@@ -806,6 +806,8 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void InstallCommand_PreferNonSymbolPackage()
         {
+            var targetDir = ConfigurationManager.AppSettings["TargetDir"];
+            var nugetexe = Path.Combine(targetDir, "nuget.exe");
             var tempPath = Path.GetTempPath();
             var source = Path.Combine(tempPath, Guid.NewGuid().ToString());
             var outputDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
@@ -826,10 +828,15 @@ namespace NuGet.CommandLine.Test
                     "install", "testPackage1",
                     "-OutputDirectory", outputDirectory,
                     "-Source", source };
-                int r = Program.Main(args);
+
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    String.Join(" ", args),
+                    waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r);
+                Assert.Equal(0, r.Item1);
                 var testTxtFile = Path.Combine(
                     outputDirectory,
                     @"testPackage1.1.1.0\content\test1.txt");
