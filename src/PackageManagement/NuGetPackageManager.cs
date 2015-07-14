@@ -421,7 +421,7 @@ namespace NuGet.PackageManagement
                     }
 
                     // No-op if this is not an actual update, or if the latest version from the source is less than the currently installed version
-                    if (installedPackageReference != null)
+                    if (installedPackageReference != null && !(installedPackageReference.PackageIdentity.Equals(updateToIdentity)))
                     {
                         var action = NuGetProjectAction.CreateInstallProjectAction(updateToIdentity, primarySources.FirstOrDefault());
 
