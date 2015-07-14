@@ -60,12 +60,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandRunner.cs" />
+    <Compile Include="DefaultConfigurationFilePreserver.cs" />
     <Compile Include="MockServer.cs" />
     <Compile Include="MockServerResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>MockServerResource.resx</DependentUpon>
     </Compile>
+    <Compile Include="NuGetConfigCommandTest.cs" />
+    <Compile Include="NuGetDeleteCommandTest.cs" />
     <Compile Include="NuGetHelpCommandTest.cs" />
     <Compile Include="NuGetInstallCommandTest.cs" />
     <Compile Include="PackageCreator.cs" />
