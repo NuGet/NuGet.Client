@@ -11,7 +11,10 @@ namespace NuGet.PackageManagement
     /// </summary>
     public class BuildIntegratedProjectCacheEntry
     {
-        public BuildIntegratedProjectCacheEntry(string projectConfigPath, IEnumerable<string> packageSpecClosure)
+        public BuildIntegratedProjectCacheEntry(
+            string projectConfigPath,
+            IEnumerable<string> packageSpecClosure,
+            IEnumerable<string> supportsProfiles)
         {
             if (projectConfigPath == null)
             {
@@ -23,8 +26,14 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(packageSpecClosure));
             }
 
+            if (supportsProfiles == null)
+            {
+                throw new ArgumentNullException(nameof(supportsProfiles));
+            }
+
             ProjectConfigPath = projectConfigPath;
             PackageSpecClosure = new HashSet<string>(packageSpecClosure);
+            SupportsProfiles = supportsProfiles;
         }
 
         /// <summary>
@@ -36,5 +45,7 @@ namespace NuGet.PackageManagement
         /// All project.json files in the closure.
         /// </summary>
         public HashSet<string> PackageSpecClosure { get; }
+
+        public IEnumerable<string> SupportsProfiles { get; }
     }
 }
