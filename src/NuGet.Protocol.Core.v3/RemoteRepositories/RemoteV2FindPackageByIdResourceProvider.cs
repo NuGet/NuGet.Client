@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3.Data;
 using NuGet.Protocol.Core.v3.LocalRepositories;
 
 namespace NuGet.Protocol.Core.v3.RemoteRepositories
@@ -19,7 +20,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         {
         }
 
-        public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository sourceRepository, CancellationToken token)
+        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository sourceRepository, CancellationToken token)
         {
             INuGetResource resource = null;
 
@@ -27,10 +28,13 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 &&
                 !sourceRepository.PackageSource.Source.EndsWith("json", StringComparison.OrdinalIgnoreCase))
             {
-                resource = new RemoteV2FindPackageByIdResourcce(sourceRepository.PackageSource);
+                var messageHandlerResource = await sourceRepository.GetResourceAsync<HttpHandlerResource>(token);
+                var client = new DataClient(messageHandlerResource.MessageHandler);
+
+                resource = new RemoteV2FindPackageByIdResource(sourceRepository.PackageSource, client);
             }
 
-            return Task.FromResult(Tuple.Create(resource != null, resource));
+            return Tuple.Create(resource != null, resource);
         }
     }
 }

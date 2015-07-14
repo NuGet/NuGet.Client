@@ -82,7 +82,7 @@ namespace NuGet.Protocol.Core.v3
                 {
                     CredentialStore.Instance.Add(uri, credential);
                 }
-                return new ProxyWebRequestHandler()
+                return new CredentialPromptWebRequestHandler()
                 {
                     Proxy = proxy,
                     Credentials = credential
@@ -90,7 +90,7 @@ namespace NuGet.Protocol.Core.v3
             }
         }
 
-        private class ProxyWebRequestHandler : WebRequestHandler
+        private class CredentialPromptWebRequestHandler : WebRequestHandler
         {
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
@@ -102,6 +102,20 @@ namespace NuGet.Protocol.Core.v3
                         if (HttpHandlerResourceV3.ProxyPassed != null)
                         {
                             HttpHandlerResourceV3.ProxyPassed(Proxy);
+                        }
+
+                        if (response.StatusCode == HttpStatusCode.Unauthorized)
+                        {
+                            if (HttpHandlerResourceV3.PromptForProxyCredentials == null)
+                            {
+                                // Fail this operation.
+                                response.EnsureSuccessStatusCode();
+                            }
+                            else
+                            {
+                                // PromptForProxyCredentials is a misnomer. It can prompt for proxy credentials or request credentials.
+                                Credentials = HttpHandlerResourceV3.PromptForProxyCredentials(request.RequestUri, /* webProxy */ null);
+                            }
                         }
 
                         return response;

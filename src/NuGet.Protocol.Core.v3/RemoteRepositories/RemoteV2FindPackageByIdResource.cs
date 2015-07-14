@@ -14,11 +14,12 @@ using NuGet.Configuration;
 using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3.Data;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.v3.RemoteRepositories
 {
-    public class RemoteV2FindPackageByIdResourcce : FindPackageByIdResource
+    public class RemoteV2FindPackageByIdResource : FindPackageByIdResource
     {
         private static readonly XName _xnameEntry = XName.Get("entry", "http://www.w3.org/2005/Atom");
         private static readonly XName _xnameTitle = XName.Get("title", "http://www.w3.org/2005/Atom");
@@ -41,10 +42,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private TimeSpan _cacheAgeLimitList;
         private TimeSpan _cacheAgeLimitNupkg;
 
-        public RemoteV2FindPackageByIdResourcce(PackageSource packageSource)
+        public RemoteV2FindPackageByIdResource(PackageSource packageSource, DataClient dataClient)
         {
             _baseUri = packageSource.Source.EndsWith("/") ? packageSource.Source : (packageSource.Source + "/");
-            _httpSource = new HttpSource(new Uri(_baseUri), packageSource.UserName, packageSource.Password);
+            _httpSource = new HttpSource(_baseUri, dataClient);
 
             PackageSource = packageSource;
         }

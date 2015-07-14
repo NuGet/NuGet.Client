@@ -8,15 +8,13 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Logging;
-using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3.Data;
 
 namespace NuGet.Protocol.Core.v3.RemoteRepositories
 {
@@ -24,83 +22,12 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
     {
         private const int BufferSize = 8192;
         private readonly HttpClient _client;
-        private readonly Uri _baseUri;
-        private readonly string _userName;
-        private readonly string _password;
+        private readonly string _baseUri;
 
-#if DNXCORE50
-        private string _proxyUserName;
-        private string _proxyPassword;
-#endif
-
-        public HttpSource(PackageSource source)
-            : this(new Uri(source.Source), source.UserName, source.Password)
+        public HttpSource(string sourceUrl, DataClient client)
         {
-        }
-
-        public HttpSource(
-            Uri baseUri,
-            string userName,
-            string password)
-        {
-            _baseUri = baseUri;
-            _userName = userName;
-            _password = password;
-
-            var proxy = Environment.GetEnvironmentVariable("http_proxy");
-            if (string.IsNullOrEmpty(proxy))
-            {
-#if !DNXCORE50
-                _client = new HttpClient();
-
-#else
-                _client = new HttpClient(new WinHttpHandler());
-#endif
-            }
-            else
-            {
-                // To use an authenticated proxy, the proxy address should be in the form of
-                // "http://user:password@proxyaddress.com:8888"
-                var proxyUriBuilder = new UriBuilder(proxy);
-#if !DNXCORE50
-                var webProxy = new WebProxy(proxy);
-                if (string.IsNullOrEmpty(proxyUriBuilder.UserName))
-                {
-                    // If no credentials were specified we use default credentials
-                    webProxy.Credentials = CredentialCache.DefaultCredentials;
-                }
-                else
-                {
-                    var credentials = new NetworkCredential(proxyUriBuilder.UserName,
-                        proxyUriBuilder.Password);
-                    webProxy.Credentials = credentials;
-                }
-
-                var handler = new HttpClientHandler
-                {
-                    Proxy = webProxy,
-                    UseProxy = true
-                };
-                _client = new HttpClient(handler);
-#else
-                if (!string.IsNullOrEmpty(proxyUriBuilder.UserName))
-                {
-                    _proxyUserName = proxyUriBuilder.UserName;
-                    _proxyPassword = proxyUriBuilder.Password;
-                }
-
-                _client = new HttpClient(new WinHttpHandler()
-                {
-                    WindowsProxyUsePolicy = WindowsProxyUsePolicy.UseWinHttpProxy
-                });
-#endif
-            }
-
-            _client.BaseAddress = baseUri;
-
-            // Set user agent to HttpClient
-            var userAgent = UserAgent.CreateUserAgentStringForVisualStudio(UserAgent.NuGetClientName);
-            UserAgent.SetUserAgent(_client, userAgent);
+            _baseUri = sourceUrl;
+            _client = client;
         }
 
         public ILogger Logger { get; set; }
@@ -125,20 +52,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture, "  {0} {1}.", "GET", uri));
 
             var request = new HttpRequestMessage(HttpMethod.Get, uri);
-            if (_userName != null)
-            {
-                var token = Convert.ToBase64String(Encoding.UTF8.GetBytes(_userName + ":" + _password));
-                request.Headers.Authorization = new AuthenticationHeaderValue("Basic", token);
-            }
-            ;
-
-#if DNXCORE50
-            if (_proxyUserName != null)
-            {
-                var proxyToken = Convert.ToBase64String(Encoding.UTF8.GetBytes(_proxyUserName + ":" + _proxyPassword));
-                request.Headers.ProxyAuthorization = new AuthenticationHeaderValue("Basic", proxyToken);
-            }
-#endif
 
             var response = await _client.SendAsync(request, cancellationToken);
             if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
@@ -224,7 +137,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             TimeSpan cacheAgeLimit,
             CancellationToken token)
         {
-            var baseFolderName = RemoveInvalidFileNameChars(ComputeHash(_baseUri.OriginalString));
+            var baseFolderName = RemoveInvalidFileNameChars(ComputeHash(_baseUri));
             var baseFileName = RemoveInvalidFileNameChars(cacheKey) + ".dat";
 
 #if DNX451

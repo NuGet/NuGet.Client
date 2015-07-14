@@ -11,6 +11,7 @@ using NuGet.Common;
 using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3.Data;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.v3.RemoteRepositories
@@ -29,10 +30,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private TimeSpan _cacheAgeLimitList;
         private TimeSpan _cacheAgeLimitNupkg;
 
-        public RemoteV3FindPackageByIdResource(SourceRepository sourceRepository)
+        public RemoteV3FindPackageByIdResource(SourceRepository sourceRepository, DataClient dataClient)
         {
             SourceRepository = sourceRepository;
-            _httpSource = new HttpSource(sourceRepository.PackageSource);
+            _httpSource = new HttpSource(sourceRepository.PackageSource.Source, dataClient);
         }
 
         public SourceRepository SourceRepository { get; }
