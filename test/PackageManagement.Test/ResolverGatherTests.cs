@@ -105,7 +105,7 @@ namespace NuGet.Test
                 ResolutionContext = new ResolutionContext()
             };
 
-            var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
+            var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(5000));
 
             // Act
             var results = await ResolverGather.GatherAsync(context, cts.Token);

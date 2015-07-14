@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NuGet.Configuration;
-using NuGet.Frameworks;
-using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement.Projects;
@@ -61,7 +59,10 @@ namespace NuGet.ProjectManagement
         /// </summary>
         public static ExternalProjectReference ConvertProjectReference(BuildIntegratedProjectReference reference)
         {
-            return new ExternalProjectReference(reference.Name, reference.PackageSpecPath, reference.ExternalProjectReferences);
+            return new ExternalProjectReference(
+                reference.Name,
+                reference.PackageSpecPath,
+                reference.ExternalProjectReferences.Where(externalReference => !externalReference.Equals(reference.Name, StringComparison.OrdinalIgnoreCase)));
         }
 
         public static IReadOnlyList<PackageIdentity> GetOrderedProjectDependencies(BuildIntegratedNuGetProject buildIntegratedProject)

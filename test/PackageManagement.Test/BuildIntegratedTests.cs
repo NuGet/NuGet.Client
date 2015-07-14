@@ -119,7 +119,7 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public async Task TestPacManBuildIntegratedUpdatePackage()
+        public async Task TestPacManBuildIntegratedInstallUpdatedPackage()
         {
             // Arrange
             var versioning107 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
@@ -228,6 +228,133 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public async Task TestPacManBuildIntegratedUpdatePackageAll()
+        {
+            // Arrange
+            var versioning105 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.5"));
+            var jsonNet608 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8"));
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new Configuration.NullSettings();
+            var deleteOnRestartManager = new TestDeleteOnRestartManager();
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager,
+                deleteOnRestartManager);
+
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+            var token = CancellationToken.None;
+
+            CreateConfigJson(randomConfig);
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
+            var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+
+            string message = string.Empty;
+
+            await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, versioning105, new ResolutionContext(), new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+            await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, jsonNet608, new ResolutionContext(), new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+            // Act
+            var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                buildIntegratedProject,
+                new ResolutionContext(),
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories(),
+                sourceRepositoryProvider.GetRepositories(),
+                CancellationToken.None);
+
+            await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                buildIntegratedProject,
+                actions,
+                new TestNuGetProjectContext(),
+                CancellationToken.None);
+
+            var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
+            var lockFile = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+
+            // Assert
+            Assert.Equal(1, actions.Count());
+            Assert.True(actions.First() is BuildIntegratedProjectAction);
+            Assert.Equal(2, installedPackages.Count());
+            Assert.True(installedPackages.First().PackageIdentity.Version > jsonNet608.Version);
+            Assert.True(installedPackages.Skip(1).First().PackageIdentity.Version > versioning105.Version);
+            Assert.True(File.Exists(lockFile));
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomProjectFolderPath);
+        }
+
+        [Fact]
+        public async Task TestPacManBuildIntegratedUpdatePackageToExactVersion()
+        {
+            // Arrange
+            var versioning105 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.5"));
+            var versioning107 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new Configuration.NullSettings();
+            var deleteOnRestartManager = new TestDeleteOnRestartManager();
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager,
+                deleteOnRestartManager);
+
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+            var token = CancellationToken.None;
+
+            CreateConfigJson(randomConfig);
+
+            var projectTargetFramework = NuGetFramework.Parse("netcore50");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
+            var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+
+            string message = string.Empty;
+
+            await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, versioning105, new ResolutionContext(), new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+            // Act
+            var actions = await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                versioning107,
+                buildIntegratedProject,
+                new ResolutionContext(),
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories(),
+                sourceRepositoryProvider.GetRepositories(),
+                CancellationToken.None);
+
+            await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                buildIntegratedProject,
+                actions,
+                new TestNuGetProjectContext(),
+                CancellationToken.None);
+
+            var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
+            var lockFile = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+
+            // Assert
+            Assert.Equal(1, actions.Count());
+            Assert.True(actions.First() is BuildIntegratedProjectAction);
+            Assert.Equal(1, installedPackages.Count());
+            Assert.True(installedPackages.Single().PackageIdentity.Version > versioning105.Version);
+            Assert.True(File.Exists(lockFile));
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomProjectFolderPath);
+        }
+
+        [Fact]
         public async Task TestPacManBuildIntegratedUpdatePackageDowngrade()
         {
             // Arrange
@@ -269,13 +396,19 @@ namespace NuGet.Test
                 sourceRepositoryProvider.GetRepositories(),
                 CancellationToken.None);
 
+            await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
+                buildIntegratedProject,
+                actions, 
+                new TestNuGetProjectContext(),
+                CancellationToken.None);
+
             var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
             var lockFile = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
 
             // Assert
-            Assert.Equal(0, actions.Count());
+            Assert.Equal(1, actions.Count());
             Assert.Equal(1, installedPackages.Count());
-            Assert.Equal("1.0.5", installedPackages.Single().PackageIdentity.Version.ToNormalizedString());
+            Assert.Equal("1.0.1", installedPackages.Single().PackageIdentity.Version.ToNormalizedString());
             Assert.True(File.Exists(lockFile));
 
             // Clean-up

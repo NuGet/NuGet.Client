@@ -38,8 +38,6 @@ namespace Test.Utility
 
         public bool SkipAssemblyReferences { get; set; }
 
-        public bool SkipBindingRedirects { get; set; }
-
         public bool BindingRedirectsDisabled { get; set; }
 
         public void ReportError(string message)
