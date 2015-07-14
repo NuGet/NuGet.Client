@@ -22,7 +22,7 @@ namespace NuGet.CommandLine {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class NuGetResources {
+    public class NuGetResources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace NuGet.CommandLine {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.CommandLine.NuGetResources", typeof(NuGetResources).Assembly);
@@ -51,7 +51,7 @@ namespace NuGet.CommandLine {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -63,7 +63,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Add file &apos;{0}&apos; to package as &apos;{1}&apos;.
         /// </summary>
-        internal static string AddFileToPackage {
+        public static string AddFileToPackage {
             get {
                 return ResourceManager.GetString("AddFileToPackage", resourceCulture);
             }
@@ -72,7 +72,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 将文件“{0}”作为“{1}”添加到程序包.
         /// </summary>
-        internal static string AddFileToPackage_chs {
+        public static string AddFileToPackage_chs {
             get {
                 return ResourceManager.GetString("AddFileToPackage_chs", resourceCulture);
             }
@@ -81,7 +81,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 新增檔案 &apos;{0}&apos; 到封裝以做為 &apos;{1}&apos;.
         /// </summary>
-        internal static string AddFileToPackage_cht {
+        public static string AddFileToPackage_cht {
             get {
                 return ResourceManager.GetString("AddFileToPackage_cht", resourceCulture);
             }
@@ -90,7 +90,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Přidat soubor {0} do balíčku jako {1}.
         /// </summary>
-        internal static string AddFileToPackage_csy {
+        public static string AddFileToPackage_csy {
             get {
                 return ResourceManager.GetString("AddFileToPackage_csy", resourceCulture);
             }
@@ -99,7 +99,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Datei &quot;{0}&quot; dem Paket als &quot;{1}&quot; hinzufügen.
         /// </summary>
-        internal static string AddFileToPackage_deu {
+        public static string AddFileToPackage_deu {
             get {
                 return ResourceManager.GetString("AddFileToPackage_deu", resourceCulture);
             }
@@ -108,7 +108,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Agregar archivo &apos;{0}&apos; al paquete como &apos;{1}&apos;.
         /// </summary>
-        internal static string AddFileToPackage_esp {
+        public static string AddFileToPackage_esp {
             get {
                 return ResourceManager.GetString("AddFileToPackage_esp", resourceCulture);
             }
@@ -117,7 +117,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ajouter le fichier &apos;{0}&apos; au package comme &apos;{1}&apos;.
         /// </summary>
-        internal static string AddFileToPackage_fra {
+        public static string AddFileToPackage_fra {
             get {
                 return ResourceManager.GetString("AddFileToPackage_fra", resourceCulture);
             }
@@ -126,7 +126,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Aggiungere file &apos;{0}&apos; a pacchetto come &apos;{1}&apos;.
         /// </summary>
-        internal static string AddFileToPackage_ita {
+        public static string AddFileToPackage_ita {
             get {
                 return ResourceManager.GetString("AddFileToPackage_ita", resourceCulture);
             }
@@ -135,7 +135,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to ファイル &apos;{0}&apos; を &apos;{1}&apos; としてパッケージに追加します.
         /// </summary>
-        internal static string AddFileToPackage_jpn {
+        public static string AddFileToPackage_jpn {
             get {
                 return ResourceManager.GetString("AddFileToPackage_jpn", resourceCulture);
             }
@@ -144,7 +144,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 패키지에 &apos;{1}&apos;(으)로 &apos;{0}&apos; 파일 추가.
         /// </summary>
-        internal static string AddFileToPackage_kor {
+        public static string AddFileToPackage_kor {
             get {
                 return ResourceManager.GetString("AddFileToPackage_kor", resourceCulture);
             }
@@ -153,7 +153,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Dodaj plik „{0}” do pakietu jako „{1}”.
         /// </summary>
-        internal static string AddFileToPackage_plk {
+        public static string AddFileToPackage_plk {
             get {
                 return ResourceManager.GetString("AddFileToPackage_plk", resourceCulture);
             }
@@ -162,7 +162,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Adicionar arquivo &apos;{0}&apos; ao pacote como &apos;{1}&apos;.
         /// </summary>
-        internal static string AddFileToPackage_ptb {
+        public static string AddFileToPackage_ptb {
             get {
                 return ResourceManager.GetString("AddFileToPackage_ptb", resourceCulture);
             }
@@ -171,7 +171,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Добавление файла &quot;{0}&quot; в пакет как &quot;{1}&quot;.
         /// </summary>
-        internal static string AddFileToPackage_rus {
+        public static string AddFileToPackage_rus {
             get {
                 return ResourceManager.GetString("AddFileToPackage_rus", resourceCulture);
             }
@@ -180,7 +180,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; dosyasını pakete &apos;{1}&apos; olarak ekle.
         /// </summary>
-        internal static string AddFileToPackage_trk {
+        public static string AddFileToPackage_trk {
             get {
                 return ResourceManager.GetString("AddFileToPackage_trk", resourceCulture);
             }
@@ -189,7 +189,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ambiguous command &apos;{0}&apos;. Possible values: {1}..
         /// </summary>
-        internal static string AmbiguousCommand {
+        public static string AmbiguousCommand {
             get {
                 return ResourceManager.GetString("AmbiguousCommand", resourceCulture);
             }
@@ -198,7 +198,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 命令“{0}”不明确。可能的值: {1}。.
         /// </summary>
-        internal static string AmbiguousCommand_chs {
+        public static string AmbiguousCommand_chs {
             get {
                 return ResourceManager.GetString("AmbiguousCommand_chs", resourceCulture);
             }
@@ -207,7 +207,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 模糊的命令 &apos;{0}&apos;。可能值為: {1}。.
         /// </summary>
-        internal static string AmbiguousCommand_cht {
+        public static string AmbiguousCommand_cht {
             get {
                 return ResourceManager.GetString("AmbiguousCommand_cht", resourceCulture);
             }
@@ -216,7 +216,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nejednoznačný příkaz {0}. Možné hodnoty: {1}..
         /// </summary>
-        internal static string AmbiguousCommand_csy {
+        public static string AmbiguousCommand_csy {
             get {
                 return ResourceManager.GetString("AmbiguousCommand_csy", resourceCulture);
             }
@@ -225,7 +225,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Mehrdeutiger Befehl &quot;{0}&quot;. Mögliche Werte: {1}..
         /// </summary>
-        internal static string AmbiguousCommand_deu {
+        public static string AmbiguousCommand_deu {
             get {
                 return ResourceManager.GetString("AmbiguousCommand_deu", resourceCulture);
             }
@@ -234,7 +234,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Comando ambiguo &apos;{0}&apos;. Valores posibles: {1}..
         /// </summary>
-        internal static string AmbiguousCommand_esp {
+        public static string AmbiguousCommand_esp {
             get {
                 return ResourceManager.GetString("AmbiguousCommand_esp", resourceCulture);
             }
@@ -243,7 +243,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Commande ambiguë &apos;{0}&apos;. Valeurs possibles : {1}..
         /// </summary>
-        internal static string AmbiguousCommand_fra {
+        public static string AmbiguousCommand_fra {
             get {
                 return ResourceManager.GetString("AmbiguousCommand_fra", resourceCulture);
             }
@@ -252,7 +252,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Comando ambiguo &apos;{0}&apos;. Possibili valori: {1}..
         /// </summary>
-        internal static string AmbiguousCommand_ita {
+        public static string AmbiguousCommand_ita {
             get {
                 return ResourceManager.GetString("AmbiguousCommand_ita", resourceCulture);
             }
@@ -261,7 +261,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to あいまいなコマンド &apos;{0}&apos;。指定可能な値: {1}..
         /// </summary>
-        internal static string AmbiguousCommand_jpn {
+        public static string AmbiguousCommand_jpn {
             get {
                 return ResourceManager.GetString("AmbiguousCommand_jpn", resourceCulture);
             }
@@ -270,7 +270,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 모호한 &apos;{0}&apos; 명령입니다. 사용 가능한 값: {1}..
         /// </summary>
-        internal static string AmbiguousCommand_kor {
+        public static string AmbiguousCommand_kor {
             get {
                 return ResourceManager.GetString("AmbiguousCommand_kor", resourceCulture);
             }
@@ -279,7 +279,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Niejednoznaczne polecenie „{0}”. Możliwe wartości: {1}..
         /// </summary>
-        internal static string AmbiguousCommand_plk {
+        public static string AmbiguousCommand_plk {
             get {
                 return ResourceManager.GetString("AmbiguousCommand_plk", resourceCulture);
             }
@@ -288,7 +288,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Comando ambíguo &apos;{0}&apos;. Valores possíveis: {1}..
         /// </summary>
-        internal static string AmbiguousCommand_ptb {
+        public static string AmbiguousCommand_ptb {
             get {
                 return ResourceManager.GetString("AmbiguousCommand_ptb", resourceCulture);
             }
@@ -297,7 +297,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Неоднозначная команда &quot;{0}&quot;. Возможные значения: {1}..
         /// </summary>
-        internal static string AmbiguousCommand_rus {
+        public static string AmbiguousCommand_rus {
             get {
                 return ResourceManager.GetString("AmbiguousCommand_rus", resourceCulture);
             }
@@ -306,7 +306,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Belirsiz komut &apos;{0}&apos;. Olası değerler: {1}..
         /// </summary>
-        internal static string AmbiguousCommand_trk {
+        public static string AmbiguousCommand_trk {
             get {
                 return ResourceManager.GetString("AmbiguousCommand_trk", resourceCulture);
             }
@@ -315,7 +315,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ambiguous option &apos;{0}&apos;. Possible values: {1}..
         /// </summary>
-        internal static string AmbiguousOption {
+        public static string AmbiguousOption {
             get {
                 return ResourceManager.GetString("AmbiguousOption", resourceCulture);
             }
@@ -324,7 +324,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 选项“{0}”不明确。可能的值: {1}。.
         /// </summary>
-        internal static string AmbiguousOption_chs {
+        public static string AmbiguousOption_chs {
             get {
                 return ResourceManager.GetString("AmbiguousOption_chs", resourceCulture);
             }
@@ -333,7 +333,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 模糊的選項 &apos;{0}&apos;。可能值為: {1}。.
         /// </summary>
-        internal static string AmbiguousOption_cht {
+        public static string AmbiguousOption_cht {
             get {
                 return ResourceManager.GetString("AmbiguousOption_cht", resourceCulture);
             }
@@ -342,7 +342,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nejednoznačná možnost {0}. Možné hodnoty: {1}..
         /// </summary>
-        internal static string AmbiguousOption_csy {
+        public static string AmbiguousOption_csy {
             get {
                 return ResourceManager.GetString("AmbiguousOption_csy", resourceCulture);
             }
@@ -351,7 +351,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Mehrdeutige Option &quot;{0}&quot;. Mögliche Werte: {1}..
         /// </summary>
-        internal static string AmbiguousOption_deu {
+        public static string AmbiguousOption_deu {
             get {
                 return ResourceManager.GetString("AmbiguousOption_deu", resourceCulture);
             }
@@ -360,7 +360,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Opción ambigua &apos;{0}&apos;. Valores posibles: {1}..
         /// </summary>
-        internal static string AmbiguousOption_esp {
+        public static string AmbiguousOption_esp {
             get {
                 return ResourceManager.GetString("AmbiguousOption_esp", resourceCulture);
             }
@@ -369,7 +369,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Option ambiguë &apos;{0}&apos;. Valeurs possibles : {1}..
         /// </summary>
-        internal static string AmbiguousOption_fra {
+        public static string AmbiguousOption_fra {
             get {
                 return ResourceManager.GetString("AmbiguousOption_fra", resourceCulture);
             }
@@ -378,7 +378,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Opzione ambigua &apos;{0}&apos;. Possibili valori: {1}..
         /// </summary>
-        internal static string AmbiguousOption_ita {
+        public static string AmbiguousOption_ita {
             get {
                 return ResourceManager.GetString("AmbiguousOption_ita", resourceCulture);
             }
@@ -387,7 +387,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to あいまいなオプション &apos;{0}&apos;。指定可能な値: {1}..
         /// </summary>
-        internal static string AmbiguousOption_jpn {
+        public static string AmbiguousOption_jpn {
             get {
                 return ResourceManager.GetString("AmbiguousOption_jpn", resourceCulture);
             }
@@ -396,7 +396,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 모호한 &apos;{0}&apos; 옵션입니다. 사용 가능한 값: {1}..
         /// </summary>
-        internal static string AmbiguousOption_kor {
+        public static string AmbiguousOption_kor {
             get {
                 return ResourceManager.GetString("AmbiguousOption_kor", resourceCulture);
             }
@@ -405,7 +405,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Niejednoznaczna opcja „{0}”. Możliwe wartości: {1}..
         /// </summary>
-        internal static string AmbiguousOption_plk {
+        public static string AmbiguousOption_plk {
             get {
                 return ResourceManager.GetString("AmbiguousOption_plk", resourceCulture);
             }
@@ -414,7 +414,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Opção ambígua &apos;{0}&apos;. Valores possíveis: {1}..
         /// </summary>
-        internal static string AmbiguousOption_ptb {
+        public static string AmbiguousOption_ptb {
             get {
                 return ResourceManager.GetString("AmbiguousOption_ptb", resourceCulture);
             }
@@ -423,7 +423,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Неоднозначный параметр &quot;{0}&quot;. Возможные значения: {1}..
         /// </summary>
-        internal static string AmbiguousOption_rus {
+        public static string AmbiguousOption_rus {
             get {
                 return ResourceManager.GetString("AmbiguousOption_rus", resourceCulture);
             }
@@ -432,7 +432,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Belirsiz seçenek &apos;{0}&apos;. Olası değerler: {1}..
         /// </summary>
-        internal static string AmbiguousOption_trk {
+        public static string AmbiguousOption_trk {
             get {
                 return ResourceManager.GetString("AmbiguousOption_trk", resourceCulture);
             }
@@ -441,7 +441,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Building project &apos;{0}&apos; for target framework &apos;{1}&apos;..
         /// </summary>
-        internal static string BuildingProjectTargetingFramework {
+        public static string BuildingProjectTargetingFramework {
             get {
                 return ResourceManager.GetString("BuildingProjectTargetingFramework", resourceCulture);
             }
@@ -450,7 +450,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在为目标框架“{1}”生成项目“{0}”。.
         /// </summary>
-        internal static string BuildingProjectTargetingFramework_chs {
+        public static string BuildingProjectTargetingFramework_chs {
             get {
                 return ResourceManager.GetString("BuildingProjectTargetingFramework_chs", resourceCulture);
             }
@@ -459,7 +459,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在為目標架構 &apos;{1}&apos; 建置專案 &apos;{0}&apos;。.
         /// </summary>
-        internal static string BuildingProjectTargetingFramework_cht {
+        public static string BuildingProjectTargetingFramework_cht {
             get {
                 return ResourceManager.GetString("BuildingProjectTargetingFramework_cht", resourceCulture);
             }
@@ -468,7 +468,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Vytváří se projekt {0} pro cílovou architekturu {1}..
         /// </summary>
-        internal static string BuildingProjectTargetingFramework_csy {
+        public static string BuildingProjectTargetingFramework_csy {
             get {
                 return ResourceManager.GetString("BuildingProjectTargetingFramework_csy", resourceCulture);
             }
@@ -477,7 +477,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Projekt &quot;{0}&quot; wird für das Zielframework &quot;{1}&quot; erstellt..
         /// </summary>
-        internal static string BuildingProjectTargetingFramework_deu {
+        public static string BuildingProjectTargetingFramework_deu {
             get {
                 return ResourceManager.GetString("BuildingProjectTargetingFramework_deu", resourceCulture);
             }
@@ -486,7 +486,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Compilando proyecto &apos;{0}&apos; para el marco de trabajo de destino &apos;{1}&apos;..
         /// </summary>
-        internal static string BuildingProjectTargetingFramework_esp {
+        public static string BuildingProjectTargetingFramework_esp {
             get {
                 return ResourceManager.GetString("BuildingProjectTargetingFramework_esp", resourceCulture);
             }
@@ -495,7 +495,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Création du projet &apos;{0}&apos; pour le Framework cible &apos;{1}&apos;..
         /// </summary>
-        internal static string BuildingProjectTargetingFramework_fra {
+        public static string BuildingProjectTargetingFramework_fra {
             get {
                 return ResourceManager.GetString("BuildingProjectTargetingFramework_fra", resourceCulture);
             }
@@ -504,7 +504,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Creazione progetto &apos;{0}&apos; per quadro target &apos;{1}&apos;..
         /// </summary>
-        internal static string BuildingProjectTargetingFramework_ita {
+        public static string BuildingProjectTargetingFramework_ita {
             get {
                 return ResourceManager.GetString("BuildingProjectTargetingFramework_ita", resourceCulture);
             }
@@ -513,7 +513,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to ターゲット フレームワーク &apos;{1}&apos; のプロジェクト &apos;{0}&apos; をビルドしています.
         /// </summary>
-        internal static string BuildingProjectTargetingFramework_jpn {
+        public static string BuildingProjectTargetingFramework_jpn {
             get {
                 return ResourceManager.GetString("BuildingProjectTargetingFramework_jpn", resourceCulture);
             }
@@ -522,7 +522,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 대상 프레임워크 &apos;{1}&apos;에 대한 &apos;{0}&apos; 프로젝트를 빌드하고 있습니다..
         /// </summary>
-        internal static string BuildingProjectTargetingFramework_kor {
+        public static string BuildingProjectTargetingFramework_kor {
             get {
                 return ResourceManager.GetString("BuildingProjectTargetingFramework_kor", resourceCulture);
             }
@@ -531,7 +531,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Kompilowanie projektu „{0}” dla struktury docelowej „{1}”..
         /// </summary>
-        internal static string BuildingProjectTargetingFramework_plk {
+        public static string BuildingProjectTargetingFramework_plk {
             get {
                 return ResourceManager.GetString("BuildingProjectTargetingFramework_plk", resourceCulture);
             }
@@ -540,7 +540,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Criar projeto &apos;{0}&apos; para a estrutura de destino &apos;{1}&apos;..
         /// </summary>
-        internal static string BuildingProjectTargetingFramework_ptb {
+        public static string BuildingProjectTargetingFramework_ptb {
             get {
                 return ResourceManager.GetString("BuildingProjectTargetingFramework_ptb", resourceCulture);
             }
@@ -549,7 +549,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Выполнение сборки проекта &quot;{0}&quot; для целевой платформы &quot;{1}&quot;..
         /// </summary>
-        internal static string BuildingProjectTargetingFramework_rus {
+        public static string BuildingProjectTargetingFramework_rus {
             get {
                 return ResourceManager.GetString("BuildingProjectTargetingFramework_rus", resourceCulture);
             }
@@ -558,7 +558,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {1}&apos; hedef framework&apos;ü için &apos;{0}&apos; projesi oluşturuluyor..
         /// </summary>
-        internal static string BuildingProjectTargetingFramework_trk {
+        public static string BuildingProjectTargetingFramework_trk {
             get {
                 return ResourceManager.GetString("BuildingProjectTargetingFramework_trk", resourceCulture);
             }
@@ -567,7 +567,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to WARNING: {0}.
         /// </summary>
-        internal static string CommandLine_Warning {
+        public static string CommandLine_Warning {
             get {
                 return ResourceManager.GetString("CommandLine_Warning", resourceCulture);
             }
@@ -576,7 +576,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 警告: {0}.
         /// </summary>
-        internal static string CommandLine_Warning_chs {
+        public static string CommandLine_Warning_chs {
             get {
                 return ResourceManager.GetString("CommandLine_Warning_chs", resourceCulture);
             }
@@ -585,7 +585,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 警告: {0}.
         /// </summary>
-        internal static string CommandLine_Warning_cht {
+        public static string CommandLine_Warning_cht {
             get {
                 return ResourceManager.GetString("CommandLine_Warning_cht", resourceCulture);
             }
@@ -594,7 +594,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to UPOZORNĚNÍ: {0}.
         /// </summary>
-        internal static string CommandLine_Warning_csy {
+        public static string CommandLine_Warning_csy {
             get {
                 return ResourceManager.GetString("CommandLine_Warning_csy", resourceCulture);
             }
@@ -603,7 +603,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to WARNUNG: {0}.
         /// </summary>
-        internal static string CommandLine_Warning_deu {
+        public static string CommandLine_Warning_deu {
             get {
                 return ResourceManager.GetString("CommandLine_Warning_deu", resourceCulture);
             }
@@ -612,7 +612,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to ADVERTENCIA: &apos;{0}&apos;.
         /// </summary>
-        internal static string CommandLine_Warning_esp {
+        public static string CommandLine_Warning_esp {
             get {
                 return ResourceManager.GetString("CommandLine_Warning_esp", resourceCulture);
             }
@@ -621,7 +621,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to AVERTISSEMENT : {0}.
         /// </summary>
-        internal static string CommandLine_Warning_fra {
+        public static string CommandLine_Warning_fra {
             get {
                 return ResourceManager.GetString("CommandLine_Warning_fra", resourceCulture);
             }
@@ -630,7 +630,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to AVVISO: {0}.
         /// </summary>
-        internal static string CommandLine_Warning_ita {
+        public static string CommandLine_Warning_ita {
             get {
                 return ResourceManager.GetString("CommandLine_Warning_ita", resourceCulture);
             }
@@ -639,7 +639,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 警告: {0}.
         /// </summary>
-        internal static string CommandLine_Warning_jpn {
+        public static string CommandLine_Warning_jpn {
             get {
                 return ResourceManager.GetString("CommandLine_Warning_jpn", resourceCulture);
             }
@@ -648,7 +648,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 경고: {0}.
         /// </summary>
-        internal static string CommandLine_Warning_kor {
+        public static string CommandLine_Warning_kor {
             get {
                 return ResourceManager.GetString("CommandLine_Warning_kor", resourceCulture);
             }
@@ -657,7 +657,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to OSTRZEŻENIE: {0}.
         /// </summary>
-        internal static string CommandLine_Warning_plk {
+        public static string CommandLine_Warning_plk {
             get {
                 return ResourceManager.GetString("CommandLine_Warning_plk", resourceCulture);
             }
@@ -666,7 +666,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to AVISO: {0}.
         /// </summary>
-        internal static string CommandLine_Warning_ptb {
+        public static string CommandLine_Warning_ptb {
             get {
                 return ResourceManager.GetString("CommandLine_Warning_ptb", resourceCulture);
             }
@@ -675,7 +675,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to ПРЕДУПРЕЖДЕНИЕ. {0}.
         /// </summary>
-        internal static string CommandLine_Warning_rus {
+        public static string CommandLine_Warning_rus {
             get {
                 return ResourceManager.GetString("CommandLine_Warning_rus", resourceCulture);
             }
@@ -684,7 +684,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to UYARI: {0}.
         /// </summary>
-        internal static string CommandLine_Warning_trk {
+        public static string CommandLine_Warning_trk {
             get {
                 return ResourceManager.GetString("CommandLine_Warning_trk", resourceCulture);
             }
@@ -693,7 +693,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Key &apos;{0}&apos; not found..
         /// </summary>
-        internal static string ConfigCommandKeyNotFound {
+        public static string ConfigCommandKeyNotFound {
             get {
                 return ResourceManager.GetString("ConfigCommandKeyNotFound", resourceCulture);
             }
@@ -702,7 +702,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到键“{0}”。.
         /// </summary>
-        internal static string ConfigCommandKeyNotFound_chs {
+        public static string ConfigCommandKeyNotFound_chs {
             get {
                 return ResourceManager.GetString("ConfigCommandKeyNotFound_chs", resourceCulture);
             }
@@ -711,7 +711,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到索引鍵 &apos;{0}&apos;。.
         /// </summary>
-        internal static string ConfigCommandKeyNotFound_cht {
+        public static string ConfigCommandKeyNotFound_cht {
             get {
                 return ResourceManager.GetString("ConfigCommandKeyNotFound_cht", resourceCulture);
             }
@@ -720,7 +720,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Klíč {0} nebyl nalezen..
         /// </summary>
-        internal static string ConfigCommandKeyNotFound_csy {
+        public static string ConfigCommandKeyNotFound_csy {
             get {
                 return ResourceManager.GetString("ConfigCommandKeyNotFound_csy", resourceCulture);
             }
@@ -729,7 +729,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Der Schlüssel &quot;{0}&quot; wurde nicht gefunden..
         /// </summary>
-        internal static string ConfigCommandKeyNotFound_deu {
+        public static string ConfigCommandKeyNotFound_deu {
             get {
                 return ResourceManager.GetString("ConfigCommandKeyNotFound_deu", resourceCulture);
             }
@@ -738,7 +738,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se encuentra la clave &apos;{0}&apos;..
         /// </summary>
-        internal static string ConfigCommandKeyNotFound_esp {
+        public static string ConfigCommandKeyNotFound_esp {
             get {
                 return ResourceManager.GetString("ConfigCommandKeyNotFound_esp", resourceCulture);
             }
@@ -747,7 +747,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Clé &apos;{0}&apos; introuvable..
         /// </summary>
-        internal static string ConfigCommandKeyNotFound_fra {
+        public static string ConfigCommandKeyNotFound_fra {
             get {
                 return ResourceManager.GetString("ConfigCommandKeyNotFound_fra", resourceCulture);
             }
@@ -756,7 +756,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Chiave &apos;{0}&apos; non trovata..
         /// </summary>
-        internal static string ConfigCommandKeyNotFound_ita {
+        public static string ConfigCommandKeyNotFound_ita {
             get {
                 return ResourceManager.GetString("ConfigCommandKeyNotFound_ita", resourceCulture);
             }
@@ -765,7 +765,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to キー &apos;{0}&apos; が見つかりません。.
         /// </summary>
-        internal static string ConfigCommandKeyNotFound_jpn {
+        public static string ConfigCommandKeyNotFound_jpn {
             get {
                 return ResourceManager.GetString("ConfigCommandKeyNotFound_jpn", resourceCulture);
             }
@@ -774,7 +774,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; 키를 찾을 수 없습니다..
         /// </summary>
-        internal static string ConfigCommandKeyNotFound_kor {
+        public static string ConfigCommandKeyNotFound_kor {
             get {
                 return ResourceManager.GetString("ConfigCommandKeyNotFound_kor", resourceCulture);
             }
@@ -783,7 +783,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie odnaleziono klucza „{0}”..
         /// </summary>
-        internal static string ConfigCommandKeyNotFound_plk {
+        public static string ConfigCommandKeyNotFound_plk {
             get {
                 return ResourceManager.GetString("ConfigCommandKeyNotFound_plk", resourceCulture);
             }
@@ -792,7 +792,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Chave &apos;{0}&apos; não encontrada..
         /// </summary>
-        internal static string ConfigCommandKeyNotFound_ptb {
+        public static string ConfigCommandKeyNotFound_ptb {
             get {
                 return ResourceManager.GetString("ConfigCommandKeyNotFound_ptb", resourceCulture);
             }
@@ -801,7 +801,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ключ &quot;{0}&quot; не найден..
         /// </summary>
-        internal static string ConfigCommandKeyNotFound_rus {
+        public static string ConfigCommandKeyNotFound_rus {
             get {
                 return ResourceManager.GetString("ConfigCommandKeyNotFound_rus", resourceCulture);
             }
@@ -810,7 +810,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; anahtarı bulunamadı..
         /// </summary>
-        internal static string ConfigCommandKeyNotFound_trk {
+        public static string ConfigCommandKeyNotFound_trk {
             get {
                 return ResourceManager.GetString("ConfigCommandKeyNotFound_trk", resourceCulture);
             }
@@ -819,7 +819,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} (y/N) .
         /// </summary>
-        internal static string ConsoleConfirmMessage {
+        public static string ConsoleConfirmMessage {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessage", resourceCulture);
             }
@@ -828,7 +828,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} (y/N) .
         /// </summary>
-        internal static string ConsoleConfirmMessage_chs {
+        public static string ConsoleConfirmMessage_chs {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessage_chs", resourceCulture);
             }
@@ -837,7 +837,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} (是/否) .
         /// </summary>
-        internal static string ConsoleConfirmMessage_cht {
+        public static string ConsoleConfirmMessage_cht {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessage_cht", resourceCulture);
             }
@@ -846,7 +846,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} (A/N): .
         /// </summary>
-        internal static string ConsoleConfirmMessage_csy {
+        public static string ConsoleConfirmMessage_csy {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessage_csy", resourceCulture);
             }
@@ -855,7 +855,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} (j/N) .
         /// </summary>
-        internal static string ConsoleConfirmMessage_deu {
+        public static string ConsoleConfirmMessage_deu {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessage_deu", resourceCulture);
             }
@@ -864,7 +864,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} (Sí/No) .
         /// </summary>
-        internal static string ConsoleConfirmMessage_esp {
+        public static string ConsoleConfirmMessage_esp {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessage_esp", resourceCulture);
             }
@@ -873,7 +873,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} (o/N) .
         /// </summary>
-        internal static string ConsoleConfirmMessage_fra {
+        public static string ConsoleConfirmMessage_fra {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessage_fra", resourceCulture);
             }
@@ -882,7 +882,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} (y/N) .
         /// </summary>
-        internal static string ConsoleConfirmMessage_ita {
+        public static string ConsoleConfirmMessage_ita {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessage_ita", resourceCulture);
             }
@@ -891,7 +891,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} (y/N) .
         /// </summary>
-        internal static string ConsoleConfirmMessage_jpn {
+        public static string ConsoleConfirmMessage_jpn {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessage_jpn", resourceCulture);
             }
@@ -900,7 +900,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}(y/N) .
         /// </summary>
-        internal static string ConsoleConfirmMessage_kor {
+        public static string ConsoleConfirmMessage_kor {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessage_kor", resourceCulture);
             }
@@ -909,7 +909,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} (t/N) .
         /// </summary>
-        internal static string ConsoleConfirmMessage_plk {
+        public static string ConsoleConfirmMessage_plk {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessage_plk", resourceCulture);
             }
@@ -918,7 +918,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} (y / N).
         /// </summary>
-        internal static string ConsoleConfirmMessage_ptb {
+        public static string ConsoleConfirmMessage_ptb {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessage_ptb", resourceCulture);
             }
@@ -927,7 +927,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} (д/н) .
         /// </summary>
-        internal static string ConsoleConfirmMessage_rus {
+        public static string ConsoleConfirmMessage_rus {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessage_rus", resourceCulture);
             }
@@ -936,7 +936,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} (e/H) .
         /// </summary>
-        internal static string ConsoleConfirmMessage_trk {
+        public static string ConsoleConfirmMessage_trk {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessage_trk", resourceCulture);
             }
@@ -945,7 +945,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to y.
         /// </summary>
-        internal static string ConsoleConfirmMessageAccept {
+        public static string ConsoleConfirmMessageAccept {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessageAccept", resourceCulture);
             }
@@ -954,7 +954,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to y.
         /// </summary>
-        internal static string ConsoleConfirmMessageAccept_chs {
+        public static string ConsoleConfirmMessageAccept_chs {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessageAccept_chs", resourceCulture);
             }
@@ -963,7 +963,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 是.
         /// </summary>
-        internal static string ConsoleConfirmMessageAccept_cht {
+        public static string ConsoleConfirmMessageAccept_cht {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessageAccept_cht", resourceCulture);
             }
@@ -972,7 +972,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to A.
         /// </summary>
-        internal static string ConsoleConfirmMessageAccept_csy {
+        public static string ConsoleConfirmMessageAccept_csy {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessageAccept_csy", resourceCulture);
             }
@@ -981,7 +981,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to j.
         /// </summary>
-        internal static string ConsoleConfirmMessageAccept_deu {
+        public static string ConsoleConfirmMessageAccept_deu {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessageAccept_deu", resourceCulture);
             }
@@ -990,7 +990,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to sí.
         /// </summary>
-        internal static string ConsoleConfirmMessageAccept_esp {
+        public static string ConsoleConfirmMessageAccept_esp {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessageAccept_esp", resourceCulture);
             }
@@ -999,7 +999,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to o.
         /// </summary>
-        internal static string ConsoleConfirmMessageAccept_fra {
+        public static string ConsoleConfirmMessageAccept_fra {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessageAccept_fra", resourceCulture);
             }
@@ -1008,7 +1008,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to y.
         /// </summary>
-        internal static string ConsoleConfirmMessageAccept_ita {
+        public static string ConsoleConfirmMessageAccept_ita {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessageAccept_ita", resourceCulture);
             }
@@ -1017,7 +1017,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to y.
         /// </summary>
-        internal static string ConsoleConfirmMessageAccept_jpn {
+        public static string ConsoleConfirmMessageAccept_jpn {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessageAccept_jpn", resourceCulture);
             }
@@ -1026,7 +1026,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to y.
         /// </summary>
-        internal static string ConsoleConfirmMessageAccept_kor {
+        public static string ConsoleConfirmMessageAccept_kor {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessageAccept_kor", resourceCulture);
             }
@@ -1035,7 +1035,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to t.
         /// </summary>
-        internal static string ConsoleConfirmMessageAccept_plk {
+        public static string ConsoleConfirmMessageAccept_plk {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessageAccept_plk", resourceCulture);
             }
@@ -1044,7 +1044,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to y.
         /// </summary>
-        internal static string ConsoleConfirmMessageAccept_ptb {
+        public static string ConsoleConfirmMessageAccept_ptb {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessageAccept_ptb", resourceCulture);
             }
@@ -1053,7 +1053,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to д.
         /// </summary>
-        internal static string ConsoleConfirmMessageAccept_rus {
+        public static string ConsoleConfirmMessageAccept_rus {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessageAccept_rus", resourceCulture);
             }
@@ -1062,7 +1062,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to e.
         /// </summary>
-        internal static string ConsoleConfirmMessageAccept_trk {
+        public static string ConsoleConfirmMessageAccept_trk {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessageAccept_trk", resourceCulture);
             }
@@ -1071,7 +1071,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Password: .
         /// </summary>
-        internal static string Credentials_Password {
+        public static string Credentials_Password {
             get {
                 return ResourceManager.GetString("Credentials_Password", resourceCulture);
             }
@@ -1080,7 +1080,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 密码: .
         /// </summary>
-        internal static string Credentials_Password_chs {
+        public static string Credentials_Password_chs {
             get {
                 return ResourceManager.GetString("Credentials_Password_chs", resourceCulture);
             }
@@ -1089,7 +1089,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 密碼: .
         /// </summary>
-        internal static string Credentials_Password_cht {
+        public static string Credentials_Password_cht {
             get {
                 return ResourceManager.GetString("Credentials_Password_cht", resourceCulture);
             }
@@ -1098,7 +1098,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Heslo: .
         /// </summary>
-        internal static string Credentials_Password_csy {
+        public static string Credentials_Password_csy {
             get {
                 return ResourceManager.GetString("Credentials_Password_csy", resourceCulture);
             }
@@ -1107,7 +1107,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Kennwort: .
         /// </summary>
-        internal static string Credentials_Password_deu {
+        public static string Credentials_Password_deu {
             get {
                 return ResourceManager.GetString("Credentials_Password_deu", resourceCulture);
             }
@@ -1116,7 +1116,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Contraseña:.
         /// </summary>
-        internal static string Credentials_Password_esp {
+        public static string Credentials_Password_esp {
             get {
                 return ResourceManager.GetString("Credentials_Password_esp", resourceCulture);
             }
@@ -1125,7 +1125,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Mot de passe : .
         /// </summary>
-        internal static string Credentials_Password_fra {
+        public static string Credentials_Password_fra {
             get {
                 return ResourceManager.GetString("Credentials_Password_fra", resourceCulture);
             }
@@ -1134,7 +1134,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Password:.
         /// </summary>
-        internal static string Credentials_Password_ita {
+        public static string Credentials_Password_ita {
             get {
                 return ResourceManager.GetString("Credentials_Password_ita", resourceCulture);
             }
@@ -1143,7 +1143,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to パスワード: .
         /// </summary>
-        internal static string Credentials_Password_jpn {
+        public static string Credentials_Password_jpn {
             get {
                 return ResourceManager.GetString("Credentials_Password_jpn", resourceCulture);
             }
@@ -1152,7 +1152,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 암호: .
         /// </summary>
-        internal static string Credentials_Password_kor {
+        public static string Credentials_Password_kor {
             get {
                 return ResourceManager.GetString("Credentials_Password_kor", resourceCulture);
             }
@@ -1161,7 +1161,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Hasło:.
         /// </summary>
-        internal static string Credentials_Password_plk {
+        public static string Credentials_Password_plk {
             get {
                 return ResourceManager.GetString("Credentials_Password_plk", resourceCulture);
             }
@@ -1170,7 +1170,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Senha:.
         /// </summary>
-        internal static string Credentials_Password_ptb {
+        public static string Credentials_Password_ptb {
             get {
                 return ResourceManager.GetString("Credentials_Password_ptb", resourceCulture);
             }
@@ -1179,7 +1179,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Пароль: .
         /// </summary>
-        internal static string Credentials_Password_rus {
+        public static string Credentials_Password_rus {
             get {
                 return ResourceManager.GetString("Credentials_Password_rus", resourceCulture);
             }
@@ -1188,7 +1188,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Parola: .
         /// </summary>
-        internal static string Credentials_Password_trk {
+        public static string Credentials_Password_trk {
             get {
                 return ResourceManager.GetString("Credentials_Password_trk", resourceCulture);
             }
@@ -1197,7 +1197,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Please provide proxy credentials:.
         /// </summary>
-        internal static string Credentials_ProxyCredentials {
+        public static string Credentials_ProxyCredentials {
             get {
                 return ResourceManager.GetString("Credentials_ProxyCredentials", resourceCulture);
             }
@@ -1206,7 +1206,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 请提供代理凭据:.
         /// </summary>
-        internal static string Credentials_ProxyCredentials_chs {
+        public static string Credentials_ProxyCredentials_chs {
             get {
                 return ResourceManager.GetString("Credentials_ProxyCredentials_chs", resourceCulture);
             }
@@ -1215,7 +1215,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 請提供 Proxy 認證:.
         /// </summary>
-        internal static string Credentials_ProxyCredentials_cht {
+        public static string Credentials_ProxyCredentials_cht {
             get {
                 return ResourceManager.GetString("Credentials_ProxyCredentials_cht", resourceCulture);
             }
@@ -1224,7 +1224,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Zadejte proxy přihlašovací údaje:.
         /// </summary>
-        internal static string Credentials_ProxyCredentials_csy {
+        public static string Credentials_ProxyCredentials_csy {
             get {
                 return ResourceManager.GetString("Credentials_ProxyCredentials_csy", resourceCulture);
             }
@@ -1233,7 +1233,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Bitte stellen Sie Proxyanmeldeinformationen zur Verfügung:.
         /// </summary>
-        internal static string Credentials_ProxyCredentials_deu {
+        public static string Credentials_ProxyCredentials_deu {
             get {
                 return ResourceManager.GetString("Credentials_ProxyCredentials_deu", resourceCulture);
             }
@@ -1242,7 +1242,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Proporcione las credenciales de proxy:.
         /// </summary>
-        internal static string Credentials_ProxyCredentials_esp {
+        public static string Credentials_ProxyCredentials_esp {
             get {
                 return ResourceManager.GetString("Credentials_ProxyCredentials_esp", resourceCulture);
             }
@@ -1251,7 +1251,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Veuillez fournir les informations d&apos;identification du proxy :.
         /// </summary>
-        internal static string Credentials_ProxyCredentials_fra {
+        public static string Credentials_ProxyCredentials_fra {
             get {
                 return ResourceManager.GetString("Credentials_ProxyCredentials_fra", resourceCulture);
             }
@@ -1260,7 +1260,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Fornire credenziali proxy:.
         /// </summary>
-        internal static string Credentials_ProxyCredentials_ita {
+        public static string Credentials_ProxyCredentials_ita {
             get {
                 return ResourceManager.GetString("Credentials_ProxyCredentials_ita", resourceCulture);
             }
@@ -1269,7 +1269,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to プロキシの資格情報を指定してください:.
         /// </summary>
-        internal static string Credentials_ProxyCredentials_jpn {
+        public static string Credentials_ProxyCredentials_jpn {
             get {
                 return ResourceManager.GetString("Credentials_ProxyCredentials_jpn", resourceCulture);
             }
@@ -1278,7 +1278,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 프록시 자격 증명을 제공하십시오..
         /// </summary>
-        internal static string Credentials_ProxyCredentials_kor {
+        public static string Credentials_ProxyCredentials_kor {
             get {
                 return ResourceManager.GetString("Credentials_ProxyCredentials_kor", resourceCulture);
             }
@@ -1287,7 +1287,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Podaj poświadczenia serwera proxy:.
         /// </summary>
-        internal static string Credentials_ProxyCredentials_plk {
+        public static string Credentials_ProxyCredentials_plk {
             get {
                 return ResourceManager.GetString("Credentials_ProxyCredentials_plk", resourceCulture);
             }
@@ -1296,7 +1296,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Forneça as credenciais de proxy:.
         /// </summary>
-        internal static string Credentials_ProxyCredentials_ptb {
+        public static string Credentials_ProxyCredentials_ptb {
             get {
                 return ResourceManager.GetString("Credentials_ProxyCredentials_ptb", resourceCulture);
             }
@@ -1305,7 +1305,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Укажите учетные данные прокси-сервера:.
         /// </summary>
-        internal static string Credentials_ProxyCredentials_rus {
+        public static string Credentials_ProxyCredentials_rus {
             get {
                 return ResourceManager.GetString("Credentials_ProxyCredentials_rus", resourceCulture);
             }
@@ -1314,7 +1314,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Lütfen proxy kimlik bilgilerini belirtin:.
         /// </summary>
-        internal static string Credentials_ProxyCredentials_trk {
+        public static string Credentials_ProxyCredentials_trk {
             get {
                 return ResourceManager.GetString("Credentials_ProxyCredentials_trk", resourceCulture);
             }
@@ -1323,7 +1323,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Please provide credentials for: {0}.
         /// </summary>
-        internal static string Credentials_RequestCredentials {
+        public static string Credentials_RequestCredentials {
             get {
                 return ResourceManager.GetString("Credentials_RequestCredentials", resourceCulture);
             }
@@ -1332,7 +1332,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 请提供以下人员的凭据: {0}.
         /// </summary>
-        internal static string Credentials_RequestCredentials_chs {
+        public static string Credentials_RequestCredentials_chs {
             get {
                 return ResourceManager.GetString("Credentials_RequestCredentials_chs", resourceCulture);
             }
@@ -1341,7 +1341,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 請提供以下項目的認證: {0}.
         /// </summary>
-        internal static string Credentials_RequestCredentials_cht {
+        public static string Credentials_RequestCredentials_cht {
             get {
                 return ResourceManager.GetString("Credentials_RequestCredentials_cht", resourceCulture);
             }
@@ -1350,7 +1350,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Zadejte přihlašovací údaje pro: {0}.
         /// </summary>
-        internal static string Credentials_RequestCredentials_csy {
+        public static string Credentials_RequestCredentials_csy {
             get {
                 return ResourceManager.GetString("Credentials_RequestCredentials_csy", resourceCulture);
             }
@@ -1359,7 +1359,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Bitte stellen Sie Anmeldeinformationen zur Verfügung für: {0}.
         /// </summary>
-        internal static string Credentials_RequestCredentials_deu {
+        public static string Credentials_RequestCredentials_deu {
             get {
                 return ResourceManager.GetString("Credentials_RequestCredentials_deu", resourceCulture);
             }
@@ -1368,7 +1368,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Proporcione las credenciales para: {0}.
         /// </summary>
-        internal static string Credentials_RequestCredentials_esp {
+        public static string Credentials_RequestCredentials_esp {
             get {
                 return ResourceManager.GetString("Credentials_RequestCredentials_esp", resourceCulture);
             }
@@ -1377,7 +1377,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Veuillez fournir les informations d&apos;identification relative à : {0}.
         /// </summary>
-        internal static string Credentials_RequestCredentials_fra {
+        public static string Credentials_RequestCredentials_fra {
             get {
                 return ResourceManager.GetString("Credentials_RequestCredentials_fra", resourceCulture);
             }
@@ -1386,7 +1386,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Fornire credenziali per: {0}.
         /// </summary>
-        internal static string Credentials_RequestCredentials_ita {
+        public static string Credentials_RequestCredentials_ita {
             get {
                 return ResourceManager.GetString("Credentials_RequestCredentials_ita", resourceCulture);
             }
@@ -1395,7 +1395,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 次の資格情報を指定してください: {0}.
         /// </summary>
-        internal static string Credentials_RequestCredentials_jpn {
+        public static string Credentials_RequestCredentials_jpn {
             get {
                 return ResourceManager.GetString("Credentials_RequestCredentials_jpn", resourceCulture);
             }
@@ -1404,7 +1404,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}에 대한 자격 증명을 제공하십시오..
         /// </summary>
-        internal static string Credentials_RequestCredentials_kor {
+        public static string Credentials_RequestCredentials_kor {
             get {
                 return ResourceManager.GetString("Credentials_RequestCredentials_kor", resourceCulture);
             }
@@ -1413,7 +1413,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Podaj poświadczenia dla: {0}.
         /// </summary>
-        internal static string Credentials_RequestCredentials_plk {
+        public static string Credentials_RequestCredentials_plk {
             get {
                 return ResourceManager.GetString("Credentials_RequestCredentials_plk", resourceCulture);
             }
@@ -1422,7 +1422,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Forneça as credenciais para: {0}.
         /// </summary>
-        internal static string Credentials_RequestCredentials_ptb {
+        public static string Credentials_RequestCredentials_ptb {
             get {
                 return ResourceManager.GetString("Credentials_RequestCredentials_ptb", resourceCulture);
             }
@@ -1431,7 +1431,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Укажите учетные данные для: {0}.
         /// </summary>
-        internal static string Credentials_RequestCredentials_rus {
+        public static string Credentials_RequestCredentials_rus {
             get {
                 return ResourceManager.GetString("Credentials_RequestCredentials_rus", resourceCulture);
             }
@@ -1440,7 +1440,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Lütfen buna ait kimlik bilgilerini belirtin: {0}.
         /// </summary>
-        internal static string Credentials_RequestCredentials_trk {
+        public static string Credentials_RequestCredentials_trk {
             get {
                 return ResourceManager.GetString("Credentials_RequestCredentials_trk", resourceCulture);
             }
@@ -1449,7 +1449,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to UserName: .
         /// </summary>
-        internal static string Credentials_UserName {
+        public static string Credentials_UserName {
             get {
                 return ResourceManager.GetString("Credentials_UserName", resourceCulture);
             }
@@ -1458,7 +1458,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 用户名: .
         /// </summary>
-        internal static string Credentials_UserName_chs {
+        public static string Credentials_UserName_chs {
             get {
                 return ResourceManager.GetString("Credentials_UserName_chs", resourceCulture);
             }
@@ -1467,7 +1467,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 使用者名稱: .
         /// </summary>
-        internal static string Credentials_UserName_cht {
+        public static string Credentials_UserName_cht {
             get {
                 return ResourceManager.GetString("Credentials_UserName_cht", resourceCulture);
             }
@@ -1476,7 +1476,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Uživatelské jméno: .
         /// </summary>
-        internal static string Credentials_UserName_csy {
+        public static string Credentials_UserName_csy {
             get {
                 return ResourceManager.GetString("Credentials_UserName_csy", resourceCulture);
             }
@@ -1485,7 +1485,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to UserName: .
         /// </summary>
-        internal static string Credentials_UserName_deu {
+        public static string Credentials_UserName_deu {
             get {
                 return ResourceManager.GetString("Credentials_UserName_deu", resourceCulture);
             }
@@ -1494,7 +1494,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nombre de usuario:.
         /// </summary>
-        internal static string Credentials_UserName_esp {
+        public static string Credentials_UserName_esp {
             get {
                 return ResourceManager.GetString("Credentials_UserName_esp", resourceCulture);
             }
@@ -1503,7 +1503,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nom d&apos;utilisateur : .
         /// </summary>
-        internal static string Credentials_UserName_fra {
+        public static string Credentials_UserName_fra {
             get {
                 return ResourceManager.GetString("Credentials_UserName_fra", resourceCulture);
             }
@@ -1512,7 +1512,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nome utente:.
         /// </summary>
-        internal static string Credentials_UserName_ita {
+        public static string Credentials_UserName_ita {
             get {
                 return ResourceManager.GetString("Credentials_UserName_ita", resourceCulture);
             }
@@ -1521,7 +1521,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to UserName: .
         /// </summary>
-        internal static string Credentials_UserName_jpn {
+        public static string Credentials_UserName_jpn {
             get {
                 return ResourceManager.GetString("Credentials_UserName_jpn", resourceCulture);
             }
@@ -1530,7 +1530,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 사용자 이름: .
         /// </summary>
-        internal static string Credentials_UserName_kor {
+        public static string Credentials_UserName_kor {
             get {
                 return ResourceManager.GetString("Credentials_UserName_kor", resourceCulture);
             }
@@ -1539,7 +1539,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nazwa użytkownika: .
         /// </summary>
-        internal static string Credentials_UserName_plk {
+        public static string Credentials_UserName_plk {
             get {
                 return ResourceManager.GetString("Credentials_UserName_plk", resourceCulture);
             }
@@ -1548,7 +1548,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nome de usuário:.
         /// </summary>
-        internal static string Credentials_UserName_ptb {
+        public static string Credentials_UserName_ptb {
             get {
                 return ResourceManager.GetString("Credentials_UserName_ptb", resourceCulture);
             }
@@ -1557,7 +1557,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Имя пользователя: .
         /// </summary>
-        internal static string Credentials_UserName_rus {
+        public static string Credentials_UserName_rus {
             get {
                 return ResourceManager.GetString("Credentials_UserName_rus", resourceCulture);
             }
@@ -1566,7 +1566,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to KullanıcıAdı: .
         /// </summary>
-        internal static string Credentials_UserName_trk {
+        public static string Credentials_UserName_trk {
             get {
                 return ResourceManager.GetString("Credentials_UserName_trk", resourceCulture);
             }
@@ -1575,7 +1575,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No description was provided for this command..
         /// </summary>
-        internal static string DefaultCommandDescription {
+        public static string DefaultCommandDescription {
             get {
                 return ResourceManager.GetString("DefaultCommandDescription", resourceCulture);
             }
@@ -1584,7 +1584,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 未提供此命令的说明。.
         /// </summary>
-        internal static string DefaultCommandDescription_chs {
+        public static string DefaultCommandDescription_chs {
             get {
                 return ResourceManager.GetString("DefaultCommandDescription_chs", resourceCulture);
             }
@@ -1593,7 +1593,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 並未提供此命令的描述。.
         /// </summary>
-        internal static string DefaultCommandDescription_cht {
+        public static string DefaultCommandDescription_cht {
             get {
                 return ResourceManager.GetString("DefaultCommandDescription_cht", resourceCulture);
             }
@@ -1602,7 +1602,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Pro tento příkaz nebyl zadán žádný popis..
         /// </summary>
-        internal static string DefaultCommandDescription_csy {
+        public static string DefaultCommandDescription_csy {
             get {
                 return ResourceManager.GetString("DefaultCommandDescription_csy", resourceCulture);
             }
@@ -1611,7 +1611,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Für diesen Befehl wurde keine Beschreibung bereitgestellt..
         /// </summary>
-        internal static string DefaultCommandDescription_deu {
+        public static string DefaultCommandDescription_deu {
             get {
                 return ResourceManager.GetString("DefaultCommandDescription_deu", resourceCulture);
             }
@@ -1620,7 +1620,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se ha proporcionado ninguna descripción para este comando..
         /// </summary>
-        internal static string DefaultCommandDescription_esp {
+        public static string DefaultCommandDescription_esp {
             get {
                 return ResourceManager.GetString("DefaultCommandDescription_esp", resourceCulture);
             }
@@ -1629,7 +1629,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Aucune description n&apos;a été fournie pour cette commande..
         /// </summary>
-        internal static string DefaultCommandDescription_fra {
+        public static string DefaultCommandDescription_fra {
             get {
                 return ResourceManager.GetString("DefaultCommandDescription_fra", resourceCulture);
             }
@@ -1638,7 +1638,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Non è stata fornita alcuna descrizione per questo comando..
         /// </summary>
-        internal static string DefaultCommandDescription_ita {
+        public static string DefaultCommandDescription_ita {
             get {
                 return ResourceManager.GetString("DefaultCommandDescription_ita", resourceCulture);
             }
@@ -1647,7 +1647,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to このコマンドに説明は指定されていません。.
         /// </summary>
-        internal static string DefaultCommandDescription_jpn {
+        public static string DefaultCommandDescription_jpn {
             get {
                 return ResourceManager.GetString("DefaultCommandDescription_jpn", resourceCulture);
             }
@@ -1656,7 +1656,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 이 명령에 대한 설명이 제공되지 않았습니다..
         /// </summary>
-        internal static string DefaultCommandDescription_kor {
+        public static string DefaultCommandDescription_kor {
             get {
                 return ResourceManager.GetString("DefaultCommandDescription_kor", resourceCulture);
             }
@@ -1665,7 +1665,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie podano opisu dla tego polecenia..
         /// </summary>
-        internal static string DefaultCommandDescription_plk {
+        public static string DefaultCommandDescription_plk {
             get {
                 return ResourceManager.GetString("DefaultCommandDescription_plk", resourceCulture);
             }
@@ -1674,7 +1674,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nenhuma descrição foi fornecida para este comando..
         /// </summary>
-        internal static string DefaultCommandDescription_ptb {
+        public static string DefaultCommandDescription_ptb {
             get {
                 return ResourceManager.GetString("DefaultCommandDescription_ptb", resourceCulture);
             }
@@ -1683,7 +1683,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Описание для этой команды отсутствует..
         /// </summary>
-        internal static string DefaultCommandDescription_rus {
+        public static string DefaultCommandDescription_rus {
             get {
                 return ResourceManager.GetString("DefaultCommandDescription_rus", resourceCulture);
             }
@@ -1692,7 +1692,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Bu komut için açıklama belirtilmedi..
         /// </summary>
-        internal static string DefaultCommandDescription_trk {
+        public static string DefaultCommandDescription_trk {
             get {
                 return ResourceManager.GetString("DefaultCommandDescription_trk", resourceCulture);
             }
@@ -1701,7 +1701,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to the symbol server.
         /// </summary>
-        internal static string DefaultSymbolServer {
+        public static string DefaultSymbolServer {
             get {
                 return ResourceManager.GetString("DefaultSymbolServer", resourceCulture);
             }
@@ -1710,7 +1710,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 符号服务器.
         /// </summary>
-        internal static string DefaultSymbolServer_chs {
+        public static string DefaultSymbolServer_chs {
             get {
                 return ResourceManager.GetString("DefaultSymbolServer_chs", resourceCulture);
             }
@@ -1719,7 +1719,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 符號伺服器.
         /// </summary>
-        internal static string DefaultSymbolServer_cht {
+        public static string DefaultSymbolServer_cht {
             get {
                 return ResourceManager.GetString("DefaultSymbolServer_cht", resourceCulture);
             }
@@ -1728,7 +1728,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to server symbolů.
         /// </summary>
-        internal static string DefaultSymbolServer_csy {
+        public static string DefaultSymbolServer_csy {
             get {
                 return ResourceManager.GetString("DefaultSymbolServer_csy", resourceCulture);
             }
@@ -1737,7 +1737,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to der Symbolserver.
         /// </summary>
-        internal static string DefaultSymbolServer_deu {
+        public static string DefaultSymbolServer_deu {
             get {
                 return ResourceManager.GetString("DefaultSymbolServer_deu", resourceCulture);
             }
@@ -1746,7 +1746,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to servidor de símbolos.
         /// </summary>
-        internal static string DefaultSymbolServer_esp {
+        public static string DefaultSymbolServer_esp {
             get {
                 return ResourceManager.GetString("DefaultSymbolServer_esp", resourceCulture);
             }
@@ -1755,7 +1755,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to serveur de symboles.
         /// </summary>
-        internal static string DefaultSymbolServer_fra {
+        public static string DefaultSymbolServer_fra {
             get {
                 return ResourceManager.GetString("DefaultSymbolServer_fra", resourceCulture);
             }
@@ -1764,7 +1764,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to il symbol server.
         /// </summary>
-        internal static string DefaultSymbolServer_ita {
+        public static string DefaultSymbolServer_ita {
             get {
                 return ResourceManager.GetString("DefaultSymbolServer_ita", resourceCulture);
             }
@@ -1773,7 +1773,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to シンボル サーバー.
         /// </summary>
-        internal static string DefaultSymbolServer_jpn {
+        public static string DefaultSymbolServer_jpn {
             get {
                 return ResourceManager.GetString("DefaultSymbolServer_jpn", resourceCulture);
             }
@@ -1782,7 +1782,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 기호 서버.
         /// </summary>
-        internal static string DefaultSymbolServer_kor {
+        public static string DefaultSymbolServer_kor {
             get {
                 return ResourceManager.GetString("DefaultSymbolServer_kor", resourceCulture);
             }
@@ -1791,7 +1791,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to serwer symboli.
         /// </summary>
-        internal static string DefaultSymbolServer_plk {
+        public static string DefaultSymbolServer_plk {
             get {
                 return ResourceManager.GetString("DefaultSymbolServer_plk", resourceCulture);
             }
@@ -1800,7 +1800,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to o servidor de símbolos.
         /// </summary>
-        internal static string DefaultSymbolServer_ptb {
+        public static string DefaultSymbolServer_ptb {
             get {
                 return ResourceManager.GetString("DefaultSymbolServer_ptb", resourceCulture);
             }
@@ -1809,7 +1809,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to сервер символов.
         /// </summary>
-        internal static string DefaultSymbolServer_rus {
+        public static string DefaultSymbolServer_rus {
             get {
                 return ResourceManager.GetString("DefaultSymbolServer_rus", resourceCulture);
             }
@@ -1818,7 +1818,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to simge sunucusu.
         /// </summary>
-        internal static string DefaultSymbolServer_trk {
+        public static string DefaultSymbolServer_trk {
             get {
                 return ResourceManager.GetString("DefaultSymbolServer_trk", resourceCulture);
             }
@@ -1827,7 +1827,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Delete canceled.
         /// </summary>
-        internal static string DeleteCommandCanceled {
+        public static string DeleteCommandCanceled {
             get {
                 return ResourceManager.GetString("DeleteCommandCanceled", resourceCulture);
             }
@@ -1836,7 +1836,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已取消删除.
         /// </summary>
-        internal static string DeleteCommandCanceled_chs {
+        public static string DeleteCommandCanceled_chs {
             get {
                 return ResourceManager.GetString("DeleteCommandCanceled_chs", resourceCulture);
             }
@@ -1845,7 +1845,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已取消刪除.
         /// </summary>
-        internal static string DeleteCommandCanceled_cht {
+        public static string DeleteCommandCanceled_cht {
             get {
                 return ResourceManager.GetString("DeleteCommandCanceled_cht", resourceCulture);
             }
@@ -1854,7 +1854,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Odstranit zrušené.
         /// </summary>
-        internal static string DeleteCommandCanceled_csy {
+        public static string DeleteCommandCanceled_csy {
             get {
                 return ResourceManager.GetString("DeleteCommandCanceled_csy", resourceCulture);
             }
@@ -1863,7 +1863,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Der Löschvorgang wurde abgebrochen..
         /// </summary>
-        internal static string DeleteCommandCanceled_deu {
+        public static string DeleteCommandCanceled_deu {
             get {
                 return ResourceManager.GetString("DeleteCommandCanceled_deu", resourceCulture);
             }
@@ -1872,7 +1872,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Eliminación cancelada.
         /// </summary>
-        internal static string DeleteCommandCanceled_esp {
+        public static string DeleteCommandCanceled_esp {
             get {
                 return ResourceManager.GetString("DeleteCommandCanceled_esp", resourceCulture);
             }
@@ -1881,7 +1881,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Suppression annulée.
         /// </summary>
-        internal static string DeleteCommandCanceled_fra {
+        public static string DeleteCommandCanceled_fra {
             get {
                 return ResourceManager.GetString("DeleteCommandCanceled_fra", resourceCulture);
             }
@@ -1890,7 +1890,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to cancellazione teminata.
         /// </summary>
-        internal static string DeleteCommandCanceled_ita {
+        public static string DeleteCommandCanceled_ita {
             get {
                 return ResourceManager.GetString("DeleteCommandCanceled_ita", resourceCulture);
             }
@@ -1899,7 +1899,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 削除は取り消されました.
         /// </summary>
-        internal static string DeleteCommandCanceled_jpn {
+        public static string DeleteCommandCanceled_jpn {
             get {
                 return ResourceManager.GetString("DeleteCommandCanceled_jpn", resourceCulture);
             }
@@ -1908,7 +1908,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 삭제가 취소됨.
         /// </summary>
-        internal static string DeleteCommandCanceled_kor {
+        public static string DeleteCommandCanceled_kor {
             get {
                 return ResourceManager.GetString("DeleteCommandCanceled_kor", resourceCulture);
             }
@@ -1917,7 +1917,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Usuwanie anulowane.
         /// </summary>
-        internal static string DeleteCommandCanceled_plk {
+        public static string DeleteCommandCanceled_plk {
             get {
                 return ResourceManager.GetString("DeleteCommandCanceled_plk", resourceCulture);
             }
@@ -1926,7 +1926,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Excluir cancelado.
         /// </summary>
-        internal static string DeleteCommandCanceled_ptb {
+        public static string DeleteCommandCanceled_ptb {
             get {
                 return ResourceManager.GetString("DeleteCommandCanceled_ptb", resourceCulture);
             }
@@ -1935,7 +1935,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Удаление отменено.
         /// </summary>
-        internal static string DeleteCommandCanceled_rus {
+        public static string DeleteCommandCanceled_rus {
             get {
                 return ResourceManager.GetString("DeleteCommandCanceled_rus", resourceCulture);
             }
@@ -1944,7 +1944,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Silme iptal edildi.
         /// </summary>
-        internal static string DeleteCommandCanceled_trk {
+        public static string DeleteCommandCanceled_trk {
             get {
                 return ResourceManager.GetString("DeleteCommandCanceled_trk", resourceCulture);
             }
@@ -1953,7 +1953,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} will be deleted from the {2}. Would you like to continue?.
         /// </summary>
-        internal static string DeleteCommandConfirm {
+        public static string DeleteCommandConfirm {
             get {
                 return ResourceManager.GetString("DeleteCommandConfirm", resourceCulture);
             }
@@ -1962,7 +1962,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 将从 {2} 中删除 {0} {1}。是否要继续?.
         /// </summary>
-        internal static string DeleteCommandConfirm_chs {
+        public static string DeleteCommandConfirm_chs {
             get {
                 return ResourceManager.GetString("DeleteCommandConfirm_chs", resourceCulture);
             }
@@ -1971,7 +1971,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} 會從 {2} 刪除。您要繼續嗎?.
         /// </summary>
-        internal static string DeleteCommandConfirm_cht {
+        public static string DeleteCommandConfirm_cht {
             get {
                 return ResourceManager.GetString("DeleteCommandConfirm_cht", resourceCulture);
             }
@@ -1980,7 +1980,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} bude odstraněno z {2}. Chcete pokračovat?.
         /// </summary>
-        internal static string DeleteCommandConfirm_csy {
+        public static string DeleteCommandConfirm_csy {
             get {
                 return ResourceManager.GetString("DeleteCommandConfirm_csy", resourceCulture);
             }
@@ -1989,7 +1989,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} wird aus &quot;{2}&quot; gelöscht. Möchten Sie den Vorgang fortsetzen?.
         /// </summary>
-        internal static string DeleteCommandConfirm_deu {
+        public static string DeleteCommandConfirm_deu {
             get {
                 return ResourceManager.GetString("DeleteCommandConfirm_deu", resourceCulture);
             }
@@ -1998,7 +1998,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} se eliminará de {2}. ¿Desea continuar?.
         /// </summary>
-        internal static string DeleteCommandConfirm_esp {
+        public static string DeleteCommandConfirm_esp {
             get {
                 return ResourceManager.GetString("DeleteCommandConfirm_esp", resourceCulture);
             }
@@ -2007,7 +2007,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} sera supprimé de {2}. Souhaitez-vous continuer ?.
         /// </summary>
-        internal static string DeleteCommandConfirm_fra {
+        public static string DeleteCommandConfirm_fra {
             get {
                 return ResourceManager.GetString("DeleteCommandConfirm_fra", resourceCulture);
             }
@@ -2016,7 +2016,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} sarà cancellato da {2}. Vuoi continuare?.
         /// </summary>
-        internal static string DeleteCommandConfirm_ita {
+        public static string DeleteCommandConfirm_ita {
             get {
                 return ResourceManager.GetString("DeleteCommandConfirm_ita", resourceCulture);
             }
@@ -2025,7 +2025,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} は {2} から削除されます。続行しますか?.
         /// </summary>
-        internal static string DeleteCommandConfirm_jpn {
+        public static string DeleteCommandConfirm_jpn {
             get {
                 return ResourceManager.GetString("DeleteCommandConfirm_jpn", resourceCulture);
             }
@@ -2034,7 +2034,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1}이(가) {2}에서 삭제됩니다. 계속하시겠습니까?.
         /// </summary>
-        internal static string DeleteCommandConfirm_kor {
+        public static string DeleteCommandConfirm_kor {
             get {
                 return ResourceManager.GetString("DeleteCommandConfirm_kor", resourceCulture);
             }
@@ -2043,7 +2043,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Element {0} {1} zostanie usunięty z {2}. Czy chcesz kontynuować?.
         /// </summary>
-        internal static string DeleteCommandConfirm_plk {
+        public static string DeleteCommandConfirm_plk {
             get {
                 return ResourceManager.GetString("DeleteCommandConfirm_plk", resourceCulture);
             }
@@ -2052,7 +2052,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} será excluído do {2}. Deseja continuar?.
         /// </summary>
-        internal static string DeleteCommandConfirm_ptb {
+        public static string DeleteCommandConfirm_ptb {
             get {
                 return ResourceManager.GetString("DeleteCommandConfirm_ptb", resourceCulture);
             }
@@ -2061,7 +2061,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Будет выполнено удаление {0} {1} из {2}. Продолжить?.
         /// </summary>
-        internal static string DeleteCommandConfirm_rus {
+        public static string DeleteCommandConfirm_rus {
             get {
                 return ResourceManager.GetString("DeleteCommandConfirm_rus", resourceCulture);
             }
@@ -2070,7 +2070,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} öğeleri {2} konumundan silinecek. Devam etmek istiyor musunuz?.
         /// </summary>
-        internal static string DeleteCommandConfirm_trk {
+        public static string DeleteCommandConfirm_trk {
             get {
                 return ResourceManager.GetString("DeleteCommandConfirm_trk", resourceCulture);
             }
@@ -2079,7 +2079,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} was deleted successfully..
         /// </summary>
-        internal static string DeleteCommandDeletedPackage {
+        public static string DeleteCommandDeletedPackage {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletedPackage", resourceCulture);
             }
@@ -2088,7 +2088,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已成功删除 {0} {1}。.
         /// </summary>
-        internal static string DeleteCommandDeletedPackage_chs {
+        public static string DeleteCommandDeletedPackage_chs {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletedPackage_chs", resourceCulture);
             }
@@ -2097,7 +2097,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} 已成功刪除。.
         /// </summary>
-        internal static string DeleteCommandDeletedPackage_cht {
+        public static string DeleteCommandDeletedPackage_cht {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletedPackage_cht", resourceCulture);
             }
@@ -2106,7 +2106,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} bylo úspěšně odstraněno..
         /// </summary>
-        internal static string DeleteCommandDeletedPackage_csy {
+        public static string DeleteCommandDeletedPackage_csy {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletedPackage_csy", resourceCulture);
             }
@@ -2115,7 +2115,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} wurde erfolgreich gelöscht..
         /// </summary>
-        internal static string DeleteCommandDeletedPackage_deu {
+        public static string DeleteCommandDeletedPackage_deu {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletedPackage_deu", resourceCulture);
             }
@@ -2124,7 +2124,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} se ha eliminado correctamente..
         /// </summary>
-        internal static string DeleteCommandDeletedPackage_esp {
+        public static string DeleteCommandDeletedPackage_esp {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletedPackage_esp", resourceCulture);
             }
@@ -2133,7 +2133,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} a été correctement supprimé..
         /// </summary>
-        internal static string DeleteCommandDeletedPackage_fra {
+        public static string DeleteCommandDeletedPackage_fra {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletedPackage_fra", resourceCulture);
             }
@@ -2142,7 +2142,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} è stato correttamente cancellato..
         /// </summary>
-        internal static string DeleteCommandDeletedPackage_ita {
+        public static string DeleteCommandDeletedPackage_ita {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletedPackage_ita", resourceCulture);
             }
@@ -2151,7 +2151,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} は正常に削除されました。.
         /// </summary>
-        internal static string DeleteCommandDeletedPackage_jpn {
+        public static string DeleteCommandDeletedPackage_jpn {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletedPackage_jpn", resourceCulture);
             }
@@ -2160,7 +2160,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1}이(가) 삭제되었습니다..
         /// </summary>
-        internal static string DeleteCommandDeletedPackage_kor {
+        public static string DeleteCommandDeletedPackage_kor {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletedPackage_kor", resourceCulture);
             }
@@ -2169,7 +2169,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Pomyślnie usunięto element {0} {1}..
         /// </summary>
-        internal static string DeleteCommandDeletedPackage_plk {
+        public static string DeleteCommandDeletedPackage_plk {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletedPackage_plk", resourceCulture);
             }
@@ -2178,7 +2178,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} foi excluído com sucesso..
         /// </summary>
-        internal static string DeleteCommandDeletedPackage_ptb {
+        public static string DeleteCommandDeletedPackage_ptb {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletedPackage_ptb", resourceCulture);
             }
@@ -2187,7 +2187,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Удаление {0} {1} выполнено..
         /// </summary>
-        internal static string DeleteCommandDeletedPackage_rus {
+        public static string DeleteCommandDeletedPackage_rus {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletedPackage_rus", resourceCulture);
             }
@@ -2196,7 +2196,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} başarıyla silindi..
         /// </summary>
-        internal static string DeleteCommandDeletedPackage_trk {
+        public static string DeleteCommandDeletedPackage_trk {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletedPackage_trk", resourceCulture);
             }
@@ -2205,7 +2205,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Deleting {0} {1} from the {2}..
         /// </summary>
-        internal static string DeleteCommandDeletingPackage {
+        public static string DeleteCommandDeletingPackage {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletingPackage", resourceCulture);
             }
@@ -2214,7 +2214,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在从 {2} 中删除 {0} {1}。.
         /// </summary>
-        internal static string DeleteCommandDeletingPackage_chs {
+        public static string DeleteCommandDeletingPackage_chs {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletingPackage_chs", resourceCulture);
             }
@@ -2223,7 +2223,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在從 {2} 刪除 {0} {1}。.
         /// </summary>
-        internal static string DeleteCommandDeletingPackage_cht {
+        public static string DeleteCommandDeletingPackage_cht {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletingPackage_cht", resourceCulture);
             }
@@ -2232,7 +2232,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Probíhá odstraňování {0} {1} z {2}..
         /// </summary>
-        internal static string DeleteCommandDeletingPackage_csy {
+        public static string DeleteCommandDeletingPackage_csy {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletingPackage_csy", resourceCulture);
             }
@@ -2241,7 +2241,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} wird aus &quot;{2}&quot; gelöscht..
         /// </summary>
-        internal static string DeleteCommandDeletingPackage_deu {
+        public static string DeleteCommandDeletingPackage_deu {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletingPackage_deu", resourceCulture);
             }
@@ -2250,7 +2250,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Eliminando {0} {1} de {2}..
         /// </summary>
-        internal static string DeleteCommandDeletingPackage_esp {
+        public static string DeleteCommandDeletingPackage_esp {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletingPackage_esp", resourceCulture);
             }
@@ -2259,7 +2259,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Suppression de {0} {1} de {2}..
         /// </summary>
-        internal static string DeleteCommandDeletingPackage_fra {
+        public static string DeleteCommandDeletingPackage_fra {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletingPackage_fra", resourceCulture);
             }
@@ -2268,7 +2268,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Cancellando {0} {1} da {2}..
         /// </summary>
-        internal static string DeleteCommandDeletingPackage_ita {
+        public static string DeleteCommandDeletingPackage_ita {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletingPackage_ita", resourceCulture);
             }
@@ -2277,7 +2277,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {2} から {0} {1} を削除しています。.
         /// </summary>
-        internal static string DeleteCommandDeletingPackage_jpn {
+        public static string DeleteCommandDeletingPackage_jpn {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletingPackage_jpn", resourceCulture);
             }
@@ -2286,7 +2286,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1}을(를) {2}에서 삭제하고 있습니다..
         /// </summary>
-        internal static string DeleteCommandDeletingPackage_kor {
+        public static string DeleteCommandDeletingPackage_kor {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletingPackage_kor", resourceCulture);
             }
@@ -2295,7 +2295,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Usuwanie elementu {0} {1} z {2}..
         /// </summary>
-        internal static string DeleteCommandDeletingPackage_plk {
+        public static string DeleteCommandDeletingPackage_plk {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletingPackage_plk", resourceCulture);
             }
@@ -2304,7 +2304,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Excluindo {0} {1} do {2}..
         /// </summary>
-        internal static string DeleteCommandDeletingPackage_ptb {
+        public static string DeleteCommandDeletingPackage_ptb {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletingPackage_ptb", resourceCulture);
             }
@@ -2313,7 +2313,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Удаление {0} {1} из {2}..
         /// </summary>
-        internal static string DeleteCommandDeletingPackage_rus {
+        public static string DeleteCommandDeletingPackage_rus {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletingPackage_rus", resourceCulture);
             }
@@ -2322,7 +2322,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1} öğeleri {2} konumundan siliniyor..
         /// </summary>
-        internal static string DeleteCommandDeletingPackage_trk {
+        public static string DeleteCommandDeletingPackage_trk {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletingPackage_trk", resourceCulture);
             }
@@ -2331,7 +2331,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Cannot get the GetAllProjectFileNamesMethod from type  Mono.XBuild.CommandLine.SolutionParser..
         /// </summary>
-        internal static string Error_CannotGetGetAllProjectFileNamesMethod {
+        public static string Error_CannotGetGetAllProjectFileNamesMethod {
             get {
                 return ResourceManager.GetString("Error_CannotGetGetAllProjectFileNamesMethod", resourceCulture);
             }
@@ -2340,7 +2340,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Cannot get type Mono.XBuild.CommandLine.SolutionParser..
         /// </summary>
-        internal static string Error_CannotGetXBuildSolutionParser {
+        public static string Error_CannotGetXBuildSolutionParser {
             get {
                 return ResourceManager.GetString("Error_CannotGetXBuildSolutionParser", resourceCulture);
             }
@@ -2349,7 +2349,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Cannot load type Microsoft.Build.Construction.ProjectInSolution from Microsoft.Build.dll.
         /// </summary>
-        internal static string Error_CannotLoadTypeProjectInSolution {
+        public static string Error_CannotLoadTypeProjectInSolution {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeProjectInSolution", resourceCulture);
             }
@@ -2358,7 +2358,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 无法从 Microsoft.Build.dll 中加载类型 Microsoft.Build.Construction.ProjectInSolution.
         /// </summary>
-        internal static string Error_CannotLoadTypeProjectInSolution_chs {
+        public static string Error_CannotLoadTypeProjectInSolution_chs {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeProjectInSolution_chs", resourceCulture);
             }
@@ -2367,7 +2367,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 無法從 Microsoft.Build.dll 載入類型  Microsoft.Build.Construction.ProjectInSolution.
         /// </summary>
-        internal static string Error_CannotLoadTypeProjectInSolution_cht {
+        public static string Error_CannotLoadTypeProjectInSolution_cht {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeProjectInSolution_cht", resourceCulture);
             }
@@ -2376,7 +2376,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nelze načíst typ Microsoft.Build.Construction.ProjectInSolution z knihovny Microsoft.Build.dll..
         /// </summary>
-        internal static string Error_CannotLoadTypeProjectInSolution_csy {
+        public static string Error_CannotLoadTypeProjectInSolution_csy {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeProjectInSolution_csy", resourceCulture);
             }
@@ -2385,7 +2385,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Der Typ &quot;Microsoft.Build.Construction.ProjectInSolution&quot; kann nicht aus &quot;Microsoft.Build.dll&quot; geladen werden..
         /// </summary>
-        internal static string Error_CannotLoadTypeProjectInSolution_deu {
+        public static string Error_CannotLoadTypeProjectInSolution_deu {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeProjectInSolution_deu", resourceCulture);
             }
@@ -2394,7 +2394,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se puede cargar el tipo Microsoft.Build.Construction.ProjectInSolution desde Microsoft.Build.dll.
         /// </summary>
-        internal static string Error_CannotLoadTypeProjectInSolution_esp {
+        public static string Error_CannotLoadTypeProjectInSolution_esp {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeProjectInSolution_esp", resourceCulture);
             }
@@ -2403,7 +2403,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Chargement impossible du type Microsoft.Build.Construction.ProjectInSolution depuis Microsoft.Build.dll.
         /// </summary>
-        internal static string Error_CannotLoadTypeProjectInSolution_fra {
+        public static string Error_CannotLoadTypeProjectInSolution_fra {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeProjectInSolution_fra", resourceCulture);
             }
@@ -2412,7 +2412,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossibile caricare Microsoft.Build.Construction.SolutionParser da Microsoft.Build.dll.
         /// </summary>
-        internal static string Error_CannotLoadTypeProjectInSolution_ita {
+        public static string Error_CannotLoadTypeProjectInSolution_ita {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeProjectInSolution_ita", resourceCulture);
             }
@@ -2421,7 +2421,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Microsoft.Build.dll から Microsoft.Build.Construction.ProjectInSolution 型を読み込めません.
         /// </summary>
-        internal static string Error_CannotLoadTypeProjectInSolution_jpn {
+        public static string Error_CannotLoadTypeProjectInSolution_jpn {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeProjectInSolution_jpn", resourceCulture);
             }
@@ -2430,7 +2430,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Microsoft.Build.dll에서 Microsoft.Build.Construction.ProjectInSolution 형식을 로드할 수 없습니다..
         /// </summary>
-        internal static string Error_CannotLoadTypeProjectInSolution_kor {
+        public static string Error_CannotLoadTypeProjectInSolution_kor {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeProjectInSolution_kor", resourceCulture);
             }
@@ -2439,7 +2439,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie można załadować typu rozwiązania Microsoft.Build.Construction.ProjectInSolution z biblioteki Microsoft.Build.dll.
         /// </summary>
-        internal static string Error_CannotLoadTypeProjectInSolution_plk {
+        public static string Error_CannotLoadTypeProjectInSolution_plk {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeProjectInSolution_plk", resourceCulture);
             }
@@ -2448,7 +2448,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Não foi possível carregar o tipo Microsoft.Build.Construction.ProjectInSolution do Microsoft.Build.dll.
         /// </summary>
-        internal static string Error_CannotLoadTypeProjectInSolution_ptb {
+        public static string Error_CannotLoadTypeProjectInSolution_ptb {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeProjectInSolution_ptb", resourceCulture);
             }
@@ -2457,7 +2457,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Не удается загрузить тип Microsoft.Build.Construction.ProjectInSolution из Microsoft.Build.dll.
         /// </summary>
-        internal static string Error_CannotLoadTypeProjectInSolution_rus {
+        public static string Error_CannotLoadTypeProjectInSolution_rus {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeProjectInSolution_rus", resourceCulture);
             }
@@ -2466,7 +2466,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Microsoft.Build.Construction.ProjectInSolution türü Microsoft.Build.dll üzerinden yüklenemiyor.
         /// </summary>
-        internal static string Error_CannotLoadTypeProjectInSolution_trk {
+        public static string Error_CannotLoadTypeProjectInSolution_trk {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeProjectInSolution_trk", resourceCulture);
             }
@@ -2475,7 +2475,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Cannot load type Microsoft.Build.Construction.SolutionParser from Microsoft.Build.dll.
         /// </summary>
-        internal static string Error_CannotLoadTypeSolutionParser {
+        public static string Error_CannotLoadTypeSolutionParser {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeSolutionParser", resourceCulture);
             }
@@ -2484,7 +2484,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 无法从 Microsoft.Build.dll 中加载类型 Microsoft.Build.Construction.SolutionParser.
         /// </summary>
-        internal static string Error_CannotLoadTypeSolutionParser_chs {
+        public static string Error_CannotLoadTypeSolutionParser_chs {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeSolutionParser_chs", resourceCulture);
             }
@@ -2493,7 +2493,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 無法從  Microsoft.Build.dll 載入類型 Microsoft.Build.Construction.SolutionParser.
         /// </summary>
-        internal static string Error_CannotLoadTypeSolutionParser_cht {
+        public static string Error_CannotLoadTypeSolutionParser_cht {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeSolutionParser_cht", resourceCulture);
             }
@@ -2502,7 +2502,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nelze načíst typ Microsoft.Build.Construction.SolutionParser z knihovny Microsoft.Build.dll..
         /// </summary>
-        internal static string Error_CannotLoadTypeSolutionParser_csy {
+        public static string Error_CannotLoadTypeSolutionParser_csy {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeSolutionParser_csy", resourceCulture);
             }
@@ -2511,7 +2511,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Der Typ &quot;Microsoft.Build.Construction.SolutionParser&quot; kann nicht aus &quot;Microsoft.Build.dll&quot; geladen werden..
         /// </summary>
-        internal static string Error_CannotLoadTypeSolutionParser_deu {
+        public static string Error_CannotLoadTypeSolutionParser_deu {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeSolutionParser_deu", resourceCulture);
             }
@@ -2520,7 +2520,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se puede cargar el tipo Microsoft.Build.Construction.SolutionParser desde Microsoft.Build.dll.
         /// </summary>
-        internal static string Error_CannotLoadTypeSolutionParser_esp {
+        public static string Error_CannotLoadTypeSolutionParser_esp {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeSolutionParser_esp", resourceCulture);
             }
@@ -2529,7 +2529,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Chargement impossible du type Microsoft.Build.Construction.SolutionParser depuis Microsoft.Build.dll.
         /// </summary>
-        internal static string Error_CannotLoadTypeSolutionParser_fra {
+        public static string Error_CannotLoadTypeSolutionParser_fra {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeSolutionParser_fra", resourceCulture);
             }
@@ -2538,7 +2538,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossibile caricare Microsoft.Build.Construction.SolutionParser da Microsoft.Build.dll.
         /// </summary>
-        internal static string Error_CannotLoadTypeSolutionParser_ita {
+        public static string Error_CannotLoadTypeSolutionParser_ita {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeSolutionParser_ita", resourceCulture);
             }
@@ -2547,7 +2547,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Microsoft.Build.dll から Microsoft.Build.Construction.SolutionParser 型を読み込めません.
         /// </summary>
-        internal static string Error_CannotLoadTypeSolutionParser_jpn {
+        public static string Error_CannotLoadTypeSolutionParser_jpn {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeSolutionParser_jpn", resourceCulture);
             }
@@ -2556,7 +2556,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Microsoft.Build.dll에서 Microsoft.Build.Construction.SolutionParser 형식을 로드할 수 없습니다..
         /// </summary>
-        internal static string Error_CannotLoadTypeSolutionParser_kor {
+        public static string Error_CannotLoadTypeSolutionParser_kor {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeSolutionParser_kor", resourceCulture);
             }
@@ -2565,7 +2565,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie można załadować typu parsera Microsoft.Build.Construction.SolutionParser z biblioteki Microsoft.Build.dll.
         /// </summary>
-        internal static string Error_CannotLoadTypeSolutionParser_plk {
+        public static string Error_CannotLoadTypeSolutionParser_plk {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeSolutionParser_plk", resourceCulture);
             }
@@ -2574,7 +2574,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Não foi possível carregar o tipo Microsoft.Build.Construction.SolutionParser do Microsoft.Build.dll.
         /// </summary>
-        internal static string Error_CannotLoadTypeSolutionParser_ptb {
+        public static string Error_CannotLoadTypeSolutionParser_ptb {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeSolutionParser_ptb", resourceCulture);
             }
@@ -2583,7 +2583,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Не удается загрузить тип Microsoft.Build.Construction.SolutionParser из Microsoft.Build.dll.
         /// </summary>
-        internal static string Error_CannotLoadTypeSolutionParser_rus {
+        public static string Error_CannotLoadTypeSolutionParser_rus {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeSolutionParser_rus", resourceCulture);
             }
@@ -2592,7 +2592,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Microsoft.Build.Construction.SolutionParser türü Microsoft.Build.dll konumundan yüklenemiyor.
         /// </summary>
-        internal static string Error_CannotLoadTypeSolutionParser_trk {
+        public static string Error_CannotLoadTypeSolutionParser_trk {
             get {
                 return ResourceManager.GetString("Error_CannotLoadTypeSolutionParser_trk", resourceCulture);
             }
@@ -2601,7 +2601,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Cannot locate a solution file..
         /// </summary>
-        internal static string Error_CannotLocateSolutionFile {
+        public static string Error_CannotLocateSolutionFile {
             get {
                 return ResourceManager.GetString("Error_CannotLocateSolutionFile", resourceCulture);
             }
@@ -2610,7 +2610,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Cannot prompt for input in non-interactive mode..
         /// </summary>
-        internal static string Error_CannotPromptForInput {
+        public static string Error_CannotPromptForInput {
             get {
                 return ResourceManager.GetString("Error_CannotPromptForInput", resourceCulture);
             }
@@ -2619,7 +2619,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 无法在非交互式模式下提示输入。.
         /// </summary>
-        internal static string Error_CannotPromptForInput_chs {
+        public static string Error_CannotPromptForInput_chs {
             get {
                 return ResourceManager.GetString("Error_CannotPromptForInput_chs", resourceCulture);
             }
@@ -2628,7 +2628,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 無法在非互動模式下提供提示。.
         /// </summary>
-        internal static string Error_CannotPromptForInput_cht {
+        public static string Error_CannotPromptForInput_cht {
             get {
                 return ResourceManager.GetString("Error_CannotPromptForInput_cht", resourceCulture);
             }
@@ -2637,7 +2637,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to V neinteraktivním režimu nelze zobrazit výzvu pro zadání vstupu..
         /// </summary>
-        internal static string Error_CannotPromptForInput_csy {
+        public static string Error_CannotPromptForInput_csy {
             get {
                 return ResourceManager.GetString("Error_CannotPromptForInput_csy", resourceCulture);
             }
@@ -2646,7 +2646,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Im nicht interaktiven Modus kann keine Eingabeaufforderung erfolgen..
         /// </summary>
-        internal static string Error_CannotPromptForInput_deu {
+        public static string Error_CannotPromptForInput_deu {
             get {
                 return ResourceManager.GetString("Error_CannotPromptForInput_deu", resourceCulture);
             }
@@ -2655,7 +2655,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se puede pedir confirmación de la entrada en un modo no interactivo..
         /// </summary>
-        internal static string Error_CannotPromptForInput_esp {
+        public static string Error_CannotPromptForInput_esp {
             get {
                 return ResourceManager.GetString("Error_CannotPromptForInput_esp", resourceCulture);
             }
@@ -2664,7 +2664,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Le mode non interactif ne permet pas l&apos;invite de saisie de données..
         /// </summary>
-        internal static string Error_CannotPromptForInput_fra {
+        public static string Error_CannotPromptForInput_fra {
             get {
                 return ResourceManager.GetString("Error_CannotPromptForInput_fra", resourceCulture);
             }
@@ -2673,7 +2673,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossibile richiedere input in modalità non interattiva.
         /// </summary>
-        internal static string Error_CannotPromptForInput_ita {
+        public static string Error_CannotPromptForInput_ita {
             get {
                 return ResourceManager.GetString("Error_CannotPromptForInput_ita", resourceCulture);
             }
@@ -2682,7 +2682,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 非対話モードの場合、入力のプロンプトを表示できません。.
         /// </summary>
-        internal static string Error_CannotPromptForInput_jpn {
+        public static string Error_CannotPromptForInput_jpn {
             get {
                 return ResourceManager.GetString("Error_CannotPromptForInput_jpn", resourceCulture);
             }
@@ -2691,7 +2691,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 비대화형 모드에서는 입력을 요청할 수 없습니다..
         /// </summary>
-        internal static string Error_CannotPromptForInput_kor {
+        public static string Error_CannotPromptForInput_kor {
             get {
                 return ResourceManager.GetString("Error_CannotPromptForInput_kor", resourceCulture);
             }
@@ -2700,7 +2700,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie można monitować o dane wejściowe w trybie nieinterakcyjnym..
         /// </summary>
-        internal static string Error_CannotPromptForInput_plk {
+        public static string Error_CannotPromptForInput_plk {
             get {
                 return ResourceManager.GetString("Error_CannotPromptForInput_plk", resourceCulture);
             }
@@ -2709,7 +2709,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Não foi possível solicitar a entrada no modo não interativo..
         /// </summary>
-        internal static string Error_CannotPromptForInput_ptb {
+        public static string Error_CannotPromptForInput_ptb {
             get {
                 return ResourceManager.GetString("Error_CannotPromptForInput_ptb", resourceCulture);
             }
@@ -2718,7 +2718,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Запрос ввода в неинтерактивном режиме невозможен..
         /// </summary>
-        internal static string Error_CannotPromptForInput_rus {
+        public static string Error_CannotPromptForInput_rus {
             get {
                 return ResourceManager.GetString("Error_CannotPromptForInput_rus", resourceCulture);
             }
@@ -2727,7 +2727,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Etkileşimli olmayan modda girdi istenemiyor..
         /// </summary>
-        internal static string Error_CannotPromptForInput_trk {
+        public static string Error_CannotPromptForInput_trk {
             get {
                 return ResourceManager.GetString("Error_CannotPromptForInput_trk", resourceCulture);
             }
@@ -2736,7 +2736,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to This folder contains more than one solution file..
         /// </summary>
-        internal static string Error_MultipleSolutions {
+        public static string Error_MultipleSolutions {
             get {
                 return ResourceManager.GetString("Error_MultipleSolutions", resourceCulture);
             }
@@ -2745,7 +2745,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 此文件夹包含多个解决方案文件。.
         /// </summary>
-        internal static string Error_MultipleSolutions_chs {
+        public static string Error_MultipleSolutions_chs {
             get {
                 return ResourceManager.GetString("Error_MultipleSolutions_chs", resourceCulture);
             }
@@ -2754,7 +2754,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 此資料夾包含一個以上的方案檔案。.
         /// </summary>
-        internal static string Error_MultipleSolutions_cht {
+        public static string Error_MultipleSolutions_cht {
             get {
                 return ResourceManager.GetString("Error_MultipleSolutions_cht", resourceCulture);
             }
@@ -2763,7 +2763,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Tato složka obsahuje více než jeden soubor řešení..
         /// </summary>
-        internal static string Error_MultipleSolutions_csy {
+        public static string Error_MultipleSolutions_csy {
             get {
                 return ResourceManager.GetString("Error_MultipleSolutions_csy", resourceCulture);
             }
@@ -2772,7 +2772,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Dieser Ordner enthält mehrere Projektdateien..
         /// </summary>
-        internal static string Error_MultipleSolutions_deu {
+        public static string Error_MultipleSolutions_deu {
             get {
                 return ResourceManager.GetString("Error_MultipleSolutions_deu", resourceCulture);
             }
@@ -2781,7 +2781,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Esta carpeta contiene más de un archivo de la solución..
         /// </summary>
-        internal static string Error_MultipleSolutions_esp {
+        public static string Error_MultipleSolutions_esp {
             get {
                 return ResourceManager.GetString("Error_MultipleSolutions_esp", resourceCulture);
             }
@@ -2790,7 +2790,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ce dossier contient plus d&apos;un fichier solution..
         /// </summary>
-        internal static string Error_MultipleSolutions_fra {
+        public static string Error_MultipleSolutions_fra {
             get {
                 return ResourceManager.GetString("Error_MultipleSolutions_fra", resourceCulture);
             }
@@ -2799,7 +2799,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La cartella contiene più di un solution file..
         /// </summary>
-        internal static string Error_MultipleSolutions_ita {
+        public static string Error_MultipleSolutions_ita {
             get {
                 return ResourceManager.GetString("Error_MultipleSolutions_ita", resourceCulture);
             }
@@ -2808,7 +2808,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to このフォルダーには、複数のソリューション ファイルが含まれています。.
         /// </summary>
-        internal static string Error_MultipleSolutions_jpn {
+        public static string Error_MultipleSolutions_jpn {
             get {
                 return ResourceManager.GetString("Error_MultipleSolutions_jpn", resourceCulture);
             }
@@ -2817,7 +2817,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 이 폴더에 솔루션 파일이 두 개 이상 포함되어 있습니다..
         /// </summary>
-        internal static string Error_MultipleSolutions_kor {
+        public static string Error_MultipleSolutions_kor {
             get {
                 return ResourceManager.GetString("Error_MultipleSolutions_kor", resourceCulture);
             }
@@ -2826,7 +2826,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ten folder zawiera więcej niż jeden plik rozwiązania..
         /// </summary>
-        internal static string Error_MultipleSolutions_plk {
+        public static string Error_MultipleSolutions_plk {
             get {
                 return ResourceManager.GetString("Error_MultipleSolutions_plk", resourceCulture);
             }
@@ -2835,7 +2835,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Esta pasta contém mais de um arquivo de solução..
         /// </summary>
-        internal static string Error_MultipleSolutions_ptb {
+        public static string Error_MultipleSolutions_ptb {
             get {
                 return ResourceManager.GetString("Error_MultipleSolutions_ptb", resourceCulture);
             }
@@ -2844,7 +2844,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Эта папка содержит более одного файла решения..
         /// </summary>
-        internal static string Error_MultipleSolutions_rus {
+        public static string Error_MultipleSolutions_rus {
             get {
                 return ResourceManager.GetString("Error_MultipleSolutions_rus", resourceCulture);
             }
@@ -2853,7 +2853,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Bu klasör birden çok çözüm dosyası içeriyor..
         /// </summary>
-        internal static string Error_MultipleSolutions_trk {
+        public static string Error_MultipleSolutions_trk {
             get {
                 return ResourceManager.GetString("Error_MultipleSolutions_trk", resourceCulture);
             }
@@ -2862,7 +2862,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to This folder contains no solution files, nor packages.config files..
         /// </summary>
-        internal static string Error_NoSolutionFileNorePackagesConfigFile {
+        public static string Error_NoSolutionFileNorePackagesConfigFile {
             get {
                 return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile", resourceCulture);
             }
@@ -2871,7 +2871,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 此文件夹既不包含解决方案文件，也不包含 packages.config 文件。.
         /// </summary>
-        internal static string Error_NoSolutionFileNorePackagesConfigFile_chs {
+        public static string Error_NoSolutionFileNorePackagesConfigFile_chs {
             get {
                 return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_chs", resourceCulture);
             }
@@ -2880,7 +2880,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 此資料夾不包含方案檔案，也沒有 packages.config 檔案。.
         /// </summary>
-        internal static string Error_NoSolutionFileNorePackagesConfigFile_cht {
+        public static string Error_NoSolutionFileNorePackagesConfigFile_cht {
             get {
                 return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_cht", resourceCulture);
             }
@@ -2889,7 +2889,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Tato složka neobsahuje žádné soubory řešení ani soubory packages.config..
         /// </summary>
-        internal static string Error_NoSolutionFileNorePackagesConfigFile_csy {
+        public static string Error_NoSolutionFileNorePackagesConfigFile_csy {
             get {
                 return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_csy", resourceCulture);
             }
@@ -2898,7 +2898,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Dieser Ordner enthält keine Projektdateien und keine packages.config-Dateien..
         /// </summary>
-        internal static string Error_NoSolutionFileNorePackagesConfigFile_deu {
+        public static string Error_NoSolutionFileNorePackagesConfigFile_deu {
             get {
                 return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_deu", resourceCulture);
             }
@@ -2907,7 +2907,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Esta carpeta no contiene ningún archivo de la solución ni archivos packages.config..
         /// </summary>
-        internal static string Error_NoSolutionFileNorePackagesConfigFile_esp {
+        public static string Error_NoSolutionFileNorePackagesConfigFile_esp {
             get {
                 return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_esp", resourceCulture);
             }
@@ -2916,7 +2916,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ce dossier ne contient ni fichier solution ni fichier packages.config..
         /// </summary>
-        internal static string Error_NoSolutionFileNorePackagesConfigFile_fra {
+        public static string Error_NoSolutionFileNorePackagesConfigFile_fra {
             get {
                 return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_fra", resourceCulture);
             }
@@ -2925,7 +2925,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La cartella non contiene solution file né pacchetti. Config..
         /// </summary>
-        internal static string Error_NoSolutionFileNorePackagesConfigFile_ita {
+        public static string Error_NoSolutionFileNorePackagesConfigFile_ita {
             get {
                 return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_ita", resourceCulture);
             }
@@ -2934,7 +2934,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to このフォルダーには、ソリューション ファイルと packages.config ファイルが含まれていません。.
         /// </summary>
-        internal static string Error_NoSolutionFileNorePackagesConfigFile_jpn {
+        public static string Error_NoSolutionFileNorePackagesConfigFile_jpn {
             get {
                 return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_jpn", resourceCulture);
             }
@@ -2943,7 +2943,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 이 폴더에는 솔루션 파일과 packages.config 파일이 모두 없습니다..
         /// </summary>
-        internal static string Error_NoSolutionFileNorePackagesConfigFile_kor {
+        public static string Error_NoSolutionFileNorePackagesConfigFile_kor {
             get {
                 return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_kor", resourceCulture);
             }
@@ -2952,7 +2952,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ten folder nie zawiera ani plików rozwiązań, ani plików packages.config..
         /// </summary>
-        internal static string Error_NoSolutionFileNorePackagesConfigFile_plk {
+        public static string Error_NoSolutionFileNorePackagesConfigFile_plk {
             get {
                 return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_plk", resourceCulture);
             }
@@ -2961,7 +2961,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Esta pasta não contém arquivos de solução, nem arquivos packages.config..
         /// </summary>
-        internal static string Error_NoSolutionFileNorePackagesConfigFile_ptb {
+        public static string Error_NoSolutionFileNorePackagesConfigFile_ptb {
             get {
                 return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_ptb", resourceCulture);
             }
@@ -2970,7 +2970,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Эта папка не содержит ни файлы решений, ни файлы packages.config..
         /// </summary>
-        internal static string Error_NoSolutionFileNorePackagesConfigFile_rus {
+        public static string Error_NoSolutionFileNorePackagesConfigFile_rus {
             get {
                 return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_rus", resourceCulture);
             }
@@ -2979,7 +2979,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Bu klasör herhangi çözüm dosyası veya packages.config dosyası içermiyor..
         /// </summary>
-        internal static string Error_NoSolutionFileNorePackagesConfigFile_trk {
+        public static string Error_NoSolutionFileNorePackagesConfigFile_trk {
             get {
                 return ResourceManager.GetString("Error_NoSolutionFileNorePackagesConfigFile_trk", resourceCulture);
             }
@@ -2988,7 +2988,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Error occurred when processing file &apos;{0}&apos;: {1}.
         /// </summary>
-        internal static string Error_ProcessingNuspecFile {
+        public static string Error_ProcessingNuspecFile {
             get {
                 return ResourceManager.GetString("Error_ProcessingNuspecFile", resourceCulture);
             }
@@ -2997,7 +2997,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 处理文件“{0}”时出错: {1}.
         /// </summary>
-        internal static string Error_ProcessingNuspecFile_chs {
+        public static string Error_ProcessingNuspecFile_chs {
             get {
                 return ResourceManager.GetString("Error_ProcessingNuspecFile_chs", resourceCulture);
             }
@@ -3006,7 +3006,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 處理檔案 &apos;{0}&apos; 時發生錯誤: {1}.
         /// </summary>
-        internal static string Error_ProcessingNuspecFile_cht {
+        public static string Error_ProcessingNuspecFile_cht {
             get {
                 return ResourceManager.GetString("Error_ProcessingNuspecFile_cht", resourceCulture);
             }
@@ -3015,7 +3015,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Při zpracování souboru {0} došlo k chybě: {1}.
         /// </summary>
-        internal static string Error_ProcessingNuspecFile_csy {
+        public static string Error_ProcessingNuspecFile_csy {
             get {
                 return ResourceManager.GetString("Error_ProcessingNuspecFile_csy", resourceCulture);
             }
@@ -3024,7 +3024,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Fehler beim Verarbeiten der Datei &quot;{0}&quot;: {1}.
         /// </summary>
-        internal static string Error_ProcessingNuspecFile_deu {
+        public static string Error_ProcessingNuspecFile_deu {
             get {
                 return ResourceManager.GetString("Error_ProcessingNuspecFile_deu", resourceCulture);
             }
@@ -3033,7 +3033,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Error al procesar el archivo &apos;{0}&apos;: {1}.
         /// </summary>
-        internal static string Error_ProcessingNuspecFile_esp {
+        public static string Error_ProcessingNuspecFile_esp {
             get {
                 return ResourceManager.GetString("Error_ProcessingNuspecFile_esp", resourceCulture);
             }
@@ -3042,7 +3042,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Une erreur est survenue lors du traitement du fichier &apos;{0}&apos; : {1}.
         /// </summary>
-        internal static string Error_ProcessingNuspecFile_fra {
+        public static string Error_ProcessingNuspecFile_fra {
             get {
                 return ResourceManager.GetString("Error_ProcessingNuspecFile_fra", resourceCulture);
             }
@@ -3051,7 +3051,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Si è verificato un errore nell&apos;elaborazione del file &apos;{0}&apos;: {1}.
         /// </summary>
-        internal static string Error_ProcessingNuspecFile_ita {
+        public static string Error_ProcessingNuspecFile_ita {
             get {
                 return ResourceManager.GetString("Error_ProcessingNuspecFile_ita", resourceCulture);
             }
@@ -3060,7 +3060,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to ファイル &apos;{0}&apos; の処理中にエラーが発生しました: {1}.
         /// </summary>
-        internal static string Error_ProcessingNuspecFile_jpn {
+        public static string Error_ProcessingNuspecFile_jpn {
             get {
                 return ResourceManager.GetString("Error_ProcessingNuspecFile_jpn", resourceCulture);
             }
@@ -3069,7 +3069,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; 파일을 처리하는 동안 오류가 발생했습니다. {1}.
         /// </summary>
-        internal static string Error_ProcessingNuspecFile_kor {
+        public static string Error_ProcessingNuspecFile_kor {
             get {
                 return ResourceManager.GetString("Error_ProcessingNuspecFile_kor", resourceCulture);
             }
@@ -3078,7 +3078,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Wystąpił błąd podczas przetwarzania pliku „{0}”: {1}.
         /// </summary>
-        internal static string Error_ProcessingNuspecFile_plk {
+        public static string Error_ProcessingNuspecFile_plk {
             get {
                 return ResourceManager.GetString("Error_ProcessingNuspecFile_plk", resourceCulture);
             }
@@ -3087,7 +3087,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Falha ao processar o arquivo &apos;{0}: {1}.
         /// </summary>
-        internal static string Error_ProcessingNuspecFile_ptb {
+        public static string Error_ProcessingNuspecFile_ptb {
             get {
                 return ResourceManager.GetString("Error_ProcessingNuspecFile_ptb", resourceCulture);
             }
@@ -3096,7 +3096,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to При обработке файла&quot;{0}&quot; произошла ошибка: {1}.
         /// </summary>
-        internal static string Error_ProcessingNuspecFile_rus {
+        public static string Error_ProcessingNuspecFile_rus {
             get {
                 return ResourceManager.GetString("Error_ProcessingNuspecFile_rus", resourceCulture);
             }
@@ -3105,7 +3105,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; dosyası işlenirken hata oluştu: {1}.
         /// </summary>
-        internal static string Error_ProcessingNuspecFile_trk {
+        public static string Error_ProcessingNuspecFile_trk {
             get {
                 return ResourceManager.GetString("Error_ProcessingNuspecFile_trk", resourceCulture);
             }
@@ -3114,7 +3114,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Property Settings is null..
         /// </summary>
-        internal static string Error_SettingsIsNull {
+        public static string Error_SettingsIsNull {
             get {
                 return ResourceManager.GetString("Error_SettingsIsNull", resourceCulture);
             }
@@ -3123,7 +3123,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 属性设置为 null。.
         /// </summary>
-        internal static string Error_SettingsIsNull_chs {
+        public static string Error_SettingsIsNull_chs {
             get {
                 return ResourceManager.GetString("Error_SettingsIsNull_chs", resourceCulture);
             }
@@ -3132,7 +3132,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 屬性設定為 Null。.
         /// </summary>
-        internal static string Error_SettingsIsNull_cht {
+        public static string Error_SettingsIsNull_cht {
             get {
                 return ResourceManager.GetString("Error_SettingsIsNull_cht", resourceCulture);
             }
@@ -3141,7 +3141,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Vlastnost Settings má hodnotu null..
         /// </summary>
-        internal static string Error_SettingsIsNull_csy {
+        public static string Error_SettingsIsNull_csy {
             get {
                 return ResourceManager.GetString("Error_SettingsIsNull_csy", resourceCulture);
             }
@@ -3150,7 +3150,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Eigenschafteneinstellungen sind null..
         /// </summary>
-        internal static string Error_SettingsIsNull_deu {
+        public static string Error_SettingsIsNull_deu {
             get {
                 return ResourceManager.GetString("Error_SettingsIsNull_deu", resourceCulture);
             }
@@ -3159,7 +3159,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La configuración de propiedad es nula..
         /// </summary>
-        internal static string Error_SettingsIsNull_esp {
+        public static string Error_SettingsIsNull_esp {
             get {
                 return ResourceManager.GetString("Error_SettingsIsNull_esp", resourceCulture);
             }
@@ -3168,7 +3168,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Les paramètres de propriété sont nuls..
         /// </summary>
-        internal static string Error_SettingsIsNull_fra {
+        public static string Error_SettingsIsNull_fra {
             get {
                 return ResourceManager.GetString("Error_SettingsIsNull_fra", resourceCulture);
             }
@@ -3177,7 +3177,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Property Setting è nullo..
         /// </summary>
-        internal static string Error_SettingsIsNull_ita {
+        public static string Error_SettingsIsNull_ita {
             get {
                 return ResourceManager.GetString("Error_SettingsIsNull_ita", resourceCulture);
             }
@@ -3186,7 +3186,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to プロパティ設定が null です。.
         /// </summary>
-        internal static string Error_SettingsIsNull_jpn {
+        public static string Error_SettingsIsNull_jpn {
             get {
                 return ResourceManager.GetString("Error_SettingsIsNull_jpn", resourceCulture);
             }
@@ -3195,7 +3195,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Settings 속성이 null입니다..
         /// </summary>
-        internal static string Error_SettingsIsNull_kor {
+        public static string Error_SettingsIsNull_kor {
             get {
                 return ResourceManager.GetString("Error_SettingsIsNull_kor", resourceCulture);
             }
@@ -3204,7 +3204,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Właściwość Settings ma wartość null..
         /// </summary>
-        internal static string Error_SettingsIsNull_plk {
+        public static string Error_SettingsIsNull_plk {
             get {
                 return ResourceManager.GetString("Error_SettingsIsNull_plk", resourceCulture);
             }
@@ -3213,7 +3213,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to O item Property Settings é nulo..
         /// </summary>
-        internal static string Error_SettingsIsNull_ptb {
+        public static string Error_SettingsIsNull_ptb {
             get {
                 return ResourceManager.GetString("Error_SettingsIsNull_ptb", resourceCulture);
             }
@@ -3222,7 +3222,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Settings свойства имеет значение NULL..
         /// </summary>
-        internal static string Error_SettingsIsNull_rus {
+        public static string Error_SettingsIsNull_rus {
             get {
                 return ResourceManager.GetString("Error_SettingsIsNull_rus", resourceCulture);
             }
@@ -3231,7 +3231,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Özellik Ayarları null..
         /// </summary>
-        internal static string Error_SettingsIsNull_trk {
+        public static string Error_SettingsIsNull_trk {
             get {
                 return ResourceManager.GetString("Error_SettingsIsNull_trk", resourceCulture);
             }
@@ -3240,7 +3240,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Property SourceProvider is null..
         /// </summary>
-        internal static string Error_SourceProviderIsNull {
+        public static string Error_SourceProviderIsNull {
             get {
                 return ResourceManager.GetString("Error_SourceProviderIsNull", resourceCulture);
             }
@@ -3249,7 +3249,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to SourceProvider 属性为 null。.
         /// </summary>
-        internal static string Error_SourceProviderIsNull_chs {
+        public static string Error_SourceProviderIsNull_chs {
             get {
                 return ResourceManager.GetString("Error_SourceProviderIsNull_chs", resourceCulture);
             }
@@ -3258,7 +3258,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 屬性 SourceProvider 為 Null。.
         /// </summary>
-        internal static string Error_SourceProviderIsNull_cht {
+        public static string Error_SourceProviderIsNull_cht {
             get {
                 return ResourceManager.GetString("Error_SourceProviderIsNull_cht", resourceCulture);
             }
@@ -3267,7 +3267,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Vlastnost SourceProvider má hodnotu null..
         /// </summary>
-        internal static string Error_SourceProviderIsNull_csy {
+        public static string Error_SourceProviderIsNull_csy {
             get {
                 return ResourceManager.GetString("Error_SourceProviderIsNull_csy", resourceCulture);
             }
@@ -3276,7 +3276,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Eigenschaft &quot;SourceProvider&quot; ist null..
         /// </summary>
-        internal static string Error_SourceProviderIsNull_deu {
+        public static string Error_SourceProviderIsNull_deu {
             get {
                 return ResourceManager.GetString("Error_SourceProviderIsNull_deu", resourceCulture);
             }
@@ -3285,7 +3285,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La propiedad SourceProvider es nula..
         /// </summary>
-        internal static string Error_SourceProviderIsNull_esp {
+        public static string Error_SourceProviderIsNull_esp {
             get {
                 return ResourceManager.GetString("Error_SourceProviderIsNull_esp", resourceCulture);
             }
@@ -3294,7 +3294,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Le @@@fournisseur de source de propriété est nul..
         /// </summary>
-        internal static string Error_SourceProviderIsNull_fra {
+        public static string Error_SourceProviderIsNull_fra {
             get {
                 return ResourceManager.GetString("Error_SourceProviderIsNull_fra", resourceCulture);
             }
@@ -3303,7 +3303,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Property sSourceProvider è nullo..
         /// </summary>
-        internal static string Error_SourceProviderIsNull_ita {
+        public static string Error_SourceProviderIsNull_ita {
             get {
                 return ResourceManager.GetString("Error_SourceProviderIsNull_ita", resourceCulture);
             }
@@ -3312,7 +3312,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to プロパティ SourceProvider は null です。.
         /// </summary>
-        internal static string Error_SourceProviderIsNull_jpn {
+        public static string Error_SourceProviderIsNull_jpn {
             get {
                 return ResourceManager.GetString("Error_SourceProviderIsNull_jpn", resourceCulture);
             }
@@ -3321,7 +3321,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to SourceProvider 속성이 null입니다..
         /// </summary>
-        internal static string Error_SourceProviderIsNull_kor {
+        public static string Error_SourceProviderIsNull_kor {
             get {
                 return ResourceManager.GetString("Error_SourceProviderIsNull_kor", resourceCulture);
             }
@@ -3330,7 +3330,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Właściwość SourceProvider ma wartość null..
         /// </summary>
-        internal static string Error_SourceProviderIsNull_plk {
+        public static string Error_SourceProviderIsNull_plk {
             get {
                 return ResourceManager.GetString("Error_SourceProviderIsNull_plk", resourceCulture);
             }
@@ -3339,7 +3339,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to O item SourceProvider de propriedade é nulo..
         /// </summary>
-        internal static string Error_SourceProviderIsNull_ptb {
+        public static string Error_SourceProviderIsNull_ptb {
             get {
                 return ResourceManager.GetString("Error_SourceProviderIsNull_ptb", resourceCulture);
             }
@@ -3348,7 +3348,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to SourceProvider свойства имеет значение NULL..
         /// </summary>
-        internal static string Error_SourceProviderIsNull_rus {
+        public static string Error_SourceProviderIsNull_rus {
             get {
                 return ResourceManager.GetString("Error_SourceProviderIsNull_rus", resourceCulture);
             }
@@ -3357,7 +3357,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Özellik SourceProvider null..
         /// </summary>
-        internal static string Error_SourceProviderIsNull_trk {
+        public static string Error_SourceProviderIsNull_trk {
             get {
                 return ResourceManager.GetString("Error_SourceProviderIsNull_trk", resourceCulture);
             }
@@ -3366,7 +3366,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Failed to build &apos;{0}&apos;..
         /// </summary>
-        internal static string FailedToBuildProject {
+        public static string FailedToBuildProject {
             get {
                 return ResourceManager.GetString("FailedToBuildProject", resourceCulture);
             }
@@ -3375,7 +3375,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 无法生成“{0}”。.
         /// </summary>
-        internal static string FailedToBuildProject_chs {
+        public static string FailedToBuildProject_chs {
             get {
                 return ResourceManager.GetString("FailedToBuildProject_chs", resourceCulture);
             }
@@ -3384,7 +3384,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 無法建置 &apos;{0}&apos;。.
         /// </summary>
-        internal static string FailedToBuildProject_cht {
+        public static string FailedToBuildProject_cht {
             get {
                 return ResourceManager.GetString("FailedToBuildProject_cht", resourceCulture);
             }
@@ -3393,7 +3393,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Sestavení {0} se nezdařilo..
         /// </summary>
-        internal static string FailedToBuildProject_csy {
+        public static string FailedToBuildProject_csy {
             get {
                 return ResourceManager.GetString("FailedToBuildProject_csy", resourceCulture);
             }
@@ -3402,7 +3402,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Fehler beim Erstellen von &quot;{0}&quot;..
         /// </summary>
-        internal static string FailedToBuildProject_deu {
+        public static string FailedToBuildProject_deu {
             get {
                 return ResourceManager.GetString("FailedToBuildProject_deu", resourceCulture);
             }
@@ -3411,7 +3411,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Error al compilar &apos;{0}&apos;..
         /// </summary>
-        internal static string FailedToBuildProject_esp {
+        public static string FailedToBuildProject_esp {
             get {
                 return ResourceManager.GetString("FailedToBuildProject_esp", resourceCulture);
             }
@@ -3420,7 +3420,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Échec de la création de &apos;{0}&apos;..
         /// </summary>
-        internal static string FailedToBuildProject_fra {
+        public static string FailedToBuildProject_fra {
             get {
                 return ResourceManager.GetString("FailedToBuildProject_fra", resourceCulture);
             }
@@ -3429,7 +3429,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossibile sviluppare &apos;{0}&apos;..
         /// </summary>
-        internal static string FailedToBuildProject_ita {
+        public static string FailedToBuildProject_ita {
             get {
                 return ResourceManager.GetString("FailedToBuildProject_ita", resourceCulture);
             }
@@ -3438,7 +3438,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; をビルドできませんでした。.
         /// </summary>
-        internal static string FailedToBuildProject_jpn {
+        public static string FailedToBuildProject_jpn {
             get {
                 return ResourceManager.GetString("FailedToBuildProject_jpn", resourceCulture);
             }
@@ -3447,7 +3447,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos;을(를) 빌드하지 못했습니다..
         /// </summary>
-        internal static string FailedToBuildProject_kor {
+        public static string FailedToBuildProject_kor {
             get {
                 return ResourceManager.GetString("FailedToBuildProject_kor", resourceCulture);
             }
@@ -3456,7 +3456,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie można skompilować „{0}”..
         /// </summary>
-        internal static string FailedToBuildProject_plk {
+        public static string FailedToBuildProject_plk {
             get {
                 return ResourceManager.GetString("FailedToBuildProject_plk", resourceCulture);
             }
@@ -3465,7 +3465,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Falha ao construir &apos;{0}&apos;..
         /// </summary>
-        internal static string FailedToBuildProject_ptb {
+        public static string FailedToBuildProject_ptb {
             get {
                 return ResourceManager.GetString("FailedToBuildProject_ptb", resourceCulture);
             }
@@ -3474,7 +3474,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ошибка при сборке &quot;{0}&quot;..
         /// </summary>
-        internal static string FailedToBuildProject_rus {
+        public static string FailedToBuildProject_rus {
             get {
                 return ResourceManager.GetString("FailedToBuildProject_rus", resourceCulture);
             }
@@ -3483,7 +3483,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; oluşturulamadı..
         /// </summary>
-        internal static string FailedToBuildProject_trk {
+        public static string FailedToBuildProject_trk {
             get {
                 return ResourceManager.GetString("FailedToBuildProject_trk", resourceCulture);
             }
@@ -3492,7 +3492,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [Y] Yes  [A] Yes to All  [N] No  [L] No to All ?.
         /// </summary>
-        internal static string FileConflictChoiceText {
+        public static string FileConflictChoiceText {
             get {
                 return ResourceManager.GetString("FileConflictChoiceText", resourceCulture);
             }
@@ -3501,7 +3501,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [Y] 是  [A] 全部是  [N] 否  [L] 全部否 ?.
         /// </summary>
-        internal static string FileConflictChoiceText_chs {
+        public static string FileConflictChoiceText_chs {
             get {
                 return ResourceManager.GetString("FileConflictChoiceText_chs", resourceCulture);
             }
@@ -3510,7 +3510,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [Y] 是  [A] 全部皆是  [N] 否  [L] 全部皆否 ?.
         /// </summary>
-        internal static string FileConflictChoiceText_cht {
+        public static string FileConflictChoiceText_cht {
             get {
                 return ResourceManager.GetString("FileConflictChoiceText_cht", resourceCulture);
             }
@@ -3519,7 +3519,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [Y] Ano [A] Ano pro všechny  [N] Ne  [L] Ne pro všechny?.
         /// </summary>
-        internal static string FileConflictChoiceText_csy {
+        public static string FileConflictChoiceText_csy {
             get {
                 return ResourceManager.GetString("FileConflictChoiceText_csy", resourceCulture);
             }
@@ -3528,7 +3528,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [Y] Ja  [A] Ja, alle  [N] Nein  [L] Nein für alle?.
         /// </summary>
-        internal static string FileConflictChoiceText_deu {
+        public static string FileConflictChoiceText_deu {
             get {
                 return ResourceManager.GetString("FileConflictChoiceText_deu", resourceCulture);
             }
@@ -3537,7 +3537,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [Y] Sí  [A] Sí a todo  [N] No  [L] ¿No a todo?.
         /// </summary>
-        internal static string FileConflictChoiceText_esp {
+        public static string FileConflictChoiceText_esp {
             get {
                 return ResourceManager.GetString("FileConflictChoiceText_esp", resourceCulture);
             }
@@ -3546,7 +3546,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [Y] Oui  [A] Oui pour tout  [N] Non  [L] Non pour tout ?.
         /// </summary>
-        internal static string FileConflictChoiceText_fra {
+        public static string FileConflictChoiceText_fra {
             get {
                 return ResourceManager.GetString("FileConflictChoiceText_fra", resourceCulture);
             }
@@ -3555,7 +3555,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [Y] Sì  [A] Sì a tutto  [N] No  [L] No a tutti ?.
         /// </summary>
-        internal static string FileConflictChoiceText_ita {
+        public static string FileConflictChoiceText_ita {
             get {
                 return ResourceManager.GetString("FileConflictChoiceText_ita", resourceCulture);
             }
@@ -3564,7 +3564,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [Y] はい  [A] すべてはい  [N] いいえ  [L] すべていいえ.
         /// </summary>
-        internal static string FileConflictChoiceText_jpn {
+        public static string FileConflictChoiceText_jpn {
             get {
                 return ResourceManager.GetString("FileConflictChoiceText_jpn", resourceCulture);
             }
@@ -3573,7 +3573,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [Y] 예  [A] 모두 예  [N] 아니요  [L] 모두 아니요 ?.
         /// </summary>
-        internal static string FileConflictChoiceText_kor {
+        public static string FileConflictChoiceText_kor {
             get {
                 return ResourceManager.GetString("FileConflictChoiceText_kor", resourceCulture);
             }
@@ -3582,7 +3582,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [Y] Tak  [A] Tak dla wszystkich  [N] Nie  [L] Nie dla wszystkich ?.
         /// </summary>
-        internal static string FileConflictChoiceText_plk {
+        public static string FileConflictChoiceText_plk {
             get {
                 return ResourceManager.GetString("FileConflictChoiceText_plk", resourceCulture);
             }
@@ -3591,7 +3591,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [Y] Sim  [A] Sim para todos  [N] Não  [L] Não para todos?.
         /// </summary>
-        internal static string FileConflictChoiceText_ptb {
+        public static string FileConflictChoiceText_ptb {
             get {
                 return ResourceManager.GetString("FileConflictChoiceText_ptb", resourceCulture);
             }
@@ -3600,7 +3600,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [Y] Да  [A] Да для всех  [N] Нет  [L] Нет для всех ?.
         /// </summary>
-        internal static string FileConflictChoiceText_rus {
+        public static string FileConflictChoiceText_rus {
             get {
                 return ResourceManager.GetString("FileConflictChoiceText_rus", resourceCulture);
             }
@@ -3609,7 +3609,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [Y] Evet  [A] Tümüne Evet  [N] Hayır  [L] Tümüne Hayır ?.
         /// </summary>
-        internal static string FileConflictChoiceText_trk {
+        public static string FileConflictChoiceText_trk {
             get {
                 return ResourceManager.GetString("FileConflictChoiceText_trk", resourceCulture);
             }
@@ -3618,7 +3618,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to File &apos;{0}&apos; is not added because the package already contains file &apos;{1}&apos;.
         /// </summary>
-        internal static string FileNotAddedToPackage {
+        public static string FileNotAddedToPackage {
             get {
                 return ResourceManager.GetString("FileNotAddedToPackage", resourceCulture);
             }
@@ -3627,7 +3627,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 未添加文件“{0}”，因为程序包已包含文件“{1}”.
         /// </summary>
-        internal static string FileNotAddedToPackage_chs {
+        public static string FileNotAddedToPackage_chs {
             get {
                 return ResourceManager.GetString("FileNotAddedToPackage_chs", resourceCulture);
             }
@@ -3636,7 +3636,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 並未新增檔案 &apos;{0}&apos;，因為封裝已經包含檔案 &apos;{1}&apos;.
         /// </summary>
-        internal static string FileNotAddedToPackage_cht {
+        public static string FileNotAddedToPackage_cht {
             get {
                 return ResourceManager.GetString("FileNotAddedToPackage_cht", resourceCulture);
             }
@@ -3645,7 +3645,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Soubor {0} není přidán, protože balíček již obsahuje soubor {1}..
         /// </summary>
-        internal static string FileNotAddedToPackage_csy {
+        public static string FileNotAddedToPackage_csy {
             get {
                 return ResourceManager.GetString("FileNotAddedToPackage_csy", resourceCulture);
             }
@@ -3654,7 +3654,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Datei &quot;{0}&quot; wird nicht hinzugefügt, weil das Paket die Datei &quot;{1}&quot; bereits enthält..
         /// </summary>
-        internal static string FileNotAddedToPackage_deu {
+        public static string FileNotAddedToPackage_deu {
             get {
                 return ResourceManager.GetString("FileNotAddedToPackage_deu", resourceCulture);
             }
@@ -3663,7 +3663,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se ha agregado el archivo &apos;{0}&apos; porque el paquete aún contiene el archivo &apos;{1}&apos;.
         /// </summary>
-        internal static string FileNotAddedToPackage_esp {
+        public static string FileNotAddedToPackage_esp {
             get {
                 return ResourceManager.GetString("FileNotAddedToPackage_esp", resourceCulture);
             }
@@ -3672,7 +3672,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Le fichier &apos;{0}&apos; n&apos;a pas été ajouté car le package contient déjà le fichier &apos;{1}&apos;..
         /// </summary>
-        internal static string FileNotAddedToPackage_fra {
+        public static string FileNotAddedToPackage_fra {
             get {
                 return ResourceManager.GetString("FileNotAddedToPackage_fra", resourceCulture);
             }
@@ -3681,7 +3681,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossibile aggiungere file &apos;{0}&apos; perché il pacchetto contiene già file &apos;{1}&apos;.
         /// </summary>
-        internal static string FileNotAddedToPackage_ita {
+        public static string FileNotAddedToPackage_ita {
             get {
                 return ResourceManager.GetString("FileNotAddedToPackage_ita", resourceCulture);
             }
@@ -3690,7 +3690,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to パッケージには既にファイル &apos;{1}&apos; が含まれているため、ファイル &apos;{0}&apos; は追加されません.
         /// </summary>
-        internal static string FileNotAddedToPackage_jpn {
+        public static string FileNotAddedToPackage_jpn {
             get {
                 return ResourceManager.GetString("FileNotAddedToPackage_jpn", resourceCulture);
             }
@@ -3699,7 +3699,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 패키지에 &apos;{1}&apos; 파일이 이미 있으므로 &apos;{0}&apos; 파일이 추가되지 않았습니다..
         /// </summary>
-        internal static string FileNotAddedToPackage_kor {
+        public static string FileNotAddedToPackage_kor {
             get {
                 return ResourceManager.GetString("FileNotAddedToPackage_kor", resourceCulture);
             }
@@ -3708,7 +3708,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Plik „{0}” nie został dodany, ponieważ pakiet zawiera już plik „{1}”.
         /// </summary>
-        internal static string FileNotAddedToPackage_plk {
+        public static string FileNotAddedToPackage_plk {
             get {
                 return ResourceManager.GetString("FileNotAddedToPackage_plk", resourceCulture);
             }
@@ -3717,7 +3717,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to O arquivo &apos;{0}&apos; não é adicionado porque o pacote já contém o arquivo &apos;{1}&apos;.
         /// </summary>
-        internal static string FileNotAddedToPackage_ptb {
+        public static string FileNotAddedToPackage_ptb {
             get {
                 return ResourceManager.GetString("FileNotAddedToPackage_ptb", resourceCulture);
             }
@@ -3726,7 +3726,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Файл &quot;{0}&quot; не добавлен, так как в пакете уже есть файл &quot;{1}&quot;.
         /// </summary>
-        internal static string FileNotAddedToPackage_rus {
+        public static string FileNotAddedToPackage_rus {
             get {
                 return ResourceManager.GetString("FileNotAddedToPackage_rus", resourceCulture);
             }
@@ -3735,7 +3735,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Paket zaten &apos;{1}&apos;dosyası içerdiğinden &apos;{0}&apos; eklenmedi.
         /// </summary>
-        internal static string FileNotAddedToPackage_trk {
+        public static string FileNotAddedToPackage_trk {
             get {
                 return ResourceManager.GetString("FileNotAddedToPackage_trk", resourceCulture);
             }
@@ -3744,7 +3744,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Found 1 project with a packages.config file. ({0}).
         /// </summary>
-        internal static string FoundProject {
+        public static string FoundProject {
             get {
                 return ResourceManager.GetString("FoundProject", resourceCulture);
             }
@@ -3753,7 +3753,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找到一个包含 packages.config 文件的项目。({0}).
         /// </summary>
-        internal static string FoundProject_chs {
+        public static string FoundProject_chs {
             get {
                 return ResourceManager.GetString("FoundProject_chs", resourceCulture);
             }
@@ -3762,7 +3762,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找到具有 packages.config 檔案的專案。({0}).
         /// </summary>
-        internal static string FoundProject_cht {
+        public static string FoundProject_cht {
             get {
                 return ResourceManager.GetString("FoundProject_cht", resourceCulture);
             }
@@ -3771,7 +3771,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Počet nalezených projektů se souborem packages.config: 1. ({0}).
         /// </summary>
-        internal static string FoundProject_csy {
+        public static string FoundProject_csy {
             get {
                 return ResourceManager.GetString("FoundProject_csy", resourceCulture);
             }
@@ -3780,7 +3780,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Es wurde ein Projekt mit einer Datei &quot;packages.config&quot; gefunden. ({0}).
         /// </summary>
-        internal static string FoundProject_deu {
+        public static string FoundProject_deu {
             get {
                 return ResourceManager.GetString("FoundProject_deu", resourceCulture);
             }
@@ -3789,7 +3789,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Se ha encontrado 1 proyecto con un archivo packages.config. ({0}).
         /// </summary>
-        internal static string FoundProject_esp {
+        public static string FoundProject_esp {
             get {
                 return ResourceManager.GetString("FoundProject_esp", resourceCulture);
             }
@@ -3798,7 +3798,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Un projet contenant packages.config a été trouvé. ({0}).
         /// </summary>
-        internal static string FoundProject_fra {
+        public static string FoundProject_fra {
             get {
                 return ResourceManager.GetString("FoundProject_fra", resourceCulture);
             }
@@ -3807,7 +3807,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Trovato 1 progetto con packages.config file. ({0}).
         /// </summary>
-        internal static string FoundProject_ita {
+        public static string FoundProject_ita {
             get {
                 return ResourceManager.GetString("FoundProject_ita", resourceCulture);
             }
@@ -3816,7 +3816,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to packages.config ファイルが指定されたプロジェクトが 1 個見つかりました。({0}).
         /// </summary>
-        internal static string FoundProject_jpn {
+        public static string FoundProject_jpn {
             get {
                 return ResourceManager.GetString("FoundProject_jpn", resourceCulture);
             }
@@ -3825,7 +3825,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to packages.config 파일이 있는 프로젝트를 1개 찾았습니다. ({0}).
         /// </summary>
-        internal static string FoundProject_kor {
+        public static string FoundProject_kor {
             get {
                 return ResourceManager.GetString("FoundProject_kor", resourceCulture);
             }
@@ -3834,7 +3834,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Znaleziono 1 projekt z plikiem packages.config. ({0}).
         /// </summary>
-        internal static string FoundProject_plk {
+        public static string FoundProject_plk {
             get {
                 return ResourceManager.GetString("FoundProject_plk", resourceCulture);
             }
@@ -3843,7 +3843,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Encontrado um projeto com um arquivo packages.config. ({0}).
         /// </summary>
-        internal static string FoundProject_ptb {
+        public static string FoundProject_ptb {
             get {
                 return ResourceManager.GetString("FoundProject_ptb", resourceCulture);
             }
@@ -3852,7 +3852,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Обнаружен 1 проект с файлом packages.config. ({0}).
         /// </summary>
-        internal static string FoundProject_rus {
+        public static string FoundProject_rus {
             get {
                 return ResourceManager.GetString("FoundProject_rus", resourceCulture);
             }
@@ -3861,7 +3861,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to packages.config dosyası içeren 1 proje bulundu. ({0}).
         /// </summary>
-        internal static string FoundProject_trk {
+        public static string FoundProject_trk {
             get {
                 return ResourceManager.GetString("FoundProject_trk", resourceCulture);
             }
@@ -3870,7 +3870,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Found {0} projects with a packages.config file. ({1}).
         /// </summary>
-        internal static string FoundProjects {
+        public static string FoundProjects {
             get {
                 return ResourceManager.GetString("FoundProjects", resourceCulture);
             }
@@ -3879,7 +3879,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找到 {0} 个包含 packages.config 文件的项目。({1}).
         /// </summary>
-        internal static string FoundProjects_chs {
+        public static string FoundProjects_chs {
             get {
                 return ResourceManager.GetString("FoundProjects_chs", resourceCulture);
             }
@@ -3888,7 +3888,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找到具有 packages.confi 檔案的 {0} 個專案。({1}).
         /// </summary>
-        internal static string FoundProjects_cht {
+        public static string FoundProjects_cht {
             get {
                 return ResourceManager.GetString("FoundProjects_cht", resourceCulture);
             }
@@ -3897,7 +3897,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Počet nalezených projektů se souborem packages.config: {0}. ({1}).
         /// </summary>
-        internal static string FoundProjects_csy {
+        public static string FoundProjects_csy {
             get {
                 return ResourceManager.GetString("FoundProjects_csy", resourceCulture);
             }
@@ -3906,7 +3906,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Es wurden {0} Projekte mit einer Datei &quot;packages.config&quot; gefunden. ({1}).
         /// </summary>
-        internal static string FoundProjects_deu {
+        public static string FoundProjects_deu {
             get {
                 return ResourceManager.GetString("FoundProjects_deu", resourceCulture);
             }
@@ -3915,7 +3915,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Se han encontrado {0} proyectos con un archivo packages.config. ({1}).
         /// </summary>
-        internal static string FoundProjects_esp {
+        public static string FoundProjects_esp {
             get {
                 return ResourceManager.GetString("FoundProjects_esp", resourceCulture);
             }
@@ -3924,7 +3924,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} projets contenant un fichier packages.config ont été trouvés. ({1}).
         /// </summary>
-        internal static string FoundProjects_fra {
+        public static string FoundProjects_fra {
             get {
                 return ResourceManager.GetString("FoundProjects_fra", resourceCulture);
             }
@@ -3933,7 +3933,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Trovati {0} progetti con packages.config file. ({1}).
         /// </summary>
-        internal static string FoundProjects_ita {
+        public static string FoundProjects_ita {
             get {
                 return ResourceManager.GetString("FoundProjects_ita", resourceCulture);
             }
@@ -3942,7 +3942,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to packages.config ファイルが指定されたプロジェクトが {0} 個見つかりました。({1}).
         /// </summary>
-        internal static string FoundProjects_jpn {
+        public static string FoundProjects_jpn {
             get {
                 return ResourceManager.GetString("FoundProjects_jpn", resourceCulture);
             }
@@ -3951,7 +3951,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to packages.config 파일이 있는 프로젝트를 {0}개 찾았습니다. ({1}).
         /// </summary>
-        internal static string FoundProjects_kor {
+        public static string FoundProjects_kor {
             get {
                 return ResourceManager.GetString("FoundProjects_kor", resourceCulture);
             }
@@ -3960,7 +3960,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Liczba znalezionych projektów z plikiem  packages.config: {0}. ({1}).
         /// </summary>
-        internal static string FoundProjects_plk {
+        public static string FoundProjects_plk {
             get {
                 return ResourceManager.GetString("FoundProjects_plk", resourceCulture);
             }
@@ -3969,7 +3969,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Encontrados projetos {0} com um arquivo packages.config. ({1}).
         /// </summary>
-        internal static string FoundProjects_ptb {
+        public static string FoundProjects_ptb {
             get {
                 return ResourceManager.GetString("FoundProjects_ptb", resourceCulture);
             }
@@ -3978,7 +3978,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Обнаружено проектов с файлом packages.config: {0}. ({1}).
         /// </summary>
-        internal static string FoundProjects_rus {
+        public static string FoundProjects_rus {
             get {
                 return ResourceManager.GetString("FoundProjects_rus", resourceCulture);
             }
@@ -3987,7 +3987,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to packages.config dosyası içeren {0} proje bulundu. ({1}).
         /// </summary>
-        internal static string FoundProjects_trk {
+        public static string FoundProjects_trk {
             get {
                 return ResourceManager.GetString("FoundProjects_trk", resourceCulture);
             }
@@ -3996,7 +3996,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to For more information, visit {0}.
         /// </summary>
-        internal static string HelpCommandForMoreInfo {
+        public static string HelpCommandForMoreInfo {
             get {
                 return ResourceManager.GetString("HelpCommandForMoreInfo", resourceCulture);
             }
@@ -4005,7 +4005,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 有关详细信息，请访问 {0}.
         /// </summary>
-        internal static string HelpCommandForMoreInfo_chs {
+        public static string HelpCommandForMoreInfo_chs {
             get {
                 return ResourceManager.GetString("HelpCommandForMoreInfo_chs", resourceCulture);
             }
@@ -4014,7 +4014,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 如需詳細資訊，請造訪 {0}.
         /// </summary>
-        internal static string HelpCommandForMoreInfo_cht {
+        public static string HelpCommandForMoreInfo_cht {
             get {
                 return ResourceManager.GetString("HelpCommandForMoreInfo_cht", resourceCulture);
             }
@@ -4023,7 +4023,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Další informace naleznete na adrese {0}.
         /// </summary>
-        internal static string HelpCommandForMoreInfo_csy {
+        public static string HelpCommandForMoreInfo_csy {
             get {
                 return ResourceManager.GetString("HelpCommandForMoreInfo_csy", resourceCulture);
             }
@@ -4032,7 +4032,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Besuchen Sie &quot;{0}&quot;, um weitere Informationen zu erhalten..
         /// </summary>
-        internal static string HelpCommandForMoreInfo_deu {
+        public static string HelpCommandForMoreInfo_deu {
             get {
                 return ResourceManager.GetString("HelpCommandForMoreInfo_deu", resourceCulture);
             }
@@ -4041,7 +4041,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Para obtener más información, visite {0}.
         /// </summary>
-        internal static string HelpCommandForMoreInfo_esp {
+        public static string HelpCommandForMoreInfo_esp {
             get {
                 return ResourceManager.GetString("HelpCommandForMoreInfo_esp", resourceCulture);
             }
@@ -4050,7 +4050,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Pour plus d&apos;informations, consultez {0}.
         /// </summary>
-        internal static string HelpCommandForMoreInfo_fra {
+        public static string HelpCommandForMoreInfo_fra {
             get {
                 return ResourceManager.GetString("HelpCommandForMoreInfo_fra", resourceCulture);
             }
@@ -4059,7 +4059,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Per ulteriori informazioni, visitare {0}.
         /// </summary>
-        internal static string HelpCommandForMoreInfo_ita {
+        public static string HelpCommandForMoreInfo_ita {
             get {
                 return ResourceManager.GetString("HelpCommandForMoreInfo_ita", resourceCulture);
             }
@@ -4068,7 +4068,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 詳細については、{0} を参照してください.
         /// </summary>
-        internal static string HelpCommandForMoreInfo_jpn {
+        public static string HelpCommandForMoreInfo_jpn {
             get {
                 return ResourceManager.GetString("HelpCommandForMoreInfo_jpn", resourceCulture);
             }
@@ -4077,7 +4077,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 자세한 내용은 {0}을(를) 참조하십시오..
         /// </summary>
-        internal static string HelpCommandForMoreInfo_kor {
+        public static string HelpCommandForMoreInfo_kor {
             get {
                 return ResourceManager.GetString("HelpCommandForMoreInfo_kor", resourceCulture);
             }
@@ -4086,7 +4086,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Aby uzyskać więcej informacji, odwiedź stronę {0}.
         /// </summary>
-        internal static string HelpCommandForMoreInfo_plk {
+        public static string HelpCommandForMoreInfo_plk {
             get {
                 return ResourceManager.GetString("HelpCommandForMoreInfo_plk", resourceCulture);
             }
@@ -4095,7 +4095,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Para obter mais informações, visite {0}.
         /// </summary>
-        internal static string HelpCommandForMoreInfo_ptb {
+        public static string HelpCommandForMoreInfo_ptb {
             get {
                 return ResourceManager.GetString("HelpCommandForMoreInfo_ptb", resourceCulture);
             }
@@ -4104,7 +4104,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Дополнительные сведения см. на веб-сайте {0}.
         /// </summary>
-        internal static string HelpCommandForMoreInfo_rus {
+        public static string HelpCommandForMoreInfo_rus {
             get {
                 return ResourceManager.GetString("HelpCommandForMoreInfo_rus", resourceCulture);
             }
@@ -4113,7 +4113,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Daha fazla bilgi için {0} adresini ziyaret edin..
         /// </summary>
-        internal static string HelpCommandForMoreInfo_trk {
+        public static string HelpCommandForMoreInfo_trk {
             get {
                 return ResourceManager.GetString("HelpCommandForMoreInfo_trk", resourceCulture);
             }
@@ -4122,7 +4122,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; contains invalid package references. .
         /// </summary>
-        internal static string InstallCommandInvalidPackageReference {
+        public static string InstallCommandInvalidPackageReference {
             get {
                 return ResourceManager.GetString("InstallCommandInvalidPackageReference", resourceCulture);
             }
@@ -4131,7 +4131,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to “{0}”包含的程序包引用无效。.
         /// </summary>
-        internal static string InstallCommandInvalidPackageReference_chs {
+        public static string InstallCommandInvalidPackageReference_chs {
             get {
                 return ResourceManager.GetString("InstallCommandInvalidPackageReference_chs", resourceCulture);
             }
@@ -4140,7 +4140,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; 包含無效的封裝參照。.
         /// </summary>
-        internal static string InstallCommandInvalidPackageReference_cht {
+        public static string InstallCommandInvalidPackageReference_cht {
             get {
                 return ResourceManager.GetString("InstallCommandInvalidPackageReference_cht", resourceCulture);
             }
@@ -4149,7 +4149,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} obsahuje neplatné odkazy na balíčky. .
         /// </summary>
-        internal static string InstallCommandInvalidPackageReference_csy {
+        public static string InstallCommandInvalidPackageReference_csy {
             get {
                 return ResourceManager.GetString("InstallCommandInvalidPackageReference_csy", resourceCulture);
             }
@@ -4158,7 +4158,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;{0}&quot; enthält ungültige Paketverweise. .
         /// </summary>
-        internal static string InstallCommandInvalidPackageReference_deu {
+        public static string InstallCommandInvalidPackageReference_deu {
             get {
                 return ResourceManager.GetString("InstallCommandInvalidPackageReference_deu", resourceCulture);
             }
@@ -4167,7 +4167,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; contiene referencias de paquete no válidas..
         /// </summary>
-        internal static string InstallCommandInvalidPackageReference_esp {
+        public static string InstallCommandInvalidPackageReference_esp {
             get {
                 return ResourceManager.GetString("InstallCommandInvalidPackageReference_esp", resourceCulture);
             }
@@ -4176,7 +4176,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; contient des références de package non valides. .
         /// </summary>
-        internal static string InstallCommandInvalidPackageReference_fra {
+        public static string InstallCommandInvalidPackageReference_fra {
             get {
                 return ResourceManager.GetString("InstallCommandInvalidPackageReference_fra", resourceCulture);
             }
@@ -4185,7 +4185,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; contains invalid package references. .
         /// </summary>
-        internal static string InstallCommandInvalidPackageReference_ita {
+        public static string InstallCommandInvalidPackageReference_ita {
             get {
                 return ResourceManager.GetString("InstallCommandInvalidPackageReference_ita", resourceCulture);
             }
@@ -4194,7 +4194,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; には無効なパッケージ参照が含まれています。.
         /// </summary>
-        internal static string InstallCommandInvalidPackageReference_jpn {
+        public static string InstallCommandInvalidPackageReference_jpn {
             get {
                 return ResourceManager.GetString("InstallCommandInvalidPackageReference_jpn", resourceCulture);
             }
@@ -4203,7 +4203,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos;에 잘못된 패키지 참조가 포함되어 있습니다. .
         /// </summary>
-        internal static string InstallCommandInvalidPackageReference_kor {
+        public static string InstallCommandInvalidPackageReference_kor {
             get {
                 return ResourceManager.GetString("InstallCommandInvalidPackageReference_kor", resourceCulture);
             }
@@ -4212,7 +4212,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to „{0}” zawiera nieprawidłowe odwołania do pakietów. .
         /// </summary>
-        internal static string InstallCommandInvalidPackageReference_plk {
+        public static string InstallCommandInvalidPackageReference_plk {
             get {
                 return ResourceManager.GetString("InstallCommandInvalidPackageReference_plk", resourceCulture);
             }
@@ -4221,7 +4221,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; contém referências de pacotes inválidos..
         /// </summary>
-        internal static string InstallCommandInvalidPackageReference_ptb {
+        public static string InstallCommandInvalidPackageReference_ptb {
             get {
                 return ResourceManager.GetString("InstallCommandInvalidPackageReference_ptb", resourceCulture);
             }
@@ -4230,7 +4230,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;{0}&quot; содержит недопустимые ссылки на пакеты. .
         /// </summary>
-        internal static string InstallCommandInvalidPackageReference_rus {
+        public static string InstallCommandInvalidPackageReference_rus {
             get {
                 return ResourceManager.GetString("InstallCommandInvalidPackageReference_rus", resourceCulture);
             }
@@ -4239,7 +4239,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; geçersiz paket başvuruları içeriyor. .
         /// </summary>
-        internal static string InstallCommandInvalidPackageReference_trk {
+        public static string InstallCommandInvalidPackageReference_trk {
             get {
                 return ResourceManager.GetString("InstallCommandInvalidPackageReference_trk", resourceCulture);
             }
@@ -4248,7 +4248,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to All packages listed in {0} are already installed..
         /// </summary>
-        internal static string InstallCommandNothingToInstall {
+        public static string InstallCommandNothingToInstall {
             get {
                 return ResourceManager.GetString("InstallCommandNothingToInstall", resourceCulture);
             }
@@ -4257,7 +4257,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} 中列出的所有程序包均已安装。.
         /// </summary>
-        internal static string InstallCommandNothingToInstall_chs {
+        public static string InstallCommandNothingToInstall_chs {
             get {
                 return ResourceManager.GetString("InstallCommandNothingToInstall_chs", resourceCulture);
             }
@@ -4266,7 +4266,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} 中列出的所有封裝均已安裝。.
         /// </summary>
-        internal static string InstallCommandNothingToInstall_cht {
+        public static string InstallCommandNothingToInstall_cht {
             get {
                 return ResourceManager.GetString("InstallCommandNothingToInstall_cht", resourceCulture);
             }
@@ -4275,7 +4275,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Všechny balíčky, které uvádí {0}, jsou již nainstalované..
         /// </summary>
-        internal static string InstallCommandNothingToInstall_csy {
+        public static string InstallCommandNothingToInstall_csy {
             get {
                 return ResourceManager.GetString("InstallCommandNothingToInstall_csy", resourceCulture);
             }
@@ -4284,7 +4284,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Alle in &quot;{0}&quot; aufgeführten Pakete sind bereits installiert..
         /// </summary>
-        internal static string InstallCommandNothingToInstall_deu {
+        public static string InstallCommandNothingToInstall_deu {
             get {
                 return ResourceManager.GetString("InstallCommandNothingToInstall_deu", resourceCulture);
             }
@@ -4293,7 +4293,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ya se han instalado todos los paquetes mostrados en &apos;{0}&apos;..
         /// </summary>
-        internal static string InstallCommandNothingToInstall_esp {
+        public static string InstallCommandNothingToInstall_esp {
             get {
                 return ResourceManager.GetString("InstallCommandNothingToInstall_esp", resourceCulture);
             }
@@ -4302,7 +4302,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Tous les packages répertoriés dans {0} sont déjà installés..
         /// </summary>
-        internal static string InstallCommandNothingToInstall_fra {
+        public static string InstallCommandNothingToInstall_fra {
             get {
                 return ResourceManager.GetString("InstallCommandNothingToInstall_fra", resourceCulture);
             }
@@ -4311,7 +4311,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Tutti i pacchetti elencati in {0}sono già installati..
         /// </summary>
-        internal static string InstallCommandNothingToInstall_ita {
+        public static string InstallCommandNothingToInstall_ita {
             get {
                 return ResourceManager.GetString("InstallCommandNothingToInstall_ita", resourceCulture);
             }
@@ -4320,7 +4320,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} に含まれるすべてのパッケージは、既にインストールされています。.
         /// </summary>
-        internal static string InstallCommandNothingToInstall_jpn {
+        public static string InstallCommandNothingToInstall_jpn {
             get {
                 return ResourceManager.GetString("InstallCommandNothingToInstall_jpn", resourceCulture);
             }
@@ -4329,7 +4329,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}에 나열된 모든 패키지가 이미 설치되었습니다..
         /// </summary>
-        internal static string InstallCommandNothingToInstall_kor {
+        public static string InstallCommandNothingToInstall_kor {
             get {
                 return ResourceManager.GetString("InstallCommandNothingToInstall_kor", resourceCulture);
             }
@@ -4338,7 +4338,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Wszystkie pakiety wymienione w {0} zostały już zainstalowane..
         /// </summary>
-        internal static string InstallCommandNothingToInstall_plk {
+        public static string InstallCommandNothingToInstall_plk {
             get {
                 return ResourceManager.GetString("InstallCommandNothingToInstall_plk", resourceCulture);
             }
@@ -4347,7 +4347,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Todos os pacotes listados em {0} já estão instalados..
         /// </summary>
-        internal static string InstallCommandNothingToInstall_ptb {
+        public static string InstallCommandNothingToInstall_ptb {
             get {
                 return ResourceManager.GetString("InstallCommandNothingToInstall_ptb", resourceCulture);
             }
@@ -4356,7 +4356,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Все пакеты, перечисленные в {0}, уже установлены..
         /// </summary>
-        internal static string InstallCommandNothingToInstall_rus {
+        public static string InstallCommandNothingToInstall_rus {
             get {
                 return ResourceManager.GetString("InstallCommandNothingToInstall_rus", resourceCulture);
             }
@@ -4365,7 +4365,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} içinde sıralanan tüm paketler zaten yüklü..
         /// </summary>
-        internal static string InstallCommandNothingToInstall_trk {
+        public static string InstallCommandNothingToInstall_trk {
             get {
                 return ResourceManager.GetString("InstallCommandNothingToInstall_trk", resourceCulture);
             }
@@ -4374,7 +4374,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Package &quot;{0}&quot; is already installed..
         /// </summary>
-        internal static string InstallCommandPackageAlreadyExists {
+        public static string InstallCommandPackageAlreadyExists {
             get {
                 return ResourceManager.GetString("InstallCommandPackageAlreadyExists", resourceCulture);
             }
@@ -4383,7 +4383,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已安装程序包“{0}”。.
         /// </summary>
-        internal static string InstallCommandPackageAlreadyExists_chs {
+        public static string InstallCommandPackageAlreadyExists_chs {
             get {
                 return ResourceManager.GetString("InstallCommandPackageAlreadyExists_chs", resourceCulture);
             }
@@ -4392,7 +4392,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已安裝封裝 &quot;{0}&quot;。.
         /// </summary>
-        internal static string InstallCommandPackageAlreadyExists_cht {
+        public static string InstallCommandPackageAlreadyExists_cht {
             get {
                 return ResourceManager.GetString("InstallCommandPackageAlreadyExists_cht", resourceCulture);
             }
@@ -4401,7 +4401,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Balíček {0} je již nainstalován..
         /// </summary>
-        internal static string InstallCommandPackageAlreadyExists_csy {
+        public static string InstallCommandPackageAlreadyExists_csy {
             get {
                 return ResourceManager.GetString("InstallCommandPackageAlreadyExists_csy", resourceCulture);
             }
@@ -4410,7 +4410,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Das Paket &quot;{0}&quot; ist bereits installiert..
         /// </summary>
-        internal static string InstallCommandPackageAlreadyExists_deu {
+        public static string InstallCommandPackageAlreadyExists_deu {
             get {
                 return ResourceManager.GetString("InstallCommandPackageAlreadyExists_deu", resourceCulture);
             }
@@ -4419,7 +4419,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ya se ha instalado el paquete &quot;{0}&quot;..
         /// </summary>
-        internal static string InstallCommandPackageAlreadyExists_esp {
+        public static string InstallCommandPackageAlreadyExists_esp {
             get {
                 return ResourceManager.GetString("InstallCommandPackageAlreadyExists_esp", resourceCulture);
             }
@@ -4428,7 +4428,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Le package « {0} » est déjà installé..
         /// </summary>
-        internal static string InstallCommandPackageAlreadyExists_fra {
+        public static string InstallCommandPackageAlreadyExists_fra {
             get {
                 return ResourceManager.GetString("InstallCommandPackageAlreadyExists_fra", resourceCulture);
             }
@@ -4437,7 +4437,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Pacchetto &quot;{0}&quot; è già installato.
         /// </summary>
-        internal static string InstallCommandPackageAlreadyExists_ita {
+        public static string InstallCommandPackageAlreadyExists_ita {
             get {
                 return ResourceManager.GetString("InstallCommandPackageAlreadyExists_ita", resourceCulture);
             }
@@ -4446,7 +4446,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to パッケージ &quot;{0}&quot; は既にインストールされています。.
         /// </summary>
-        internal static string InstallCommandPackageAlreadyExists_jpn {
+        public static string InstallCommandPackageAlreadyExists_jpn {
             get {
                 return ResourceManager.GetString("InstallCommandPackageAlreadyExists_jpn", resourceCulture);
             }
@@ -4455,7 +4455,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} 패키지는 이미 설치되었습니다..
         /// </summary>
-        internal static string InstallCommandPackageAlreadyExists_kor {
+        public static string InstallCommandPackageAlreadyExists_kor {
             get {
                 return ResourceManager.GetString("InstallCommandPackageAlreadyExists_kor", resourceCulture);
             }
@@ -4464,7 +4464,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Pakiet „{0}” został już zainstalowany..
         /// </summary>
-        internal static string InstallCommandPackageAlreadyExists_plk {
+        public static string InstallCommandPackageAlreadyExists_plk {
             get {
                 return ResourceManager.GetString("InstallCommandPackageAlreadyExists_plk", resourceCulture);
             }
@@ -4473,7 +4473,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to O pacote &quot;{0}&quot; já está instalado..
         /// </summary>
-        internal static string InstallCommandPackageAlreadyExists_ptb {
+        public static string InstallCommandPackageAlreadyExists_ptb {
             get {
                 return ResourceManager.GetString("InstallCommandPackageAlreadyExists_ptb", resourceCulture);
             }
@@ -4482,7 +4482,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Пакет &quot;{0}&quot; уже установлен..
         /// </summary>
-        internal static string InstallCommandPackageAlreadyExists_rus {
+        public static string InstallCommandPackageAlreadyExists_rus {
             get {
                 return ResourceManager.GetString("InstallCommandPackageAlreadyExists_rus", resourceCulture);
             }
@@ -4491,7 +4491,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;{0}&quot; paketi zaten yüklü..
         /// </summary>
-        internal static string InstallCommandPackageAlreadyExists_trk {
+        public static string InstallCommandPackageAlreadyExists_trk {
             get {
                 return ResourceManager.GetString("InstallCommandPackageAlreadyExists_trk", resourceCulture);
             }
@@ -4500,7 +4500,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Version string specified for package reference &apos;{0}&apos; is invalid..
         /// </summary>
-        internal static string InstallCommandPackageReferenceInvalidVersion {
+        public static string InstallCommandPackageReferenceInvalidVersion {
             get {
                 return ResourceManager.GetString("InstallCommandPackageReferenceInvalidVersion", resourceCulture);
             }
@@ -4509,7 +4509,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 为程序包引用“{0}”指定的版本字符串无效。.
         /// </summary>
-        internal static string InstallCommandPackageReferenceInvalidVersion_chs {
+        public static string InstallCommandPackageReferenceInvalidVersion_chs {
             get {
                 return ResourceManager.GetString("InstallCommandPackageReferenceInvalidVersion_chs", resourceCulture);
             }
@@ -4518,7 +4518,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 封裝參照 &apos;{0}&apos; 指定的版本字串無效。.
         /// </summary>
-        internal static string InstallCommandPackageReferenceInvalidVersion_cht {
+        public static string InstallCommandPackageReferenceInvalidVersion_cht {
             get {
                 return ResourceManager.GetString("InstallCommandPackageReferenceInvalidVersion_cht", resourceCulture);
             }
@@ -4527,7 +4527,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Řetězec verze zadaný pro odkaz na balíček {0} je neplatný..
         /// </summary>
-        internal static string InstallCommandPackageReferenceInvalidVersion_csy {
+        public static string InstallCommandPackageReferenceInvalidVersion_csy {
             get {
                 return ResourceManager.GetString("InstallCommandPackageReferenceInvalidVersion_csy", resourceCulture);
             }
@@ -4536,7 +4536,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die für den Paketverweis &quot;{0}&quot; angegebene Versionszeichenfolge ist ungültig..
         /// </summary>
-        internal static string InstallCommandPackageReferenceInvalidVersion_deu {
+        public static string InstallCommandPackageReferenceInvalidVersion_deu {
             get {
                 return ResourceManager.GetString("InstallCommandPackageReferenceInvalidVersion_deu", resourceCulture);
             }
@@ -4545,7 +4545,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La cadena de versión especificada para la referencia de paquete &apos;{0}&apos; no es válida..
         /// </summary>
-        internal static string InstallCommandPackageReferenceInvalidVersion_esp {
+        public static string InstallCommandPackageReferenceInvalidVersion_esp {
             get {
                 return ResourceManager.GetString("InstallCommandPackageReferenceInvalidVersion_esp", resourceCulture);
             }
@@ -4554,7 +4554,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La chaîne de version spécifiée pour la référence de package &apos;{0}&apos; n&apos;est pas valide..
         /// </summary>
-        internal static string InstallCommandPackageReferenceInvalidVersion_fra {
+        public static string InstallCommandPackageReferenceInvalidVersion_fra {
             get {
                 return ResourceManager.GetString("InstallCommandPackageReferenceInvalidVersion_fra", resourceCulture);
             }
@@ -4563,7 +4563,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Stringa versione specificata per il pacchetto di riferimento &apos;{0}&apos; non è valida..
         /// </summary>
-        internal static string InstallCommandPackageReferenceInvalidVersion_ita {
+        public static string InstallCommandPackageReferenceInvalidVersion_ita {
             get {
                 return ResourceManager.GetString("InstallCommandPackageReferenceInvalidVersion_ita", resourceCulture);
             }
@@ -4572,7 +4572,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to パッケージ参照 &apos;{0}&apos; に指定されたバージョン文字列は無効です。.
         /// </summary>
-        internal static string InstallCommandPackageReferenceInvalidVersion_jpn {
+        public static string InstallCommandPackageReferenceInvalidVersion_jpn {
             get {
                 return ResourceManager.GetString("InstallCommandPackageReferenceInvalidVersion_jpn", resourceCulture);
             }
@@ -4581,7 +4581,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 패키지 참조 &apos;{0}&apos;에 대해 지정된 버전 문자열이 잘못되었습니다..
         /// </summary>
-        internal static string InstallCommandPackageReferenceInvalidVersion_kor {
+        public static string InstallCommandPackageReferenceInvalidVersion_kor {
             get {
                 return ResourceManager.GetString("InstallCommandPackageReferenceInvalidVersion_kor", resourceCulture);
             }
@@ -4590,7 +4590,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ciąg wersji określony dla odwołania do pakietu „{0}” jest nieprawidłowy..
         /// </summary>
-        internal static string InstallCommandPackageReferenceInvalidVersion_plk {
+        public static string InstallCommandPackageReferenceInvalidVersion_plk {
             get {
                 return ResourceManager.GetString("InstallCommandPackageReferenceInvalidVersion_plk", resourceCulture);
             }
@@ -4599,7 +4599,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to A cadeia de caracteres de versão especificada para a referência do pacote &apos;{0}&apos; é inválida..
         /// </summary>
-        internal static string InstallCommandPackageReferenceInvalidVersion_ptb {
+        public static string InstallCommandPackageReferenceInvalidVersion_ptb {
             get {
                 return ResourceManager.GetString("InstallCommandPackageReferenceInvalidVersion_ptb", resourceCulture);
             }
@@ -4608,7 +4608,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Строка версии, указанная для ссылки на пакет &quot;{0}&quot;, является недопустимой..
         /// </summary>
-        internal static string InstallCommandPackageReferenceInvalidVersion_rus {
+        public static string InstallCommandPackageReferenceInvalidVersion_rus {
             get {
                 return ResourceManager.GetString("InstallCommandPackageReferenceInvalidVersion_rus", resourceCulture);
             }
@@ -4617,7 +4617,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; paket referansı için belirtilen sürüm dizesi geçersiz..
         /// </summary>
-        internal static string InstallCommandPackageReferenceInvalidVersion_trk {
+        public static string InstallCommandPackageReferenceInvalidVersion_trk {
             get {
                 return ResourceManager.GetString("InstallCommandPackageReferenceInvalidVersion_trk", resourceCulture);
             }
@@ -4626,7 +4626,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Package restore is disabled. To enable it, open the Visual Studio Options dialog, click on Package Manager node and check &apos;{0}&apos;. You can also enable package restore by setting the environment variable &apos;EnableNuGetPackageRestore&apos; to &apos;true&apos;..
         /// </summary>
-        internal static string InstallCommandPackageRestoreConsentNotFound {
+        public static string InstallCommandPackageRestoreConsentNotFound {
             get {
                 return ResourceManager.GetString("InstallCommandPackageRestoreConsentNotFound", resourceCulture);
             }
@@ -4635,7 +4635,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已禁用程序包还原。若要启用它，请打开“Visual Studio 选项”对话框，单击“程序包管理器”节点并检查“{0}”。你还可以通过将环境变量 &quot;EnableNuGetPackageRestore&quot; 设置为 &quot;true&quot; 来启用程序包还原。.
         /// </summary>
-        internal static string InstallCommandPackageRestoreConsentNotFound_chs {
+        public static string InstallCommandPackageRestoreConsentNotFound_chs {
             get {
                 return ResourceManager.GetString("InstallCommandPackageRestoreConsentNotFound_chs", resourceCulture);
             }
@@ -4644,7 +4644,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已停用封裝還原。若要啟用，開啟 Visual Studio 選項對話，按一下 [封裝管理員] 節點並勾選 &apos;{0}&apos;。您也可以設定環境變數 &apos;EnableNuGetPackageRestore&apos; 為 &apos;true&apos; 以啟用封裝還原。.
         /// </summary>
-        internal static string InstallCommandPackageRestoreConsentNotFound_cht {
+        public static string InstallCommandPackageRestoreConsentNotFound_cht {
             get {
                 return ResourceManager.GetString("InstallCommandPackageRestoreConsentNotFound_cht", resourceCulture);
             }
@@ -4653,7 +4653,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Obnovení balíčku je zakázáno. Chcete-li je povolit, otevřete dialogové okno Možnosti sady Visual Studio, klikněte na uzel Správce balíčků a zaškrtněte položku {0}. Obnovení balíčku můžete rovněž povolit nastavením proměnné prostředí EnableNuGetPackageRestore na hodnotu true..
         /// </summary>
-        internal static string InstallCommandPackageRestoreConsentNotFound_csy {
+        public static string InstallCommandPackageRestoreConsentNotFound_csy {
             get {
                 return ResourceManager.GetString("InstallCommandPackageRestoreConsentNotFound_csy", resourceCulture);
             }
@@ -4662,7 +4662,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Paketwiederherstellung ist deaktiviert. Öffnen Sie zum Aktivieren das Dialogfeld &quot;Optionen&quot; von Visual Studio, klicken Sie auf den Knoten &quot;Paket-Manager&quot;, und aktivieren Sie dann &quot;{0}&quot;. Sie können die Paketwiederherstellung auch aktivieren, indem Sie die Umgebungsvariable &quot;EnableNuGetPackageRestore&quot; auf &quot;true&quot; festlegen..
         /// </summary>
-        internal static string InstallCommandPackageRestoreConsentNotFound_deu {
+        public static string InstallCommandPackageRestoreConsentNotFound_deu {
             get {
                 return ResourceManager.GetString("InstallCommandPackageRestoreConsentNotFound_deu", resourceCulture);
             }
@@ -4671,7 +4671,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Se ha deshabilitado la restauración del paquete. Para habilitarla, abra el cuadro de diálogo Opciones de Visual Studio, haga clic en el nodo del Administrador de paquetes y compruebe &apos;{0}&apos;. Para habilitar la restauración de paquetes, también puede configurar la variable de entorno &apos;EnableNuGetPackageRestore&apos; a &apos;true&apos;..
         /// </summary>
-        internal static string InstallCommandPackageRestoreConsentNotFound_esp {
+        public static string InstallCommandPackageRestoreConsentNotFound_esp {
             get {
                 return ResourceManager.GetString("InstallCommandPackageRestoreConsentNotFound_esp", resourceCulture);
             }
@@ -4680,7 +4680,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La restauration de package est désactivée. Pour l&apos;activer, ouvrez la boîte de dialogue Options Visual Studio, cliquez sur le nœud Gestionnaire de package et cochez &apos;{0}&apos;. Vous pouvez également activer la restauration de package en définissant la variable d&apos;environnement &apos;EnableNuGetPackageRestore&apos; avec la valeur &apos;true&apos;..
         /// </summary>
-        internal static string InstallCommandPackageRestoreConsentNotFound_fra {
+        public static string InstallCommandPackageRestoreConsentNotFound_fra {
             get {
                 return ResourceManager.GetString("InstallCommandPackageRestoreConsentNotFound_fra", resourceCulture);
             }
@@ -4689,7 +4689,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ripristino pacchetto disabilitato. Per abilitarlo, aprire la finestra di dialogo Visual Studio Options, fare clic su Package Manager node e verificare &apos;{0}&apos;. È possibile anche abilitare il pacchetto impostando la variabile ambiente &apos;EnableNuGetPackageRestore&apos; su &apos;vero&apos;..
         /// </summary>
-        internal static string InstallCommandPackageRestoreConsentNotFound_ita {
+        public static string InstallCommandPackageRestoreConsentNotFound_ita {
             get {
                 return ResourceManager.GetString("InstallCommandPackageRestoreConsentNotFound_ita", resourceCulture);
             }
@@ -4698,7 +4698,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to パッケージの復元は無効です。有効にするには、Visual Studio の [オプション] ダイアログを開き、パッケージ マネージャー ノードをクリックし、&apos;{0}&apos; を確認します。環境変数 &apos;EnableNuGetPackageRestore&apos; を &apos;true&apos; に設定して、パッケージの復元を有効にすることもできます。.
         /// </summary>
-        internal static string InstallCommandPackageRestoreConsentNotFound_jpn {
+        public static string InstallCommandPackageRestoreConsentNotFound_jpn {
             get {
                 return ResourceManager.GetString("InstallCommandPackageRestoreConsentNotFound_jpn", resourceCulture);
             }
@@ -4707,7 +4707,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 패키지 복원을 사용할 수 없습니다. 패키지 복원을 사용하도록 설정하려면 [Visual Studio 옵션] 대화 상자를 열고 [패키지 관리자] 노드를 클릭한 후 &apos;{0}&apos;을(를) 선택합니다. 또한 환경 변수 &apos;EnableNuGetPackageRestore&apos;를 &apos;true&apos;로 설정하여 패키지 복원을 사용하도록 설정할 수 있습니다..
         /// </summary>
-        internal static string InstallCommandPackageRestoreConsentNotFound_kor {
+        public static string InstallCommandPackageRestoreConsentNotFound_kor {
             get {
                 return ResourceManager.GetString("InstallCommandPackageRestoreConsentNotFound_kor", resourceCulture);
             }
@@ -4716,7 +4716,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Przywracanie pakietu jest wyłączone. Aby je włączyć, otwórz okno dialogowe opcji programu Visual Studio, kliknij węzeł Menedżera pakietów i zaznacz pozycję „{0}”. Przywracanie pakietów możesz także włączyć, ustawiając wartość „true” dla zmiennej środowiskowej „EnableNuGetPackageRestore”..
         /// </summary>
-        internal static string InstallCommandPackageRestoreConsentNotFound_plk {
+        public static string InstallCommandPackageRestoreConsentNotFound_plk {
             get {
                 return ResourceManager.GetString("InstallCommandPackageRestoreConsentNotFound_plk", resourceCulture);
             }
@@ -4725,7 +4725,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to A restauração do pacote está desativada. Para ativá-la, abra a caixa de diálogo Opções do Visual Studio, clique no nó do Gerenciador de Pacotes e marque &apos;{0}&apos;. Você também pode ativar a restauração do pacote definindo a variável de ambiente &apos;EnableNuGetPackageRestore&apos; como &quot;true&quot;..
         /// </summary>
-        internal static string InstallCommandPackageRestoreConsentNotFound_ptb {
+        public static string InstallCommandPackageRestoreConsentNotFound_ptb {
             get {
                 return ResourceManager.GetString("InstallCommandPackageRestoreConsentNotFound_ptb", resourceCulture);
             }
@@ -4734,7 +4734,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Восстановление пакетов отключено. Чтобы включить его, в Visual Studio откройте диалоговое окно &quot;Параметры&quot;, выберите узел &quot;Диспетчер пакетов&quot; и проверьте &quot;{0}&quot;. Кроме того, чтобы включить восстановление пакетов, можно для переменной среды &quot;EnableNuGetPackageRestore&quot; задать значение &quot;true&quot;..
         /// </summary>
-        internal static string InstallCommandPackageRestoreConsentNotFound_rus {
+        public static string InstallCommandPackageRestoreConsentNotFound_rus {
             get {
                 return ResourceManager.GetString("InstallCommandPackageRestoreConsentNotFound_rus", resourceCulture);
             }
@@ -4743,7 +4743,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Paket geri yükleme devre dışı. Etkinleştirmek için Visual Studio Seçenekler iletişim kutusunu açın, Paket Yöneticisi düğümünü tıklayın ve &apos;{0}&apos; öğesini kontrol edin. Paket geri yüklemesini ayrıca &apos;EnableNuGetPackageRestore&apos; ortam değişkenini &apos;doğru&apos; olarak ayarlayarak da etkinleştirebilirsiniz..
         /// </summary>
-        internal static string InstallCommandPackageRestoreConsentNotFound_trk {
+        public static string InstallCommandPackageRestoreConsentNotFound_trk {
             get {
                 return ResourceManager.GetString("InstallCommandPackageRestoreConsentNotFound_trk", resourceCulture);
             }
@@ -4752,7 +4752,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}: invalid arguments..
         /// </summary>
-        internal static string InvalidArguments {
+        public static string InvalidArguments {
             get {
                 return ResourceManager.GetString("InvalidArguments", resourceCulture);
             }
@@ -4761,7 +4761,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}: 参数无效。.
         /// </summary>
-        internal static string InvalidArguments_chs {
+        public static string InvalidArguments_chs {
             get {
                 return ResourceManager.GetString("InvalidArguments_chs", resourceCulture);
             }
@@ -4770,7 +4770,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}: 無效的引數。.
         /// </summary>
-        internal static string InvalidArguments_cht {
+        public static string InvalidArguments_cht {
             get {
                 return ResourceManager.GetString("InvalidArguments_cht", resourceCulture);
             }
@@ -4779,7 +4779,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}: neplatné argumenty.
         /// </summary>
-        internal static string InvalidArguments_csy {
+        public static string InvalidArguments_csy {
             get {
                 return ResourceManager.GetString("InvalidArguments_csy", resourceCulture);
             }
@@ -4788,7 +4788,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}: ungültige Argumente..
         /// </summary>
-        internal static string InvalidArguments_deu {
+        public static string InvalidArguments_deu {
             get {
                 return ResourceManager.GetString("InvalidArguments_deu", resourceCulture);
             }
@@ -4797,7 +4797,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}: argumentos no válidos..
         /// </summary>
-        internal static string InvalidArguments_esp {
+        public static string InvalidArguments_esp {
             get {
                 return ResourceManager.GetString("InvalidArguments_esp", resourceCulture);
             }
@@ -4806,7 +4806,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} : arguments non valides..
         /// </summary>
-        internal static string InvalidArguments_fra {
+        public static string InvalidArguments_fra {
             get {
                 return ResourceManager.GetString("InvalidArguments_fra", resourceCulture);
             }
@@ -4815,7 +4815,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}: argomenti non validi..
         /// </summary>
-        internal static string InvalidArguments_ita {
+        public static string InvalidArguments_ita {
             get {
                 return ResourceManager.GetString("InvalidArguments_ita", resourceCulture);
             }
@@ -4824,7 +4824,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}: 引数が無効です。.
         /// </summary>
-        internal static string InvalidArguments_jpn {
+        public static string InvalidArguments_jpn {
             get {
                 return ResourceManager.GetString("InvalidArguments_jpn", resourceCulture);
             }
@@ -4833,7 +4833,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}: 잘못된 인수입니다..
         /// </summary>
-        internal static string InvalidArguments_kor {
+        public static string InvalidArguments_kor {
             get {
                 return ResourceManager.GetString("InvalidArguments_kor", resourceCulture);
             }
@@ -4842,7 +4842,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}: nieprawidłowe argumenty..
         /// </summary>
-        internal static string InvalidArguments_plk {
+        public static string InvalidArguments_plk {
             get {
                 return ResourceManager.GetString("InvalidArguments_plk", resourceCulture);
             }
@@ -4851,7 +4851,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}: argumentos inválidos..
         /// </summary>
-        internal static string InvalidArguments_ptb {
+        public static string InvalidArguments_ptb {
             get {
                 return ResourceManager.GetString("InvalidArguments_ptb", resourceCulture);
             }
@@ -4860,7 +4860,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}: недопустимые аргументы..
         /// </summary>
-        internal static string InvalidArguments_rus {
+        public static string InvalidArguments_rus {
             get {
                 return ResourceManager.GetString("InvalidArguments_rus", resourceCulture);
             }
@@ -4869,7 +4869,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}: geçersiz bağımsız değişken..
         /// </summary>
-        internal static string InvalidArguments_trk {
+        public static string InvalidArguments_trk {
             get {
                 return ResourceManager.GetString("InvalidArguments_trk", resourceCulture);
             }
@@ -4878,7 +4878,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No packages.config, project or solution file specified. Use the -self switch to update NuGet.exe..
         /// </summary>
-        internal static string InvalidFile {
+        public static string InvalidFile {
             get {
                 return ResourceManager.GetString("InvalidFile", resourceCulture);
             }
@@ -4887,7 +4887,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 未指定 packages.config、项目或解决方案文件。请使用 -self 开关更新 NuGet.exe。.
         /// </summary>
-        internal static string InvalidFile_chs {
+        public static string InvalidFile_chs {
             get {
                 return ResourceManager.GetString("InvalidFile_chs", resourceCulture);
             }
@@ -4896,7 +4896,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 未指定 packages.config、專案或方案。使用 -self 切換以更新 NuGet.exe。.
         /// </summary>
-        internal static string InvalidFile_cht {
+        public static string InvalidFile_cht {
             get {
                 return ResourceManager.GetString("InvalidFile_cht", resourceCulture);
             }
@@ -4905,7 +4905,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nebyl určen žádný soubor packages.config, soubor projektu nebo balíčku. Použijte přepínač -self a aktualizujte soubor NuGet.exe..
         /// </summary>
-        internal static string InvalidFile_csy {
+        public static string InvalidFile_csy {
             get {
                 return ResourceManager.GetString("InvalidFile_csy", resourceCulture);
             }
@@ -4914,7 +4914,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Es wurde keine packages.config-, Projekt- oder Lösungsdatei angegeben. Verwenden Sie den Schalter &quot;-self&quot;, um &quot;NuGet.exe&quot; zu aktualisieren..
         /// </summary>
-        internal static string InvalidFile_deu {
+        public static string InvalidFile_deu {
             get {
                 return ResourceManager.GetString("InvalidFile_deu", resourceCulture);
             }
@@ -4923,7 +4923,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se ha especificado ningún archivo de solución, proyecto o packages.config. Use el modificador -self para actualizar NuGet.exe..
         /// </summary>
-        internal static string InvalidFile_esp {
+        public static string InvalidFile_esp {
             get {
                 return ResourceManager.GetString("InvalidFile_esp", resourceCulture);
             }
@@ -4932,7 +4932,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Aucun packages.config, projet ou fichier de solution spécifié. Utilisez le commutateur -self pour mettre à jour NuGet.exe..
         /// </summary>
-        internal static string InvalidFile_fra {
+        public static string InvalidFile_fra {
             get {
                 return ResourceManager.GetString("InvalidFile_fra", resourceCulture);
             }
@@ -4941,7 +4941,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nessun file packages.config, di progetto o di soluzione specificato. Utilizzare l&apos;opzione -self per aggiornare NuGet.exe..
         /// </summary>
-        internal static string InvalidFile_ita {
+        public static string InvalidFile_ita {
             get {
                 return ResourceManager.GetString("InvalidFile_ita", resourceCulture);
             }
@@ -4950,7 +4950,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to packages.config、プロジェクトまたはソリューション ファイルが指定されていません。-self スイッチ使用して、NuGet.exe を更新してください。.
         /// </summary>
-        internal static string InvalidFile_jpn {
+        public static string InvalidFile_jpn {
             get {
                 return ResourceManager.GetString("InvalidFile_jpn", resourceCulture);
             }
@@ -4959,7 +4959,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to packages.config, 프로젝트 또는 솔루션 파일이 지정되지 않았습니다. -self 스위치를 사용하여 NuGet.exe를 업데이트하십시오..
         /// </summary>
-        internal static string InvalidFile_kor {
+        public static string InvalidFile_kor {
             get {
                 return ResourceManager.GetString("InvalidFile_kor", resourceCulture);
             }
@@ -4968,7 +4968,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie określono pliku packages.config, pliku projektu ani pliku rozwiązania. Użyj przełącznika -self, aby zaktualizować pakiet NuGet.exe..
         /// </summary>
-        internal static string InvalidFile_plk {
+        public static string InvalidFile_plk {
             get {
                 return ResourceManager.GetString("InvalidFile_plk", resourceCulture);
             }
@@ -4977,7 +4977,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nenhum arquivo de solução, projeto ou packages.config especificado. Use a chave -self para atualizar o NuGet.exe..
         /// </summary>
-        internal static string InvalidFile_ptb {
+        public static string InvalidFile_ptb {
             get {
                 return ResourceManager.GetString("InvalidFile_ptb", resourceCulture);
             }
@@ -4986,7 +4986,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Не указан файл packages.config, файл проекта или решения. Используйте переключатель -self, чтобы обновить NuGet.exe..
         /// </summary>
-        internal static string InvalidFile_rus {
+        public static string InvalidFile_rus {
             get {
                 return ResourceManager.GetString("InvalidFile_rus", resourceCulture);
             }
@@ -4995,7 +4995,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to packages.config, proje veya çözüm dosyası belirtilmemiş. NuGet.exe&apos;yi güncelleştirmek için -self anahtarını kullanın..
         /// </summary>
-        internal static string InvalidFile_trk {
+        public static string InvalidFile_trk {
             get {
                 return ResourceManager.GetString("InvalidFile_trk", resourceCulture);
             }
@@ -5004,7 +5004,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Invalid option value: &apos;{0} {1}&apos;.
         /// </summary>
-        internal static string InvalidOptionValueError {
+        public static string InvalidOptionValueError {
             get {
                 return ResourceManager.GetString("InvalidOptionValueError", resourceCulture);
             }
@@ -5013,7 +5013,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 无效的选项值:“{0} {1}”.
         /// </summary>
-        internal static string InvalidOptionValueError_chs {
+        public static string InvalidOptionValueError_chs {
             get {
                 return ResourceManager.GetString("InvalidOptionValueError_chs", resourceCulture);
             }
@@ -5022,7 +5022,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 無效的選項值: &apos;{0} {1}&apos;.
         /// </summary>
-        internal static string InvalidOptionValueError_cht {
+        public static string InvalidOptionValueError_cht {
             get {
                 return ResourceManager.GetString("InvalidOptionValueError_cht", resourceCulture);
             }
@@ -5031,7 +5031,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Neplatná hodnota možnosti: &apos;{0} {1}&apos;.
         /// </summary>
-        internal static string InvalidOptionValueError_csy {
+        public static string InvalidOptionValueError_csy {
             get {
                 return ResourceManager.GetString("InvalidOptionValueError_csy", resourceCulture);
             }
@@ -5040,7 +5040,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ungültiger Optionswert: &quot;{0} {1}&quot;.
         /// </summary>
-        internal static string InvalidOptionValueError_deu {
+        public static string InvalidOptionValueError_deu {
             get {
                 return ResourceManager.GetString("InvalidOptionValueError_deu", resourceCulture);
             }
@@ -5049,7 +5049,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Valor de opción no válido: &apos;{0} {1}&apos;.
         /// </summary>
-        internal static string InvalidOptionValueError_esp {
+        public static string InvalidOptionValueError_esp {
             get {
                 return ResourceManager.GetString("InvalidOptionValueError_esp", resourceCulture);
             }
@@ -5058,7 +5058,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Valeur de l&apos;option non valide : &apos;{0} {1}&apos;.
         /// </summary>
-        internal static string InvalidOptionValueError_fra {
+        public static string InvalidOptionValueError_fra {
             get {
                 return ResourceManager.GetString("InvalidOptionValueError_fra", resourceCulture);
             }
@@ -5067,7 +5067,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Valore opzione non valido: &apos;{0} {1}&apos;.
         /// </summary>
-        internal static string InvalidOptionValueError_ita {
+        public static string InvalidOptionValueError_ita {
             get {
                 return ResourceManager.GetString("InvalidOptionValueError_ita", resourceCulture);
             }
@@ -5076,7 +5076,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 無効なオプションの値: &apos;{0} {1}&apos;.
         /// </summary>
-        internal static string InvalidOptionValueError_jpn {
+        public static string InvalidOptionValueError_jpn {
             get {
                 return ResourceManager.GetString("InvalidOptionValueError_jpn", resourceCulture);
             }
@@ -5085,7 +5085,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 잘못된 옵션 값: &apos;{0} {1}&apos;.
         /// </summary>
-        internal static string InvalidOptionValueError_kor {
+        public static string InvalidOptionValueError_kor {
             get {
                 return ResourceManager.GetString("InvalidOptionValueError_kor", resourceCulture);
             }
@@ -5094,7 +5094,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nieprawidłowa wartość opcji: „{0} {1}”.
         /// </summary>
-        internal static string InvalidOptionValueError_plk {
+        public static string InvalidOptionValueError_plk {
             get {
                 return ResourceManager.GetString("InvalidOptionValueError_plk", resourceCulture);
             }
@@ -5103,7 +5103,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Valor de opção inválida: &apos;{0} {1}&apos;.
         /// </summary>
-        internal static string InvalidOptionValueError_ptb {
+        public static string InvalidOptionValueError_ptb {
             get {
                 return ResourceManager.GetString("InvalidOptionValueError_ptb", resourceCulture);
             }
@@ -5112,7 +5112,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Недопустимое значение параметра: &apos;{0} {1}&apos;.
         /// </summary>
-        internal static string InvalidOptionValueError_rus {
+        public static string InvalidOptionValueError_rus {
             get {
                 return ResourceManager.GetString("InvalidOptionValueError_rus", resourceCulture);
             }
@@ -5121,7 +5121,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Geçersiz seçenek değeri: &apos;{0} {1}&apos;.
         /// </summary>
-        internal static string InvalidOptionValueError_trk {
+        public static string InvalidOptionValueError_trk {
             get {
                 return ResourceManager.GetString("InvalidOptionValueError_trk", resourceCulture);
             }
@@ -5130,7 +5130,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to The specified source &apos;{0}&apos; is invalid. Please provide a valid source..
         /// </summary>
-        internal static string InvalidSource {
+        public static string InvalidSource {
             get {
                 return ResourceManager.GetString("InvalidSource", resourceCulture);
             }
@@ -5139,7 +5139,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 指定的源“{0}”无效。请提供有效源。.
         /// </summary>
-        internal static string InvalidSource_chs {
+        public static string InvalidSource_chs {
             get {
                 return ResourceManager.GetString("InvalidSource_chs", resourceCulture);
             }
@@ -5148,7 +5148,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 指定的來源 &apos;{0}&apos; 無效。請提供有效的來源。.
         /// </summary>
-        internal static string InvalidSource_cht {
+        public static string InvalidSource_cht {
             get {
                 return ResourceManager.GetString("InvalidSource_cht", resourceCulture);
             }
@@ -5157,7 +5157,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Zadaný zdroj {0} je neplatný. Zadejte platný zdroj..
         /// </summary>
-        internal static string InvalidSource_csy {
+        public static string InvalidSource_csy {
             get {
                 return ResourceManager.GetString("InvalidSource_csy", resourceCulture);
             }
@@ -5166,7 +5166,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die angegebene Quelle &quot;{0}&quot; ist ungültig. Bitte stellen Sie eine gültige Quelle zur Verfügung..
         /// </summary>
-        internal static string InvalidSource_deu {
+        public static string InvalidSource_deu {
             get {
                 return ResourceManager.GetString("InvalidSource_deu", resourceCulture);
             }
@@ -5175,7 +5175,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to El origen especificado &apos;{0}&apos; no es válido. Proporcione un origen válido..
         /// </summary>
-        internal static string InvalidSource_esp {
+        public static string InvalidSource_esp {
             get {
                 return ResourceManager.GetString("InvalidSource_esp", resourceCulture);
             }
@@ -5184,7 +5184,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La source spécifiée &apos;{0}&apos; n&apos;est pas valide. Veuillez fournir une source valide..
         /// </summary>
-        internal static string InvalidSource_fra {
+        public static string InvalidSource_fra {
             get {
                 return ResourceManager.GetString("InvalidSource_fra", resourceCulture);
             }
@@ -5193,7 +5193,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La fonte specificata &apos;{0}&apos; non è valida. Fornire una fonte valida..
         /// </summary>
-        internal static string InvalidSource_ita {
+        public static string InvalidSource_ita {
             get {
                 return ResourceManager.GetString("InvalidSource_ita", resourceCulture);
             }
@@ -5202,7 +5202,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 指定されたソース &apos;{0}&apos; は無効です。有効なソースを指定してください。.
         /// </summary>
-        internal static string InvalidSource_jpn {
+        public static string InvalidSource_jpn {
             get {
                 return ResourceManager.GetString("InvalidSource_jpn", resourceCulture);
             }
@@ -5211,7 +5211,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 지정된 소스 &apos;{0}&apos;이(가) 잘못되었습니다. 올바른 소스를 제공하십시오..
         /// </summary>
-        internal static string InvalidSource_kor {
+        public static string InvalidSource_kor {
             get {
                 return ResourceManager.GetString("InvalidSource_kor", resourceCulture);
             }
@@ -5220,7 +5220,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Określone źródło „{0}” jest nieprawidłowe. Podaj prawidłowe źródło..
         /// </summary>
-        internal static string InvalidSource_plk {
+        public static string InvalidSource_plk {
             get {
                 return ResourceManager.GetString("InvalidSource_plk", resourceCulture);
             }
@@ -5229,7 +5229,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to A origem especificada &apos;{0}&apos; é inválida. Forneça uma origem válida..
         /// </summary>
-        internal static string InvalidSource_ptb {
+        public static string InvalidSource_ptb {
             get {
                 return ResourceManager.GetString("InvalidSource_ptb", resourceCulture);
             }
@@ -5238,7 +5238,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Указанный источник &quot;{0}&quot; недопустим. Укажите допустимый источник..
         /// </summary>
-        internal static string InvalidSource_rus {
+        public static string InvalidSource_rus {
             get {
                 return ResourceManager.GetString("InvalidSource_rus", resourceCulture);
             }
@@ -5247,7 +5247,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Belirtilen &apos;{0}&apos; kaynağı geçersiz. Lütfen geçerli bir kaynak belirtin..
         /// </summary>
-        internal static string InvalidSource_trk {
+        public static string InvalidSource_trk {
             get {
                 return ResourceManager.GetString("InvalidSource_trk", resourceCulture);
             }
@@ -5256,7 +5256,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to License url: {0}.
         /// </summary>
-        internal static string ListCommand_LicenseUrl {
+        public static string ListCommand_LicenseUrl {
             get {
                 return ResourceManager.GetString("ListCommand_LicenseUrl", resourceCulture);
             }
@@ -5265,7 +5265,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 许可证 URL: {0}.
         /// </summary>
-        internal static string ListCommand_LicenseUrl_chs {
+        public static string ListCommand_LicenseUrl_chs {
             get {
                 return ResourceManager.GetString("ListCommand_LicenseUrl_chs", resourceCulture);
             }
@@ -5274,7 +5274,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 授權 URL: {0}.
         /// </summary>
-        internal static string ListCommand_LicenseUrl_cht {
+        public static string ListCommand_LicenseUrl_cht {
             get {
                 return ResourceManager.GetString("ListCommand_LicenseUrl_cht", resourceCulture);
             }
@@ -5283,7 +5283,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Adresa URL licence: {0}.
         /// </summary>
-        internal static string ListCommand_LicenseUrl_csy {
+        public static string ListCommand_LicenseUrl_csy {
             get {
                 return ResourceManager.GetString("ListCommand_LicenseUrl_csy", resourceCulture);
             }
@@ -5292,7 +5292,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Lizenz-URL: {0}.
         /// </summary>
-        internal static string ListCommand_LicenseUrl_deu {
+        public static string ListCommand_LicenseUrl_deu {
             get {
                 return ResourceManager.GetString("ListCommand_LicenseUrl_deu", resourceCulture);
             }
@@ -5301,7 +5301,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to URL de la licencia: {0}.
         /// </summary>
-        internal static string ListCommand_LicenseUrl_esp {
+        public static string ListCommand_LicenseUrl_esp {
             get {
                 return ResourceManager.GetString("ListCommand_LicenseUrl_esp", resourceCulture);
             }
@@ -5310,7 +5310,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to URL de la licence : {0}.
         /// </summary>
-        internal static string ListCommand_LicenseUrl_fra {
+        public static string ListCommand_LicenseUrl_fra {
             get {
                 return ResourceManager.GetString("ListCommand_LicenseUrl_fra", resourceCulture);
             }
@@ -5319,7 +5319,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Licenze url: {0}.
         /// </summary>
-        internal static string ListCommand_LicenseUrl_ita {
+        public static string ListCommand_LicenseUrl_ita {
             get {
                 return ResourceManager.GetString("ListCommand_LicenseUrl_ita", resourceCulture);
             }
@@ -5328,7 +5328,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to ライセンス URL: {0}.
         /// </summary>
-        internal static string ListCommand_LicenseUrl_jpn {
+        public static string ListCommand_LicenseUrl_jpn {
             get {
                 return ResourceManager.GetString("ListCommand_LicenseUrl_jpn", resourceCulture);
             }
@@ -5337,7 +5337,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 라이선스 URL: {0}.
         /// </summary>
-        internal static string ListCommand_LicenseUrl_kor {
+        public static string ListCommand_LicenseUrl_kor {
             get {
                 return ResourceManager.GetString("ListCommand_LicenseUrl_kor", resourceCulture);
             }
@@ -5346,7 +5346,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Adres URL licencji: {0}.
         /// </summary>
-        internal static string ListCommand_LicenseUrl_plk {
+        public static string ListCommand_LicenseUrl_plk {
             get {
                 return ResourceManager.GetString("ListCommand_LicenseUrl_plk", resourceCulture);
             }
@@ -5355,7 +5355,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Url de licença: {0}.
         /// </summary>
-        internal static string ListCommand_LicenseUrl_ptb {
+        public static string ListCommand_LicenseUrl_ptb {
             get {
                 return ResourceManager.GetString("ListCommand_LicenseUrl_ptb", resourceCulture);
             }
@@ -5364,7 +5364,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to URL-адрес лицензии: {0}.
         /// </summary>
-        internal static string ListCommand_LicenseUrl_rus {
+        public static string ListCommand_LicenseUrl_rus {
             get {
                 return ResourceManager.GetString("ListCommand_LicenseUrl_rus", resourceCulture);
             }
@@ -5373,7 +5373,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Lisans url&apos;si: {0}.
         /// </summary>
-        internal static string ListCommand_LicenseUrl_trk {
+        public static string ListCommand_LicenseUrl_trk {
             get {
                 return ResourceManager.GetString("ListCommand_LicenseUrl_trk", resourceCulture);
             }
@@ -5382,7 +5382,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No packages found..
         /// </summary>
-        internal static string ListCommandNoPackages {
+        public static string ListCommandNoPackages {
             get {
                 return ResourceManager.GetString("ListCommandNoPackages", resourceCulture);
             }
@@ -5391,7 +5391,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到程序包。.
         /// </summary>
-        internal static string ListCommandNoPackages_chs {
+        public static string ListCommandNoPackages_chs {
             get {
                 return ResourceManager.GetString("ListCommandNoPackages_chs", resourceCulture);
             }
@@ -5400,7 +5400,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到封裝。.
         /// </summary>
-        internal static string ListCommandNoPackages_cht {
+        public static string ListCommandNoPackages_cht {
             get {
                 return ResourceManager.GetString("ListCommandNoPackages_cht", resourceCulture);
             }
@@ -5409,7 +5409,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nebyly nalezeny žádné balíčky..
         /// </summary>
-        internal static string ListCommandNoPackages_csy {
+        public static string ListCommandNoPackages_csy {
             get {
                 return ResourceManager.GetString("ListCommandNoPackages_csy", resourceCulture);
             }
@@ -5418,7 +5418,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Es wurden keine Pakete gefunden..
         /// </summary>
-        internal static string ListCommandNoPackages_deu {
+        public static string ListCommandNoPackages_deu {
             get {
                 return ResourceManager.GetString("ListCommandNoPackages_deu", resourceCulture);
             }
@@ -5427,7 +5427,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se han encontrado paquetes..
         /// </summary>
-        internal static string ListCommandNoPackages_esp {
+        public static string ListCommandNoPackages_esp {
             get {
                 return ResourceManager.GetString("ListCommandNoPackages_esp", resourceCulture);
             }
@@ -5436,7 +5436,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Aucun package trouvé..
         /// </summary>
-        internal static string ListCommandNoPackages_fra {
+        public static string ListCommandNoPackages_fra {
             get {
                 return ResourceManager.GetString("ListCommandNoPackages_fra", resourceCulture);
             }
@@ -5445,7 +5445,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nessun pacchetto trovato.
         /// </summary>
-        internal static string ListCommandNoPackages_ita {
+        public static string ListCommandNoPackages_ita {
             get {
                 return ResourceManager.GetString("ListCommandNoPackages_ita", resourceCulture);
             }
@@ -5454,7 +5454,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to パッケージが見つかりませんでした。.
         /// </summary>
-        internal static string ListCommandNoPackages_jpn {
+        public static string ListCommandNoPackages_jpn {
             get {
                 return ResourceManager.GetString("ListCommandNoPackages_jpn", resourceCulture);
             }
@@ -5463,7 +5463,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 패키지를 찾을 수 없습니다..
         /// </summary>
-        internal static string ListCommandNoPackages_kor {
+        public static string ListCommandNoPackages_kor {
             get {
                 return ResourceManager.GetString("ListCommandNoPackages_kor", resourceCulture);
             }
@@ -5472,7 +5472,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie znaleziono żadnych pakietów..
         /// </summary>
-        internal static string ListCommandNoPackages_plk {
+        public static string ListCommandNoPackages_plk {
             get {
                 return ResourceManager.GetString("ListCommandNoPackages_plk", resourceCulture);
             }
@@ -5481,7 +5481,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nenhum pacote encontrado..
         /// </summary>
-        internal static string ListCommandNoPackages_ptb {
+        public static string ListCommandNoPackages_ptb {
             get {
                 return ResourceManager.GetString("ListCommandNoPackages_ptb", resourceCulture);
             }
@@ -5490,7 +5490,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Пакеты не найдены..
         /// </summary>
-        internal static string ListCommandNoPackages_rus {
+        public static string ListCommandNoPackages_rus {
             get {
                 return ResourceManager.GetString("ListCommandNoPackages_rus", resourceCulture);
             }
@@ -5499,7 +5499,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Hiçbir paket bulunamadı..
         /// </summary>
-        internal static string ListCommandNoPackages_trk {
+        public static string ListCommandNoPackages_trk {
             get {
                 return ResourceManager.GetString("ListCommandNoPackages_trk", resourceCulture);
             }
@@ -5508,7 +5508,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to the NuGet gallery.
         /// </summary>
-        internal static string LiveFeed {
+        public static string LiveFeed {
             get {
                 return ResourceManager.GetString("LiveFeed", resourceCulture);
             }
@@ -5517,7 +5517,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet 库.
         /// </summary>
-        internal static string LiveFeed_chs {
+        public static string LiveFeed_chs {
             get {
                 return ResourceManager.GetString("LiveFeed_chs", resourceCulture);
             }
@@ -5526,7 +5526,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet 陳列庫.
         /// </summary>
-        internal static string LiveFeed_cht {
+        public static string LiveFeed_cht {
             get {
                 return ResourceManager.GetString("LiveFeed_cht", resourceCulture);
             }
@@ -5535,7 +5535,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to galerie NuGet.
         /// </summary>
-        internal static string LiveFeed_csy {
+        public static string LiveFeed_csy {
             get {
                 return ResourceManager.GetString("LiveFeed_csy", resourceCulture);
             }
@@ -5544,7 +5544,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to der NuGet-Katalog.
         /// </summary>
-        internal static string LiveFeed_deu {
+        public static string LiveFeed_deu {
             get {
                 return ResourceManager.GetString("LiveFeed_deu", resourceCulture);
             }
@@ -5553,7 +5553,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to la galería NuGet.
         /// </summary>
-        internal static string LiveFeed_esp {
+        public static string LiveFeed_esp {
             get {
                 return ResourceManager.GetString("LiveFeed_esp", resourceCulture);
             }
@@ -5562,7 +5562,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to galerie NuGet.
         /// </summary>
-        internal static string LiveFeed_fra {
+        public static string LiveFeed_fra {
             get {
                 return ResourceManager.GetString("LiveFeed_fra", resourceCulture);
             }
@@ -5571,7 +5571,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La galleria NuGet.
         /// </summary>
-        internal static string LiveFeed_ita {
+        public static string LiveFeed_ita {
             get {
                 return ResourceManager.GetString("LiveFeed_ita", resourceCulture);
             }
@@ -5580,7 +5580,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet ギャラリー.
         /// </summary>
-        internal static string LiveFeed_jpn {
+        public static string LiveFeed_jpn {
             get {
                 return ResourceManager.GetString("LiveFeed_jpn", resourceCulture);
             }
@@ -5589,7 +5589,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet 갤러리.
         /// </summary>
-        internal static string LiveFeed_kor {
+        public static string LiveFeed_kor {
             get {
                 return ResourceManager.GetString("LiveFeed_kor", resourceCulture);
             }
@@ -5598,7 +5598,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to galeria NuGet.
         /// </summary>
-        internal static string LiveFeed_plk {
+        public static string LiveFeed_plk {
             get {
                 return ResourceManager.GetString("LiveFeed_plk", resourceCulture);
             }
@@ -5607,7 +5607,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to a galeria de NuGet.
         /// </summary>
-        internal static string LiveFeed_ptb {
+        public static string LiveFeed_ptb {
             get {
                 return ResourceManager.GetString("LiveFeed_ptb", resourceCulture);
             }
@@ -5616,7 +5616,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to коллекция NuGet.
         /// </summary>
-        internal static string LiveFeed_rus {
+        public static string LiveFeed_rus {
             get {
                 return ResourceManager.GetString("LiveFeed_rus", resourceCulture);
             }
@@ -5625,7 +5625,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet galerisi.
         /// </summary>
-        internal static string LiveFeed_trk {
+        public static string LiveFeed_trk {
             get {
                 return ResourceManager.GetString("LiveFeed_trk", resourceCulture);
             }
@@ -5634,7 +5634,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Looking for installed packages in &apos;{0}&apos;..
         /// </summary>
-        internal static string LookingForInstalledPackages {
+        public static string LookingForInstalledPackages {
             get {
                 return ResourceManager.GetString("LookingForInstalledPackages", resourceCulture);
             }
@@ -5643,7 +5643,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在“{0}”中查找已安装的程序包。.
         /// </summary>
-        internal static string LookingForInstalledPackages_chs {
+        public static string LookingForInstalledPackages_chs {
             get {
                 return ResourceManager.GetString("LookingForInstalledPackages_chs", resourceCulture);
             }
@@ -5652,7 +5652,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 在 &apos;{0}&apos; 中尋找已安裝的封裝。.
         /// </summary>
-        internal static string LookingForInstalledPackages_cht {
+        public static string LookingForInstalledPackages_cht {
             get {
                 return ResourceManager.GetString("LookingForInstalledPackages_cht", resourceCulture);
             }
@@ -5661,7 +5661,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Probíhá vyhledávání nainstalovaných balíčků v {0}..
         /// </summary>
-        internal static string LookingForInstalledPackages_csy {
+        public static string LookingForInstalledPackages_csy {
             get {
                 return ResourceManager.GetString("LookingForInstalledPackages_csy", resourceCulture);
             }
@@ -5670,7 +5670,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to In &quot;{0}&quot; wird nach installierten Paketen gesucht..
         /// </summary>
-        internal static string LookingForInstalledPackages_deu {
+        public static string LookingForInstalledPackages_deu {
             get {
                 return ResourceManager.GetString("LookingForInstalledPackages_deu", resourceCulture);
             }
@@ -5679,7 +5679,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Buscando paquetes instalados en &apos;{0}&apos;..
         /// </summary>
-        internal static string LookingForInstalledPackages_esp {
+        public static string LookingForInstalledPackages_esp {
             get {
                 return ResourceManager.GetString("LookingForInstalledPackages_esp", resourceCulture);
             }
@@ -5688,7 +5688,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Recherche en cours des packages installés sur &apos;{0}&apos;..
         /// </summary>
-        internal static string LookingForInstalledPackages_fra {
+        public static string LookingForInstalledPackages_fra {
             get {
                 return ResourceManager.GetString("LookingForInstalledPackages_fra", resourceCulture);
             }
@@ -5697,7 +5697,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ricerca pacchetti installati in &apos;{0}&apos;..
         /// </summary>
-        internal static string LookingForInstalledPackages_ita {
+        public static string LookingForInstalledPackages_ita {
             get {
                 return ResourceManager.GetString("LookingForInstalledPackages_ita", resourceCulture);
             }
@@ -5706,7 +5706,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; にインストールされているパッケージを探しています。.
         /// </summary>
-        internal static string LookingForInstalledPackages_jpn {
+        public static string LookingForInstalledPackages_jpn {
             get {
                 return ResourceManager.GetString("LookingForInstalledPackages_jpn", resourceCulture);
             }
@@ -5715,7 +5715,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos;에서 설치된 패키지를 찾고 있습니다..
         /// </summary>
-        internal static string LookingForInstalledPackages_kor {
+        public static string LookingForInstalledPackages_kor {
             get {
                 return ResourceManager.GetString("LookingForInstalledPackages_kor", resourceCulture);
             }
@@ -5724,7 +5724,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Wyszukiwanie zainstalowanych pakietów w „{0}”..
         /// </summary>
-        internal static string LookingForInstalledPackages_plk {
+        public static string LookingForInstalledPackages_plk {
             get {
                 return ResourceManager.GetString("LookingForInstalledPackages_plk", resourceCulture);
             }
@@ -5733,7 +5733,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Buscar pacotes instalados em &apos;{0}&apos;..
         /// </summary>
-        internal static string LookingForInstalledPackages_ptb {
+        public static string LookingForInstalledPackages_ptb {
             get {
                 return ResourceManager.GetString("LookingForInstalledPackages_ptb", resourceCulture);
             }
@@ -5742,7 +5742,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Поиск установленных пакетов в &quot;{0}&quot;..
         /// </summary>
-        internal static string LookingForInstalledPackages_rus {
+        public static string LookingForInstalledPackages_rus {
             get {
                 return ResourceManager.GetString("LookingForInstalledPackages_rus", resourceCulture);
             }
@@ -5751,7 +5751,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; içindeki yüklü paketler aranıyor..
         /// </summary>
-        internal static string LookingForInstalledPackages_trk {
+        public static string LookingForInstalledPackages_trk {
             get {
                 return ResourceManager.GetString("LookingForInstalledPackages_trk", resourceCulture);
             }
@@ -5760,7 +5760,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Missing option value for: &apos;{0}&apos;.
         /// </summary>
-        internal static string MissingOptionValueError {
+        public static string MissingOptionValueError {
             get {
                 return ResourceManager.GetString("MissingOptionValueError", resourceCulture);
             }
@@ -5769,7 +5769,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 缺少以下项的选项值:“{0}”.
         /// </summary>
-        internal static string MissingOptionValueError_chs {
+        public static string MissingOptionValueError_chs {
             get {
                 return ResourceManager.GetString("MissingOptionValueError_chs", resourceCulture);
             }
@@ -5778,7 +5778,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 缺少下列項目的選項值: &apos;{0}&apos;.
         /// </summary>
-        internal static string MissingOptionValueError_cht {
+        public static string MissingOptionValueError_cht {
             get {
                 return ResourceManager.GetString("MissingOptionValueError_cht", resourceCulture);
             }
@@ -5787,7 +5787,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Chybějící hodnota možnosti: &apos;{0}&apos;.
         /// </summary>
-        internal static string MissingOptionValueError_csy {
+        public static string MissingOptionValueError_csy {
             get {
                 return ResourceManager.GetString("MissingOptionValueError_csy", resourceCulture);
             }
@@ -5796,7 +5796,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Fehlender Optionswert für: &quot;{0}&quot;.
         /// </summary>
-        internal static string MissingOptionValueError_deu {
+        public static string MissingOptionValueError_deu {
             get {
                 return ResourceManager.GetString("MissingOptionValueError_deu", resourceCulture);
             }
@@ -5805,7 +5805,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Falta el valor de opción para &apos;{0}&apos;.
         /// </summary>
-        internal static string MissingOptionValueError_esp {
+        public static string MissingOptionValueError_esp {
             get {
                 return ResourceManager.GetString("MissingOptionValueError_esp", resourceCulture);
             }
@@ -5814,7 +5814,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Valeur de l&apos;option manquante pour : &apos;{0}&apos;.
         /// </summary>
-        internal static string MissingOptionValueError_fra {
+        public static string MissingOptionValueError_fra {
             get {
                 return ResourceManager.GetString("MissingOptionValueError_fra", resourceCulture);
             }
@@ -5823,7 +5823,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Valore opzione mancante per: &apos;{0}&apos;.
         /// </summary>
-        internal static string MissingOptionValueError_ita {
+        public static string MissingOptionValueError_ita {
             get {
                 return ResourceManager.GetString("MissingOptionValueError_ita", resourceCulture);
             }
@@ -5832,7 +5832,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 次のオプションの値が見つかりません: &apos;{0}&apos;.
         /// </summary>
-        internal static string MissingOptionValueError_jpn {
+        public static string MissingOptionValueError_jpn {
             get {
                 return ResourceManager.GetString("MissingOptionValueError_jpn", resourceCulture);
             }
@@ -5841,7 +5841,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos;에 대한 옵션 값이 없습니다..
         /// </summary>
-        internal static string MissingOptionValueError_kor {
+        public static string MissingOptionValueError_kor {
             get {
                 return ResourceManager.GetString("MissingOptionValueError_kor", resourceCulture);
             }
@@ -5850,7 +5850,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Brak wartości opcji dla: „{0}”.
         /// </summary>
-        internal static string MissingOptionValueError_plk {
+        public static string MissingOptionValueError_plk {
             get {
                 return ResourceManager.GetString("MissingOptionValueError_plk", resourceCulture);
             }
@@ -5859,7 +5859,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Valor da opção ausente para: &apos;{0}&apos;.
         /// </summary>
-        internal static string MissingOptionValueError_ptb {
+        public static string MissingOptionValueError_ptb {
             get {
                 return ResourceManager.GetString("MissingOptionValueError_ptb", resourceCulture);
             }
@@ -5868,7 +5868,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Отсутствует значение параметра для: &quot;{0}&quot;.
         /// </summary>
-        internal static string MissingOptionValueError_rus {
+        public static string MissingOptionValueError_rus {
             get {
                 return ResourceManager.GetString("MissingOptionValueError_rus", resourceCulture);
             }
@@ -5877,7 +5877,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Bu öğe için seçenek değeri eksik: &apos;{0}&apos;.
         /// </summary>
-        internal static string MissingOptionValueError_trk {
+        public static string MissingOptionValueError_trk {
             get {
                 return ResourceManager.GetString("MissingOptionValueError_trk", resourceCulture);
             }
@@ -5886,7 +5886,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Found multiple project files for &apos;{0}&apos;..
         /// </summary>
-        internal static string MultipleProjectFilesFound {
+        public static string MultipleProjectFilesFound {
             get {
                 return ResourceManager.GetString("MultipleProjectFilesFound", resourceCulture);
             }
@@ -5895,7 +5895,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 发现了“{0}”的多个项目文件。.
         /// </summary>
-        internal static string MultipleProjectFilesFound_chs {
+        public static string MultipleProjectFilesFound_chs {
             get {
                 return ResourceManager.GetString("MultipleProjectFilesFound_chs", resourceCulture);
             }
@@ -5904,7 +5904,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找到 &apos;{0}&apos; 的多個專案檔案。.
         /// </summary>
-        internal static string MultipleProjectFilesFound_cht {
+        public static string MultipleProjectFilesFound_cht {
             get {
                 return ResourceManager.GetString("MultipleProjectFilesFound_cht", resourceCulture);
             }
@@ -5913,7 +5913,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Bylo nalezeno více souborů projektu pro {0}..
         /// </summary>
-        internal static string MultipleProjectFilesFound_csy {
+        public static string MultipleProjectFilesFound_csy {
             get {
                 return ResourceManager.GetString("MultipleProjectFilesFound_csy", resourceCulture);
             }
@@ -5922,7 +5922,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Es wurden mehrere Projektdateien für &quot;{0}&quot; gefunden..
         /// </summary>
-        internal static string MultipleProjectFilesFound_deu {
+        public static string MultipleProjectFilesFound_deu {
             get {
                 return ResourceManager.GetString("MultipleProjectFilesFound_deu", resourceCulture);
             }
@@ -5931,7 +5931,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Se encontraron varios archivos de proyecto para &apos;{0}&apos;..
         /// </summary>
-        internal static string MultipleProjectFilesFound_esp {
+        public static string MultipleProjectFilesFound_esp {
             get {
                 return ResourceManager.GetString("MultipleProjectFilesFound_esp", resourceCulture);
             }
@@ -5940,7 +5940,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Plusieurs fichiers de projet trouvés pour &apos;{0}&apos;..
         /// </summary>
-        internal static string MultipleProjectFilesFound_fra {
+        public static string MultipleProjectFilesFound_fra {
             get {
                 return ResourceManager.GetString("MultipleProjectFilesFound_fra", resourceCulture);
             }
@@ -5949,7 +5949,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Trovati più file di progetto per &apos;{0}&apos;..
         /// </summary>
-        internal static string MultipleProjectFilesFound_ita {
+        public static string MultipleProjectFilesFound_ita {
             get {
                 return ResourceManager.GetString("MultipleProjectFilesFound_ita", resourceCulture);
             }
@@ -5958,7 +5958,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; に複数のプロジェクト ファイルが見つかりました。.
         /// </summary>
-        internal static string MultipleProjectFilesFound_jpn {
+        public static string MultipleProjectFilesFound_jpn {
             get {
                 return ResourceManager.GetString("MultipleProjectFilesFound_jpn", resourceCulture);
             }
@@ -5967,7 +5967,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos;에 대한 프로젝트 파일이 여러 개 있습니다..
         /// </summary>
-        internal static string MultipleProjectFilesFound_kor {
+        public static string MultipleProjectFilesFound_kor {
             get {
                 return ResourceManager.GetString("MultipleProjectFilesFound_kor", resourceCulture);
             }
@@ -5976,7 +5976,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Znaleziono wiele plików projektów dla elementu „{0}”..
         /// </summary>
-        internal static string MultipleProjectFilesFound_plk {
+        public static string MultipleProjectFilesFound_plk {
             get {
                 return ResourceManager.GetString("MultipleProjectFilesFound_plk", resourceCulture);
             }
@@ -5985,7 +5985,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Encontrados diversos arquivos de projeto para &apos;{0}&apos;..
         /// </summary>
-        internal static string MultipleProjectFilesFound_ptb {
+        public static string MultipleProjectFilesFound_ptb {
             get {
                 return ResourceManager.GetString("MultipleProjectFilesFound_ptb", resourceCulture);
             }
@@ -5994,7 +5994,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Обнаружено несколько файлов проектов для &quot;{0}&quot;..
         /// </summary>
-        internal static string MultipleProjectFilesFound_rus {
+        public static string MultipleProjectFilesFound_rus {
             get {
                 return ResourceManager.GetString("MultipleProjectFilesFound_rus", resourceCulture);
             }
@@ -6003,7 +6003,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} için birden çok proje dosyası bulundu..
         /// </summary>
-        internal static string MultipleProjectFilesFound_trk {
+        public static string MultipleProjectFilesFound_trk {
             get {
                 return ResourceManager.GetString("MultipleProjectFilesFound_trk", resourceCulture);
             }
@@ -6012,7 +6012,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No API Key was provided and no API Key could be found for {0}. To save an API Key for a source use the &apos;setApiKey&apos; command..
         /// </summary>
-        internal static string NoApiKeyFound {
+        public static string NoApiKeyFound {
             get {
                 return ResourceManager.GetString("NoApiKeyFound", resourceCulture);
             }
@@ -6021,7 +6021,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 未提供 API 密钥并且找不到 {0} 的 API 密钥。若要保存源的 API 密钥，请使用 &quot;setApiKey&quot; 命令。.
         /// </summary>
-        internal static string NoApiKeyFound_chs {
+        public static string NoApiKeyFound_chs {
             get {
                 return ResourceManager.GetString("NoApiKeyFound_chs", resourceCulture);
             }
@@ -6030,7 +6030,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 未提供 API 索引鍵，也找不到 {0} 的 API 索引鍵。如要儲存來源的 API 索引鍵，請使用 &apos;setApiKey&apos; 命令。.
         /// </summary>
-        internal static string NoApiKeyFound_cht {
+        public static string NoApiKeyFound_cht {
             get {
                 return ResourceManager.GetString("NoApiKeyFound_cht", resourceCulture);
             }
@@ -6039,7 +6039,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nebyl zadán žádný klíč API a nebyl nalezen žádný klíč API Key pro {0}. Chcete-li uložit klíč API pro určitý zdroj, použijte příkaz setApiKey..
         /// </summary>
-        internal static string NoApiKeyFound_csy {
+        public static string NoApiKeyFound_csy {
             get {
                 return ResourceManager.GetString("NoApiKeyFound_csy", resourceCulture);
             }
@@ -6048,7 +6048,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Es wurde kein API-Schlüssel bereitgestellt bzw. für &quot;{0}&quot; gefunden. Verwenden Sie zum Speichern eines API-Schlüssels für eine Quelle den Befehl &quot;setApiKey&quot;..
         /// </summary>
-        internal static string NoApiKeyFound_deu {
+        public static string NoApiKeyFound_deu {
             get {
                 return ResourceManager.GetString("NoApiKeyFound_deu", resourceCulture);
             }
@@ -6057,7 +6057,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se ha proporcionado ninguna clave API ni tampoco se ha podido encontrar una para {0}. Para guardar una clave API para un origen use el comando &apos;setApiKey&apos;..
         /// </summary>
-        internal static string NoApiKeyFound_esp {
+        public static string NoApiKeyFound_esp {
             get {
                 return ResourceManager.GetString("NoApiKeyFound_esp", resourceCulture);
             }
@@ -6066,7 +6066,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Aucune clé API n&apos;a été fournie et aucune clé API n&apos;a été trouvée pour {0}. Utilisez la commande &apos;setApiKey&apos; pour enregistrer une clé API pour une source..
         /// </summary>
-        internal static string NoApiKeyFound_fra {
+        public static string NoApiKeyFound_fra {
             get {
                 return ResourceManager.GetString("NoApiKeyFound_fra", resourceCulture);
             }
@@ -6075,7 +6075,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Non è stato fornito alcun API Key  e non è stato possibile trovare API Key per {0}. Per salvare un API Key per una fonte usare il comando &apos;setApiKey&apos;..
         /// </summary>
-        internal static string NoApiKeyFound_ita {
+        public static string NoApiKeyFound_ita {
             get {
                 return ResourceManager.GetString("NoApiKeyFound_ita", resourceCulture);
             }
@@ -6084,7 +6084,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to API キーが指定されておらず、{0} の API キーが見つかりませんでした。ソースの API キーを保存するには、&apos;setApiKey&apos; コマンドを使用してください。.
         /// </summary>
-        internal static string NoApiKeyFound_jpn {
+        public static string NoApiKeyFound_jpn {
             get {
                 return ResourceManager.GetString("NoApiKeyFound_jpn", resourceCulture);
             }
@@ -6093,7 +6093,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to API 키가 제공되지 않았으므로 {0}에서 API 키를 찾을 수 없습니다. 소스에 대한 API 키를 저장하려면 &apos;setApiKey&apos; 명령을 사용하십시오..
         /// </summary>
-        internal static string NoApiKeyFound_kor {
+        public static string NoApiKeyFound_kor {
             get {
                 return ResourceManager.GetString("NoApiKeyFound_kor", resourceCulture);
             }
@@ -6102,7 +6102,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie podano klucza interfejsu API i nie można znaleźć klucza interfejsu API dla {0}. Aby zapisać klucz interfejsu API dla źródła, użyj polecenia „setApiKey”..
         /// </summary>
-        internal static string NoApiKeyFound_plk {
+        public static string NoApiKeyFound_plk {
             get {
                 return ResourceManager.GetString("NoApiKeyFound_plk", resourceCulture);
             }
@@ -6111,7 +6111,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nenhuma chave de API foi fornecida e nenhuma chave de API foi encontrada para {0}. Para salvar uma chave de API para uma origem, use o comando &quot;setApiKey..
         /// </summary>
-        internal static string NoApiKeyFound_ptb {
+        public static string NoApiKeyFound_ptb {
             get {
                 return ResourceManager.GetString("NoApiKeyFound_ptb", resourceCulture);
             }
@@ -6120,7 +6120,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ключ API не указан, также не удалось найти ключ API для {0}. Чтобы сохранить ключ API для источника, используйте команду &quot;setApiKey&quot;..
         /// </summary>
-        internal static string NoApiKeyFound_rus {
+        public static string NoApiKeyFound_rus {
             get {
                 return ResourceManager.GetString("NoApiKeyFound_rus", resourceCulture);
             }
@@ -6129,7 +6129,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to API Anahtarı belirtilmemiş ve {0} için hiçbir API Anahtarı bulunamadı. Bir kaynak için API Anahtarını kaydetmek için &apos;setApiKey&apos; komutunu kullanın..
         /// </summary>
-        internal static string NoApiKeyFound_trk {
+        public static string NoApiKeyFound_trk {
             get {
                 return ResourceManager.GetString("NoApiKeyFound_trk", resourceCulture);
             }
@@ -6138,7 +6138,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No projects found with packages.config..
         /// </summary>
-        internal static string NoProjectsFound {
+        public static string NoProjectsFound {
             get {
                 return ResourceManager.GetString("NoProjectsFound", resourceCulture);
             }
@@ -6147,7 +6147,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到包含 packages.config 的项目。.
         /// </summary>
-        internal static string NoProjectsFound_chs {
+        public static string NoProjectsFound_chs {
             get {
                 return ResourceManager.GetString("NoProjectsFound_chs", resourceCulture);
             }
@@ -6156,7 +6156,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到具有 packages.config 的專案。.
         /// </summary>
-        internal static string NoProjectsFound_cht {
+        public static string NoProjectsFound_cht {
             get {
                 return ResourceManager.GetString("NoProjectsFound_cht", resourceCulture);
             }
@@ -6165,7 +6165,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nebyly nalezeny žádné projekty se souborem packages.config..
         /// </summary>
-        internal static string NoProjectsFound_csy {
+        public static string NoProjectsFound_csy {
             get {
                 return ResourceManager.GetString("NoProjectsFound_csy", resourceCulture);
             }
@@ -6174,7 +6174,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Es wurden keine Projekte mit &quot;packages.config&quot; gefunden..
         /// </summary>
-        internal static string NoProjectsFound_deu {
+        public static string NoProjectsFound_deu {
             get {
                 return ResourceManager.GetString("NoProjectsFound_deu", resourceCulture);
             }
@@ -6183,7 +6183,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se han encontrado proyectos con packages.config..
         /// </summary>
-        internal static string NoProjectsFound_esp {
+        public static string NoProjectsFound_esp {
             get {
                 return ResourceManager.GetString("NoProjectsFound_esp", resourceCulture);
             }
@@ -6192,7 +6192,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Aucun projet contenant le fichier packages.config n&apos;a été trouvé..
         /// </summary>
-        internal static string NoProjectsFound_fra {
+        public static string NoProjectsFound_fra {
             get {
                 return ResourceManager.GetString("NoProjectsFound_fra", resourceCulture);
             }
@@ -6201,7 +6201,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nessun progetto trovato per packages.config..
         /// </summary>
-        internal static string NoProjectsFound_ita {
+        public static string NoProjectsFound_ita {
             get {
                 return ResourceManager.GetString("NoProjectsFound_ita", resourceCulture);
             }
@@ -6210,7 +6210,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to packages.config が指定されたプロジェクトが見つかりませんでした。.
         /// </summary>
-        internal static string NoProjectsFound_jpn {
+        public static string NoProjectsFound_jpn {
             get {
                 return ResourceManager.GetString("NoProjectsFound_jpn", resourceCulture);
             }
@@ -6219,7 +6219,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to packages.config가 있는 프로젝트를 찾을 수 없습니다..
         /// </summary>
-        internal static string NoProjectsFound_kor {
+        public static string NoProjectsFound_kor {
             get {
                 return ResourceManager.GetString("NoProjectsFound_kor", resourceCulture);
             }
@@ -6228,7 +6228,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie odnaleziono żadnych projektów z plikiem packages.config..
         /// </summary>
-        internal static string NoProjectsFound_plk {
+        public static string NoProjectsFound_plk {
             get {
                 return ResourceManager.GetString("NoProjectsFound_plk", resourceCulture);
             }
@@ -6237,7 +6237,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nenhum projeto encontrado com packages.config..
         /// </summary>
-        internal static string NoProjectsFound_ptb {
+        public static string NoProjectsFound_ptb {
             get {
                 return ResourceManager.GetString("NoProjectsFound_ptb", resourceCulture);
             }
@@ -6246,7 +6246,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Проекты с файлом packages.config не найдены..
         /// </summary>
-        internal static string NoProjectsFound_rus {
+        public static string NoProjectsFound_rus {
             get {
                 return ResourceManager.GetString("NoProjectsFound_rus", resourceCulture);
             }
@@ -6255,7 +6255,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Packages.config içeren hiçbir paket bulunamadı..
         /// </summary>
-        internal static string NoProjectsFound_trk {
+        public static string NoProjectsFound_trk {
             get {
                 return ResourceManager.GetString("NoProjectsFound_trk", resourceCulture);
             }
@@ -6264,7 +6264,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet official package source.
         /// </summary>
-        internal static string OfficialPackageSourceName {
+        public static string OfficialPackageSourceName {
             get {
                 return ResourceManager.GetString("OfficialPackageSourceName", resourceCulture);
             }
@@ -6273,7 +6273,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet 官方程序包源.
         /// </summary>
-        internal static string OfficialPackageSourceName_chs {
+        public static string OfficialPackageSourceName_chs {
             get {
                 return ResourceManager.GetString("OfficialPackageSourceName_chs", resourceCulture);
             }
@@ -6282,7 +6282,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet 官方封裝來源.
         /// </summary>
-        internal static string OfficialPackageSourceName_cht {
+        public static string OfficialPackageSourceName_cht {
             get {
                 return ResourceManager.GetString("OfficialPackageSourceName_cht", resourceCulture);
             }
@@ -6291,7 +6291,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Oficiální zdroj balíčků NuGet.
         /// </summary>
-        internal static string OfficialPackageSourceName_csy {
+        public static string OfficialPackageSourceName_csy {
             get {
                 return ResourceManager.GetString("OfficialPackageSourceName_csy", resourceCulture);
             }
@@ -6300,7 +6300,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Offizielle NuGet-Paketquelle.
         /// </summary>
-        internal static string OfficialPackageSourceName_deu {
+        public static string OfficialPackageSourceName_deu {
             get {
                 return ResourceManager.GetString("OfficialPackageSourceName_deu", resourceCulture);
             }
@@ -6309,7 +6309,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to origen del paquete oficial de NuGet.
         /// </summary>
-        internal static string OfficialPackageSourceName_esp {
+        public static string OfficialPackageSourceName_esp {
             get {
                 return ResourceManager.GetString("OfficialPackageSourceName_esp", resourceCulture);
             }
@@ -6318,7 +6318,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Source du package officiel NuGet.
         /// </summary>
-        internal static string OfficialPackageSourceName_fra {
+        public static string OfficialPackageSourceName_fra {
             get {
                 return ResourceManager.GetString("OfficialPackageSourceName_fra", resourceCulture);
             }
@@ -6327,7 +6327,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Fonte pacchetto ufficiale NuGet .
         /// </summary>
-        internal static string OfficialPackageSourceName_ita {
+        public static string OfficialPackageSourceName_ita {
             get {
                 return ResourceManager.GetString("OfficialPackageSourceName_ita", resourceCulture);
             }
@@ -6336,7 +6336,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet の正式なパッケージ ソース.
         /// </summary>
-        internal static string OfficialPackageSourceName_jpn {
+        public static string OfficialPackageSourceName_jpn {
             get {
                 return ResourceManager.GetString("OfficialPackageSourceName_jpn", resourceCulture);
             }
@@ -6345,7 +6345,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet 공식 패키지 소스.
         /// </summary>
-        internal static string OfficialPackageSourceName_kor {
+        public static string OfficialPackageSourceName_kor {
             get {
                 return ResourceManager.GetString("OfficialPackageSourceName_kor", resourceCulture);
             }
@@ -6354,7 +6354,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Oficjalne źródło pakietów NuGet.
         /// </summary>
-        internal static string OfficialPackageSourceName_plk {
+        public static string OfficialPackageSourceName_plk {
             get {
                 return ResourceManager.GetString("OfficialPackageSourceName_plk", resourceCulture);
             }
@@ -6363,7 +6363,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Origem de pacote oficial NuGet.
         /// </summary>
-        internal static string OfficialPackageSourceName_ptb {
+        public static string OfficialPackageSourceName_ptb {
             get {
                 return ResourceManager.GetString("OfficialPackageSourceName_ptb", resourceCulture);
             }
@@ -6372,7 +6372,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Официальный источник пакетов NuGet.
         /// </summary>
-        internal static string OfficialPackageSourceName_rus {
+        public static string OfficialPackageSourceName_rus {
             get {
                 return ResourceManager.GetString("OfficialPackageSourceName_rus", resourceCulture);
             }
@@ -6381,7 +6381,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet resmi paket kaynağı.
         /// </summary>
-        internal static string OfficialPackageSourceName_trk {
+        public static string OfficialPackageSourceName_trk {
             get {
                 return ResourceManager.GetString("OfficialPackageSourceName_trk", resourceCulture);
             }
@@ -6390,7 +6390,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Option &apos;Verbose&apos; has been deprecated. Use &apos;Verbosity&apos; instead..
         /// </summary>
-        internal static string Option_VerboseDeprecated {
+        public static string Option_VerboseDeprecated {
             get {
                 return ResourceManager.GetString("Option_VerboseDeprecated", resourceCulture);
             }
@@ -6399,7 +6399,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 选项 &quot;Verbose&quot; 已弃用。请改用 &quot;Verbosity&quot;。.
         /// </summary>
-        internal static string Option_VerboseDeprecated_chs {
+        public static string Option_VerboseDeprecated_chs {
             get {
                 return ResourceManager.GetString("Option_VerboseDeprecated_chs", resourceCulture);
             }
@@ -6408,7 +6408,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Verbose&apos; 選項已過時。請使用 &apos;Verbosity&apos;。.
         /// </summary>
-        internal static string Option_VerboseDeprecated_cht {
+        public static string Option_VerboseDeprecated_cht {
             get {
                 return ResourceManager.GetString("Option_VerboseDeprecated_cht", resourceCulture);
             }
@@ -6417,7 +6417,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Možnost Podrobný se již nepoužívá. Použijte místo toho možnost Podrobnosti..
         /// </summary>
-        internal static string Option_VerboseDeprecated_csy {
+        public static string Option_VerboseDeprecated_csy {
             get {
                 return ResourceManager.GetString("Option_VerboseDeprecated_csy", resourceCulture);
             }
@@ -6426,7 +6426,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Option &quot;Verbose&quot; ist veraltet. Verwenden Sie stattdessen &quot;Verbosity&quot;..
         /// </summary>
-        internal static string Option_VerboseDeprecated_deu {
+        public static string Option_VerboseDeprecated_deu {
             get {
                 return ResourceManager.GetString("Option_VerboseDeprecated_deu", resourceCulture);
             }
@@ -6435,7 +6435,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La opción &apos;Verbose&apos; ha dejado de usarse. Use &apos;Verbosity&apos; en su lugar..
         /// </summary>
-        internal static string Option_VerboseDeprecated_esp {
+        public static string Option_VerboseDeprecated_esp {
             get {
                 return ResourceManager.GetString("Option_VerboseDeprecated_esp", resourceCulture);
             }
@@ -6444,7 +6444,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to L&apos;option &apos;Verbose&apos; a été dépréciée. Préférez plutôt &apos;Verbosity&apos;..
         /// </summary>
-        internal static string Option_VerboseDeprecated_fra {
+        public static string Option_VerboseDeprecated_fra {
             get {
                 return ResourceManager.GetString("Option_VerboseDeprecated_fra", resourceCulture);
             }
@@ -6453,7 +6453,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Opzione &apos;Verbose&apos; non approvata. Usare &apos;Verbosity&apos; invece..
         /// </summary>
-        internal static string Option_VerboseDeprecated_ita {
+        public static string Option_VerboseDeprecated_ita {
             get {
                 return ResourceManager.GetString("Option_VerboseDeprecated_ita", resourceCulture);
             }
@@ -6462,7 +6462,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to オプション &apos;Verbose&apos; は使用しないでください。代わりに &apos;Verbosity&apos; を使用してください。.
         /// </summary>
-        internal static string Option_VerboseDeprecated_jpn {
+        public static string Option_VerboseDeprecated_jpn {
             get {
                 return ResourceManager.GetString("Option_VerboseDeprecated_jpn", resourceCulture);
             }
@@ -6471,7 +6471,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;Verbose&apos; 옵션은 사용되지 않습니다. 대신 &apos;Verbosity&apos;를 사용하십시오..
         /// </summary>
-        internal static string Option_VerboseDeprecated_kor {
+        public static string Option_VerboseDeprecated_kor {
             get {
                 return ResourceManager.GetString("Option_VerboseDeprecated_kor", resourceCulture);
             }
@@ -6480,7 +6480,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Opcja „Verbose” jest przestarzała. Zamiast niej użyj opcji „Verbosity”..
         /// </summary>
-        internal static string Option_VerboseDeprecated_plk {
+        public static string Option_VerboseDeprecated_plk {
             get {
                 return ResourceManager.GetString("Option_VerboseDeprecated_plk", resourceCulture);
             }
@@ -6489,7 +6489,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to A opção &quot;Detalhe&quot; foi substituída. Use &quot;Detalhamento&quot; como alternativa..
         /// </summary>
-        internal static string Option_VerboseDeprecated_ptb {
+        public static string Option_VerboseDeprecated_ptb {
             get {
                 return ResourceManager.GetString("Option_VerboseDeprecated_ptb", resourceCulture);
             }
@@ -6498,7 +6498,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Параметр &quot;Verbose&quot; удален из этой версии. Вместо него используйте &quot;Verbosity&quot;..
         /// </summary>
-        internal static string Option_VerboseDeprecated_rus {
+        public static string Option_VerboseDeprecated_rus {
             get {
                 return ResourceManager.GetString("Option_VerboseDeprecated_rus", resourceCulture);
             }
@@ -6507,7 +6507,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ayrıntılı&apos; seçeneği kullanım dışı bırakılmış. Bunun yerine &apos;Ayrıntı Düzeyi&apos; seçimini kullanın..
         /// </summary>
-        internal static string Option_VerboseDeprecated_trk {
+        public static string Option_VerboseDeprecated_trk {
             get {
                 return ResourceManager.GetString("Option_VerboseDeprecated_trk", resourceCulture);
             }
@@ -6516,7 +6516,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [option] on &apos;{0}&apos; is invalid without a setter..
         /// </summary>
-        internal static string OptionInvalidWithoutSetter {
+        public static string OptionInvalidWithoutSetter {
             get {
                 return ResourceManager.GetString("OptionInvalidWithoutSetter", resourceCulture);
             }
@@ -6525,7 +6525,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to “{0}”上的 [option] 没有 setter，是无效的。.
         /// </summary>
-        internal static string OptionInvalidWithoutSetter_chs {
+        public static string OptionInvalidWithoutSetter_chs {
             get {
                 return ResourceManager.GetString("OptionInvalidWithoutSetter_chs", resourceCulture);
             }
@@ -6534,7 +6534,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; 上的 [選項] 因為沒有 Setter 因此無效。.
         /// </summary>
-        internal static string OptionInvalidWithoutSetter_cht {
+        public static string OptionInvalidWithoutSetter_cht {
             get {
                 return ResourceManager.GetString("OptionInvalidWithoutSetter_cht", resourceCulture);
             }
@@ -6543,7 +6543,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [možnost] pro {0} je bez metody Setter neplatná..
         /// </summary>
-        internal static string OptionInvalidWithoutSetter_csy {
+        public static string OptionInvalidWithoutSetter_csy {
             get {
                 return ResourceManager.GetString("OptionInvalidWithoutSetter_csy", resourceCulture);
             }
@@ -6552,7 +6552,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [Option] für &quot;{0}&quot; ist ohne einen Setter ungültig..
         /// </summary>
-        internal static string OptionInvalidWithoutSetter_deu {
+        public static string OptionInvalidWithoutSetter_deu {
             get {
                 return ResourceManager.GetString("OptionInvalidWithoutSetter_deu", resourceCulture);
             }
@@ -6561,7 +6561,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [option] en &apos;{0}&apos; no es válida si no se ha establecido de ningún modo..
         /// </summary>
-        internal static string OptionInvalidWithoutSetter_esp {
+        public static string OptionInvalidWithoutSetter_esp {
             get {
                 return ResourceManager.GetString("OptionInvalidWithoutSetter_esp", resourceCulture);
             }
@@ -6570,7 +6570,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [option] sur &apos;{0}&apos; n&apos;est pas valide sans un setter..
         /// </summary>
-        internal static string OptionInvalidWithoutSetter_fra {
+        public static string OptionInvalidWithoutSetter_fra {
             get {
                 return ResourceManager.GetString("OptionInvalidWithoutSetter_fra", resourceCulture);
             }
@@ -6579,7 +6579,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [option] su &apos;{0}&apos; non valido senza setter..
         /// </summary>
-        internal static string OptionInvalidWithoutSetter_ita {
+        public static string OptionInvalidWithoutSetter_ita {
             get {
                 return ResourceManager.GetString("OptionInvalidWithoutSetter_ita", resourceCulture);
             }
@@ -6588,7 +6588,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to セッターがない &apos;{0}&apos; の [option] は無効です。.
         /// </summary>
-        internal static string OptionInvalidWithoutSetter_jpn {
+        public static string OptionInvalidWithoutSetter_jpn {
             get {
                 return ResourceManager.GetString("OptionInvalidWithoutSetter_jpn", resourceCulture);
             }
@@ -6597,7 +6597,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to setter가 없으므로 &apos;{0}&apos;의 [옵션]이 잘못되었습니다..
         /// </summary>
-        internal static string OptionInvalidWithoutSetter_kor {
+        public static string OptionInvalidWithoutSetter_kor {
             get {
                 return ResourceManager.GetString("OptionInvalidWithoutSetter_kor", resourceCulture);
             }
@@ -6606,7 +6606,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Opcja [opcja] dla „{0}” jest nieprawidłowa bez metody ustawiającej..
         /// </summary>
-        internal static string OptionInvalidWithoutSetter_plk {
+        public static string OptionInvalidWithoutSetter_plk {
             get {
                 return ResourceManager.GetString("OptionInvalidWithoutSetter_plk", resourceCulture);
             }
@@ -6615,7 +6615,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [option] em &apos;{0}&apos; não é válido sem um setter..
         /// </summary>
-        internal static string OptionInvalidWithoutSetter_ptb {
+        public static string OptionInvalidWithoutSetter_ptb {
             get {
                 return ResourceManager.GetString("OptionInvalidWithoutSetter_ptb", resourceCulture);
             }
@@ -6624,7 +6624,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to [параметр] в &quot;{0}&quot; является недопустимым без метода задания значения..
         /// </summary>
-        internal static string OptionInvalidWithoutSetter_rus {
+        public static string OptionInvalidWithoutSetter_rus {
             get {
                 return ResourceManager.GetString("OptionInvalidWithoutSetter_rus", resourceCulture);
             }
@@ -6633,7 +6633,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; üzerindeki [option] ayarlayıcı olmadan geçersizdir..
         /// </summary>
-        internal static string OptionInvalidWithoutSetter_trk {
+        public static string OptionInvalidWithoutSetter_trk {
             get {
                 return ResourceManager.GetString("OptionInvalidWithoutSetter_trk", resourceCulture);
             }
@@ -6642,7 +6642,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Added file &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandAddedFile {
+        public static string PackageCommandAddedFile {
             get {
                 return ResourceManager.GetString("PackageCommandAddedFile", resourceCulture);
             }
@@ -6651,7 +6651,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已添加文件“{0}”。.
         /// </summary>
-        internal static string PackageCommandAddedFile_chs {
+        public static string PackageCommandAddedFile_chs {
             get {
                 return ResourceManager.GetString("PackageCommandAddedFile_chs", resourceCulture);
             }
@@ -6660,7 +6660,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已新增檔案 &apos;{0}&apos;。.
         /// </summary>
-        internal static string PackageCommandAddedFile_cht {
+        public static string PackageCommandAddedFile_cht {
             get {
                 return ResourceManager.GetString("PackageCommandAddedFile_cht", resourceCulture);
             }
@@ -6669,7 +6669,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Byl přidán soubor {0}..
         /// </summary>
-        internal static string PackageCommandAddedFile_csy {
+        public static string PackageCommandAddedFile_csy {
             get {
                 return ResourceManager.GetString("PackageCommandAddedFile_csy", resourceCulture);
             }
@@ -6678,7 +6678,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Datei &quot;{0}&quot; wurde hinzugefügt..
         /// </summary>
-        internal static string PackageCommandAddedFile_deu {
+        public static string PackageCommandAddedFile_deu {
             get {
                 return ResourceManager.GetString("PackageCommandAddedFile_deu", resourceCulture);
             }
@@ -6687,7 +6687,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Se ha agregado el archivo &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandAddedFile_esp {
+        public static string PackageCommandAddedFile_esp {
             get {
                 return ResourceManager.GetString("PackageCommandAddedFile_esp", resourceCulture);
             }
@@ -6696,7 +6696,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Fichier ajouté &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandAddedFile_fra {
+        public static string PackageCommandAddedFile_fra {
             get {
                 return ResourceManager.GetString("PackageCommandAddedFile_fra", resourceCulture);
             }
@@ -6705,7 +6705,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Aggiungere file &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandAddedFile_ita {
+        public static string PackageCommandAddedFile_ita {
             get {
                 return ResourceManager.GetString("PackageCommandAddedFile_ita", resourceCulture);
             }
@@ -6714,7 +6714,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to ファイル &apos;{0}&apos; が追加されました。.
         /// </summary>
-        internal static string PackageCommandAddedFile_jpn {
+        public static string PackageCommandAddedFile_jpn {
             get {
                 return ResourceManager.GetString("PackageCommandAddedFile_jpn", resourceCulture);
             }
@@ -6723,7 +6723,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; 파일을 추가했습니다..
         /// </summary>
-        internal static string PackageCommandAddedFile_kor {
+        public static string PackageCommandAddedFile_kor {
             get {
                 return ResourceManager.GetString("PackageCommandAddedFile_kor", resourceCulture);
             }
@@ -6732,7 +6732,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Dodano plik „{0}”..
         /// </summary>
-        internal static string PackageCommandAddedFile_plk {
+        public static string PackageCommandAddedFile_plk {
             get {
                 return ResourceManager.GetString("PackageCommandAddedFile_plk", resourceCulture);
             }
@@ -6741,7 +6741,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Arquivo adicionado &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandAddedFile_ptb {
+        public static string PackageCommandAddedFile_ptb {
             get {
                 return ResourceManager.GetString("PackageCommandAddedFile_ptb", resourceCulture);
             }
@@ -6750,7 +6750,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Добавлен файл &quot;{0}&quot;..
         /// </summary>
-        internal static string PackageCommandAddedFile_rus {
+        public static string PackageCommandAddedFile_rus {
             get {
                 return ResourceManager.GetString("PackageCommandAddedFile_rus", resourceCulture);
             }
@@ -6759,7 +6759,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; dosyası eklendi..
         /// </summary>
-        internal static string PackageCommandAddedFile_trk {
+        public static string PackageCommandAddedFile_trk {
             get {
                 return ResourceManager.GetString("PackageCommandAddedFile_trk", resourceCulture);
             }
@@ -6768,7 +6768,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Attempting to build package from &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildPackage {
+        public static string PackageCommandAttemptingToBuildPackage {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildPackage", resourceCulture);
             }
@@ -6777,7 +6777,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在尝试从“{0}”生成程序包。.
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildPackage_chs {
+        public static string PackageCommandAttemptingToBuildPackage_chs {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildPackage_chs", resourceCulture);
             }
@@ -6786,7 +6786,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在嘗試從 &apos;{0}&apos; 建置封裝。.
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildPackage_cht {
+        public static string PackageCommandAttemptingToBuildPackage_cht {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildPackage_cht", resourceCulture);
             }
@@ -6795,7 +6795,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Probíhá pokus o sestavení balíčku z {0}..
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildPackage_csy {
+        public static string PackageCommandAttemptingToBuildPackage_csy {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildPackage_csy", resourceCulture);
             }
@@ -6804,7 +6804,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Es wird versucht, das Paket aus &quot;{0}&quot; zu erstellen..
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildPackage_deu {
+        public static string PackageCommandAttemptingToBuildPackage_deu {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildPackage_deu", resourceCulture);
             }
@@ -6813,7 +6813,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Intentando compilar el paquete desde &apos;{0}&apos;. .
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildPackage_esp {
+        public static string PackageCommandAttemptingToBuildPackage_esp {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildPackage_esp", resourceCulture);
             }
@@ -6822,7 +6822,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Tentative de création du package depuis &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildPackage_fra {
+        public static string PackageCommandAttemptingToBuildPackage_fra {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildPackage_fra", resourceCulture);
             }
@@ -6831,7 +6831,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Componendo pacchetto da&apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildPackage_ita {
+        public static string PackageCommandAttemptingToBuildPackage_ita {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildPackage_ita", resourceCulture);
             }
@@ -6840,7 +6840,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; からパッケージをビルドしています。.
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildPackage_jpn {
+        public static string PackageCommandAttemptingToBuildPackage_jpn {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildPackage_jpn", resourceCulture);
             }
@@ -6849,7 +6849,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos;에서 패키지를 빌드하고 있습니다..
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildPackage_kor {
+        public static string PackageCommandAttemptingToBuildPackage_kor {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildPackage_kor", resourceCulture);
             }
@@ -6858,7 +6858,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Próba skompilowania pakietu z „{0}”..
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildPackage_plk {
+        public static string PackageCommandAttemptingToBuildPackage_plk {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildPackage_plk", resourceCulture);
             }
@@ -6867,7 +6867,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Tentando construir o pacote de &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildPackage_ptb {
+        public static string PackageCommandAttemptingToBuildPackage_ptb {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildPackage_ptb", resourceCulture);
             }
@@ -6876,7 +6876,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Попытка выполнить сборку пакета из &quot;{0}&quot;..
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildPackage_rus {
+        public static string PackageCommandAttemptingToBuildPackage_rus {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildPackage_rus", resourceCulture);
             }
@@ -6885,7 +6885,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Paket &apos;{0}&apos; konumundan oluşturulmaya çalışılıyor. .
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildPackage_trk {
+        public static string PackageCommandAttemptingToBuildPackage_trk {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildPackage_trk", resourceCulture);
             }
@@ -6894,7 +6894,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Attempting to build symbols package for &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildSymbolsPackage {
+        public static string PackageCommandAttemptingToBuildSymbolsPackage {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildSymbolsPackage", resourceCulture);
             }
@@ -6903,7 +6903,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在尝试为“{0}”生成符号程序包。.
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildSymbolsPackage_chs {
+        public static string PackageCommandAttemptingToBuildSymbolsPackage_chs {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildSymbolsPackage_chs", resourceCulture);
             }
@@ -6912,7 +6912,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在嘗試為 &apos;{0}&apos; 建置符號封裝。.
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildSymbolsPackage_cht {
+        public static string PackageCommandAttemptingToBuildSymbolsPackage_cht {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildSymbolsPackage_cht", resourceCulture);
             }
@@ -6921,7 +6921,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Probíhá pokus o sestavení balíčku symbolů pro {0}..
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildSymbolsPackage_csy {
+        public static string PackageCommandAttemptingToBuildSymbolsPackage_csy {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildSymbolsPackage_csy", resourceCulture);
             }
@@ -6930,7 +6930,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Es wird versucht, das Symbolpaket für &quot;{0}&quot; zu erstellen..
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildSymbolsPackage_deu {
+        public static string PackageCommandAttemptingToBuildSymbolsPackage_deu {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildSymbolsPackage_deu", resourceCulture);
             }
@@ -6939,7 +6939,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Intentando compilar el paquete de símbolos para &apos;{0}&apos;. .
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildSymbolsPackage_esp {
+        public static string PackageCommandAttemptingToBuildSymbolsPackage_esp {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildSymbolsPackage_esp", resourceCulture);
             }
@@ -6948,7 +6948,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Tentative de création du package de symboles pour &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildSymbolsPackage_fra {
+        public static string PackageCommandAttemptingToBuildSymbolsPackage_fra {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildSymbolsPackage_fra", resourceCulture);
             }
@@ -6957,7 +6957,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Componendo pacchetti simboli &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildSymbolsPackage_ita {
+        public static string PackageCommandAttemptingToBuildSymbolsPackage_ita {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildSymbolsPackage_ita", resourceCulture);
             }
@@ -6966,7 +6966,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; のシンボル パッケージをビルドしています。.
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildSymbolsPackage_jpn {
+        public static string PackageCommandAttemptingToBuildSymbolsPackage_jpn {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildSymbolsPackage_jpn", resourceCulture);
             }
@@ -6975,7 +6975,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos;에 대한 기호 패키지를 빌드하고 있습니다..
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildSymbolsPackage_kor {
+        public static string PackageCommandAttemptingToBuildSymbolsPackage_kor {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildSymbolsPackage_kor", resourceCulture);
             }
@@ -6984,7 +6984,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Próba skompilowania pakietu symboli dla „{0}”..
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildSymbolsPackage_plk {
+        public static string PackageCommandAttemptingToBuildSymbolsPackage_plk {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildSymbolsPackage_plk", resourceCulture);
             }
@@ -6993,7 +6993,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Tentando construir o pacote de símbolos para &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildSymbolsPackage_ptb {
+        public static string PackageCommandAttemptingToBuildSymbolsPackage_ptb {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildSymbolsPackage_ptb", resourceCulture);
             }
@@ -7002,7 +7002,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Попытка выполнить сборку пакета символов для &quot;{0}&quot;..
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildSymbolsPackage_rus {
+        public static string PackageCommandAttemptingToBuildSymbolsPackage_rus {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildSymbolsPackage_rus", resourceCulture);
             }
@@ -7011,7 +7011,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; için simge paketi oluşturulmaya çalışılıyor..
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildSymbolsPackage_trk {
+        public static string PackageCommandAttemptingToBuildSymbolsPackage_trk {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildSymbolsPackage_trk", resourceCulture);
             }
@@ -7020,7 +7020,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to File from dependency is changed. Adding file &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsChanged {
+        public static string PackageCommandFileFromDependencyIsChanged {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsChanged", resourceCulture);
             }
@@ -7029,7 +7029,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 依赖关系中的文件已更改。正在添加文件“{0}”。.
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsChanged_chs {
+        public static string PackageCommandFileFromDependencyIsChanged_chs {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsChanged_chs", resourceCulture);
             }
@@ -7038,7 +7038,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 相依性中的檔案已變更。正在新增檔案 &apos;{0}&apos;。.
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsChanged_cht {
+        public static string PackageCommandFileFromDependencyIsChanged_cht {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsChanged_cht", resourceCulture);
             }
@@ -7047,7 +7047,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Soubor ze závislosti se změnil. Probíhá přidávání souboru {0}..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsChanged_csy {
+        public static string PackageCommandFileFromDependencyIsChanged_csy {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsChanged_csy", resourceCulture);
             }
@@ -7056,7 +7056,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Datei aus der Abhängigkeit wurde geändert. Die Datei &quot;{0}&quot; wird hinzugefügt..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsChanged_deu {
+        public static string PackageCommandFileFromDependencyIsChanged_deu {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsChanged_deu", resourceCulture);
             }
@@ -7065,7 +7065,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Se ha cambiado el archivo de la dependencia. Agregando archivo &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsChanged_esp {
+        public static string PackageCommandFileFromDependencyIsChanged_esp {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsChanged_esp", resourceCulture);
             }
@@ -7074,7 +7074,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Le @@@fichier de dépendance est modifié. Ajout du fichier &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsChanged_fra {
+        public static string PackageCommandFileFromDependencyIsChanged_fra {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsChanged_fra", resourceCulture);
             }
@@ -7083,7 +7083,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to File da dipendenza modificato. Aggiungere file &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsChanged_ita {
+        public static string PackageCommandFileFromDependencyIsChanged_ita {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsChanged_ita", resourceCulture);
             }
@@ -7092,7 +7092,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 依存関係のファイルが変更されます。ファイル &apos;{0}&apos; を追加しています。.
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsChanged_jpn {
+        public static string PackageCommandFileFromDependencyIsChanged_jpn {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsChanged_jpn", resourceCulture);
             }
@@ -7101,7 +7101,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 종속성에서 파일이 변경되었습니다. &apos;{0}&apos; 파일을 추가하고 있습니다..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsChanged_kor {
+        public static string PackageCommandFileFromDependencyIsChanged_kor {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsChanged_kor", resourceCulture);
             }
@@ -7110,7 +7110,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Plik z zależności został zmieniony. Dodawanie pliku „{0}”..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsChanged_plk {
+        public static string PackageCommandFileFromDependencyIsChanged_plk {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsChanged_plk", resourceCulture);
             }
@@ -7119,7 +7119,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to O arquivo de dependência foi alterado. Adicionando o arquivo &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsChanged_ptb {
+        public static string PackageCommandFileFromDependencyIsChanged_ptb {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsChanged_ptb", resourceCulture);
             }
@@ -7128,7 +7128,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Файл из зависимости был изменен. Добавление файла &quot;{0}&quot;..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsChanged_rus {
+        public static string PackageCommandFileFromDependencyIsChanged_rus {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsChanged_rus", resourceCulture);
             }
@@ -7137,7 +7137,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Bağımlılık dosyası değiştirildi. &apos;{0}&apos; dosyası ekleniyor..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsChanged_trk {
+        public static string PackageCommandFileFromDependencyIsChanged_trk {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsChanged_trk", resourceCulture);
             }
@@ -7146,7 +7146,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to File from dependency is not changed. File &apos;{0}&apos; is not added..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsNotChanged {
+        public static string PackageCommandFileFromDependencyIsNotChanged {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsNotChanged", resourceCulture);
             }
@@ -7155,7 +7155,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 依赖关系中的文件未更改。未添加文件“{0}”。.
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsNotChanged_chs {
+        public static string PackageCommandFileFromDependencyIsNotChanged_chs {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsNotChanged_chs", resourceCulture);
             }
@@ -7164,7 +7164,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 相依性中的檔案並未變更。並未新增檔案 &apos;{0}&apos;。.
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsNotChanged_cht {
+        public static string PackageCommandFileFromDependencyIsNotChanged_cht {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsNotChanged_cht", resourceCulture);
             }
@@ -7173,7 +7173,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Soubor ze závislosti se nezměnil. Soubor {0} není přidán..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsNotChanged_csy {
+        public static string PackageCommandFileFromDependencyIsNotChanged_csy {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsNotChanged_csy", resourceCulture);
             }
@@ -7182,7 +7182,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Datei aus der Abhängigkeit wurde nicht geändert. Die Datei &quot;{0}&quot; wird nicht hinzugefügt..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsNotChanged_deu {
+        public static string PackageCommandFileFromDependencyIsNotChanged_deu {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsNotChanged_deu", resourceCulture);
             }
@@ -7191,7 +7191,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se ha cambiado el archivo de la dependencia. El archivo &apos;{0}&apos; no se ha agregado..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsNotChanged_esp {
+        public static string PackageCommandFileFromDependencyIsNotChanged_esp {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsNotChanged_esp", resourceCulture);
             }
@@ -7200,7 +7200,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Le @@@fichier de dépendance n&apos;a pas été modifié. Le fichier &apos;{0}&apos; n&apos;a pas été ajouté..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsNotChanged_fra {
+        public static string PackageCommandFileFromDependencyIsNotChanged_fra {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsNotChanged_fra", resourceCulture);
             }
@@ -7209,7 +7209,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to File da dipendenza non modificato. File &apos;{0}&apos; non aggiunto..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsNotChanged_ita {
+        public static string PackageCommandFileFromDependencyIsNotChanged_ita {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsNotChanged_ita", resourceCulture);
             }
@@ -7218,7 +7218,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 依存関係のファイルは変更されません。ファイル &apos;{0}&apos; は追加されません。.
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsNotChanged_jpn {
+        public static string PackageCommandFileFromDependencyIsNotChanged_jpn {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsNotChanged_jpn", resourceCulture);
             }
@@ -7227,7 +7227,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 종속성에서 파일이 변경되지 않았습니다. &apos;{0}&apos; 파일이 추가되지 않습니다..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsNotChanged_kor {
+        public static string PackageCommandFileFromDependencyIsNotChanged_kor {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsNotChanged_kor", resourceCulture);
             }
@@ -7236,7 +7236,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Plik z zależności nie został zmieniony. Nie dodano pliku „{0}”..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsNotChanged_plk {
+        public static string PackageCommandFileFromDependencyIsNotChanged_plk {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsNotChanged_plk", resourceCulture);
             }
@@ -7245,7 +7245,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to O arquivo da dependência não foi alterado. O arquivo &apos;{0}&apos; não foi adicionado..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsNotChanged_ptb {
+        public static string PackageCommandFileFromDependencyIsNotChanged_ptb {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsNotChanged_ptb", resourceCulture);
             }
@@ -7254,7 +7254,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Файл из зависимости не был изменен. Файл &quot;{0}&quot; не добавлен..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsNotChanged_rus {
+        public static string PackageCommandFileFromDependencyIsNotChanged_rus {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsNotChanged_rus", resourceCulture);
             }
@@ -7263,7 +7263,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Bağımlılık dosyası değiştirilmedi. &apos;{0}&apos; dosyası eklenmedi..
         /// </summary>
-        internal static string PackageCommandFileFromDependencyIsNotChanged_trk {
+        public static string PackageCommandFileFromDependencyIsNotChanged_trk {
             get {
                 return ResourceManager.GetString("PackageCommandFileFromDependencyIsNotChanged_trk", resourceCulture);
             }
@@ -7272,7 +7272,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to The value of MinClientVersion argument is not a valid version..
         /// </summary>
-        internal static string PackageCommandInvalidMinClientVersion {
+        public static string PackageCommandInvalidMinClientVersion {
             get {
                 return ResourceManager.GetString("PackageCommandInvalidMinClientVersion", resourceCulture);
             }
@@ -7281,7 +7281,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to MinClientVersion 参数的值不是有效版本。.
         /// </summary>
-        internal static string PackageCommandInvalidMinClientVersion_chs {
+        public static string PackageCommandInvalidMinClientVersion_chs {
             get {
                 return ResourceManager.GetString("PackageCommandInvalidMinClientVersion_chs", resourceCulture);
             }
@@ -7290,7 +7290,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to MinClientVersion 引數的值不是有效版本。.
         /// </summary>
-        internal static string PackageCommandInvalidMinClientVersion_cht {
+        public static string PackageCommandInvalidMinClientVersion_cht {
             get {
                 return ResourceManager.GetString("PackageCommandInvalidMinClientVersion_cht", resourceCulture);
             }
@@ -7299,7 +7299,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Hodnotou argumentu MinClientVersion není platná verze..
         /// </summary>
-        internal static string PackageCommandInvalidMinClientVersion_csy {
+        public static string PackageCommandInvalidMinClientVersion_csy {
             get {
                 return ResourceManager.GetString("PackageCommandInvalidMinClientVersion_csy", resourceCulture);
             }
@@ -7308,7 +7308,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Der Wert des Arguments &quot;MinClientVersion&quot; weist keine gültige Version auf..
         /// </summary>
-        internal static string PackageCommandInvalidMinClientVersion_deu {
+        public static string PackageCommandInvalidMinClientVersion_deu {
             get {
                 return ResourceManager.GetString("PackageCommandInvalidMinClientVersion_deu", resourceCulture);
             }
@@ -7317,7 +7317,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to El valor del argumento de MinClientVersion no es una versión válida..
         /// </summary>
-        internal static string PackageCommandInvalidMinClientVersion_esp {
+        public static string PackageCommandInvalidMinClientVersion_esp {
             get {
                 return ResourceManager.GetString("PackageCommandInvalidMinClientVersion_esp", resourceCulture);
             }
@@ -7326,7 +7326,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La version de la valeur de l&apos;argument MinClientVersion n&apos;est pas valide..
         /// </summary>
-        internal static string PackageCommandInvalidMinClientVersion_fra {
+        public static string PackageCommandInvalidMinClientVersion_fra {
             get {
                 return ResourceManager.GetString("PackageCommandInvalidMinClientVersion_fra", resourceCulture);
             }
@@ -7335,7 +7335,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Il valore dell&apos;argomento MinClientVersion non ha una versione valida..
         /// </summary>
-        internal static string PackageCommandInvalidMinClientVersion_ita {
+        public static string PackageCommandInvalidMinClientVersion_ita {
             get {
                 return ResourceManager.GetString("PackageCommandInvalidMinClientVersion_ita", resourceCulture);
             }
@@ -7344,7 +7344,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to MinClientVersion 引数の値は有効なバージョンではありません。.
         /// </summary>
-        internal static string PackageCommandInvalidMinClientVersion_jpn {
+        public static string PackageCommandInvalidMinClientVersion_jpn {
             get {
                 return ResourceManager.GetString("PackageCommandInvalidMinClientVersion_jpn", resourceCulture);
             }
@@ -7353,7 +7353,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to MinClientVersion 인수 값은 올바른 버전이 아닙니다..
         /// </summary>
-        internal static string PackageCommandInvalidMinClientVersion_kor {
+        public static string PackageCommandInvalidMinClientVersion_kor {
             get {
                 return ResourceManager.GetString("PackageCommandInvalidMinClientVersion_kor", resourceCulture);
             }
@@ -7362,7 +7362,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Wartość argumentu MinClientVersion nie jest prawidłową wersją..
         /// </summary>
-        internal static string PackageCommandInvalidMinClientVersion_plk {
+        public static string PackageCommandInvalidMinClientVersion_plk {
             get {
                 return ResourceManager.GetString("PackageCommandInvalidMinClientVersion_plk", resourceCulture);
             }
@@ -7371,7 +7371,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to O valor do argumento MinClientVersion não é uma versão válida..
         /// </summary>
-        internal static string PackageCommandInvalidMinClientVersion_ptb {
+        public static string PackageCommandInvalidMinClientVersion_ptb {
             get {
                 return ResourceManager.GetString("PackageCommandInvalidMinClientVersion_ptb", resourceCulture);
             }
@@ -7380,7 +7380,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Недопустимая версия значения аргумента MinClientVersion..
         /// </summary>
-        internal static string PackageCommandInvalidMinClientVersion_rus {
+        public static string PackageCommandInvalidMinClientVersion_rus {
             get {
                 return ResourceManager.GetString("PackageCommandInvalidMinClientVersion_rus", resourceCulture);
             }
@@ -7389,7 +7389,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to MinClientVersion bağımsız değişken değeri geçerli bir sürüm değildir..
         /// </summary>
-        internal static string PackageCommandInvalidMinClientVersion_trk {
+        public static string PackageCommandInvalidMinClientVersion_trk {
             get {
                 return ResourceManager.GetString("PackageCommandInvalidMinClientVersion_trk", resourceCulture);
             }
@@ -7398,7 +7398,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Description: {0}.
         /// </summary>
-        internal static string PackageCommandIssueDescription {
+        public static string PackageCommandIssueDescription {
             get {
                 return ResourceManager.GetString("PackageCommandIssueDescription", resourceCulture);
             }
@@ -7407,7 +7407,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 说明: {0}.
         /// </summary>
-        internal static string PackageCommandIssueDescription_chs {
+        public static string PackageCommandIssueDescription_chs {
             get {
                 return ResourceManager.GetString("PackageCommandIssueDescription_chs", resourceCulture);
             }
@@ -7416,7 +7416,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 描述: {0}.
         /// </summary>
-        internal static string PackageCommandIssueDescription_cht {
+        public static string PackageCommandIssueDescription_cht {
             get {
                 return ResourceManager.GetString("PackageCommandIssueDescription_cht", resourceCulture);
             }
@@ -7425,7 +7425,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Popis: {0}.
         /// </summary>
-        internal static string PackageCommandIssueDescription_csy {
+        public static string PackageCommandIssueDescription_csy {
             get {
                 return ResourceManager.GetString("PackageCommandIssueDescription_csy", resourceCulture);
             }
@@ -7434,7 +7434,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Beschreibung: {0}.
         /// </summary>
-        internal static string PackageCommandIssueDescription_deu {
+        public static string PackageCommandIssueDescription_deu {
             get {
                 return ResourceManager.GetString("PackageCommandIssueDescription_deu", resourceCulture);
             }
@@ -7443,7 +7443,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Descripción: {0}.
         /// </summary>
-        internal static string PackageCommandIssueDescription_esp {
+        public static string PackageCommandIssueDescription_esp {
             get {
                 return ResourceManager.GetString("PackageCommandIssueDescription_esp", resourceCulture);
             }
@@ -7452,7 +7452,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Description : {0}.
         /// </summary>
-        internal static string PackageCommandIssueDescription_fra {
+        public static string PackageCommandIssueDescription_fra {
             get {
                 return ResourceManager.GetString("PackageCommandIssueDescription_fra", resourceCulture);
             }
@@ -7461,7 +7461,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Descrizione: {0}.
         /// </summary>
-        internal static string PackageCommandIssueDescription_ita {
+        public static string PackageCommandIssueDescription_ita {
             get {
                 return ResourceManager.GetString("PackageCommandIssueDescription_ita", resourceCulture);
             }
@@ -7470,7 +7470,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 説明: {0}.
         /// </summary>
-        internal static string PackageCommandIssueDescription_jpn {
+        public static string PackageCommandIssueDescription_jpn {
             get {
                 return ResourceManager.GetString("PackageCommandIssueDescription_jpn", resourceCulture);
             }
@@ -7479,7 +7479,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 설명: {0}.
         /// </summary>
-        internal static string PackageCommandIssueDescription_kor {
+        public static string PackageCommandIssueDescription_kor {
             get {
                 return ResourceManager.GetString("PackageCommandIssueDescription_kor", resourceCulture);
             }
@@ -7488,7 +7488,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Opis: {0}.
         /// </summary>
-        internal static string PackageCommandIssueDescription_plk {
+        public static string PackageCommandIssueDescription_plk {
             get {
                 return ResourceManager.GetString("PackageCommandIssueDescription_plk", resourceCulture);
             }
@@ -7497,7 +7497,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Descrição: {0}.
         /// </summary>
-        internal static string PackageCommandIssueDescription_ptb {
+        public static string PackageCommandIssueDescription_ptb {
             get {
                 return ResourceManager.GetString("PackageCommandIssueDescription_ptb", resourceCulture);
             }
@@ -7506,7 +7506,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Описание: {0}.
         /// </summary>
-        internal static string PackageCommandIssueDescription_rus {
+        public static string PackageCommandIssueDescription_rus {
             get {
                 return ResourceManager.GetString("PackageCommandIssueDescription_rus", resourceCulture);
             }
@@ -7515,7 +7515,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Açıklama: {0}.
         /// </summary>
-        internal static string PackageCommandIssueDescription_trk {
+        public static string PackageCommandIssueDescription_trk {
             get {
                 return ResourceManager.GetString("PackageCommandIssueDescription_trk", resourceCulture);
             }
@@ -7524,7 +7524,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Solution: {0}.
         /// </summary>
-        internal static string PackageCommandIssueSolution {
+        public static string PackageCommandIssueSolution {
             get {
                 return ResourceManager.GetString("PackageCommandIssueSolution", resourceCulture);
             }
@@ -7533,7 +7533,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 解决方案: {0}.
         /// </summary>
-        internal static string PackageCommandIssueSolution_chs {
+        public static string PackageCommandIssueSolution_chs {
             get {
                 return ResourceManager.GetString("PackageCommandIssueSolution_chs", resourceCulture);
             }
@@ -7542,7 +7542,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 方案: {0}.
         /// </summary>
-        internal static string PackageCommandIssueSolution_cht {
+        public static string PackageCommandIssueSolution_cht {
             get {
                 return ResourceManager.GetString("PackageCommandIssueSolution_cht", resourceCulture);
             }
@@ -7551,7 +7551,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Řešení: {0}.
         /// </summary>
-        internal static string PackageCommandIssueSolution_csy {
+        public static string PackageCommandIssueSolution_csy {
             get {
                 return ResourceManager.GetString("PackageCommandIssueSolution_csy", resourceCulture);
             }
@@ -7560,7 +7560,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Projekt: {0}.
         /// </summary>
-        internal static string PackageCommandIssueSolution_deu {
+        public static string PackageCommandIssueSolution_deu {
             get {
                 return ResourceManager.GetString("PackageCommandIssueSolution_deu", resourceCulture);
             }
@@ -7569,7 +7569,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Solución: {0}.
         /// </summary>
-        internal static string PackageCommandIssueSolution_esp {
+        public static string PackageCommandIssueSolution_esp {
             get {
                 return ResourceManager.GetString("PackageCommandIssueSolution_esp", resourceCulture);
             }
@@ -7578,7 +7578,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Solution : {0}.
         /// </summary>
-        internal static string PackageCommandIssueSolution_fra {
+        public static string PackageCommandIssueSolution_fra {
             get {
                 return ResourceManager.GetString("PackageCommandIssueSolution_fra", resourceCulture);
             }
@@ -7587,7 +7587,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Soluzione: {0}.
         /// </summary>
-        internal static string PackageCommandIssueSolution_ita {
+        public static string PackageCommandIssueSolution_ita {
             get {
                 return ResourceManager.GetString("PackageCommandIssueSolution_ita", resourceCulture);
             }
@@ -7596,7 +7596,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to ソリューション: {0}.
         /// </summary>
-        internal static string PackageCommandIssueSolution_jpn {
+        public static string PackageCommandIssueSolution_jpn {
             get {
                 return ResourceManager.GetString("PackageCommandIssueSolution_jpn", resourceCulture);
             }
@@ -7605,7 +7605,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 솔루션: {0}.
         /// </summary>
-        internal static string PackageCommandIssueSolution_kor {
+        public static string PackageCommandIssueSolution_kor {
             get {
                 return ResourceManager.GetString("PackageCommandIssueSolution_kor", resourceCulture);
             }
@@ -7614,7 +7614,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Rozwiązanie: {0}.
         /// </summary>
-        internal static string PackageCommandIssueSolution_plk {
+        public static string PackageCommandIssueSolution_plk {
             get {
                 return ResourceManager.GetString("PackageCommandIssueSolution_plk", resourceCulture);
             }
@@ -7623,7 +7623,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Solução: {0}.
         /// </summary>
-        internal static string PackageCommandIssueSolution_ptb {
+        public static string PackageCommandIssueSolution_ptb {
             get {
                 return ResourceManager.GetString("PackageCommandIssueSolution_ptb", resourceCulture);
             }
@@ -7632,7 +7632,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Решение: {0}.
         /// </summary>
-        internal static string PackageCommandIssueSolution_rus {
+        public static string PackageCommandIssueSolution_rus {
             get {
                 return ResourceManager.GetString("PackageCommandIssueSolution_rus", resourceCulture);
             }
@@ -7641,7 +7641,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Çözüm: {0}.
         /// </summary>
-        internal static string PackageCommandIssueSolution_trk {
+        public static string PackageCommandIssueSolution_trk {
             get {
                 return ResourceManager.GetString("PackageCommandIssueSolution_trk", resourceCulture);
             }
@@ -7650,7 +7650,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Issue: {0}.
         /// </summary>
-        internal static string PackageCommandIssueTitle {
+        public static string PackageCommandIssueTitle {
             get {
                 return ResourceManager.GetString("PackageCommandIssueTitle", resourceCulture);
             }
@@ -7659,7 +7659,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 问题: {0}.
         /// </summary>
-        internal static string PackageCommandIssueTitle_chs {
+        public static string PackageCommandIssueTitle_chs {
             get {
                 return ResourceManager.GetString("PackageCommandIssueTitle_chs", resourceCulture);
             }
@@ -7668,7 +7668,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 問題: {0}.
         /// </summary>
-        internal static string PackageCommandIssueTitle_cht {
+        public static string PackageCommandIssueTitle_cht {
             get {
                 return ResourceManager.GetString("PackageCommandIssueTitle_cht", resourceCulture);
             }
@@ -7677,7 +7677,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Problém: {0}.
         /// </summary>
-        internal static string PackageCommandIssueTitle_csy {
+        public static string PackageCommandIssueTitle_csy {
             get {
                 return ResourceManager.GetString("PackageCommandIssueTitle_csy", resourceCulture);
             }
@@ -7686,7 +7686,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Problem: {0}.
         /// </summary>
-        internal static string PackageCommandIssueTitle_deu {
+        public static string PackageCommandIssueTitle_deu {
             get {
                 return ResourceManager.GetString("PackageCommandIssueTitle_deu", resourceCulture);
             }
@@ -7695,7 +7695,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Problema: {0}.
         /// </summary>
-        internal static string PackageCommandIssueTitle_esp {
+        public static string PackageCommandIssueTitle_esp {
             get {
                 return ResourceManager.GetString("PackageCommandIssueTitle_esp", resourceCulture);
             }
@@ -7704,7 +7704,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Problème : {0}.
         /// </summary>
-        internal static string PackageCommandIssueTitle_fra {
+        public static string PackageCommandIssueTitle_fra {
             get {
                 return ResourceManager.GetString("PackageCommandIssueTitle_fra", resourceCulture);
             }
@@ -7713,7 +7713,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Versione: {0}.
         /// </summary>
-        internal static string PackageCommandIssueTitle_ita {
+        public static string PackageCommandIssueTitle_ita {
             get {
                 return ResourceManager.GetString("PackageCommandIssueTitle_ita", resourceCulture);
             }
@@ -7722,7 +7722,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 問題: {0}.
         /// </summary>
-        internal static string PackageCommandIssueTitle_jpn {
+        public static string PackageCommandIssueTitle_jpn {
             get {
                 return ResourceManager.GetString("PackageCommandIssueTitle_jpn", resourceCulture);
             }
@@ -7731,7 +7731,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 문제: {0}.
         /// </summary>
-        internal static string PackageCommandIssueTitle_kor {
+        public static string PackageCommandIssueTitle_kor {
             get {
                 return ResourceManager.GetString("PackageCommandIssueTitle_kor", resourceCulture);
             }
@@ -7740,7 +7740,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Problem: {0}.
         /// </summary>
-        internal static string PackageCommandIssueTitle_plk {
+        public static string PackageCommandIssueTitle_plk {
             get {
                 return ResourceManager.GetString("PackageCommandIssueTitle_plk", resourceCulture);
             }
@@ -7749,7 +7749,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Edição: {0}.
         /// </summary>
-        internal static string PackageCommandIssueTitle_ptb {
+        public static string PackageCommandIssueTitle_ptb {
             get {
                 return ResourceManager.GetString("PackageCommandIssueTitle_ptb", resourceCulture);
             }
@@ -7758,7 +7758,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Проблема: {0}.
         /// </summary>
-        internal static string PackageCommandIssueTitle_rus {
+        public static string PackageCommandIssueTitle_rus {
             get {
                 return ResourceManager.GetString("PackageCommandIssueTitle_rus", resourceCulture);
             }
@@ -7767,7 +7767,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Sorun: {0}.
         /// </summary>
-        internal static string PackageCommandIssueTitle_trk {
+        public static string PackageCommandIssueTitle_trk {
             get {
                 return ResourceManager.GetString("PackageCommandIssueTitle_trk", resourceCulture);
             }
@@ -7776,7 +7776,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Failed to build package. Ensure &apos;{0}&apos; includes assembly files. For help on building symbols package, visit {1}..
         /// </summary>
-        internal static string PackageCommandNoFilesForLibPackage {
+        public static string PackageCommandNoFilesForLibPackage {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForLibPackage", resourceCulture);
             }
@@ -7785,7 +7785,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 无法生成程序包。请确保“{0}”包括程序集文件。有关生成符号程序包的帮助，请访问 {1}。.
         /// </summary>
-        internal static string PackageCommandNoFilesForLibPackage_chs {
+        public static string PackageCommandNoFilesForLibPackage_chs {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForLibPackage_chs", resourceCulture);
             }
@@ -7794,7 +7794,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 無法建置封裝。確定 &apos;{0}&apos; 包含組件檔案。如需建置符號封裝的說明，請造訪 {1}。.
         /// </summary>
-        internal static string PackageCommandNoFilesForLibPackage_cht {
+        public static string PackageCommandNoFilesForLibPackage_cht {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForLibPackage_cht", resourceCulture);
             }
@@ -7803,7 +7803,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Sestavení balíčku se nezdařilo. Ověřte, zda {0} zahrnuje soubory sestavení. Nápovědu týkající se sestavení balíčku symbolů naleznete na webu {1}..
         /// </summary>
-        internal static string PackageCommandNoFilesForLibPackage_csy {
+        public static string PackageCommandNoFilesForLibPackage_csy {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForLibPackage_csy", resourceCulture);
             }
@@ -7812,7 +7812,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Fehler beim Erstellen des Pakets. Stellen Sie sicher, dass &quot;{0}&quot; Assemblydateien enthält. Hilfe zum Erstellen eines Symbolpakets finden Sie unter {1}..
         /// </summary>
-        internal static string PackageCommandNoFilesForLibPackage_deu {
+        public static string PackageCommandNoFilesForLibPackage_deu {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForLibPackage_deu", resourceCulture);
             }
@@ -7821,7 +7821,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Error al compilar el paquete. Asegúrese de que &apos;{0}&apos; incluye los archivos de ensamblado. Para obtener ayuda sobre la compilación de paquetes de símbolos, visite {1}..
         /// </summary>
-        internal static string PackageCommandNoFilesForLibPackage_esp {
+        public static string PackageCommandNoFilesForLibPackage_esp {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForLibPackage_esp", resourceCulture);
             }
@@ -7830,7 +7830,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Échec de la création du package. Assurez-vous que &apos;{0}&apos; inclut les fichiers d&apos;assembly. Pour obtenir l&apos;aide relative à la création d&apos;un package de symboles, visitez {1}..
         /// </summary>
-        internal static string PackageCommandNoFilesForLibPackage_fra {
+        public static string PackageCommandNoFilesForLibPackage_fra {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForLibPackage_fra", resourceCulture);
             }
@@ -7839,7 +7839,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossibile impostare package. Assicurarsi che &apos;{0}&apos; include i file di assemblaggio. Per aiuto sull&apos;impostazione dei simboli, visitare {1}..
         /// </summary>
-        internal static string PackageCommandNoFilesForLibPackage_ita {
+        public static string PackageCommandNoFilesForLibPackage_ita {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForLibPackage_ita", resourceCulture);
             }
@@ -7848,7 +7848,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to パッケージをビルドできませんでした。&apos;{0}&apos; にアセンブリ ファイルが含まれることを確認してください。シンボル パッケージのビルド方法については、{1} を参照してください。.
         /// </summary>
-        internal static string PackageCommandNoFilesForLibPackage_jpn {
+        public static string PackageCommandNoFilesForLibPackage_jpn {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForLibPackage_jpn", resourceCulture);
             }
@@ -7857,7 +7857,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 패키지를 빌드하지 못했습니다. &apos;{0}&apos;에 어셈블리 파일이 있는지 확인하십시오. 기호 패키지를 빌드하는 방법에 대한 도움말은 {1}을(를) 참조하십시오..
         /// </summary>
-        internal static string PackageCommandNoFilesForLibPackage_kor {
+        public static string PackageCommandNoFilesForLibPackage_kor {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForLibPackage_kor", resourceCulture);
             }
@@ -7866,7 +7866,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie można skompilować pakietu. Upewnij się, że „{0}” zawiera pliki zestawów. Aby uzyskać pomoc na temat kompilowania pakietów symboli, odwiedź {1}..
         /// </summary>
-        internal static string PackageCommandNoFilesForLibPackage_plk {
+        public static string PackageCommandNoFilesForLibPackage_plk {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForLibPackage_plk", resourceCulture);
             }
@@ -7875,7 +7875,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Falha ao construir pacote. Verifique se  &apos;{0}&apos; inclui arquivos de assembly. Para ajudar a construir pacotes de símbolos, visite {1}..
         /// </summary>
-        internal static string PackageCommandNoFilesForLibPackage_ptb {
+        public static string PackageCommandNoFilesForLibPackage_ptb {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForLibPackage_ptb", resourceCulture);
             }
@@ -7884,7 +7884,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Не удалось выполнить сборку пакета. Убедитесь, что &quot;{0}&quot; содержит файлы сборки. Справку о выполнении сборки пакета символов см. по адресу: {1}..
         /// </summary>
-        internal static string PackageCommandNoFilesForLibPackage_rus {
+        public static string PackageCommandNoFilesForLibPackage_rus {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForLibPackage_rus", resourceCulture);
             }
@@ -7893,7 +7893,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Paket oluşturulamadı. &apos;{0}&apos; öğesinin derleme dosyalarını içerdiğinden emin olun. Simge paketi oluşturma konusunda yardım almak için, {1} sayfasını ziyaret edin..
         /// </summary>
-        internal static string PackageCommandNoFilesForLibPackage_trk {
+        public static string PackageCommandNoFilesForLibPackage_trk {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForLibPackage_trk", resourceCulture);
             }
@@ -7902,7 +7902,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Failed to build package. Ensure &apos;{0}&apos; includes source and symbol files. For help on building symbols package, visit {1}..
         /// </summary>
-        internal static string PackageCommandNoFilesForSymbolsPackage {
+        public static string PackageCommandNoFilesForSymbolsPackage {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForSymbolsPackage", resourceCulture);
             }
@@ -7911,7 +7911,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 无法生成程序包。请确保“{0}”包括源文件和符号文件。有关生成符号程序包的帮助，请访问 {1}。.
         /// </summary>
-        internal static string PackageCommandNoFilesForSymbolsPackage_chs {
+        public static string PackageCommandNoFilesForSymbolsPackage_chs {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForSymbolsPackage_chs", resourceCulture);
             }
@@ -7920,7 +7920,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 無法建置封裝。確定 &apos;{0}&apos; 包含來源和符號檔案。如需建置符號封裝的說明，請造訪 {1}。.
         /// </summary>
-        internal static string PackageCommandNoFilesForSymbolsPackage_cht {
+        public static string PackageCommandNoFilesForSymbolsPackage_cht {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForSymbolsPackage_cht", resourceCulture);
             }
@@ -7929,7 +7929,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Sestavení balíčku se nezdařilo. Ověřte, zda {0} zahrnuje zdroj a soubory symbolů. Nápovědu týkající se sestavení balíčku symbolů naleznete na webu {1}..
         /// </summary>
-        internal static string PackageCommandNoFilesForSymbolsPackage_csy {
+        public static string PackageCommandNoFilesForSymbolsPackage_csy {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForSymbolsPackage_csy", resourceCulture);
             }
@@ -7938,7 +7938,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Fehler beim Erstellen des Pakets. Stellen Sie sicher, dass &quot;{0}&quot; Quell- und Symboldateien enthält. Hilfe zum Erstellen eines Symbolpakets finden Sie unter {1}..
         /// </summary>
-        internal static string PackageCommandNoFilesForSymbolsPackage_deu {
+        public static string PackageCommandNoFilesForSymbolsPackage_deu {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForSymbolsPackage_deu", resourceCulture);
             }
@@ -7947,7 +7947,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Error al compilar el paquete. Asegúrese de que &apos;{0}&apos; incluye los archivos de símbolos y de origen. Para obtener ayuda sobre la compilación de paquetes de símbolos, visite {1}..
         /// </summary>
-        internal static string PackageCommandNoFilesForSymbolsPackage_esp {
+        public static string PackageCommandNoFilesForSymbolsPackage_esp {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForSymbolsPackage_esp", resourceCulture);
             }
@@ -7956,7 +7956,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Échec de la création du package. Assurez-vous que &apos;{0}&apos; inclut les fichiers source et de symboles. Pour obtenir l&apos;aide relative à la création d&apos;un package de symboles, visitez {1}..
         /// </summary>
-        internal static string PackageCommandNoFilesForSymbolsPackage_fra {
+        public static string PackageCommandNoFilesForSymbolsPackage_fra {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForSymbolsPackage_fra", resourceCulture);
             }
@@ -7965,7 +7965,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossibile impostare package. Assicurarsi che &apos;{0}&apos; include i file di assemblaggio. Per aiuto sull&apos;impostazione dei simboli, visitare {1}..
         /// </summary>
-        internal static string PackageCommandNoFilesForSymbolsPackage_ita {
+        public static string PackageCommandNoFilesForSymbolsPackage_ita {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForSymbolsPackage_ita", resourceCulture);
             }
@@ -7974,7 +7974,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to パッケージをビルドできませんでした。&apos;{0}&apos; にソースとシンボル ファイルが含まれることを確認してください。シンボル パッケージのビルド方法については、{1} を参照してください。.
         /// </summary>
-        internal static string PackageCommandNoFilesForSymbolsPackage_jpn {
+        public static string PackageCommandNoFilesForSymbolsPackage_jpn {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForSymbolsPackage_jpn", resourceCulture);
             }
@@ -7983,7 +7983,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 패키지를 빌드하지 못했습니다. &apos;{0}&apos;에 소스 및 기호 파일이 있는지 확인하십시오. 기호 패키지를 빌드하는 방법에 대한 도움말은 {1}을(를) 참조하십시오..
         /// </summary>
-        internal static string PackageCommandNoFilesForSymbolsPackage_kor {
+        public static string PackageCommandNoFilesForSymbolsPackage_kor {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForSymbolsPackage_kor", resourceCulture);
             }
@@ -7992,7 +7992,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie można skompilować pakietu. Upewnij się, że „{0}” zawiera pliki źródłowe i pliki symboli. Aby uzyskać pomoc na temat kompilowania pakietów symboli, odwiedź {1}..
         /// </summary>
-        internal static string PackageCommandNoFilesForSymbolsPackage_plk {
+        public static string PackageCommandNoFilesForSymbolsPackage_plk {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForSymbolsPackage_plk", resourceCulture);
             }
@@ -8001,7 +8001,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Falha ao construir pacote. Verifique se &apos;{0}&apos; inclui arquivos de origem e símbolo. Para ajudar a construir pacotes símbolos, visite {1}..
         /// </summary>
-        internal static string PackageCommandNoFilesForSymbolsPackage_ptb {
+        public static string PackageCommandNoFilesForSymbolsPackage_ptb {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForSymbolsPackage_ptb", resourceCulture);
             }
@@ -8010,7 +8010,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Не удалось выполнить сборку пакета. Убедитесь, что &quot;{0}&quot; содержит файлы источников и файлы символов. Справку о выполнении сборки пакета символов см. по адресу: {1}..
         /// </summary>
-        internal static string PackageCommandNoFilesForSymbolsPackage_rus {
+        public static string PackageCommandNoFilesForSymbolsPackage_rus {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForSymbolsPackage_rus", resourceCulture);
             }
@@ -8019,7 +8019,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Paket oluşturulamadı. &apos;{0}&apos; öğesinin kaynak ve simge dosyalarını içerdiğinden emin olun. Simge paketi oluşturma konusunda yardım almak için, {1} sayfasını ziyaret edin..
         /// </summary>
-        internal static string PackageCommandNoFilesForSymbolsPackage_trk {
+        public static string PackageCommandNoFilesForSymbolsPackage_trk {
             get {
                 return ResourceManager.GetString("PackageCommandNoFilesForSymbolsPackage_trk", resourceCulture);
             }
@@ -8028,7 +8028,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} issue(s) found with package &apos;{1}&apos;..
         /// </summary>
-        internal static string PackageCommandPackageIssueSummary {
+        public static string PackageCommandPackageIssueSummary {
             get {
                 return ResourceManager.GetString("PackageCommandPackageIssueSummary", resourceCulture);
             }
@@ -8037,7 +8037,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 发现程序包“{1}”存在 {0} 个问题。.
         /// </summary>
-        internal static string PackageCommandPackageIssueSummary_chs {
+        public static string PackageCommandPackageIssueSummary_chs {
             get {
                 return ResourceManager.GetString("PackageCommandPackageIssueSummary_chs", resourceCulture);
             }
@@ -8046,7 +8046,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找到{0} 個具有封裝 &apos;{1}&apos; 的問題。.
         /// </summary>
-        internal static string PackageCommandPackageIssueSummary_cht {
+        public static string PackageCommandPackageIssueSummary_cht {
             get {
                 return ResourceManager.GetString("PackageCommandPackageIssueSummary_cht", resourceCulture);
             }
@@ -8055,7 +8055,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Počet problémů zjištěných v balíčku {1}: {0}..
         /// </summary>
-        internal static string PackageCommandPackageIssueSummary_csy {
+        public static string PackageCommandPackageIssueSummary_csy {
             get {
                 return ResourceManager.GetString("PackageCommandPackageIssueSummary_csy", resourceCulture);
             }
@@ -8064,7 +8064,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Für das Paket &quot;{1}&quot; gefundene Probleme: {0}..
         /// </summary>
-        internal static string PackageCommandPackageIssueSummary_deu {
+        public static string PackageCommandPackageIssueSummary_deu {
             get {
                 return ResourceManager.GetString("PackageCommandPackageIssueSummary_deu", resourceCulture);
             }
@@ -8073,7 +8073,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Se han encontrado {0} problemas en el paquete &apos;{1}&apos;..
         /// </summary>
-        internal static string PackageCommandPackageIssueSummary_esp {
+        public static string PackageCommandPackageIssueSummary_esp {
             get {
                 return ResourceManager.GetString("PackageCommandPackageIssueSummary_esp", resourceCulture);
             }
@@ -8082,7 +8082,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} problème(s) trouvé(s) concernant le package &apos;{1}&apos;..
         /// </summary>
-        internal static string PackageCommandPackageIssueSummary_fra {
+        public static string PackageCommandPackageIssueSummary_fra {
             get {
                 return ResourceManager.GetString("PackageCommandPackageIssueSummary_fra", resourceCulture);
             }
@@ -8091,7 +8091,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} problema (i) trovati con pacchetto&apos;{1}&apos;..
         /// </summary>
-        internal static string PackageCommandPackageIssueSummary_ita {
+        public static string PackageCommandPackageIssueSummary_ita {
             get {
                 return ResourceManager.GetString("PackageCommandPackageIssueSummary_ita", resourceCulture);
             }
@@ -8100,7 +8100,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to パッケージ &apos;{1}&apos; に {0} 個の問題が見つかりました。.
         /// </summary>
-        internal static string PackageCommandPackageIssueSummary_jpn {
+        public static string PackageCommandPackageIssueSummary_jpn {
             get {
                 return ResourceManager.GetString("PackageCommandPackageIssueSummary_jpn", resourceCulture);
             }
@@ -8109,7 +8109,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{1}&apos; 패키지에 문제가 {0}개 있습니다..
         /// </summary>
-        internal static string PackageCommandPackageIssueSummary_kor {
+        public static string PackageCommandPackageIssueSummary_kor {
             get {
                 return ResourceManager.GetString("PackageCommandPackageIssueSummary_kor", resourceCulture);
             }
@@ -8118,7 +8118,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Liczba znalezionych problemów z pakietem „{1}”: {0}..
         /// </summary>
-        internal static string PackageCommandPackageIssueSummary_plk {
+        public static string PackageCommandPackageIssueSummary_plk {
             get {
                 return ResourceManager.GetString("PackageCommandPackageIssueSummary_plk", resourceCulture);
             }
@@ -8127,7 +8127,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} problemas encontrados com o pacote &apos;{1}&apos;..
         /// </summary>
-        internal static string PackageCommandPackageIssueSummary_ptb {
+        public static string PackageCommandPackageIssueSummary_ptb {
             get {
                 return ResourceManager.GetString("PackageCommandPackageIssueSummary_ptb", resourceCulture);
             }
@@ -8136,7 +8136,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Обнаружено неполадок пакета &quot;{1}&quot;: {0}..
         /// </summary>
-        internal static string PackageCommandPackageIssueSummary_rus {
+        public static string PackageCommandPackageIssueSummary_rus {
             get {
                 return ResourceManager.GetString("PackageCommandPackageIssueSummary_rus", resourceCulture);
             }
@@ -8145,7 +8145,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {1}&apos; sorunuyla ilgili {0} sorun bulundu..
         /// </summary>
-        internal static string PackageCommandPackageIssueSummary_trk {
+        public static string PackageCommandPackageIssueSummary_trk {
             get {
                 return ResourceManager.GetString("PackageCommandPackageIssueSummary_trk", resourceCulture);
             }
@@ -8154,7 +8154,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Please specify a nuspec or project file to use..
         /// </summary>
-        internal static string PackageCommandSpecifyInputFileError {
+        public static string PackageCommandSpecifyInputFileError {
             get {
                 return ResourceManager.GetString("PackageCommandSpecifyInputFileError", resourceCulture);
             }
@@ -8163,7 +8163,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 请指定要使用的 nuspec 文件或项目文件。.
         /// </summary>
-        internal static string PackageCommandSpecifyInputFileError_chs {
+        public static string PackageCommandSpecifyInputFileError_chs {
             get {
                 return ResourceManager.GetString("PackageCommandSpecifyInputFileError_chs", resourceCulture);
             }
@@ -8172,7 +8172,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 請指定 nuspec 或要使用的專案檔。.
         /// </summary>
-        internal static string PackageCommandSpecifyInputFileError_cht {
+        public static string PackageCommandSpecifyInputFileError_cht {
             get {
                 return ResourceManager.GetString("PackageCommandSpecifyInputFileError_cht", resourceCulture);
             }
@@ -8181,7 +8181,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Zadejte soubor nuspec nebo soubor projektu, který má být použit..
         /// </summary>
-        internal static string PackageCommandSpecifyInputFileError_csy {
+        public static string PackageCommandSpecifyInputFileError_csy {
             get {
                 return ResourceManager.GetString("PackageCommandSpecifyInputFileError_csy", resourceCulture);
             }
@@ -8190,7 +8190,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Bitte geben Sie eine zu verwendende nuspec- oder Projektdatei an..
         /// </summary>
-        internal static string PackageCommandSpecifyInputFileError_deu {
+        public static string PackageCommandSpecifyInputFileError_deu {
             get {
                 return ResourceManager.GetString("PackageCommandSpecifyInputFileError_deu", resourceCulture);
             }
@@ -8199,7 +8199,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Especifique el archivo de proyecto o nuspec que se va a usar..
         /// </summary>
-        internal static string PackageCommandSpecifyInputFileError_esp {
+        public static string PackageCommandSpecifyInputFileError_esp {
             get {
                 return ResourceManager.GetString("PackageCommandSpecifyInputFileError_esp", resourceCulture);
             }
@@ -8208,7 +8208,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Veuillez spécifier le fichier .nuspec ou projet à utiliser..
         /// </summary>
-        internal static string PackageCommandSpecifyInputFileError_fra {
+        public static string PackageCommandSpecifyInputFileError_fra {
             get {
                 return ResourceManager.GetString("PackageCommandSpecifyInputFileError_fra", resourceCulture);
             }
@@ -8217,7 +8217,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Specificare il file progetto o nuspec da usare..
         /// </summary>
-        internal static string PackageCommandSpecifyInputFileError_ita {
+        public static string PackageCommandSpecifyInputFileError_ita {
             get {
                 return ResourceManager.GetString("PackageCommandSpecifyInputFileError_ita", resourceCulture);
             }
@@ -8226,7 +8226,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 使用する nuspec または project ファイルを指定してください。.
         /// </summary>
-        internal static string PackageCommandSpecifyInputFileError_jpn {
+        public static string PackageCommandSpecifyInputFileError_jpn {
             get {
                 return ResourceManager.GetString("PackageCommandSpecifyInputFileError_jpn", resourceCulture);
             }
@@ -8235,7 +8235,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 사용할 nuspec 또는 프로젝트 파일을 지정하십시오..
         /// </summary>
-        internal static string PackageCommandSpecifyInputFileError_kor {
+        public static string PackageCommandSpecifyInputFileError_kor {
             get {
                 return ResourceManager.GetString("PackageCommandSpecifyInputFileError_kor", resourceCulture);
             }
@@ -8244,7 +8244,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Określ plik nuspec lub plik projektu, który ma zostać użyty..
         /// </summary>
-        internal static string PackageCommandSpecifyInputFileError_plk {
+        public static string PackageCommandSpecifyInputFileError_plk {
             get {
                 return ResourceManager.GetString("PackageCommandSpecifyInputFileError_plk", resourceCulture);
             }
@@ -8253,7 +8253,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Especifique um arquivo nuspec ou de projeto para usar..
         /// </summary>
-        internal static string PackageCommandSpecifyInputFileError_ptb {
+        public static string PackageCommandSpecifyInputFileError_ptb {
             get {
                 return ResourceManager.GetString("PackageCommandSpecifyInputFileError_ptb", resourceCulture);
             }
@@ -8262,7 +8262,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Укажите NUSPEC-файл или файл проекта для использования..
         /// </summary>
-        internal static string PackageCommandSpecifyInputFileError_rus {
+        public static string PackageCommandSpecifyInputFileError_rus {
             get {
                 return ResourceManager.GetString("PackageCommandSpecifyInputFileError_rus", resourceCulture);
             }
@@ -8271,7 +8271,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Lütfen kullanılan nuspec veya proje dosyasını belirtin..
         /// </summary>
-        internal static string PackageCommandSpecifyInputFileError_trk {
+        public static string PackageCommandSpecifyInputFileError_trk {
             get {
                 return ResourceManager.GetString("PackageCommandSpecifyInputFileError_trk", resourceCulture);
             }
@@ -8280,7 +8280,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Successfully created package &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandSuccess {
+        public static string PackageCommandSuccess {
             get {
                 return ResourceManager.GetString("PackageCommandSuccess", resourceCulture);
             }
@@ -8289,7 +8289,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已成功创建程序包“{0}”。.
         /// </summary>
-        internal static string PackageCommandSuccess_chs {
+        public static string PackageCommandSuccess_chs {
             get {
                 return ResourceManager.GetString("PackageCommandSuccess_chs", resourceCulture);
             }
@@ -8298,7 +8298,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已成功建立封裝 &apos;{0}&apos;。.
         /// </summary>
-        internal static string PackageCommandSuccess_cht {
+        public static string PackageCommandSuccess_cht {
             get {
                 return ResourceManager.GetString("PackageCommandSuccess_cht", resourceCulture);
             }
@@ -8307,7 +8307,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Balíček {0} byl úspěšně vytvořen..
         /// </summary>
-        internal static string PackageCommandSuccess_csy {
+        public static string PackageCommandSuccess_csy {
             get {
                 return ResourceManager.GetString("PackageCommandSuccess_csy", resourceCulture);
             }
@@ -8316,7 +8316,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Das Paket &quot;{0}&quot; wurde erfolgreich erstellt..
         /// </summary>
-        internal static string PackageCommandSuccess_deu {
+        public static string PackageCommandSuccess_deu {
             get {
                 return ResourceManager.GetString("PackageCommandSuccess_deu", resourceCulture);
             }
@@ -8325,7 +8325,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Paquete &apos;{0}&apos; creado correctamente..
         /// </summary>
-        internal static string PackageCommandSuccess_esp {
+        public static string PackageCommandSuccess_esp {
             get {
                 return ResourceManager.GetString("PackageCommandSuccess_esp", resourceCulture);
             }
@@ -8334,7 +8334,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Package &apos;{0}&apos; correctement créé..
         /// </summary>
-        internal static string PackageCommandSuccess_fra {
+        public static string PackageCommandSuccess_fra {
             get {
                 return ResourceManager.GetString("PackageCommandSuccess_fra", resourceCulture);
             }
@@ -8343,7 +8343,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Creato pacchetto &apos;{0}&apos; correttamente..
         /// </summary>
-        internal static string PackageCommandSuccess_ita {
+        public static string PackageCommandSuccess_ita {
             get {
                 return ResourceManager.GetString("PackageCommandSuccess_ita", resourceCulture);
             }
@@ -8352,7 +8352,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to パッケージ &apos;{0}&apos; が正常に作成されました。.
         /// </summary>
-        internal static string PackageCommandSuccess_jpn {
+        public static string PackageCommandSuccess_jpn {
             get {
                 return ResourceManager.GetString("PackageCommandSuccess_jpn", resourceCulture);
             }
@@ -8361,7 +8361,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; 패키지를 만들었습니다..
         /// </summary>
-        internal static string PackageCommandSuccess_kor {
+        public static string PackageCommandSuccess_kor {
             get {
                 return ResourceManager.GetString("PackageCommandSuccess_kor", resourceCulture);
             }
@@ -8370,7 +8370,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Pomyślnie utworzono pakiet „{0}”..
         /// </summary>
-        internal static string PackageCommandSuccess_plk {
+        public static string PackageCommandSuccess_plk {
             get {
                 return ResourceManager.GetString("PackageCommandSuccess_plk", resourceCulture);
             }
@@ -8379,7 +8379,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Pacote &apos;{0}&apos; criado com êxito..
         /// </summary>
-        internal static string PackageCommandSuccess_ptb {
+        public static string PackageCommandSuccess_ptb {
             get {
                 return ResourceManager.GetString("PackageCommandSuccess_ptb", resourceCulture);
             }
@@ -8388,7 +8388,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Пакет &quot;{0}&quot; успешно создан..
         /// </summary>
-        internal static string PackageCommandSuccess_rus {
+        public static string PackageCommandSuccess_rus {
             get {
                 return ResourceManager.GetString("PackageCommandSuccess_rus", resourceCulture);
             }
@@ -8397,7 +8397,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; paketi başarıyla oluşturuldu..
         /// </summary>
-        internal static string PackageCommandSuccess_trk {
+        public static string PackageCommandSuccess_trk {
             get {
                 return ResourceManager.GetString("PackageCommandSuccess_trk", resourceCulture);
             }
@@ -8406,7 +8406,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Unable to locate &apos;{0} {1}&apos;. Make sure all packages exist in the packages folder before running update..
         /// </summary>
-        internal static string PackageDoesNotExist {
+        public static string PackageDoesNotExist {
             get {
                 return ResourceManager.GetString("PackageDoesNotExist", resourceCulture);
             }
@@ -8415,7 +8415,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到“{0} {1}”。在运行更新之前，请确保所有程序包均存在于程序包文件夹中。.
         /// </summary>
-        internal static string PackageDoesNotExist_chs {
+        public static string PackageDoesNotExist_chs {
             get {
                 return ResourceManager.GetString("PackageDoesNotExist_chs", resourceCulture);
             }
@@ -8424,7 +8424,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到 &apos;{0} {1}&apos;。請確定封裝資料夾中存在所有封裝，才能執行更新。.
         /// </summary>
-        internal static string PackageDoesNotExist_cht {
+        public static string PackageDoesNotExist_cht {
             get {
                 return ResourceManager.GetString("PackageDoesNotExist_cht", resourceCulture);
             }
@@ -8433,7 +8433,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nelze vyhledat {0} {1}. Před spuštěním aktualizace ověřte, zda jsou k dispozici všechny balíčky ve složce balíčků..
         /// </summary>
-        internal static string PackageDoesNotExist_csy {
+        public static string PackageDoesNotExist_csy {
             get {
                 return ResourceManager.GetString("PackageDoesNotExist_csy", resourceCulture);
             }
@@ -8442,7 +8442,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;{0} {1}&quot; wurde nicht gefunden. Stellen Sie sicher, dass alle Pakete im Paketordner vorhanden sind, bevor Sie das Update ausführen..
         /// </summary>
-        internal static string PackageDoesNotExist_deu {
+        public static string PackageDoesNotExist_deu {
             get {
                 return ResourceManager.GetString("PackageDoesNotExist_deu", resourceCulture);
             }
@@ -8451,7 +8451,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se puede ubicar &apos;{0} {1}&apos;. Asegúrese de que existen todos los paquetes en la carpeta de paquetes antes de ejecutar la actualización..
         /// </summary>
-        internal static string PackageDoesNotExist_esp {
+        public static string PackageDoesNotExist_esp {
             get {
                 return ResourceManager.GetString("PackageDoesNotExist_esp", resourceCulture);
             }
@@ -8460,7 +8460,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossible de trouver &apos;{0} {1}&apos;. Assurez-vous que tous les packages existent dans le dossier des packages avant d&apos;exécuter la mise à jour..
         /// </summary>
-        internal static string PackageDoesNotExist_fra {
+        public static string PackageDoesNotExist_fra {
             get {
                 return ResourceManager.GetString("PackageDoesNotExist_fra", resourceCulture);
             }
@@ -8469,7 +8469,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossibile localizzare &apos;{0} {1}&apos;. Assicurarsi che esistono tutte le cartelle pacchetti prima di eseguire l&apos;aggiornamento.
         /// </summary>
-        internal static string PackageDoesNotExist_ita {
+        public static string PackageDoesNotExist_ita {
             get {
                 return ResourceManager.GetString("PackageDoesNotExist_ita", resourceCulture);
             }
@@ -8478,7 +8478,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0} {1}&apos; が見つかりません。更新を実行する前に、パッケージ フォルダーにすべてのパッケージが存在することを確認してください。.
         /// </summary>
-        internal static string PackageDoesNotExist_jpn {
+        public static string PackageDoesNotExist_jpn {
             get {
                 return ResourceManager.GetString("PackageDoesNotExist_jpn", resourceCulture);
             }
@@ -8487,7 +8487,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0} {1}&apos;을(를) 찾을 수 없습니다. 패키지 폴더에 모든 패키지가 있는지 확인한 후 업데이트를 실행하십시오..
         /// </summary>
-        internal static string PackageDoesNotExist_kor {
+        public static string PackageDoesNotExist_kor {
             get {
                 return ResourceManager.GetString("PackageDoesNotExist_kor", resourceCulture);
             }
@@ -8496,7 +8496,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie można znaleźć pakietu „{0} {1}”. Przed uruchomieniem aktualizacji upewnij się, że wszystkie pakiety znajdują się w folderze pakietów..
         /// </summary>
-        internal static string PackageDoesNotExist_plk {
+        public static string PackageDoesNotExist_plk {
             get {
                 return ResourceManager.GetString("PackageDoesNotExist_plk", resourceCulture);
             }
@@ -8505,7 +8505,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Não foi possível localizar &apos;{0} {1}&apos;. Certifique-se que todos os pacotes estejam na pasta de pacotes antes de executar a atualização..
         /// </summary>
-        internal static string PackageDoesNotExist_ptb {
+        public static string PackageDoesNotExist_ptb {
             get {
                 return ResourceManager.GetString("PackageDoesNotExist_ptb", resourceCulture);
             }
@@ -8514,7 +8514,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Не удалось найти &quot;{0} {1}&quot;. Прежде чем запускать обновление, убедитесь, что в папке пакетов содержатся все пакеты..
         /// </summary>
-        internal static string PackageDoesNotExist_rus {
+        public static string PackageDoesNotExist_rus {
             get {
                 return ResourceManager.GetString("PackageDoesNotExist_rus", resourceCulture);
             }
@@ -8523,7 +8523,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} {1}&apos; bulunamıyor. Güncellemeyi çalıştırmadan önce tüm paketlerin paket klasöründe mevcut olduğundan emin olun..
         /// </summary>
-        internal static string PackageDoesNotExist_trk {
+        public static string PackageDoesNotExist_trk {
             get {
                 return ResourceManager.GetString("PackageDoesNotExist_trk", resourceCulture);
             }
@@ -8532,7 +8532,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Packing files from &apos;{0}&apos;..
         /// </summary>
-        internal static string PackagingFilesFromOutputPath {
+        public static string PackagingFilesFromOutputPath {
             get {
                 return ResourceManager.GetString("PackagingFilesFromOutputPath", resourceCulture);
             }
@@ -8541,7 +8541,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在打包“{0}”中的文件。.
         /// </summary>
-        internal static string PackagingFilesFromOutputPath_chs {
+        public static string PackagingFilesFromOutputPath_chs {
             get {
                 return ResourceManager.GetString("PackagingFilesFromOutputPath_chs", resourceCulture);
             }
@@ -8550,7 +8550,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在封裝 &apos;{0}&apos; 中的檔案。.
         /// </summary>
-        internal static string PackagingFilesFromOutputPath_cht {
+        public static string PackagingFilesFromOutputPath_cht {
             get {
                 return ResourceManager.GetString("PackagingFilesFromOutputPath_cht", resourceCulture);
             }
@@ -8559,7 +8559,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Probíhá balení souborů z {0}..
         /// </summary>
-        internal static string PackagingFilesFromOutputPath_csy {
+        public static string PackagingFilesFromOutputPath_csy {
             get {
                 return ResourceManager.GetString("PackagingFilesFromOutputPath_csy", resourceCulture);
             }
@@ -8568,7 +8568,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Paketerstellung der Dateien aus &quot;{0}&quot;..
         /// </summary>
-        internal static string PackagingFilesFromOutputPath_deu {
+        public static string PackagingFilesFromOutputPath_deu {
             get {
                 return ResourceManager.GetString("PackagingFilesFromOutputPath_deu", resourceCulture);
             }
@@ -8577,7 +8577,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Empaquetando archivos de proyecto de &apos;{0}&apos;..
         /// </summary>
-        internal static string PackagingFilesFromOutputPath_esp {
+        public static string PackagingFilesFromOutputPath_esp {
             get {
                 return ResourceManager.GetString("PackagingFilesFromOutputPath_esp", resourceCulture);
             }
@@ -8586,7 +8586,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Compression des fichiers depuis &apos;{0}&apos;..
         /// </summary>
-        internal static string PackagingFilesFromOutputPath_fra {
+        public static string PackagingFilesFromOutputPath_fra {
             get {
                 return ResourceManager.GetString("PackagingFilesFromOutputPath_fra", resourceCulture);
             }
@@ -8595,7 +8595,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impacchettando file da &apos;{0}&apos;..
         /// </summary>
-        internal static string PackagingFilesFromOutputPath_ita {
+        public static string PackagingFilesFromOutputPath_ita {
             get {
                 return ResourceManager.GetString("PackagingFilesFromOutputPath_ita", resourceCulture);
             }
@@ -8604,7 +8604,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; のファイルをパックしています。.
         /// </summary>
-        internal static string PackagingFilesFromOutputPath_jpn {
+        public static string PackagingFilesFromOutputPath_jpn {
             get {
                 return ResourceManager.GetString("PackagingFilesFromOutputPath_jpn", resourceCulture);
             }
@@ -8613,7 +8613,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos;에서 파일을 압축하고 있습니다..
         /// </summary>
-        internal static string PackagingFilesFromOutputPath_kor {
+        public static string PackagingFilesFromOutputPath_kor {
             get {
                 return ResourceManager.GetString("PackagingFilesFromOutputPath_kor", resourceCulture);
             }
@@ -8622,7 +8622,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Pakowanie plików z „{0}”..
         /// </summary>
-        internal static string PackagingFilesFromOutputPath_plk {
+        public static string PackagingFilesFromOutputPath_plk {
             get {
                 return ResourceManager.GetString("PackagingFilesFromOutputPath_plk", resourceCulture);
             }
@@ -8631,7 +8631,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Embalar arquivos de &apos;{0}&apos;..
         /// </summary>
-        internal static string PackagingFilesFromOutputPath_ptb {
+        public static string PackagingFilesFromOutputPath_ptb {
             get {
                 return ResourceManager.GetString("PackagingFilesFromOutputPath_ptb", resourceCulture);
             }
@@ -8640,7 +8640,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Упаковка файлов из {0}..
         /// </summary>
-        internal static string PackagingFilesFromOutputPath_rus {
+        public static string PackagingFilesFromOutputPath_rus {
             get {
                 return ResourceManager.GetString("PackagingFilesFromOutputPath_rus", resourceCulture);
             }
@@ -8649,7 +8649,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; dosyaları paketleniyor..
         /// </summary>
-        internal static string PackagingFilesFromOutputPath_trk {
+        public static string PackagingFilesFromOutputPath_trk {
             get {
                 return ResourceManager.GetString("PackagingFilesFromOutputPath_trk", resourceCulture);
             }
@@ -8658,7 +8658,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to There is no default source, please specify a source..
         /// </summary>
-        internal static string PushCommandNoSourceError {
+        public static string PushCommandNoSourceError {
             get {
                 return ResourceManager.GetString("PushCommandNoSourceError", resourceCulture);
             }
@@ -8667,7 +8667,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 没有默认源，请指定源。.
         /// </summary>
-        internal static string PushCommandNoSourceError_chs {
+        public static string PushCommandNoSourceError_chs {
             get {
                 return ResourceManager.GetString("PushCommandNoSourceError_chs", resourceCulture);
             }
@@ -8676,7 +8676,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 沒有預設的來源，請指定來源。.
         /// </summary>
-        internal static string PushCommandNoSourceError_cht {
+        public static string PushCommandNoSourceError_cht {
             get {
                 return ResourceManager.GetString("PushCommandNoSourceError_cht", resourceCulture);
             }
@@ -8685,7 +8685,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Není nastaven výchozí zdroj. Zadejte zdroj..
         /// </summary>
-        internal static string PushCommandNoSourceError_csy {
+        public static string PushCommandNoSourceError_csy {
             get {
                 return ResourceManager.GetString("PushCommandNoSourceError_csy", resourceCulture);
             }
@@ -8694,7 +8694,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Es ist keine Standardquelle vorhanden. Bitte geben Sie eine Quelle an..
         /// </summary>
-        internal static string PushCommandNoSourceError_deu {
+        public static string PushCommandNoSourceError_deu {
             get {
                 return ResourceManager.GetString("PushCommandNoSourceError_deu", resourceCulture);
             }
@@ -8703,7 +8703,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No hay ningún origen predeterminado, especifique un origen..
         /// </summary>
-        internal static string PushCommandNoSourceError_esp {
+        public static string PushCommandNoSourceError_esp {
             get {
                 return ResourceManager.GetString("PushCommandNoSourceError_esp", resourceCulture);
             }
@@ -8712,7 +8712,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Absence de source par défaut, veuillez en spécifier une..
         /// </summary>
-        internal static string PushCommandNoSourceError_fra {
+        public static string PushCommandNoSourceError_fra {
             get {
                 return ResourceManager.GetString("PushCommandNoSourceError_fra", resourceCulture);
             }
@@ -8721,7 +8721,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nessuna fonte di default, specificare una fonte..
         /// </summary>
-        internal static string PushCommandNoSourceError_ita {
+        public static string PushCommandNoSourceError_ita {
             get {
                 return ResourceManager.GetString("PushCommandNoSourceError_ita", resourceCulture);
             }
@@ -8730,7 +8730,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 既定のソースがありません。ソースを指定してください。.
         /// </summary>
-        internal static string PushCommandNoSourceError_jpn {
+        public static string PushCommandNoSourceError_jpn {
             get {
                 return ResourceManager.GetString("PushCommandNoSourceError_jpn", resourceCulture);
             }
@@ -8739,7 +8739,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 기본 소스가 없습니다. 소스를 지정하십시오..
         /// </summary>
-        internal static string PushCommandNoSourceError_kor {
+        public static string PushCommandNoSourceError_kor {
             get {
                 return ResourceManager.GetString("PushCommandNoSourceError_kor", resourceCulture);
             }
@@ -8748,7 +8748,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Brak domyślnego źródła. Określ źródło..
         /// </summary>
-        internal static string PushCommandNoSourceError_plk {
+        public static string PushCommandNoSourceError_plk {
             get {
                 return ResourceManager.GetString("PushCommandNoSourceError_plk", resourceCulture);
             }
@@ -8757,7 +8757,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Não há origem padrão. Especifique uma origem..
         /// </summary>
-        internal static string PushCommandNoSourceError_ptb {
+        public static string PushCommandNoSourceError_ptb {
             get {
                 return ResourceManager.GetString("PushCommandNoSourceError_ptb", resourceCulture);
             }
@@ -8766,7 +8766,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Источник по умолчанию отсутствует, укажите источник..
         /// </summary>
-        internal static string PushCommandNoSourceError_rus {
+        public static string PushCommandNoSourceError_rus {
             get {
                 return ResourceManager.GetString("PushCommandNoSourceError_rus", resourceCulture);
             }
@@ -8775,7 +8775,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Varsayılan herhangi bir kaynak yok, lütfen bir kaynak belirtin..
         /// </summary>
-        internal static string PushCommandNoSourceError_trk {
+        public static string PushCommandNoSourceError_trk {
             get {
                 return ResourceManager.GetString("PushCommandNoSourceError_trk", resourceCulture);
             }
@@ -8784,7 +8784,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Your package was pushed..
         /// </summary>
-        internal static string PushCommandPackagePushed {
+        public static string PushCommandPackagePushed {
             get {
                 return ResourceManager.GetString("PushCommandPackagePushed", resourceCulture);
             }
@@ -8793,7 +8793,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已推送你的程序包。.
         /// </summary>
-        internal static string PushCommandPackagePushed_chs {
+        public static string PushCommandPackagePushed_chs {
             get {
                 return ResourceManager.GetString("PushCommandPackagePushed_chs", resourceCulture);
             }
@@ -8802,7 +8802,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已推入您的封裝。.
         /// </summary>
-        internal static string PushCommandPackagePushed_cht {
+        public static string PushCommandPackagePushed_cht {
             get {
                 return ResourceManager.GetString("PushCommandPackagePushed_cht", resourceCulture);
             }
@@ -8811,7 +8811,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Balíček byl předán..
         /// </summary>
-        internal static string PushCommandPackagePushed_csy {
+        public static string PushCommandPackagePushed_csy {
             get {
                 return ResourceManager.GetString("PushCommandPackagePushed_csy", resourceCulture);
             }
@@ -8820,7 +8820,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ihr Paket wurde mittels Push übertragen..
         /// </summary>
-        internal static string PushCommandPackagePushed_deu {
+        public static string PushCommandPackagePushed_deu {
             get {
                 return ResourceManager.GetString("PushCommandPackagePushed_deu", resourceCulture);
             }
@@ -8829,7 +8829,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Se ha insertado su proyecto..
         /// </summary>
-        internal static string PushCommandPackagePushed_esp {
+        public static string PushCommandPackagePushed_esp {
             get {
                 return ResourceManager.GetString("PushCommandPackagePushed_esp", resourceCulture);
             }
@@ -8838,7 +8838,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Votre package a été transmis..
         /// </summary>
-        internal static string PushCommandPackagePushed_fra {
+        public static string PushCommandPackagePushed_fra {
             get {
                 return ResourceManager.GetString("PushCommandPackagePushed_fra", resourceCulture);
             }
@@ -8847,7 +8847,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Il pacchetto è stato compresso..
         /// </summary>
-        internal static string PushCommandPackagePushed_ita {
+        public static string PushCommandPackagePushed_ita {
             get {
                 return ResourceManager.GetString("PushCommandPackagePushed_ita", resourceCulture);
             }
@@ -8856,7 +8856,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to パッケージがプッシュされました。.
         /// </summary>
-        internal static string PushCommandPackagePushed_jpn {
+        public static string PushCommandPackagePushed_jpn {
             get {
                 return ResourceManager.GetString("PushCommandPackagePushed_jpn", resourceCulture);
             }
@@ -8865,7 +8865,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 패키지가 푸시되었습니다..
         /// </summary>
-        internal static string PushCommandPackagePushed_kor {
+        public static string PushCommandPackagePushed_kor {
             get {
                 return ResourceManager.GetString("PushCommandPackagePushed_kor", resourceCulture);
             }
@@ -8874,7 +8874,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Pakiet został wypchnięty..
         /// </summary>
-        internal static string PushCommandPackagePushed_plk {
+        public static string PushCommandPackagePushed_plk {
             get {
                 return ResourceManager.GetString("PushCommandPackagePushed_plk", resourceCulture);
             }
@@ -8883,7 +8883,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to O pacote foi empurrado..
         /// </summary>
-        internal static string PushCommandPackagePushed_ptb {
+        public static string PushCommandPackagePushed_ptb {
             get {
                 return ResourceManager.GetString("PushCommandPackagePushed_ptb", resourceCulture);
             }
@@ -8892,7 +8892,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ваш пакет был отправлен..
         /// </summary>
-        internal static string PushCommandPackagePushed_rus {
+        public static string PushCommandPackagePushed_rus {
             get {
                 return ResourceManager.GetString("PushCommandPackagePushed_rus", resourceCulture);
             }
@@ -8901,7 +8901,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Paketiniz iletildi..
         /// </summary>
-        internal static string PushCommandPackagePushed_trk {
+        public static string PushCommandPackagePushed_trk {
             get {
                 return ResourceManager.GetString("PushCommandPackagePushed_trk", resourceCulture);
             }
@@ -8910,7 +8910,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Pushing {0} to {1}....
         /// </summary>
-        internal static string PushCommandPushingPackage {
+        public static string PushCommandPushingPackage {
             get {
                 return ResourceManager.GetString("PushCommandPushingPackage", resourceCulture);
             }
@@ -8919,7 +8919,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在将 {0} 推送到 {1}....
         /// </summary>
-        internal static string PushCommandPushingPackage_chs {
+        public static string PushCommandPushingPackage_chs {
             get {
                 return ResourceManager.GetString("PushCommandPushingPackage_chs", resourceCulture);
             }
@@ -8928,7 +8928,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在將 {0} 推入 {1}....
         /// </summary>
-        internal static string PushCommandPushingPackage_cht {
+        public static string PushCommandPushingPackage_cht {
             get {
                 return ResourceManager.GetString("PushCommandPushingPackage_cht", resourceCulture);
             }
@@ -8937,7 +8937,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Probíhá předávání {0} do {1}....
         /// </summary>
-        internal static string PushCommandPushingPackage_csy {
+        public static string PushCommandPushingPackage_csy {
             get {
                 return ResourceManager.GetString("PushCommandPushingPackage_csy", resourceCulture);
             }
@@ -8946,7 +8946,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} wird mittels Push an {1} übertragen....
         /// </summary>
-        internal static string PushCommandPushingPackage_deu {
+        public static string PushCommandPushingPackage_deu {
             get {
                 return ResourceManager.GetString("PushCommandPushingPackage_deu", resourceCulture);
             }
@@ -8955,7 +8955,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Insertando {0} a {1}….
         /// </summary>
-        internal static string PushCommandPushingPackage_esp {
+        public static string PushCommandPushingPackage_esp {
             get {
                 return ResourceManager.GetString("PushCommandPushingPackage_esp", resourceCulture);
             }
@@ -8964,7 +8964,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Transmission de {0} à {1}….
         /// </summary>
-        internal static string PushCommandPushingPackage_fra {
+        public static string PushCommandPushingPackage_fra {
             get {
                 return ResourceManager.GetString("PushCommandPushingPackage_fra", resourceCulture);
             }
@@ -8973,7 +8973,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Comprimendo {0} di {1}....
         /// </summary>
-        internal static string PushCommandPushingPackage_ita {
+        public static string PushCommandPushingPackage_ita {
             get {
                 return ResourceManager.GetString("PushCommandPushingPackage_ita", resourceCulture);
             }
@@ -8982,7 +8982,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} を {1} にプッシュしています....
         /// </summary>
-        internal static string PushCommandPushingPackage_jpn {
+        public static string PushCommandPushingPackage_jpn {
             get {
                 return ResourceManager.GetString("PushCommandPushingPackage_jpn", resourceCulture);
             }
@@ -8991,7 +8991,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}을(를) {1}에 푸시하는 중....
         /// </summary>
-        internal static string PushCommandPushingPackage_kor {
+        public static string PushCommandPushingPackage_kor {
             get {
                 return ResourceManager.GetString("PushCommandPushingPackage_kor", resourceCulture);
             }
@@ -9000,7 +9000,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Trwa wypychanie {0} do {1}....
         /// </summary>
-        internal static string PushCommandPushingPackage_plk {
+        public static string PushCommandPushingPackage_plk {
             get {
                 return ResourceManager.GetString("PushCommandPushingPackage_plk", resourceCulture);
             }
@@ -9009,7 +9009,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Empurrando {0} para {1} ....
         /// </summary>
-        internal static string PushCommandPushingPackage_ptb {
+        public static string PushCommandPushingPackage_ptb {
             get {
                 return ResourceManager.GetString("PushCommandPushingPackage_ptb", resourceCulture);
             }
@@ -9018,7 +9018,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Отправка {0} в {1}....
         /// </summary>
-        internal static string PushCommandPushingPackage_rus {
+        public static string PushCommandPushingPackage_rus {
             get {
                 return ResourceManager.GetString("PushCommandPushingPackage_rus", resourceCulture);
             }
@@ -9027,7 +9027,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} öğesi {1} öğesine iletiliyor....
         /// </summary>
-        internal static string PushCommandPushingPackage_trk {
+        public static string PushCommandPushingPackage_trk {
             get {
                 return ResourceManager.GetString("PushCommandPushingPackage_trk", resourceCulture);
             }
@@ -9036,7 +9036,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to All.
         /// </summary>
-        internal static string ReservedPackageNameAll {
+        public static string ReservedPackageNameAll {
             get {
                 return ResourceManager.GetString("ReservedPackageNameAll", resourceCulture);
             }
@@ -9045,7 +9045,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 全部.
         /// </summary>
-        internal static string ReservedPackageNameAll_chs {
+        public static string ReservedPackageNameAll_chs {
             get {
                 return ResourceManager.GetString("ReservedPackageNameAll_chs", resourceCulture);
             }
@@ -9054,7 +9054,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 全部.
         /// </summary>
-        internal static string ReservedPackageNameAll_cht {
+        public static string ReservedPackageNameAll_cht {
             get {
                 return ResourceManager.GetString("ReservedPackageNameAll_cht", resourceCulture);
             }
@@ -9063,7 +9063,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Vše.
         /// </summary>
-        internal static string ReservedPackageNameAll_csy {
+        public static string ReservedPackageNameAll_csy {
             get {
                 return ResourceManager.GetString("ReservedPackageNameAll_csy", resourceCulture);
             }
@@ -9072,7 +9072,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Alle.
         /// </summary>
-        internal static string ReservedPackageNameAll_deu {
+        public static string ReservedPackageNameAll_deu {
             get {
                 return ResourceManager.GetString("ReservedPackageNameAll_deu", resourceCulture);
             }
@@ -9081,7 +9081,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Todos.
         /// </summary>
-        internal static string ReservedPackageNameAll_esp {
+        public static string ReservedPackageNameAll_esp {
             get {
                 return ResourceManager.GetString("ReservedPackageNameAll_esp", resourceCulture);
             }
@@ -9090,7 +9090,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Tous.
         /// </summary>
-        internal static string ReservedPackageNameAll_fra {
+        public static string ReservedPackageNameAll_fra {
             get {
                 return ResourceManager.GetString("ReservedPackageNameAll_fra", resourceCulture);
             }
@@ -9099,7 +9099,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Tutto.
         /// </summary>
-        internal static string ReservedPackageNameAll_ita {
+        public static string ReservedPackageNameAll_ita {
             get {
                 return ResourceManager.GetString("ReservedPackageNameAll_ita", resourceCulture);
             }
@@ -9108,7 +9108,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to すべて.
         /// </summary>
-        internal static string ReservedPackageNameAll_jpn {
+        public static string ReservedPackageNameAll_jpn {
             get {
                 return ResourceManager.GetString("ReservedPackageNameAll_jpn", resourceCulture);
             }
@@ -9117,7 +9117,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 모두.
         /// </summary>
-        internal static string ReservedPackageNameAll_kor {
+        public static string ReservedPackageNameAll_kor {
             get {
                 return ResourceManager.GetString("ReservedPackageNameAll_kor", resourceCulture);
             }
@@ -9126,7 +9126,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Wszystkie.
         /// </summary>
-        internal static string ReservedPackageNameAll_plk {
+        public static string ReservedPackageNameAll_plk {
             get {
                 return ResourceManager.GetString("ReservedPackageNameAll_plk", resourceCulture);
             }
@@ -9135,7 +9135,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Tudo.
         /// </summary>
-        internal static string ReservedPackageNameAll_ptb {
+        public static string ReservedPackageNameAll_ptb {
             get {
                 return ResourceManager.GetString("ReservedPackageNameAll_ptb", resourceCulture);
             }
@@ -9144,7 +9144,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Все.
         /// </summary>
-        internal static string ReservedPackageNameAll_rus {
+        public static string ReservedPackageNameAll_rus {
             get {
                 return ResourceManager.GetString("ReservedPackageNameAll_rus", resourceCulture);
             }
@@ -9153,7 +9153,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Tümü.
         /// </summary>
-        internal static string ReservedPackageNameAll_trk {
+        public static string ReservedPackageNameAll_trk {
             get {
                 return ResourceManager.GetString("ReservedPackageNameAll_trk", resourceCulture);
             }
@@ -9162,7 +9162,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to The property &apos;{0}&apos; on resource type &apos;{1}&apos; is not a type of ResourceManager..
         /// </summary>
-        internal static string ResourcePropertyIncorrectType {
+        public static string ResourcePropertyIncorrectType {
             get {
                 return ResourceManager.GetString("ResourcePropertyIncorrectType", resourceCulture);
             }
@@ -9171,7 +9171,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 资源类型“{1}”的属性“{0}”不是 ResourceManager 类型。.
         /// </summary>
-        internal static string ResourcePropertyIncorrectType_chs {
+        public static string ResourcePropertyIncorrectType_chs {
             get {
                 return ResourceManager.GetString("ResourcePropertyIncorrectType_chs", resourceCulture);
             }
@@ -9180,7 +9180,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 資源類型 &apos;{1}&apos; 上的屬性 &apos;{0}&apos; 不是 ResourceManager 類型。.
         /// </summary>
-        internal static string ResourcePropertyIncorrectType_cht {
+        public static string ResourcePropertyIncorrectType_cht {
             get {
                 return ResourceManager.GetString("ResourcePropertyIncorrectType_cht", resourceCulture);
             }
@@ -9189,7 +9189,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Vlastnost {0} typu prostředku {1} není typu ResourceManager..
         /// </summary>
-        internal static string ResourcePropertyIncorrectType_csy {
+        public static string ResourcePropertyIncorrectType_csy {
             get {
                 return ResourceManager.GetString("ResourcePropertyIncorrectType_csy", resourceCulture);
             }
@@ -9198,7 +9198,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Eigenschaft &quot;{0}&quot; für den Ressourcentyp &quot;{1}&quot; ist kein Typ von &quot;ResourceManager&quot;..
         /// </summary>
-        internal static string ResourcePropertyIncorrectType_deu {
+        public static string ResourcePropertyIncorrectType_deu {
             get {
                 return ResourceManager.GetString("ResourcePropertyIncorrectType_deu", resourceCulture);
             }
@@ -9207,7 +9207,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La propiedad &apos;{0}&apos; del tipo de recurso &apos;{1}&apos; no es un tipo de ResourceManager..
         /// </summary>
-        internal static string ResourcePropertyIncorrectType_esp {
+        public static string ResourcePropertyIncorrectType_esp {
             get {
                 return ResourceManager.GetString("ResourcePropertyIncorrectType_esp", resourceCulture);
             }
@@ -9216,7 +9216,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La propriété &apos;{0}&apos; du type de ressource &apos;{1}&apos; n&apos;est pas du type ResourceManager..
         /// </summary>
-        internal static string ResourcePropertyIncorrectType_fra {
+        public static string ResourcePropertyIncorrectType_fra {
             get {
                 return ResourceManager.GetString("ResourcePropertyIncorrectType_fra", resourceCulture);
             }
@@ -9225,7 +9225,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La proprietà &apos;{0}&apos; sulla risorsa tipo &apos;{1}&apos; non è un tipo in ResourceManager..
         /// </summary>
-        internal static string ResourcePropertyIncorrectType_ita {
+        public static string ResourcePropertyIncorrectType_ita {
             get {
                 return ResourceManager.GetString("ResourcePropertyIncorrectType_ita", resourceCulture);
             }
@@ -9234,7 +9234,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to リソースの種類 &apos;{1}&apos; のプロパティ &apos;{0}&apos; が ResourceManager 型ではありません。.
         /// </summary>
-        internal static string ResourcePropertyIncorrectType_jpn {
+        public static string ResourcePropertyIncorrectType_jpn {
             get {
                 return ResourceManager.GetString("ResourcePropertyIncorrectType_jpn", resourceCulture);
             }
@@ -9243,7 +9243,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 리소스 형식 &apos;{1}&apos;의 &apos;{0}&apos; 속성이 ResourceManager 형식이 아닙니다..
         /// </summary>
-        internal static string ResourcePropertyIncorrectType_kor {
+        public static string ResourcePropertyIncorrectType_kor {
             get {
                 return ResourceManager.GetString("ResourcePropertyIncorrectType_kor", resourceCulture);
             }
@@ -9252,7 +9252,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Właściwość „{0}” w typie zasobu „{1}” nie jest typu ResourceManager..
         /// </summary>
-        internal static string ResourcePropertyIncorrectType_plk {
+        public static string ResourcePropertyIncorrectType_plk {
             get {
                 return ResourceManager.GetString("ResourcePropertyIncorrectType_plk", resourceCulture);
             }
@@ -9261,7 +9261,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to A propriedade &apos;{0}&apos; no tipo de recurso &apos;{1}&apos; não é um tipo de ResourceManager..
         /// </summary>
-        internal static string ResourcePropertyIncorrectType_ptb {
+        public static string ResourcePropertyIncorrectType_ptb {
             get {
                 return ResourceManager.GetString("ResourcePropertyIncorrectType_ptb", resourceCulture);
             }
@@ -9270,7 +9270,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Типом свойства &quot;{0}&quot; типа ресурса &quot;{1}&quot; не является ResourceManager..
         /// </summary>
-        internal static string ResourcePropertyIncorrectType_rus {
+        public static string ResourcePropertyIncorrectType_rus {
             get {
                 return ResourceManager.GetString("ResourcePropertyIncorrectType_rus", resourceCulture);
             }
@@ -9279,7 +9279,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {1}&apos; kaynak türündeki &apos;{0}&apos; özelliği bir ResourceManager türü değildir..
         /// </summary>
-        internal static string ResourcePropertyIncorrectType_trk {
+        public static string ResourcePropertyIncorrectType_trk {
             get {
                 return ResourceManager.GetString("ResourcePropertyIncorrectType_trk", resourceCulture);
             }
@@ -9288,7 +9288,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to The resource type &apos;{0}&apos; does not have an accessible static property named &apos;{1}&apos;..
         /// </summary>
-        internal static string ResourceTypeDoesNotHaveProperty {
+        public static string ResourceTypeDoesNotHaveProperty {
             get {
                 return ResourceManager.GetString("ResourceTypeDoesNotHaveProperty", resourceCulture);
             }
@@ -9297,7 +9297,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 资源类型“{0}”没有名为“{1}”的可访问静态属性。.
         /// </summary>
-        internal static string ResourceTypeDoesNotHaveProperty_chs {
+        public static string ResourceTypeDoesNotHaveProperty_chs {
             get {
                 return ResourceManager.GetString("ResourceTypeDoesNotHaveProperty_chs", resourceCulture);
             }
@@ -9306,7 +9306,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 資源類型 &apos;{0}&apos; 沒有可存取的靜態屬性名為 &apos;{1}&apos;。.
         /// </summary>
-        internal static string ResourceTypeDoesNotHaveProperty_cht {
+        public static string ResourceTypeDoesNotHaveProperty_cht {
             get {
                 return ResourceManager.GetString("ResourceTypeDoesNotHaveProperty_cht", resourceCulture);
             }
@@ -9315,7 +9315,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Typ prostředku {0} neobsahuje přístupnou statickou vlastnost s názvem {1}..
         /// </summary>
-        internal static string ResourceTypeDoesNotHaveProperty_csy {
+        public static string ResourceTypeDoesNotHaveProperty_csy {
             get {
                 return ResourceManager.GetString("ResourceTypeDoesNotHaveProperty_csy", resourceCulture);
             }
@@ -9324,7 +9324,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Der Ressourcentyp &quot;{0}&quot; besitzt keine statische Eigenschaft namens &quot;{1}&quot;, auf die zugegriffen werden kann..
         /// </summary>
-        internal static string ResourceTypeDoesNotHaveProperty_deu {
+        public static string ResourceTypeDoesNotHaveProperty_deu {
             get {
                 return ResourceManager.GetString("ResourceTypeDoesNotHaveProperty_deu", resourceCulture);
             }
@@ -9333,7 +9333,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to El tipo de recurso &apos;{0}&apos; no tiene una propiedad estática accesible denominada &apos;{1}&apos;..
         /// </summary>
-        internal static string ResourceTypeDoesNotHaveProperty_esp {
+        public static string ResourceTypeDoesNotHaveProperty_esp {
             get {
                 return ResourceManager.GetString("ResourceTypeDoesNotHaveProperty_esp", resourceCulture);
             }
@@ -9342,7 +9342,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Le type de ressource &apos;{0}&apos; ne dispose pas d&apos;une propriété statique accessible nommée &apos;{1}&apos;..
         /// </summary>
-        internal static string ResourceTypeDoesNotHaveProperty_fra {
+        public static string ResourceTypeDoesNotHaveProperty_fra {
             get {
                 return ResourceManager.GetString("ResourceTypeDoesNotHaveProperty_fra", resourceCulture);
             }
@@ -9351,7 +9351,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Il tipo di risorsa &apos;{0}&apos;non ha una proprietà statica accessibile di nome&apos;{1}&apos;..
         /// </summary>
-        internal static string ResourceTypeDoesNotHaveProperty_ita {
+        public static string ResourceTypeDoesNotHaveProperty_ita {
             get {
                 return ResourceManager.GetString("ResourceTypeDoesNotHaveProperty_ita", resourceCulture);
             }
@@ -9360,7 +9360,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to リソースの種類 &apos;{0}&apos; に、&apos;{1}&apos; というアクセスできる静的プロパティがありません。.
         /// </summary>
-        internal static string ResourceTypeDoesNotHaveProperty_jpn {
+        public static string ResourceTypeDoesNotHaveProperty_jpn {
             get {
                 return ResourceManager.GetString("ResourceTypeDoesNotHaveProperty_jpn", resourceCulture);
             }
@@ -9369,7 +9369,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 리소스 형식 &apos;{0}&apos;에 액세스 가능한 &apos;{1}&apos; 이름의 정적 속성이 없습니다..
         /// </summary>
-        internal static string ResourceTypeDoesNotHaveProperty_kor {
+        public static string ResourceTypeDoesNotHaveProperty_kor {
             get {
                 return ResourceManager.GetString("ResourceTypeDoesNotHaveProperty_kor", resourceCulture);
             }
@@ -9378,7 +9378,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Typ zasobu „{0}” nie ma dostępnej właściwości statycznej o nazwie „{1}”..
         /// </summary>
-        internal static string ResourceTypeDoesNotHaveProperty_plk {
+        public static string ResourceTypeDoesNotHaveProperty_plk {
             get {
                 return ResourceManager.GetString("ResourceTypeDoesNotHaveProperty_plk", resourceCulture);
             }
@@ -9387,7 +9387,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to O tipo de recurso &apos;{0}&apos; não tem uma propriedade estática acessível chamada &apos;{1}&apos;..
         /// </summary>
-        internal static string ResourceTypeDoesNotHaveProperty_ptb {
+        public static string ResourceTypeDoesNotHaveProperty_ptb {
             get {
                 return ResourceManager.GetString("ResourceTypeDoesNotHaveProperty_ptb", resourceCulture);
             }
@@ -9396,7 +9396,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to У типа ресурса &quot;{0}&quot; отсутствует доступное статическое свойство с именем &quot;{1}&quot;..
         /// </summary>
-        internal static string ResourceTypeDoesNotHaveProperty_rus {
+        public static string ResourceTypeDoesNotHaveProperty_rus {
             get {
                 return ResourceManager.GetString("ResourceTypeDoesNotHaveProperty_rus", resourceCulture);
             }
@@ -9405,7 +9405,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; kaynak türünün erişilebilir &apos;{1}&apos; adlı erişilebilir statik bir özelliği yok..
         /// </summary>
-        internal static string ResourceTypeDoesNotHaveProperty_trk {
+        public static string ResourceTypeDoesNotHaveProperty_trk {
             get {
                 return ResourceManager.GetString("ResourceTypeDoesNotHaveProperty_trk", resourceCulture);
             }
@@ -9414,7 +9414,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Cannot determine the packages folder to restore NuGet packages. Please specify either -PackagesDirectory or -SolutionDirectory..
         /// </summary>
-        internal static string RestoreCommandCannotDeterminePackagesFolder {
+        public static string RestoreCommandCannotDeterminePackagesFolder {
             get {
                 return ResourceManager.GetString("RestoreCommandCannotDeterminePackagesFolder", resourceCulture);
             }
@@ -9423,7 +9423,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 无法确定用于还原 NuGet 程序包的程序包文件夹。请指定 -PackagesDirectory 或 -SolutionDirectory。.
         /// </summary>
-        internal static string RestoreCommandCannotDeterminePackagesFolder_chs {
+        public static string RestoreCommandCannotDeterminePackagesFolder_chs {
             get {
                 return ResourceManager.GetString("RestoreCommandCannotDeterminePackagesFolder_chs", resourceCulture);
             }
@@ -9432,7 +9432,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 無法判斷要還原 NuGet 封裝的封裝資料夾。請指定 -PackagesDirectory 或 -SolutionDirectory。.
         /// </summary>
-        internal static string RestoreCommandCannotDeterminePackagesFolder_cht {
+        public static string RestoreCommandCannotDeterminePackagesFolder_cht {
             get {
                 return ResourceManager.GetString("RestoreCommandCannotDeterminePackagesFolder_cht", resourceCulture);
             }
@@ -9441,7 +9441,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nelze určit složku balíčků pro obnovení balíčků NuGet. Zadejte parametr -PackagesDirectory nebo -SolutionDirectory..
         /// </summary>
-        internal static string RestoreCommandCannotDeterminePackagesFolder_csy {
+        public static string RestoreCommandCannotDeterminePackagesFolder_csy {
             get {
                 return ResourceManager.GetString("RestoreCommandCannotDeterminePackagesFolder_csy", resourceCulture);
             }
@@ -9450,7 +9450,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Der Paketordner zum Widerherstellen von NuGet-Paketen konnte nicht ermittelt werden. Bitte geben Sie &quot;-PackagesDirectory&quot; oder &quot;-SolutionDirectory&quot; an..
         /// </summary>
-        internal static string RestoreCommandCannotDeterminePackagesFolder_deu {
+        public static string RestoreCommandCannotDeterminePackagesFolder_deu {
             get {
                 return ResourceManager.GetString("RestoreCommandCannotDeterminePackagesFolder_deu", resourceCulture);
             }
@@ -9459,7 +9459,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se puede determinar la carpeta de paquetes para restaurar los paquetes NuGet. Especifique PackagesDirectory o SolutionDirectory..
         /// </summary>
-        internal static string RestoreCommandCannotDeterminePackagesFolder_esp {
+        public static string RestoreCommandCannotDeterminePackagesFolder_esp {
             get {
                 return ResourceManager.GetString("RestoreCommandCannotDeterminePackagesFolder_esp", resourceCulture);
             }
@@ -9468,7 +9468,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossible de déterminer le dossier de packages pour restaurer les packages NuGet. Veuillez spécifier soit -PackagesDirectory, soit -SolutionDirectory..
         /// </summary>
-        internal static string RestoreCommandCannotDeterminePackagesFolder_fra {
+        public static string RestoreCommandCannotDeterminePackagesFolder_fra {
             get {
                 return ResourceManager.GetString("RestoreCommandCannotDeterminePackagesFolder_fra", resourceCulture);
             }
@@ -9477,7 +9477,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossibile determinare le cartelle dei pacchetti per ripristinare i pacchetti NuGet. Specificare o PackagesDirectory o SolutionDirectory..
         /// </summary>
-        internal static string RestoreCommandCannotDeterminePackagesFolder_ita {
+        public static string RestoreCommandCannotDeterminePackagesFolder_ita {
             get {
                 return ResourceManager.GetString("RestoreCommandCannotDeterminePackagesFolder_ita", resourceCulture);
             }
@@ -9486,7 +9486,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet パッケージを復元するパッケージ フォルダーを特定できません。-PackagesDirectory または -SolutionDirectory を指定してください。.
         /// </summary>
-        internal static string RestoreCommandCannotDeterminePackagesFolder_jpn {
+        public static string RestoreCommandCannotDeterminePackagesFolder_jpn {
             get {
                 return ResourceManager.GetString("RestoreCommandCannotDeterminePackagesFolder_jpn", resourceCulture);
             }
@@ -9495,7 +9495,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet 패키지를 복원하는 데 필요한 패키지 폴더를 확인할 수 없습니다. -PackagesDirectory 또는 -SolutionDirectory를 지정하십시오..
         /// </summary>
-        internal static string RestoreCommandCannotDeterminePackagesFolder_kor {
+        public static string RestoreCommandCannotDeterminePackagesFolder_kor {
             get {
                 return ResourceManager.GetString("RestoreCommandCannotDeterminePackagesFolder_kor", resourceCulture);
             }
@@ -9504,7 +9504,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie można ustalić folderu pakietów w celu przywrócenia pakietów NuGet. Określ opcję -PackagesDirectory lub opcję -SolutionDirectory..
         /// </summary>
-        internal static string RestoreCommandCannotDeterminePackagesFolder_plk {
+        public static string RestoreCommandCannotDeterminePackagesFolder_plk {
             get {
                 return ResourceManager.GetString("RestoreCommandCannotDeterminePackagesFolder_plk", resourceCulture);
             }
@@ -9513,7 +9513,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Não é possível determinar os pacotes de pasta para restaurar pacotes NuGet. Especifique SolutionDirectory ou PackagesDirectory..
         /// </summary>
-        internal static string RestoreCommandCannotDeterminePackagesFolder_ptb {
+        public static string RestoreCommandCannotDeterminePackagesFolder_ptb {
             get {
                 return ResourceManager.GetString("RestoreCommandCannotDeterminePackagesFolder_ptb", resourceCulture);
             }
@@ -9522,7 +9522,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Не удается определить папку пакетов для восстановления пакетов NuGet. Укажите -PackagesDirectory или -SolutionDirectory..
         /// </summary>
-        internal static string RestoreCommandCannotDeterminePackagesFolder_rus {
+        public static string RestoreCommandCannotDeterminePackagesFolder_rus {
             get {
                 return ResourceManager.GetString("RestoreCommandCannotDeterminePackagesFolder_rus", resourceCulture);
             }
@@ -9531,7 +9531,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet paketlerinin geri yükleneceği paket klasörü belirlenemiyor. Lütfen -PackagesDirectory veya -SolutionDirectory seçimini belirtin..
         /// </summary>
-        internal static string RestoreCommandCannotDeterminePackagesFolder_trk {
+        public static string RestoreCommandCannotDeterminePackagesFolder_trk {
             get {
                 return ResourceManager.GetString("RestoreCommandCannotDeterminePackagesFolder_trk", resourceCulture);
             }
@@ -9540,7 +9540,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Input file does not exist: {0}..
         /// </summary>
-        internal static string RestoreCommandFileNotFound {
+        public static string RestoreCommandFileNotFound {
             get {
                 return ResourceManager.GetString("RestoreCommandFileNotFound", resourceCulture);
             }
@@ -9549,7 +9549,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 输入文件不存在: {0}。.
         /// </summary>
-        internal static string RestoreCommandFileNotFound_chs {
+        public static string RestoreCommandFileNotFound_chs {
             get {
                 return ResourceManager.GetString("RestoreCommandFileNotFound_chs", resourceCulture);
             }
@@ -9558,7 +9558,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 輸入檔不存在: {0}。.
         /// </summary>
-        internal static string RestoreCommandFileNotFound_cht {
+        public static string RestoreCommandFileNotFound_cht {
             get {
                 return ResourceManager.GetString("RestoreCommandFileNotFound_cht", resourceCulture);
             }
@@ -9567,7 +9567,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Vstupní soubor neexistuje: {0}..
         /// </summary>
-        internal static string RestoreCommandFileNotFound_csy {
+        public static string RestoreCommandFileNotFound_csy {
             get {
                 return ResourceManager.GetString("RestoreCommandFileNotFound_csy", resourceCulture);
             }
@@ -9576,7 +9576,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Eingabedatei ist nicht vorhanden: {0}..
         /// </summary>
-        internal static string RestoreCommandFileNotFound_deu {
+        public static string RestoreCommandFileNotFound_deu {
             get {
                 return ResourceManager.GetString("RestoreCommandFileNotFound_deu", resourceCulture);
             }
@@ -9585,7 +9585,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to El archivo de entrada no existe: {0}..
         /// </summary>
-        internal static string RestoreCommandFileNotFound_esp {
+        public static string RestoreCommandFileNotFound_esp {
             get {
                 return ResourceManager.GetString("RestoreCommandFileNotFound_esp", resourceCulture);
             }
@@ -9594,7 +9594,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Le fichier d&apos;entrée n&apos;existe pas : {0}..
         /// </summary>
-        internal static string RestoreCommandFileNotFound_fra {
+        public static string RestoreCommandFileNotFound_fra {
             get {
                 return ResourceManager.GetString("RestoreCommandFileNotFound_fra", resourceCulture);
             }
@@ -9603,7 +9603,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Input file inesistente: {0}..
         /// </summary>
-        internal static string RestoreCommandFileNotFound_ita {
+        public static string RestoreCommandFileNotFound_ita {
             get {
                 return ResourceManager.GetString("RestoreCommandFileNotFound_ita", resourceCulture);
             }
@@ -9612,7 +9612,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 入力ファイルが存在しません: {0}..
         /// </summary>
-        internal static string RestoreCommandFileNotFound_jpn {
+        public static string RestoreCommandFileNotFound_jpn {
             get {
                 return ResourceManager.GetString("RestoreCommandFileNotFound_jpn", resourceCulture);
             }
@@ -9621,7 +9621,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 입력 파일이 없습니다. {0}..
         /// </summary>
-        internal static string RestoreCommandFileNotFound_kor {
+        public static string RestoreCommandFileNotFound_kor {
             get {
                 return ResourceManager.GetString("RestoreCommandFileNotFound_kor", resourceCulture);
             }
@@ -9630,7 +9630,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Plik wejściowy nie istnieje: {0}..
         /// </summary>
-        internal static string RestoreCommandFileNotFound_plk {
+        public static string RestoreCommandFileNotFound_plk {
             get {
                 return ResourceManager.GetString("RestoreCommandFileNotFound_plk", resourceCulture);
             }
@@ -9639,7 +9639,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to O arquivo de entrada não existe: {0}..
         /// </summary>
-        internal static string RestoreCommandFileNotFound_ptb {
+        public static string RestoreCommandFileNotFound_ptb {
             get {
                 return ResourceManager.GetString("RestoreCommandFileNotFound_ptb", resourceCulture);
             }
@@ -9648,7 +9648,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Входной файл не существует: {0}..
         /// </summary>
-        internal static string RestoreCommandFileNotFound_rus {
+        public static string RestoreCommandFileNotFound_rus {
             get {
                 return ResourceManager.GetString("RestoreCommandFileNotFound_rus", resourceCulture);
             }
@@ -9657,7 +9657,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Girdi dosyası mevcut değil: {0}..
         /// </summary>
-        internal static string RestoreCommandFileNotFound_trk {
+        public static string RestoreCommandFileNotFound_trk {
             get {
                 return ResourceManager.GetString("RestoreCommandFileNotFound_trk", resourceCulture);
             }
@@ -9666,7 +9666,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Option -SolutionDirectory is not valid when restoring packages for a solution..
         /// </summary>
-        internal static string RestoreCommandOptionSolutionDirectoryIsInvalid {
+        public static string RestoreCommandOptionSolutionDirectoryIsInvalid {
             get {
                 return ResourceManager.GetString("RestoreCommandOptionSolutionDirectoryIsInvalid", resourceCulture);
             }
@@ -9675,7 +9675,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 为解决方案还原程序包时，选项 -SolutionDirectory 无效。.
         /// </summary>
-        internal static string RestoreCommandOptionSolutionDirectoryIsInvalid_chs {
+        public static string RestoreCommandOptionSolutionDirectoryIsInvalid_chs {
             get {
                 return ResourceManager.GetString("RestoreCommandOptionSolutionDirectoryIsInvalid_chs", resourceCulture);
             }
@@ -9684,7 +9684,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 為方案還原封裝時 Option -SolutionDirectory 為無效。.
         /// </summary>
-        internal static string RestoreCommandOptionSolutionDirectoryIsInvalid_cht {
+        public static string RestoreCommandOptionSolutionDirectoryIsInvalid_cht {
             get {
                 return ResourceManager.GetString("RestoreCommandOptionSolutionDirectoryIsInvalid_cht", resourceCulture);
             }
@@ -9693,7 +9693,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Možnost -SolutionDirectory není platná při obnovování balíčků pro řešení..
         /// </summary>
-        internal static string RestoreCommandOptionSolutionDirectoryIsInvalid_csy {
+        public static string RestoreCommandOptionSolutionDirectoryIsInvalid_csy {
             get {
                 return ResourceManager.GetString("RestoreCommandOptionSolutionDirectoryIsInvalid_csy", resourceCulture);
             }
@@ -9702,7 +9702,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Option &quot;-SolutionDirectory&quot; ist beim Wiederherstellen von Paketen für ein Projekt nicht gültig..
         /// </summary>
-        internal static string RestoreCommandOptionSolutionDirectoryIsInvalid_deu {
+        public static string RestoreCommandOptionSolutionDirectoryIsInvalid_deu {
             get {
                 return ResourceManager.GetString("RestoreCommandOptionSolutionDirectoryIsInvalid_deu", resourceCulture);
             }
@@ -9711,7 +9711,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La opción SolutionDirectory no es válida cuando restaura paquetes para una solución..
         /// </summary>
-        internal static string RestoreCommandOptionSolutionDirectoryIsInvalid_esp {
+        public static string RestoreCommandOptionSolutionDirectoryIsInvalid_esp {
             get {
                 return ResourceManager.GetString("RestoreCommandOptionSolutionDirectoryIsInvalid_esp", resourceCulture);
             }
@@ -9720,7 +9720,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to L&apos;option -SolutionDirectory n&apos;est pas valide lors de la restauration de packages pour une solution..
         /// </summary>
-        internal static string RestoreCommandOptionSolutionDirectoryIsInvalid_fra {
+        public static string RestoreCommandOptionSolutionDirectoryIsInvalid_fra {
             get {
                 return ResourceManager.GetString("RestoreCommandOptionSolutionDirectoryIsInvalid_fra", resourceCulture);
             }
@@ -9729,7 +9729,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Option -SolutionDirectory non è valida quando si ripristina pacchetti per una soluzione..
         /// </summary>
-        internal static string RestoreCommandOptionSolutionDirectoryIsInvalid_ita {
+        public static string RestoreCommandOptionSolutionDirectoryIsInvalid_ita {
             get {
                 return ResourceManager.GetString("RestoreCommandOptionSolutionDirectoryIsInvalid_ita", resourceCulture);
             }
@@ -9738,7 +9738,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to ソリューションのパッケージを復元する場合、オプション -SolutionDirectory は無効です。.
         /// </summary>
-        internal static string RestoreCommandOptionSolutionDirectoryIsInvalid_jpn {
+        public static string RestoreCommandOptionSolutionDirectoryIsInvalid_jpn {
             get {
                 return ResourceManager.GetString("RestoreCommandOptionSolutionDirectoryIsInvalid_jpn", resourceCulture);
             }
@@ -9747,7 +9747,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 솔루션 패키지를 복원하는 경우 -SolutionDirectory 옵션은 사용할 수 없습니다..
         /// </summary>
-        internal static string RestoreCommandOptionSolutionDirectoryIsInvalid_kor {
+        public static string RestoreCommandOptionSolutionDirectoryIsInvalid_kor {
             get {
                 return ResourceManager.GetString("RestoreCommandOptionSolutionDirectoryIsInvalid_kor", resourceCulture);
             }
@@ -9756,7 +9756,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Opcja -SolutionDirectory jest nieprawidłowa podczas przywracania pakietów dla rozwiązania..
         /// </summary>
-        internal static string RestoreCommandOptionSolutionDirectoryIsInvalid_plk {
+        public static string RestoreCommandOptionSolutionDirectoryIsInvalid_plk {
             get {
                 return ResourceManager.GetString("RestoreCommandOptionSolutionDirectoryIsInvalid_plk", resourceCulture);
             }
@@ -9765,7 +9765,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Option-SolutionDirectory não é válido ao restaurar pacotes para uma solução..
         /// </summary>
-        internal static string RestoreCommandOptionSolutionDirectoryIsInvalid_ptb {
+        public static string RestoreCommandOptionSolutionDirectoryIsInvalid_ptb {
             get {
                 return ResourceManager.GetString("RestoreCommandOptionSolutionDirectoryIsInvalid_ptb", resourceCulture);
             }
@@ -9774,7 +9774,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to При восстановлении пакетов для решения параметр -SolutionDirectory является недопустимым..
         /// </summary>
-        internal static string RestoreCommandOptionSolutionDirectoryIsInvalid_rus {
+        public static string RestoreCommandOptionSolutionDirectoryIsInvalid_rus {
             get {
                 return ResourceManager.GetString("RestoreCommandOptionSolutionDirectoryIsInvalid_rus", resourceCulture);
             }
@@ -9783,7 +9783,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Bir çözüme ait paketler geri yüklenirken -SolutionDirectory seçeneği geçerli değildir..
         /// </summary>
-        internal static string RestoreCommandOptionSolutionDirectoryIsInvalid_trk {
+        public static string RestoreCommandOptionSolutionDirectoryIsInvalid_trk {
             get {
                 return ResourceManager.GetString("RestoreCommandOptionSolutionDirectoryIsInvalid_trk", resourceCulture);
             }
@@ -9793,7 +9793,7 @@ namespace NuGet.CommandLine {
         ///   Looks up a localized string similar to Restoring NuGet packages...
         ///To prevent NuGet from downloading packages during build, open the Visual Studio Options dialog, click on the Package Manager node and uncheck &apos;{0}&apos;..
         /// </summary>
-        internal static string RestoreCommandPackageRestoreOptOutMessage {
+        public static string RestoreCommandPackageRestoreOptOutMessage {
             get {
                 return ResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage", resourceCulture);
             }
@@ -9803,7 +9803,7 @@ namespace NuGet.CommandLine {
         ///   Looks up a localized string similar to 正在还原 NuGet 程序包...
         ///若要防止 NuGet 在生成期间下载程序包，请打开“Visual Studio 选项”对话框，单击“程序包管理器”节点并取消选中“{0}”。.
         /// </summary>
-        internal static string RestoreCommandPackageRestoreOptOutMessage_chs {
+        public static string RestoreCommandPackageRestoreOptOutMessage_chs {
             get {
                 return ResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage_chs", resourceCulture);
             }
@@ -9813,7 +9813,7 @@ namespace NuGet.CommandLine {
         ///   Looks up a localized string similar to 正在還原 NuGet packages...
         ///若要防止 NuGet 在建置時下載封裝，按一下 [封裝管理員] 節點並取消勾選 &apos;{0}&apos;。.
         /// </summary>
-        internal static string RestoreCommandPackageRestoreOptOutMessage_cht {
+        public static string RestoreCommandPackageRestoreOptOutMessage_cht {
             get {
                 return ResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage_cht", resourceCulture);
             }
@@ -9823,7 +9823,7 @@ namespace NuGet.CommandLine {
         ///   Looks up a localized string similar to Probíhá obnovení balíčků NuGet...
         ///Chcete-li systému NuGet zabránit ve stahování balíčků během sestavování, otevřete dialogové okno Možnosti sady Visual Studio, klikněte na uzel Správce balíčků a zrušte zaškrtnutí položky {0}..
         /// </summary>
-        internal static string RestoreCommandPackageRestoreOptOutMessage_csy {
+        public static string RestoreCommandPackageRestoreOptOutMessage_csy {
             get {
                 return ResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage_csy", resourceCulture);
             }
@@ -9833,7 +9833,7 @@ namespace NuGet.CommandLine {
         ///   Looks up a localized string similar to NuGet-Pakete werden wiederhergestellt...
         ///Damit verhindert wird, dass NuGet Pakete während des Buildvorgangs herunterlädt, öffnen Sie das Dialogfeld &quot;Optionen&quot; von Visual Studio, klicken Sie auf den Knoten &quot;Paket-Manager&quot;, und deaktivieren Sie dann &quot;{0}&quot;..
         /// </summary>
-        internal static string RestoreCommandPackageRestoreOptOutMessage_deu {
+        public static string RestoreCommandPackageRestoreOptOutMessage_deu {
             get {
                 return ResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage_deu", resourceCulture);
             }
@@ -9843,7 +9843,7 @@ namespace NuGet.CommandLine {
         ///   Looks up a localized string similar to Restaurando paquetes NuGet…  
         ///Para impedir que NuGet descargue paquetes durante la compilación, abra el cuadro de diálogo Opciones de Visual Studio, haga clic en el nodo del Administrador de paquetes y desactive &apos;{0}&apos;. .
         /// </summary>
-        internal static string RestoreCommandPackageRestoreOptOutMessage_esp {
+        public static string RestoreCommandPackageRestoreOptOutMessage_esp {
             get {
                 return ResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage_esp", resourceCulture);
             }
@@ -9853,7 +9853,7 @@ namespace NuGet.CommandLine {
         ///   Looks up a localized string similar to Restauration des packages NuGet…
         ///Pour empêcher NuGet de télécharger des packages lors de la création, ouvrez la boîte de dialogue Options Visual Studio, cliquez sur le nœud Gestionnaire de package et décochez &apos;{0}&apos;..
         /// </summary>
-        internal static string RestoreCommandPackageRestoreOptOutMessage_fra {
+        public static string RestoreCommandPackageRestoreOptOutMessage_fra {
             get {
                 return ResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage_fra", resourceCulture);
             }
@@ -9862,7 +9862,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ripristinando pacchetti NuGet…                               Per evitare che NuGet scarichi pacchetti durante il build, aprire la finestra di dialogo Visual Studio Options dialog, fare clic su Package Manager e deselezionare &apos;{0}&apos;..
         /// </summary>
-        internal static string RestoreCommandPackageRestoreOptOutMessage_ita {
+        public static string RestoreCommandPackageRestoreOptOutMessage_ita {
             get {
                 return ResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage_ita", resourceCulture);
             }
@@ -9872,7 +9872,7 @@ namespace NuGet.CommandLine {
         ///   Looks up a localized string similar to NuGet パッケージを復元しています...
         ///ビルド中に NuGet がパッケージをダウンロードしないようにするには、Visual Studio の [オプション] ダイアログを開き、パッケージ マネージャー ノードをクリックし、&apos;{0}&apos; をオフにします。.
         /// </summary>
-        internal static string RestoreCommandPackageRestoreOptOutMessage_jpn {
+        public static string RestoreCommandPackageRestoreOptOutMessage_jpn {
             get {
                 return ResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage_jpn", resourceCulture);
             }
@@ -9882,7 +9882,7 @@ namespace NuGet.CommandLine {
         ///   Looks up a localized string similar to NuGet 패키지를 복원하는 중...
         ///빌드 시 NuGet이 패키지를 다운로드하지 않도록 하려면 [Visual Studio 옵션] 대화 상자를 열고 [패키지 관리자] 노드를 클릭한 후 &apos;{0}&apos;을(를) 선택 취소합니다..
         /// </summary>
-        internal static string RestoreCommandPackageRestoreOptOutMessage_kor {
+        public static string RestoreCommandPackageRestoreOptOutMessage_kor {
             get {
                 return ResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage_kor", resourceCulture);
             }
@@ -9892,7 +9892,7 @@ namespace NuGet.CommandLine {
         ///   Looks up a localized string similar to Trwa przywracanie pakietów NuGet...
         ///Aby uniemożliwić pobieranie pakietów NuGet podczas kompilowania, otwórz okno dialogowe opcji programu Visual Studio, kliknij węzeł Menedżera pakietów i usuń zaznaczenie pozycji „{0}”..
         /// </summary>
-        internal static string RestoreCommandPackageRestoreOptOutMessage_plk {
+        public static string RestoreCommandPackageRestoreOptOutMessage_plk {
             get {
                 return ResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage_plk", resourceCulture);
             }
@@ -9902,7 +9902,7 @@ namespace NuGet.CommandLine {
         ///   Looks up a localized string similar to Restaurando pacotes NuGet ...
         ///Para evitar que o NuGet baixe pacotes durante a construção, abra a caixa de diálogo Opções do Visual Studio, clique no nó Gerenciador de Pacotes e desmarque a opção &apos;{0}&apos;..
         /// </summary>
-        internal static string RestoreCommandPackageRestoreOptOutMessage_ptb {
+        public static string RestoreCommandPackageRestoreOptOutMessage_ptb {
             get {
                 return ResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage_ptb", resourceCulture);
             }
@@ -9912,7 +9912,7 @@ namespace NuGet.CommandLine {
         ///   Looks up a localized string similar to Восстановление пакетов NuGet…
         ///Чтобы предотвратить загрузку пакетов NuGet во время выполнения сборки, в Visual Studio откройте диалоговое окно &quot;Параметры&quot;, выберите узел &quot;Диспетчер пакетов&quot; и снимите флажок &quot;{0}&quot;..
         /// </summary>
-        internal static string RestoreCommandPackageRestoreOptOutMessage_rus {
+        public static string RestoreCommandPackageRestoreOptOutMessage_rus {
             get {
                 return ResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage_rus", resourceCulture);
             }
@@ -9922,7 +9922,7 @@ namespace NuGet.CommandLine {
         ///   Looks up a localized string similar to NuGet paketleri geri yükleniyor...
         ///Oluşturma sırasında NuGet&apos;in paketleri indirmesini önlemek için, Visual Studio Seçenekleri iletişim kutusunu açın, Paket Yöneticisi düğümünü tıklayıp &apos;{0}&apos; seçimini işaretleyin..
         /// </summary>
-        internal static string RestoreCommandPackageRestoreOptOutMessage_trk {
+        public static string RestoreCommandPackageRestoreOptOutMessage_trk {
             get {
                 return ResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage_trk", resourceCulture);
             }
@@ -9931,7 +9931,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Project file {0} cannot be found..
         /// </summary>
-        internal static string RestoreCommandProjectNotFound {
+        public static string RestoreCommandProjectNotFound {
             get {
                 return ResourceManager.GetString("RestoreCommandProjectNotFound", resourceCulture);
             }
@@ -9940,7 +9940,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到项目文件 {0}。.
         /// </summary>
-        internal static string RestoreCommandProjectNotFound_chs {
+        public static string RestoreCommandProjectNotFound_chs {
             get {
                 return ResourceManager.GetString("RestoreCommandProjectNotFound_chs", resourceCulture);
             }
@@ -9949,7 +9949,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到專案檔 {0}。.
         /// </summary>
-        internal static string RestoreCommandProjectNotFound_cht {
+        public static string RestoreCommandProjectNotFound_cht {
             get {
                 return ResourceManager.GetString("RestoreCommandProjectNotFound_cht", resourceCulture);
             }
@@ -9958,7 +9958,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Soubor projektu {0} nebyl nalezen..
         /// </summary>
-        internal static string RestoreCommandProjectNotFound_csy {
+        public static string RestoreCommandProjectNotFound_csy {
             get {
                 return ResourceManager.GetString("RestoreCommandProjectNotFound_csy", resourceCulture);
             }
@@ -9967,7 +9967,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Projektdatei &quot;{0}&quot; wurde nicht gefunden..
         /// </summary>
-        internal static string RestoreCommandProjectNotFound_deu {
+        public static string RestoreCommandProjectNotFound_deu {
             get {
                 return ResourceManager.GetString("RestoreCommandProjectNotFound_deu", resourceCulture);
             }
@@ -9976,7 +9976,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se puede encontrar el archivo de proyecto {0}..
         /// </summary>
-        internal static string RestoreCommandProjectNotFound_esp {
+        public static string RestoreCommandProjectNotFound_esp {
             get {
                 return ResourceManager.GetString("RestoreCommandProjectNotFound_esp", resourceCulture);
             }
@@ -9985,7 +9985,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Le fichier projet {0} est introuvable..
         /// </summary>
-        internal static string RestoreCommandProjectNotFound_fra {
+        public static string RestoreCommandProjectNotFound_fra {
             get {
                 return ResourceManager.GetString("RestoreCommandProjectNotFound_fra", resourceCulture);
             }
@@ -9994,7 +9994,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossibile trovare file progetto {0}..
         /// </summary>
-        internal static string RestoreCommandProjectNotFound_ita {
+        public static string RestoreCommandProjectNotFound_ita {
             get {
                 return ResourceManager.GetString("RestoreCommandProjectNotFound_ita", resourceCulture);
             }
@@ -10003,7 +10003,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to プロジェクト ファイル {0} が見つかりません。.
         /// </summary>
-        internal static string RestoreCommandProjectNotFound_jpn {
+        public static string RestoreCommandProjectNotFound_jpn {
             get {
                 return ResourceManager.GetString("RestoreCommandProjectNotFound_jpn", resourceCulture);
             }
@@ -10012,7 +10012,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 프로젝트 파일 {0}을(를) 찾을 수 없습니다..
         /// </summary>
-        internal static string RestoreCommandProjectNotFound_kor {
+        public static string RestoreCommandProjectNotFound_kor {
             get {
                 return ResourceManager.GetString("RestoreCommandProjectNotFound_kor", resourceCulture);
             }
@@ -10021,7 +10021,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie można znaleźć pliku projektu {0}..
         /// </summary>
-        internal static string RestoreCommandProjectNotFound_plk {
+        public static string RestoreCommandProjectNotFound_plk {
             get {
                 return ResourceManager.GetString("RestoreCommandProjectNotFound_plk", resourceCulture);
             }
@@ -10030,7 +10030,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Não foi possível localizar o arquivo de projeto {0}..
         /// </summary>
-        internal static string RestoreCommandProjectNotFound_ptb {
+        public static string RestoreCommandProjectNotFound_ptb {
             get {
                 return ResourceManager.GetString("RestoreCommandProjectNotFound_ptb", resourceCulture);
             }
@@ -10039,7 +10039,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Не удалось найти файл проекта {0}..
         /// </summary>
-        internal static string RestoreCommandProjectNotFound_rus {
+        public static string RestoreCommandProjectNotFound_rus {
             get {
                 return ResourceManager.GetString("RestoreCommandProjectNotFound_rus", resourceCulture);
             }
@@ -10048,7 +10048,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} proje dosyası bulunamadı..
         /// </summary>
-        internal static string RestoreCommandProjectNotFound_trk {
+        public static string RestoreCommandProjectNotFound_trk {
             get {
                 return ResourceManager.GetString("RestoreCommandProjectNotFound_trk", resourceCulture);
             }
@@ -10057,7 +10057,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Restoring NuGet packages for solution {0}..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesForSolution {
+        public static string RestoreCommandRestoringPackagesForSolution {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesForSolution", resourceCulture);
             }
@@ -10066,7 +10066,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在为解决方案 {0} 还原 NuGet 程序包。.
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesForSolution_chs {
+        public static string RestoreCommandRestoringPackagesForSolution_chs {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesForSolution_chs", resourceCulture);
             }
@@ -10075,7 +10075,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在為方案 {0} 還原 NuGet 封裝。.
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesForSolution_cht {
+        public static string RestoreCommandRestoringPackagesForSolution_cht {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesForSolution_cht", resourceCulture);
             }
@@ -10084,7 +10084,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Probíhá obnovení balíčků NuGet pro řešení {0}..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesForSolution_csy {
+        public static string RestoreCommandRestoringPackagesForSolution_csy {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesForSolution_csy", resourceCulture);
             }
@@ -10093,7 +10093,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet-Pakete für das Projekt &quot;{0}&quot; werden wiederhergestellt..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesForSolution_deu {
+        public static string RestoreCommandRestoringPackagesForSolution_deu {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesForSolution_deu", resourceCulture);
             }
@@ -10102,7 +10102,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Restaurando paquetes NuGet para la solución {0}..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesForSolution_esp {
+        public static string RestoreCommandRestoringPackagesForSolution_esp {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesForSolution_esp", resourceCulture);
             }
@@ -10111,7 +10111,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Restauration des packages NuGet pour la solution {0}..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesForSolution_fra {
+        public static string RestoreCommandRestoringPackagesForSolution_fra {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesForSolution_fra", resourceCulture);
             }
@@ -10120,7 +10120,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ripristinando pacchetti NuGet per soluzione{0}..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesForSolution_ita {
+        public static string RestoreCommandRestoringPackagesForSolution_ita {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesForSolution_ita", resourceCulture);
             }
@@ -10129,7 +10129,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet パッケージをソリューション {0} 用に復元しています。.
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesForSolution_jpn {
+        public static string RestoreCommandRestoringPackagesForSolution_jpn {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesForSolution_jpn", resourceCulture);
             }
@@ -10138,7 +10138,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} 솔루션의 NuGet 패키지를 복원하고 있습니다..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesForSolution_kor {
+        public static string RestoreCommandRestoringPackagesForSolution_kor {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesForSolution_kor", resourceCulture);
             }
@@ -10147,7 +10147,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Przywracanie pakietów NuGet dla rozwiązania {0}..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesForSolution_plk {
+        public static string RestoreCommandRestoringPackagesForSolution_plk {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesForSolution_plk", resourceCulture);
             }
@@ -10156,7 +10156,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Restaurar pacotes NuGet para a solução {0}..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesForSolution_ptb {
+        public static string RestoreCommandRestoringPackagesForSolution_ptb {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesForSolution_ptb", resourceCulture);
             }
@@ -10165,7 +10165,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Восстановление пакетов NuGet для решения {0}..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesForSolution_rus {
+        public static string RestoreCommandRestoringPackagesForSolution_rus {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesForSolution_rus", resourceCulture);
             }
@@ -10174,7 +10174,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} çözümü için NuGet paketleri geri yükleniyor..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesForSolution_trk {
+        public static string RestoreCommandRestoringPackagesForSolution_trk {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesForSolution_trk", resourceCulture);
             }
@@ -10183,7 +10183,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Restoring NuGet packages listed in packages.config file..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesFromPackagesConfigFile {
+        public static string RestoreCommandRestoringPackagesFromPackagesConfigFile {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesFromPackagesConfigFile", resourceCulture);
             }
@@ -10192,7 +10192,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在还原 packages.config 文件中列出的 NuGet 程序包。.
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesFromPackagesConfigFile_chs {
+        public static string RestoreCommandRestoringPackagesFromPackagesConfigFile_chs {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesFromPackagesConfigFile_chs", resourceCulture);
             }
@@ -10201,7 +10201,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在還原列在 packages.config 檔案中的 NuGet 封裝。.
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesFromPackagesConfigFile_cht {
+        public static string RestoreCommandRestoringPackagesFromPackagesConfigFile_cht {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesFromPackagesConfigFile_cht", resourceCulture);
             }
@@ -10210,7 +10210,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Probíhá obnovení balíčků NuGet uvedených v souboru packages.config..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesFromPackagesConfigFile_csy {
+        public static string RestoreCommandRestoringPackagesFromPackagesConfigFile_csy {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesFromPackagesConfigFile_csy", resourceCulture);
             }
@@ -10219,7 +10219,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die in der Datei &quot;packages.config&quot; aufgelisteten NuGet-Pakete werden wiederhergestellt..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesFromPackagesConfigFile_deu {
+        public static string RestoreCommandRestoringPackagesFromPackagesConfigFile_deu {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesFromPackagesConfigFile_deu", resourceCulture);
             }
@@ -10228,7 +10228,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Restaurando paquetes NuGet mostrados en el archivo packages.config..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesFromPackagesConfigFile_esp {
+        public static string RestoreCommandRestoringPackagesFromPackagesConfigFile_esp {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesFromPackagesConfigFile_esp", resourceCulture);
             }
@@ -10237,7 +10237,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Restauration des packages NuGet répertoriés dans le fichier packages.config..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesFromPackagesConfigFile_fra {
+        public static string RestoreCommandRestoringPackagesFromPackagesConfigFile_fra {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesFromPackagesConfigFile_fra", resourceCulture);
             }
@@ -10246,7 +10246,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ripristinando pacchetti NuGet elencati in packages.config file..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesFromPackagesConfigFile_ita {
+        public static string RestoreCommandRestoringPackagesFromPackagesConfigFile_ita {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesFromPackagesConfigFile_ita", resourceCulture);
             }
@@ -10255,7 +10255,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to packages.config ファイルに含まれる NuGet パッケージを復元しています。.
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesFromPackagesConfigFile_jpn {
+        public static string RestoreCommandRestoringPackagesFromPackagesConfigFile_jpn {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesFromPackagesConfigFile_jpn", resourceCulture);
             }
@@ -10264,7 +10264,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to packages.config 파일에 나열된 NuGet 패키지를 복원하고 있습니다..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesFromPackagesConfigFile_kor {
+        public static string RestoreCommandRestoringPackagesFromPackagesConfigFile_kor {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesFromPackagesConfigFile_kor", resourceCulture);
             }
@@ -10273,7 +10273,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Przywracanie pakietów NuGet wymienionych w pliku packages.config..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesFromPackagesConfigFile_plk {
+        public static string RestoreCommandRestoringPackagesFromPackagesConfigFile_plk {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesFromPackagesConfigFile_plk", resourceCulture);
             }
@@ -10282,7 +10282,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Restaurar pacotes NuGet listados no arquivo de packages.config..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesFromPackagesConfigFile_ptb {
+        public static string RestoreCommandRestoringPackagesFromPackagesConfigFile_ptb {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesFromPackagesConfigFile_ptb", resourceCulture);
             }
@@ -10291,7 +10291,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Восстановление пакетов NuGet, перечисленных в файле packages.config..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesFromPackagesConfigFile_rus {
+        public static string RestoreCommandRestoringPackagesFromPackagesConfigFile_rus {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesFromPackagesConfigFile_rus", resourceCulture);
             }
@@ -10300,7 +10300,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Packages.config dosyasında listelenen NuGet paketleri geri yükleniyor..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesFromPackagesConfigFile_trk {
+        public static string RestoreCommandRestoringPackagesFromPackagesConfigFile_trk {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesFromPackagesConfigFile_trk", resourceCulture);
             }
@@ -10309,7 +10309,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Restoring NuGet packages listed in file {0}..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesListedInFile {
+        public static string RestoreCommandRestoringPackagesListedInFile {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesListedInFile", resourceCulture);
             }
@@ -10318,7 +10318,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在还原文件 {0} 中列出的 NuGet 程序包。.
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesListedInFile_chs {
+        public static string RestoreCommandRestoringPackagesListedInFile_chs {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesListedInFile_chs", resourceCulture);
             }
@@ -10327,7 +10327,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在還原列在檔案 {0} 中的 NuGet 封裝。.
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesListedInFile_cht {
+        public static string RestoreCommandRestoringPackagesListedInFile_cht {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesListedInFile_cht", resourceCulture);
             }
@@ -10336,7 +10336,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Probíhá obnovení balíčků NuGet uvedených v souboru {0}..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesListedInFile_csy {
+        public static string RestoreCommandRestoringPackagesListedInFile_csy {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesListedInFile_csy", resourceCulture);
             }
@@ -10345,7 +10345,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die in der Datei &quot;{0}&quot; aufgelisteten NuGet-Pakete werden wiederhergestellt..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesListedInFile_deu {
+        public static string RestoreCommandRestoringPackagesListedInFile_deu {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesListedInFile_deu", resourceCulture);
             }
@@ -10354,7 +10354,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Restaurando paquetes NuGet mostrados en el archivo {0}..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesListedInFile_esp {
+        public static string RestoreCommandRestoringPackagesListedInFile_esp {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesListedInFile_esp", resourceCulture);
             }
@@ -10363,7 +10363,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Restauration des packages NuGet répertoriés dans le fichier {0}..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesListedInFile_fra {
+        public static string RestoreCommandRestoringPackagesListedInFile_fra {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesListedInFile_fra", resourceCulture);
             }
@@ -10372,7 +10372,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ripristinando pacchetti NuGet elencati in file {0}..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesListedInFile_ita {
+        public static string RestoreCommandRestoringPackagesListedInFile_ita {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesListedInFile_ita", resourceCulture);
             }
@@ -10381,7 +10381,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to ファイル {0} に含まれる NuGet パッケージを復元しています。.
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesListedInFile_jpn {
+        public static string RestoreCommandRestoringPackagesListedInFile_jpn {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesListedInFile_jpn", resourceCulture);
             }
@@ -10390,7 +10390,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} 파일에 나열된 NuGet 패키지를 복원하고 있습니다..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesListedInFile_kor {
+        public static string RestoreCommandRestoringPackagesListedInFile_kor {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesListedInFile_kor", resourceCulture);
             }
@@ -10399,7 +10399,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Przywracanie pakietów NuGet wymienionych w pliku {0}..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesListedInFile_plk {
+        public static string RestoreCommandRestoringPackagesListedInFile_plk {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesListedInFile_plk", resourceCulture);
             }
@@ -10408,7 +10408,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Restaurar pacotes NuGet listados no arquivo {0}..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesListedInFile_ptb {
+        public static string RestoreCommandRestoringPackagesListedInFile_ptb {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesListedInFile_ptb", resourceCulture);
             }
@@ -10417,7 +10417,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Восстановление пакетов NuGet, перечисленных в файле {0}..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesListedInFile_rus {
+        public static string RestoreCommandRestoringPackagesListedInFile_rus {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesListedInFile_rus", resourceCulture);
             }
@@ -10426,7 +10426,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} içinde listelenen NuGet paketleri geri yükleniyor..
         /// </summary>
-        internal static string RestoreCommandRestoringPackagesListedInFile_trk {
+        public static string RestoreCommandRestoringPackagesListedInFile_trk {
             get {
                 return ResourceManager.GetString("RestoreCommandRestoringPackagesListedInFile_trk", resourceCulture);
             }
@@ -10435,7 +10435,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Scanning for projects....
         /// </summary>
-        internal static string ScanningForProjects {
+        public static string ScanningForProjects {
             get {
                 return ResourceManager.GetString("ScanningForProjects", resourceCulture);
             }
@@ -10444,7 +10444,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在扫描项目....
         /// </summary>
-        internal static string ScanningForProjects_chs {
+        public static string ScanningForProjects_chs {
             get {
                 return ResourceManager.GetString("ScanningForProjects_chs", resourceCulture);
             }
@@ -10453,7 +10453,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在掃瞄專案....
         /// </summary>
-        internal static string ScanningForProjects_cht {
+        public static string ScanningForProjects_cht {
             get {
                 return ResourceManager.GetString("ScanningForProjects_cht", resourceCulture);
             }
@@ -10462,7 +10462,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Probíhá hledání projektů....
         /// </summary>
-        internal static string ScanningForProjects_csy {
+        public static string ScanningForProjects_csy {
             get {
                 return ResourceManager.GetString("ScanningForProjects_csy", resourceCulture);
             }
@@ -10471,7 +10471,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Suchen nach Projekten....
         /// </summary>
-        internal static string ScanningForProjects_deu {
+        public static string ScanningForProjects_deu {
             get {
                 return ResourceManager.GetString("ScanningForProjects_deu", resourceCulture);
             }
@@ -10480,7 +10480,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Examinando proyectos….
         /// </summary>
-        internal static string ScanningForProjects_esp {
+        public static string ScanningForProjects_esp {
             get {
                 return ResourceManager.GetString("ScanningForProjects_esp", resourceCulture);
             }
@@ -10489,7 +10489,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Recherche de projets en cours….
         /// </summary>
-        internal static string ScanningForProjects_fra {
+        public static string ScanningForProjects_fra {
             get {
                 return ResourceManager.GetString("ScanningForProjects_fra", resourceCulture);
             }
@@ -10498,7 +10498,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ricercando progetti....
         /// </summary>
-        internal static string ScanningForProjects_ita {
+        public static string ScanningForProjects_ita {
             get {
                 return ResourceManager.GetString("ScanningForProjects_ita", resourceCulture);
             }
@@ -10507,7 +10507,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to プロジェクトをスキャンしています....
         /// </summary>
-        internal static string ScanningForProjects_jpn {
+        public static string ScanningForProjects_jpn {
             get {
                 return ResourceManager.GetString("ScanningForProjects_jpn", resourceCulture);
             }
@@ -10516,7 +10516,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 프로젝트를 스캔하는 중....
         /// </summary>
-        internal static string ScanningForProjects_kor {
+        public static string ScanningForProjects_kor {
             get {
                 return ResourceManager.GetString("ScanningForProjects_kor", resourceCulture);
             }
@@ -10525,7 +10525,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Trwa skanowanie w poszukiwaniu projektów....
         /// </summary>
-        internal static string ScanningForProjects_plk {
+        public static string ScanningForProjects_plk {
             get {
                 return ResourceManager.GetString("ScanningForProjects_plk", resourceCulture);
             }
@@ -10534,7 +10534,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Verificando projetos ....
         /// </summary>
-        internal static string ScanningForProjects_ptb {
+        public static string ScanningForProjects_ptb {
             get {
                 return ResourceManager.GetString("ScanningForProjects_ptb", resourceCulture);
             }
@@ -10543,7 +10543,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Сканирование проектов….
         /// </summary>
-        internal static string ScanningForProjects_rus {
+        public static string ScanningForProjects_rus {
             get {
                 return ResourceManager.GetString("ScanningForProjects_rus", resourceCulture);
             }
@@ -10552,7 +10552,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Projeler taranıyor….
         /// </summary>
-        internal static string ScanningForProjects_trk {
+        public static string ScanningForProjects_trk {
             get {
                 return ResourceManager.GetString("ScanningForProjects_trk", resourceCulture);
             }
@@ -10561,7 +10561,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to The API Key &apos;{0}&apos; was saved for {1}..
         /// </summary>
-        internal static string SetApiKeyCommandApiKeySaved {
+        public static string SetApiKeyCommandApiKeySaved {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandApiKeySaved", resourceCulture);
             }
@@ -10570,7 +10570,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已保存 {1} 的 API 密钥“{0}”。.
         /// </summary>
-        internal static string SetApiKeyCommandApiKeySaved_chs {
+        public static string SetApiKeyCommandApiKeySaved_chs {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandApiKeySaved_chs", resourceCulture);
             }
@@ -10579,7 +10579,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已為 {1} 儲存 API 索引鍵 &apos;{0}&apos;。.
         /// </summary>
-        internal static string SetApiKeyCommandApiKeySaved_cht {
+        public static string SetApiKeyCommandApiKeySaved_cht {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandApiKeySaved_cht", resourceCulture);
             }
@@ -10588,7 +10588,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Klíč API {0} byl uložen pro {1}..
         /// </summary>
-        internal static string SetApiKeyCommandApiKeySaved_csy {
+        public static string SetApiKeyCommandApiKeySaved_csy {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandApiKeySaved_csy", resourceCulture);
             }
@@ -10597,7 +10597,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Der API-Schlüssel &quot;{0}&quot; wurde für &quot;{1}&quot; gespeichert..
         /// </summary>
-        internal static string SetApiKeyCommandApiKeySaved_deu {
+        public static string SetApiKeyCommandApiKeySaved_deu {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandApiKeySaved_deu", resourceCulture);
             }
@@ -10606,7 +10606,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La clave API &apos;{0}&apos; se ha guardado para {1}..
         /// </summary>
-        internal static string SetApiKeyCommandApiKeySaved_esp {
+        public static string SetApiKeyCommandApiKeySaved_esp {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandApiKeySaved_esp", resourceCulture);
             }
@@ -10615,7 +10615,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La clé API &apos;{0}&apos; a été enregistrée pour {1}..
         /// </summary>
-        internal static string SetApiKeyCommandApiKeySaved_fra {
+        public static string SetApiKeyCommandApiKeySaved_fra {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandApiKeySaved_fra", resourceCulture);
             }
@@ -10624,7 +10624,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to API Key &apos;{0}&apos; salvato per {1}..
         /// </summary>
-        internal static string SetApiKeyCommandApiKeySaved_ita {
+        public static string SetApiKeyCommandApiKeySaved_ita {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandApiKeySaved_ita", resourceCulture);
             }
@@ -10633,7 +10633,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {1} の API キー &apos;{0}&apos; が保存されました。.
         /// </summary>
-        internal static string SetApiKeyCommandApiKeySaved_jpn {
+        public static string SetApiKeyCommandApiKeySaved_jpn {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandApiKeySaved_jpn", resourceCulture);
             }
@@ -10642,7 +10642,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to API 키 &apos;{0}&apos;이(가) {1}에 저장되었습니다..
         /// </summary>
-        internal static string SetApiKeyCommandApiKeySaved_kor {
+        public static string SetApiKeyCommandApiKeySaved_kor {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandApiKeySaved_kor", resourceCulture);
             }
@@ -10651,7 +10651,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Klucz interfejsu API „{0}” został zapisany dla {1}..
         /// </summary>
-        internal static string SetApiKeyCommandApiKeySaved_plk {
+        public static string SetApiKeyCommandApiKeySaved_plk {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandApiKeySaved_plk", resourceCulture);
             }
@@ -10660,7 +10660,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to A chave de API &apos;{0}&apos; foi salva para {1}..
         /// </summary>
-        internal static string SetApiKeyCommandApiKeySaved_ptb {
+        public static string SetApiKeyCommandApiKeySaved_ptb {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandApiKeySaved_ptb", resourceCulture);
             }
@@ -10669,7 +10669,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Был сохранен ключ API &quot;{0}&quot; для {1}..
         /// </summary>
-        internal static string SetApiKeyCommandApiKeySaved_rus {
+        public static string SetApiKeyCommandApiKeySaved_rus {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandApiKeySaved_rus", resourceCulture);
             }
@@ -10678,7 +10678,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {1} için &apos;{0}&apos; API Anahtarı kaydedildi..
         /// </summary>
-        internal static string SetApiKeyCommandApiKeySaved_trk {
+        public static string SetApiKeyCommandApiKeySaved_trk {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandApiKeySaved_trk", resourceCulture);
             }
@@ -10687,7 +10687,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to The API Key &apos;{0}&apos; was saved for {1} and {2}..
         /// </summary>
-        internal static string SetApiKeyCommandDefaultApiKeysSaved {
+        public static string SetApiKeyCommandDefaultApiKeysSaved {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandDefaultApiKeysSaved", resourceCulture);
             }
@@ -10696,7 +10696,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已保存 {1} 和 {2} 的 API 密钥“{0}”。.
         /// </summary>
-        internal static string SetApiKeyCommandDefaultApiKeysSaved_chs {
+        public static string SetApiKeyCommandDefaultApiKeysSaved_chs {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandDefaultApiKeysSaved_chs", resourceCulture);
             }
@@ -10705,7 +10705,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已為 {1} 和 {2} 儲存 API 索引鍵 &apos;{0}&apos;。.
         /// </summary>
-        internal static string SetApiKeyCommandDefaultApiKeysSaved_cht {
+        public static string SetApiKeyCommandDefaultApiKeysSaved_cht {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandDefaultApiKeysSaved_cht", resourceCulture);
             }
@@ -10714,7 +10714,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Klíč API {0} byl uložen pro {1} a {2}..
         /// </summary>
-        internal static string SetApiKeyCommandDefaultApiKeysSaved_csy {
+        public static string SetApiKeyCommandDefaultApiKeysSaved_csy {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandDefaultApiKeysSaved_csy", resourceCulture);
             }
@@ -10723,7 +10723,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Der API-Schlüssel &quot;{0}&quot; wurde für &quot;{1}&quot; und &quot;{2}&quot; gespeichert..
         /// </summary>
-        internal static string SetApiKeyCommandDefaultApiKeysSaved_deu {
+        public static string SetApiKeyCommandDefaultApiKeysSaved_deu {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandDefaultApiKeysSaved_deu", resourceCulture);
             }
@@ -10732,7 +10732,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La clave API &apos;{0}&apos; se ha guardado para {1} y {2}..
         /// </summary>
-        internal static string SetApiKeyCommandDefaultApiKeysSaved_esp {
+        public static string SetApiKeyCommandDefaultApiKeysSaved_esp {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandDefaultApiKeysSaved_esp", resourceCulture);
             }
@@ -10741,7 +10741,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La clé API &apos;{0}&apos; a été enregistrée pour {1} et {2}..
         /// </summary>
-        internal static string SetApiKeyCommandDefaultApiKeysSaved_fra {
+        public static string SetApiKeyCommandDefaultApiKeysSaved_fra {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandDefaultApiKeysSaved_fra", resourceCulture);
             }
@@ -10750,7 +10750,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to API Key &apos;{0}&apos;salvato per {1} e {2}..
         /// </summary>
-        internal static string SetApiKeyCommandDefaultApiKeysSaved_ita {
+        public static string SetApiKeyCommandDefaultApiKeysSaved_ita {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandDefaultApiKeysSaved_ita", resourceCulture);
             }
@@ -10759,7 +10759,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {1} と {2} の API キー &apos;{0}&apos; が保存されました。.
         /// </summary>
-        internal static string SetApiKeyCommandDefaultApiKeysSaved_jpn {
+        public static string SetApiKeyCommandDefaultApiKeysSaved_jpn {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandDefaultApiKeysSaved_jpn", resourceCulture);
             }
@@ -10768,7 +10768,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to API 키 &apos;{0}&apos;이(가) {1} 및 {2}에 저장되었습니다..
         /// </summary>
-        internal static string SetApiKeyCommandDefaultApiKeysSaved_kor {
+        public static string SetApiKeyCommandDefaultApiKeysSaved_kor {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandDefaultApiKeysSaved_kor", resourceCulture);
             }
@@ -10777,7 +10777,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Klucz interfejsu API „{0}” został zapisany dla {1} i {2}..
         /// </summary>
-        internal static string SetApiKeyCommandDefaultApiKeysSaved_plk {
+        public static string SetApiKeyCommandDefaultApiKeysSaved_plk {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandDefaultApiKeysSaved_plk", resourceCulture);
             }
@@ -10786,7 +10786,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to A chave de API &apos;{0}&apos; foi salva para {1} e {2}..
         /// </summary>
-        internal static string SetApiKeyCommandDefaultApiKeysSaved_ptb {
+        public static string SetApiKeyCommandDefaultApiKeysSaved_ptb {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandDefaultApiKeysSaved_ptb", resourceCulture);
             }
@@ -10795,7 +10795,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Был сохранен ключ API &quot;{0}&quot; для {1} и {2}..
         /// </summary>
-        internal static string SetApiKeyCommandDefaultApiKeysSaved_rus {
+        public static string SetApiKeyCommandDefaultApiKeysSaved_rus {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandDefaultApiKeysSaved_rus", resourceCulture);
             }
@@ -10804,7 +10804,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {1} ve {2} için &apos;{0}&apos; API Anahtarı kaydedildi..
         /// </summary>
-        internal static string SetApiKeyCommandDefaultApiKeysSaved_trk {
+        public static string SetApiKeyCommandDefaultApiKeysSaved_trk {
             get {
                 return ResourceManager.GetString("SetApiKeyCommandDefaultApiKeysSaved_trk", resourceCulture);
             }
@@ -10813,7 +10813,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Using credentials from config. UserName: {0}.
         /// </summary>
-        internal static string SettingsCredentials_UsingSavedCredentials {
+        public static string SettingsCredentials_UsingSavedCredentials {
             get {
                 return ResourceManager.GetString("SettingsCredentials_UsingSavedCredentials", resourceCulture);
             }
@@ -10822,7 +10822,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Package source name &apos;All&apos; is a reserved name..
         /// </summary>
-        internal static string SourcesCommandAllNameIsReserved {
+        public static string SourcesCommandAllNameIsReserved {
             get {
                 return ResourceManager.GetString("SourcesCommandAllNameIsReserved", resourceCulture);
             }
@@ -10831,7 +10831,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 程序包源名称 &quot;All&quot; 是保留名称。.
         /// </summary>
-        internal static string SourcesCommandAllNameIsReserved_chs {
+        public static string SourcesCommandAllNameIsReserved_chs {
             get {
                 return ResourceManager.GetString("SourcesCommandAllNameIsReserved_chs", resourceCulture);
             }
@@ -10840,7 +10840,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 封裝來源名稱 &apos;All&apos; 為保留的名稱。.
         /// </summary>
-        internal static string SourcesCommandAllNameIsReserved_cht {
+        public static string SourcesCommandAllNameIsReserved_cht {
             get {
                 return ResourceManager.GetString("SourcesCommandAllNameIsReserved_cht", resourceCulture);
             }
@@ -10849,7 +10849,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Název zdroje balíčku All je vyhrazený název..
         /// </summary>
-        internal static string SourcesCommandAllNameIsReserved_csy {
+        public static string SourcesCommandAllNameIsReserved_csy {
             get {
                 return ResourceManager.GetString("SourcesCommandAllNameIsReserved_csy", resourceCulture);
             }
@@ -10858,7 +10858,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Der Paketquellname &quot;All&quot; ist ein reservierter Name..
         /// </summary>
-        internal static string SourcesCommandAllNameIsReserved_deu {
+        public static string SourcesCommandAllNameIsReserved_deu {
             get {
                 return ResourceManager.GetString("SourcesCommandAllNameIsReserved_deu", resourceCulture);
             }
@@ -10867,7 +10867,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to El nombre de origen del paquete &apos;Todo&apos; es un nombre reservado..
         /// </summary>
-        internal static string SourcesCommandAllNameIsReserved_esp {
+        public static string SourcesCommandAllNameIsReserved_esp {
             get {
                 return ResourceManager.GetString("SourcesCommandAllNameIsReserved_esp", resourceCulture);
             }
@@ -10876,7 +10876,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Le nom de source de package &apos;All&apos; est réservé..
         /// </summary>
-        internal static string SourcesCommandAllNameIsReserved_fra {
+        public static string SourcesCommandAllNameIsReserved_fra {
             get {
                 return ResourceManager.GetString("SourcesCommandAllNameIsReserved_fra", resourceCulture);
             }
@@ -10885,7 +10885,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nome pacchetto &apos;Tutti&apos; è un nome riservato..
         /// </summary>
-        internal static string SourcesCommandAllNameIsReserved_ita {
+        public static string SourcesCommandAllNameIsReserved_ita {
             get {
                 return ResourceManager.GetString("SourcesCommandAllNameIsReserved_ita", resourceCulture);
             }
@@ -10894,7 +10894,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to パッケージ ソース名 &apos;All&apos; は予約名です。.
         /// </summary>
-        internal static string SourcesCommandAllNameIsReserved_jpn {
+        public static string SourcesCommandAllNameIsReserved_jpn {
             get {
                 return ResourceManager.GetString("SourcesCommandAllNameIsReserved_jpn", resourceCulture);
             }
@@ -10903,7 +10903,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 패키지 소스 이름 &apos;All&apos;은 예약된 이름입니다..
         /// </summary>
-        internal static string SourcesCommandAllNameIsReserved_kor {
+        public static string SourcesCommandAllNameIsReserved_kor {
             get {
                 return ResourceManager.GetString("SourcesCommandAllNameIsReserved_kor", resourceCulture);
             }
@@ -10912,7 +10912,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nazwa źródła pakietów „Wszystkie” jest nazwą zarezerwowaną..
         /// </summary>
-        internal static string SourcesCommandAllNameIsReserved_plk {
+        public static string SourcesCommandAllNameIsReserved_plk {
             get {
                 return ResourceManager.GetString("SourcesCommandAllNameIsReserved_plk", resourceCulture);
             }
@@ -10921,7 +10921,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to O nome de origem do pacote &apos;Todos&apos; é um nome reservado..
         /// </summary>
-        internal static string SourcesCommandAllNameIsReserved_ptb {
+        public static string SourcesCommandAllNameIsReserved_ptb {
             get {
                 return ResourceManager.GetString("SourcesCommandAllNameIsReserved_ptb", resourceCulture);
             }
@@ -10930,7 +10930,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Имя источника пакетов &quot;All&quot; является зарезервированным именем..
         /// </summary>
-        internal static string SourcesCommandAllNameIsReserved_rus {
+        public static string SourcesCommandAllNameIsReserved_rus {
             get {
                 return ResourceManager.GetString("SourcesCommandAllNameIsReserved_rus", resourceCulture);
             }
@@ -10939,7 +10939,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Tümü&apos; paket kaynak adı ayrılmış bir addır..
         /// </summary>
-        internal static string SourcesCommandAllNameIsReserved_trk {
+        public static string SourcesCommandAllNameIsReserved_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandAllNameIsReserved_trk", resourceCulture);
             }
@@ -10948,7 +10948,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Both UserName and Password must be specified..
         /// </summary>
-        internal static string SourcesCommandCredentialsRequired {
+        public static string SourcesCommandCredentialsRequired {
             get {
                 return ResourceManager.GetString("SourcesCommandCredentialsRequired", resourceCulture);
             }
@@ -10957,7 +10957,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 必须同时指定用户名和密码。.
         /// </summary>
-        internal static string SourcesCommandCredentialsRequired_chs {
+        public static string SourcesCommandCredentialsRequired_chs {
             get {
                 return ResourceManager.GetString("SourcesCommandCredentialsRequired_chs", resourceCulture);
             }
@@ -10966,7 +10966,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 必須指定使用者名稱和密碼。.
         /// </summary>
-        internal static string SourcesCommandCredentialsRequired_cht {
+        public static string SourcesCommandCredentialsRequired_cht {
             get {
                 return ResourceManager.GetString("SourcesCommandCredentialsRequired_cht", resourceCulture);
             }
@@ -10975,7 +10975,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Je třeba zadat uživatelské jméno i heslo..
         /// </summary>
-        internal static string SourcesCommandCredentialsRequired_csy {
+        public static string SourcesCommandCredentialsRequired_csy {
             get {
                 return ResourceManager.GetString("SourcesCommandCredentialsRequired_csy", resourceCulture);
             }
@@ -10984,7 +10984,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;UserName&quot; und &quot;Password&quot; müssen angegeben werden..
         /// </summary>
-        internal static string SourcesCommandCredentialsRequired_deu {
+        public static string SourcesCommandCredentialsRequired_deu {
             get {
                 return ResourceManager.GetString("SourcesCommandCredentialsRequired_deu", resourceCulture);
             }
@@ -10993,7 +10993,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Se deben especificar tanto el nombre de usuario como la contraseña..
         /// </summary>
-        internal static string SourcesCommandCredentialsRequired_esp {
+        public static string SourcesCommandCredentialsRequired_esp {
             get {
                 return ResourceManager.GetString("SourcesCommandCredentialsRequired_esp", resourceCulture);
             }
@@ -11002,7 +11002,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Le @@@nom d&apos;utilisateur et le mot de passe doivent être spécifiés..
         /// </summary>
-        internal static string SourcesCommandCredentialsRequired_fra {
+        public static string SourcesCommandCredentialsRequired_fra {
             get {
                 return ResourceManager.GetString("SourcesCommandCredentialsRequired_fra", resourceCulture);
             }
@@ -11011,7 +11011,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Specificare nome utente e password..
         /// </summary>
-        internal static string SourcesCommandCredentialsRequired_ita {
+        public static string SourcesCommandCredentialsRequired_ita {
             get {
                 return ResourceManager.GetString("SourcesCommandCredentialsRequired_ita", resourceCulture);
             }
@@ -11020,7 +11020,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to UserName と Password の両方を指定する必要があります。.
         /// </summary>
-        internal static string SourcesCommandCredentialsRequired_jpn {
+        public static string SourcesCommandCredentialsRequired_jpn {
             get {
                 return ResourceManager.GetString("SourcesCommandCredentialsRequired_jpn", resourceCulture);
             }
@@ -11029,7 +11029,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 사용자 이름 및 암호를 모두 지정해야 합니다..
         /// </summary>
-        internal static string SourcesCommandCredentialsRequired_kor {
+        public static string SourcesCommandCredentialsRequired_kor {
             get {
                 return ResourceManager.GetString("SourcesCommandCredentialsRequired_kor", resourceCulture);
             }
@@ -11038,7 +11038,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Należy określić zarówno nazwę użytkownika, jak i hasło..
         /// </summary>
-        internal static string SourcesCommandCredentialsRequired_plk {
+        public static string SourcesCommandCredentialsRequired_plk {
             get {
                 return ResourceManager.GetString("SourcesCommandCredentialsRequired_plk", resourceCulture);
             }
@@ -11047,7 +11047,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to O Nome de usuário e senha devem ser especificados..
         /// </summary>
-        internal static string SourcesCommandCredentialsRequired_ptb {
+        public static string SourcesCommandCredentialsRequired_ptb {
             get {
                 return ResourceManager.GetString("SourcesCommandCredentialsRequired_ptb", resourceCulture);
             }
@@ -11056,7 +11056,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Следует указать имя пользователя и пароль..
         /// </summary>
-        internal static string SourcesCommandCredentialsRequired_rus {
+        public static string SourcesCommandCredentialsRequired_rus {
             get {
                 return ResourceManager.GetString("SourcesCommandCredentialsRequired_rus", resourceCulture);
             }
@@ -11065,7 +11065,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to KullanıcıAdı ve Parolanın belirtilmesi gerekir..
         /// </summary>
-        internal static string SourcesCommandCredentialsRequired_trk {
+        public static string SourcesCommandCredentialsRequired_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandCredentialsRequired_trk", resourceCulture);
             }
@@ -11074,7 +11074,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Disabled.
         /// </summary>
-        internal static string SourcesCommandDisabled {
+        public static string SourcesCommandDisabled {
             get {
                 return ResourceManager.GetString("SourcesCommandDisabled", resourceCulture);
             }
@@ -11083,7 +11083,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已禁用.
         /// </summary>
-        internal static string SourcesCommandDisabled_chs {
+        public static string SourcesCommandDisabled_chs {
             get {
                 return ResourceManager.GetString("SourcesCommandDisabled_chs", resourceCulture);
             }
@@ -11092,7 +11092,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已停用.
         /// </summary>
-        internal static string SourcesCommandDisabled_cht {
+        public static string SourcesCommandDisabled_cht {
             get {
                 return ResourceManager.GetString("SourcesCommandDisabled_cht", resourceCulture);
             }
@@ -11101,7 +11101,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Zakázáno.
         /// </summary>
-        internal static string SourcesCommandDisabled_csy {
+        public static string SourcesCommandDisabled_csy {
             get {
                 return ResourceManager.GetString("SourcesCommandDisabled_csy", resourceCulture);
             }
@@ -11110,7 +11110,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Deaktiviert.
         /// </summary>
-        internal static string SourcesCommandDisabled_deu {
+        public static string SourcesCommandDisabled_deu {
             get {
                 return ResourceManager.GetString("SourcesCommandDisabled_deu", resourceCulture);
             }
@@ -11119,7 +11119,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Deshabilitado.
         /// </summary>
-        internal static string SourcesCommandDisabled_esp {
+        public static string SourcesCommandDisabled_esp {
             get {
                 return ResourceManager.GetString("SourcesCommandDisabled_esp", resourceCulture);
             }
@@ -11128,7 +11128,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Désactivé.
         /// </summary>
-        internal static string SourcesCommandDisabled_fra {
+        public static string SourcesCommandDisabled_fra {
             get {
                 return ResourceManager.GetString("SourcesCommandDisabled_fra", resourceCulture);
             }
@@ -11137,7 +11137,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Disabilitato.
         /// </summary>
-        internal static string SourcesCommandDisabled_ita {
+        public static string SourcesCommandDisabled_ita {
             get {
                 return ResourceManager.GetString("SourcesCommandDisabled_ita", resourceCulture);
             }
@@ -11146,7 +11146,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 無効.
         /// </summary>
-        internal static string SourcesCommandDisabled_jpn {
+        public static string SourcesCommandDisabled_jpn {
             get {
                 return ResourceManager.GetString("SourcesCommandDisabled_jpn", resourceCulture);
             }
@@ -11155,7 +11155,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 사용 안 함.
         /// </summary>
-        internal static string SourcesCommandDisabled_kor {
+        public static string SourcesCommandDisabled_kor {
             get {
                 return ResourceManager.GetString("SourcesCommandDisabled_kor", resourceCulture);
             }
@@ -11164,7 +11164,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Wyłączone.
         /// </summary>
-        internal static string SourcesCommandDisabled_plk {
+        public static string SourcesCommandDisabled_plk {
             get {
                 return ResourceManager.GetString("SourcesCommandDisabled_plk", resourceCulture);
             }
@@ -11173,7 +11173,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Desativado.
         /// </summary>
-        internal static string SourcesCommandDisabled_ptb {
+        public static string SourcesCommandDisabled_ptb {
             get {
                 return ResourceManager.GetString("SourcesCommandDisabled_ptb", resourceCulture);
             }
@@ -11182,7 +11182,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Отключено.
         /// </summary>
-        internal static string SourcesCommandDisabled_rus {
+        public static string SourcesCommandDisabled_rus {
             get {
                 return ResourceManager.GetString("SourcesCommandDisabled_rus", resourceCulture);
             }
@@ -11191,7 +11191,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Devre dışı.
         /// </summary>
-        internal static string SourcesCommandDisabled_trk {
+        public static string SourcesCommandDisabled_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandDisabled_trk", resourceCulture);
             }
@@ -11200,7 +11200,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Enabled.
         /// </summary>
-        internal static string SourcesCommandEnabled {
+        public static string SourcesCommandEnabled {
             get {
                 return ResourceManager.GetString("SourcesCommandEnabled", resourceCulture);
             }
@@ -11209,7 +11209,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已启用.
         /// </summary>
-        internal static string SourcesCommandEnabled_chs {
+        public static string SourcesCommandEnabled_chs {
             get {
                 return ResourceManager.GetString("SourcesCommandEnabled_chs", resourceCulture);
             }
@@ -11218,7 +11218,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已啟用.
         /// </summary>
-        internal static string SourcesCommandEnabled_cht {
+        public static string SourcesCommandEnabled_cht {
             get {
                 return ResourceManager.GetString("SourcesCommandEnabled_cht", resourceCulture);
             }
@@ -11227,7 +11227,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Povoleno.
         /// </summary>
-        internal static string SourcesCommandEnabled_csy {
+        public static string SourcesCommandEnabled_csy {
             get {
                 return ResourceManager.GetString("SourcesCommandEnabled_csy", resourceCulture);
             }
@@ -11236,7 +11236,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Aktiviert.
         /// </summary>
-        internal static string SourcesCommandEnabled_deu {
+        public static string SourcesCommandEnabled_deu {
             get {
                 return ResourceManager.GetString("SourcesCommandEnabled_deu", resourceCulture);
             }
@@ -11245,7 +11245,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Habilitado.
         /// </summary>
-        internal static string SourcesCommandEnabled_esp {
+        public static string SourcesCommandEnabled_esp {
             get {
                 return ResourceManager.GetString("SourcesCommandEnabled_esp", resourceCulture);
             }
@@ -11254,7 +11254,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Activé.
         /// </summary>
-        internal static string SourcesCommandEnabled_fra {
+        public static string SourcesCommandEnabled_fra {
             get {
                 return ResourceManager.GetString("SourcesCommandEnabled_fra", resourceCulture);
             }
@@ -11263,7 +11263,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Abilitato.
         /// </summary>
-        internal static string SourcesCommandEnabled_ita {
+        public static string SourcesCommandEnabled_ita {
             get {
                 return ResourceManager.GetString("SourcesCommandEnabled_ita", resourceCulture);
             }
@@ -11272,7 +11272,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 有効.
         /// </summary>
-        internal static string SourcesCommandEnabled_jpn {
+        public static string SourcesCommandEnabled_jpn {
             get {
                 return ResourceManager.GetString("SourcesCommandEnabled_jpn", resourceCulture);
             }
@@ -11281,7 +11281,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 사용.
         /// </summary>
-        internal static string SourcesCommandEnabled_kor {
+        public static string SourcesCommandEnabled_kor {
             get {
                 return ResourceManager.GetString("SourcesCommandEnabled_kor", resourceCulture);
             }
@@ -11290,7 +11290,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Włączone.
         /// </summary>
-        internal static string SourcesCommandEnabled_plk {
+        public static string SourcesCommandEnabled_plk {
             get {
                 return ResourceManager.GetString("SourcesCommandEnabled_plk", resourceCulture);
             }
@@ -11299,7 +11299,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ativado.
         /// </summary>
-        internal static string SourcesCommandEnabled_ptb {
+        public static string SourcesCommandEnabled_ptb {
             get {
                 return ResourceManager.GetString("SourcesCommandEnabled_ptb", resourceCulture);
             }
@@ -11308,7 +11308,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Включено.
         /// </summary>
-        internal static string SourcesCommandEnabled_rus {
+        public static string SourcesCommandEnabled_rus {
             get {
                 return ResourceManager.GetString("SourcesCommandEnabled_rus", resourceCulture);
             }
@@ -11317,7 +11317,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Etkin.
         /// </summary>
-        internal static string SourcesCommandEnabled_trk {
+        public static string SourcesCommandEnabled_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandEnabled_trk", resourceCulture);
             }
@@ -11326,7 +11326,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to The source specified is invalid. Please provide a valid source..
         /// </summary>
-        internal static string SourcesCommandInvalidSource {
+        public static string SourcesCommandInvalidSource {
             get {
                 return ResourceManager.GetString("SourcesCommandInvalidSource", resourceCulture);
             }
@@ -11335,7 +11335,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 指定的源无效。请提供有效源。.
         /// </summary>
-        internal static string SourcesCommandInvalidSource_chs {
+        public static string SourcesCommandInvalidSource_chs {
             get {
                 return ResourceManager.GetString("SourcesCommandInvalidSource_chs", resourceCulture);
             }
@@ -11344,7 +11344,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 指定的來源無效。請提供有效來源。.
         /// </summary>
-        internal static string SourcesCommandInvalidSource_cht {
+        public static string SourcesCommandInvalidSource_cht {
             get {
                 return ResourceManager.GetString("SourcesCommandInvalidSource_cht", resourceCulture);
             }
@@ -11353,7 +11353,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Zadaný zdroj je neplatný. Zadejte platný zdroj..
         /// </summary>
-        internal static string SourcesCommandInvalidSource_csy {
+        public static string SourcesCommandInvalidSource_csy {
             get {
                 return ResourceManager.GetString("SourcesCommandInvalidSource_csy", resourceCulture);
             }
@@ -11362,7 +11362,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die angegebene Quelle ist ungültig. Bitte geben Sie eine gültige Quelle an..
         /// </summary>
-        internal static string SourcesCommandInvalidSource_deu {
+        public static string SourcesCommandInvalidSource_deu {
             get {
                 return ResourceManager.GetString("SourcesCommandInvalidSource_deu", resourceCulture);
             }
@@ -11371,7 +11371,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to El origen especificado no es válido. Proporcione un origen válido..
         /// </summary>
-        internal static string SourcesCommandInvalidSource_esp {
+        public static string SourcesCommandInvalidSource_esp {
             get {
                 return ResourceManager.GetString("SourcesCommandInvalidSource_esp", resourceCulture);
             }
@@ -11380,7 +11380,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La source spécifiée n&apos;est pas valide. Veuillez fournir une source valide..
         /// </summary>
-        internal static string SourcesCommandInvalidSource_fra {
+        public static string SourcesCommandInvalidSource_fra {
             get {
                 return ResourceManager.GetString("SourcesCommandInvalidSource_fra", resourceCulture);
             }
@@ -11389,7 +11389,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La fonte specificata non è valida. Fornire una fonte valida..
         /// </summary>
-        internal static string SourcesCommandInvalidSource_ita {
+        public static string SourcesCommandInvalidSource_ita {
             get {
                 return ResourceManager.GetString("SourcesCommandInvalidSource_ita", resourceCulture);
             }
@@ -11398,7 +11398,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 指定されたソースは無効です。有効なソースを指定してください。.
         /// </summary>
-        internal static string SourcesCommandInvalidSource_jpn {
+        public static string SourcesCommandInvalidSource_jpn {
             get {
                 return ResourceManager.GetString("SourcesCommandInvalidSource_jpn", resourceCulture);
             }
@@ -11407,7 +11407,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 지정한 소스가 잘못되었습니다. 올바른 소스를 제공하십시오..
         /// </summary>
-        internal static string SourcesCommandInvalidSource_kor {
+        public static string SourcesCommandInvalidSource_kor {
             get {
                 return ResourceManager.GetString("SourcesCommandInvalidSource_kor", resourceCulture);
             }
@@ -11416,7 +11416,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Podane źródło jest nieprawidłowe. Określ prawidłowe źródło..
         /// </summary>
-        internal static string SourcesCommandInvalidSource_plk {
+        public static string SourcesCommandInvalidSource_plk {
             get {
                 return ResourceManager.GetString("SourcesCommandInvalidSource_plk", resourceCulture);
             }
@@ -11425,7 +11425,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to A origem especificada é inválida. Forneça uma origem válida..
         /// </summary>
-        internal static string SourcesCommandInvalidSource_ptb {
+        public static string SourcesCommandInvalidSource_ptb {
             get {
                 return ResourceManager.GetString("SourcesCommandInvalidSource_ptb", resourceCulture);
             }
@@ -11434,7 +11434,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Указан недопустимый источник. Укажите допустимый источник..
         /// </summary>
-        internal static string SourcesCommandInvalidSource_rus {
+        public static string SourcesCommandInvalidSource_rus {
             get {
                 return ResourceManager.GetString("SourcesCommandInvalidSource_rus", resourceCulture);
             }
@@ -11443,7 +11443,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Belirtilen kaynak geçersiz. Lütfen geçerli bir kaynak belirtin..
         /// </summary>
-        internal static string SourcesCommandInvalidSource_trk {
+        public static string SourcesCommandInvalidSource_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandInvalidSource_trk", resourceCulture);
             }
@@ -11452,7 +11452,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to The name specified cannot be empty. Please provide a valid name..
         /// </summary>
-        internal static string SourcesCommandNameRequired {
+        public static string SourcesCommandNameRequired {
             get {
                 return ResourceManager.GetString("SourcesCommandNameRequired", resourceCulture);
             }
@@ -11461,7 +11461,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 指定的名称不能为空。请提供有效的名称。.
         /// </summary>
-        internal static string SourcesCommandNameRequired_chs {
+        public static string SourcesCommandNameRequired_chs {
             get {
                 return ResourceManager.GetString("SourcesCommandNameRequired_chs", resourceCulture);
             }
@@ -11470,7 +11470,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 指定的名稱不能為空。請提供有效名稱。.
         /// </summary>
-        internal static string SourcesCommandNameRequired_cht {
+        public static string SourcesCommandNameRequired_cht {
             get {
                 return ResourceManager.GetString("SourcesCommandNameRequired_cht", resourceCulture);
             }
@@ -11479,7 +11479,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Zadaný název nesmí být prázdný. Zadejte platný název..
         /// </summary>
-        internal static string SourcesCommandNameRequired_csy {
+        public static string SourcesCommandNameRequired_csy {
             get {
                 return ResourceManager.GetString("SourcesCommandNameRequired_csy", resourceCulture);
             }
@@ -11488,7 +11488,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Der angegebene Name darf nicht leer sein. Bitte geben Sie einen gültigen Namen an..
         /// </summary>
-        internal static string SourcesCommandNameRequired_deu {
+        public static string SourcesCommandNameRequired_deu {
             get {
                 return ResourceManager.GetString("SourcesCommandNameRequired_deu", resourceCulture);
             }
@@ -11497,7 +11497,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to El nombre especificado no puede estar vacío. Proporcione un nombre válido..
         /// </summary>
-        internal static string SourcesCommandNameRequired_esp {
+        public static string SourcesCommandNameRequired_esp {
             get {
                 return ResourceManager.GetString("SourcesCommandNameRequired_esp", resourceCulture);
             }
@@ -11506,7 +11506,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Le nom spécifié ne peut pas être vide. Veuillez fournir un nom valide..
         /// </summary>
-        internal static string SourcesCommandNameRequired_fra {
+        public static string SourcesCommandNameRequired_fra {
             get {
                 return ResourceManager.GetString("SourcesCommandNameRequired_fra", resourceCulture);
             }
@@ -11515,7 +11515,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Il nome specificato non può essere vuoto. Fornire un nome valido..
         /// </summary>
-        internal static string SourcesCommandNameRequired_ita {
+        public static string SourcesCommandNameRequired_ita {
             get {
                 return ResourceManager.GetString("SourcesCommandNameRequired_ita", resourceCulture);
             }
@@ -11524,7 +11524,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 空の名前は指定できません。有効な名前を指定してください。.
         /// </summary>
-        internal static string SourcesCommandNameRequired_jpn {
+        public static string SourcesCommandNameRequired_jpn {
             get {
                 return ResourceManager.GetString("SourcesCommandNameRequired_jpn", resourceCulture);
             }
@@ -11533,7 +11533,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 지정한 이름은 비워둘 수 없습니다. 올바른 이름을 제공하십시오..
         /// </summary>
-        internal static string SourcesCommandNameRequired_kor {
+        public static string SourcesCommandNameRequired_kor {
             get {
                 return ResourceManager.GetString("SourcesCommandNameRequired_kor", resourceCulture);
             }
@@ -11542,7 +11542,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nazwa nie może być pusta. Określ prawidłową nazwę..
         /// </summary>
-        internal static string SourcesCommandNameRequired_plk {
+        public static string SourcesCommandNameRequired_plk {
             get {
                 return ResourceManager.GetString("SourcesCommandNameRequired_plk", resourceCulture);
             }
@@ -11551,7 +11551,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to O nome especificado não pode ficar vazio. Forneça um nome válido..
         /// </summary>
-        internal static string SourcesCommandNameRequired_ptb {
+        public static string SourcesCommandNameRequired_ptb {
             get {
                 return ResourceManager.GetString("SourcesCommandNameRequired_ptb", resourceCulture);
             }
@@ -11560,7 +11560,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Указанное имя не может быть пустым. Укажите допустимое имя..
         /// </summary>
-        internal static string SourcesCommandNameRequired_rus {
+        public static string SourcesCommandNameRequired_rus {
             get {
                 return ResourceManager.GetString("SourcesCommandNameRequired_rus", resourceCulture);
             }
@@ -11569,7 +11569,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Belirtilen ad boş olamaz. Lütfen geçerli bir ad belirtin..
         /// </summary>
-        internal static string SourcesCommandNameRequired_trk {
+        public static string SourcesCommandNameRequired_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandNameRequired_trk", resourceCulture);
             }
@@ -11578,7 +11578,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Unable to find any package source(s) matching name: {0}..
         /// </summary>
-        internal static string SourcesCommandNoMatchingSourcesFound {
+        public static string SourcesCommandNoMatchingSourcesFound {
             get {
                 return ResourceManager.GetString("SourcesCommandNoMatchingSourcesFound", resourceCulture);
             }
@@ -11587,7 +11587,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到与名称 {0} 匹配的任何程序包源。.
         /// </summary>
-        internal static string SourcesCommandNoMatchingSourcesFound_chs {
+        public static string SourcesCommandNoMatchingSourcesFound_chs {
             get {
                 return ResourceManager.GetString("SourcesCommandNoMatchingSourcesFound_chs", resourceCulture);
             }
@@ -11596,7 +11596,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到入封裝來源相符名稱: {0}..
         /// </summary>
-        internal static string SourcesCommandNoMatchingSourcesFound_cht {
+        public static string SourcesCommandNoMatchingSourcesFound_cht {
             get {
                 return ResourceManager.GetString("SourcesCommandNoMatchingSourcesFound_cht", resourceCulture);
             }
@@ -11605,7 +11605,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nebyly nalezen žádné zdroje balíčků odpovídající názvu: {0}..
         /// </summary>
-        internal static string SourcesCommandNoMatchingSourcesFound_csy {
+        public static string SourcesCommandNoMatchingSourcesFound_csy {
             get {
                 return ResourceManager.GetString("SourcesCommandNoMatchingSourcesFound_csy", resourceCulture);
             }
@@ -11614,7 +11614,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Es wurden keine Paketquellen gefunden, die mit dem folgenden Namen übereinstimmen: {0}..
         /// </summary>
-        internal static string SourcesCommandNoMatchingSourcesFound_deu {
+        public static string SourcesCommandNoMatchingSourcesFound_deu {
             get {
                 return ResourceManager.GetString("SourcesCommandNoMatchingSourcesFound_deu", resourceCulture);
             }
@@ -11623,7 +11623,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se puede encontrar ningún nombre que coincida con los orígenes del paquete: {0}..
         /// </summary>
-        internal static string SourcesCommandNoMatchingSourcesFound_esp {
+        public static string SourcesCommandNoMatchingSourcesFound_esp {
             get {
                 return ResourceManager.GetString("SourcesCommandNoMatchingSourcesFound_esp", resourceCulture);
             }
@@ -11632,7 +11632,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossible de trouver un nom de source de package correspondant : {0}..
         /// </summary>
-        internal static string SourcesCommandNoMatchingSourcesFound_fra {
+        public static string SourcesCommandNoMatchingSourcesFound_fra {
             get {
                 return ResourceManager.GetString("SourcesCommandNoMatchingSourcesFound_fra", resourceCulture);
             }
@@ -11641,7 +11641,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossibile trovare il nome del pacchetto: {0}..
         /// </summary>
-        internal static string SourcesCommandNoMatchingSourcesFound_ita {
+        public static string SourcesCommandNoMatchingSourcesFound_ita {
             get {
                 return ResourceManager.GetString("SourcesCommandNoMatchingSourcesFound_ita", resourceCulture);
             }
@@ -11650,7 +11650,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 名前と一致するパッケージ ソースが見つかりません: {0}..
         /// </summary>
-        internal static string SourcesCommandNoMatchingSourcesFound_jpn {
+        public static string SourcesCommandNoMatchingSourcesFound_jpn {
             get {
                 return ResourceManager.GetString("SourcesCommandNoMatchingSourcesFound_jpn", resourceCulture);
             }
@@ -11659,7 +11659,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} 이름과 일치하는 패키지 소스를 찾을 수 없습니다..
         /// </summary>
-        internal static string SourcesCommandNoMatchingSourcesFound_kor {
+        public static string SourcesCommandNoMatchingSourcesFound_kor {
             get {
                 return ResourceManager.GetString("SourcesCommandNoMatchingSourcesFound_kor", resourceCulture);
             }
@@ -11668,7 +11668,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie można odnaleźć żadnych zgodnych nazw źródeł pakietów: {0}..
         /// </summary>
-        internal static string SourcesCommandNoMatchingSourcesFound_plk {
+        public static string SourcesCommandNoMatchingSourcesFound_plk {
             get {
                 return ResourceManager.GetString("SourcesCommandNoMatchingSourcesFound_plk", resourceCulture);
             }
@@ -11677,7 +11677,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Não é possível encontrar nenhum nome correspondente de origem de pacote: {0}..
         /// </summary>
-        internal static string SourcesCommandNoMatchingSourcesFound_ptb {
+        public static string SourcesCommandNoMatchingSourcesFound_ptb {
             get {
                 return ResourceManager.GetString("SourcesCommandNoMatchingSourcesFound_ptb", resourceCulture);
             }
@@ -11686,7 +11686,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Не удалось найти источники пакетов, соответствующие имени: {0}..
         /// </summary>
-        internal static string SourcesCommandNoMatchingSourcesFound_rus {
+        public static string SourcesCommandNoMatchingSourcesFound_rus {
             get {
                 return ResourceManager.GetString("SourcesCommandNoMatchingSourcesFound_rus", resourceCulture);
             }
@@ -11695,7 +11695,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Bu adla eşleşen herhangi bir paket kaynağı bulunamadı: {0}..
         /// </summary>
-        internal static string SourcesCommandNoMatchingSourcesFound_trk {
+        public static string SourcesCommandNoMatchingSourcesFound_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandNoMatchingSourcesFound_trk", resourceCulture);
             }
@@ -11704,7 +11704,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No sources found..
         /// </summary>
-        internal static string SourcesCommandNoSources {
+        public static string SourcesCommandNoSources {
             get {
                 return ResourceManager.GetString("SourcesCommandNoSources", resourceCulture);
             }
@@ -11713,7 +11713,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到源。.
         /// </summary>
-        internal static string SourcesCommandNoSources_chs {
+        public static string SourcesCommandNoSources_chs {
             get {
                 return ResourceManager.GetString("SourcesCommandNoSources_chs", resourceCulture);
             }
@@ -11722,7 +11722,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到來源。.
         /// </summary>
-        internal static string SourcesCommandNoSources_cht {
+        public static string SourcesCommandNoSources_cht {
             get {
                 return ResourceManager.GetString("SourcesCommandNoSources_cht", resourceCulture);
             }
@@ -11731,7 +11731,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nebyly nalezeny žádné zdroje..
         /// </summary>
-        internal static string SourcesCommandNoSources_csy {
+        public static string SourcesCommandNoSources_csy {
             get {
                 return ResourceManager.GetString("SourcesCommandNoSources_csy", resourceCulture);
             }
@@ -11740,7 +11740,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Es wurden keine Quellen gefunden..
         /// </summary>
-        internal static string SourcesCommandNoSources_deu {
+        public static string SourcesCommandNoSources_deu {
             get {
                 return ResourceManager.GetString("SourcesCommandNoSources_deu", resourceCulture);
             }
@@ -11749,7 +11749,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se ha encontrado ningún origen..
         /// </summary>
-        internal static string SourcesCommandNoSources_esp {
+        public static string SourcesCommandNoSources_esp {
             get {
                 return ResourceManager.GetString("SourcesCommandNoSources_esp", resourceCulture);
             }
@@ -11758,7 +11758,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Aucune source trouvée..
         /// </summary>
-        internal static string SourcesCommandNoSources_fra {
+        public static string SourcesCommandNoSources_fra {
             get {
                 return ResourceManager.GetString("SourcesCommandNoSources_fra", resourceCulture);
             }
@@ -11767,7 +11767,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nessuna fonte trovata..
         /// </summary>
-        internal static string SourcesCommandNoSources_ita {
+        public static string SourcesCommandNoSources_ita {
             get {
                 return ResourceManager.GetString("SourcesCommandNoSources_ita", resourceCulture);
             }
@@ -11776,7 +11776,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to ソースが見つかりません。.
         /// </summary>
-        internal static string SourcesCommandNoSources_jpn {
+        public static string SourcesCommandNoSources_jpn {
             get {
                 return ResourceManager.GetString("SourcesCommandNoSources_jpn", resourceCulture);
             }
@@ -11785,7 +11785,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 소스를 찾을 수 없습니다..
         /// </summary>
-        internal static string SourcesCommandNoSources_kor {
+        public static string SourcesCommandNoSources_kor {
             get {
                 return ResourceManager.GetString("SourcesCommandNoSources_kor", resourceCulture);
             }
@@ -11794,7 +11794,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie znaleziono żadnych źródeł..
         /// </summary>
-        internal static string SourcesCommandNoSources_plk {
+        public static string SourcesCommandNoSources_plk {
             get {
                 return ResourceManager.GetString("SourcesCommandNoSources_plk", resourceCulture);
             }
@@ -11803,7 +11803,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nenhuma origem encontrada..
         /// </summary>
-        internal static string SourcesCommandNoSources_ptb {
+        public static string SourcesCommandNoSources_ptb {
             get {
                 return ResourceManager.GetString("SourcesCommandNoSources_ptb", resourceCulture);
             }
@@ -11812,7 +11812,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Источники не обнаружены..
         /// </summary>
-        internal static string SourcesCommandNoSources_rus {
+        public static string SourcesCommandNoSources_rus {
             get {
                 return ResourceManager.GetString("SourcesCommandNoSources_rus", resourceCulture);
             }
@@ -11821,7 +11821,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Hiçbir kaynak bulunamadı..
         /// </summary>
-        internal static string SourcesCommandNoSources_trk {
+        public static string SourcesCommandNoSources_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandNoSources_trk", resourceCulture);
             }
@@ -11830,7 +11830,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Registered Sources:.
         /// </summary>
-        internal static string SourcesCommandRegisteredSources {
+        public static string SourcesCommandRegisteredSources {
             get {
                 return ResourceManager.GetString("SourcesCommandRegisteredSources", resourceCulture);
             }
@@ -11839,7 +11839,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已注册的源:.
         /// </summary>
-        internal static string SourcesCommandRegisteredSources_chs {
+        public static string SourcesCommandRegisteredSources_chs {
             get {
                 return ResourceManager.GetString("SourcesCommandRegisteredSources_chs", resourceCulture);
             }
@@ -11848,7 +11848,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已註冊來源:.
         /// </summary>
-        internal static string SourcesCommandRegisteredSources_cht {
+        public static string SourcesCommandRegisteredSources_cht {
             get {
                 return ResourceManager.GetString("SourcesCommandRegisteredSources_cht", resourceCulture);
             }
@@ -11857,7 +11857,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Registrované zdroje:.
         /// </summary>
-        internal static string SourcesCommandRegisteredSources_csy {
+        public static string SourcesCommandRegisteredSources_csy {
             get {
                 return ResourceManager.GetString("SourcesCommandRegisteredSources_csy", resourceCulture);
             }
@@ -11866,7 +11866,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Registrierte Quellen:.
         /// </summary>
-        internal static string SourcesCommandRegisteredSources_deu {
+        public static string SourcesCommandRegisteredSources_deu {
             get {
                 return ResourceManager.GetString("SourcesCommandRegisteredSources_deu", resourceCulture);
             }
@@ -11875,7 +11875,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Orígenes registrados:.
         /// </summary>
-        internal static string SourcesCommandRegisteredSources_esp {
+        public static string SourcesCommandRegisteredSources_esp {
             get {
                 return ResourceManager.GetString("SourcesCommandRegisteredSources_esp", resourceCulture);
             }
@@ -11884,7 +11884,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Sources inscrites :.
         /// </summary>
-        internal static string SourcesCommandRegisteredSources_fra {
+        public static string SourcesCommandRegisteredSources_fra {
             get {
                 return ResourceManager.GetString("SourcesCommandRegisteredSources_fra", resourceCulture);
             }
@@ -11893,7 +11893,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Fonti registrate:.
         /// </summary>
-        internal static string SourcesCommandRegisteredSources_ita {
+        public static string SourcesCommandRegisteredSources_ita {
             get {
                 return ResourceManager.GetString("SourcesCommandRegisteredSources_ita", resourceCulture);
             }
@@ -11902,7 +11902,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 登録されているソース:.
         /// </summary>
-        internal static string SourcesCommandRegisteredSources_jpn {
+        public static string SourcesCommandRegisteredSources_jpn {
             get {
                 return ResourceManager.GetString("SourcesCommandRegisteredSources_jpn", resourceCulture);
             }
@@ -11911,7 +11911,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 등록된 소스:.
         /// </summary>
-        internal static string SourcesCommandRegisteredSources_kor {
+        public static string SourcesCommandRegisteredSources_kor {
             get {
                 return ResourceManager.GetString("SourcesCommandRegisteredSources_kor", resourceCulture);
             }
@@ -11920,7 +11920,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Zarejestrowane źródła:.
         /// </summary>
-        internal static string SourcesCommandRegisteredSources_plk {
+        public static string SourcesCommandRegisteredSources_plk {
             get {
                 return ResourceManager.GetString("SourcesCommandRegisteredSources_plk", resourceCulture);
             }
@@ -11929,7 +11929,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Origens registradas:.
         /// </summary>
-        internal static string SourcesCommandRegisteredSources_ptb {
+        public static string SourcesCommandRegisteredSources_ptb {
             get {
                 return ResourceManager.GetString("SourcesCommandRegisteredSources_ptb", resourceCulture);
             }
@@ -11938,7 +11938,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Зарегистрированные источники:.
         /// </summary>
-        internal static string SourcesCommandRegisteredSources_rus {
+        public static string SourcesCommandRegisteredSources_rus {
             get {
                 return ResourceManager.GetString("SourcesCommandRegisteredSources_rus", resourceCulture);
             }
@@ -11947,7 +11947,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Kayıtlı Kaynaklar:.
         /// </summary>
-        internal static string SourcesCommandRegisteredSources_trk {
+        public static string SourcesCommandRegisteredSources_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandRegisteredSources_trk", resourceCulture);
             }
@@ -11956,7 +11956,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Package Source with Name: {0} added successfully..
         /// </summary>
-        internal static string SourcesCommandSourceAddedSuccessfully {
+        public static string SourcesCommandSourceAddedSuccessfully {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceAddedSuccessfully", resourceCulture);
             }
@@ -11965,7 +11965,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已成功添加名为 {0} 的程序包源。.
         /// </summary>
-        internal static string SourcesCommandSourceAddedSuccessfully_chs {
+        public static string SourcesCommandSourceAddedSuccessfully_chs {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceAddedSuccessfully_chs", resourceCulture);
             }
@@ -11974,7 +11974,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 具有名稱的封裝來源: {0} 已成功新增。.
         /// </summary>
-        internal static string SourcesCommandSourceAddedSuccessfully_cht {
+        public static string SourcesCommandSourceAddedSuccessfully_cht {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceAddedSuccessfully_cht", resourceCulture);
             }
@@ -11983,7 +11983,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Zdroj balíčku s názvem {0} byl úspěšně přidán..
         /// </summary>
-        internal static string SourcesCommandSourceAddedSuccessfully_csy {
+        public static string SourcesCommandSourceAddedSuccessfully_csy {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceAddedSuccessfully_csy", resourceCulture);
             }
@@ -11992,7 +11992,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Paketquelle mit dem Namen &quot;{0}&quot; wurde erfolgreich hinzugefügt..
         /// </summary>
-        internal static string SourcesCommandSourceAddedSuccessfully_deu {
+        public static string SourcesCommandSourceAddedSuccessfully_deu {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceAddedSuccessfully_deu", resourceCulture);
             }
@@ -12001,7 +12001,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Origen del paquete con nombre: {0} agregado correctamente..
         /// </summary>
-        internal static string SourcesCommandSourceAddedSuccessfully_esp {
+        public static string SourcesCommandSourceAddedSuccessfully_esp {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceAddedSuccessfully_esp", resourceCulture);
             }
@@ -12010,7 +12010,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Source de package avec nom : {0} ajouté correctement..
         /// </summary>
-        internal static string SourcesCommandSourceAddedSuccessfully_fra {
+        public static string SourcesCommandSourceAddedSuccessfully_fra {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceAddedSuccessfully_fra", resourceCulture);
             }
@@ -12019,7 +12019,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Fonte pacchetto con nome: {0} aggiunto correttamente..
         /// </summary>
-        internal static string SourcesCommandSourceAddedSuccessfully_ita {
+        public static string SourcesCommandSourceAddedSuccessfully_ita {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceAddedSuccessfully_ita", resourceCulture);
             }
@@ -12028,7 +12028,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 次の名前のパッケージ ソース:{0} が正常に追加されました。.
         /// </summary>
-        internal static string SourcesCommandSourceAddedSuccessfully_jpn {
+        public static string SourcesCommandSourceAddedSuccessfully_jpn {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceAddedSuccessfully_jpn", resourceCulture);
             }
@@ -12037,7 +12037,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} 이름의 패키지 소스가 추가되었습니다..
         /// </summary>
-        internal static string SourcesCommandSourceAddedSuccessfully_kor {
+        public static string SourcesCommandSourceAddedSuccessfully_kor {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceAddedSuccessfully_kor", resourceCulture);
             }
@@ -12046,7 +12046,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Pomyślnie dodano źródło pakietów o nazwie: {0}..
         /// </summary>
-        internal static string SourcesCommandSourceAddedSuccessfully_plk {
+        public static string SourcesCommandSourceAddedSuccessfully_plk {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceAddedSuccessfully_plk", resourceCulture);
             }
@@ -12055,7 +12055,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Origem de pacote com o nome: {0} adicionada com sucesso..
         /// </summary>
-        internal static string SourcesCommandSourceAddedSuccessfully_ptb {
+        public static string SourcesCommandSourceAddedSuccessfully_ptb {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceAddedSuccessfully_ptb", resourceCulture);
             }
@@ -12064,7 +12064,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Источник пакетов с именем: {0} успешно добавлен..
         /// </summary>
-        internal static string SourcesCommandSourceAddedSuccessfully_rus {
+        public static string SourcesCommandSourceAddedSuccessfully_rus {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceAddedSuccessfully_rus", resourceCulture);
             }
@@ -12073,7 +12073,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} Adlı Paket Kaynağı başarıyla eklendi..
         /// </summary>
-        internal static string SourcesCommandSourceAddedSuccessfully_trk {
+        public static string SourcesCommandSourceAddedSuccessfully_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceAddedSuccessfully_trk", resourceCulture);
             }
@@ -12082,7 +12082,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Package source with Name: {0} disabled successfully..
         /// </summary>
-        internal static string SourcesCommandSourceDisabledSuccessfully {
+        public static string SourcesCommandSourceDisabledSuccessfully {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceDisabledSuccessfully", resourceCulture);
             }
@@ -12091,7 +12091,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已成功禁用名为 {0} 的程序包源。.
         /// </summary>
-        internal static string SourcesCommandSourceDisabledSuccessfully_chs {
+        public static string SourcesCommandSourceDisabledSuccessfully_chs {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceDisabledSuccessfully_chs", resourceCulture);
             }
@@ -12100,7 +12100,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 具有名稱的封裝來源: {1} 已成功停用。.
         /// </summary>
-        internal static string SourcesCommandSourceDisabledSuccessfully_cht {
+        public static string SourcesCommandSourceDisabledSuccessfully_cht {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceDisabledSuccessfully_cht", resourceCulture);
             }
@@ -12109,7 +12109,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Zdroj balíčku s názvem {0} byl úspěšně zakázán..
         /// </summary>
-        internal static string SourcesCommandSourceDisabledSuccessfully_csy {
+        public static string SourcesCommandSourceDisabledSuccessfully_csy {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceDisabledSuccessfully_csy", resourceCulture);
             }
@@ -12118,7 +12118,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Paketquelle mit dem Namen &quot;{0}&quot; wurde erfolgreich deaktiviert..
         /// </summary>
-        internal static string SourcesCommandSourceDisabledSuccessfully_deu {
+        public static string SourcesCommandSourceDisabledSuccessfully_deu {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceDisabledSuccessfully_deu", resourceCulture);
             }
@@ -12127,7 +12127,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Origen del paquete con nombre: {0} deshabilitado correctamente..
         /// </summary>
-        internal static string SourcesCommandSourceDisabledSuccessfully_esp {
+        public static string SourcesCommandSourceDisabledSuccessfully_esp {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceDisabledSuccessfully_esp", resourceCulture);
             }
@@ -12136,7 +12136,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Source de package avec nom : {0} désactivé correctement..
         /// </summary>
-        internal static string SourcesCommandSourceDisabledSuccessfully_fra {
+        public static string SourcesCommandSourceDisabledSuccessfully_fra {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceDisabledSuccessfully_fra", resourceCulture);
             }
@@ -12145,7 +12145,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Fonte pacchetto con nome: {0} disabilitata correttamente..
         /// </summary>
-        internal static string SourcesCommandSourceDisabledSuccessfully_ita {
+        public static string SourcesCommandSourceDisabledSuccessfully_ita {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceDisabledSuccessfully_ita", resourceCulture);
             }
@@ -12154,7 +12154,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 次の名前のパッケージ ソース:{0} は正常に無効になりました。.
         /// </summary>
-        internal static string SourcesCommandSourceDisabledSuccessfully_jpn {
+        public static string SourcesCommandSourceDisabledSuccessfully_jpn {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceDisabledSuccessfully_jpn", resourceCulture);
             }
@@ -12163,7 +12163,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} 이름의 패키지 소스가 사용되지 않도록 설정되었습니다..
         /// </summary>
-        internal static string SourcesCommandSourceDisabledSuccessfully_kor {
+        public static string SourcesCommandSourceDisabledSuccessfully_kor {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceDisabledSuccessfully_kor", resourceCulture);
             }
@@ -12172,7 +12172,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Pomyślnie wyłączono źródło pakietów o nazwie: {0}..
         /// </summary>
-        internal static string SourcesCommandSourceDisabledSuccessfully_plk {
+        public static string SourcesCommandSourceDisabledSuccessfully_plk {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceDisabledSuccessfully_plk", resourceCulture);
             }
@@ -12181,7 +12181,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Origem de pacote com o nome: {0} desativada com sucesso..
         /// </summary>
-        internal static string SourcesCommandSourceDisabledSuccessfully_ptb {
+        public static string SourcesCommandSourceDisabledSuccessfully_ptb {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceDisabledSuccessfully_ptb", resourceCulture);
             }
@@ -12190,7 +12190,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Источник пакетов с именем: {0} успешно отключен..
         /// </summary>
-        internal static string SourcesCommandSourceDisabledSuccessfully_rus {
+        public static string SourcesCommandSourceDisabledSuccessfully_rus {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceDisabledSuccessfully_rus", resourceCulture);
             }
@@ -12199,7 +12199,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} Adlı Paket Kaynağı başarıyla devre dışı bırakıldı..
         /// </summary>
-        internal static string SourcesCommandSourceDisabledSuccessfully_trk {
+        public static string SourcesCommandSourceDisabledSuccessfully_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceDisabledSuccessfully_trk", resourceCulture);
             }
@@ -12208,7 +12208,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Package source with Name: {0} enabled successfully..
         /// </summary>
-        internal static string SourcesCommandSourceEnabledSuccessfully {
+        public static string SourcesCommandSourceEnabledSuccessfully {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceEnabledSuccessfully", resourceCulture);
             }
@@ -12217,7 +12217,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已成功启用名为 {0} 的程序包源。.
         /// </summary>
-        internal static string SourcesCommandSourceEnabledSuccessfully_chs {
+        public static string SourcesCommandSourceEnabledSuccessfully_chs {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceEnabledSuccessfully_chs", resourceCulture);
             }
@@ -12226,7 +12226,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 具有名稱的封裝來源: {2} 已成功啟用。.
         /// </summary>
-        internal static string SourcesCommandSourceEnabledSuccessfully_cht {
+        public static string SourcesCommandSourceEnabledSuccessfully_cht {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceEnabledSuccessfully_cht", resourceCulture);
             }
@@ -12235,7 +12235,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Zdroj balíčku s názvem {0} byl úspěšně povolen..
         /// </summary>
-        internal static string SourcesCommandSourceEnabledSuccessfully_csy {
+        public static string SourcesCommandSourceEnabledSuccessfully_csy {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceEnabledSuccessfully_csy", resourceCulture);
             }
@@ -12244,7 +12244,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Paketquelle mit dem Namen &quot;{0}&quot; wurde erfolgreich aktiviert..
         /// </summary>
-        internal static string SourcesCommandSourceEnabledSuccessfully_deu {
+        public static string SourcesCommandSourceEnabledSuccessfully_deu {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceEnabledSuccessfully_deu", resourceCulture);
             }
@@ -12253,7 +12253,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Origen del paquete con nombre: {0} habilitado correctamente..
         /// </summary>
-        internal static string SourcesCommandSourceEnabledSuccessfully_esp {
+        public static string SourcesCommandSourceEnabledSuccessfully_esp {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceEnabledSuccessfully_esp", resourceCulture);
             }
@@ -12262,7 +12262,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Source de package avec nom : {0} activé correctement..
         /// </summary>
-        internal static string SourcesCommandSourceEnabledSuccessfully_fra {
+        public static string SourcesCommandSourceEnabledSuccessfully_fra {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceEnabledSuccessfully_fra", resourceCulture);
             }
@@ -12271,7 +12271,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Fonte pacchetto con nome: {0} abilitata correttamente..
         /// </summary>
-        internal static string SourcesCommandSourceEnabledSuccessfully_ita {
+        public static string SourcesCommandSourceEnabledSuccessfully_ita {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceEnabledSuccessfully_ita", resourceCulture);
             }
@@ -12280,7 +12280,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 次の名前のパッケージ ソース:{0} は正常に有効になりました。.
         /// </summary>
-        internal static string SourcesCommandSourceEnabledSuccessfully_jpn {
+        public static string SourcesCommandSourceEnabledSuccessfully_jpn {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceEnabledSuccessfully_jpn", resourceCulture);
             }
@@ -12289,7 +12289,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} 이름의 패키지 소스가 사용되도록 설정되었습니다..
         /// </summary>
-        internal static string SourcesCommandSourceEnabledSuccessfully_kor {
+        public static string SourcesCommandSourceEnabledSuccessfully_kor {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceEnabledSuccessfully_kor", resourceCulture);
             }
@@ -12298,7 +12298,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Pomyślnie włączono źródło pakietów o nazwie: {0}..
         /// </summary>
-        internal static string SourcesCommandSourceEnabledSuccessfully_plk {
+        public static string SourcesCommandSourceEnabledSuccessfully_plk {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceEnabledSuccessfully_plk", resourceCulture);
             }
@@ -12307,7 +12307,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Origem de pacote com o nome: {0} ativada com sucesso..
         /// </summary>
-        internal static string SourcesCommandSourceEnabledSuccessfully_ptb {
+        public static string SourcesCommandSourceEnabledSuccessfully_ptb {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceEnabledSuccessfully_ptb", resourceCulture);
             }
@@ -12316,7 +12316,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Источник пакетов с именем: {0} успешно включен..
         /// </summary>
-        internal static string SourcesCommandSourceEnabledSuccessfully_rus {
+        public static string SourcesCommandSourceEnabledSuccessfully_rus {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceEnabledSuccessfully_rus", resourceCulture);
             }
@@ -12325,7 +12325,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} Adlı Paket Kaynağı başarıyla etkinleştirildi..
         /// </summary>
-        internal static string SourcesCommandSourceEnabledSuccessfully_trk {
+        public static string SourcesCommandSourceEnabledSuccessfully_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceEnabledSuccessfully_trk", resourceCulture);
             }
@@ -12334,7 +12334,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Package source with Name: {0} removed successfully..
         /// </summary>
-        internal static string SourcesCommandSourceRemovedSuccessfully {
+        public static string SourcesCommandSourceRemovedSuccessfully {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRemovedSuccessfully", resourceCulture);
             }
@@ -12343,7 +12343,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已成功删除名为 {0} 的程序包源。.
         /// </summary>
-        internal static string SourcesCommandSourceRemovedSuccessfully_chs {
+        public static string SourcesCommandSourceRemovedSuccessfully_chs {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRemovedSuccessfully_chs", resourceCulture);
             }
@@ -12352,7 +12352,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 具有名稱的封裝來源: {3} 已成功移除。.
         /// </summary>
-        internal static string SourcesCommandSourceRemovedSuccessfully_cht {
+        public static string SourcesCommandSourceRemovedSuccessfully_cht {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRemovedSuccessfully_cht", resourceCulture);
             }
@@ -12361,7 +12361,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Zdroj balíčku s názvem {0} byl úspěšně odebrán..
         /// </summary>
-        internal static string SourcesCommandSourceRemovedSuccessfully_csy {
+        public static string SourcesCommandSourceRemovedSuccessfully_csy {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRemovedSuccessfully_csy", resourceCulture);
             }
@@ -12370,7 +12370,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Paketquelle mit dem Namen &quot;{0}&quot; wurde erfolgreich entfernt..
         /// </summary>
-        internal static string SourcesCommandSourceRemovedSuccessfully_deu {
+        public static string SourcesCommandSourceRemovedSuccessfully_deu {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRemovedSuccessfully_deu", resourceCulture);
             }
@@ -12379,7 +12379,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Origen del paquete con nombre: {0} quitado correctamente..
         /// </summary>
-        internal static string SourcesCommandSourceRemovedSuccessfully_esp {
+        public static string SourcesCommandSourceRemovedSuccessfully_esp {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRemovedSuccessfully_esp", resourceCulture);
             }
@@ -12388,7 +12388,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Source de package avec nom : {0} supprimé correctement..
         /// </summary>
-        internal static string SourcesCommandSourceRemovedSuccessfully_fra {
+        public static string SourcesCommandSourceRemovedSuccessfully_fra {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRemovedSuccessfully_fra", resourceCulture);
             }
@@ -12397,7 +12397,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Fonte pacchetto con nome: {0} rimossa correttamente...
         /// </summary>
-        internal static string SourcesCommandSourceRemovedSuccessfully_ita {
+        public static string SourcesCommandSourceRemovedSuccessfully_ita {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRemovedSuccessfully_ita", resourceCulture);
             }
@@ -12406,7 +12406,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 次の名前のパッケージ ソース:{0} は正常に削除されました。.
         /// </summary>
-        internal static string SourcesCommandSourceRemovedSuccessfully_jpn {
+        public static string SourcesCommandSourceRemovedSuccessfully_jpn {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRemovedSuccessfully_jpn", resourceCulture);
             }
@@ -12415,7 +12415,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} 이름의 패키지 소스가 제거되었습니다..
         /// </summary>
-        internal static string SourcesCommandSourceRemovedSuccessfully_kor {
+        public static string SourcesCommandSourceRemovedSuccessfully_kor {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRemovedSuccessfully_kor", resourceCulture);
             }
@@ -12424,7 +12424,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Pomyślnie usunięto źródło pakietów o nazwie: {0}..
         /// </summary>
-        internal static string SourcesCommandSourceRemovedSuccessfully_plk {
+        public static string SourcesCommandSourceRemovedSuccessfully_plk {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRemovedSuccessfully_plk", resourceCulture);
             }
@@ -12433,7 +12433,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Origem do pacote com o nome: {0} removida com sucesso..
         /// </summary>
-        internal static string SourcesCommandSourceRemovedSuccessfully_ptb {
+        public static string SourcesCommandSourceRemovedSuccessfully_ptb {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRemovedSuccessfully_ptb", resourceCulture);
             }
@@ -12442,7 +12442,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Источник пакетов с именем: {0} успешно удален..
         /// </summary>
-        internal static string SourcesCommandSourceRemovedSuccessfully_rus {
+        public static string SourcesCommandSourceRemovedSuccessfully_rus {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRemovedSuccessfully_rus", resourceCulture);
             }
@@ -12451,7 +12451,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} Adlı Paket Kaynağı başarıyla kaldırıldı..
         /// </summary>
-        internal static string SourcesCommandSourceRemovedSuccessfully_trk {
+        public static string SourcesCommandSourceRemovedSuccessfully_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRemovedSuccessfully_trk", resourceCulture);
             }
@@ -12460,7 +12460,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to The source specified cannot be empty. Please provide a valid source..
         /// </summary>
-        internal static string SourcesCommandSourceRequired {
+        public static string SourcesCommandSourceRequired {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRequired", resourceCulture);
             }
@@ -12469,7 +12469,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 指定的源不能为空。请提供有效源。.
         /// </summary>
-        internal static string SourcesCommandSourceRequired_chs {
+        public static string SourcesCommandSourceRequired_chs {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRequired_chs", resourceCulture);
             }
@@ -12478,7 +12478,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 指定的來源不能為空。請提供有效的來源。.
         /// </summary>
-        internal static string SourcesCommandSourceRequired_cht {
+        public static string SourcesCommandSourceRequired_cht {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRequired_cht", resourceCulture);
             }
@@ -12487,7 +12487,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Zadaný zdroj nesmí být prázdný. Zadejte platný zdroj..
         /// </summary>
-        internal static string SourcesCommandSourceRequired_csy {
+        public static string SourcesCommandSourceRequired_csy {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRequired_csy", resourceCulture);
             }
@@ -12496,7 +12496,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die angegebene Quelle darf nicht leer sein. Bitte geben Sie eine gültige Quelle an..
         /// </summary>
-        internal static string SourcesCommandSourceRequired_deu {
+        public static string SourcesCommandSourceRequired_deu {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRequired_deu", resourceCulture);
             }
@@ -12505,7 +12505,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to El origen especificado no puede estar vacío. Proporcione un origen válido..
         /// </summary>
-        internal static string SourcesCommandSourceRequired_esp {
+        public static string SourcesCommandSourceRequired_esp {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRequired_esp", resourceCulture);
             }
@@ -12514,7 +12514,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La source spécifiée ne peut pas être vide. Veuillez fournir une source valide..
         /// </summary>
-        internal static string SourcesCommandSourceRequired_fra {
+        public static string SourcesCommandSourceRequired_fra {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRequired_fra", resourceCulture);
             }
@@ -12523,7 +12523,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La fonte specificata non può essere vuota. Fornire una fonte valida..
         /// </summary>
-        internal static string SourcesCommandSourceRequired_ita {
+        public static string SourcesCommandSourceRequired_ita {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRequired_ita", resourceCulture);
             }
@@ -12532,7 +12532,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 空のソースは指定できません。有効なソースを指定してください。.
         /// </summary>
-        internal static string SourcesCommandSourceRequired_jpn {
+        public static string SourcesCommandSourceRequired_jpn {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRequired_jpn", resourceCulture);
             }
@@ -12541,7 +12541,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 지정한 소스는 비워둘 수 없습니다. 올바른 소스를 제공하십시오..
         /// </summary>
-        internal static string SourcesCommandSourceRequired_kor {
+        public static string SourcesCommandSourceRequired_kor {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRequired_kor", resourceCulture);
             }
@@ -12550,7 +12550,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Źródło nie może być puste. Podaj prawidłowe źródło..
         /// </summary>
-        internal static string SourcesCommandSourceRequired_plk {
+        public static string SourcesCommandSourceRequired_plk {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRequired_plk", resourceCulture);
             }
@@ -12559,7 +12559,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to A origem especificada não ficar vazia. Forneça uma origem válida..
         /// </summary>
-        internal static string SourcesCommandSourceRequired_ptb {
+        public static string SourcesCommandSourceRequired_ptb {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRequired_ptb", resourceCulture);
             }
@@ -12568,7 +12568,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Указанный источник не может быть пустым. Укажите допустимый источник..
         /// </summary>
-        internal static string SourcesCommandSourceRequired_rus {
+        public static string SourcesCommandSourceRequired_rus {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRequired_rus", resourceCulture);
             }
@@ -12577,7 +12577,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Belirtilen kaynak boş olamaz. Lütfen geçerli bir kaynak belirtin..
         /// </summary>
-        internal static string SourcesCommandSourceRequired_trk {
+        public static string SourcesCommandSourceRequired_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandSourceRequired_trk", resourceCulture);
             }
@@ -12586,7 +12586,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to The name specified has already been added to the list of available package sources. Please provide a unique name..
         /// </summary>
-        internal static string SourcesCommandUniqueName {
+        public static string SourcesCommandUniqueName {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueName", resourceCulture);
             }
@@ -12595,7 +12595,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 指定的名称已添加到可用程序包源列表。请提供唯一名称。.
         /// </summary>
-        internal static string SourcesCommandUniqueName_chs {
+        public static string SourcesCommandUniqueName_chs {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueName_chs", resourceCulture);
             }
@@ -12604,7 +12604,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 指定的名稱已新增到可用封裝來源清單。請提供唯一名稱。.
         /// </summary>
-        internal static string SourcesCommandUniqueName_cht {
+        public static string SourcesCommandUniqueName_cht {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueName_cht", resourceCulture);
             }
@@ -12613,7 +12613,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Zadaný název již byl přidán do seznamu dostupných zdrojů balíčků. Zadejte jedinečný název..
         /// </summary>
-        internal static string SourcesCommandUniqueName_csy {
+        public static string SourcesCommandUniqueName_csy {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueName_csy", resourceCulture);
             }
@@ -12622,7 +12622,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Der angegebene Name wurde der Liste der verfügbaren Paketquellen bereits hinzugefügt. Bitte geben Sie einen eindeutigen Namen an..
         /// </summary>
-        internal static string SourcesCommandUniqueName_deu {
+        public static string SourcesCommandUniqueName_deu {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueName_deu", resourceCulture);
             }
@@ -12631,7 +12631,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to El nombre especificado ya se ha agregado a la lista de orígenes de paquete disponibles. Proporcione un nombre único..
         /// </summary>
-        internal static string SourcesCommandUniqueName_esp {
+        public static string SourcesCommandUniqueName_esp {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueName_esp", resourceCulture);
             }
@@ -12640,7 +12640,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Le nom spécifié a déjà été ajouté à la liste de sources de package disponibles. Veuillez fournir un nom unique..
         /// </summary>
-        internal static string SourcesCommandUniqueName_fra {
+        public static string SourcesCommandUniqueName_fra {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueName_fra", resourceCulture);
             }
@@ -12649,7 +12649,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Il nome specificato è stato aggiunto alla lista di fonti pacchetto disponibili. Fornire un nome unico.
         /// </summary>
-        internal static string SourcesCommandUniqueName_ita {
+        public static string SourcesCommandUniqueName_ita {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueName_ita", resourceCulture);
             }
@@ -12658,7 +12658,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 指定された名前は既に利用可能なパッケージ ソースの一覧に追加されています。一意の名前を指定してください。.
         /// </summary>
-        internal static string SourcesCommandUniqueName_jpn {
+        public static string SourcesCommandUniqueName_jpn {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueName_jpn", resourceCulture);
             }
@@ -12667,7 +12667,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 지정한 이름은 이미 사용 가능한 패키지 소스 목록에 추가되어 있습니다. 고유한 이름을 제공하십시오..
         /// </summary>
-        internal static string SourcesCommandUniqueName_kor {
+        public static string SourcesCommandUniqueName_kor {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueName_kor", resourceCulture);
             }
@@ -12676,7 +12676,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Określona nazwa została już dodana do listy dostępnych źródeł pakietów. Podaj unikatową nazwę..
         /// </summary>
-        internal static string SourcesCommandUniqueName_plk {
+        public static string SourcesCommandUniqueName_plk {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueName_plk", resourceCulture);
             }
@@ -12685,7 +12685,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to O nome especificado já foi adicionado à lista de origens de pacotes disponíveis. Forneça um nome exclusivo..
         /// </summary>
-        internal static string SourcesCommandUniqueName_ptb {
+        public static string SourcesCommandUniqueName_ptb {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueName_ptb", resourceCulture);
             }
@@ -12694,7 +12694,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Указанное имя уже было добавлено в список доступных источников пакетов. Укажите уникальное имя..
         /// </summary>
-        internal static string SourcesCommandUniqueName_rus {
+        public static string SourcesCommandUniqueName_rus {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueName_rus", resourceCulture);
             }
@@ -12703,7 +12703,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Belirtilen ad zaten kullanılabilir paket kaynakları listesine eklenmiş. Lütfen benzersiz bir ad belirtin..
         /// </summary>
-        internal static string SourcesCommandUniqueName_trk {
+        public static string SourcesCommandUniqueName_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueName_trk", resourceCulture);
             }
@@ -12712,7 +12712,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to The source specified has already been added to the list of available package sources. Please provide a unique source..
         /// </summary>
-        internal static string SourcesCommandUniqueSource {
+        public static string SourcesCommandUniqueSource {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueSource", resourceCulture);
             }
@@ -12721,7 +12721,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 指定的源已添加到可用程序包源列表。请提供唯一源。.
         /// </summary>
-        internal static string SourcesCommandUniqueSource_chs {
+        public static string SourcesCommandUniqueSource_chs {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueSource_chs", resourceCulture);
             }
@@ -12730,7 +12730,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 指定的來源已新增到可用封裝來源清單。請提供唯一名稱。.
         /// </summary>
-        internal static string SourcesCommandUniqueSource_cht {
+        public static string SourcesCommandUniqueSource_cht {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueSource_cht", resourceCulture);
             }
@@ -12739,7 +12739,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Zadaný zdroj již byl přidán do seznamu dostupných zdrojů balíčků. Zadejte jedinečný zdroj..
         /// </summary>
-        internal static string SourcesCommandUniqueSource_csy {
+        public static string SourcesCommandUniqueSource_csy {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueSource_csy", resourceCulture);
             }
@@ -12748,7 +12748,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Der angegebene Name wurde der Liste der verfügbaren Paketquellen bereits hinzugefügt. Bitte geben Sie eine eindeutige Quelle an..
         /// </summary>
-        internal static string SourcesCommandUniqueSource_deu {
+        public static string SourcesCommandUniqueSource_deu {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueSource_deu", resourceCulture);
             }
@@ -12757,7 +12757,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to El origen especificado ya se ha agregado a la lista de orígenes de paquete disponibles. Proporcione un nombre único..
         /// </summary>
-        internal static string SourcesCommandUniqueSource_esp {
+        public static string SourcesCommandUniqueSource_esp {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueSource_esp", resourceCulture);
             }
@@ -12766,7 +12766,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La source spécifiée a déjà été ajoutée à la liste de sources de package disponibles. Veuillez fournir une source unique..
         /// </summary>
-        internal static string SourcesCommandUniqueSource_fra {
+        public static string SourcesCommandUniqueSource_fra {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueSource_fra", resourceCulture);
             }
@@ -12775,7 +12775,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La fonte specificata è stato aggiunta alla lista di fonti pacchetto disponibili. Fornire una fonte unica..
         /// </summary>
-        internal static string SourcesCommandUniqueSource_ita {
+        public static string SourcesCommandUniqueSource_ita {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueSource_ita", resourceCulture);
             }
@@ -12784,7 +12784,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 指定されたソースは既に利用可能なパッケージ ソースの一覧に追加されています。一意のソースを指定してください。.
         /// </summary>
-        internal static string SourcesCommandUniqueSource_jpn {
+        public static string SourcesCommandUniqueSource_jpn {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueSource_jpn", resourceCulture);
             }
@@ -12793,7 +12793,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 지정한 소스는 이미 사용 가능한 패키지 소스 목록에 추가되어 있습니다. 고유한 소스를 제공하십시오..
         /// </summary>
-        internal static string SourcesCommandUniqueSource_kor {
+        public static string SourcesCommandUniqueSource_kor {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueSource_kor", resourceCulture);
             }
@@ -12802,7 +12802,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Określone źródło zostało już dodane do listy dostępnych źródeł pakietów. Podaj unikatowe źródło..
         /// </summary>
-        internal static string SourcesCommandUniqueSource_plk {
+        public static string SourcesCommandUniqueSource_plk {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueSource_plk", resourceCulture);
             }
@@ -12811,7 +12811,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to A origem especificada já foi adicionada à lista de origens de pacotes disponíveis. Forneça uma origem única..
         /// </summary>
-        internal static string SourcesCommandUniqueSource_ptb {
+        public static string SourcesCommandUniqueSource_ptb {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueSource_ptb", resourceCulture);
             }
@@ -12820,7 +12820,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Указанный источник имя уже был добавлен в список доступных источников пакетов. Укажите уникальный источник..
         /// </summary>
-        internal static string SourcesCommandUniqueSource_rus {
+        public static string SourcesCommandUniqueSource_rus {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueSource_rus", resourceCulture);
             }
@@ -12829,7 +12829,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Belirtilen kaynak zaten kullanılabilir paket kaynakları listesine eklenmiş. Lütfen benzersiz bir kaynak belirtin..
         /// </summary>
-        internal static string SourcesCommandUniqueSource_trk {
+        public static string SourcesCommandUniqueSource_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandUniqueSource_trk", resourceCulture);
             }
@@ -12838,7 +12838,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Package source &quot;{0}&quot; was successfully updated..
         /// </summary>
-        internal static string SourcesCommandUpdateSuccessful {
+        public static string SourcesCommandUpdateSuccessful {
             get {
                 return ResourceManager.GetString("SourcesCommandUpdateSuccessful", resourceCulture);
             }
@@ -12847,7 +12847,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已成功更新程序包源“{0}”。.
         /// </summary>
-        internal static string SourcesCommandUpdateSuccessful_chs {
+        public static string SourcesCommandUpdateSuccessful_chs {
             get {
                 return ResourceManager.GetString("SourcesCommandUpdateSuccessful_chs", resourceCulture);
             }
@@ -12856,7 +12856,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 封裝來源 &quot;{0}&quot; 已成功更新。.
         /// </summary>
-        internal static string SourcesCommandUpdateSuccessful_cht {
+        public static string SourcesCommandUpdateSuccessful_cht {
             get {
                 return ResourceManager.GetString("SourcesCommandUpdateSuccessful_cht", resourceCulture);
             }
@@ -12865,7 +12865,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Zdroj balíčku {0} byl úspěšně aktualizován..
         /// </summary>
-        internal static string SourcesCommandUpdateSuccessful_csy {
+        public static string SourcesCommandUpdateSuccessful_csy {
             get {
                 return ResourceManager.GetString("SourcesCommandUpdateSuccessful_csy", resourceCulture);
             }
@@ -12874,7 +12874,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Paketquelle &quot;{0}&quot; wurde erfolgreich aktualisiert..
         /// </summary>
-        internal static string SourcesCommandUpdateSuccessful_deu {
+        public static string SourcesCommandUpdateSuccessful_deu {
             get {
                 return ResourceManager.GetString("SourcesCommandUpdateSuccessful_deu", resourceCulture);
             }
@@ -12883,7 +12883,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to El origen del paquete &apos;{0}&apos; se ha actualizado correctamente..
         /// </summary>
-        internal static string SourcesCommandUpdateSuccessful_esp {
+        public static string SourcesCommandUpdateSuccessful_esp {
             get {
                 return ResourceManager.GetString("SourcesCommandUpdateSuccessful_esp", resourceCulture);
             }
@@ -12892,7 +12892,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La source de package « {0} » a été mise à jour correctement..
         /// </summary>
-        internal static string SourcesCommandUpdateSuccessful_fra {
+        public static string SourcesCommandUpdateSuccessful_fra {
             get {
                 return ResourceManager.GetString("SourcesCommandUpdateSuccessful_fra", resourceCulture);
             }
@@ -12901,7 +12901,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Fonte pacchetto &quot;{0}&quot; aggiornata correttamente..
         /// </summary>
-        internal static string SourcesCommandUpdateSuccessful_ita {
+        public static string SourcesCommandUpdateSuccessful_ita {
             get {
                 return ResourceManager.GetString("SourcesCommandUpdateSuccessful_ita", resourceCulture);
             }
@@ -12910,7 +12910,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to パッケージ ソース &quot;{0}&quot; は正常に更新されました。.
         /// </summary>
-        internal static string SourcesCommandUpdateSuccessful_jpn {
+        public static string SourcesCommandUpdateSuccessful_jpn {
             get {
                 return ResourceManager.GetString("SourcesCommandUpdateSuccessful_jpn", resourceCulture);
             }
@@ -12919,7 +12919,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 패키지 소스 &quot;{0}&quot;이(가) 업데이트되었습니다..
         /// </summary>
-        internal static string SourcesCommandUpdateSuccessful_kor {
+        public static string SourcesCommandUpdateSuccessful_kor {
             get {
                 return ResourceManager.GetString("SourcesCommandUpdateSuccessful_kor", resourceCulture);
             }
@@ -12928,7 +12928,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Źródło pakietów „{0}” zostało pomyślnie zaktualizowane..
         /// </summary>
-        internal static string SourcesCommandUpdateSuccessful_plk {
+        public static string SourcesCommandUpdateSuccessful_plk {
             get {
                 return ResourceManager.GetString("SourcesCommandUpdateSuccessful_plk", resourceCulture);
             }
@@ -12937,7 +12937,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to A origem de pacote &apos;{0}&apos; foi atualizada com sucesso..
         /// </summary>
-        internal static string SourcesCommandUpdateSuccessful_ptb {
+        public static string SourcesCommandUpdateSuccessful_ptb {
             get {
                 return ResourceManager.GetString("SourcesCommandUpdateSuccessful_ptb", resourceCulture);
             }
@@ -12946,7 +12946,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Источник пакетов &quot;{0}&quot; успешно обновлен..
         /// </summary>
-        internal static string SourcesCommandUpdateSuccessful_rus {
+        public static string SourcesCommandUpdateSuccessful_rus {
             get {
                 return ResourceManager.GetString("SourcesCommandUpdateSuccessful_rus", resourceCulture);
             }
@@ -12955,7 +12955,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;{0}&quot; paket kaynağı başarıyla güncellendi..
         /// </summary>
-        internal static string SourcesCommandUpdateSuccessful_trk {
+        public static string SourcesCommandUpdateSuccessful_trk {
             get {
                 return ResourceManager.GetString("SourcesCommandUpdateSuccessful_trk", resourceCulture);
             }
@@ -12964,7 +12964,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Created &apos;{0}&apos; successfully..
         /// </summary>
-        internal static string SpecCommandCreatedNuSpec {
+        public static string SpecCommandCreatedNuSpec {
             get {
                 return ResourceManager.GetString("SpecCommandCreatedNuSpec", resourceCulture);
             }
@@ -12973,7 +12973,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已成功创建“{0}”。.
         /// </summary>
-        internal static string SpecCommandCreatedNuSpec_chs {
+        public static string SpecCommandCreatedNuSpec_chs {
             get {
                 return ResourceManager.GetString("SpecCommandCreatedNuSpec_chs", resourceCulture);
             }
@@ -12982,7 +12982,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 已成功建立 &apos;{0}&apos;。.
         /// </summary>
-        internal static string SpecCommandCreatedNuSpec_cht {
+        public static string SpecCommandCreatedNuSpec_cht {
             get {
                 return ResourceManager.GetString("SpecCommandCreatedNuSpec_cht", resourceCulture);
             }
@@ -12991,7 +12991,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} úspěšně vytvořeno..
         /// </summary>
-        internal static string SpecCommandCreatedNuSpec_csy {
+        public static string SpecCommandCreatedNuSpec_csy {
             get {
                 return ResourceManager.GetString("SpecCommandCreatedNuSpec_csy", resourceCulture);
             }
@@ -13000,7 +13000,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;{0}&quot; wurde erfolgreich erstellt..
         /// </summary>
-        internal static string SpecCommandCreatedNuSpec_deu {
+        public static string SpecCommandCreatedNuSpec_deu {
             get {
                 return ResourceManager.GetString("SpecCommandCreatedNuSpec_deu", resourceCulture);
             }
@@ -13009,7 +13009,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; creado correctamente..
         /// </summary>
-        internal static string SpecCommandCreatedNuSpec_esp {
+        public static string SpecCommandCreatedNuSpec_esp {
             get {
                 return ResourceManager.GetString("SpecCommandCreatedNuSpec_esp", resourceCulture);
             }
@@ -13018,7 +13018,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; créé correctement..
         /// </summary>
-        internal static string SpecCommandCreatedNuSpec_fra {
+        public static string SpecCommandCreatedNuSpec_fra {
             get {
                 return ResourceManager.GetString("SpecCommandCreatedNuSpec_fra", resourceCulture);
             }
@@ -13027,7 +13027,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Creato &apos;{0}&apos; correttamente..
         /// </summary>
-        internal static string SpecCommandCreatedNuSpec_ita {
+        public static string SpecCommandCreatedNuSpec_ita {
             get {
                 return ResourceManager.GetString("SpecCommandCreatedNuSpec_ita", resourceCulture);
             }
@@ -13036,7 +13036,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; は正常に作成されました。.
         /// </summary>
-        internal static string SpecCommandCreatedNuSpec_jpn {
+        public static string SpecCommandCreatedNuSpec_jpn {
             get {
                 return ResourceManager.GetString("SpecCommandCreatedNuSpec_jpn", resourceCulture);
             }
@@ -13045,7 +13045,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos;을(를) 만들었습니다..
         /// </summary>
-        internal static string SpecCommandCreatedNuSpec_kor {
+        public static string SpecCommandCreatedNuSpec_kor {
             get {
                 return ResourceManager.GetString("SpecCommandCreatedNuSpec_kor", resourceCulture);
             }
@@ -13054,7 +13054,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Pomyślnie utworzono „{0}”..
         /// </summary>
-        internal static string SpecCommandCreatedNuSpec_plk {
+        public static string SpecCommandCreatedNuSpec_plk {
             get {
                 return ResourceManager.GetString("SpecCommandCreatedNuSpec_plk", resourceCulture);
             }
@@ -13063,7 +13063,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Criado &apos;{0}&apos; com sucesso..
         /// </summary>
-        internal static string SpecCommandCreatedNuSpec_ptb {
+        public static string SpecCommandCreatedNuSpec_ptb {
             get {
                 return ResourceManager.GetString("SpecCommandCreatedNuSpec_ptb", resourceCulture);
             }
@@ -13072,7 +13072,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;{0}&quot; успешно создан..
         /// </summary>
-        internal static string SpecCommandCreatedNuSpec_rus {
+        public static string SpecCommandCreatedNuSpec_rus {
             get {
                 return ResourceManager.GetString("SpecCommandCreatedNuSpec_rus", resourceCulture);
             }
@@ -13081,7 +13081,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; başarıyla oluşturuldu..
         /// </summary>
-        internal static string SpecCommandCreatedNuSpec_trk {
+        public static string SpecCommandCreatedNuSpec_trk {
             get {
                 return ResourceManager.GetString("SpecCommandCreatedNuSpec_trk", resourceCulture);
             }
@@ -13090,7 +13090,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; already exists, use -f to overwrite it..
         /// </summary>
-        internal static string SpecCommandFileExists {
+        public static string SpecCommandFileExists {
             get {
                 return ResourceManager.GetString("SpecCommandFileExists", resourceCulture);
             }
@@ -13099,7 +13099,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to “{0}”已存在，请使用 -f 覆盖它。.
         /// </summary>
-        internal static string SpecCommandFileExists_chs {
+        public static string SpecCommandFileExists_chs {
             get {
                 return ResourceManager.GetString("SpecCommandFileExists_chs", resourceCulture);
             }
@@ -13108,7 +13108,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; 己存在，使用 -f 加以覆寫。.
         /// </summary>
-        internal static string SpecCommandFileExists_cht {
+        public static string SpecCommandFileExists_cht {
             get {
                 return ResourceManager.GetString("SpecCommandFileExists_cht", resourceCulture);
             }
@@ -13117,7 +13117,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} již existuje, k přepsání použijte -f..
         /// </summary>
-        internal static string SpecCommandFileExists_csy {
+        public static string SpecCommandFileExists_csy {
             get {
                 return ResourceManager.GetString("SpecCommandFileExists_csy", resourceCulture);
             }
@@ -13126,7 +13126,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;{0}&quot; ist bereits vorhanden. Verwenden Sie &quot;-f&quot; zum Überschreiben..
         /// </summary>
-        internal static string SpecCommandFileExists_deu {
+        public static string SpecCommandFileExists_deu {
             get {
                 return ResourceManager.GetString("SpecCommandFileExists_deu", resourceCulture);
             }
@@ -13135,7 +13135,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; ya existe, use -f para sobrescribirlo..
         /// </summary>
-        internal static string SpecCommandFileExists_esp {
+        public static string SpecCommandFileExists_esp {
             get {
                 return ResourceManager.GetString("SpecCommandFileExists_esp", resourceCulture);
             }
@@ -13144,7 +13144,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; existe déjà. Utilisez -f pour le remplacer..
         /// </summary>
-        internal static string SpecCommandFileExists_fra {
+        public static string SpecCommandFileExists_fra {
             get {
                 return ResourceManager.GetString("SpecCommandFileExists_fra", resourceCulture);
             }
@@ -13153,7 +13153,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; già esistente, usere  -f per sostituire..
         /// </summary>
-        internal static string SpecCommandFileExists_ita {
+        public static string SpecCommandFileExists_ita {
             get {
                 return ResourceManager.GetString("SpecCommandFileExists_ita", resourceCulture);
             }
@@ -13162,7 +13162,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; は既に存在します。上書きするには、-f を使用してください。.
         /// </summary>
-        internal static string SpecCommandFileExists_jpn {
+        public static string SpecCommandFileExists_jpn {
             get {
                 return ResourceManager.GetString("SpecCommandFileExists_jpn", resourceCulture);
             }
@@ -13171,7 +13171,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos;이(가) 이미 있습니다. 덮어쓰려면 -f를 사용하십시오..
         /// </summary>
-        internal static string SpecCommandFileExists_kor {
+        public static string SpecCommandFileExists_kor {
             get {
                 return ResourceManager.GetString("SpecCommandFileExists_kor", resourceCulture);
             }
@@ -13180,7 +13180,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Plik „{0}” już istnieje, użyj argumentu -f, aby go zastąpić..
         /// </summary>
-        internal static string SpecCommandFileExists_plk {
+        public static string SpecCommandFileExists_plk {
             get {
                 return ResourceManager.GetString("SpecCommandFileExists_plk", resourceCulture);
             }
@@ -13189,7 +13189,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; já existe, use -f para substituí-lo..
         /// </summary>
-        internal static string SpecCommandFileExists_ptb {
+        public static string SpecCommandFileExists_ptb {
             get {
                 return ResourceManager.GetString("SpecCommandFileExists_ptb", resourceCulture);
             }
@@ -13198,7 +13198,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;{0}&quot; уже существует. Для перезаписи используйте параметр -f..
         /// </summary>
-        internal static string SpecCommandFileExists_rus {
+        public static string SpecCommandFileExists_rus {
             get {
                 return ResourceManager.GetString("SpecCommandFileExists_rus", resourceCulture);
             }
@@ -13207,7 +13207,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; zaten mevcut, geçersiz kılmak için -f seçimini kullanın..
         /// </summary>
-        internal static string SpecCommandFileExists_trk {
+        public static string SpecCommandFileExists_trk {
             get {
                 return ResourceManager.GetString("SpecCommandFileExists_trk", resourceCulture);
             }
@@ -13216,7 +13216,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Unable to change from type &apos;{0}&apos; to &apos;{1}&apos;..
         /// </summary>
-        internal static string UnableToConvertTypeError {
+        public static string UnableToConvertTypeError {
             get {
                 return ResourceManager.GetString("UnableToConvertTypeError", resourceCulture);
             }
@@ -13225,7 +13225,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 无法从类型“{0}”更改为“{1}”。.
         /// </summary>
-        internal static string UnableToConvertTypeError_chs {
+        public static string UnableToConvertTypeError_chs {
             get {
                 return ResourceManager.GetString("UnableToConvertTypeError_chs", resourceCulture);
             }
@@ -13234,7 +13234,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 無法變更類型 &apos;{0}&apos; 為 &apos;{1}&apos;。.
         /// </summary>
-        internal static string UnableToConvertTypeError_cht {
+        public static string UnableToConvertTypeError_cht {
             get {
                 return ResourceManager.GetString("UnableToConvertTypeError_cht", resourceCulture);
             }
@@ -13243,7 +13243,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nelze provést změnu z typu {0} na typ {1}..
         /// </summary>
-        internal static string UnableToConvertTypeError_csy {
+        public static string UnableToConvertTypeError_csy {
             get {
                 return ResourceManager.GetString("UnableToConvertTypeError_csy", resourceCulture);
             }
@@ -13252,7 +13252,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Der Typ kann nicht aus &quot;{0}&quot; in &quot;{1}&quot; geändert werden..
         /// </summary>
-        internal static string UnableToConvertTypeError_deu {
+        public static string UnableToConvertTypeError_deu {
             get {
                 return ResourceManager.GetString("UnableToConvertTypeError_deu", resourceCulture);
             }
@@ -13261,7 +13261,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se puede cambiar del tipo &apos;{0}&apos; a &apos;{1}&apos;..
         /// </summary>
-        internal static string UnableToConvertTypeError_esp {
+        public static string UnableToConvertTypeError_esp {
             get {
                 return ResourceManager.GetString("UnableToConvertTypeError_esp", resourceCulture);
             }
@@ -13270,7 +13270,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossible de basculer du type &apos;{0}&apos; au type &apos;{1}&apos;..
         /// </summary>
-        internal static string UnableToConvertTypeError_fra {
+        public static string UnableToConvertTypeError_fra {
             get {
                 return ResourceManager.GetString("UnableToConvertTypeError_fra", resourceCulture);
             }
@@ -13279,7 +13279,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossibile modificare da &apos;{0}&apos; a &apos;{1}&apos;..
         /// </summary>
-        internal static string UnableToConvertTypeError_ita {
+        public static string UnableToConvertTypeError_ita {
             get {
                 return ResourceManager.GetString("UnableToConvertTypeError_ita", resourceCulture);
             }
@@ -13288,7 +13288,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 型 &apos;{0}&apos; から &apos;{1}&apos; に変更できません。.
         /// </summary>
-        internal static string UnableToConvertTypeError_jpn {
+        public static string UnableToConvertTypeError_jpn {
             get {
                 return ResourceManager.GetString("UnableToConvertTypeError_jpn", resourceCulture);
             }
@@ -13297,7 +13297,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos;에서 &apos;{1}&apos;(으)로 형식을 변경할 수 없습니다..
         /// </summary>
-        internal static string UnableToConvertTypeError_kor {
+        public static string UnableToConvertTypeError_kor {
             get {
                 return ResourceManager.GetString("UnableToConvertTypeError_kor", resourceCulture);
             }
@@ -13306,7 +13306,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie można zmienić typu „{0}” na „{1}”..
         /// </summary>
-        internal static string UnableToConvertTypeError_plk {
+        public static string UnableToConvertTypeError_plk {
             get {
                 return ResourceManager.GetString("UnableToConvertTypeError_plk", resourceCulture);
             }
@@ -13315,7 +13315,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Não é possível mudar do tipo &apos;{0}&apos; para &apos;{1}&apos;..
         /// </summary>
-        internal static string UnableToConvertTypeError_ptb {
+        public static string UnableToConvertTypeError_ptb {
             get {
                 return ResourceManager.GetString("UnableToConvertTypeError_ptb", resourceCulture);
             }
@@ -13324,7 +13324,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Не удалось изменить тип &quot;{0}&quot; на &quot;{1}&quot;..
         /// </summary>
-        internal static string UnableToConvertTypeError_rus {
+        public static string UnableToConvertTypeError_rus {
             get {
                 return ResourceManager.GetString("UnableToConvertTypeError_rus", resourceCulture);
             }
@@ -13333,7 +13333,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; türünden &apos;{1}&apos; türüne değiştirilemiyor..
         /// </summary>
-        internal static string UnableToConvertTypeError_trk {
+        public static string UnableToConvertTypeError_trk {
             get {
                 return ResourceManager.GetString("UnableToConvertTypeError_trk", resourceCulture);
             }
@@ -13342,7 +13342,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Unable to extract metadata from &apos;{0}&apos;..
         /// </summary>
-        internal static string UnableToExtractAssemblyMetadata {
+        public static string UnableToExtractAssemblyMetadata {
             get {
                 return ResourceManager.GetString("UnableToExtractAssemblyMetadata", resourceCulture);
             }
@@ -13351,7 +13351,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 无法从“{0}”中提取元数据。.
         /// </summary>
-        internal static string UnableToExtractAssemblyMetadata_chs {
+        public static string UnableToExtractAssemblyMetadata_chs {
             get {
                 return ResourceManager.GetString("UnableToExtractAssemblyMetadata_chs", resourceCulture);
             }
@@ -13360,7 +13360,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 無法從 &apos;{0}&apos; 擷取中繼資料。.
         /// </summary>
-        internal static string UnableToExtractAssemblyMetadata_cht {
+        public static string UnableToExtractAssemblyMetadata_cht {
             get {
                 return ResourceManager.GetString("UnableToExtractAssemblyMetadata_cht", resourceCulture);
             }
@@ -13369,7 +13369,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nelze extrahovat metadata z {0}..
         /// </summary>
-        internal static string UnableToExtractAssemblyMetadata_csy {
+        public static string UnableToExtractAssemblyMetadata_csy {
             get {
                 return ResourceManager.GetString("UnableToExtractAssemblyMetadata_csy", resourceCulture);
             }
@@ -13378,7 +13378,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Aus &quot;{0}&quot; können keine Metadaten extrahiert werden..
         /// </summary>
-        internal static string UnableToExtractAssemblyMetadata_deu {
+        public static string UnableToExtractAssemblyMetadata_deu {
             get {
                 return ResourceManager.GetString("UnableToExtractAssemblyMetadata_deu", resourceCulture);
             }
@@ -13387,7 +13387,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se pueden extraer metadatos desde &apos;{0}&apos;..
         /// </summary>
-        internal static string UnableToExtractAssemblyMetadata_esp {
+        public static string UnableToExtractAssemblyMetadata_esp {
             get {
                 return ResourceManager.GetString("UnableToExtractAssemblyMetadata_esp", resourceCulture);
             }
@@ -13396,7 +13396,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossible d&apos;extraire les métadonnées de &apos;{0}&apos;..
         /// </summary>
-        internal static string UnableToExtractAssemblyMetadata_fra {
+        public static string UnableToExtractAssemblyMetadata_fra {
             get {
                 return ResourceManager.GetString("UnableToExtractAssemblyMetadata_fra", resourceCulture);
             }
@@ -13405,7 +13405,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossibile estrarre metadati da &apos;{0}&apos;..
         /// </summary>
-        internal static string UnableToExtractAssemblyMetadata_ita {
+        public static string UnableToExtractAssemblyMetadata_ita {
             get {
                 return ResourceManager.GetString("UnableToExtractAssemblyMetadata_ita", resourceCulture);
             }
@@ -13414,7 +13414,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; からメタデータを抽出できません。.
         /// </summary>
-        internal static string UnableToExtractAssemblyMetadata_jpn {
+        public static string UnableToExtractAssemblyMetadata_jpn {
             get {
                 return ResourceManager.GetString("UnableToExtractAssemblyMetadata_jpn", resourceCulture);
             }
@@ -13423,7 +13423,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos;에서 메타데이터를 추출할 수 없습니다..
         /// </summary>
-        internal static string UnableToExtractAssemblyMetadata_kor {
+        public static string UnableToExtractAssemblyMetadata_kor {
             get {
                 return ResourceManager.GetString("UnableToExtractAssemblyMetadata_kor", resourceCulture);
             }
@@ -13432,7 +13432,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie można wyodrębnić metadanych z „{0}”..
         /// </summary>
-        internal static string UnableToExtractAssemblyMetadata_plk {
+        public static string UnableToExtractAssemblyMetadata_plk {
             get {
                 return ResourceManager.GetString("UnableToExtractAssemblyMetadata_plk", resourceCulture);
             }
@@ -13441,7 +13441,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Não foi possível extrair os metadados de &apos;{0}&apos;..
         /// </summary>
-        internal static string UnableToExtractAssemblyMetadata_ptb {
+        public static string UnableToExtractAssemblyMetadata_ptb {
             get {
                 return ResourceManager.GetString("UnableToExtractAssemblyMetadata_ptb", resourceCulture);
             }
@@ -13450,7 +13450,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Не удалось извлечь метаданные из &quot;{0}&quot;..
         /// </summary>
-        internal static string UnableToExtractAssemblyMetadata_rus {
+        public static string UnableToExtractAssemblyMetadata_rus {
             get {
                 return ResourceManager.GetString("UnableToExtractAssemblyMetadata_rus", resourceCulture);
             }
@@ -13459,7 +13459,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Meta veriler &apos;{0}&apos; konumundan ayıklanamıyor..
         /// </summary>
-        internal static string UnableToExtractAssemblyMetadata_trk {
+        public static string UnableToExtractAssemblyMetadata_trk {
             get {
                 return ResourceManager.GetString("UnableToExtractAssemblyMetadata_trk", resourceCulture);
             }
@@ -13468,7 +13468,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Unable to find &apos;{0}&apos;. Make sure the project has been built..
         /// </summary>
-        internal static string UnableToFindBuildOutput {
+        public static string UnableToFindBuildOutput {
             get {
                 return ResourceManager.GetString("UnableToFindBuildOutput", resourceCulture);
             }
@@ -13477,7 +13477,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到“{0}”。请确保已生成项目。.
         /// </summary>
-        internal static string UnableToFindBuildOutput_chs {
+        public static string UnableToFindBuildOutput_chs {
             get {
                 return ResourceManager.GetString("UnableToFindBuildOutput_chs", resourceCulture);
             }
@@ -13486,7 +13486,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到 &apos;{0}&apos;。確定已建置專案。.
         /// </summary>
-        internal static string UnableToFindBuildOutput_cht {
+        public static string UnableToFindBuildOutput_cht {
             get {
                 return ResourceManager.GetString("UnableToFindBuildOutput_cht", resourceCulture);
             }
@@ -13495,7 +13495,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nelze najít {0}. Ověřte, zda tento projekt byl sestaven..
         /// </summary>
-        internal static string UnableToFindBuildOutput_csy {
+        public static string UnableToFindBuildOutput_csy {
             get {
                 return ResourceManager.GetString("UnableToFindBuildOutput_csy", resourceCulture);
             }
@@ -13504,7 +13504,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;{0}&quot; wurde nicht gefunden. Stellen Sie sicher, dass das Projekt erstellt wurde..
         /// </summary>
-        internal static string UnableToFindBuildOutput_deu {
+        public static string UnableToFindBuildOutput_deu {
             get {
                 return ResourceManager.GetString("UnableToFindBuildOutput_deu", resourceCulture);
             }
@@ -13513,7 +13513,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se puede encontrar &apos;{0}&apos;. Asegúrese de que el proyecto se ha compilado..
         /// </summary>
-        internal static string UnableToFindBuildOutput_esp {
+        public static string UnableToFindBuildOutput_esp {
             get {
                 return ResourceManager.GetString("UnableToFindBuildOutput_esp", resourceCulture);
             }
@@ -13522,7 +13522,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossible de trouver &apos;{0}&apos;. Assurez-vous que le projet a été créé..
         /// </summary>
-        internal static string UnableToFindBuildOutput_fra {
+        public static string UnableToFindBuildOutput_fra {
             get {
                 return ResourceManager.GetString("UnableToFindBuildOutput_fra", resourceCulture);
             }
@@ -13531,7 +13531,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossibile trovare &apos;{0}&apos;. Assicurarsi che il progetto è stato creato..
         /// </summary>
-        internal static string UnableToFindBuildOutput_ita {
+        public static string UnableToFindBuildOutput_ita {
             get {
                 return ResourceManager.GetString("UnableToFindBuildOutput_ita", resourceCulture);
             }
@@ -13540,7 +13540,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; が見つかりません。プロジェクトが構築されたことを確認してください。.
         /// </summary>
-        internal static string UnableToFindBuildOutput_jpn {
+        public static string UnableToFindBuildOutput_jpn {
             get {
                 return ResourceManager.GetString("UnableToFindBuildOutput_jpn", resourceCulture);
             }
@@ -13549,7 +13549,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos;을(를) 찾을 수 없습니다. 프로젝트가 빌드되었는지 확인하십시오..
         /// </summary>
-        internal static string UnableToFindBuildOutput_kor {
+        public static string UnableToFindBuildOutput_kor {
             get {
                 return ResourceManager.GetString("UnableToFindBuildOutput_kor", resourceCulture);
             }
@@ -13558,7 +13558,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie można znaleźć „{0}”. Upewnij się, że projekt został skompilowany..
         /// </summary>
-        internal static string UnableToFindBuildOutput_plk {
+        public static string UnableToFindBuildOutput_plk {
             get {
                 return ResourceManager.GetString("UnableToFindBuildOutput_plk", resourceCulture);
             }
@@ -13567,7 +13567,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Não é possível encontrar o &apos;{0}&apos;. Verifique se o projeto foi construído..
         /// </summary>
-        internal static string UnableToFindBuildOutput_ptb {
+        public static string UnableToFindBuildOutput_ptb {
             get {
                 return ResourceManager.GetString("UnableToFindBuildOutput_ptb", resourceCulture);
             }
@@ -13576,7 +13576,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Не удалось найти &quot;{0}&quot;. Убедитесь, что была выполнена сборка проекта..
         /// </summary>
-        internal static string UnableToFindBuildOutput_rus {
+        public static string UnableToFindBuildOutput_rus {
             get {
                 return ResourceManager.GetString("UnableToFindBuildOutput_rus", resourceCulture);
             }
@@ -13585,7 +13585,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; bulunamıyor. Projenin oluşturulduğundan emin olun..
         /// </summary>
-        internal static string UnableToFindBuildOutput_trk {
+        public static string UnableToFindBuildOutput_trk {
             get {
                 return ResourceManager.GetString("UnableToFindBuildOutput_trk", resourceCulture);
             }
@@ -13594,7 +13594,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to File does not exist ({0})..
         /// </summary>
-        internal static string UnableToFindFile {
+        public static string UnableToFindFile {
             get {
                 return ResourceManager.GetString("UnableToFindFile", resourceCulture);
             }
@@ -13603,7 +13603,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 文件不存在({0})。.
         /// </summary>
-        internal static string UnableToFindFile_chs {
+        public static string UnableToFindFile_chs {
             get {
                 return ResourceManager.GetString("UnableToFindFile_chs", resourceCulture);
             }
@@ -13612,7 +13612,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 檔案不存在 ({0})。.
         /// </summary>
-        internal static string UnableToFindFile_cht {
+        public static string UnableToFindFile_cht {
             get {
                 return ResourceManager.GetString("UnableToFindFile_cht", resourceCulture);
             }
@@ -13621,7 +13621,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Soubor neexistuje ({0})..
         /// </summary>
-        internal static string UnableToFindFile_csy {
+        public static string UnableToFindFile_csy {
             get {
                 return ResourceManager.GetString("UnableToFindFile_csy", resourceCulture);
             }
@@ -13630,7 +13630,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Datei ist nicht vorhanden (&quot;{0}&quot;)..
         /// </summary>
-        internal static string UnableToFindFile_deu {
+        public static string UnableToFindFile_deu {
             get {
                 return ResourceManager.GetString("UnableToFindFile_deu", resourceCulture);
             }
@@ -13639,7 +13639,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No existe el archivo ({0})..
         /// </summary>
-        internal static string UnableToFindFile_esp {
+        public static string UnableToFindFile_esp {
             get {
                 return ResourceManager.GetString("UnableToFindFile_esp", resourceCulture);
             }
@@ -13648,7 +13648,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Le fichier n&apos;existe pas ({0})..
         /// </summary>
-        internal static string UnableToFindFile_fra {
+        public static string UnableToFindFile_fra {
             get {
                 return ResourceManager.GetString("UnableToFindFile_fra", resourceCulture);
             }
@@ -13657,7 +13657,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Il file non esiste ({0})..
         /// </summary>
-        internal static string UnableToFindFile_ita {
+        public static string UnableToFindFile_ita {
             get {
                 return ResourceManager.GetString("UnableToFindFile_ita", resourceCulture);
             }
@@ -13666,7 +13666,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to ファイルは存在しません ({0})。.
         /// </summary>
-        internal static string UnableToFindFile_jpn {
+        public static string UnableToFindFile_jpn {
             get {
                 return ResourceManager.GetString("UnableToFindFile_jpn", resourceCulture);
             }
@@ -13675,7 +13675,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 파일이 없습니다({0})..
         /// </summary>
-        internal static string UnableToFindFile_kor {
+        public static string UnableToFindFile_kor {
             get {
                 return ResourceManager.GetString("UnableToFindFile_kor", resourceCulture);
             }
@@ -13684,7 +13684,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Plik nie istnieje ({0})..
         /// </summary>
-        internal static string UnableToFindFile_plk {
+        public static string UnableToFindFile_plk {
             get {
                 return ResourceManager.GetString("UnableToFindFile_plk", resourceCulture);
             }
@@ -13693,7 +13693,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to O arquivo não existe ({0})..
         /// </summary>
-        internal static string UnableToFindFile_ptb {
+        public static string UnableToFindFile_ptb {
             get {
                 return ResourceManager.GetString("UnableToFindFile_ptb", resourceCulture);
             }
@@ -13702,7 +13702,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Файл не существует ({0})..
         /// </summary>
-        internal static string UnableToFindFile_rus {
+        public static string UnableToFindFile_rus {
             get {
                 return ResourceManager.GetString("UnableToFindFile_rus", resourceCulture);
             }
@@ -13711,7 +13711,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Dosya mevcut değil ({0})..
         /// </summary>
-        internal static string UnableToFindFile_trk {
+        public static string UnableToFindFile_trk {
             get {
                 return ResourceManager.GetString("UnableToFindFile_trk", resourceCulture);
             }
@@ -13720,7 +13720,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Unable to find &apos;{0}&apos;. Make sure they are specified in packages.config..
         /// </summary>
-        internal static string UnableToFindPackages {
+        public static string UnableToFindPackages {
             get {
                 return ResourceManager.GetString("UnableToFindPackages", resourceCulture);
             }
@@ -13729,7 +13729,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到“{0}”。请确保已在 packages.config 中指定它们。.
         /// </summary>
-        internal static string UnableToFindPackages_chs {
+        public static string UnableToFindPackages_chs {
             get {
                 return ResourceManager.GetString("UnableToFindPackages_chs", resourceCulture);
             }
@@ -13738,7 +13738,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到 &apos;{0}&apos;。確定已在 packages.config 中指定。.
         /// </summary>
-        internal static string UnableToFindPackages_cht {
+        public static string UnableToFindPackages_cht {
             get {
                 return ResourceManager.GetString("UnableToFindPackages_cht", resourceCulture);
             }
@@ -13747,7 +13747,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nelze najít {0}. Ověřte, zda jsou zadány v souboru packages.config..
         /// </summary>
-        internal static string UnableToFindPackages_csy {
+        public static string UnableToFindPackages_csy {
             get {
                 return ResourceManager.GetString("UnableToFindPackages_csy", resourceCulture);
             }
@@ -13756,7 +13756,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;{0}&quot; wurde nicht gefunden. Stellen Sie sicher, dass das Element in &quot;packages.config&quot; spezifisch ist..
         /// </summary>
-        internal static string UnableToFindPackages_deu {
+        public static string UnableToFindPackages_deu {
             get {
                 return ResourceManager.GetString("UnableToFindPackages_deu", resourceCulture);
             }
@@ -13765,7 +13765,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se puede encontrar &apos;{0}&apos;. Asegúrese de que se han especificado en packages.config..
         /// </summary>
-        internal static string UnableToFindPackages_esp {
+        public static string UnableToFindPackages_esp {
             get {
                 return ResourceManager.GetString("UnableToFindPackages_esp", resourceCulture);
             }
@@ -13774,7 +13774,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossible de trouver &apos;{0}&apos;. Assurez-vous qu&apos;ils sont spécifiés dans packages.config..
         /// </summary>
-        internal static string UnableToFindPackages_fra {
+        public static string UnableToFindPackages_fra {
             get {
                 return ResourceManager.GetString("UnableToFindPackages_fra", resourceCulture);
             }
@@ -13783,7 +13783,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossibile trovare &apos;{0}&apos;.Assicurarsi che siano specificati in packages.config..
         /// </summary>
-        internal static string UnableToFindPackages_ita {
+        public static string UnableToFindPackages_ita {
             get {
                 return ResourceManager.GetString("UnableToFindPackages_ita", resourceCulture);
             }
@@ -13792,7 +13792,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; が見つかりません。packages.config に指定されていることを確認してください。.
         /// </summary>
-        internal static string UnableToFindPackages_jpn {
+        public static string UnableToFindPackages_jpn {
             get {
                 return ResourceManager.GetString("UnableToFindPackages_jpn", resourceCulture);
             }
@@ -13801,7 +13801,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos;을(를) 찾을 수 없습니다. packages.config에 지정되어 있는지 확인하십시오..
         /// </summary>
-        internal static string UnableToFindPackages_kor {
+        public static string UnableToFindPackages_kor {
             get {
                 return ResourceManager.GetString("UnableToFindPackages_kor", resourceCulture);
             }
@@ -13810,7 +13810,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie można odnaleźć pakietów „{0}”. Upewnij się, że zostały one określone w pliku packages.config..
         /// </summary>
-        internal static string UnableToFindPackages_plk {
+        public static string UnableToFindPackages_plk {
             get {
                 return ResourceManager.GetString("UnableToFindPackages_plk", resourceCulture);
             }
@@ -13819,7 +13819,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Não foi possível encontrar o &apos;{0}&apos;. Verifique se eles estão especificados em packages.config..
         /// </summary>
-        internal static string UnableToFindPackages_ptb {
+        public static string UnableToFindPackages_ptb {
             get {
                 return ResourceManager.GetString("UnableToFindPackages_ptb", resourceCulture);
             }
@@ -13828,7 +13828,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Не удалось найти &quot;{0}&quot;. Убедитесь, что они указаны в файле packages.config..
         /// </summary>
-        internal static string UnableToFindPackages_rus {
+        public static string UnableToFindPackages_rus {
             get {
                 return ResourceManager.GetString("UnableToFindPackages_rus", resourceCulture);
             }
@@ -13837,7 +13837,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; bulunamıyor. Packages.config içinde belirtildiğinden emin olun..
         /// </summary>
-        internal static string UnableToFindPackages_trk {
+        public static string UnableToFindPackages_trk {
             get {
                 return ResourceManager.GetString("UnableToFindPackages_trk", resourceCulture);
             }
@@ -13846,7 +13846,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Unable to find project &apos;{0}&apos;..
         /// </summary>
-        internal static string UnableToFindProject {
+        public static string UnableToFindProject {
             get {
                 return ResourceManager.GetString("UnableToFindProject", resourceCulture);
             }
@@ -13855,7 +13855,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到项目“{0}”。.
         /// </summary>
-        internal static string UnableToFindProject_chs {
+        public static string UnableToFindProject_chs {
             get {
                 return ResourceManager.GetString("UnableToFindProject_chs", resourceCulture);
             }
@@ -13864,7 +13864,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到專案 &apos;{0}&apos;。.
         /// </summary>
-        internal static string UnableToFindProject_cht {
+        public static string UnableToFindProject_cht {
             get {
                 return ResourceManager.GetString("UnableToFindProject_cht", resourceCulture);
             }
@@ -13873,7 +13873,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Projekt {0} nebyl nalezen..
         /// </summary>
-        internal static string UnableToFindProject_csy {
+        public static string UnableToFindProject_csy {
             get {
                 return ResourceManager.GetString("UnableToFindProject_csy", resourceCulture);
             }
@@ -13882,7 +13882,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Das Projekt &quot;{0}&quot; wurde nicht gefunden..
         /// </summary>
-        internal static string UnableToFindProject_deu {
+        public static string UnableToFindProject_deu {
             get {
                 return ResourceManager.GetString("UnableToFindProject_deu", resourceCulture);
             }
@@ -13891,7 +13891,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se encuentra el proyecto &apos;{0}&apos;..
         /// </summary>
-        internal static string UnableToFindProject_esp {
+        public static string UnableToFindProject_esp {
             get {
                 return ResourceManager.GetString("UnableToFindProject_esp", resourceCulture);
             }
@@ -13900,7 +13900,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossible de trouver le projet &apos;{0}&apos;..
         /// </summary>
-        internal static string UnableToFindProject_fra {
+        public static string UnableToFindProject_fra {
             get {
                 return ResourceManager.GetString("UnableToFindProject_fra", resourceCulture);
             }
@@ -13909,7 +13909,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossibile trovare il progetto &apos;{0}&apos;..
         /// </summary>
-        internal static string UnableToFindProject_ita {
+        public static string UnableToFindProject_ita {
             get {
                 return ResourceManager.GetString("UnableToFindProject_ita", resourceCulture);
             }
@@ -13918,7 +13918,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to プロジェクト &apos;{0}&apos; が見つかりません。.
         /// </summary>
-        internal static string UnableToFindProject_jpn {
+        public static string UnableToFindProject_jpn {
             get {
                 return ResourceManager.GetString("UnableToFindProject_jpn", resourceCulture);
             }
@@ -13927,7 +13927,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; 프로젝트를 찾을 수 없습니다..
         /// </summary>
-        internal static string UnableToFindProject_kor {
+        public static string UnableToFindProject_kor {
             get {
                 return ResourceManager.GetString("UnableToFindProject_kor", resourceCulture);
             }
@@ -13936,7 +13936,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie można odnaleźć projektu „{0}”..
         /// </summary>
-        internal static string UnableToFindProject_plk {
+        public static string UnableToFindProject_plk {
             get {
                 return ResourceManager.GetString("UnableToFindProject_plk", resourceCulture);
             }
@@ -13945,7 +13945,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Não é possível encontrar o projeto &apos;{0}&apos;..
         /// </summary>
-        internal static string UnableToFindProject_ptb {
+        public static string UnableToFindProject_ptb {
             get {
                 return ResourceManager.GetString("UnableToFindProject_ptb", resourceCulture);
             }
@@ -13954,7 +13954,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Не удалось найти проект &quot;{0}&quot;..
         /// </summary>
-        internal static string UnableToFindProject_rus {
+        public static string UnableToFindProject_rus {
             get {
                 return ResourceManager.GetString("UnableToFindProject_rus", resourceCulture);
             }
@@ -13963,7 +13963,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; projesi bulunamadı..
         /// </summary>
-        internal static string UnableToFindProject_trk {
+        public static string UnableToFindProject_trk {
             get {
                 return ResourceManager.GetString("UnableToFindProject_trk", resourceCulture);
             }
@@ -13972,7 +13972,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Unable to find solution &apos;{0}&apos;..
         /// </summary>
-        internal static string UnableToFindSolution {
+        public static string UnableToFindSolution {
             get {
                 return ResourceManager.GetString("UnableToFindSolution", resourceCulture);
             }
@@ -13981,7 +13981,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到解决方案“{0}”。.
         /// </summary>
-        internal static string UnableToFindSolution_chs {
+        public static string UnableToFindSolution_chs {
             get {
                 return ResourceManager.GetString("UnableToFindSolution_chs", resourceCulture);
             }
@@ -13990,7 +13990,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到方案 &apos;{0}&apos;。.
         /// </summary>
-        internal static string UnableToFindSolution_cht {
+        public static string UnableToFindSolution_cht {
             get {
                 return ResourceManager.GetString("UnableToFindSolution_cht", resourceCulture);
             }
@@ -13999,7 +13999,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nelze najít řešení {0}..
         /// </summary>
-        internal static string UnableToFindSolution_csy {
+        public static string UnableToFindSolution_csy {
             get {
                 return ResourceManager.GetString("UnableToFindSolution_csy", resourceCulture);
             }
@@ -14008,7 +14008,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Das Projekt &quot;{0}&quot; wurde nicht gefunden..
         /// </summary>
-        internal static string UnableToFindSolution_deu {
+        public static string UnableToFindSolution_deu {
             get {
                 return ResourceManager.GetString("UnableToFindSolution_deu", resourceCulture);
             }
@@ -14017,7 +14017,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se puede encontrar la solución &apos;{0}&apos;..
         /// </summary>
-        internal static string UnableToFindSolution_esp {
+        public static string UnableToFindSolution_esp {
             get {
                 return ResourceManager.GetString("UnableToFindSolution_esp", resourceCulture);
             }
@@ -14026,7 +14026,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossible de trouver la solution &apos;{0}&apos;..
         /// </summary>
-        internal static string UnableToFindSolution_fra {
+        public static string UnableToFindSolution_fra {
             get {
                 return ResourceManager.GetString("UnableToFindSolution_fra", resourceCulture);
             }
@@ -14035,7 +14035,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossibile trovare soluzione &apos;{0}&apos;..
         /// </summary>
-        internal static string UnableToFindSolution_ita {
+        public static string UnableToFindSolution_ita {
             get {
                 return ResourceManager.GetString("UnableToFindSolution_ita", resourceCulture);
             }
@@ -14044,7 +14044,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to ソリューション &apos;{0}&apos; が見つかりません。.
         /// </summary>
-        internal static string UnableToFindSolution_jpn {
+        public static string UnableToFindSolution_jpn {
             get {
                 return ResourceManager.GetString("UnableToFindSolution_jpn", resourceCulture);
             }
@@ -14053,7 +14053,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; 솔루션을 찾을 수 없습니다..
         /// </summary>
-        internal static string UnableToFindSolution_kor {
+        public static string UnableToFindSolution_kor {
             get {
                 return ResourceManager.GetString("UnableToFindSolution_kor", resourceCulture);
             }
@@ -14062,7 +14062,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie można znaleźć rozwiązania „{0}”..
         /// </summary>
-        internal static string UnableToFindSolution_plk {
+        public static string UnableToFindSolution_plk {
             get {
                 return ResourceManager.GetString("UnableToFindSolution_plk", resourceCulture);
             }
@@ -14071,7 +14071,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Não foi possível encontrar uma solução &apos;{0}&apos;..
         /// </summary>
-        internal static string UnableToFindSolution_ptb {
+        public static string UnableToFindSolution_ptb {
             get {
                 return ResourceManager.GetString("UnableToFindSolution_ptb", resourceCulture);
             }
@@ -14080,7 +14080,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Не удалось найти решение &quot;{0}&quot;..
         /// </summary>
-        internal static string UnableToFindSolution_rus {
+        public static string UnableToFindSolution_rus {
             get {
                 return ResourceManager.GetString("UnableToFindSolution_rus", resourceCulture);
             }
@@ -14089,7 +14089,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; çözümü bulunamıyor..
         /// </summary>
-        internal static string UnableToFindSolution_trk {
+        public static string UnableToFindSolution_trk {
             get {
                 return ResourceManager.GetString("UnableToFindSolution_trk", resourceCulture);
             }
@@ -14098,7 +14098,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Unable to locate the packages folder. Try specifying it using the repositoryPath switch..
         /// </summary>
-        internal static string UnableToLocatePackagesFolder {
+        public static string UnableToLocatePackagesFolder {
             get {
                 return ResourceManager.GetString("UnableToLocatePackagesFolder", resourceCulture);
             }
@@ -14107,7 +14107,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到程序包文件夹。请尝试使用 repositoryPath 开关指定它。.
         /// </summary>
-        internal static string UnableToLocatePackagesFolder_chs {
+        public static string UnableToLocatePackagesFolder_chs {
             get {
                 return ResourceManager.GetString("UnableToLocatePackagesFolder_chs", resourceCulture);
             }
@@ -14116,7 +14116,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到封裝資料夾。嘗試使用 repositoryPath 切換指定。.
         /// </summary>
-        internal static string UnableToLocatePackagesFolder_cht {
+        public static string UnableToLocatePackagesFolder_cht {
             get {
                 return ResourceManager.GetString("UnableToLocatePackagesFolder_cht", resourceCulture);
             }
@@ -14125,7 +14125,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Složka balíčků nebyla nalezena. Zkuste ji zadat pomocí přepínače repositoryPath..
         /// </summary>
-        internal static string UnableToLocatePackagesFolder_csy {
+        public static string UnableToLocatePackagesFolder_csy {
             get {
                 return ResourceManager.GetString("UnableToLocatePackagesFolder_csy", resourceCulture);
             }
@@ -14134,7 +14134,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Der Paketordner wurde nicht gefunden. Versuchen Sie, ihn mithilfe des Schalters &quot;repositoryPath &quot; anzugeben..
         /// </summary>
-        internal static string UnableToLocatePackagesFolder_deu {
+        public static string UnableToLocatePackagesFolder_deu {
             get {
                 return ResourceManager.GetString("UnableToLocatePackagesFolder_deu", resourceCulture);
             }
@@ -14143,7 +14143,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se puede ubicar la carpeta de los paquetes. Pruebe de especificarla usando el conmutador repositoryPath..
         /// </summary>
-        internal static string UnableToLocatePackagesFolder_esp {
+        public static string UnableToLocatePackagesFolder_esp {
             get {
                 return ResourceManager.GetString("UnableToLocatePackagesFolder_esp", resourceCulture);
             }
@@ -14152,7 +14152,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossible de trouver le dossier de packages. Essayez de le spécifier à l&apos;aide du commutateur repositoryPath..
         /// </summary>
-        internal static string UnableToLocatePackagesFolder_fra {
+        public static string UnableToLocatePackagesFolder_fra {
             get {
                 return ResourceManager.GetString("UnableToLocatePackagesFolder_fra", resourceCulture);
             }
@@ -14161,7 +14161,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossibile localizzare la cartella pacchetto. Provare a specificarla usando repositoryPath switch..
         /// </summary>
-        internal static string UnableToLocatePackagesFolder_ita {
+        public static string UnableToLocatePackagesFolder_ita {
             get {
                 return ResourceManager.GetString("UnableToLocatePackagesFolder_ita", resourceCulture);
             }
@@ -14170,7 +14170,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to packages フォルダーが見つかりません。repositoryPath スイッチを使用して指定してください。.
         /// </summary>
-        internal static string UnableToLocatePackagesFolder_jpn {
+        public static string UnableToLocatePackagesFolder_jpn {
             get {
                 return ResourceManager.GetString("UnableToLocatePackagesFolder_jpn", resourceCulture);
             }
@@ -14179,7 +14179,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 패키지 폴더를 찾을 수 없습니다. repositoryPath 스위치를 사용하여 지정해 보십시오..
         /// </summary>
-        internal static string UnableToLocatePackagesFolder_kor {
+        public static string UnableToLocatePackagesFolder_kor {
             get {
                 return ResourceManager.GetString("UnableToLocatePackagesFolder_kor", resourceCulture);
             }
@@ -14188,7 +14188,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie można zlokalizować folderu pakietów. Spróbuj go określić przy użyciu przełącznika repositoryPath..
         /// </summary>
-        internal static string UnableToLocatePackagesFolder_plk {
+        public static string UnableToLocatePackagesFolder_plk {
             get {
                 return ResourceManager.GetString("UnableToLocatePackagesFolder_plk", resourceCulture);
             }
@@ -14197,7 +14197,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Não foi possível localizar a pasta de pacotes. Tente especificá-la usando a opção repositoryPath..
         /// </summary>
-        internal static string UnableToLocatePackagesFolder_ptb {
+        public static string UnableToLocatePackagesFolder_ptb {
             get {
                 return ResourceManager.GetString("UnableToLocatePackagesFolder_ptb", resourceCulture);
             }
@@ -14206,7 +14206,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Не удалось найти папку пакетов. Попробуйте указать ее с помощью параметра repositoryPath..
         /// </summary>
-        internal static string UnableToLocatePackagesFolder_rus {
+        public static string UnableToLocatePackagesFolder_rus {
             get {
                 return ResourceManager.GetString("UnableToLocatePackagesFolder_rus", resourceCulture);
             }
@@ -14215,7 +14215,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Paket klasörü bulunamıyor. RepositoryPath anahtarını kullanarak belirlemeyi deneyin..
         /// </summary>
-        internal static string UnableToLocatePackagesFolder_trk {
+        public static string UnableToLocatePackagesFolder_trk {
             get {
                 return ResourceManager.GetString("UnableToLocatePackagesFolder_trk", resourceCulture);
             }
@@ -14224,7 +14224,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Unable to locate project file for &apos;{0}&apos;..
         /// </summary>
-        internal static string UnableToLocateProjectFile {
+        public static string UnableToLocateProjectFile {
             get {
                 return ResourceManager.GetString("UnableToLocateProjectFile", resourceCulture);
             }
@@ -14233,7 +14233,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到“{0}”的项目文件。.
         /// </summary>
-        internal static string UnableToLocateProjectFile_chs {
+        public static string UnableToLocateProjectFile_chs {
             get {
                 return ResourceManager.GetString("UnableToLocateProjectFile_chs", resourceCulture);
             }
@@ -14242,7 +14242,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到 &apos;{0}&apos; 的專案檔。.
         /// </summary>
-        internal static string UnableToLocateProjectFile_cht {
+        public static string UnableToLocateProjectFile_cht {
             get {
                 return ResourceManager.GetString("UnableToLocateProjectFile_cht", resourceCulture);
             }
@@ -14251,7 +14251,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Soubor projektu pro {0} nebyl nalezen..
         /// </summary>
-        internal static string UnableToLocateProjectFile_csy {
+        public static string UnableToLocateProjectFile_csy {
             get {
                 return ResourceManager.GetString("UnableToLocateProjectFile_csy", resourceCulture);
             }
@@ -14260,7 +14260,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Projektdatei für &quot;{0}&quot; wurde nicht gefunden..
         /// </summary>
-        internal static string UnableToLocateProjectFile_deu {
+        public static string UnableToLocateProjectFile_deu {
             get {
                 return ResourceManager.GetString("UnableToLocateProjectFile_deu", resourceCulture);
             }
@@ -14269,7 +14269,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se puede ubicar el archivo de proyecto para &apos;{0}&apos;..
         /// </summary>
-        internal static string UnableToLocateProjectFile_esp {
+        public static string UnableToLocateProjectFile_esp {
             get {
                 return ResourceManager.GetString("UnableToLocateProjectFile_esp", resourceCulture);
             }
@@ -14278,7 +14278,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossible de trouver le fichier projet pour &apos;{0}&apos;..
         /// </summary>
-        internal static string UnableToLocateProjectFile_fra {
+        public static string UnableToLocateProjectFile_fra {
             get {
                 return ResourceManager.GetString("UnableToLocateProjectFile_fra", resourceCulture);
             }
@@ -14287,7 +14287,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossibile localizzare file progetto per &apos;{0}&apos;..
         /// </summary>
-        internal static string UnableToLocateProjectFile_ita {
+        public static string UnableToLocateProjectFile_ita {
             get {
                 return ResourceManager.GetString("UnableToLocateProjectFile_ita", resourceCulture);
             }
@@ -14296,7 +14296,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; のプロジェクト ファイルが見つかりません。.
         /// </summary>
-        internal static string UnableToLocateProjectFile_jpn {
+        public static string UnableToLocateProjectFile_jpn {
             get {
                 return ResourceManager.GetString("UnableToLocateProjectFile_jpn", resourceCulture);
             }
@@ -14305,7 +14305,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos;에 대한 프로젝트 파일을 찾을 수 없습니다..
         /// </summary>
-        internal static string UnableToLocateProjectFile_kor {
+        public static string UnableToLocateProjectFile_kor {
             get {
                 return ResourceManager.GetString("UnableToLocateProjectFile_kor", resourceCulture);
             }
@@ -14314,7 +14314,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie można zlokalizować pliku projektu dla „{0}”..
         /// </summary>
-        internal static string UnableToLocateProjectFile_plk {
+        public static string UnableToLocateProjectFile_plk {
             get {
                 return ResourceManager.GetString("UnableToLocateProjectFile_plk", resourceCulture);
             }
@@ -14323,7 +14323,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Não foi possível localizar arquivo de projeto para &apos;{0}&apos;..
         /// </summary>
-        internal static string UnableToLocateProjectFile_ptb {
+        public static string UnableToLocateProjectFile_ptb {
             get {
                 return ResourceManager.GetString("UnableToLocateProjectFile_ptb", resourceCulture);
             }
@@ -14332,7 +14332,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Не удалось найти файл проекта для &quot;{0}&quot;..
         /// </summary>
-        internal static string UnableToLocateProjectFile_rus {
+        public static string UnableToLocateProjectFile_rus {
             get {
                 return ResourceManager.GetString("UnableToLocateProjectFile_rus", resourceCulture);
             }
@@ -14341,7 +14341,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; için proje dosyası bulunamıyor..
         /// </summary>
-        internal static string UnableToLocateProjectFile_trk {
+        public static string UnableToLocateProjectFile_trk {
             get {
                 return ResourceManager.GetString("UnableToLocateProjectFile_trk", resourceCulture);
             }
@@ -14350,7 +14350,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Unknown command: &apos;{0}&apos;.
         /// </summary>
-        internal static string UnknowCommandError {
+        public static string UnknowCommandError {
             get {
                 return ResourceManager.GetString("UnknowCommandError", resourceCulture);
             }
@@ -14359,7 +14359,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 未知命令:“{0}”.
         /// </summary>
-        internal static string UnknowCommandError_chs {
+        public static string UnknowCommandError_chs {
             get {
                 return ResourceManager.GetString("UnknowCommandError_chs", resourceCulture);
             }
@@ -14368,7 +14368,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 不明的命令: &apos;{0}&apos;.
         /// </summary>
-        internal static string UnknowCommandError_cht {
+        public static string UnknowCommandError_cht {
             get {
                 return ResourceManager.GetString("UnknowCommandError_cht", resourceCulture);
             }
@@ -14377,7 +14377,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Neznámý příkaz: &apos;{0}&apos;.
         /// </summary>
-        internal static string UnknowCommandError_csy {
+        public static string UnknowCommandError_csy {
             get {
                 return ResourceManager.GetString("UnknowCommandError_csy", resourceCulture);
             }
@@ -14386,7 +14386,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Unbekannter Befehl: &quot;{0}&quot;.
         /// </summary>
-        internal static string UnknowCommandError_deu {
+        public static string UnknowCommandError_deu {
             get {
                 return ResourceManager.GetString("UnknowCommandError_deu", resourceCulture);
             }
@@ -14395,7 +14395,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Comando desconocido: &apos;{0}&apos;.
         /// </summary>
-        internal static string UnknowCommandError_esp {
+        public static string UnknowCommandError_esp {
             get {
                 return ResourceManager.GetString("UnknowCommandError_esp", resourceCulture);
             }
@@ -14404,7 +14404,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Commande inconnue : &apos;{0}&apos;.
         /// </summary>
-        internal static string UnknowCommandError_fra {
+        public static string UnknowCommandError_fra {
             get {
                 return ResourceManager.GetString("UnknowCommandError_fra", resourceCulture);
             }
@@ -14413,7 +14413,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Comando sconosciuto: &apos;{0}&apos;.
         /// </summary>
-        internal static string UnknowCommandError_ita {
+        public static string UnknowCommandError_ita {
             get {
                 return ResourceManager.GetString("UnknowCommandError_ita", resourceCulture);
             }
@@ -14422,7 +14422,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 不明なコマンド: &apos;{0}&apos;.
         /// </summary>
-        internal static string UnknowCommandError_jpn {
+        public static string UnknowCommandError_jpn {
             get {
                 return ResourceManager.GetString("UnknowCommandError_jpn", resourceCulture);
             }
@@ -14431,7 +14431,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 알 수 없는 명령: &apos;{0}&apos;.
         /// </summary>
-        internal static string UnknowCommandError_kor {
+        public static string UnknowCommandError_kor {
             get {
                 return ResourceManager.GetString("UnknowCommandError_kor", resourceCulture);
             }
@@ -14440,7 +14440,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nieznane polecenie: „{0}”.
         /// </summary>
-        internal static string UnknowCommandError_plk {
+        public static string UnknowCommandError_plk {
             get {
                 return ResourceManager.GetString("UnknowCommandError_plk", resourceCulture);
             }
@@ -14449,7 +14449,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Comando desconhecido: &apos;{0}&apos;.
         /// </summary>
-        internal static string UnknowCommandError_ptb {
+        public static string UnknowCommandError_ptb {
             get {
                 return ResourceManager.GetString("UnknowCommandError_ptb", resourceCulture);
             }
@@ -14458,7 +14458,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Неизвестная команда: &quot;{0}&quot;.
         /// </summary>
-        internal static string UnknowCommandError_rus {
+        public static string UnknowCommandError_rus {
             get {
                 return ResourceManager.GetString("UnknowCommandError_rus", resourceCulture);
             }
@@ -14467,7 +14467,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Bilinmeyen komut: &apos;{0}&apos;.
         /// </summary>
-        internal static string UnknowCommandError_trk {
+        public static string UnknowCommandError_trk {
             get {
                 return ResourceManager.GetString("UnknowCommandError_trk", resourceCulture);
             }
@@ -14476,7 +14476,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Unknown option: &apos;{0}&apos;.
         /// </summary>
-        internal static string UnknownOptionError {
+        public static string UnknownOptionError {
             get {
                 return ResourceManager.GetString("UnknownOptionError", resourceCulture);
             }
@@ -14485,7 +14485,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 未知选项:“{0}”.
         /// </summary>
-        internal static string UnknownOptionError_chs {
+        public static string UnknownOptionError_chs {
             get {
                 return ResourceManager.GetString("UnknownOptionError_chs", resourceCulture);
             }
@@ -14494,7 +14494,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 不明的選項: &apos;{0}&apos;.
         /// </summary>
-        internal static string UnknownOptionError_cht {
+        public static string UnknownOptionError_cht {
             get {
                 return ResourceManager.GetString("UnknownOptionError_cht", resourceCulture);
             }
@@ -14503,7 +14503,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Neznámá možnost: &apos;{0}&apos;.
         /// </summary>
-        internal static string UnknownOptionError_csy {
+        public static string UnknownOptionError_csy {
             get {
                 return ResourceManager.GetString("UnknownOptionError_csy", resourceCulture);
             }
@@ -14512,7 +14512,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Unbekannte Option: &quot;{0}&quot;.
         /// </summary>
-        internal static string UnknownOptionError_deu {
+        public static string UnknownOptionError_deu {
             get {
                 return ResourceManager.GetString("UnknownOptionError_deu", resourceCulture);
             }
@@ -14521,7 +14521,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Opción desconocida: &apos;{0}&apos;.
         /// </summary>
-        internal static string UnknownOptionError_esp {
+        public static string UnknownOptionError_esp {
             get {
                 return ResourceManager.GetString("UnknownOptionError_esp", resourceCulture);
             }
@@ -14530,7 +14530,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Option inconnue : &apos;{0}&apos;.
         /// </summary>
-        internal static string UnknownOptionError_fra {
+        public static string UnknownOptionError_fra {
             get {
                 return ResourceManager.GetString("UnknownOptionError_fra", resourceCulture);
             }
@@ -14539,7 +14539,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Opzione sconosciuta: &apos;{0}&apos;.
         /// </summary>
-        internal static string UnknownOptionError_ita {
+        public static string UnknownOptionError_ita {
             get {
                 return ResourceManager.GetString("UnknownOptionError_ita", resourceCulture);
             }
@@ -14548,7 +14548,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 不明なオプション: &apos;{0}&apos;.
         /// </summary>
-        internal static string UnknownOptionError_jpn {
+        public static string UnknownOptionError_jpn {
             get {
                 return ResourceManager.GetString("UnknownOptionError_jpn", resourceCulture);
             }
@@ -14557,7 +14557,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 알 수 없는 옵션: &apos;{0}&apos;.
         /// </summary>
-        internal static string UnknownOptionError_kor {
+        public static string UnknownOptionError_kor {
             get {
                 return ResourceManager.GetString("UnknownOptionError_kor", resourceCulture);
             }
@@ -14566,7 +14566,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nieznana opcja: „{0}”.
         /// </summary>
-        internal static string UnknownOptionError_plk {
+        public static string UnknownOptionError_plk {
             get {
                 return ResourceManager.GetString("UnknownOptionError_plk", resourceCulture);
             }
@@ -14575,7 +14575,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Opção desconhecida: &apos;{0}&apos;.
         /// </summary>
-        internal static string UnknownOptionError_ptb {
+        public static string UnknownOptionError_ptb {
             get {
                 return ResourceManager.GetString("UnknownOptionError_ptb", resourceCulture);
             }
@@ -14584,7 +14584,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Неизвестный оператор: &quot;{0}&quot;.
         /// </summary>
-        internal static string UnknownOptionError_rus {
+        public static string UnknownOptionError_rus {
             get {
                 return ResourceManager.GetString("UnknownOptionError_rus", resourceCulture);
             }
@@ -14593,7 +14593,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Bilinmeyen seçenek: &apos;{0}&apos;.
         /// </summary>
-        internal static string UnknownOptionError_trk {
+        public static string UnknownOptionError_trk {
             get {
                 return ResourceManager.GetString("UnknownOptionError_trk", resourceCulture);
             }
@@ -14602,7 +14602,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Checking for updates from {0}..
         /// </summary>
-        internal static string UpdateCommandCheckingForUpdates {
+        public static string UpdateCommandCheckingForUpdates {
             get {
                 return ResourceManager.GetString("UpdateCommandCheckingForUpdates", resourceCulture);
             }
@@ -14611,7 +14611,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在检查来自 {0} 的更新。.
         /// </summary>
-        internal static string UpdateCommandCheckingForUpdates_chs {
+        public static string UpdateCommandCheckingForUpdates_chs {
             get {
                 return ResourceManager.GetString("UpdateCommandCheckingForUpdates_chs", resourceCulture);
             }
@@ -14620,7 +14620,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在檢查來自 {0} 的更新。.
         /// </summary>
-        internal static string UpdateCommandCheckingForUpdates_cht {
+        public static string UpdateCommandCheckingForUpdates_cht {
             get {
                 return ResourceManager.GetString("UpdateCommandCheckingForUpdates_cht", resourceCulture);
             }
@@ -14629,7 +14629,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Probíhá kontrola aktualizací z {0}..
         /// </summary>
-        internal static string UpdateCommandCheckingForUpdates_csy {
+        public static string UpdateCommandCheckingForUpdates_csy {
             get {
                 return ResourceManager.GetString("UpdateCommandCheckingForUpdates_csy", resourceCulture);
             }
@@ -14638,7 +14638,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Es wird auf Updates von {0} überprüft..
         /// </summary>
-        internal static string UpdateCommandCheckingForUpdates_deu {
+        public static string UpdateCommandCheckingForUpdates_deu {
             get {
                 return ResourceManager.GetString("UpdateCommandCheckingForUpdates_deu", resourceCulture);
             }
@@ -14647,7 +14647,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Comprobando actualizaciones desde {0}..
         /// </summary>
-        internal static string UpdateCommandCheckingForUpdates_esp {
+        public static string UpdateCommandCheckingForUpdates_esp {
             get {
                 return ResourceManager.GetString("UpdateCommandCheckingForUpdates_esp", resourceCulture);
             }
@@ -14656,7 +14656,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Recherche de mises à jour depuis {0}..
         /// </summary>
-        internal static string UpdateCommandCheckingForUpdates_fra {
+        public static string UpdateCommandCheckingForUpdates_fra {
             get {
                 return ResourceManager.GetString("UpdateCommandCheckingForUpdates_fra", resourceCulture);
             }
@@ -14665,7 +14665,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Controllando aggiornamenti da {0}..
         /// </summary>
-        internal static string UpdateCommandCheckingForUpdates_ita {
+        public static string UpdateCommandCheckingForUpdates_ita {
             get {
                 return ResourceManager.GetString("UpdateCommandCheckingForUpdates_ita", resourceCulture);
             }
@@ -14674,7 +14674,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} の更新を確認しています。.
         /// </summary>
-        internal static string UpdateCommandCheckingForUpdates_jpn {
+        public static string UpdateCommandCheckingForUpdates_jpn {
             get {
                 return ResourceManager.GetString("UpdateCommandCheckingForUpdates_jpn", resourceCulture);
             }
@@ -14683,7 +14683,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}에서 업데이트를 확인하고 있습니다..
         /// </summary>
-        internal static string UpdateCommandCheckingForUpdates_kor {
+        public static string UpdateCommandCheckingForUpdates_kor {
             get {
                 return ResourceManager.GetString("UpdateCommandCheckingForUpdates_kor", resourceCulture);
             }
@@ -14692,7 +14692,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Sprawdzanie dostępności aktualizacji z {0}..
         /// </summary>
-        internal static string UpdateCommandCheckingForUpdates_plk {
+        public static string UpdateCommandCheckingForUpdates_plk {
             get {
                 return ResourceManager.GetString("UpdateCommandCheckingForUpdates_plk", resourceCulture);
             }
@@ -14701,7 +14701,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Verifique se há atualizações de {0}..
         /// </summary>
-        internal static string UpdateCommandCheckingForUpdates_ptb {
+        public static string UpdateCommandCheckingForUpdates_ptb {
             get {
                 return ResourceManager.GetString("UpdateCommandCheckingForUpdates_ptb", resourceCulture);
             }
@@ -14710,7 +14710,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Проверка обновлений из &quot;{0}&quot;..
         /// </summary>
-        internal static string UpdateCommandCheckingForUpdates_rus {
+        public static string UpdateCommandCheckingForUpdates_rus {
             get {
                 return ResourceManager.GetString("UpdateCommandCheckingForUpdates_rus", resourceCulture);
             }
@@ -14719,7 +14719,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Güncellemeler {0} konumundan denetleniyor..
         /// </summary>
-        internal static string UpdateCommandCheckingForUpdates_trk {
+        public static string UpdateCommandCheckingForUpdates_trk {
             get {
                 return ResourceManager.GetString("UpdateCommandCheckingForUpdates_trk", resourceCulture);
             }
@@ -14728,7 +14728,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Currently running NuGet.exe {0}..
         /// </summary>
-        internal static string UpdateCommandCurrentlyRunningNuGetExe {
+        public static string UpdateCommandCurrentlyRunningNuGetExe {
             get {
                 return ResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe", resourceCulture);
             }
@@ -14737,7 +14737,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 当前正在运行 NuGet.exe {0}。.
         /// </summary>
-        internal static string UpdateCommandCurrentlyRunningNuGetExe_chs {
+        public static string UpdateCommandCurrentlyRunningNuGetExe_chs {
             get {
                 return ResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe_chs", resourceCulture);
             }
@@ -14746,7 +14746,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 目前正在執行 NuGet.exe {0}。.
         /// </summary>
-        internal static string UpdateCommandCurrentlyRunningNuGetExe_cht {
+        public static string UpdateCommandCurrentlyRunningNuGetExe_cht {
             get {
                 return ResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe_cht", resourceCulture);
             }
@@ -14755,7 +14755,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Aktuálně je spuštěn soubor NuGet.exe {0}..
         /// </summary>
-        internal static string UpdateCommandCurrentlyRunningNuGetExe_csy {
+        public static string UpdateCommandCurrentlyRunningNuGetExe_csy {
             get {
                 return ResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe_csy", resourceCulture);
             }
@@ -14764,7 +14764,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;NuGet.exe&quot; {0} wird zurzeit ausgeführt..
         /// </summary>
-        internal static string UpdateCommandCurrentlyRunningNuGetExe_deu {
+        public static string UpdateCommandCurrentlyRunningNuGetExe_deu {
             get {
                 return ResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe_deu", resourceCulture);
             }
@@ -14773,7 +14773,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Se está ejecutando NuGet.exe {0}..
         /// </summary>
-        internal static string UpdateCommandCurrentlyRunningNuGetExe_esp {
+        public static string UpdateCommandCurrentlyRunningNuGetExe_esp {
             get {
                 return ResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe_esp", resourceCulture);
             }
@@ -14782,7 +14782,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet.exe {0} en cours d&apos;exécution..
         /// </summary>
-        internal static string UpdateCommandCurrentlyRunningNuGetExe_fra {
+        public static string UpdateCommandCurrentlyRunningNuGetExe_fra {
             get {
                 return ResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe_fra", resourceCulture);
             }
@@ -14791,7 +14791,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to  NuGet.exe {0} avviato..
         /// </summary>
-        internal static string UpdateCommandCurrentlyRunningNuGetExe_ita {
+        public static string UpdateCommandCurrentlyRunningNuGetExe_ita {
             get {
                 return ResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe_ita", resourceCulture);
             }
@@ -14800,7 +14800,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet.exe {0} は実行中です。.
         /// </summary>
-        internal static string UpdateCommandCurrentlyRunningNuGetExe_jpn {
+        public static string UpdateCommandCurrentlyRunningNuGetExe_jpn {
             get {
                 return ResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe_jpn", resourceCulture);
             }
@@ -14809,7 +14809,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 현재 NuGet.exe {0}을(를) 실행하고 있습니다..
         /// </summary>
-        internal static string UpdateCommandCurrentlyRunningNuGetExe_kor {
+        public static string UpdateCommandCurrentlyRunningNuGetExe_kor {
             get {
                 return ResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe_kor", resourceCulture);
             }
@@ -14818,7 +14818,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Plik NuGet.exe {0} jest obecnie uruchomiony..
         /// </summary>
-        internal static string UpdateCommandCurrentlyRunningNuGetExe_plk {
+        public static string UpdateCommandCurrentlyRunningNuGetExe_plk {
             get {
                 return ResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe_plk", resourceCulture);
             }
@@ -14827,7 +14827,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Atualmente executando NuGet.exe {0}..
         /// </summary>
-        internal static string UpdateCommandCurrentlyRunningNuGetExe_ptb {
+        public static string UpdateCommandCurrentlyRunningNuGetExe_ptb {
             get {
                 return ResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe_ptb", resourceCulture);
             }
@@ -14836,7 +14836,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Сейчас запущен NuGet.exe {0}..
         /// </summary>
-        internal static string UpdateCommandCurrentlyRunningNuGetExe_rus {
+        public static string UpdateCommandCurrentlyRunningNuGetExe_rus {
             get {
                 return ResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe_rus", resourceCulture);
             }
@@ -14845,7 +14845,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet.exe {0} şu anda çalıştırılıyor..
         /// </summary>
-        internal static string UpdateCommandCurrentlyRunningNuGetExe_trk {
+        public static string UpdateCommandCurrentlyRunningNuGetExe_trk {
             get {
                 return ResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe_trk", resourceCulture);
             }
@@ -14854,7 +14854,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet.exe is up to date..
         /// </summary>
-        internal static string UpdateCommandNuGetUpToDate {
+        public static string UpdateCommandNuGetUpToDate {
             get {
                 return ResourceManager.GetString("UpdateCommandNuGetUpToDate", resourceCulture);
             }
@@ -14863,7 +14863,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet.exe 是最新的。.
         /// </summary>
-        internal static string UpdateCommandNuGetUpToDate_chs {
+        public static string UpdateCommandNuGetUpToDate_chs {
             get {
                 return ResourceManager.GetString("UpdateCommandNuGetUpToDate_chs", resourceCulture);
             }
@@ -14872,7 +14872,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet.exe 是最新的。.
         /// </summary>
-        internal static string UpdateCommandNuGetUpToDate_cht {
+        public static string UpdateCommandNuGetUpToDate_cht {
             get {
                 return ResourceManager.GetString("UpdateCommandNuGetUpToDate_cht", resourceCulture);
             }
@@ -14881,7 +14881,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet.exe je aktuální..
         /// </summary>
-        internal static string UpdateCommandNuGetUpToDate_csy {
+        public static string UpdateCommandNuGetUpToDate_csy {
             get {
                 return ResourceManager.GetString("UpdateCommandNuGetUpToDate_csy", resourceCulture);
             }
@@ -14890,7 +14890,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;NuGet.exe&quot; ist aktuell..
         /// </summary>
-        internal static string UpdateCommandNuGetUpToDate_deu {
+        public static string UpdateCommandNuGetUpToDate_deu {
             get {
                 return ResourceManager.GetString("UpdateCommandNuGetUpToDate_deu", resourceCulture);
             }
@@ -14899,7 +14899,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet.exe está actualizado..
         /// </summary>
-        internal static string UpdateCommandNuGetUpToDate_esp {
+        public static string UpdateCommandNuGetUpToDate_esp {
             get {
                 return ResourceManager.GetString("UpdateCommandNuGetUpToDate_esp", resourceCulture);
             }
@@ -14908,7 +14908,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet.exe est à jour..
         /// </summary>
-        internal static string UpdateCommandNuGetUpToDate_fra {
+        public static string UpdateCommandNuGetUpToDate_fra {
             get {
                 return ResourceManager.GetString("UpdateCommandNuGetUpToDate_fra", resourceCulture);
             }
@@ -14917,7 +14917,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet.exe è aggiornato..
         /// </summary>
-        internal static string UpdateCommandNuGetUpToDate_ita {
+        public static string UpdateCommandNuGetUpToDate_ita {
             get {
                 return ResourceManager.GetString("UpdateCommandNuGetUpToDate_ita", resourceCulture);
             }
@@ -14926,7 +14926,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet.exe は最新です。.
         /// </summary>
-        internal static string UpdateCommandNuGetUpToDate_jpn {
+        public static string UpdateCommandNuGetUpToDate_jpn {
             get {
                 return ResourceManager.GetString("UpdateCommandNuGetUpToDate_jpn", resourceCulture);
             }
@@ -14935,7 +14935,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet.exe가 최신 버전입니다..
         /// </summary>
-        internal static string UpdateCommandNuGetUpToDate_kor {
+        public static string UpdateCommandNuGetUpToDate_kor {
             get {
                 return ResourceManager.GetString("UpdateCommandNuGetUpToDate_kor", resourceCulture);
             }
@@ -14944,7 +14944,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Plik NuGet.exe jest aktualny..
         /// </summary>
-        internal static string UpdateCommandNuGetUpToDate_plk {
+        public static string UpdateCommandNuGetUpToDate_plk {
             get {
                 return ResourceManager.GetString("UpdateCommandNuGetUpToDate_plk", resourceCulture);
             }
@@ -14953,7 +14953,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to O NuGet.exe está atualizado..
         /// </summary>
-        internal static string UpdateCommandNuGetUpToDate_ptb {
+        public static string UpdateCommandNuGetUpToDate_ptb {
             get {
                 return ResourceManager.GetString("UpdateCommandNuGetUpToDate_ptb", resourceCulture);
             }
@@ -14962,7 +14962,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Обновление NuGet.exe не требуется..
         /// </summary>
-        internal static string UpdateCommandNuGetUpToDate_rus {
+        public static string UpdateCommandNuGetUpToDate_rus {
             get {
                 return ResourceManager.GetString("UpdateCommandNuGetUpToDate_rus", resourceCulture);
             }
@@ -14971,7 +14971,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet.exe güncel..
         /// </summary>
-        internal static string UpdateCommandNuGetUpToDate_trk {
+        public static string UpdateCommandNuGetUpToDate_trk {
             get {
                 return ResourceManager.GetString("UpdateCommandNuGetUpToDate_trk", resourceCulture);
             }
@@ -14980,7 +14980,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Unable to find &apos;{0}&apos; package..
         /// </summary>
-        internal static string UpdateCommandUnableToFindPackage {
+        public static string UpdateCommandUnableToFindPackage {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToFindPackage", resourceCulture);
             }
@@ -14989,7 +14989,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到“{0}”程序包。.
         /// </summary>
-        internal static string UpdateCommandUnableToFindPackage_chs {
+        public static string UpdateCommandUnableToFindPackage_chs {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToFindPackage_chs", resourceCulture);
             }
@@ -14998,7 +14998,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找不到 &apos;{0}&apos; 封裝。.
         /// </summary>
-        internal static string UpdateCommandUnableToFindPackage_cht {
+        public static string UpdateCommandUnableToFindPackage_cht {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToFindPackage_cht", resourceCulture);
             }
@@ -15007,7 +15007,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Balíček {0} nebyl nalezen..
         /// </summary>
-        internal static string UpdateCommandUnableToFindPackage_csy {
+        public static string UpdateCommandUnableToFindPackage_csy {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToFindPackage_csy", resourceCulture);
             }
@@ -15016,7 +15016,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Das Paket &quot;{0}&quot; wurde nicht gefunden..
         /// </summary>
-        internal static string UpdateCommandUnableToFindPackage_deu {
+        public static string UpdateCommandUnableToFindPackage_deu {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToFindPackage_deu", resourceCulture);
             }
@@ -15025,7 +15025,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se puede encontrar el paquete &apos;{0}&apos;..
         /// </summary>
-        internal static string UpdateCommandUnableToFindPackage_esp {
+        public static string UpdateCommandUnableToFindPackage_esp {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToFindPackage_esp", resourceCulture);
             }
@@ -15034,7 +15034,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossible de trouver le package &apos;{0}&apos;..
         /// </summary>
-        internal static string UpdateCommandUnableToFindPackage_fra {
+        public static string UpdateCommandUnableToFindPackage_fra {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToFindPackage_fra", resourceCulture);
             }
@@ -15043,7 +15043,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Impossibile trovare pacchetto &apos;{0}&apos;..
         /// </summary>
-        internal static string UpdateCommandUnableToFindPackage_ita {
+        public static string UpdateCommandUnableToFindPackage_ita {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToFindPackage_ita", resourceCulture);
             }
@@ -15052,7 +15052,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; パッケージが見つかりません。.
         /// </summary>
-        internal static string UpdateCommandUnableToFindPackage_jpn {
+        public static string UpdateCommandUnableToFindPackage_jpn {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToFindPackage_jpn", resourceCulture);
             }
@@ -15061,7 +15061,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; 패키지를 찾을 수 없습니다..
         /// </summary>
-        internal static string UpdateCommandUnableToFindPackage_kor {
+        public static string UpdateCommandUnableToFindPackage_kor {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToFindPackage_kor", resourceCulture);
             }
@@ -15070,7 +15070,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie można odnaleźć pakietu „{0}”..
         /// </summary>
-        internal static string UpdateCommandUnableToFindPackage_plk {
+        public static string UpdateCommandUnableToFindPackage_plk {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToFindPackage_plk", resourceCulture);
             }
@@ -15079,7 +15079,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Não foi possível encontrar o pacote &apos;{0}&apos;..
         /// </summary>
-        internal static string UpdateCommandUnableToFindPackage_ptb {
+        public static string UpdateCommandUnableToFindPackage_ptb {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToFindPackage_ptb", resourceCulture);
             }
@@ -15088,7 +15088,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Не удалось найти пакет &quot;{0}&quot;..
         /// </summary>
-        internal static string UpdateCommandUnableToFindPackage_rus {
+        public static string UpdateCommandUnableToFindPackage_rus {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToFindPackage_rus", resourceCulture);
             }
@@ -15097,7 +15097,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; paketi bulunamıyor..
         /// </summary>
-        internal static string UpdateCommandUnableToFindPackage_trk {
+        public static string UpdateCommandUnableToFindPackage_trk {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToFindPackage_trk", resourceCulture);
             }
@@ -15106,7 +15106,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Invalid NuGet.CommandLine package. Unable to locate NuGet.exe within the package..
         /// </summary>
-        internal static string UpdateCommandUnableToLocateNuGetExe {
+        public static string UpdateCommandUnableToLocateNuGetExe {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe", resourceCulture);
             }
@@ -15115,7 +15115,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet.CommandLine 程序包无效。在该程序包中找不到 NuGet.exe。.
         /// </summary>
-        internal static string UpdateCommandUnableToLocateNuGetExe_chs {
+        public static string UpdateCommandUnableToLocateNuGetExe_chs {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe_chs", resourceCulture);
             }
@@ -15124,7 +15124,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 無效的 NuGet.CommandLine 封裝。在封裝中找不到 NuGet.exe。.
         /// </summary>
-        internal static string UpdateCommandUnableToLocateNuGetExe_cht {
+        public static string UpdateCommandUnableToLocateNuGetExe_cht {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe_cht", resourceCulture);
             }
@@ -15133,7 +15133,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Neplatný balíček NuGet.CommandLine. V tomto balíčku nebyl nalezen soubor NuGet.exe..
         /// </summary>
-        internal static string UpdateCommandUnableToLocateNuGetExe_csy {
+        public static string UpdateCommandUnableToLocateNuGetExe_csy {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe_csy", resourceCulture);
             }
@@ -15142,7 +15142,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ungültiges NuGet.CommandLine-Paket. &quot;NuGet.exe&quot; wurde im Paket nicht gefunden..
         /// </summary>
-        internal static string UpdateCommandUnableToLocateNuGetExe_deu {
+        public static string UpdateCommandUnableToLocateNuGetExe_deu {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe_deu", resourceCulture);
             }
@@ -15151,7 +15151,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Paquete NuGet.CommandLine no válido. No se puede ubicar NuGet.exe en el paquete..
         /// </summary>
-        internal static string UpdateCommandUnableToLocateNuGetExe_esp {
+        public static string UpdateCommandUnableToLocateNuGetExe_esp {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe_esp", resourceCulture);
             }
@@ -15160,7 +15160,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Package NuGet.CommandLine non valide. Impossible de trouver NuGet.exe dans le package..
         /// </summary>
-        internal static string UpdateCommandUnableToLocateNuGetExe_fra {
+        public static string UpdateCommandUnableToLocateNuGetExe_fra {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe_fra", resourceCulture);
             }
@@ -15169,7 +15169,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Pacchetto NuGet.CommandLine invalido. Impossibile localizzare NuGet.exe all&apos;interno del pacchetto..
         /// </summary>
-        internal static string UpdateCommandUnableToLocateNuGetExe_ita {
+        public static string UpdateCommandUnableToLocateNuGetExe_ita {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe_ita", resourceCulture);
             }
@@ -15178,7 +15178,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet.CommandLine パッケージが無効です。パッケージ内に NuGet.exe が見つかりません。.
         /// </summary>
-        internal static string UpdateCommandUnableToLocateNuGetExe_jpn {
+        public static string UpdateCommandUnableToLocateNuGetExe_jpn {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe_jpn", resourceCulture);
             }
@@ -15187,7 +15187,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 잘못된 NuGet.CommandLine 패키지입니다. 패키지에서 NuGet.exe를 찾을 수 없습니다..
         /// </summary>
-        internal static string UpdateCommandUnableToLocateNuGetExe_kor {
+        public static string UpdateCommandUnableToLocateNuGetExe_kor {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe_kor", resourceCulture);
             }
@@ -15196,7 +15196,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nieprawidłowy pakiet NuGet.CommandLine. Nie można odnaleźć pliku NuGet.exe wewnątrz pakietu..
         /// </summary>
-        internal static string UpdateCommandUnableToLocateNuGetExe_plk {
+        public static string UpdateCommandUnableToLocateNuGetExe_plk {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe_plk", resourceCulture);
             }
@@ -15205,7 +15205,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Pacote NuGet.CommandLine inválido. Não foi possível localizar NuGet.exe dentro do pacote..
         /// </summary>
-        internal static string UpdateCommandUnableToLocateNuGetExe_ptb {
+        public static string UpdateCommandUnableToLocateNuGetExe_ptb {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe_ptb", resourceCulture);
             }
@@ -15214,7 +15214,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Недопустимый пакет NuGet.CommandLine. В пакете не удалось найти NuGet.exe..
         /// </summary>
-        internal static string UpdateCommandUnableToLocateNuGetExe_rus {
+        public static string UpdateCommandUnableToLocateNuGetExe_rus {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe_rus", resourceCulture);
             }
@@ -15223,7 +15223,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Geçersiz NuGet.CommandLine paketi. Paket içindeki NuGet.exe bulunamıyor..
         /// </summary>
-        internal static string UpdateCommandUnableToLocateNuGetExe_trk {
+        public static string UpdateCommandUnableToLocateNuGetExe_trk {
             get {
                 return ResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe_trk", resourceCulture);
             }
@@ -15232,7 +15232,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Update successful..
         /// </summary>
-        internal static string UpdateCommandUpdateSuccessful {
+        public static string UpdateCommandUpdateSuccessful {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdateSuccessful", resourceCulture);
             }
@@ -15241,7 +15241,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 更新成功。.
         /// </summary>
-        internal static string UpdateCommandUpdateSuccessful_chs {
+        public static string UpdateCommandUpdateSuccessful_chs {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdateSuccessful_chs", resourceCulture);
             }
@@ -15250,7 +15250,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 成功更新。.
         /// </summary>
-        internal static string UpdateCommandUpdateSuccessful_cht {
+        public static string UpdateCommandUpdateSuccessful_cht {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdateSuccessful_cht", resourceCulture);
             }
@@ -15259,7 +15259,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Aktualizace proběhla úspěšně..
         /// </summary>
-        internal static string UpdateCommandUpdateSuccessful_csy {
+        public static string UpdateCommandUpdateSuccessful_csy {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdateSuccessful_csy", resourceCulture);
             }
@@ -15268,7 +15268,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Das Update war erfolgreich..
         /// </summary>
-        internal static string UpdateCommandUpdateSuccessful_deu {
+        public static string UpdateCommandUpdateSuccessful_deu {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdateSuccessful_deu", resourceCulture);
             }
@@ -15277,7 +15277,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Actualización correcta..
         /// </summary>
-        internal static string UpdateCommandUpdateSuccessful_esp {
+        public static string UpdateCommandUpdateSuccessful_esp {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdateSuccessful_esp", resourceCulture);
             }
@@ -15286,7 +15286,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Mise à jour réussie..
         /// </summary>
-        internal static string UpdateCommandUpdateSuccessful_fra {
+        public static string UpdateCommandUpdateSuccessful_fra {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdateSuccessful_fra", resourceCulture);
             }
@@ -15295,7 +15295,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Aggiornamento riuscito.
         /// </summary>
-        internal static string UpdateCommandUpdateSuccessful_ita {
+        public static string UpdateCommandUpdateSuccessful_ita {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdateSuccessful_ita", resourceCulture);
             }
@@ -15304,7 +15304,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正常に更新されました。.
         /// </summary>
-        internal static string UpdateCommandUpdateSuccessful_jpn {
+        public static string UpdateCommandUpdateSuccessful_jpn {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdateSuccessful_jpn", resourceCulture);
             }
@@ -15313,7 +15313,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 업데이트했습니다..
         /// </summary>
-        internal static string UpdateCommandUpdateSuccessful_kor {
+        public static string UpdateCommandUpdateSuccessful_kor {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdateSuccessful_kor", resourceCulture);
             }
@@ -15322,7 +15322,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Aktualizacja powiodła się..
         /// </summary>
-        internal static string UpdateCommandUpdateSuccessful_plk {
+        public static string UpdateCommandUpdateSuccessful_plk {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdateSuccessful_plk", resourceCulture);
             }
@@ -15331,7 +15331,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Atualização bem-sucedida..
         /// </summary>
-        internal static string UpdateCommandUpdateSuccessful_ptb {
+        public static string UpdateCommandUpdateSuccessful_ptb {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdateSuccessful_ptb", resourceCulture);
             }
@@ -15340,7 +15340,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Обновление выполнено..
         /// </summary>
-        internal static string UpdateCommandUpdateSuccessful_rus {
+        public static string UpdateCommandUpdateSuccessful_rus {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdateSuccessful_rus", resourceCulture);
             }
@@ -15349,7 +15349,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Güncelleme başarılı..
         /// </summary>
-        internal static string UpdateCommandUpdateSuccessful_trk {
+        public static string UpdateCommandUpdateSuccessful_trk {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdateSuccessful_trk", resourceCulture);
             }
@@ -15358,7 +15358,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Updating NuGet.exe to {0}..
         /// </summary>
-        internal static string UpdateCommandUpdatingNuGet {
+        public static string UpdateCommandUpdatingNuGet {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdatingNuGet", resourceCulture);
             }
@@ -15367,7 +15367,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在将 NuGet.exe 更新到 {0}。.
         /// </summary>
-        internal static string UpdateCommandUpdatingNuGet_chs {
+        public static string UpdateCommandUpdatingNuGet_chs {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdatingNuGet_chs", resourceCulture);
             }
@@ -15376,7 +15376,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在更新 NuGet.exe 為 {0}。.
         /// </summary>
-        internal static string UpdateCommandUpdatingNuGet_cht {
+        public static string UpdateCommandUpdatingNuGet_cht {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdatingNuGet_cht", resourceCulture);
             }
@@ -15385,7 +15385,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Probíhá aktualizace souboru NuGet.exe na {0}..
         /// </summary>
-        internal static string UpdateCommandUpdatingNuGet_csy {
+        public static string UpdateCommandUpdatingNuGet_csy {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdatingNuGet_csy", resourceCulture);
             }
@@ -15394,7 +15394,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;NuGet.exe&quot; wird auf {0} aktualisiert..
         /// </summary>
-        internal static string UpdateCommandUpdatingNuGet_deu {
+        public static string UpdateCommandUpdatingNuGet_deu {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdatingNuGet_deu", resourceCulture);
             }
@@ -15403,7 +15403,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Actualizando NuGet.exe a {0}..
         /// </summary>
-        internal static string UpdateCommandUpdatingNuGet_esp {
+        public static string UpdateCommandUpdatingNuGet_esp {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdatingNuGet_esp", resourceCulture);
             }
@@ -15412,7 +15412,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Mise à jour de NuGet.exe vers {0}..
         /// </summary>
-        internal static string UpdateCommandUpdatingNuGet_fra {
+        public static string UpdateCommandUpdatingNuGet_fra {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdatingNuGet_fra", resourceCulture);
             }
@@ -15421,7 +15421,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Aggiornando NuGet.exe a {0}..
         /// </summary>
-        internal static string UpdateCommandUpdatingNuGet_ita {
+        public static string UpdateCommandUpdatingNuGet_ita {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdatingNuGet_ita", resourceCulture);
             }
@@ -15430,7 +15430,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet.exe を {0} に更新しています。.
         /// </summary>
-        internal static string UpdateCommandUpdatingNuGet_jpn {
+        public static string UpdateCommandUpdatingNuGet_jpn {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdatingNuGet_jpn", resourceCulture);
             }
@@ -15439,7 +15439,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet.exe를 {0}(으)로 업데이트하고 있습니다..
         /// </summary>
-        internal static string UpdateCommandUpdatingNuGet_kor {
+        public static string UpdateCommandUpdatingNuGet_kor {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdatingNuGet_kor", resourceCulture);
             }
@@ -15448,7 +15448,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Aktualizowanie pliku NuGet.exe do {0}..
         /// </summary>
-        internal static string UpdateCommandUpdatingNuGet_plk {
+        public static string UpdateCommandUpdatingNuGet_plk {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdatingNuGet_plk", resourceCulture);
             }
@@ -15457,7 +15457,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Atualizando NuGet.exe para {0}..
         /// </summary>
-        internal static string UpdateCommandUpdatingNuGet_ptb {
+        public static string UpdateCommandUpdatingNuGet_ptb {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdatingNuGet_ptb", resourceCulture);
             }
@@ -15466,7 +15466,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Обновление NuGet.exe в {0}..
         /// </summary>
-        internal static string UpdateCommandUpdatingNuGet_rus {
+        public static string UpdateCommandUpdatingNuGet_rus {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdatingNuGet_rus", resourceCulture);
             }
@@ -15475,7 +15475,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NuGet.exe {0} olarak güncelleniyor..
         /// </summary>
-        internal static string UpdateCommandUpdatingNuGet_trk {
+        public static string UpdateCommandUpdatingNuGet_trk {
             get {
                 return ResourceManager.GetString("UpdateCommandUpdatingNuGet_trk", resourceCulture);
             }
@@ -15484,7 +15484,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Updating &apos;{0}&apos;....
         /// </summary>
-        internal static string UpdatingProject {
+        public static string UpdatingProject {
             get {
                 return ResourceManager.GetString("UpdatingProject", resourceCulture);
             }
@@ -15493,7 +15493,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在更新“{0}”....
         /// </summary>
-        internal static string UpdatingProject_chs {
+        public static string UpdatingProject_chs {
             get {
                 return ResourceManager.GetString("UpdatingProject_chs", resourceCulture);
             }
@@ -15502,7 +15502,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在更新 &apos;{0}&apos;....
         /// </summary>
-        internal static string UpdatingProject_cht {
+        public static string UpdatingProject_cht {
             get {
                 return ResourceManager.GetString("UpdatingProject_cht", resourceCulture);
             }
@@ -15511,7 +15511,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Probíhá aktualizace {0}....
         /// </summary>
-        internal static string UpdatingProject_csy {
+        public static string UpdatingProject_csy {
             get {
                 return ResourceManager.GetString("UpdatingProject_csy", resourceCulture);
             }
@@ -15520,7 +15520,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;{0}&quot; wird aktualisiert....
         /// </summary>
-        internal static string UpdatingProject_deu {
+        public static string UpdatingProject_deu {
             get {
                 return ResourceManager.GetString("UpdatingProject_deu", resourceCulture);
             }
@@ -15529,7 +15529,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Actualizando &apos;{0}&apos;….
         /// </summary>
-        internal static string UpdatingProject_esp {
+        public static string UpdatingProject_esp {
             get {
                 return ResourceManager.GetString("UpdatingProject_esp", resourceCulture);
             }
@@ -15538,7 +15538,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Mise à jour de &apos;{0}&apos;….
         /// </summary>
-        internal static string UpdatingProject_fra {
+        public static string UpdatingProject_fra {
             get {
                 return ResourceManager.GetString("UpdatingProject_fra", resourceCulture);
             }
@@ -15547,7 +15547,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Aggiornando &apos;{0}&apos;....
         /// </summary>
-        internal static string UpdatingProject_ita {
+        public static string UpdatingProject_ita {
             get {
                 return ResourceManager.GetString("UpdatingProject_ita", resourceCulture);
             }
@@ -15556,7 +15556,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; を更新しています....
         /// </summary>
-        internal static string UpdatingProject_jpn {
+        public static string UpdatingProject_jpn {
             get {
                 return ResourceManager.GetString("UpdatingProject_jpn", resourceCulture);
             }
@@ -15565,7 +15565,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos;을(를) 업데이트하는 중....
         /// </summary>
-        internal static string UpdatingProject_kor {
+        public static string UpdatingProject_kor {
             get {
                 return ResourceManager.GetString("UpdatingProject_kor", resourceCulture);
             }
@@ -15574,7 +15574,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Trwa aktualizacja „{0}”....
         /// </summary>
-        internal static string UpdatingProject_plk {
+        public static string UpdatingProject_plk {
             get {
                 return ResourceManager.GetString("UpdatingProject_plk", resourceCulture);
             }
@@ -15583,7 +15583,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Atualizando &apos;{0}&apos; ....
         /// </summary>
-        internal static string UpdatingProject_ptb {
+        public static string UpdatingProject_ptb {
             get {
                 return ResourceManager.GetString("UpdatingProject_ptb", resourceCulture);
             }
@@ -15592,7 +15592,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Обновление &quot;{0}&quot;....
         /// </summary>
-        internal static string UpdatingProject_rus {
+        public static string UpdatingProject_rus {
             get {
                 return ResourceManager.GetString("UpdatingProject_rus", resourceCulture);
             }
@@ -15601,7 +15601,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; güncelleniyor....
         /// </summary>
-        internal static string UpdatingProject_trk {
+        public static string UpdatingProject_trk {
             get {
                 return ResourceManager.GetString("UpdatingProject_trk", resourceCulture);
             }
@@ -15610,7 +15610,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Using &apos;{0}&apos; for metadata..
         /// </summary>
-        internal static string UsingNuspecForMetadata {
+        public static string UsingNuspecForMetadata {
             get {
                 return ResourceManager.GetString("UsingNuspecForMetadata", resourceCulture);
             }
@@ -15619,7 +15619,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在对元数据使用“{0}”。.
         /// </summary>
-        internal static string UsingNuspecForMetadata_chs {
+        public static string UsingNuspecForMetadata_chs {
             get {
                 return ResourceManager.GetString("UsingNuspecForMetadata_chs", resourceCulture);
             }
@@ -15628,7 +15628,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 正在使用中繼資料的 &apos;{0}&apos;。.
         /// </summary>
-        internal static string UsingNuspecForMetadata_cht {
+        public static string UsingNuspecForMetadata_cht {
             get {
                 return ResourceManager.GetString("UsingNuspecForMetadata_cht", resourceCulture);
             }
@@ -15637,7 +15637,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} se používá pro metadata..
         /// </summary>
-        internal static string UsingNuspecForMetadata_csy {
+        public static string UsingNuspecForMetadata_csy {
             get {
                 return ResourceManager.GetString("UsingNuspecForMetadata_csy", resourceCulture);
             }
@@ -15646,7 +15646,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;{0}&quot; wird für Metadaten verwendet..
         /// </summary>
-        internal static string UsingNuspecForMetadata_deu {
+        public static string UsingNuspecForMetadata_deu {
             get {
                 return ResourceManager.GetString("UsingNuspecForMetadata_deu", resourceCulture);
             }
@@ -15655,7 +15655,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Usando &apos;{0}&apos; para metadatos..
         /// </summary>
-        internal static string UsingNuspecForMetadata_esp {
+        public static string UsingNuspecForMetadata_esp {
             get {
                 return ResourceManager.GetString("UsingNuspecForMetadata_esp", resourceCulture);
             }
@@ -15664,7 +15664,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Utilisation de &apos;{0}&apos; pour les métadonnées..
         /// </summary>
-        internal static string UsingNuspecForMetadata_fra {
+        public static string UsingNuspecForMetadata_fra {
             get {
                 return ResourceManager.GetString("UsingNuspecForMetadata_fra", resourceCulture);
             }
@@ -15673,7 +15673,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Usando &apos;{0}&apos; per metadati..
         /// </summary>
-        internal static string UsingNuspecForMetadata_ita {
+        public static string UsingNuspecForMetadata_ita {
             get {
                 return ResourceManager.GetString("UsingNuspecForMetadata_ita", resourceCulture);
             }
@@ -15682,7 +15682,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to メタデータに &apos;{0}&apos; を使用しています。.
         /// </summary>
-        internal static string UsingNuspecForMetadata_jpn {
+        public static string UsingNuspecForMetadata_jpn {
             get {
                 return ResourceManager.GetString("UsingNuspecForMetadata_jpn", resourceCulture);
             }
@@ -15691,7 +15691,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 메타데이터에 대한 &apos;{0}&apos;을(를) 사용하고 있습니다..
         /// </summary>
-        internal static string UsingNuspecForMetadata_kor {
+        public static string UsingNuspecForMetadata_kor {
             get {
                 return ResourceManager.GetString("UsingNuspecForMetadata_kor", resourceCulture);
             }
@@ -15700,7 +15700,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Używanie „{0}” na potrzeby metadanych..
         /// </summary>
-        internal static string UsingNuspecForMetadata_plk {
+        public static string UsingNuspecForMetadata_plk {
             get {
                 return ResourceManager.GetString("UsingNuspecForMetadata_plk", resourceCulture);
             }
@@ -15709,7 +15709,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Usando &apos;{0}&apos; para metadados..
         /// </summary>
-        internal static string UsingNuspecForMetadata_ptb {
+        public static string UsingNuspecForMetadata_ptb {
             get {
                 return ResourceManager.GetString("UsingNuspecForMetadata_ptb", resourceCulture);
             }
@@ -15718,7 +15718,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Использование &quot;{0}&quot; для метаданных..
         /// </summary>
-        internal static string UsingNuspecForMetadata_rus {
+        public static string UsingNuspecForMetadata_rus {
             get {
                 return ResourceManager.GetString("UsingNuspecForMetadata_rus", resourceCulture);
             }
@@ -15727,7 +15727,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Meta veriler için &apos;{0}&apos; kullanılıyor..
         /// </summary>
-        internal static string UsingNuspecForMetadata_trk {
+        public static string UsingNuspecForMetadata_trk {
             get {
                 return ResourceManager.GetString("UsingNuspecForMetadata_trk", resourceCulture);
             }
@@ -15736,7 +15736,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Found packages.config. Using packages listed as dependencies.
         /// </summary>
-        internal static string UsingPackagesConfigForDependencies {
+        public static string UsingPackagesConfigForDependencies {
             get {
                 return ResourceManager.GetString("UsingPackagesConfigForDependencies", resourceCulture);
             }
@@ -15745,7 +15745,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找到 packages.config。正在使用列出的程序包作为依赖关系.
         /// </summary>
-        internal static string UsingPackagesConfigForDependencies_chs {
+        public static string UsingPackagesConfigForDependencies_chs {
             get {
                 return ResourceManager.GetString("UsingPackagesConfigForDependencies_chs", resourceCulture);
             }
@@ -15754,7 +15754,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找到 packages.config。使用列出的封裝做為相依性。.
         /// </summary>
-        internal static string UsingPackagesConfigForDependencies_cht {
+        public static string UsingPackagesConfigForDependencies_cht {
             get {
                 return ResourceManager.GetString("UsingPackagesConfigForDependencies_cht", resourceCulture);
             }
@@ -15763,7 +15763,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Byl nalezen soubor packages.config. Používají se balíčky uvedené jako závislosti..
         /// </summary>
-        internal static string UsingPackagesConfigForDependencies_csy {
+        public static string UsingPackagesConfigForDependencies_csy {
             get {
                 return ResourceManager.GetString("UsingPackagesConfigForDependencies_csy", resourceCulture);
             }
@@ -15772,7 +15772,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;packages.config&quot; wurde gefunden. Die aufgelisteten Pakete werden als Abhängigkeiten verwendet..
         /// </summary>
-        internal static string UsingPackagesConfigForDependencies_deu {
+        public static string UsingPackagesConfigForDependencies_deu {
             get {
                 return ResourceManager.GetString("UsingPackagesConfigForDependencies_deu", resourceCulture);
             }
@@ -15781,7 +15781,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Se ha encontrado packages.config. Usando paquetes mostrados como dependencias.
         /// </summary>
-        internal static string UsingPackagesConfigForDependencies_esp {
+        public static string UsingPackagesConfigForDependencies_esp {
             get {
                 return ResourceManager.GetString("UsingPackagesConfigForDependencies_esp", resourceCulture);
             }
@@ -15790,7 +15790,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Packages.config trouvé. Utilisation de packages répertoriés comme dépendances.
         /// </summary>
-        internal static string UsingPackagesConfigForDependencies_fra {
+        public static string UsingPackagesConfigForDependencies_fra {
             get {
                 return ResourceManager.GetString("UsingPackagesConfigForDependencies_fra", resourceCulture);
             }
@@ -15799,7 +15799,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Trovato packages.config. Usando pacchetti elencati come dipendenze..
         /// </summary>
-        internal static string UsingPackagesConfigForDependencies_ita {
+        public static string UsingPackagesConfigForDependencies_ita {
             get {
                 return ResourceManager.GetString("UsingPackagesConfigForDependencies_ita", resourceCulture);
             }
@@ -15808,7 +15808,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to packages.config が見つかりました。依存関係として登録されているパッケージを使用します.
         /// </summary>
-        internal static string UsingPackagesConfigForDependencies_jpn {
+        public static string UsingPackagesConfigForDependencies_jpn {
             get {
                 return ResourceManager.GetString("UsingPackagesConfigForDependencies_jpn", resourceCulture);
             }
@@ -15817,7 +15817,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to packages.config를 찾았습니다. 나열된 패키지를 종속성으로 사용하고 있습니다..
         /// </summary>
-        internal static string UsingPackagesConfigForDependencies_kor {
+        public static string UsingPackagesConfigForDependencies_kor {
             get {
                 return ResourceManager.GetString("UsingPackagesConfigForDependencies_kor", resourceCulture);
             }
@@ -15826,7 +15826,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Znaleziono plik packages.config. Wymienione pakiety zostaną użyte jako zależności.
         /// </summary>
-        internal static string UsingPackagesConfigForDependencies_plk {
+        public static string UsingPackagesConfigForDependencies_plk {
             get {
                 return ResourceManager.GetString("UsingPackagesConfigForDependencies_plk", resourceCulture);
             }
@@ -15835,7 +15835,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Encontrado packages.config. Usando pacotes listados como dependências.
         /// </summary>
-        internal static string UsingPackagesConfigForDependencies_ptb {
+        public static string UsingPackagesConfigForDependencies_ptb {
             get {
                 return ResourceManager.GetString("UsingPackagesConfigForDependencies_ptb", resourceCulture);
             }
@@ -15844,7 +15844,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Найден файл packages.config. Перечисленные пакеты будут использованы как зависимости.
         /// </summary>
-        internal static string UsingPackagesConfigForDependencies_rus {
+        public static string UsingPackagesConfigForDependencies_rus {
             get {
                 return ResourceManager.GetString("UsingPackagesConfigForDependencies_rus", resourceCulture);
             }
@@ -15853,7 +15853,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Packages.config bulundu. Paketler bağımlılıklarda listelenen şekilde kullanılıyor.
         /// </summary>
-        internal static string UsingPackagesConfigForDependencies_trk {
+        public static string UsingPackagesConfigForDependencies_trk {
             get {
                 return ResourceManager.GetString("UsingPackagesConfigForDependencies_trk", resourceCulture);
             }
@@ -15862,7 +15862,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to The value &quot;{0}&quot; for {1} is a sample value and should be removed..
         /// </summary>
-        internal static string Warning_DefaultSpecValue {
+        public static string Warning_DefaultSpecValue {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValue", resourceCulture);
             }
@@ -15871,7 +15871,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {1} 的值“{0}”是示例值，应将其删除。.
         /// </summary>
-        internal static string Warning_DefaultSpecValue_chs {
+        public static string Warning_DefaultSpecValue_chs {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValue_chs", resourceCulture);
             }
@@ -15880,7 +15880,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {1} 的值 &quot;{0}&quot; 為範例值且應該移除。.
         /// </summary>
-        internal static string Warning_DefaultSpecValue_cht {
+        public static string Warning_DefaultSpecValue_cht {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValue_cht", resourceCulture);
             }
@@ -15889,7 +15889,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Hodnota {0} pro {1} je ukázková hodnota a měla by být odebrána..
         /// </summary>
-        internal static string Warning_DefaultSpecValue_csy {
+        public static string Warning_DefaultSpecValue_csy {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValue_csy", resourceCulture);
             }
@@ -15898,7 +15898,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Der Wert &quot;{0}&quot; für {1} ist ein Beispielwert und sollte entfernt werden..
         /// </summary>
-        internal static string Warning_DefaultSpecValue_deu {
+        public static string Warning_DefaultSpecValue_deu {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValue_deu", resourceCulture);
             }
@@ -15907,7 +15907,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to El valor &quot;{0}&quot; para {1} es un valor de ejemplo y se debería quitar..
         /// </summary>
-        internal static string Warning_DefaultSpecValue_esp {
+        public static string Warning_DefaultSpecValue_esp {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValue_esp", resourceCulture);
             }
@@ -15916,7 +15916,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La valeur « {0} » pour {1} est un exemple et doit être supprimée..
         /// </summary>
-        internal static string Warning_DefaultSpecValue_fra {
+        public static string Warning_DefaultSpecValue_fra {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValue_fra", resourceCulture);
             }
@@ -15925,7 +15925,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Il valore &quot;{0}&quot; per {1} è un valore campione e debe essere rimosso..
         /// </summary>
-        internal static string Warning_DefaultSpecValue_ita {
+        public static string Warning_DefaultSpecValue_ita {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValue_ita", resourceCulture);
             }
@@ -15934,7 +15934,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {1} の値 &quot;{0}&quot; はサンプル値なので、削除する必要があります。.
         /// </summary>
-        internal static string Warning_DefaultSpecValue_jpn {
+        public static string Warning_DefaultSpecValue_jpn {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValue_jpn", resourceCulture);
             }
@@ -15943,7 +15943,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {1}에 대한 &quot;{0}&quot; 값은 샘플 값이므로 제거해야 합니다..
         /// </summary>
-        internal static string Warning_DefaultSpecValue_kor {
+        public static string Warning_DefaultSpecValue_kor {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValue_kor", resourceCulture);
             }
@@ -15952,7 +15952,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Wartość „{0}” dla {1} jest wartością przykładową i należy ją usunąć..
         /// </summary>
-        internal static string Warning_DefaultSpecValue_plk {
+        public static string Warning_DefaultSpecValue_plk {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValue_plk", resourceCulture);
             }
@@ -15961,7 +15961,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to O valor &quot;{0}&quot; para {1} é um valor de amostra e deve ser removido..
         /// </summary>
-        internal static string Warning_DefaultSpecValue_ptb {
+        public static string Warning_DefaultSpecValue_ptb {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValue_ptb", resourceCulture);
             }
@@ -15970,7 +15970,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Значение &quot;{0}&quot; для {1} является образцом значения, и его не следует удалять..
         /// </summary>
-        internal static string Warning_DefaultSpecValue_rus {
+        public static string Warning_DefaultSpecValue_rus {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValue_rus", resourceCulture);
             }
@@ -15979,7 +15979,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {1} için &quot;{0}&quot; örnek bir değerdir ve kaldırılması gerekir..
         /// </summary>
-        internal static string Warning_DefaultSpecValue_trk {
+        public static string Warning_DefaultSpecValue_trk {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValue_trk", resourceCulture);
             }
@@ -15988,7 +15988,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Replace with an appropriate value or remove and it and rebuild your package..
         /// </summary>
-        internal static string Warning_DefaultSpecValueSolution {
+        public static string Warning_DefaultSpecValueSolution {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueSolution", resourceCulture);
             }
@@ -15997,7 +15997,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 请替换为适当的值或删除它，然后重新生成程序包。.
         /// </summary>
-        internal static string Warning_DefaultSpecValueSolution_chs {
+        public static string Warning_DefaultSpecValueSolution_chs {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueSolution_chs", resourceCulture);
             }
@@ -16006,7 +16006,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 以適當的值取代或移除並重新建置封裝。.
         /// </summary>
-        internal static string Warning_DefaultSpecValueSolution_cht {
+        public static string Warning_DefaultSpecValueSolution_cht {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueSolution_cht", resourceCulture);
             }
@@ -16015,7 +16015,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nahraďte ji odpovídající hodnotou nebo ji odeberte a pak znovu sestavte balíček..
         /// </summary>
-        internal static string Warning_DefaultSpecValueSolution_csy {
+        public static string Warning_DefaultSpecValueSolution_csy {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueSolution_csy", resourceCulture);
             }
@@ -16024,7 +16024,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ersetzen Sie ihn durch einen geeigneten Wert, oder entfernen Sie ihn, und erstellen Sie das Paket dann erneut..
         /// </summary>
-        internal static string Warning_DefaultSpecValueSolution_deu {
+        public static string Warning_DefaultSpecValueSolution_deu {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueSolution_deu", resourceCulture);
             }
@@ -16033,7 +16033,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Reemplazar con un valor apropiado o quitar y compilar el paquete..
         /// </summary>
-        internal static string Warning_DefaultSpecValueSolution_esp {
+        public static string Warning_DefaultSpecValueSolution_esp {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueSolution_esp", resourceCulture);
             }
@@ -16042,7 +16042,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Remplacez-la par une valeur adéquate, ou supprimez-la et recréez le package..
         /// </summary>
-        internal static string Warning_DefaultSpecValueSolution_fra {
+        public static string Warning_DefaultSpecValueSolution_fra {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueSolution_fra", resourceCulture);
             }
@@ -16051,7 +16051,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Sostituire con un valore appropriato o rimuoverlo e ricreare il pacchetto..
         /// </summary>
-        internal static string Warning_DefaultSpecValueSolution_ita {
+        public static string Warning_DefaultSpecValueSolution_ita {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueSolution_ita", resourceCulture);
             }
@@ -16060,7 +16060,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 適切な値で置き換えるか、削除して、パッケージを再度ビルドする必要があります。.
         /// </summary>
-        internal static string Warning_DefaultSpecValueSolution_jpn {
+        public static string Warning_DefaultSpecValueSolution_jpn {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueSolution_jpn", resourceCulture);
             }
@@ -16069,7 +16069,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 적합한 값으로 바꾸거나 제거하고 패키지를 다시 빌드하십시오..
         /// </summary>
-        internal static string Warning_DefaultSpecValueSolution_kor {
+        public static string Warning_DefaultSpecValueSolution_kor {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueSolution_kor", resourceCulture);
             }
@@ -16078,7 +16078,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Zastąp odpowiednią wartością lub usuń i ponownie skompiluj pakiet..
         /// </summary>
-        internal static string Warning_DefaultSpecValueSolution_plk {
+        public static string Warning_DefaultSpecValueSolution_plk {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueSolution_plk", resourceCulture);
             }
@@ -16087,7 +16087,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Substitua por um valor apropriado ou remova-o e reconstrua o seu pacote..
         /// </summary>
-        internal static string Warning_DefaultSpecValueSolution_ptb {
+        public static string Warning_DefaultSpecValueSolution_ptb {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueSolution_ptb", resourceCulture);
             }
@@ -16096,7 +16096,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Замените его соответствующим значением или удалите и повторно выполните сборку пакета..
         /// </summary>
-        internal static string Warning_DefaultSpecValueSolution_rus {
+        public static string Warning_DefaultSpecValueSolution_rus {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueSolution_rus", resourceCulture);
             }
@@ -16105,7 +16105,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Uygun bir değerle değiştirin veya kaldırın ve paketinizi yeniden oluşturun..
         /// </summary>
-        internal static string Warning_DefaultSpecValueSolution_trk {
+        public static string Warning_DefaultSpecValueSolution_trk {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueSolution_trk", resourceCulture);
             }
@@ -16114,7 +16114,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Remove sample nuspec values..
         /// </summary>
-        internal static string Warning_DefaultSpecValueTitle {
+        public static string Warning_DefaultSpecValueTitle {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueTitle", resourceCulture);
             }
@@ -16123,7 +16123,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 删除示例 nuspec 值。.
         /// </summary>
-        internal static string Warning_DefaultSpecValueTitle_chs {
+        public static string Warning_DefaultSpecValueTitle_chs {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueTitle_chs", resourceCulture);
             }
@@ -16132,7 +16132,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 移除範例 nuspec 值。.
         /// </summary>
-        internal static string Warning_DefaultSpecValueTitle_cht {
+        public static string Warning_DefaultSpecValueTitle_cht {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueTitle_cht", resourceCulture);
             }
@@ -16141,7 +16141,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Odeberte ukázkové hodnoty nuspec..
         /// </summary>
-        internal static string Warning_DefaultSpecValueTitle_csy {
+        public static string Warning_DefaultSpecValueTitle_csy {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueTitle_csy", resourceCulture);
             }
@@ -16150,7 +16150,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuspec-Beispielwerte entfernen..
         /// </summary>
-        internal static string Warning_DefaultSpecValueTitle_deu {
+        public static string Warning_DefaultSpecValueTitle_deu {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueTitle_deu", resourceCulture);
             }
@@ -16159,7 +16159,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Quitar los valores nuspec de ejemplo..
         /// </summary>
-        internal static string Warning_DefaultSpecValueTitle_esp {
+        public static string Warning_DefaultSpecValueTitle_esp {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueTitle_esp", resourceCulture);
             }
@@ -16168,7 +16168,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Supprimez les valeurs nuspec d&apos;exemple..
         /// </summary>
-        internal static string Warning_DefaultSpecValueTitle_fra {
+        public static string Warning_DefaultSpecValueTitle_fra {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueTitle_fra", resourceCulture);
             }
@@ -16177,7 +16177,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Rimuovere valori campione nuspec..
         /// </summary>
-        internal static string Warning_DefaultSpecValueTitle_ita {
+        public static string Warning_DefaultSpecValueTitle_ita {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueTitle_ita", resourceCulture);
             }
@@ -16186,7 +16186,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to サンプル nuspec 値を削除してください。.
         /// </summary>
-        internal static string Warning_DefaultSpecValueTitle_jpn {
+        public static string Warning_DefaultSpecValueTitle_jpn {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueTitle_jpn", resourceCulture);
             }
@@ -16195,7 +16195,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 샘플 nuspec 값을 제거합니다..
         /// </summary>
-        internal static string Warning_DefaultSpecValueTitle_kor {
+        public static string Warning_DefaultSpecValueTitle_kor {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueTitle_kor", resourceCulture);
             }
@@ -16204,7 +16204,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Usuń przykładowe wartości nuspec..
         /// </summary>
-        internal static string Warning_DefaultSpecValueTitle_plk {
+        public static string Warning_DefaultSpecValueTitle_plk {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueTitle_plk", resourceCulture);
             }
@@ -16213,7 +16213,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Remova os valores nuspec de amostra..
         /// </summary>
-        internal static string Warning_DefaultSpecValueTitle_ptb {
+        public static string Warning_DefaultSpecValueTitle_ptb {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueTitle_ptb", resourceCulture);
             }
@@ -16222,7 +16222,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Удалите образцы значений nuspec..
         /// </summary>
-        internal static string Warning_DefaultSpecValueTitle_rus {
+        public static string Warning_DefaultSpecValueTitle_rus {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueTitle_rus", resourceCulture);
             }
@@ -16231,7 +16231,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Örnek nuspec değerlerini kaldırın..
         /// </summary>
-        internal static string Warning_DefaultSpecValueTitle_trk {
+        public static string Warning_DefaultSpecValueTitle_trk {
             get {
                 return ResourceManager.GetString("Warning_DefaultSpecValueTitle_trk", resourceCulture);
             }
@@ -16240,7 +16240,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; key already exists in Properties collection. Overriding value..
         /// </summary>
-        internal static string Warning_DuplicatePropertyKey {
+        public static string Warning_DuplicatePropertyKey {
             get {
                 return ResourceManager.GetString("Warning_DuplicatePropertyKey", resourceCulture);
             }
@@ -16249,7 +16249,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} 键已存在于属性集合中。正在重写值。.
         /// </summary>
-        internal static string Warning_DuplicatePropertyKey_chs {
+        public static string Warning_DuplicatePropertyKey_chs {
             get {
                 return ResourceManager.GetString("Warning_DuplicatePropertyKey_chs", resourceCulture);
             }
@@ -16258,7 +16258,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; 索引鍵已存在於屬性集合中。覆寫該值。.
         /// </summary>
-        internal static string Warning_DuplicatePropertyKey_cht {
+        public static string Warning_DuplicatePropertyKey_cht {
             get {
                 return ResourceManager.GetString("Warning_DuplicatePropertyKey_cht", resourceCulture);
             }
@@ -16267,7 +16267,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Klíč {0} již existuje v kolekci Properties. Přepisuje se hodnota..
         /// </summary>
-        internal static string Warning_DuplicatePropertyKey_csy {
+        public static string Warning_DuplicatePropertyKey_csy {
             get {
                 return ResourceManager.GetString("Warning_DuplicatePropertyKey_csy", resourceCulture);
             }
@@ -16276,7 +16276,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Der Schlüssel &quot;{0}&quot; ist in der Eigenschaftenauflistung bereits vorhanden. Der Wert wird außer Kraft gesetzt..
         /// </summary>
-        internal static string Warning_DuplicatePropertyKey_deu {
+        public static string Warning_DuplicatePropertyKey_deu {
             get {
                 return ResourceManager.GetString("Warning_DuplicatePropertyKey_deu", resourceCulture);
             }
@@ -16285,7 +16285,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La clave &apos;{0}&apos; ya existe en la colección Propiedades. Reemplazando valor..
         /// </summary>
-        internal static string Warning_DuplicatePropertyKey_esp {
+        public static string Warning_DuplicatePropertyKey_esp {
             get {
                 return ResourceManager.GetString("Warning_DuplicatePropertyKey_esp", resourceCulture);
             }
@@ -16294,7 +16294,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La clé &apos;{0}&apos; existe déjà dans le Regroupement de propriétés. Remplacement de la valeur..
         /// </summary>
-        internal static string Warning_DuplicatePropertyKey_fra {
+        public static string Warning_DuplicatePropertyKey_fra {
             get {
                 return ResourceManager.GetString("Warning_DuplicatePropertyKey_fra", resourceCulture);
             }
@@ -16303,7 +16303,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; key è già presente in Properties collection. Valore prevalente..
         /// </summary>
-        internal static string Warning_DuplicatePropertyKey_ita {
+        public static string Warning_DuplicatePropertyKey_ita {
             get {
                 return ResourceManager.GetString("Warning_DuplicatePropertyKey_ita", resourceCulture);
             }
@@ -16312,7 +16312,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; キーは Properties コレクションに既に存在します。値を上書きします。.
         /// </summary>
-        internal static string Warning_DuplicatePropertyKey_jpn {
+        public static string Warning_DuplicatePropertyKey_jpn {
             get {
                 return ResourceManager.GetString("Warning_DuplicatePropertyKey_jpn", resourceCulture);
             }
@@ -16321,7 +16321,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; 키가 Properties 컬렉션에 이미 있습니다. 값을 재정의하고 있습니다..
         /// </summary>
-        internal static string Warning_DuplicatePropertyKey_kor {
+        public static string Warning_DuplicatePropertyKey_kor {
             get {
                 return ResourceManager.GetString("Warning_DuplicatePropertyKey_kor", resourceCulture);
             }
@@ -16330,7 +16330,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Klucz „{0}” już istnieje w kolekcji Właściwości. Wartość zostanie przesłonięta..
         /// </summary>
-        internal static string Warning_DuplicatePropertyKey_plk {
+        public static string Warning_DuplicatePropertyKey_plk {
             get {
                 return ResourceManager.GetString("Warning_DuplicatePropertyKey_plk", resourceCulture);
             }
@@ -16339,7 +16339,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to A chave &apos;{0}&apos; já existe na coleção Propriedades. Substituindo valor..
         /// </summary>
-        internal static string Warning_DuplicatePropertyKey_ptb {
+        public static string Warning_DuplicatePropertyKey_ptb {
             get {
                 return ResourceManager.GetString("Warning_DuplicatePropertyKey_ptb", resourceCulture);
             }
@@ -16348,7 +16348,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ключ &quot;{0}&quot; уже существует в коллекции свойств. Значение будет переопределено..
         /// </summary>
-        internal static string Warning_DuplicatePropertyKey_rus {
+        public static string Warning_DuplicatePropertyKey_rus {
             get {
                 return ResourceManager.GetString("Warning_DuplicatePropertyKey_rus", resourceCulture);
             }
@@ -16357,7 +16357,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; anahtarı zaten Özellikler koleksiyonunda mevcut. Değer geçersiz kılınıyor..
         /// </summary>
-        internal static string Warning_DuplicatePropertyKey_trk {
+        public static string Warning_DuplicatePropertyKey_trk {
             get {
                 return ResourceManager.GetString("Warning_DuplicatePropertyKey_trk", resourceCulture);
             }
@@ -16366,7 +16366,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; was included in the project but doesn&apos;t exist. Skipping....
         /// </summary>
-        internal static string Warning_FileDoesNotExist {
+        public static string Warning_FileDoesNotExist {
             get {
                 return ResourceManager.GetString("Warning_FileDoesNotExist", resourceCulture);
             }
@@ -16375,7 +16375,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to “{0}”已包含在项目中，但不存在。正在跳过....
         /// </summary>
-        internal static string Warning_FileDoesNotExist_chs {
+        public static string Warning_FileDoesNotExist_chs {
             get {
                 return ResourceManager.GetString("Warning_FileDoesNotExist_chs", resourceCulture);
             }
@@ -16384,7 +16384,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; 包含在專案中但並不存在。正在略過....
         /// </summary>
-        internal static string Warning_FileDoesNotExist_cht {
+        public static string Warning_FileDoesNotExist_cht {
             get {
                 return ResourceManager.GetString("Warning_FileDoesNotExist_cht", resourceCulture);
             }
@@ -16393,7 +16393,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Soubor {0} byl zahrnut v projektu, ale neexistuje. Dojde k přeskočení....
         /// </summary>
-        internal static string Warning_FileDoesNotExist_csy {
+        public static string Warning_FileDoesNotExist_csy {
             get {
                 return ResourceManager.GetString("Warning_FileDoesNotExist_csy", resourceCulture);
             }
@@ -16402,7 +16402,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;{0}&quot; war im Projekt enthalten, ist jedoch nicht vorhanden. Das Element wird übersprungen....
         /// </summary>
-        internal static string Warning_FileDoesNotExist_deu {
+        public static string Warning_FileDoesNotExist_deu {
             get {
                 return ResourceManager.GetString("Warning_FileDoesNotExist_deu", resourceCulture);
             }
@@ -16411,7 +16411,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; se ha incluido en el proyecto pero no existe. Omitiendo….
         /// </summary>
-        internal static string Warning_FileDoesNotExist_esp {
+        public static string Warning_FileDoesNotExist_esp {
             get {
                 return ResourceManager.GetString("Warning_FileDoesNotExist_esp", resourceCulture);
             }
@@ -16420,7 +16420,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; a été inclus au projet, mais n&apos;existe pas. Ignorer….
         /// </summary>
-        internal static string Warning_FileDoesNotExist_fra {
+        public static string Warning_FileDoesNotExist_fra {
             get {
                 return ResourceManager.GetString("Warning_FileDoesNotExist_fra", resourceCulture);
             }
@@ -16429,7 +16429,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; è incluso nel progetto ma non esiste. Saltare….
         /// </summary>
-        internal static string Warning_FileDoesNotExist_ita {
+        public static string Warning_FileDoesNotExist_ita {
             get {
                 return ResourceManager.GetString("Warning_FileDoesNotExist_ita", resourceCulture);
             }
@@ -16438,7 +16438,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; がプロジェクトに含まれていますが、存在しません。スキップしています... Skipping....
         /// </summary>
-        internal static string Warning_FileDoesNotExist_jpn {
+        public static string Warning_FileDoesNotExist_jpn {
             get {
                 return ResourceManager.GetString("Warning_FileDoesNotExist_jpn", resourceCulture);
             }
@@ -16447,7 +16447,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos;이(가) 프로젝트에 포함되어 있지만 존재하지 않습니다. 건너뛰는 중....
         /// </summary>
-        internal static string Warning_FileDoesNotExist_kor {
+        public static string Warning_FileDoesNotExist_kor {
             get {
                 return ResourceManager.GetString("Warning_FileDoesNotExist_kor", resourceCulture);
             }
@@ -16456,7 +16456,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Plik „{0}” został uwzględniony w projekcie, ale nie istnieje. Trwa pomijanie....
         /// </summary>
-        internal static string Warning_FileDoesNotExist_plk {
+        public static string Warning_FileDoesNotExist_plk {
             get {
                 return ResourceManager.GetString("Warning_FileDoesNotExist_plk", resourceCulture);
             }
@@ -16465,7 +16465,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; foi incluído no projeto, mas não existe. Ignorando....
         /// </summary>
-        internal static string Warning_FileDoesNotExist_ptb {
+        public static string Warning_FileDoesNotExist_ptb {
             get {
                 return ResourceManager.GetString("Warning_FileDoesNotExist_ptb", resourceCulture);
             }
@@ -16474,7 +16474,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;{0}&quot; был добавлен в проект, но не существует. Пропуск....
         /// </summary>
-        internal static string Warning_FileDoesNotExist_rus {
+        public static string Warning_FileDoesNotExist_rus {
             get {
                 return ResourceManager.GetString("Warning_FileDoesNotExist_rus", resourceCulture);
             }
@@ -16483,7 +16483,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; projeye dahil edildi ancak mevcut değil. Atlanıyor....
         /// </summary>
-        internal static string Warning_FileDoesNotExist_trk {
+        public static string Warning_FileDoesNotExist_trk {
             get {
                 return ResourceManager.GetString("Warning_FileDoesNotExist_trk", resourceCulture);
             }
@@ -16492,7 +16492,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Invalid PackageSaveMode value &apos;{0}&apos;..
         /// </summary>
-        internal static string Warning_InvalidPackageSaveMode {
+        public static string Warning_InvalidPackageSaveMode {
             get {
                 return ResourceManager.GetString("Warning_InvalidPackageSaveMode", resourceCulture);
             }
@@ -16501,7 +16501,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to PackageSaveMode 值“{0}”无效。.
         /// </summary>
-        internal static string Warning_InvalidPackageSaveMode_chs {
+        public static string Warning_InvalidPackageSaveMode_chs {
             get {
                 return ResourceManager.GetString("Warning_InvalidPackageSaveMode_chs", resourceCulture);
             }
@@ -16510,7 +16510,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 無效的 PackageSaveMode 值 &apos;{0}&apos;。.
         /// </summary>
-        internal static string Warning_InvalidPackageSaveMode_cht {
+        public static string Warning_InvalidPackageSaveMode_cht {
             get {
                 return ResourceManager.GetString("Warning_InvalidPackageSaveMode_cht", resourceCulture);
             }
@@ -16519,7 +16519,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Hodnota PackageSaveMode {0} je neplatná..
         /// </summary>
-        internal static string Warning_InvalidPackageSaveMode_csy {
+        public static string Warning_InvalidPackageSaveMode_csy {
             get {
                 return ResourceManager.GetString("Warning_InvalidPackageSaveMode_csy", resourceCulture);
             }
@@ -16528,7 +16528,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Ungültiger PackageSaveMode-Wert &quot;{0}&quot;..
         /// </summary>
-        internal static string Warning_InvalidPackageSaveMode_deu {
+        public static string Warning_InvalidPackageSaveMode_deu {
             get {
                 return ResourceManager.GetString("Warning_InvalidPackageSaveMode_deu", resourceCulture);
             }
@@ -16537,7 +16537,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to El valor de PackageSaveMode &apos;{0}&apos; no es válido..
         /// </summary>
-        internal static string Warning_InvalidPackageSaveMode_esp {
+        public static string Warning_InvalidPackageSaveMode_esp {
             get {
                 return ResourceManager.GetString("Warning_InvalidPackageSaveMode_esp", resourceCulture);
             }
@@ -16546,7 +16546,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to valeur PackageSaveMode non valide : &apos;{0}&apos;..
         /// </summary>
-        internal static string Warning_InvalidPackageSaveMode_fra {
+        public static string Warning_InvalidPackageSaveMode_fra {
             get {
                 return ResourceManager.GetString("Warning_InvalidPackageSaveMode_fra", resourceCulture);
             }
@@ -16555,7 +16555,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Valore &apos;{0}&apos; di PackageSaveMode non valido..
         /// </summary>
-        internal static string Warning_InvalidPackageSaveMode_ita {
+        public static string Warning_InvalidPackageSaveMode_ita {
             get {
                 return ResourceManager.GetString("Warning_InvalidPackageSaveMode_ita", resourceCulture);
             }
@@ -16564,7 +16564,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 無効な PackageSaveMode 値  &apos;{0}&apos; です。.
         /// </summary>
-        internal static string Warning_InvalidPackageSaveMode_jpn {
+        public static string Warning_InvalidPackageSaveMode_jpn {
             get {
                 return ResourceManager.GetString("Warning_InvalidPackageSaveMode_jpn", resourceCulture);
             }
@@ -16573,7 +16573,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 잘못된 PackageSaveMode 값 &apos;{0}&apos;입니다..
         /// </summary>
-        internal static string Warning_InvalidPackageSaveMode_kor {
+        public static string Warning_InvalidPackageSaveMode_kor {
             get {
                 return ResourceManager.GetString("Warning_InvalidPackageSaveMode_kor", resourceCulture);
             }
@@ -16582,7 +16582,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nieprawidłowa wartość opcji PackageSaveMode („{0}”)..
         /// </summary>
-        internal static string Warning_InvalidPackageSaveMode_plk {
+        public static string Warning_InvalidPackageSaveMode_plk {
             get {
                 return ResourceManager.GetString("Warning_InvalidPackageSaveMode_plk", resourceCulture);
             }
@@ -16591,7 +16591,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Valor PackageSaveMode inválido &apos;{0}&apos;..
         /// </summary>
-        internal static string Warning_InvalidPackageSaveMode_ptb {
+        public static string Warning_InvalidPackageSaveMode_ptb {
             get {
                 return ResourceManager.GetString("Warning_InvalidPackageSaveMode_ptb", resourceCulture);
             }
@@ -16600,7 +16600,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Недопустимое значение PackageSaveMode: &quot;{0}&quot;..
         /// </summary>
-        internal static string Warning_InvalidPackageSaveMode_rus {
+        public static string Warning_InvalidPackageSaveMode_rus {
             get {
                 return ResourceManager.GetString("Warning_InvalidPackageSaveMode_rus", resourceCulture);
             }
@@ -16609,7 +16609,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to PackageSaveMode değeri &apos;{0}&apos; geçersiz..
         /// </summary>
-        internal static string Warning_InvalidPackageSaveMode_trk {
+        public static string Warning_InvalidPackageSaveMode_trk {
             get {
                 return ResourceManager.GetString("Warning_InvalidPackageSaveMode_trk", resourceCulture);
             }
@@ -16618,7 +16618,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Option &apos;NoPrompt&apos; has been deprecated. Use &apos;NonInteractive&apos; instead..
         /// </summary>
-        internal static string Warning_NoPromptDeprecated {
+        public static string Warning_NoPromptDeprecated {
             get {
                 return ResourceManager.GetString("Warning_NoPromptDeprecated", resourceCulture);
             }
@@ -16627,7 +16627,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 选项 &quot;NoPrompt&quot; 已弃用。请改用 &quot;NonInteractive&quot;。.
         /// </summary>
-        internal static string Warning_NoPromptDeprecated_chs {
+        public static string Warning_NoPromptDeprecated_chs {
             get {
                 return ResourceManager.GetString("Warning_NoPromptDeprecated_chs", resourceCulture);
             }
@@ -16636,7 +16636,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 選項 &apos;NoPrompt&apos; 已過時。使用 &apos;NonInteractive&apos;。.
         /// </summary>
-        internal static string Warning_NoPromptDeprecated_cht {
+        public static string Warning_NoPromptDeprecated_cht {
             get {
                 return ResourceManager.GetString("Warning_NoPromptDeprecated_cht", resourceCulture);
             }
@@ -16645,7 +16645,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Možnost NoPrompt se již nepoužívá. Použijte místo toho možnost NonInteractive..
         /// </summary>
-        internal static string Warning_NoPromptDeprecated_csy {
+        public static string Warning_NoPromptDeprecated_csy {
             get {
                 return ResourceManager.GetString("Warning_NoPromptDeprecated_csy", resourceCulture);
             }
@@ -16654,7 +16654,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Option &quot;NoPrompt&quot; ist veraltet. Verwenden Sie stattdessen &quot;NonInteractive&quot;..
         /// </summary>
-        internal static string Warning_NoPromptDeprecated_deu {
+        public static string Warning_NoPromptDeprecated_deu {
             get {
                 return ResourceManager.GetString("Warning_NoPromptDeprecated_deu", resourceCulture);
             }
@@ -16663,7 +16663,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La opción &apos;NoPrompt&apos; se ha desusado. Use &apos;NonInteractive&apos; en su lugar..
         /// </summary>
-        internal static string Warning_NoPromptDeprecated_esp {
+        public static string Warning_NoPromptDeprecated_esp {
             get {
                 return ResourceManager.GetString("Warning_NoPromptDeprecated_esp", resourceCulture);
             }
@@ -16672,7 +16672,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to L&apos;option &apos;NoPrompt&apos; a été dépréciée. Préférez plutôt &apos;NonInteractive&apos;..
         /// </summary>
-        internal static string Warning_NoPromptDeprecated_fra {
+        public static string Warning_NoPromptDeprecated_fra {
             get {
                 return ResourceManager.GetString("Warning_NoPromptDeprecated_fra", resourceCulture);
             }
@@ -16681,7 +16681,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Opzione &apos;NoPrompt&apos; disapprovata. Usare &apos;NonInteractive&apos;..
         /// </summary>
-        internal static string Warning_NoPromptDeprecated_ita {
+        public static string Warning_NoPromptDeprecated_ita {
             get {
                 return ResourceManager.GetString("Warning_NoPromptDeprecated_ita", resourceCulture);
             }
@@ -16690,7 +16690,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to オプション &apos;NoPrompt&apos; は使用しないでください。代わりに &apos;NonInteractive&apos; を使用してください。.
         /// </summary>
-        internal static string Warning_NoPromptDeprecated_jpn {
+        public static string Warning_NoPromptDeprecated_jpn {
             get {
                 return ResourceManager.GetString("Warning_NoPromptDeprecated_jpn", resourceCulture);
             }
@@ -16699,7 +16699,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;NoPrompt&apos; 옵션은 사용되지 않습니다. 대신 &apos;NonInteractive&apos;를 사용하십시오..
         /// </summary>
-        internal static string Warning_NoPromptDeprecated_kor {
+        public static string Warning_NoPromptDeprecated_kor {
             get {
                 return ResourceManager.GetString("Warning_NoPromptDeprecated_kor", resourceCulture);
             }
@@ -16708,7 +16708,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Opcja „NoPrompt” jest przestarzała. Zamiast niej użyj opcji „NonInteractive”..
         /// </summary>
-        internal static string Warning_NoPromptDeprecated_plk {
+        public static string Warning_NoPromptDeprecated_plk {
             get {
                 return ResourceManager.GetString("Warning_NoPromptDeprecated_plk", resourceCulture);
             }
@@ -16717,7 +16717,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to A opção &apos;NoPrompt&apos; tornou-se obsoleta. Use &quot;Não interativo&quot; como alternativa..
         /// </summary>
-        internal static string Warning_NoPromptDeprecated_ptb {
+        public static string Warning_NoPromptDeprecated_ptb {
             get {
                 return ResourceManager.GetString("Warning_NoPromptDeprecated_ptb", resourceCulture);
             }
@@ -16726,7 +16726,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Параметр &quot;NoPrompt&quot; удален из этой версии. Вместо него используйте &quot;NonInteractive&quot;..
         /// </summary>
-        internal static string Warning_NoPromptDeprecated_rus {
+        public static string Warning_NoPromptDeprecated_rus {
             get {
                 return ResourceManager.GetString("Warning_NoPromptDeprecated_rus", resourceCulture);
             }
@@ -16735,7 +16735,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to NoPrompt&apos; seçeneği kullanımdan kaldırılmış. Bunun yerine &apos;NonInteractive&apos; seçeneğini kullanın..
         /// </summary>
-        internal static string Warning_NoPromptDeprecated_trk {
+        public static string Warning_NoPromptDeprecated_trk {
             get {
                 return ResourceManager.GetString("Warning_NoPromptDeprecated_trk", resourceCulture);
             }
@@ -16744,7 +16744,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Version &quot;{0}&quot; does not follow semantic versioning guidelines..
         /// </summary>
-        internal static string Warning_SemanticVersion {
+        public static string Warning_SemanticVersion {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersion", resourceCulture);
             }
@@ -16753,7 +16753,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 版本“{0}”未遵循语义版本控制准则。.
         /// </summary>
-        internal static string Warning_SemanticVersion_chs {
+        public static string Warning_SemanticVersion_chs {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersion_chs", resourceCulture);
             }
@@ -16762,7 +16762,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 版本 &quot;{0}&quot; 不允許語意版本設定方針。.
         /// </summary>
-        internal static string Warning_SemanticVersion_cht {
+        public static string Warning_SemanticVersion_cht {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersion_cht", resourceCulture);
             }
@@ -16771,7 +16771,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Verze {0} nedodržuje pokyny pro správu sémantických verzí..
         /// </summary>
-        internal static string Warning_SemanticVersion_csy {
+        public static string Warning_SemanticVersion_csy {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersion_csy", resourceCulture);
             }
@@ -16780,7 +16780,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Version &quot;{0}&quot; genügt nicht den Richtlinien für semantische Versionsverwaltung..
         /// </summary>
-        internal static string Warning_SemanticVersion_deu {
+        public static string Warning_SemanticVersion_deu {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersion_deu", resourceCulture);
             }
@@ -16789,7 +16789,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La versión &quot;{0}&quot;no sigue las instrucciones de control de versiones semánticas..
         /// </summary>
-        internal static string Warning_SemanticVersion_esp {
+        public static string Warning_SemanticVersion_esp {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersion_esp", resourceCulture);
             }
@@ -16798,7 +16798,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La version « {0} » ne suit pas les instructions de contrôle de version sémantique..
         /// </summary>
-        internal static string Warning_SemanticVersion_fra {
+        public static string Warning_SemanticVersion_fra {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersion_fra", resourceCulture);
             }
@@ -16807,7 +16807,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La versione &quot;{0}&quot; non segue le linee guida di edizione semantica..
         /// </summary>
-        internal static string Warning_SemanticVersion_ita {
+        public static string Warning_SemanticVersion_ita {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersion_ita", resourceCulture);
             }
@@ -16816,7 +16816,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to バージョン &quot;{0}&quot; は、セマンティック バージョンのガイドラインに従っていません。.
         /// </summary>
-        internal static string Warning_SemanticVersion_jpn {
+        public static string Warning_SemanticVersion_jpn {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersion_jpn", resourceCulture);
             }
@@ -16825,7 +16825,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} 버전이 의미 체계의 버전 지정 지침을 따르지 않았습니다..
         /// </summary>
-        internal static string Warning_SemanticVersion_kor {
+        public static string Warning_SemanticVersion_kor {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersion_kor", resourceCulture);
             }
@@ -16834,7 +16834,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Wersja „{0}” nie jest zgodna ze wskazówkami dotyczącymi semantycznego przechowywania wersji..
         /// </summary>
-        internal static string Warning_SemanticVersion_plk {
+        public static string Warning_SemanticVersion_plk {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersion_plk", resourceCulture);
             }
@@ -16843,7 +16843,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to A versão &quot;{0}&quot; não segue as orientações de versionamento semântico..
         /// </summary>
-        internal static string Warning_SemanticVersion_ptb {
+        public static string Warning_SemanticVersion_ptb {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersion_ptb", resourceCulture);
             }
@@ -16852,7 +16852,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Версия &quot;{0}&quot; не соответствует правилам управления семантическими версиями..
         /// </summary>
-        internal static string Warning_SemanticVersion_rus {
+        public static string Warning_SemanticVersion_rus {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersion_rus", resourceCulture);
             }
@@ -16861,7 +16861,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;{0}&quot; sürümü anlamsal sürüm oluşturma kurallarına uymuyor..
         /// </summary>
-        internal static string Warning_SemanticVersion_trk {
+        public static string Warning_SemanticVersion_trk {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersion_trk", resourceCulture);
             }
@@ -16870,7 +16870,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Update your nuspec file or use the AssemblyInformationalVersion assembly attribute to specify a semantic version as described at http://semver.org. .
         /// </summary>
-        internal static string Warning_SemanticVersionSolution {
+        public static string Warning_SemanticVersionSolution {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionSolution", resourceCulture);
             }
@@ -16879,7 +16879,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 更新 nuspec 文件，或使用 AssemblyInformationalVersion 程序集属性指定 http://semver.org 上所述的语义版本。.
         /// </summary>
-        internal static string Warning_SemanticVersionSolution_chs {
+        public static string Warning_SemanticVersionSolution_chs {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionSolution_chs", resourceCulture);
             }
@@ -16888,7 +16888,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 更新您的 nuspec 檔案或使用 AssemblyInformationalVersion 組件屬性以指定語意版本設定，如t http://semver.org 中所述。 .
         /// </summary>
-        internal static string Warning_SemanticVersionSolution_cht {
+        public static string Warning_SemanticVersionSolution_cht {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionSolution_cht", resourceCulture);
             }
@@ -16897,7 +16897,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Proveďte aktualizaci souboru nuspec nebo použijte atribut sestavení AssemblyInformationalVersion a zadejte sémantickou verzi podle popisu na webu http://semver.org. .
         /// </summary>
-        internal static string Warning_SemanticVersionSolution_csy {
+        public static string Warning_SemanticVersionSolution_csy {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionSolution_csy", resourceCulture);
             }
@@ -16906,7 +16906,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Aktualisieren Sie die nuspec-Datei, oder verwenden Sie das Assemblyattribut &quot;AssemblyInformationalVersion&quot;, um eine semantische Version wie unter &quot;http://semver.org&quot; beschrieben anzugeben. .
         /// </summary>
-        internal static string Warning_SemanticVersionSolution_deu {
+        public static string Warning_SemanticVersionSolution_deu {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionSolution_deu", resourceCulture);
             }
@@ -16915,7 +16915,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Actualice su archivo nuspec o use el atributo de ensamblado AssemblyInformationalVersion para especificar una versión semántica como se describe en http://semver.org..
         /// </summary>
-        internal static string Warning_SemanticVersionSolution_esp {
+        public static string Warning_SemanticVersionSolution_esp {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionSolution_esp", resourceCulture);
             }
@@ -16924,7 +16924,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Mettez à jour le fichier .nuspec, ou utilisez l&apos;attribut d&apos;assembly AssemblyInformationalVersion, pour spécifier la version sémantique comme décrit sur http://semver.org. .
         /// </summary>
-        internal static string Warning_SemanticVersionSolution_fra {
+        public static string Warning_SemanticVersionSolution_fra {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionSolution_fra", resourceCulture);
             }
@@ -16933,7 +16933,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Aggiornare il file nuspec o usare l&apos;attributo AssemblyInformationalVersion  per specificare la versione semantica come descritto in http://semver.org. .
         /// </summary>
-        internal static string Warning_SemanticVersionSolution_ita {
+        public static string Warning_SemanticVersionSolution_ita {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionSolution_ita", resourceCulture);
             }
@@ -16942,7 +16942,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuspec ファイルを更新するか、AssemblyInformationalVersion アセンブリ属性を使用して、http://semver.org の説明に従ってセマンティック バージョンを指定してください。.
         /// </summary>
-        internal static string Warning_SemanticVersionSolution_jpn {
+        public static string Warning_SemanticVersionSolution_jpn {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionSolution_jpn", resourceCulture);
             }
@@ -16951,7 +16951,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuspec 파일을 업데이트하거나 AssemblyInformationalVersion 어셈블리 특성을 사용하여 http://semver.org에서 설명하는 것과 같이 의미 체계의 버전을 지정하십시오. .
         /// </summary>
-        internal static string Warning_SemanticVersionSolution_kor {
+        public static string Warning_SemanticVersionSolution_kor {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionSolution_kor", resourceCulture);
             }
@@ -16960,7 +16960,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Zaktualizuj plik nuspec lub użyj atrybutu zestawu AssemblyInformationalVersion, aby określić wersję semantyczną zgodnie z opisem na stronie http://semver.org. .
         /// </summary>
-        internal static string Warning_SemanticVersionSolution_plk {
+        public static string Warning_SemanticVersionSolution_plk {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionSolution_plk", resourceCulture);
             }
@@ -16969,7 +16969,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Atualize seu arquivo nuspec ou usar o atributo de assembly AssemblyInformationalVersion para especificar uma versão semântica, como descrito em http://semver.org..
         /// </summary>
-        internal static string Warning_SemanticVersionSolution_ptb {
+        public static string Warning_SemanticVersionSolution_ptb {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionSolution_ptb", resourceCulture);
             }
@@ -16978,7 +16978,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Обновите ваш NUSPEC-файл или с помощью атрибута AssemblyInformationalVersion укажите семантическую версию, как описано по адресу: http://semver.org. .
         /// </summary>
-        internal static string Warning_SemanticVersionSolution_rus {
+        public static string Warning_SemanticVersionSolution_rus {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionSolution_rus", resourceCulture);
             }
@@ -16987,7 +16987,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nuspec dosyanızı güncelleyin veya http://semver.org sayfasında açıklanan şekilde bir anlamsal sürüm belirlemek için AssemblyInformationalVersion derleme özniteliğini kullanın . .
         /// </summary>
-        internal static string Warning_SemanticVersionSolution_trk {
+        public static string Warning_SemanticVersionSolution_trk {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionSolution_trk", resourceCulture);
             }
@@ -16996,7 +16996,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Use semantic versioning.
         /// </summary>
-        internal static string Warning_SemanticVersionTitle {
+        public static string Warning_SemanticVersionTitle {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionTitle", resourceCulture);
             }
@@ -17005,7 +17005,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 使用语义版本控制.
         /// </summary>
-        internal static string Warning_SemanticVersionTitle_chs {
+        public static string Warning_SemanticVersionTitle_chs {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionTitle_chs", resourceCulture);
             }
@@ -17014,7 +17014,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 使用語意版本設定。.
         /// </summary>
-        internal static string Warning_SemanticVersionTitle_cht {
+        public static string Warning_SemanticVersionTitle_cht {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionTitle_cht", resourceCulture);
             }
@@ -17023,7 +17023,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Použít správu sémantických verzí.
         /// </summary>
-        internal static string Warning_SemanticVersionTitle_csy {
+        public static string Warning_SemanticVersionTitle_csy {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionTitle_csy", resourceCulture);
             }
@@ -17032,7 +17032,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Semantische Versionsverwaltung verwenden.
         /// </summary>
-        internal static string Warning_SemanticVersionTitle_deu {
+        public static string Warning_SemanticVersionTitle_deu {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionTitle_deu", resourceCulture);
             }
@@ -17041,7 +17041,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Use el control de versiones semántico.
         /// </summary>
-        internal static string Warning_SemanticVersionTitle_esp {
+        public static string Warning_SemanticVersionTitle_esp {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionTitle_esp", resourceCulture);
             }
@@ -17050,7 +17050,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Utilisation du contrôle de version sémantique.
         /// </summary>
-        internal static string Warning_SemanticVersionTitle_fra {
+        public static string Warning_SemanticVersionTitle_fra {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionTitle_fra", resourceCulture);
             }
@@ -17059,7 +17059,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Usare edizione semantica.
         /// </summary>
-        internal static string Warning_SemanticVersionTitle_ita {
+        public static string Warning_SemanticVersionTitle_ita {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionTitle_ita", resourceCulture);
             }
@@ -17068,7 +17068,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to セマンティック バージョンの使用.
         /// </summary>
-        internal static string Warning_SemanticVersionTitle_jpn {
+        public static string Warning_SemanticVersionTitle_jpn {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionTitle_jpn", resourceCulture);
             }
@@ -17077,7 +17077,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 의미 체계의 버전 지정 사용.
         /// </summary>
-        internal static string Warning_SemanticVersionTitle_kor {
+        public static string Warning_SemanticVersionTitle_kor {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionTitle_kor", resourceCulture);
             }
@@ -17086,7 +17086,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Zastosuj semantyczne przechowywanie wersji.
         /// </summary>
-        internal static string Warning_SemanticVersionTitle_plk {
+        public static string Warning_SemanticVersionTitle_plk {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionTitle_plk", resourceCulture);
             }
@@ -17095,7 +17095,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Usar versões semânticas.
         /// </summary>
-        internal static string Warning_SemanticVersionTitle_ptb {
+        public static string Warning_SemanticVersionTitle_ptb {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionTitle_ptb", resourceCulture);
             }
@@ -17104,7 +17104,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Использования управления семантическими версиями.
         /// </summary>
-        internal static string Warning_SemanticVersionTitle_rus {
+        public static string Warning_SemanticVersionTitle_rus {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionTitle_rus", resourceCulture);
             }
@@ -17113,7 +17113,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Anlamsal sürüm oluşturmayı kullanın..
         /// </summary>
-        internal static string Warning_SemanticVersionTitle_trk {
+        public static string Warning_SemanticVersionTitle_trk {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionTitle_trk", resourceCulture);
             }
@@ -17122,7 +17122,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Found symbols package &apos;{0}&apos;, but no API key was specified for the symbol server. To save an API Key, run &apos;NuGet.exe setApiKey [your API key from http://www.NuGet.org]&apos;..
         /// </summary>
-        internal static string Warning_SymbolServerNotConfigured {
+        public static string Warning_SymbolServerNotConfigured {
             get {
                 return ResourceManager.GetString("Warning_SymbolServerNotConfigured", resourceCulture);
             }
@@ -17131,7 +17131,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找到符号程序包“{0}”，但未为符号服务器指定 API 密钥。若要保存 API 密钥，请运行“NuGet.exe setApiKey [来自 http://www.NuGet.org 的 API 密钥]”。.
         /// </summary>
-        internal static string Warning_SymbolServerNotConfigured_chs {
+        public static string Warning_SymbolServerNotConfigured_chs {
             get {
                 return ResourceManager.GetString("Warning_SymbolServerNotConfigured_chs", resourceCulture);
             }
@@ -17140,7 +17140,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 找到符號封裝 &apos;{0}&apos;，但並未為符號伺服器指定 API 索引鍵。若要儲存 API 索引鍵，請執行 &apos;NuGet.exe setApiKey [http://www.NuGet.org 中的 API 索引鍵]&apos;。.
         /// </summary>
-        internal static string Warning_SymbolServerNotConfigured_cht {
+        public static string Warning_SymbolServerNotConfigured_cht {
             get {
                 return ResourceManager.GetString("Warning_SymbolServerNotConfigured_cht", resourceCulture);
             }
@@ -17149,7 +17149,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Byl nalezen balíček symbolů {0}, ale pro server symbolů nebyl zadán žádný klíč API. Chcete-li uložit klíč API, spusťte příkaz NuGet.exe setApiKey [klíč API z webu http://www.NuGet.org]..
         /// </summary>
-        internal static string Warning_SymbolServerNotConfigured_csy {
+        public static string Warning_SymbolServerNotConfigured_csy {
             get {
                 return ResourceManager.GetString("Warning_SymbolServerNotConfigured_csy", resourceCulture);
             }
@@ -17158,7 +17158,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Das Symbolpaket &quot;{0}&quot; wurde gefunden, es wurde jedoch kein API-Schlüssel für den Symbolserver angegeben. Führen Sie zum Speichern eines API-Schlüssels &quot;NuGet.exe setApiKey [Ihr API-Schlüssel von http://www.NuGet.org]&quot; aus..
         /// </summary>
-        internal static string Warning_SymbolServerNotConfigured_deu {
+        public static string Warning_SymbolServerNotConfigured_deu {
             get {
                 return ResourceManager.GetString("Warning_SymbolServerNotConfigured_deu", resourceCulture);
             }
@@ -17167,7 +17167,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Se ha encontrado el paquete de símbolos &apos;{0}&apos;, pero no se ha especificado ninguna clave API para el servidor de símbolos. Para guardar una clave API, ejecute &apos;NuGet.exe setApiKey [su clave API de http://www.NuGet.org]&apos;..
         /// </summary>
-        internal static string Warning_SymbolServerNotConfigured_esp {
+        public static string Warning_SymbolServerNotConfigured_esp {
             get {
                 return ResourceManager.GetString("Warning_SymbolServerNotConfigured_esp", resourceCulture);
             }
@@ -17176,7 +17176,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Package de symboles &apos;{0}&apos; trouvé, mais aucune clé API n&apos;a été spécifiée pour le serveur de symboles. Pour enregistrer une clé API, exécutez &apos;NuGet.exe setApiKey [votre clé API provenant de http://www.NuGet.org]&apos;..
         /// </summary>
-        internal static string Warning_SymbolServerNotConfigured_fra {
+        public static string Warning_SymbolServerNotConfigured_fra {
             get {
                 return ResourceManager.GetString("Warning_SymbolServerNotConfigured_fra", resourceCulture);
             }
@@ -17185,7 +17185,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Trovato pacchetto simboli &apos;{0}&apos;, ma non è stata specificata alcuna API key per il symbol server. Per salvare una API Key, eseguire &apos;NuGet.exe setApiKey [ API key da http://www.NuGet.org]&apos;..
         /// </summary>
-        internal static string Warning_SymbolServerNotConfigured_ita {
+        public static string Warning_SymbolServerNotConfigured_ita {
             get {
                 return ResourceManager.GetString("Warning_SymbolServerNotConfigured_ita", resourceCulture);
             }
@@ -17194,7 +17194,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to シンボル パッケージ &apos;{0}&apos; が見つかりましたが、シンボル サーバーの API キーが指定されていません。API キーを保存するには、&apos;NuGet.exe setApiKey [your API key from http://www.NuGet.org]&apos; を実行してください。.
         /// </summary>
-        internal static string Warning_SymbolServerNotConfigured_jpn {
+        public static string Warning_SymbolServerNotConfigured_jpn {
             get {
                 return ResourceManager.GetString("Warning_SymbolServerNotConfigured_jpn", resourceCulture);
             }
@@ -17203,7 +17203,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 기호 패키지 &apos;{0}&apos;을(를) 찾았지만 기호 서버에 대한 API 키가 지정되지 않았습니다. API 키를 저장하려면 &apos;NuGet.exe setApiKey [http://www.NuGet.org의 API 키]&apos;를 실행하십시오..
         /// </summary>
-        internal static string Warning_SymbolServerNotConfigured_kor {
+        public static string Warning_SymbolServerNotConfigured_kor {
             get {
                 return ResourceManager.GetString("Warning_SymbolServerNotConfigured_kor", resourceCulture);
             }
@@ -17212,7 +17212,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Odnaleziono pakiet symboli „{0}”, ale dla serwera symboli nie został określony klucz interfejsu API. Aby zapisać klucz interfejsu API, uruchom polecenie „NuGet.exe setApiKey [Twój klucz interfejsu API ze strony http://www.NuGet.org]”..
         /// </summary>
-        internal static string Warning_SymbolServerNotConfigured_plk {
+        public static string Warning_SymbolServerNotConfigured_plk {
             get {
                 return ResourceManager.GetString("Warning_SymbolServerNotConfigured_plk", resourceCulture);
             }
@@ -17221,7 +17221,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to O pacote símbolos &apos;{0}&apos; foi localizado, mas nenhuma chave de API foi especificada para o servidor de símbolos. Para salvar uma chave de API,  execute &quot;NuGet.exe setApiKey [sua chave de API de http://www.NuGet.org]&quot;..
         /// </summary>
-        internal static string Warning_SymbolServerNotConfigured_ptb {
+        public static string Warning_SymbolServerNotConfigured_ptb {
             get {
                 return ResourceManager.GetString("Warning_SymbolServerNotConfigured_ptb", resourceCulture);
             }
@@ -17230,7 +17230,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Обнаружен пакет символов &quot;{0}&quot;, но для сервера символов не был указан ключ API. Чтобы сохранить ключ API, выполните команду &quot;NuGet.exe setApiKey [ваш ключ API с сайта http://www.NuGet.org]&quot;..
         /// </summary>
-        internal static string Warning_SymbolServerNotConfigured_rus {
+        public static string Warning_SymbolServerNotConfigured_rus {
             get {
                 return ResourceManager.GetString("Warning_SymbolServerNotConfigured_rus", resourceCulture);
             }
@@ -17239,7 +17239,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; simge paketi bulundu ancak simge sunucusu için hiçbir API anahtarı belirtilmemiş. Bir API Anahtarını kaydetmek için &apos;NuGet.exe setApiKey [http://www.NuGet.org sayfasından aldığınız API anahtarı]&apos; öğesini çalıştırın..
         /// </summary>
-        internal static string Warning_SymbolServerNotConfigured_trk {
+        public static string Warning_SymbolServerNotConfigured_trk {
             get {
                 return ResourceManager.GetString("Warning_SymbolServerNotConfigured_trk", resourceCulture);
             }
@@ -17248,7 +17248,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; was included in the project but the path could not be resolved. Skipping....
         /// </summary>
-        internal static string Warning_UnresolvedFilePath {
+        public static string Warning_UnresolvedFilePath {
             get {
                 return ResourceManager.GetString("Warning_UnresolvedFilePath", resourceCulture);
             }
@@ -17257,7 +17257,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to The version of dependency &apos;{0}&apos; is not specified..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersion {
+        public static string Warning_UnspecifiedDependencyVersion {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersion", resourceCulture);
             }
@@ -17266,7 +17266,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 未指定依赖项“{0}”的版本。.
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersion_chs {
+        public static string Warning_UnspecifiedDependencyVersion_chs {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersion_chs", resourceCulture);
             }
@@ -17275,7 +17275,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 未指定相依項 &apos;{0}&apos; 版本。.
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersion_cht {
+        public static string Warning_UnspecifiedDependencyVersion_cht {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersion_cht", resourceCulture);
             }
@@ -17284,7 +17284,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Verze závislosti {0} není určena..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersion_csy {
+        public static string Warning_UnspecifiedDependencyVersion_csy {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersion_csy", resourceCulture);
             }
@@ -17293,7 +17293,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Die Version der Abhängigkeit &quot;{0}&quot; wurde nicht angegeben..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersion_deu {
+        public static string Warning_UnspecifiedDependencyVersion_deu {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersion_deu", resourceCulture);
             }
@@ -17302,7 +17302,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to No se ha especificado la versión de la dependencia &apos;{0}&apos;..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersion_esp {
+        public static string Warning_UnspecifiedDependencyVersion_esp {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersion_esp", resourceCulture);
             }
@@ -17311,7 +17311,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to La version de dépendance &apos;{0}&apos; n&apos;est pas spécifiée..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersion_fra {
+        public static string Warning_UnspecifiedDependencyVersion_fra {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersion_fra", resourceCulture);
             }
@@ -17320,7 +17320,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Versione della dipendenza &apos;{0}&apos; non specificata..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersion_ita {
+        public static string Warning_UnspecifiedDependencyVersion_ita {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersion_ita", resourceCulture);
             }
@@ -17329,7 +17329,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 依存関係のバージョン &apos;{0}&apos; が指定されていません。.
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersion_jpn {
+        public static string Warning_UnspecifiedDependencyVersion_jpn {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersion_jpn", resourceCulture);
             }
@@ -17338,7 +17338,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; 종속성 버전이 지정되지 않았습니다..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersion_kor {
+        public static string Warning_UnspecifiedDependencyVersion_kor {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersion_kor", resourceCulture);
             }
@@ -17347,7 +17347,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie określono wersji zależności „{0}”..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersion_plk {
+        public static string Warning_UnspecifiedDependencyVersion_plk {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersion_plk", resourceCulture);
             }
@@ -17356,7 +17356,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to A versão de dependência &apos;{0}&apos; não é especificada..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersion_ptb {
+        public static string Warning_UnspecifiedDependencyVersion_ptb {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersion_ptb", resourceCulture);
             }
@@ -17365,7 +17365,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Не указана версия зависимости &quot;{0}&quot;..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersion_rus {
+        public static string Warning_UnspecifiedDependencyVersion_rus {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersion_rus", resourceCulture);
             }
@@ -17374,7 +17374,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}&apos; bağımlılığının sürümü belirtilmemiş..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersion_trk {
+        public static string Warning_UnspecifiedDependencyVersion_trk {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersion_trk", resourceCulture);
             }
@@ -17383,7 +17383,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Specifiy the version of dependency and rebuild your package..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionSolution {
+        public static string Warning_UnspecifiedDependencyVersionSolution {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionSolution", resourceCulture);
             }
@@ -17392,7 +17392,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 指定依赖项的版本并重新生成你的程序包。.
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionSolution_chs {
+        public static string Warning_UnspecifiedDependencyVersionSolution_chs {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionSolution_chs", resourceCulture);
             }
@@ -17401,7 +17401,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 指定相依相版本並重新建置您的套件。.
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionSolution_cht {
+        public static string Warning_UnspecifiedDependencyVersionSolution_cht {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionSolution_cht", resourceCulture);
             }
@@ -17410,7 +17410,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Určete verzi závislosti a sestavte balíček znovu..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionSolution_csy {
+        public static string Warning_UnspecifiedDependencyVersionSolution_csy {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionSolution_csy", resourceCulture);
             }
@@ -17419,7 +17419,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Angeben der Version der Abhängigkeit und erneutes Erstellen des Pakets..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionSolution_deu {
+        public static string Warning_UnspecifiedDependencyVersionSolution_deu {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionSolution_deu", resourceCulture);
             }
@@ -17428,7 +17428,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Especifique la versión de la dependencia y recompile el paquete..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionSolution_esp {
+        public static string Warning_UnspecifiedDependencyVersionSolution_esp {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionSolution_esp", resourceCulture);
             }
@@ -17437,7 +17437,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Spécifiez la version de dépendance et regénérez votre package..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionSolution_fra {
+        public static string Warning_UnspecifiedDependencyVersionSolution_fra {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionSolution_fra", resourceCulture);
             }
@@ -17446,7 +17446,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Specificare la versione della dipendenza e ricompilare il pacchetto..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionSolution_ita {
+        public static string Warning_UnspecifiedDependencyVersionSolution_ita {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionSolution_ita", resourceCulture);
             }
@@ -17455,7 +17455,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 依存関係のバージョンを指定して、パッケージを再構築してください。.
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionSolution_jpn {
+        public static string Warning_UnspecifiedDependencyVersionSolution_jpn {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionSolution_jpn", resourceCulture);
             }
@@ -17464,7 +17464,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 종속성 버전을 지정하고 패키지를 다시 빌드하십시오..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionSolution_kor {
+        public static string Warning_UnspecifiedDependencyVersionSolution_kor {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionSolution_kor", resourceCulture);
             }
@@ -17473,7 +17473,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Określ wersję zależności i ponownie skompiluj pakiet..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionSolution_plk {
+        public static string Warning_UnspecifiedDependencyVersionSolution_plk {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionSolution_plk", resourceCulture);
             }
@@ -17482,7 +17482,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Especifique a versão de dependência e reconstrua seu pacote..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionSolution_ptb {
+        public static string Warning_UnspecifiedDependencyVersionSolution_ptb {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionSolution_ptb", resourceCulture);
             }
@@ -17491,7 +17491,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Укажите версию зависимости и повторите построение проекта..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionSolution_rus {
+        public static string Warning_UnspecifiedDependencyVersionSolution_rus {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionSolution_rus", resourceCulture);
             }
@@ -17500,7 +17500,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Bağımlılığın sürümünü belirtin ve paketinizi tekrar oluşturun..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionSolution_trk {
+        public static string Warning_UnspecifiedDependencyVersionSolution_trk {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionSolution_trk", resourceCulture);
             }
@@ -17509,7 +17509,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Specify version of dependencies..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionTitle {
+        public static string Warning_UnspecifiedDependencyVersionTitle {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionTitle", resourceCulture);
             }
@@ -17518,7 +17518,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 指定依赖项的版本。.
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionTitle_chs {
+        public static string Warning_UnspecifiedDependencyVersionTitle_chs {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionTitle_chs", resourceCulture);
             }
@@ -17527,7 +17527,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 指定相依項版本。.
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionTitle_cht {
+        public static string Warning_UnspecifiedDependencyVersionTitle_cht {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionTitle_cht", resourceCulture);
             }
@@ -17536,7 +17536,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Určete verzi závislostí..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionTitle_csy {
+        public static string Warning_UnspecifiedDependencyVersionTitle_csy {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionTitle_csy", resourceCulture);
             }
@@ -17545,7 +17545,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Angeben der Version der Abhängigkeiten..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionTitle_deu {
+        public static string Warning_UnspecifiedDependencyVersionTitle_deu {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionTitle_deu", resourceCulture);
             }
@@ -17554,7 +17554,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Especifique la versión de las dependencias..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionTitle_esp {
+        public static string Warning_UnspecifiedDependencyVersionTitle_esp {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionTitle_esp", resourceCulture);
             }
@@ -17563,7 +17563,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Spécifiez la version des dépendances..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionTitle_fra {
+        public static string Warning_UnspecifiedDependencyVersionTitle_fra {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionTitle_fra", resourceCulture);
             }
@@ -17572,7 +17572,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Specificare la versione delle dipendenze..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionTitle_ita {
+        public static string Warning_UnspecifiedDependencyVersionTitle_ita {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionTitle_ita", resourceCulture);
             }
@@ -17581,7 +17581,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 依存関係のバージョンを指定してください。.
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionTitle_jpn {
+        public static string Warning_UnspecifiedDependencyVersionTitle_jpn {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionTitle_jpn", resourceCulture);
             }
@@ -17590,7 +17590,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 종속성 버전을 지정하십시오..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionTitle_kor {
+        public static string Warning_UnspecifiedDependencyVersionTitle_kor {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionTitle_kor", resourceCulture);
             }
@@ -17599,7 +17599,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Określ wersję zależności..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionTitle_plk {
+        public static string Warning_UnspecifiedDependencyVersionTitle_plk {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionTitle_plk", resourceCulture);
             }
@@ -17608,7 +17608,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Especifique uma versão de dependências..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionTitle_ptb {
+        public static string Warning_UnspecifiedDependencyVersionTitle_ptb {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionTitle_ptb", resourceCulture);
             }
@@ -17617,7 +17617,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Укажите версию зависимостей..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionTitle_rus {
+        public static string Warning_UnspecifiedDependencyVersionTitle_rus {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionTitle_rus", resourceCulture);
             }
@@ -17626,7 +17626,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Bağımlılıkların sürümlerini belirtin..
         /// </summary>
-        internal static string Warning_UnspecifiedDependencyVersionTitle_trk {
+        public static string Warning_UnspecifiedDependencyVersionTitle_trk {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedDependencyVersionTitle_trk", resourceCulture);
             }
@@ -17635,7 +17635,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} was not specified. Using &apos;{1}&apos;..
         /// </summary>
-        internal static string Warning_UnspecifiedField {
+        public static string Warning_UnspecifiedField {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedField", resourceCulture);
             }
@@ -17644,7 +17644,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 未指定 {0}。正在使用“{1}”。.
         /// </summary>
-        internal static string Warning_UnspecifiedField_chs {
+        public static string Warning_UnspecifiedField_chs {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedField_chs", resourceCulture);
             }
@@ -17653,7 +17653,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to 並未指定 {0}。使用 &apos;{1}&apos;。.
         /// </summary>
-        internal static string Warning_UnspecifiedField_cht {
+        public static string Warning_UnspecifiedField_cht {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedField_cht", resourceCulture);
             }
@@ -17662,7 +17662,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Hodnota {0} nebyla zadána. Použije se {1}..
         /// </summary>
-        internal static string Warning_UnspecifiedField_csy {
+        public static string Warning_UnspecifiedField_csy {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedField_csy", resourceCulture);
             }
@@ -17671,7 +17671,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to &quot;{0}&quot; wurde nicht angegeben. &quot;{1}&quot; wird verwendet..
         /// </summary>
-        internal static string Warning_UnspecifiedField_deu {
+        public static string Warning_UnspecifiedField_deu {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedField_deu", resourceCulture);
             }
@@ -17680,7 +17680,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} no se ha especificado. Se está usando &apos;{1}&apos;..
         /// </summary>
-        internal static string Warning_UnspecifiedField_esp {
+        public static string Warning_UnspecifiedField_esp {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedField_esp", resourceCulture);
             }
@@ -17689,7 +17689,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} n&apos;a pas été spécifié. Utilisation de &apos;{1}&apos;..
         /// </summary>
-        internal static string Warning_UnspecifiedField_fra {
+        public static string Warning_UnspecifiedField_fra {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedField_fra", resourceCulture);
             }
@@ -17698,7 +17698,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} non specificato. Usare &apos;{1}&apos;..
         /// </summary>
-        internal static string Warning_UnspecifiedField_ita {
+        public static string Warning_UnspecifiedField_ita {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedField_ita", resourceCulture);
             }
@@ -17707,7 +17707,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} が指定されませんでした。&apos;{1}&apos; を使用しています。.
         /// </summary>
-        internal static string Warning_UnspecifiedField_jpn {
+        public static string Warning_UnspecifiedField_jpn {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedField_jpn", resourceCulture);
             }
@@ -17716,7 +17716,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0}이(가) 지정되지 않았습니다. &apos;{1}&apos;을(를) 사용하고 있습니다..
         /// </summary>
-        internal static string Warning_UnspecifiedField_kor {
+        public static string Warning_UnspecifiedField_kor {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedField_kor", resourceCulture);
             }
@@ -17725,7 +17725,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to Nie określono {0}. Zostanie użyta wartość „{1}”..
         /// </summary>
-        internal static string Warning_UnspecifiedField_plk {
+        public static string Warning_UnspecifiedField_plk {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedField_plk", resourceCulture);
             }
@@ -17734,7 +17734,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} não foi especificado. Usando &apos;{1}&apos;..
         /// </summary>
-        internal static string Warning_UnspecifiedField_ptb {
+        public static string Warning_UnspecifiedField_ptb {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedField_ptb", resourceCulture);
             }
@@ -17743,7 +17743,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} не указан. Будет использован &quot;{1}&quot;..
         /// </summary>
-        internal static string Warning_UnspecifiedField_rus {
+        public static string Warning_UnspecifiedField_rus {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedField_rus", resourceCulture);
             }
@@ -17752,7 +17752,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to {0} belirtilmemiş. &apos;{1}&apos; kullanılıyor..
         /// </summary>
-        internal static string Warning_UnspecifiedField_trk {
+        public static string Warning_UnspecifiedField_trk {
             get {
                 return ResourceManager.GetString("Warning_UnspecifiedField_trk", resourceCulture);
             }

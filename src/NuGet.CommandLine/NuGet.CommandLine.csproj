@@ -116,7 +116,7 @@
       <LastGenOutput>NuGetCommand.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="NuGetResources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>NuGetResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
@@ -132,12 +132,12 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Build, Version=14.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-       <HintPath>$(MSBuildExtensionsPath32)\14.0\Bin\Microsoft.Build.dll</HintPath>
-       <SpecificVersion>true</SpecificVersion>
+      <HintPath>$(MSBuildExtensionsPath32)\14.0\Bin\Microsoft.Build.dll</HintPath>
+      <SpecificVersion>true</SpecificVersion>
     </Reference>
     <Reference Include="Microsoft.Build.Framework, Version=14.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-        <HintPath>$(MSBuildExtensionsPath32)\14.0\Bin\Microsoft.Build.Framework.dll</HintPath>
-        <SpecificVersion>true</SpecificVersion>
+      <HintPath>$(MSBuildExtensionsPath32)\14.0\Bin\Microsoft.Build.Framework.dll</HintPath>
+      <SpecificVersion>true</SpecificVersion>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
