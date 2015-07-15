@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using NuGet.DependencyResolver.Core;
 using NuGet.LibraryModel;
@@ -38,6 +40,8 @@ namespace NuGet.DependencyResolver
             //        -> D 1.0
             //   -> D 2.0
 
+            var workingDowngrades = new Dictionary<GraphNode<TItem>, GraphNode<TItem>>();
+
             root.ForEach(node =>
             {
                 if (node.Disposition == Disposition.Cycle)
@@ -56,34 +60,32 @@ namespace NuGet.DependencyResolver
                     return;
                 }
 
-                bool downgraded = false;
-
                 // REVIEW: This could probably be done in a single pass where we keep track
                 // of what is nearer as we walk down the graph (BFS)
-                for (var n = node.OuterNode; !downgraded && n != null; n = n.OuterNode)
+                for (var n = node.OuterNode; n != null; n = n.OuterNode)
                 {
                     foreach (var sideNode in n.InnerNodes)
                     {
-                        if (sideNode != node &&
-                            sideNode.Key != node.Key &&
-                            sideNode.Key.Name == node.Key.Name)
+                        if (sideNode != node && sideNode.Key.Name == node.Key.Name)
                         {
-                            downgrades.Add(Tuple.Create(node, sideNode));
-
-                            downgraded = true;
-
-                            break;
+                            if (!RemoteDependencyWalker.IsGreaterThanOrEqualTo(sideNode.Key.VersionRange, node.Key.VersionRange))
+                            {
+                                workingDowngrades[node] = sideNode;
+                            }
+                            else
+                            {
+                                workingDowngrades.Remove(node);
+                            }
                         }
                     }
                 }
 
-                if (node.Disposition == Disposition.PotentiallyDowngraded)
-                {
-                    // Remove this node from the tree so the nothing else evaluates this.
-                    // This is ok since we have a parent pointer and we can still print the path
-                    node.OuterNode.InnerNodes.Remove(node);
-                }
+                // Remove this node from the tree so the nothing else evaluates this.
+                // This is ok since we have a parent pointer and we can still print the path
+                node.OuterNode.InnerNodes.Remove(node);
             });
+
+            downgrades.AddRange(workingDowngrades.Select(p => Tuple.Create(p.Key, p.Value)));
         }
 
         public static string GetPath<TItem>(this GraphNode<TItem> node)
@@ -93,11 +95,16 @@ namespace NuGet.DependencyResolver
 
             while (current != null)
             {
-                result = (current.Item?.Key ?? current.Key).ToString() + (string.IsNullOrEmpty(result) ? "" : " -> " + result);
+                result = current.PrettyPrint() + (string.IsNullOrEmpty(result) ? "" : " -> " + result);
                 current = current.OuterNode;
             }
 
             return result;
+        }
+
+        private static string PrettyPrint<TItem>(this GraphNode<TItem> node)
+        {
+            return node.Key.Name + " " + node.Key.VersionRange?.PrettyPrint();
         }
 
         public static bool TryResolveConflicts<TItem>(this GraphNode<TItem> root)
@@ -276,6 +283,7 @@ namespace NuGet.DependencyResolver
         private const char LIGHT_UP_AND_RIGHT = '\u2514';
         private const char LIGHT_VERTICAL_AND_RIGHT = '\u251C';
 
+        [Conditional("DEBUG")]
         public static void Dump<TItem>(this GraphNode<TItem> root, Action<string> write)
         {
             DumpNode(root, write, level: 0);
@@ -302,7 +310,7 @@ namespace NuGet.DependencyResolver
                 output.Append(" ");
             }
 
-            output.Append($"{node.Key} ({node.Disposition})");
+            output.Append($"{node.PrettyPrint()} ({node.Disposition})");
 
             if (node.Item != null
                 && node.Item.Key != null)

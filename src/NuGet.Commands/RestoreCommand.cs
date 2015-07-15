@@ -97,7 +97,11 @@ namespace NuGet.Commands
                     var downgraded = downgrade.DowngradedTo;
                     var downgradedBy = downgrade.DowngradedFrom;
 
-                    _log.LogWarning($"Detected package downgrade: {downgraded.Key.Name} from {downgraded.Key.VersionRange.MinVersion} to {downgradedBy.Key.VersionRange.MinVersion} {Environment.NewLine} {downgraded.GetPath()} {Environment.NewLine} {downgradedBy.GetPath()}");
+                    // It's only a downgrade if this dependency edge was chosen
+                    if (downgradedBy.Disposition == Disposition.Accepted)
+                    {
+                        _log.LogWarning($"Detected package downgrade: {downgraded.Key.Name} from {downgraded.Key.VersionRange.MinVersion} to {downgradedBy.Key.VersionRange.MinVersion} {Environment.NewLine} {downgraded.GetPath()} {Environment.NewLine} {downgradedBy.GetPath()}");
+                    }
                 }
             }
 
