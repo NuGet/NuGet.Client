@@ -9,7 +9,9 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using EnvDTE;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TemplateWizard;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement;
@@ -25,6 +27,10 @@ namespace NuGet.VisualStudio
     public class VsTemplateWizard : IVsTemplateWizard
     {
         private const string DefaultRepositoryDirectory = "packages";
+        private const string WizardDataElementName = "WizardData";
+        private const string IsPreunzippedAttributeName = "isPreunzipped";
+        private const string ForceDesignTimeBuildAttributeName = "forceDesignTimeBuild";
+
         private readonly IVsPackageInstaller _installer;
         private IEnumerable<PreinstalledPackageConfiguration> _configurations;
 
@@ -74,30 +80,49 @@ namespace NuGet.VisualStudio
             IEnumerable<IRegistryKey> registryKeys = null)
         {
             // Ignore XML namespaces since VS does not check them either when loading vstemplate files.
-            IEnumerable<XElement> packagesElements = document.Root.ElementsNoNamespace("WizardData")
+            var packagesElements = document.Root
+                .ElementsNoNamespace(WizardDataElementName)
                 .ElementsNoNamespace("packages");
 
             foreach (var packagesElement in packagesElements)
             {
                 IList<PreinstalledPackageInfo> packages = new PreinstalledPackageInfo[0];
                 string repositoryPath = null;
-                bool isPreunzipped = false;
+                var isPreunzipped = false;
+                var forceDesignTimeBuild = false;
 
-                string isPreunzippedString = packagesElement.GetOptionalAttributeValue("isPreunzipped");
-                if (!String.IsNullOrEmpty(isPreunzippedString))
+                var isPreunzippedString = packagesElement.GetOptionalAttributeValue(IsPreunzippedAttributeName);
+                if (!string.IsNullOrEmpty(isPreunzippedString))
                 {
                     Boolean.TryParse(isPreunzippedString, out isPreunzipped);
+                }
+
+                var forceDesignTimeBuildString =
+                    packagesElement.GetOptionalAttributeValue(ForceDesignTimeBuildAttributeName);
+
+                if (!string.IsNullOrEmpty(forceDesignTimeBuildString))
+                {
+                    Boolean.TryParse(forceDesignTimeBuildString, out forceDesignTimeBuild);
                 }
 
                 packages = GetPackages(packagesElement).ToList();
 
                 if (packages.Count > 0)
                 {
-                    RepositoryType repositoryType = GetRepositoryType(packagesElement);
-                    repositoryPath = GetRepositoryPath(packagesElement, repositoryType, vsTemplatePath, vsExtensionManager, registryKeys);
+                    var repositoryType = GetRepositoryType(packagesElement);
+                    repositoryPath = GetRepositoryPath(
+                        packagesElement,
+                        repositoryType,
+                        vsTemplatePath,
+                        vsExtensionManager,
+                        registryKeys);
                 }
 
-                yield return new PreinstalledPackageConfiguration(repositoryPath, packages, isPreunzipped);
+                yield return new PreinstalledPackageConfiguration(
+                    repositoryPath,
+                    packages,
+                    isPreunzipped,
+                    forceDesignTimeBuild);
             }
         }
 
@@ -230,11 +255,49 @@ namespace NuGet.VisualStudio
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+            var forceDesignTimeBuild = false;
             foreach (var configuration in _configurations)
             {
                 if (configuration.Packages.Any())
                 {
-                    await _preinstalledPackageInstaller.PerformPackageInstallAsync(_installer, project, configuration, ShowWarningMessage, ShowErrorMessage);
+                    await _preinstalledPackageInstaller.PerformPackageInstallAsync(_installer,
+                        project,
+                        configuration,
+                        ShowWarningMessage,
+                        ShowErrorMessage);
+                }
+
+                if (configuration.ForceDesignTimeBuild)
+                {
+                    forceDesignTimeBuild = true;
+                }
+            }
+
+            if (forceDesignTimeBuild)
+            {
+                RunDesignTimeBuild(project);
+            }
+        }
+
+        private void RunDesignTimeBuild(Project project)
+        {
+            var solution = ServiceProvider.GlobalProvider.GetService(typeof(SVsSolution)) as IVsSolution;
+
+            if (solution != null)
+            {
+                IVsHierarchy hierarchy;
+                if (ErrorHandler.Succeeded(solution.GetProjectOfUniqueName(project.UniqueName, out hierarchy))
+                    && hierarchy != null)
+                {
+                    var solutionBuild = hierarchy as IVsProjectBuildSystem;
+
+                    if (solutionBuild != null)
+                    {
+                        if (ErrorHandler.Succeeded(solutionBuild.StartBatchEdit()))
+                        {
+                            solutionBuild.EndBatchEdit();
+                        }
+                    }
                 }
             }
         }

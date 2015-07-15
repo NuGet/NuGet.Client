@@ -20,15 +20,22 @@ namespace NuGet.VisualStudio
         /// A boolean indicating whether the packages are preunzipped within the repository
         /// path.
         /// </param>
-        public PreinstalledPackageConfiguration(string repositoryPath, IEnumerable<PreinstalledPackageInfo> packages, bool isPreunzipped)
+        /// <param name="forceDesignTimeBuild">If true, forces a design time build after installing
+        /// the packages</param>
+        public PreinstalledPackageConfiguration(string repositoryPath,
+            IEnumerable<PreinstalledPackageInfo> packages,
+            bool isPreunzipped,
+            bool forceDesignTimeBuild)
         {
             Packages = packages.ToList().AsReadOnly();
             RepositoryPath = repositoryPath;
             IsPreunzipped = isPreunzipped;
+            ForceDesignTimeBuild = forceDesignTimeBuild;
         }
 
-        public ICollection<PreinstalledPackageInfo> Packages { get; private set; }
-        public string RepositoryPath { get; private set; }
-        public bool IsPreunzipped { get; private set; }
+        public IReadOnlyList<PreinstalledPackageInfo> Packages { get; }
+        public string RepositoryPath { get; }
+        public bool IsPreunzipped { get; }
+        public bool ForceDesignTimeBuild { get; }
     }
 }
