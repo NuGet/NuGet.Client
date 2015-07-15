@@ -13,11 +13,27 @@ namespace NuGet.Commands
 {
     internal static class LockFileUtils
     {
-        public static LockFileTargetLibrary CreateLockFileTargetLibrary(LockFileLibrary library, LocalPackageInfo package, RestoreTargetGraph targetGraph, VersionFolderPathResolver defaultPackagePathResolver, string correctedPackageName)
+        public static LockFileTargetLibrary CreateLockFileTargetLibrary(
+            LockFileLibrary library,
+            LocalPackageInfo package,
+            RestoreTargetGraph targetGraph,
+            VersionFolderPathResolver defaultPackagePathResolver,
+            string correctedPackageName)
+        {
+            return CreateLockFileTargetLibrary(library, package, targetGraph, defaultPackagePathResolver, correctedPackageName, targetFrameworkOverride: null);
+        }
+
+        public static LockFileTargetLibrary CreateLockFileTargetLibrary(
+            LockFileLibrary library, 
+            LocalPackageInfo package, 
+            RestoreTargetGraph targetGraph, 
+            VersionFolderPathResolver defaultPackagePathResolver, 
+            string correctedPackageName, 
+            NuGetFramework targetFrameworkOverride)
         {
             var lockFileLib = new LockFileTargetLibrary();
 
-            var framework = targetGraph.Framework;
+            var framework = targetFrameworkOverride ?? targetGraph.Framework;
             var runtimeIdentifier = targetGraph.RuntimeIdentifier;
 
             // package.Id is read from nuspec and it might be in wrong casing.

@@ -198,15 +198,15 @@ namespace NuGet.ProjectModel
                     }
 
                     results.Add(new LibraryDependency()
+                    {
+                        LibraryRange = new LibraryRange()
                         {
-                            LibraryRange = new LibraryRange()
-                                {
-                                    Name = dependency.Key,
-                                    TypeConstraint = isGacOrFrameworkReference ? LibraryTypes.Reference : null,
-                                    VersionRange = dependencyVersionRange,
-                                },
-                            Type = dependencyTypeValue
-                        });
+                            Name = dependency.Key,
+                            TypeConstraint = isGacOrFrameworkReference ? LibraryTypes.Reference : null,
+                            VersionRange = dependencyVersionRange,
+                        },
+                        Type = dependencyTypeValue
+                    });
                 }
             }
         }
@@ -277,13 +277,25 @@ namespace NuGet.ProjectModel
                 return false;
             }
 
-            var targetFrameworkInformation = new TargetFrameworkInformation
-                {
-                    FrameworkName = frameworkName,
-                    Dependencies = new List<LibraryDependency>()
-                };
-
             var properties = targetFramework.Value.Value<JObject>();
+
+            var importFramework = GetImports(properties);
+
+            // If a fallback framework exists, update the framework to contain both.
+            var updatedFramework = frameworkName;
+
+            if (importFramework != null)
+            {
+                updatedFramework = new FallbackFramework(frameworkName, importFramework);
+            }
+
+            var targetFrameworkInformation = new TargetFrameworkInformation
+            {
+                FrameworkName = updatedFramework,
+                Dependencies = new List<LibraryDependency>(),
+                Imports = GetImports(properties),
+                Warn = GetWarnSetting(properties)
+            };
 
             PopulateDependencies(
                 packageSpec.FilePath,
@@ -305,6 +317,40 @@ namespace NuGet.ProjectModel
             packageSpec.TargetFrameworks.Add(targetFrameworkInformation);
 
             return true;
+        }
+
+        private static NuGetFramework GetImports(JObject properties)
+        {
+            NuGetFramework framework = null;
+
+            var importsProperty = properties["imports"];
+
+            if (importsProperty != null)
+            {
+                var importFramework = NuGetFramework.Parse(importsProperty.ToString());
+
+                if (importFramework.IsPCL)
+                {
+                    // PCLs are the only frameworks allowed here, other values will be ignored
+                    framework = importFramework;
+                }
+            }
+
+            return framework;
+        }
+
+        private static bool GetWarnSetting(JObject properties)
+        {
+            var warn = false;
+
+            var warnProperty = properties["warn"];
+
+            if (warnProperty != null)
+            {
+                warn = warnProperty.ToObject<bool>();
+            }
+
+            return warn;
         }
 
         private static NuGetFramework GetFramework(string key)

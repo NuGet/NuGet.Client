@@ -110,5 +110,25 @@ namespace NuGet.Frameworks
 
             return default(T);
         }
+
+        /// <summary>
+        /// Check compatibility with additional checks for the fallback framework.
+        /// </summary>
+        public static bool IsCompatibleWithFallbackCheck(NuGetFramework projectFramework, NuGetFramework candidate)
+        {
+            var compatible = DefaultCompatibilityProvider.Instance.IsCompatible(projectFramework, candidate);
+
+            if (!compatible)
+            {
+                var fallbackFramework = projectFramework as FallbackFramework;
+
+                if (fallbackFramework != null && fallbackFramework.Fallback != null)
+                {
+                    compatible = DefaultCompatibilityProvider.Instance.IsCompatible(fallbackFramework.Fallback, candidate);
+                }
+            }
+
+            return compatible;
+        }
     }
 }

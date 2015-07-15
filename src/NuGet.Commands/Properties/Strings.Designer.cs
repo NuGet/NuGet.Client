@@ -426,6 +426,22 @@ namespace NuGet.Commands
             return string.Format(CultureInfo.CurrentCulture, GetString("Log_DependencyBumpedUp"), p0, p1, p2, p3);
         }
 
+        /// <summary>
+        /// Package '{0}' was restored using '{1}' instead the project target framework '{2}'. This may cause compatibility problems.
+        /// </summary>
+        internal static string Log_ImportsFallbackWarning
+        {
+            get { return GetString("Log_ImportsFallbackWarning"); }
+        }
+
+        /// <summary>
+        /// Package '{0}' was restored using '{1}' instead the project target framework '{2}'. This may cause compatibility problems.
+        /// </summary>
+        internal static string FormatLog_ImportsFallbackWarning(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_ImportsFallbackWarning"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -195,4 +195,7 @@
   <data name="Log_DependencyBumpedUp" xml:space="preserve">
     <value>Dependency specified was {0} {1} but ended up with {2} {3}.</value>
   </data>
+  <data name="Log_ImportsFallbackWarning" xml:space="preserve">
+    <value>Package '{0}' was restored using '{1}' instead the project target framework '{2}'. This may cause compatibility problems.</value>
+  </data>
 </root>

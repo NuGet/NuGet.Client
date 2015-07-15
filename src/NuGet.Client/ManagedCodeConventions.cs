@@ -133,7 +133,7 @@ namespace NuGet.Client
                     return false;
                 }
 
-                return DefaultCompatibilityProvider.Instance.IsCompatible(criteriaFrameworkName, availableFrameworkName);
+                return NuGetFrameworkUtility.IsCompatibleWithFallbackCheck(criteriaFrameworkName, availableFrameworkName);
             }
 
             return false;

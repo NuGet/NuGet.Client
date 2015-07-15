@@ -19,6 +19,11 @@ namespace NuGet.Frameworks
         private readonly string _frameworkProfile;
         private const string _portable = "portable";
 
+        public NuGetFramework(NuGetFramework framework)
+            : this(framework.Framework, framework.Version, framework.Profile)
+        {
+        }
+
         public NuGetFramework(string framework)
             : this(framework, FrameworkConstants.EmptyVersion)
         {
@@ -132,7 +137,7 @@ namespace NuGet.Frameworks
         /// <summary>
         /// Creates the shortened version of the framework using the given mappings.
         /// </summary>
-        public string GetShortFolderName(IFrameworkNameProvider mappings)
+        public virtual string GetShortFolderName(IFrameworkNameProvider mappings)
         {
             // Check for rewrites
             var framework = mappings.GetShortNameReplacement(this);

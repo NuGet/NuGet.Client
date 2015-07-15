@@ -45,6 +45,23 @@ namespace NuGet.Frameworks
         /// <returns>Nearest compatible framework. If no frameworks are compatible null is returned.</returns>
         public NuGetFramework GetNearest(NuGetFramework framework, IEnumerable<NuGetFramework> possibleFrameworks)
         {
+            var nearest = GetNearestInternal(framework, possibleFrameworks);
+
+            var fallbackFramework = framework as FallbackFramework;
+
+            if (fallbackFramework != null)
+            {
+                if (nearest == null || nearest.IsAny)
+                {
+                    nearest = GetNearestInternal(fallbackFramework.Fallback, possibleFrameworks);
+                }
+            }
+
+            return nearest;
+        }
+
+        private NuGetFramework GetNearestInternal(NuGetFramework framework, IEnumerable<NuGetFramework> possibleFrameworks)
+        {
             NuGetFramework nearest = null;
 
             // Unsupported frameworks always lose, throw them out unless it's all we were given
@@ -422,8 +439,8 @@ namespace NuGet.Frameworks
             // Determine which framework has the highest version of each shared framework
             foreach (var sharedId in sharedFrameworkIds)
             {
-                var consideringFramework = consideringFrameworks.Where(f => StringComparer.OrdinalIgnoreCase.Equals(f.Framework, sharedId)).First();
-                var currentFramework = currentFrameworks.Where(f => StringComparer.OrdinalIgnoreCase.Equals(f.Framework, sharedId)).First();
+                var consideringFramework = consideringFrameworks.First(f => StringComparer.OrdinalIgnoreCase.Equals(f.Framework, sharedId));
+                var currentFramework = currentFrameworks.First(f => StringComparer.OrdinalIgnoreCase.Equals(f.Framework, sharedId));
 
                 if (consideringFramework.Version < currentFramework.Version)
                 {
@@ -446,8 +463,8 @@ namespace NuGet.Frameworks
             }
 
             // Take the highest version of .NET if no winner could be determined, this is usually a good indicator of which is newer
-            var consideringNet = consideringFrameworks.Where(f => StringComparer.OrdinalIgnoreCase.Equals(f.Framework, FrameworkConstants.FrameworkIdentifiers.Net)).First();
-            var currentNet = currentFrameworks.Where(f => StringComparer.OrdinalIgnoreCase.Equals(f.Framework, FrameworkConstants.FrameworkIdentifiers.Net)).First();
+            var consideringNet = consideringFrameworks.FirstOrDefault(f => StringComparer.OrdinalIgnoreCase.Equals(f.Framework, FrameworkConstants.FrameworkIdentifiers.Net));
+            var currentNet = currentFrameworks.FirstOrDefault(f => StringComparer.OrdinalIgnoreCase.Equals(f.Framework, FrameworkConstants.FrameworkIdentifiers.Net));
 
             // Compare using .NET only if both frameworks have it. PCLs should always have .NET, but since users can make these strings up we should
             // try to handle that as best as possible.

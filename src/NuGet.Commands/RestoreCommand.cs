@@ -513,12 +513,18 @@ namespace NuGet.Commands
 
             var libraries = lockFile.Libraries.ToDictionary(lib => Tuple.Create(lib.Name, lib.Version));
 
+            var warnForImports = project.TargetFrameworks.Any(framework => framework.Warn);
+            var librariesWithWarnings = new HashSet<LibraryIdentity>();
+
             // Add the targets
             foreach (var targetGraph in targetGraphs)
             {
                 var target = new LockFileTarget();
                 target.TargetFramework = targetGraph.Framework;
                 target.RuntimeIdentifier = targetGraph.RuntimeIdentifier;
+
+                var fallbackFramework = target.TargetFramework as FallbackFramework;
+                var warnForImportsOnGraph = warnForImports && fallbackFramework != null;
 
                 foreach (var library in targetGraph.Flattened.Select(g => g.Key).OrderBy(x => x))
                 {
@@ -538,6 +544,29 @@ namespace NuGet.Commands
                         correctedPackageName: library.Name);
 
                     target.Libraries.Add(targetLibrary);
+
+                    // Log warnings if the target library used the fallback framework
+                    if (warnForImportsOnGraph && !librariesWithWarnings.Contains(library))
+                    {
+                        var nonFallbackFramework = new NuGetFramework(fallbackFramework);
+
+                        var targetLibraryWithoutFallback = LockFileUtils.CreateLockFileTargetLibrary(
+                            libraries[Tuple.Create(library.Name, library.Version)],
+                            packageInfo,
+                            targetGraph,
+                            resolver,
+                            correctedPackageName: library.Name,
+                            targetFrameworkOverride: nonFallbackFramework);
+
+                        if (!targetLibrary.Equals(targetLibraryWithoutFallback))
+                        {
+                            var libraryName = $"{library.Name} {library.Version}";
+                            _log.LogWarning(Strings.FormatLog_ImportsFallbackWarning(libraryName, fallbackFramework.Fallback, nonFallbackFramework));
+
+                            // only log the warning once per library
+                            librariesWithWarnings.Add(library);
+                        }
+                    }
                 }
 
                 lockFile.Targets.Add(target);

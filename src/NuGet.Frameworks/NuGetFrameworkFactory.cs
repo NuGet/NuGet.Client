@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace NuGet.Frameworks
@@ -46,6 +47,8 @@ namespace NuGet.Frameworks
             {
                 throw new ArgumentNullException(nameof(mappings));
             }
+
+            Debug.Assert(folderName.IndexOf(";") < 0, "invalid folder name, this appears to contain multiple frameworks");
 
             var framework = UnsupportedFramework;
 

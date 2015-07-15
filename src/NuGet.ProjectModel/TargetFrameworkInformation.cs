@@ -13,6 +13,17 @@ namespace NuGet.ProjectModel
 
         public IList<LibraryDependency> Dependencies { get; set; }
 
+        /// <summary>
+        /// A fallback PCL framework to use when no compatible items
+        /// were found for <see cref="FrameworkName"/>.
+        /// </summary>
+        public NuGetFramework Imports { get; set; }
+
+        /// <summary>
+        /// Display warnings when the Imports framework is used.
+        /// </summary>
+        public bool Warn { get; set; }
+
         public TargetFrameworkInformation()
         {
             Dependencies = new List<LibraryDependency>();
