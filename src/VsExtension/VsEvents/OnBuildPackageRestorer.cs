@@ -34,8 +34,8 @@ namespace NuGetVSExtension
         private readonly DTE _dte;
         private bool _outputOptOutMessage;
 
-        private IReadOnlyDictionary<string, BuildIntegratedProjectCacheEntry> _buildIntegratedCache
-            = new Dictionary<string, BuildIntegratedProjectCacheEntry>();
+        private Dictionary<string, BuildIntegratedProjectCacheEntry> _buildIntegratedCache
+            = new Dictionary<string, BuildIntegratedProjectCacheEntry>(StringComparer.Ordinal);
 
         // The value of the "MSBuild project build output verbosity" setting 
         // of VS. From 0 (quiet) to 4 (Diagnostic).
@@ -327,6 +327,8 @@ namespace NuGetVSExtension
 
             if (!restoreResult.Success)
             {
+                // Invalidate cached results for the project. This will cause it to restore the next time.
+                _buildIntegratedCache.Remove(projectName);
                 await BuildIntegratedProjectReportErrorAsync(projectName, restoreResult, token);
             }
         }
