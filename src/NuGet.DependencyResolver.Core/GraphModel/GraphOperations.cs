@@ -19,7 +19,7 @@ namespace NuGet.DependencyResolver
         }
 
         public static void CheckCycleAndNearestWins<TItem>(this GraphNode<TItem> root,
-                                                           List<Tuple<GraphNode<TItem>, GraphNode<TItem>>> downgrades,
+                                                           List<GraphNode<TItem>> downgrades,
                                                            List<GraphNode<TItem>> cycles)
         {
             // Cycle
@@ -28,11 +28,10 @@ namespace NuGet.DependencyResolver
 
             // Downgrade
 
-            // A -> B -> C -> D 2.0 (downgrage)
+            // A -> B -> C -> D 2.0 (downgrade)
             //        -> D 1.0
 
             // Potential downgrade that turns out to not downgrade
-            // This should never happen in practice since B would have never been valid to begin with.
 
             // A -> B -> C -> D 2.0
             //        -> D 1.0
@@ -51,34 +50,10 @@ namespace NuGet.DependencyResolver
                     return;
                 }
 
-                if (node.Disposition != Disposition.PotentiallyDowngraded)
-                {
-                    return;
-                }
-
-                bool downgraded = false;
-
-                // REVIEW: This could probably be done in a single pass where we keep track
-                // of what is nearer as we walk down the graph (BFS)
-                for (var n = node.OuterNode; !downgraded && n != null; n = n.OuterNode)
-                {
-                    foreach (var sideNode in n.InnerNodes)
-                    {
-                        if (sideNode != node &&
-                            sideNode.Key != node.Key &&
-                            sideNode.Key.Name == node.Key.Name)
-                        {
-                            downgrades.Add(Tuple.Create(node, sideNode));
-
-                            downgraded = true;
-
-                            break;
-                        }
-                    }
-                }
-
                 if (node.Disposition == Disposition.PotentiallyDowngraded)
                 {
+                    downgrades.Add(node);
+
                     // Remove this node from the tree so the nothing else evaluates this.
                     // This is ok since we have a parent pointer and we can still print the path
                     node.OuterNode.InnerNodes.Remove(node);
@@ -93,11 +68,16 @@ namespace NuGet.DependencyResolver
 
             while (current != null)
             {
-                result = (current.Item?.Key ?? current.Key).ToString() + (string.IsNullOrEmpty(result) ? "" : " -> " + result);
+                result = current.PrettyPrint() + (string.IsNullOrEmpty(result) ? "" : " -> " + result);
                 current = current.OuterNode;
             }
 
             return result;
+        }
+
+        private static string PrettyPrint<TItem>(this GraphNode<TItem> node)
+        {
+            return node.Key.Name + " " + node.Key.VersionRange?.PrettyPrint();
         }
 
         public static bool TryResolveConflicts<TItem>(this GraphNode<TItem> root)
