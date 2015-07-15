@@ -87,7 +87,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        // !!! [Fact]
+        [Fact]
         public void DeleteCommand_DeleteFromHttpSource()
         {
             var targetDir = ConfigurationManager.AppSettings["TargetDir"];

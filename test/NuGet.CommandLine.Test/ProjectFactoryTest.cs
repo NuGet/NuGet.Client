@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
 using Microsoft.Build.Evaluation;
 using Moq;
+using NuGet.CommandLine.Test;
 using Xunit;
 
 namespace NuGet.CommandLine
@@ -99,6 +101,8 @@ namespace NuGet.CommandLine
         public void EnsureProjectFactoryDoesNotAddFileThatIsAlreadyInPackage()
         {
             // Setup
+            var targetDir = ConfigurationManager.AppSettings["TargetDir"];
+            var nugetexe = Path.Combine(targetDir, "nuget.exe");
             var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             try
             {
@@ -110,12 +114,16 @@ namespace NuGet.CommandLine
                 var projPath = Path.Combine(workingDirectory, "Assembly.csproj");
 
                 // Act 
-                var exitCode = Program.MainCore(workingDirectory, new[] { "pack", "Assembly.csproj", "-build" });
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack Assembly.csproj -build",
+                    waitForExit: true);
                 var package = new OptimizedZipPackage(Path.Combine(workingDirectory, "Assembly.1.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
 
                 // Assert
-                Assert.Equal(0, exitCode);
+                Assert.Equal(0, r.Item1);
                 Array.Sort(files);
                 Assert.Equal(files, new[] {
                     @"lib\net45\Assembly.dll",
