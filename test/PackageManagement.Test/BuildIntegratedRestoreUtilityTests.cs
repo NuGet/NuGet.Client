@@ -194,58 +194,6 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public async Task BuildIntegratedRestoreUtility_IsRestoreRequiredWithSupports()
-        {
-            // Arrange
-            var projectName = "testproj";
-
-            var rootFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
-            projectFolder.Create();
-            var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
-
-            CreateConfigJson(projectConfig.FullName);
-
-            var json = JObject.Parse(File.ReadAllText(projectConfig.FullName));
-
-            JsonConfigUtility.AddDependency(json, new NuGet.Packaging.Core.PackageDependency("nuget.versioning", VersionRange.Parse("1.0.7")));
-
-            json.Add("supports", JObject.Parse("{ \"uap10-x86\": { }, \"uap10-x86-aot\": { } }"));
-
-            using (var writer = new StreamWriter(projectConfig.FullName))
-            {
-                writer.Write(json.ToString());
-            }
-
-            var sources = new List<string> { "https://www.nuget.org/api/v2/" };
-
-            var projectTargetFramework = NuGetFramework.Parse("uap10.0");
-            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-            var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
-
-            var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                Logging.NullLogger.Instance,
-                sources,
-                Configuration.NullSettings.Instance,
-                CancellationToken.None);
-
-            var projects = new List<BuildIntegratedNuGetProject>() { project };
-
-            var packagesFolder = SettingsUtility.GetGlobalPackagesFolder(Configuration.NullSettings.Instance);
-
-            var resolver = new VersionFolderPathResolver(packagesFolder);
-
-            // Act
-            var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver);
-
-            // Assert
-            Assert.True(b);
-
-            // Clean-up
-            TestFilesystemUtility.DeleteRandomTestFolders(rootFolder);
-        }
-
-        [Fact]
         public async Task BuildIntegratedRestoreUtility_IsRestoreRequiredWithFloatingVersion()
         {
             // Arrange
@@ -402,6 +350,81 @@ namespace NuGet.Test
 
             // Assert
             Assert.True(b);
+
+            // Clean up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomProjectFolderPath, randomProjectFolderPath2);
+        }
+
+        [Fact]
+        public async Task CacheHasChanges_ReturnsTrue_IfSupportProfilesDiffer()
+        {
+            // Arrange
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+            var randomProjectFolderPath2 = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig2 = Path.Combine(randomProjectFolderPath2, "project.json");
+            var supports = new JObject
+            {
+                ["uap.app"] = new JObject()
+            };
+            var configJson = new JObject
+            {
+                ["frameworks"] = new JObject
+                {
+                    ["uap10.0"] = new JObject()
+                },
+                ["supports"] = supports
+            };
+
+            File.WriteAllText(randomConfig, configJson.ToString());
+            File.WriteAllText(randomConfig2, configJson.ToString());
+
+            var projectTargetFramework = NuGetFramework.Parse("netcore50");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                projectTargetFramework,
+                testNuGetProjectContext,
+                randomProjectFolderPath,
+                "project1");
+
+            var project1 = new TestBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+            project1.ProjectClosure = new List<BuildIntegratedProjectReference>()
+            {
+                new BuildIntegratedProjectReference("a", "a/project.json", new string[] { "b/project.json" }),
+                new BuildIntegratedProjectReference("b", "b/project.json", new string[] { }),
+            };
+
+            var msBuildNuGetProjectSystem2 = new TestMSBuildNuGetProjectSystem(
+                projectTargetFramework,
+                testNuGetProjectContext,
+                randomProjectFolderPath2,
+                "project2");
+
+            var project2 = new TestBuildIntegratedNuGetProject(randomConfig2, msBuildNuGetProjectSystem2);
+            project2.ProjectClosure = new List<BuildIntegratedProjectReference>() { };
+
+            var projects = new List<BuildIntegratedNuGetProject>();
+            projects.Add(project1);
+            projects.Add(project2);
+
+            var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+            supports["net46"] = new JObject();
+            File.WriteAllText(randomConfig, configJson.ToString());
+            var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+
+            // Act 1
+            var result1 = BuildIntegratedRestoreUtility.CacheHasChanges(cache, cache2);
+
+            // Assert 1
+            Assert.True(result1);
+
+            // Act 2
+            var cache3 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+            var result2 = BuildIntegratedRestoreUtility.CacheHasChanges(cache2, cache3);
+
+            // Assert 2
+            Assert.False(result2);
 
             // Clean up
             TestFilesystemUtility.DeleteRandomTestFolders(randomProjectFolderPath, randomProjectFolderPath2);

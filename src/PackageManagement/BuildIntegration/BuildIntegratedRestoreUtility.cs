@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -153,7 +154,7 @@ namespace NuGet.PackageManagement
         /// Creates an index of the project unique name to the cache entry. 
         /// The cache entry contains the project and the closure of project.json files.
         /// </summary>
-        public static async Task<IReadOnlyDictionary<string, BuildIntegratedProjectCacheEntry>>
+        public static async Task<Dictionary<string, BuildIntegratedProjectCacheEntry>>
             CreateBuildIntegratedProjectStateCache(IReadOnlyList<BuildIntegratedNuGetProject> projects)
         {
             var cache = new Dictionary<string, BuildIntegratedProjectCacheEntry>();
@@ -165,7 +166,10 @@ namespace NuGet.PackageManagement
                 var closure = await project.GetProjectReferenceClosureAsync();
                 var files = closure.Select(reference => reference.PackageSpecPath).ToList();
 
-                var projectInfo = new BuildIntegratedProjectCacheEntry(project.JsonConfigPath, files);
+                var projectInfo = new BuildIntegratedProjectCacheEntry(
+                    project.JsonConfigPath,
+                    files,
+                    project.PackageSpec.RuntimeGraph.Supports.Keys.OrderBy(p => p, StringComparer.Ordinal).ToArray());
 
                 var uniqueName = project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
 
@@ -186,11 +190,13 @@ namespace NuGet.PackageManagement
         /// Verifies that the caches contain the same projects and that each project contains the same closure.
         /// This is used to detect if any projects have changed before verifying the lock files.
         /// </summary>
-        public static bool CacheHasChanges(IReadOnlyDictionary<string, BuildIntegratedProjectCacheEntry> previousCache,
+        public static bool CacheHasChanges(
+            IReadOnlyDictionary<string, BuildIntegratedProjectCacheEntry> previousCache,
             IReadOnlyDictionary<string, BuildIntegratedProjectCacheEntry> currentCache)
         {
-            foreach (var projectName in currentCache.Keys)
+            foreach (var item in currentCache)
             {
+                var projectName = item.Key;
                 BuildIntegratedProjectCacheEntry projectInfo;
                 if (!previousCache.TryGetValue(projectName, out projectInfo))
                 {
@@ -198,10 +204,16 @@ namespace NuGet.PackageManagement
                     return true;
                 }
 
-                if (!currentCache[projectName].PackageSpecClosure.OrderBy(s => s)
+                if (!item.Value.PackageSpecClosure.OrderBy(s => s)
                     .SequenceEqual(projectInfo.PackageSpecClosure.OrderBy(s => s)))
                 {
                     // The project closure has changed
+                    return true;
+                }
+
+                if (!Enumerable.SequenceEqual(item.Value.SupportsProfiles, projectInfo.SupportsProfiles))
+                {
+                    // Supports nodes have changes. Compatibility checks need to be done during the restore.
                     return true;
                 }
             }
@@ -229,12 +241,6 @@ namespace NuGet.PackageManagement
                 if (!packageSpecs.ContainsKey(path))
                 {
                     var packageSpec = project.PackageSpec;
-
-                    if (packageSpec.RuntimeGraph.Supports.Any())
-                    {
-                        // Compatibility checks need to be done during the restore.
-                        return true;
-                    }
 
                     if (packageSpec.Dependencies.Any(dependency => dependency.LibraryRange.VersionRange.IsFloating))
                     {
