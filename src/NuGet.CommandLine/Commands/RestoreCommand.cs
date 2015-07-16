@@ -77,15 +77,15 @@ namespace NuGet.CommandLine
             var projectFileName = Path.GetFileName(projectFilePath);
             if (string.Equals(PackageSpec.PackageSpecFileName, projectFileName, StringComparison.OrdinalIgnoreCase))
             {
-                return PerformNuGetV3Restore(projectFilePath);
+                return PerformNuGetV3RestoreAsync(projectFilePath);
             }
             else
             {
-                return PerformNuGetV2Restore();
+                return PerformNuGetV2RestoreAsync();
             }
         }
 
-        private Task PerformNuGetV3Restore(string projectPath)
+        private async Task PerformNuGetV3RestoreAsync(string projectPath)
         {
             var projectFileName = Path.GetFileName(projectPath);
             PackageSpec project;
@@ -168,10 +168,11 @@ namespace NuGet.CommandLine
 
             // Run the restore
             var command = new Commands.RestoreCommand(Logger, request);
-            return command.ExecuteAsync();
+            var result = await command.ExecuteAsync();
+            result.Commit(Logger);
         }
 
-        private Task PerformNuGetV2Restore()
+        private Task PerformNuGetV2RestoreAsync()
         {
             DetermineRestoreMode();
             var settings = ReadSettings(Path.GetDirectoryName(_solutionFileFullPath ?? _packagesConfigFileFullPath));
