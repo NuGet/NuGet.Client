@@ -61,14 +61,16 @@ namespace NuGetVSExtension
                 // Set the static property WebRequest.DefaultWebProxy so that the right host name
                 // is displayed in the UI by IVsWebProxy.
                 var uriToDisplay = uri;
-                if (credentialType == CredentialType.ProxyCredentials &&
-                    proxy != null)
+                if (credentialType == CredentialType.ProxyCredentials)
                 {
-                    // Display the proxy server's host name when asking for proxy credential
-                    uriToDisplay = proxy.GetProxy(uri);
-                }
+                    if (proxy != null)
+                    {
+                        // Display the proxy server's host name when asking for proxy credential
+                        uriToDisplay = proxy.GetProxy(uri);
+                    }
 
-                WebRequest.DefaultWebProxy = new WebProxy(uriToDisplay);
+                    WebRequest.DefaultWebProxy = new WebProxy(uriToDisplay);
+                }
 
                 return PromptForCredentials(uri);
             }

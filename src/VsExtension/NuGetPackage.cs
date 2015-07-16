@@ -64,6 +64,7 @@ namespace NuGetVSExtension
         // This product version will be updated by the build script to match the daily build version.
         // It is displayed in the Help - About box of Visual Studio
         public const string ProductVersion = "3.0.0";
+        private static readonly object _credentialsPromptLock = new object();
 
         private static readonly string[] _visualizerSupportedSKUs = { "Premium", "Ultimate" };
 
@@ -341,20 +342,15 @@ namespace NuGetVSExtension
 
             PackageSourceProvider packageSourceProvider = new PackageSourceProvider(
                 new SettingsToLegacySettings(Settings));
-            var credentialProvider = new VisualStudioCredentialProvider(webProxy);
+            var visualStudioCredentialProvider = new VisualStudioCredentialProvider(webProxy);
             HttpClient.DefaultCredentialProvider = new SettingsCredentialProvider(
-                credentialProvider,
+                visualStudioCredentialProvider,
                 packageSourceProvider);
 
             // Set up proxy handling for v3 sources.
             // We need to sync the v2 proxy cache and v3 proxy cache so that the user will not
             // get prompted twice for the same authenticated proxy.
-
-            var v2ProxyCacheType = typeof(NuGet.IProxyCache).Assembly.GetType("NuGet.ProxyCache");
-            var property = v2ProxyCacheType?.GetProperty(
-                "Instance",
-                BindingFlags.Static | BindingFlags.NonPublic);
-            var v2ProxyCache = property?.GetValue(null) as IProxyCache;
+            var v2ProxyCache = ProxyCache.Instance;
             NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForProxyCredentials = (uri, proxy) =>
             {
                 var v2Credentials = v2ProxyCache?.GetProxy(uri)?.Credentials;
@@ -364,13 +360,59 @@ namespace NuGetVSExtension
                     return v2Credentials;
                 }
 
-                return credentialProvider.GetCredentials(uri, proxy, CredentialType.ProxyCredentials, retrying: false);
+                return visualStudioCredentialProvider.GetCredentials(uri, proxy, CredentialType.ProxyCredentials, retrying: false);
             };
 
             NuGet.Protocol.Core.v3.HttpHandlerResourceV3.ProxyPassed = proxy =>
             {
                 // add the proxy to v2 proxy cache.
                 v2ProxyCache?.Add(proxy);
+            };
+
+            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.ProxyPassed = proxy =>
+            {
+                // add the proxy to v2 proxy cache.
+                v2ProxyCache?.Add(proxy);
+            };
+
+            var v2CredentialStoreType = typeof(NuGet.ICredentialCache).Assembly.GetType("NuGet.CredentialStore");
+            var property = v2CredentialStoreType?.GetProperty(
+                "Instance",
+                BindingFlags.Static | BindingFlags.Public);
+            var v2CredentialStore = property?.GetValue(obj: null) as NuGet.ICredentialCache;
+
+            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForCredentials = uri =>
+            {
+                var v2Credentials = v2CredentialStore?.GetCredentials(uri);
+                if (v2Credentials != null)
+                {
+                    // if cached v2 credentials have not been used, try using it first.
+                    return v2Credentials;
+                }
+
+                lock (_credentialsPromptLock)
+                {
+                    // Retry after we acquire the lock. The credential provider could have been updated while
+                    // we were waiting to acquire it.
+                    v2Credentials = v2CredentialStore?.GetCredentials(uri);
+                    if (v2Credentials != null)
+                    {
+                        // if cached v2 credentials have not been used, try using it first.
+                        return v2Credentials;
+                    }
+
+                    return visualStudioCredentialProvider.GetCredentials(
+                        uri,
+                        proxy: null,
+                        credentialType: CredentialType.RequestCredentials,
+                        retrying: false);
+                }
+            };
+
+            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
+            {
+                v2CredentialStore?.Add(uri, credentials);
+                NuGet.Configuration.CredentialStore.Instance.Add(uri, credentials);
             };
         }
 
