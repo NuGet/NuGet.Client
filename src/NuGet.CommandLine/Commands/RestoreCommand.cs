@@ -78,7 +78,6 @@ namespace NuGet.CommandLine
             if (string.Equals(PackageSpec.PackageSpecFileName, projectFileName, StringComparison.OrdinalIgnoreCase))
             {
                 return PerformNuGetV3Restore(projectFilePath);
-
             }
             else
             {
@@ -218,7 +217,7 @@ namespace NuGet.CommandLine
             if (Arguments.Count == 0)
             {
                 // look for solution files first
-                _solutionFileFullPath = GetSolutionFile(String.Empty);
+                _solutionFileFullPath = GetSolutionFile(Directory.GetCurrentDirectory());
                 if (_solutionFileFullPath != null)
                 {
                     _restoringForSolution = true;
