@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Logging;
 using NuGet.Protocol.Core.v3.Data;
 
@@ -21,13 +22,13 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
     internal class HttpSource
     {
         private const int BufferSize = 8192;
-        private readonly HttpClient _client;
-        private readonly string _baseUri;
+        private readonly Func<Task<HttpClientHandler>> _messageHandlerFactory;
+        private readonly Uri _baseUri;
 
-        public HttpSource(string sourceUrl, DataClient client)
+        public HttpSource(string sourceUrl, Func<Task<HttpClientHandler>> messageHandlerFactory)
         {
-            _baseUri = sourceUrl;
-            _client = client;
+            _baseUri = new Uri(sourceUrl);
+            _messageHandlerFactory = messageHandlerFactory;
         }
 
         public ILogger Logger { get; set; }
@@ -51,85 +52,119 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
             Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture, "  {0} {1}.", "GET", uri));
 
-            var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            ICredentials credentials = CredentialStore.Instance.GetCredentials(_baseUri);
+retryWithAuthentication:
 
-            var response = await _client.SendAsync(request, cancellationToken);
-            if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
+            var messageHandler = await _messageHandlerFactory();
+            using (var client = new DataClient(messageHandler))
             {
-                Logger.LogInformation(string.Format(CultureInfo.InvariantCulture,
-                    "  {1} {0} {2}ms", uri, response.StatusCode.ToString(), sw.ElapsedMilliseconds.ToString()));
-                return new HttpSourceResult();
-            }
-
-            response.EnsureSuccessStatusCode();
-
-            var newFile = result.CacheFileName + "-new";
-
-            // Zero value of TTL means we always download the latest package
-            // So we write to a temp file instead of cache
-            if (cacheAgeLimit.Equals(TimeSpan.Zero))
-            {
-                result.CacheFileName = Path.GetTempFileName();
-                newFile = Path.GetTempFileName();
-            }
-
-            // The update of a cached file is divided into two steps:
-            // 1) Delete the old file. 2) Create a new file with the same name.
-            // To prevent race condition among multiple processes, here we use a lock to make the update atomic.
-            await ConcurrencyUtilities.ExecuteWithFileLocked(result.CacheFileName,
-                action: async token =>
+                if (credentials != null)
                 {
-                    using (var stream = new FileStream(
-                        newFile,
-                        FileMode.Create,
-                        FileAccess.ReadWrite,
-                        FileShare.ReadWrite | FileShare.Delete,
-                        BufferSize,
-                        useAsync: true))
+                    messageHandler.Credentials = credentials;
+                }
+
+                var request = new HttpRequestMessage(HttpMethod.Get, uri);
+                var response = await client.SendAsync(request, cancellationToken);
+                if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    Logger.LogInformation(string.Format(CultureInfo.InvariantCulture,
+                        "  {1} {0} {2}ms", uri, response.StatusCode.ToString(), sw.ElapsedMilliseconds.ToString()));
+                    return new HttpSourceResult();
+                }
+
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    if (HttpHandlerResourceV3.PromptForCredentials != null)
                     {
-                        await response.Content.CopyToAsync(stream);
-                        await stream.FlushAsync(cancellationToken);
+                        credentials = HttpHandlerResourceV3.PromptForCredentials(_baseUri);
                     }
 
-                    if (File.Exists(result.CacheFileName))
+                    if (credentials == null)
                     {
+                        response.EnsureSuccessStatusCode();
+                    }
+                    else
+                    {
+                        client.Dispose();
+                        goto retryWithAuthentication;
+                    }
+                }
+
+                response.EnsureSuccessStatusCode();
+
+                if (HttpHandlerResourceV3.CredentialsSuccessfullyUsed != null && credentials != null)
+                {
+                    HttpHandlerResourceV3.CredentialsSuccessfullyUsed(_baseUri, credentials);
+                }
+
+                var newFile = result.CacheFileName + "-new";
+
+                // Zero value of TTL means we always download the latest package
+                // So we write to a temp file instead of cache
+                if (cacheAgeLimit.Equals(TimeSpan.Zero))
+                {
+                    result.CacheFileName = Path.GetTempFileName();
+                    newFile = Path.GetTempFileName();
+                }
+
+                // The update of a cached file is divided into two steps:
+                // 1) Delete the old file. 2) Create a new file with the same name.
+                // To prevent race condition among multiple processes, here we use a lock to make the update atomic.
+                await ConcurrencyUtilities.ExecuteWithFileLocked(result.CacheFileName,
+                    action: async token =>
+                    {
+                        using (var stream = new FileStream(
+                            newFile,
+                            FileMode.Create,
+                            FileAccess.ReadWrite,
+                            FileShare.ReadWrite | FileShare.Delete,
+                            BufferSize,
+                            useAsync: true))
+                        {
+                            await response.Content.CopyToAsync(stream);
+                            await stream.FlushAsync(cancellationToken);
+                        }
+
+                        if (File.Exists(result.CacheFileName))
+                        {
                         // Process B can perform deletion on an opened file if the file is opened by process A
                         // with FileShare.Delete flag. However, the file won't be actually deleted until A close it.
                         // This special feature can cause race condition, so we never delete an opened file.
                         if (!IsFileAlreadyOpen(result.CacheFileName))
-                        {
-                            File.Delete(result.CacheFileName);
+                            {
+                                File.Delete(result.CacheFileName);
+                            }
                         }
-                    }
 
                     // If the destination file doesn't exist, we can safely perform moving operation.
                     // Otherwise, moving operation will fail.
                     if (!File.Exists(result.CacheFileName))
-                    {
-                        File.Move(
-                            newFile,
-                            result.CacheFileName);
-                    }
+                        {
+                            File.Move(
+                                newFile,
+                                result.CacheFileName);
+                        }
 
                     // Even the file deletion operation above succeeds but the file is not actually deleted,
                     // we can still safely read it because it means that some other process just updated it
                     // and we don't need to update it with the same content again.
                     result.Stream = new FileStream(
-                        result.CacheFileName,
-                        FileMode.Open,
-                        FileAccess.Read,
-                        FileShare.Read | FileShare.Delete,
-                        BufferSize,
-                        useAsync: true);
+                            result.CacheFileName,
+                            FileMode.Open,
+                            FileAccess.Read,
+                            FileShare.Read | FileShare.Delete,
+                            BufferSize,
+                            useAsync: true);
 
-                    return 0;
-                },
-                token: cancellationToken);
+                        return 0;
+                    },
+                    token: cancellationToken);
 
-            Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture,
-                "  {1} {0} {2}ms", uri, response.StatusCode.ToString(), sw.ElapsedMilliseconds.ToString()));
+                Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture,
+                    "  {1} {0} {2}ms", uri, response.StatusCode.ToString(), sw.ElapsedMilliseconds.ToString()));
 
-            return result;
+                return result;
+            }
         }
 
         private async Task<HttpSourceResult> TryCache(string uri,
@@ -137,7 +172,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             TimeSpan cacheAgeLimit,
             CancellationToken token)
         {
-            var baseFolderName = RemoveInvalidFileNameChars(ComputeHash(_baseUri));
+            var baseFolderName = RemoveInvalidFileNameChars(ComputeHash(_baseUri.OriginalString));
             var baseFileName = RemoveInvalidFileNameChars(cacheKey) + ".dat";
 
 #if DNX451

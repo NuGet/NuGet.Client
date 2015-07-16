@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3.Data;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.v3.RemoteRepositories
@@ -30,10 +30,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private TimeSpan _cacheAgeLimitList;
         private TimeSpan _cacheAgeLimitNupkg;
 
-        public RemoteV3FindPackageByIdResource(SourceRepository sourceRepository, DataClient dataClient)
+        public RemoteV3FindPackageByIdResource(SourceRepository sourceRepository, Func<Task<HttpClientHandler>> handlerFactory)
         {
             SourceRepository = sourceRepository;
-            _httpSource = new HttpSource(sourceRepository.PackageSource.Source, dataClient);
+            _httpSource = new HttpSource(sourceRepository.PackageSource.Source, handlerFactory);
         }
 
         public SourceRepository SourceRepository { get; }

@@ -28,22 +28,21 @@ namespace NuGet.Protocol.Core.v3
             HttpHandlerResourceV3 curResource = null;
 
             // Everyone gets a dataclient
-            var HttpHandler = TryGetCredentialAndProxy(source.PackageSource) ?? DataClient.DefaultHandler;
-            curResource = new HttpHandlerResourceV3(HttpHandler);
+            var httpHandler = TryGetCredentialAndProxy(source.PackageSource) ?? DataClient.DefaultHandler;
+            curResource = new HttpHandlerResourceV3(httpHandler);
 
             return Task.FromResult(new Tuple<bool, INuGetResource>(curResource != null, curResource));
         }
 
 #if DNXCORE50
 
-        private HttpMessageHandler TryGetCredentialAndProxy(PackageSource packageSource)
+        private HttpClientHandler TryGetCredentialAndProxy(PackageSource packageSource)
         {
             return new HttpClientHandler();
         }
-
 #else
 
-        private HttpMessageHandler TryGetCredentialAndProxy(PackageSource packageSource)
+        private HttpClientHandler TryGetCredentialAndProxy(PackageSource packageSource)
         {
             var uri = new Uri(packageSource.Source);
             var proxy = ProxyCache.Instance.GetProxy(uri);
@@ -67,27 +66,20 @@ namespace NuGet.Protocol.Core.v3
                 credential = cache;
             }
 
-            if (proxy == null
-                && credential == null)
+            if (proxy != null)
             {
-                return null;
+                ProxyCache.Instance.Add(proxy);
             }
-            else
+            if (credential != null)
             {
-                if (proxy != null)
-                {
-                    ProxyCache.Instance.Add(proxy);
-                }
-                if (credential != null)
-                {
-                    CredentialStore.Instance.Add(uri, credential);
-                }
-                return new CredentialPromptWebRequestHandler()
-                {
-                    Proxy = proxy,
-                    Credentials = credential
-                };
+                CredentialStore.Instance.Add(uri, credential);
             }
+
+            return new CredentialPromptWebRequestHandler()
+            {
+                Proxy = proxy,
+                Credentials = credential
+            };
         }
 
         private class CredentialPromptWebRequestHandler : WebRequestHandler
@@ -99,23 +91,9 @@ namespace NuGet.Protocol.Core.v3
                     try
                     {
                         var response = await base.SendAsync(request, cancellationToken);
-                        if (HttpHandlerResourceV3.ProxyPassed != null)
+                        if (HttpHandlerResourceV3.ProxyPassed != null && Proxy != null)
                         {
                             HttpHandlerResourceV3.ProxyPassed(Proxy);
-                        }
-
-                        if (response.StatusCode == HttpStatusCode.Unauthorized)
-                        {
-                            if (HttpHandlerResourceV3.PromptForProxyCredentials == null)
-                            {
-                                // Fail this operation.
-                                response.EnsureSuccessStatusCode();
-                            }
-                            else
-                            {
-                                // PromptForProxyCredentials is a misnomer. It can prompt for proxy credentials or request credentials.
-                                Credentials = HttpHandlerResourceV3.PromptForProxyCredentials(request.RequestUri, /* webProxy */ null);
-                            }
                         }
 
                         return response;

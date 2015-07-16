@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -14,7 +15,6 @@ using NuGet.Configuration;
 using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3.Data;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.v3.RemoteRepositories
@@ -42,10 +42,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private TimeSpan _cacheAgeLimitList;
         private TimeSpan _cacheAgeLimitNupkg;
 
-        public RemoteV2FindPackageByIdResource(PackageSource packageSource, DataClient dataClient)
+        public RemoteV2FindPackageByIdResource(PackageSource packageSource, Func<Task<HttpClientHandler>> handlerFactory)
         {
             _baseUri = packageSource.Source.EndsWith("/") ? packageSource.Source : (packageSource.Source + "/");
-            _httpSource = new HttpSource(_baseUri, dataClient);
+            _httpSource = new HttpSource(_baseUri, handlerFactory);
 
             PackageSource = packageSource;
         }

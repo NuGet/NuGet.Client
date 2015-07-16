@@ -38,9 +38,9 @@ namespace Test.Utility
 
     public class TestHttpHandlerProvider : ResourceProvider
     {
-        private HttpMessageHandler _messageHandler;
+        private HttpClientHandler _messageHandler;
 
-        public TestHttpHandlerProvider(HttpMessageHandler messageHandler)
+        public TestHttpHandlerProvider(HttpClientHandler messageHandler)
             : base(typeof(HttpHandlerResource), "testhandler", NuGetResourceProviderPositions.First)
         {
             _messageHandler = messageHandler;
@@ -55,20 +55,20 @@ namespace Test.Utility
 
     public class TestHttpHandler : HttpHandlerResource
     {
-        private HttpMessageHandler _messageHandler;
+        private HttpClientHandler _messageHandler;
 
-        public TestHttpHandler(HttpMessageHandler messageHandler)
+        public TestHttpHandler(HttpClientHandler messageHandler)
         {
             _messageHandler = messageHandler;
         }
 
-        public override HttpMessageHandler MessageHandler
+        public override HttpClientHandler MessageHandler
         {
             get { return _messageHandler; }
         }
     }
 
-    public class TestMessageHandler : HttpMessageHandler
+    public class TestMessageHandler : HttpClientHandler
     {
         private Dictionary<string, string> _responses;
 

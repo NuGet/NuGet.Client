@@ -13,6 +13,6 @@ namespace NuGet.Protocol.Core.Types
         /// <summary>
         /// HttpClient resource
         /// </summary>
-        public abstract HttpMessageHandler MessageHandler { get; }
+        public abstract HttpClientHandler MessageHandler { get; }
     }
 }

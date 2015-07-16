@@ -53,7 +53,7 @@ namespace NuGet.Protocol.Core.v3.Data
         /// <summary>
         /// Internal constructor for building the final handler
         /// </summary>
-        internal DataClient(HttpMessageHandler handler, IEnumerable<INuGetMessageHandlerProvider> modifiers)
+        internal DataClient(HttpClientHandler handler, IEnumerable<INuGetMessageHandlerProvider> modifiers)
             : this(AssembleHandlers(handler, modifiers))
         {
             _modifiers = modifiers.ToArray();
@@ -62,7 +62,7 @@ namespace NuGet.Protocol.Core.v3.Data
         /// <summary>
         /// Default caching handler used by the data client
         /// </summary>
-        public static HttpMessageHandler DefaultHandler
+        public static HttpClientHandler DefaultHandler
         {
             get { return AssembleHandlers(CachingHandler, Enumerable.Empty<INuGetMessageHandlerProvider>()); }
         }
@@ -70,7 +70,7 @@ namespace NuGet.Protocol.Core.v3.Data
         /// <summary>
         /// Chain the handlers together
         /// </summary>
-        private static HttpMessageHandler AssembleHandlers(HttpMessageHandler handler, IEnumerable<INuGetMessageHandlerProvider> modifiers)
+        private static HttpClientHandler AssembleHandlers(HttpClientHandler handler, IEnumerable<INuGetMessageHandlerProvider> modifiers)
         {
             // final retry logic
             // RetryHandler retryHandler = new RetryHandler(handler, 5);
@@ -118,7 +118,7 @@ namespace NuGet.Protocol.Core.v3.Data
                 });
         }
 
-        private static HttpMessageHandler CachingHandler
+        private static HttpClientHandler CachingHandler
         {
             get
             {

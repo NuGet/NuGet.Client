@@ -5,7 +5,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3.Data;
 
 namespace NuGet.Protocol.Core.v3.RemoteRepositories
 {
@@ -26,9 +25,9 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
             if (serviceIndexResource != null)
             {
-                var messageHandlerResource = await sourceRepository.GetResourceAsync<HttpHandlerResource>(token);
-                var client = new DataClient(messageHandlerResource.MessageHandler);
-                resource = new RemoteV3FindPackageByIdResource(sourceRepository, client);
+                resource = new RemoteV3FindPackageByIdResource(
+                    sourceRepository,
+                    async () => (await sourceRepository.GetResourceAsync<HttpHandlerResource>(token)).MessageHandler);
             }
 
             return Tuple.Create(resource != null, resource);

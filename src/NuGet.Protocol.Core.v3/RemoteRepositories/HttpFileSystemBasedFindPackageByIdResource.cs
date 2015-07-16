@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -13,7 +14,6 @@ using NuGet.Common;
 using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3.Data;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.v3.RemoteRepositories
@@ -40,7 +40,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private TimeSpan _cacheAgeLimitList;
         private TimeSpan _cacheAgeLimitNupkg;
 
-        public HttpFileSystemBasedFindPackageByIdResource(IReadOnlyList<Uri> baseUris, DataClient client)
+        public HttpFileSystemBasedFindPackageByIdResource(IReadOnlyList<Uri> baseUris, Func<Task<HttpClientHandler>> handlerFactory)
         {
             if (baseUris == null)
             {
@@ -56,7 +56,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 .Take(MaxRetries)
                 .Select(uri => uri.OriginalString.EndsWith("/", StringComparison.Ordinal) ? uri : new Uri(uri.OriginalString + "/"))
                 .ToList();
-            _httpSource = new HttpSource(_baseUris[0].OriginalString, client);
+            _httpSource = new HttpSource(_baseUris[0].OriginalString, handlerFactory);
         }
 
         public override ILogger Logger

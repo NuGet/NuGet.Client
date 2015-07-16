@@ -13,9 +13,9 @@ namespace NuGet.Protocol.Core.v3
     /// </summary>
     public class HttpHandlerResourceV3 : HttpHandlerResource
     {
-        private readonly HttpMessageHandler _messageHandler;
+        private readonly HttpClientHandler _messageHandler;
 
-        public HttpHandlerResourceV3(HttpMessageHandler messageHandler)
+        public HttpHandlerResourceV3(HttpClientHandler messageHandler)
         {
             if (messageHandler == null)
             {
@@ -25,15 +25,30 @@ namespace NuGet.Protocol.Core.v3
             _messageHandler = messageHandler;
         }
 
-        public override HttpMessageHandler MessageHandler
+        public override HttpClientHandler MessageHandler
         {
             get { return _messageHandler; }
         }
 
-        // Function to be called to prompt user for proxy credentials.
+        /// <summary>
+        /// Function to be called to prompt user for proxy credentials.
+        /// </summary> 
         public static Func<Uri, IWebProxy, ICredentials> PromptForProxyCredentials { get; set; }
 
-        // Action to be called when the proxy is successfully used to make a request.
+        /// <summary>
+        /// Action to be called when the proxy is successfully used to make a request.
+        /// </summary> 
         public static Action<IWebProxy> ProxyPassed { get; set; }
+
+        /// <summary>
+        /// Gets or sets a delegate to be invoked to prompt user for authenticated feed credentials.
+        /// </summary>
+        public static Func<Uri, ICredentials> PromptForCredentials { get; set; }
+
+        /// <summary>
+        /// Gets or sets a delegate that is to be invoked when authenticated feed credentials are successfully
+        /// used.
+        /// </summary>
+        public static Action<Uri, ICredentials> CredentialsSuccessfullyUsed { get; set; }
     }
 }
