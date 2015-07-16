@@ -94,8 +94,11 @@ namespace NuGet.CommandLine
             if (string.Equals(PackageSpec.PackageSpecFileName, projectFileName, StringComparison.OrdinalIgnoreCase))
             {
                 Logger.LogVerbose($"Reading project file {Arguments[0]}");
-                projectPath = Path.GetDirectoryName(projectPath);
-                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(projectPath), Path.GetFileName(projectPath), projectPath);
+                var projectDirectory = Path.GetDirectoryName(projectPath);
+                project = JsonPackageSpecReader.GetPackageSpec(
+                    File.ReadAllText(projectPath),
+                    Path.GetFileName(projectDirectory),
+                    projectPath);
             }
             else if (MsBuildUtility.IsMsBuildBasedProject(projectPath))
             {
