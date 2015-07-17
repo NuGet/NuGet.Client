@@ -195,7 +195,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             var baseFolderName = RemoveInvalidFileNameChars(ComputeHash(_baseUri.OriginalString));
             var baseFileName = RemoveInvalidFileNameChars(cacheKey) + ".dat";
 
-#if DNX451
+#if NET45
             var localAppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 #else
             var localAppDataFolder = Environment.GetEnvironmentVariable("LocalAppData");
