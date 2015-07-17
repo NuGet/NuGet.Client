@@ -73,25 +73,6 @@ namespace NuGet.CommandLine
             }
         }
 
-        protected Configuration.ISettings ReadSettings(string workingDirectory)
-        {
-            Configuration.ISettings settings;
-            if (!string.IsNullOrEmpty(ConfigFile))
-            {
-                settings = Configuration.Settings.LoadDefaultSettings(Path.GetFullPath(ConfigFile),
-                    configFileName: null,
-                    machineWideSettings: null);
-            }
-            else
-            {
-                settings = Configuration.Settings.LoadDefaultSettings(workingDirectory,
-                    configFileName: null,
-                    machineWideSettings: null);
-            }
-
-            return settings;
-        }
-
         protected IEnumerable<Packaging.PackageReference> GetInstalledPackageReferences(string projectConfigFilePath)
         {
             if (File.Exists(projectConfigFilePath))

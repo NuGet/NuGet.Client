@@ -127,11 +127,9 @@ namespace NuGet.CommandLine
                 Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), ".nuget", "packages");
             Logger.LogVerbose($"Using packages directory: {packagesDir}");
 
+            ReadSettings();
 
-            var settings = ReadSettings(Path.GetDirectoryName(projectPath));
-
-            var packageSources = GetPackageSources(settings);
-
+            var packageSources = GetPackageSources(Settings);
             var request = new RestoreRequest(
                 project,
                 packageSources);
@@ -142,7 +140,7 @@ namespace NuGet.CommandLine
             }
             else
             {
-                request.PackagesDirectory = SettingsUtility.GetGlobalPackagesFolder(settings);
+                request.PackagesDirectory = SettingsUtility.GetGlobalPackagesFolder(Settings);
             }
 
             if (DisableParallelProcessing)
@@ -172,18 +170,46 @@ namespace NuGet.CommandLine
             result.Commit(Logger);
         }
 
+        protected void ReadSettings()
+        {
+            if (_restoringForSolution || !String.IsNullOrEmpty(SolutionDirectory))
+            {
+                var solutionDirectory = _restoringForSolution ?
+                    Path.GetDirectoryName(_solutionFileFullPath) :
+                    SolutionDirectory;
+
+                // Read the solution-level settings
+                var solutionSettingsFile = Path.Combine(
+                    solutionDirectory,
+                    NuGetConstants.NuGetSolutionSettingsFolder);
+                if (ConfigFile != null)
+                {
+                    ConfigFile = Path.GetFullPath(ConfigFile);
+                }
+
+                Settings = Configuration.Settings.LoadDefaultSettings(
+                    solutionSettingsFile,
+                    configFileName: ConfigFile,
+                    machineWideSettings: MachineWideSettings);
+
+                // Recreate the source provider and credential provider
+                SourceProvider = PackageSourceBuilder.CreateSourceProvider(Settings);
+                HttpClient.DefaultCredentialProvider = new SettingsCredentialProvider(new ConsoleCredentialProvider(Console), SourceProvider, Console);
+            }       
+        } 
+
         private Task PerformNuGetV2RestoreAsync()
         {
             DetermineRestoreMode();
-            var settings = ReadSettings(Path.GetDirectoryName(_solutionFileFullPath ?? _packagesConfigFileFullPath));
+            ReadSettings();
             var packagesFolderPath = GetPackagesFolder();
 
-            var packageSourceProvider = new Configuration.PackageSourceProvider(settings);
+            var packageSourceProvider = new Configuration.PackageSourceProvider(Settings);
             var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider,
                 Enumerable.Concat(
                     Protocol.Core.v2.FactoryExtensionsV2.GetCoreV2(Repository.Provider),
                     Protocol.Core.v3.FactoryExtensionsV2.GetCoreV3(Repository.Provider)));
-            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, settings, packagesFolderPath);
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, packagesFolderPath);
 
             IEnumerable<Packaging.PackageReference> installedPackageReferences;
             if (_restoringForSolution)
@@ -208,7 +234,16 @@ namespace NuGet.CommandLine
                     reference,
                     new[] { _solutionFileFullPath ?? _packagesConfigFileFullPath },
                     isMissing: true));
-            var packageRestoreContext = new PackageRestoreContext(nuGetPackageManager, packageRestoreData, CancellationToken.None);
+            var packageSources = GetPackageSources(Settings)
+                .Select(sourceRepositoryProvider.CreateRepository);
+            var packageRestoreContext = new PackageRestoreContext(
+                nuGetPackageManager, 
+                packageRestoreData, 
+                CancellationToken.None,
+                packageRestoredEvent: null,
+                packageRestoreFailedEvent: null,
+                sourceRepositories: packageSources,
+                maxNumberOfParallelTasks: PackageManagementConstants.DefaultMaxDegreeOfParallelism);
 
             return PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Logger));
         }
@@ -322,6 +357,30 @@ namespace NuGet.CommandLine
             throw new InvalidOperationException(LocalizedResourceManager.GetString("RestoreCommandCannotDeterminePackagesFolder"));
         }
 
+        private static string ConstructPackagesConfigFromProjectName(string projectName)
+        {
+            // we look for packages.<project name>.config file
+            // but we don't want any space in the file name, so convert it to underscore.
+            return "packages." + projectName.Replace(' ', '_') + ".config";
+        }
+
+        // returns the package reference file associated with the project
+        private string GetPackageReferenceFile(string projectFile)
+        {
+            var projectName = Path.GetFileNameWithoutExtension(projectFile);
+            string pathWithProjectName =Path.Combine(
+                Path.GetDirectoryName(projectFile),
+                ConstructPackagesConfigFromProjectName(projectName));
+            if (File.Exists(pathWithProjectName))
+            {
+                return pathWithProjectName;
+            }
+
+            return Path.Combine(
+                Path.GetDirectoryName(projectFile),
+                Constants.PackageReferenceFile);
+        }
+
         private IEnumerable<Packaging.PackageReference> GetInstalledPackageReferencesFromSolutionFile(string solutionFileFullPath)
         {
             var installedPackageReferences = new HashSet<Packaging.PackageReference>(new PackageReferenceComparer());
@@ -334,10 +393,7 @@ namespace NuGet.CommandLine
                     continue;
                 }
 
-                var projectConfigFilePath = Path.Combine(
-                    Path.GetDirectoryName(projectFile),
-                    Constants.PackageReferenceFile);
-
+                var projectConfigFilePath = GetPackageReferenceFile(projectFile);
                 installedPackageReferences.AddRange(GetInstalledPackageReferences(projectConfigFilePath));
             }
 
