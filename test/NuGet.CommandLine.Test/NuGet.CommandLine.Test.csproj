@@ -71,6 +71,7 @@
     <Compile Include="NuGetDeleteCommandTest.cs" />
     <Compile Include="NuGetHelpCommandTest.cs" />
     <Compile Include="NuGetInstallCommandTest.cs" />
+    <Compile Include="NuGetPackCommandTest.cs" />
     <Compile Include="PackageCreator.cs" />
     <Compile Include="ProjectFactoryTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

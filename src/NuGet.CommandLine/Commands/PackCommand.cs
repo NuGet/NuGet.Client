@@ -16,7 +16,7 @@ namespace NuGet.CommandLine
 
         private static readonly string[] _defaultExcludes = new[] {
             // Exclude previous package files
-            @"**\*" + Constants.PackageExtension, 
+            @"**\*" + Constants.PackageExtension,
             // Exclude all files and directories that begin with "."
             @"**\\.**", ".**"
         };
@@ -247,7 +247,7 @@ namespace NuGet.CommandLine
             int index = path.IndexOf(BasePath.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
             if (index != -1)
             {
-                // Since wildcards are going to be relative to the base path, remove the BasePath portion of the file's source path. 
+                // Since wildcards are going to be relative to the base path, remove the BasePath portion of the file's source path.
                 // Also remove any leading path separator slashes
                 path = path.Substring(index + BasePath.Length).TrimStart(Path.DirectorySeparatorChar);
             }
@@ -467,6 +467,7 @@ namespace NuGet.CommandLine
                 case 1:
                     result = candidates[0];
                     break;
+
                 case 2:
                     // Remove all nuspec files
                     candidates.RemoveAll(file => Path.GetExtension(file).Equals(Constants.ManifestExtension, StringComparison.OrdinalIgnoreCase));
