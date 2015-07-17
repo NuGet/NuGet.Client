@@ -220,11 +220,12 @@ namespace NuGet.Commands.Test
             result.Commit(logger);
             var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, framework, null);
             var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
-            var dependencies = string.Join("|", result.GetAllInstalled().Select(dependency => dependency.Name));
+            var dependencies = string.Join("|", result.GetAllInstalled().Select(dependency => dependency.Name)
+                .OrderBy(name => name, StringComparer.OrdinalIgnoreCase));
 
             // Assert
             Assert.Equal(4, result.GetAllInstalled().Count);
-            Assert.Equal("WindowsAzure.Storage|Microsoft.Data.OData|System.Spatial|Microsoft.Data.Edm", dependencies);
+            Assert.Equal("Microsoft.Data.Edm|Microsoft.Data.OData|System.Spatial|WindowsAzure.Storage", dependencies);
             Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
             Assert.Equal(0, logger.Errors);
             Assert.Equal(0, logger.Warnings);
