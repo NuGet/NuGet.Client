@@ -10,7 +10,6 @@ using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Logging;
 using NuGet.RuntimeModel;
-using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
@@ -50,7 +49,7 @@ namespace NuGet.Commands
         public string Name { get; }
         public IEnumerable<ResolverConflict> Conflicts { get; internal set; }
 
-        public IEnumerable<DowngradeResult> PotentialDowngrades { get; }
+        public IEnumerable<DowngradeResult> Downgrades { get; private set; }
         public IEnumerable<GraphNode<RemoteResolveResult>> Cycles { get; private set; }
 
         private RestoreTargetGraph(IEnumerable<ResolverConflict> conflicts,
@@ -78,7 +77,7 @@ namespace NuGet.Commands
             Install = install;
             Flattened = flattened;
             Unresolved = unresolved;
-            PotentialDowngrades = downgrades;
+            Downgrades = downgrades;
             Cycles = cycles;
         }
 
@@ -101,17 +100,15 @@ namespace NuGet.Commands
             var unresolved = new HashSet<LibraryRange>();
 
             var conflicts = new Dictionary<string, HashSet<ResolverRequest>>();
-            var potentialDowngrades = new List<GraphNode<RemoteResolveResult>>();
+            var downgrades = new List<Tuple<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>>();
             var cycles = new List<GraphNode<RemoteResolveResult>>();
 
             // NOTE(anurse): We are OK with throwing away the result here. The Create call below will be checking for conflicts
             foreach (var graph in graphs)
             {
-                graph.CheckCycleAndNearestWins(potentialDowngrades, cycles);
+                graph.CheckCycleAndNearestWins(downgrades, cycles);
                 graph.TryResolveConflicts();
             }
-
-            var downgrades = new List<DowngradeResult>();
 
             graphs.ForEach(node =>
                 {
@@ -152,8 +149,6 @@ namespace NuGet.Commands
                             node.Item.Data.Match.Library.Name = node.Key.Name;
                         }
 
-                        TrimDowngrades(node, potentialDowngrades, downgrades);
-
                         // Don't add rejected nodes since we only want to write reduced nodes
                         // to the lock file
                         flattened.Add(node.Item);
@@ -179,45 +174,8 @@ namespace NuGet.Commands
                 install,
                 flattened,
                 unresolved,
-                downgrades,
+                downgrades.Select(d => new DowngradeResult { DowngradedTo = d.Item1, DowngradedFrom = d.Item2 }),
                 cycles);
-        }
-
-        // Identifies potential downgrades that turned out to be actual downgrades.
-        private static void TrimDowngrades(
-            GraphNode<RemoteResolveResult> node,
-            List<GraphNode<RemoteResolveResult>> potentialDowngrades,
-            List<DowngradeResult> downgrades)
-        {
-            if (node.Item.Key.Type != LibraryTypes.Reference)
-            {
-                var version = node.Item.Key.Version;
-                var exactVersion = new VersionRange(
-                    minVersion: version,
-                    includeMinVersion: true,
-                    maxVersion: version,
-                    includeMaxVersion: true,
-                    includePrerelease: version.IsPrerelease,
-                    floatRange: null,
-                    originalString: version.ToNormalizedString());
-
-                for (var i = 0; i < potentialDowngrades.Count; i++)
-                {
-                    var item = potentialDowngrades[i];
-                    if (string.Equals(item.Key.Name, node.Key.Name, StringComparison.OrdinalIgnoreCase))
-                    {
-                        potentialDowngrades.RemoveAt(i);
-                        i--;
-                        if (RemoteDependencyWalker.IsGreaterThanOrEqualTo(
-                                item.Key.VersionRange,
-                                exactVersion))
-                        {
-                            downgrades.Add(new DowngradeResult { DowngradedFrom = item, DowngradedTo = node });
-                        }
-                    }
-                }
-            }
-
         }
     }
 }

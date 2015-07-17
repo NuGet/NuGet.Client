@@ -84,7 +84,7 @@ namespace NuGet.Commands
                 lockFile.IsLocked = relockFile;
             }
 
-            foreach (var g in graphs.Where(g => g.Cycles.Any() || g.PotentialDowngrades.Any()))
+            foreach (var g in graphs.Where(g => g.Cycles.Any() || g.Downgrades.Any()))
             {
                 foreach (var cycle in g.Cycles)
                 {
@@ -92,7 +92,7 @@ namespace NuGet.Commands
                     _log.LogError($"Cycle detected {Environment.NewLine} {cycle.GetPath()}");
                 }
 
-                foreach (var downgrade in g.PotentialDowngrades)
+                foreach (var downgrade in g.Downgrades)
                 {
                     var downgraded = downgrade.DowngradedTo;
                     var downgradedBy = downgrade.DowngradedFrom;
