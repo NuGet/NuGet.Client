@@ -84,12 +84,18 @@ namespace NuGet.Commands
                 lockFile.IsLocked = relockFile;
             }
 
-            foreach (var g in graphs.Where(g => g.Cycles.Any() || g.Downgrades.Any()))
+            foreach (var g in graphs)
             {
                 foreach (var cycle in g.Cycles)
                 {
                     _success = false;
                     _log.LogError($"Cycle detected {Environment.NewLine} {cycle.GetPath()}");
+                }
+
+                foreach (var versionConflict in g.VersionConflicts)
+                {
+                    _success = false;
+                    _log.LogError($"Version conflict detected for {versionConflict.Selected.Key.Name}. {Environment.NewLine} {versionConflict.Selected.GetPath()} {Environment.NewLine} {versionConflict.Conflicting.GetPath()}");
                 }
 
                 foreach (var downgrade in g.Downgrades)

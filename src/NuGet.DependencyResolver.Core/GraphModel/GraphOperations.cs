@@ -109,11 +109,17 @@ namespace NuGet.DependencyResolver
 
         public static bool TryResolveConflicts<TItem>(this GraphNode<TItem> root)
         {
+            var conflicts = new List<Tuple<GraphNode<TItem>, GraphNode<TItem>>>();
+            return TryResolveConflicts(root, conflicts);
+        }
+
+        public static bool TryResolveConflicts<TItem>(this GraphNode<TItem> root, List<Tuple<GraphNode<TItem>, GraphNode<TItem>>> versionConflicts)
+        {
             // now we walk the tree as often as it takes to determine 
             // which paths are accepted or rejected, based on conflicts occuring
             // between cousin packages
 
-            var acceptedLibraries = new Dictionary<string, LibraryIdentity>(StringComparer.OrdinalIgnoreCase);
+            var acceptedLibraries = new Dictionary<string, GraphNode<TItem>>(StringComparer.OrdinalIgnoreCase);
 
             var patience = 1000;
             var incomplete = true;
@@ -196,7 +202,7 @@ namespace NuGet.DependencyResolver
                             if (tracker.IsBestVersion(node.Item))
                             {
                                 node.Disposition = Disposition.Accepted;
-                                acceptedLibraries[node.Key.Name] = node.Item.Key;
+                                acceptedLibraries[node.Key.Name] = node;
                             }
                             else
                             {
@@ -207,37 +213,32 @@ namespace NuGet.DependencyResolver
                         return node.Disposition == Disposition.Accepted;
                     });
 
-                // Locate nodes that were formerly disputed that do not have resolutions
-                var unresolvableVersionSpecifications = new HashSet<string>(StringComparer.Ordinal);
-
-                root.ForEach(true, (node, state) =>
-                {
-                    if (node.Disposition == Disposition.Rejected)
-                    {
-                        LibraryIdentity resolvedLibrary;
-                        if (node.Key.VersionRange != null &&
-                            acceptedLibraries.TryGetValue(node.Key.Name, out resolvedLibrary) &&
-                            !node.Key.VersionRange.Satisfies(resolvedLibrary.Version))
-                        {
-                            unresolvableVersionSpecifications.Add(
-                                Strings.FormatError_FailedToResolveConflicts(node.Key.Name, node.Key.VersionRange));
-
-                            return false;
-                        }
-                    }
-
-                    return true;
-                });
-
-                if (unresolvableVersionSpecifications.Count > 0)
-                {
-                    throw new InvalidOperationException(string.Join(Environment.NewLine, unresolvableVersionSpecifications));
-                }
-
                 incomplete = false;
 
                 root.ForEach(node => incomplete |= node.Disposition == Disposition.Acceptable);
             }
+
+            root.ForEach(node =>
+            {
+                if (node.Disposition != Disposition.Accepted)
+                {
+                    return;
+                }
+
+                // For all accepted nodes, find dependencies that aren't satisfied by the version
+                // of the package that we have selected
+                foreach (var childNode in node.InnerNodes)
+                {
+                    GraphNode<TItem> acceptedNode;
+                    if (acceptedLibraries.TryGetValue(childNode.Key.Name, out acceptedNode) && 
+                        childNode != acceptedNode &&
+                        childNode.Key.VersionRange != null &&
+                        !childNode.Key.VersionRange.Satisfies(acceptedNode.Item.Key.Version))
+                    {
+                        versionConflicts.Add(Tuple.Create(acceptedNode, childNode));
+                    }
+                }
+            });
 
             return !incomplete;
         }
