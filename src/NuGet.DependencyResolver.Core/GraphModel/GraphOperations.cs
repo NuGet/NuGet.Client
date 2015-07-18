@@ -114,6 +114,24 @@ namespace NuGet.DependencyResolver
             return result;
         }
 
+        // A helper to navigate the graph nodes
+        public static GraphNode<TItem> Path<TItem>(this GraphNode<TItem> node, params string[] path)
+        {
+            foreach (var item in path)
+            {
+                var childNode = node.InnerNodes.FirstOrDefault(n => n.Key.Name == item);
+
+                if (childNode == null)
+                {
+                    return null;
+                }
+
+                node = childNode;
+            }
+
+            return node;
+        }
+
         private static string PrettyPrint<TItem>(this GraphNode<TItem> node)
         {
             return node.Key.Name + " " + node.Key.VersionRange?.PrettyPrint();
@@ -236,7 +254,7 @@ namespace NuGet.DependencyResolver
                 foreach (var childNode in node.InnerNodes)
                 {
                     GraphNode<TItem> acceptedNode;
-                    if (acceptedLibraries.TryGetValue(childNode.Key.Name, out acceptedNode) && 
+                    if (acceptedLibraries.TryGetValue(childNode.Key.Name, out acceptedNode) &&
                         childNode != acceptedNode &&
                         childNode.Key.VersionRange != null &&
                         !childNode.Key.VersionRange.Satisfies(acceptedNode.Item.Key.Version))

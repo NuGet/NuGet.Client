@@ -442,6 +442,54 @@ namespace NuGet.Commands
             return string.Format(CultureInfo.CurrentCulture, GetString("Log_ImportsFallbackWarning"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// Cycle detected:
+        /// </summary>
+        internal static string Log_CycleDetected
+        {
+            get { return GetString("Log_CycleDetected"); }
+        }
+
+        /// <summary>
+        /// Cycle detected:
+        /// </summary>
+        internal static string FormatLog_CycleDetected()
+        {
+            return GetString("Log_CycleDetected");
+        }
+
+        /// <summary>
+        /// Detected package downgrade: {0} from {1} to {2}
+        /// </summary>
+        internal static string Log_DowngradeWarning
+        {
+            get { return GetString("Log_DowngradeWarning"); }
+        }
+
+        /// <summary>
+        /// Detected package downgrade: {0} from {1} to {2}
+        /// </summary>
+        internal static string FormatLog_DowngradeWarning(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_DowngradeWarning"), p0, p1, p2);
+        }
+
+        /// <summary>
+        /// Version conflict detected for {0}.
+        /// </summary>
+        internal static string Log_VersionConflict
+        {
+            get { return GetString("Log_VersionConflict"); }
+        }
+
+        /// <summary>
+        /// Version conflict detected for {0}.
+        /// </summary>
+        internal static string FormatLog_VersionConflict(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_VersionConflict"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

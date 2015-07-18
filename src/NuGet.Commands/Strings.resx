@@ -198,4 +198,13 @@
   <data name="Log_ImportsFallbackWarning" xml:space="preserve">
     <value>Package '{0}' was restored using '{1}' instead the project target framework '{2}'. This may cause compatibility problems.</value>
   </data>
+  <data name="Log_CycleDetected" xml:space="preserve">
+    <value>Cycle detected:</value>
+  </data>
+  <data name="Log_DowngradeWarning" xml:space="preserve">
+    <value>Detected package downgrade: {0} from {1} to {2}</value>
+  </data>
+  <data name="Log_VersionConflict" xml:space="preserve">
+    <value>Version conflict detected for {0}.</value>
+  </data>
 </root>

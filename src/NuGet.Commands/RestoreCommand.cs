@@ -89,13 +89,13 @@ namespace NuGet.Commands
                 foreach (var cycle in g.Cycles)
                 {
                     _success = false;
-                    _log.LogError($"Cycle detected {Environment.NewLine} {cycle.GetPath()}");
+                    _log.LogError(Strings.Log_CycleDetected + $" {Environment.NewLine}  {cycle.GetPath()}.");
                 }
 
                 foreach (var versionConflict in g.VersionConflicts)
                 {
                     _success = false;
-                    _log.LogError($"Version conflict detected for {versionConflict.Selected.Key.Name}. {Environment.NewLine} {versionConflict.Selected.GetPath()} {Environment.NewLine} {versionConflict.Conflicting.GetPath()}");
+                    _log.LogError(Strings.FormatLog_VersionConflict(versionConflict.Selected.Key.Name) + $" {Environment.NewLine} {versionConflict.Selected.GetPath()} {Environment.NewLine} {versionConflict.Conflicting.GetPath()}.");
                 }
 
                 foreach (var downgrade in g.Downgrades)
@@ -106,7 +106,7 @@ namespace NuGet.Commands
                     // It's only a downgrade if this dependency edge was chosen
                     if (downgradedBy.Disposition == Disposition.Accepted)
                     {
-                        _log.LogWarning($"Detected package downgrade: {downgraded.Key.Name} from {downgraded.Key.VersionRange.MinVersion} to {downgradedBy.Key.VersionRange.MinVersion} {Environment.NewLine} {downgraded.GetPath()} {Environment.NewLine} {downgradedBy.GetPath()}");
+                        _log.LogWarning(Strings.FormatLog_DowngradeWarning(downgraded.Key.Name, downgraded.Key.VersionRange.MinVersion, downgradedBy.Key.VersionRange.MinVersion) + $" {Environment.NewLine} {downgraded.GetPath()} {Environment.NewLine} {downgradedBy.GetPath()}");
                     }
                 }
             }

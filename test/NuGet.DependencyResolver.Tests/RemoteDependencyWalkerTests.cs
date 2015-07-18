@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -62,6 +61,37 @@ namespace NuGet.DependencyResolver.Tests
             AssertPath(cycle, "A 1.0", "B 2.0", "A 5.0");
         }
 
+        [Fact]
+        public async Task DeepCycleCheck()
+        {
+            var context = new RemoteWalkContext();
+            var provider = new DependencyProvider();
+            provider.Package("A", "1.0")
+                    .DependsOn("B", "2.0");
+
+            provider.Package("B", "2.0")
+                    .DependsOn("C", "2.0");
+
+            provider.Package("C", "2.0")
+                .DependsOn("D", "1.0")
+                .DependsOn("E", "1.0");
+
+            provider.Package("D", "1.0");
+            provider.Package("E", "1.0")
+                .DependsOn("A", "1.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+            var node = await DoWalkAsync(walker, "A");
+
+            var result = node.Analyze();
+
+            Assert.Equal(1, result.Cycles.Count);
+
+            var cycle = result.Cycles[0];
+
+            AssertPath(cycle, "A 1.0", "B 2.0", "C 2.0", "E 1.0", "A 1.0");
+        }
 
         [Fact]
         public async Task DependencyRangesButNoConflict()
@@ -130,6 +160,38 @@ namespace NuGet.DependencyResolver.Tests
             AssertPath(c2, "A 1.0", "C 2.0", "D 1.0");
         }
 
+        [Fact]
+        public async Task SingleConflictWhereConflictingDependenyIsUnresolved()
+        {
+            var context = new RemoteWalkContext();
+            var provider = new DependencyProvider();
+            provider.Package("A", "1.0")
+                    .DependsOn("B", "2.0")
+                    .DependsOn("C", "2.0");
+
+            provider.Package("B", "2.0")
+                    .DependsOn("D", "[2.0]");
+
+            provider.Package("C", "2.0")
+                    .DependsOn("D", "[1.0]");
+
+            provider.Package("D", "2.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+            var node = await DoWalkAsync(walker, "A");
+
+            var result = node.Analyze();
+
+            Assert.Equal(1, result.VersionConflicts.Count);
+
+            var conflict = result.VersionConflicts[0];
+            var c1 = conflict.Item1;
+            var c2 = conflict.Item2;
+
+            AssertPath(c1, "A 1.0", "B 2.0", "D 2.0");
+            AssertPath(c2, "A 1.0", "C 2.0", "D 1.0");
+        }
 
         [Fact]
         public async Task StrictDependenciesButNoConflict()
@@ -233,8 +295,46 @@ namespace NuGet.DependencyResolver.Tests
             var c2 = conflict.Item2;
 
             AssertPath(c1, "Root 1.0", "B 2.0", "C 1.8");
-            // AssertPath prints the min in the range
-            AssertPath(c2, "Root 1.0", "A 1.0", "C 1.0");
+            AssertPath(c2, "Root 1.0", "A 1.0", "C 1.3.8");
+        }
+
+        [Fact]
+        public async Task TryResolveConflicts_WorksWhenVersionRangeIsNotSpecified()
+        {
+            var context = new RemoteWalkContext();
+            var provider = new DependencyProvider();
+            provider.Package("Root", "1.0")
+                    .DependsOn("A", "1.0")
+                    .DependsOn("B", "2.0");
+
+            provider.Package("A", "1.0")
+                    .DependsOn("C");
+
+            provider.Package("B", "2.0")
+                    .DependsOn("C", "1.8");
+
+            provider.Package("C", "1.8");
+            provider.Package("C", "2.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+            var node = await DoWalkAsync(walker, "Root");
+
+            // Restore doesn't actually support null versions so fake a resolved dependency
+            var cNode = node.Path("A", "C");
+            cNode.Key.TypeConstraint = "Package";
+            cNode.Item = new GraphItem<RemoteResolveResult>(new LibraryIdentity
+            {
+                Name = "C",
+                Version = new NuGetVersion("2.0")
+            });
+
+            var result = node.Analyze();
+
+            Assert.Empty(result.VersionConflicts);
+
+            Assert.Equal(Disposition.Accepted, cNode.Disposition);
+            Assert.Equal(Disposition.Rejected, node.Path("B", "C").Disposition);
         }
 
         [Fact]
@@ -664,7 +764,7 @@ namespace NuGet.DependencyResolver.Tests
 
             while (node != null)
             {
-                matches.Insert(0, $"{node.Key.Name} {node.Key.VersionRange.MinVersion}");
+                matches.Insert(0, $"{node.Key.Name} {node.Item?.Key?.Version ?? node.Key.VersionRange.MinVersion}");
                 node = node.OuterNode;
             }
 
@@ -743,6 +843,19 @@ namespace NuGet.DependencyResolver.Tests
                 public TestPackage(List<LibraryDependency> dependencies)
                 {
                     _dependencies = dependencies;
+                }
+
+                public TestPackage DependsOn(string id)
+                {
+                    _dependencies.Add(new LibraryDependency
+                    {
+                        LibraryRange = new LibraryRange
+                        {
+                            Name = id
+                        }
+                    });
+
+                    return this;
                 }
 
                 public TestPackage DependsOn(string id, string version)
