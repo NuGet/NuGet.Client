@@ -108,11 +108,13 @@ namespace NuGet.Commands
             var versionConflicts = new List<Tuple<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>>();
             var cycles = new List<GraphNode<RemoteResolveResult>>();
 
-            // NOTE(anurse): We are OK with throwing away the result here. The Create call below will be checking for conflicts
             foreach (var graph in graphs)
             {
-                graph.CheckCycleAndNearestWins(downgrades, cycles);
-                graph.TryResolveConflicts(versionConflicts);
+                var result = graph.Analyze();
+
+                downgrades.AddRange(result.Downgrades);
+                cycles.AddRange(result.Cycles);
+                versionConflicts.AddRange(result.VersionConflicts);
             }
 
             graphs.ForEach(node =>

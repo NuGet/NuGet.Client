@@ -15,7 +15,56 @@ namespace NuGet.DependencyResolver.Tests
     public class RemoteDependencyWalkerTests
     {
         [Fact]
-        public async Task StrictDependenciesButNoConflict()
+        public async Task CyclesAreDetected()
+        {
+            var context = new RemoteWalkContext();
+            var provider = new DependencyProvider();
+            provider.Package("A", "1.0")
+                    .DependsOn("B", "2.0");
+
+            provider.Package("B", "2.0")
+                    .DependsOn("A", "1.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+            var node = await DoWalkAsync(walker, "A");
+
+            var result = node.Analyze();
+
+            Assert.Equal(1, result.Cycles.Count);
+
+            var cycle = result.Cycles[0];
+
+            AssertPath(cycle, "A 1.0", "B 2.0", "A 1.0");
+        }
+
+        [Fact]
+        public async Task CyclesAreDetectedIf2VersionsOfTheSamePackageId()
+        {
+            var context = new RemoteWalkContext();
+            var provider = new DependencyProvider();
+            provider.Package("A", "1.0")
+                    .DependsOn("B", "2.0");
+
+            provider.Package("B", "2.0")
+                    .DependsOn("A", "5.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+            var node = await DoWalkAsync(walker, "A");
+
+            var result = node.Analyze();
+
+            Assert.Equal(1, result.Cycles.Count);
+
+            var cycle = result.Cycles[0];
+
+            AssertPath(cycle, "A 1.0", "B 2.0", "A 5.0");
+        }
+
+
+        [Fact]
+        public async Task DependencyRangesButNoConflict()
         {
             var context = new RemoteWalkContext();
             var provider = new DependencyProvider();
@@ -35,15 +84,17 @@ namespace NuGet.DependencyResolver.Tests
             provider.Package("D", "2.0")
                     .DependsOn("E", "[2.0]");
 
+            provider.Package("E", "1.0");
+            provider.Package("E", "2.0");
+
             context.LocalLibraryProviders.Add(provider);
             var walker = new RemoteDependencyWalker(context);
             var node = await DoWalkAsync(walker, "A");
 
-            var conflicts = new List<Tuple<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>>();
-            node.TryResolveConflicts(conflicts);
-            Assert.Equal(0, conflicts.Count);
-        }
+            var result = node.Analyze();
 
+            Assert.Equal(0, result.VersionConflicts.Count);
+        }
 
         [Fact]
         public async Task SingleConflict()
@@ -67,17 +118,44 @@ namespace NuGet.DependencyResolver.Tests
             var walker = new RemoteDependencyWalker(context);
             var node = await DoWalkAsync(walker, "A");
 
-            var conflicts = new List<Tuple<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>>();
-            node.TryResolveConflicts(conflicts);
+            var result = node.Analyze();
 
-            Assert.Equal(1, conflicts.Count);
+            Assert.Equal(1, result.VersionConflicts.Count);
 
-            var conflict = conflicts[0];
+            var conflict = result.VersionConflicts[0];
             var c1 = conflict.Item1;
             var c2 = conflict.Item2;
 
             AssertPath(c1, "A 1.0", "B 2.0", "D 2.0");
             AssertPath(c2, "A 1.0", "C 2.0", "D 1.0");
+        }
+
+
+        [Fact]
+        public async Task StrictDependenciesButNoConflict()
+        {
+            var context = new RemoteWalkContext();
+            var provider = new DependencyProvider();
+            provider.Package("A", "1.0")
+                    .DependsOn("B", "2.0")
+                    .DependsOn("C", "2.0");
+
+            provider.Package("B", "2.0")
+                    .DependsOn("D", "[2.0]");
+
+            provider.Package("C", "2.0")
+                    .DependsOn("D", "[1.0, 3.0]");
+
+            provider.Package("D", "1.0");
+            provider.Package("D", "2.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+            var node = await DoWalkAsync(walker, "A");
+
+            var result = node.Analyze();
+
+            Assert.Equal(0, result.VersionConflicts.Count);
         }
 
         [Fact]
@@ -105,21 +183,123 @@ namespace NuGet.DependencyResolver.Tests
             provider.Package("F", "2.0")
                     .DependsOn("E", "[1.0]");
 
+            provider.Package("E", "1.0");
+            provider.Package("E", "2.0");
+
             context.LocalLibraryProviders.Add(provider);
             var walker = new RemoteDependencyWalker(context);
             var node = await DoWalkAsync(walker, "A");
 
-            var conflicts = new List<Tuple<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>>();
-            node.TryResolveConflicts(conflicts);
+            var result = node.Analyze();
 
-            Assert.Equal(1, conflicts.Count);
+            Assert.Equal(1, result.VersionConflicts.Count);
 
-            var conflict = conflicts[0];
+            var conflict = result.VersionConflicts[0];
             var c1 = conflict.Item1;
             var c2 = conflict.Item2;
 
             AssertPath(c1, "A 1.0", "B 2.0", "D 2.0", "E 2.0");
             AssertPath(c2, "A 1.0", "F 2.0", "E 1.0");
+        }
+
+        [Fact]
+        public async Task TryResolveConflicts_ThrowsIfPackageConstraintCannotBeResolved()
+        {
+            var context = new RemoteWalkContext();
+            var provider = new DependencyProvider();
+            provider.Package("Root", "1.0")
+                    .DependsOn("A", "1.0")
+                    .DependsOn("B", "2.0");
+
+            provider.Package("A", "1.0")
+                    .DependsOn("C", "(1.0, 1.4]");
+
+            provider.Package("B", "2.0")
+                    .DependsOn("C", "1.8");
+
+            provider.Package("C", "1.3.8");
+            provider.Package("C", "1.8");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+            var node = await DoWalkAsync(walker, "Root");
+
+            var result = node.Analyze();
+
+            Assert.Equal(1, result.VersionConflicts.Count);
+
+            var conflict = result.VersionConflicts[0];
+            var c1 = conflict.Item1;
+            var c2 = conflict.Item2;
+
+            AssertPath(c1, "Root 1.0", "B 2.0", "C 1.8");
+            // AssertPath prints the min in the range
+            AssertPath(c2, "Root 1.0", "A 1.0", "C 1.0");
+        }
+
+        [Fact]
+        public async Task NearestWinsOverridesStrictDependency()
+        {
+            var context = new RemoteWalkContext();
+            var provider = new DependencyProvider();
+            provider.Package("A", "1.0")
+                    .DependsOn("B", "2.0")
+                    .DependsOn("C", "2.0")
+                    .DependsOn("D", "3.0");
+
+            provider.Package("B", "2.0")
+                    .DependsOn("D", "[2.0]");
+
+            provider.Package("C", "2.0")
+                    .DependsOn("D", "[1.0]");
+
+            provider.Package("D", "1.0");
+            provider.Package("D", "2.0");
+            provider.Package("D", "3.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+            var node = await DoWalkAsync(walker, "A");
+
+            var result = node.Analyze();
+
+            Assert.Equal(0, result.VersionConflicts.Count);
+            Assert.Equal(0, result.Downgrades.Count);
+        }
+
+        [Fact]
+        public async Task NearestWinsOverridesStrictDependencyButDowngradeWarns()
+        {
+            var context = new RemoteWalkContext();
+            var provider = new DependencyProvider();
+            provider.Package("A", "1.0")
+                    .DependsOn("B", "2.0")
+                    .DependsOn("C", "2.0")
+                    .DependsOn("D", "1.0");
+
+            provider.Package("B", "2.0")
+                    .DependsOn("D", "[2.0]");
+
+            provider.Package("C", "2.0")
+                    .DependsOn("D", "[1.0]");
+
+            provider.Package("D", "1.0");
+            provider.Package("D", "2.0");
+            provider.Package("D", "3.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+            var node = await DoWalkAsync(walker, "A");
+
+            var result = node.Analyze();
+
+            Assert.Equal(0, result.VersionConflicts.Count);
+            Assert.Equal(1, result.Downgrades.Count);
+
+            var downgraded = result.Downgrades[0].Item1;
+            var downgradedBy = result.Downgrades[0].Item2;
+            AssertPath(downgraded, "A 1.0", "B 2.0", "D 2.0");
+            AssertPath(downgradedBy, "A 1.0", "D 1.0");
         }
 
         [Fact]
@@ -140,12 +320,9 @@ namespace NuGet.DependencyResolver.Tests
             var walker = new RemoteDependencyWalker(context);
             var node = await DoWalkAsync(walker, "A");
 
-            var downgrades = new List<Tuple<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>>();
-            var cycles = new List<GraphNode<RemoteResolveResult>>();
+            var result = node.Analyze();
 
-            GetDowngrades(node, downgrades, cycles);
-
-            Assert.Equal(0, downgrades.Count);
+            Assert.Equal(0, result.Downgrades.Count);
         }
 
         [Fact]
@@ -167,14 +344,11 @@ namespace NuGet.DependencyResolver.Tests
             var walker = new RemoteDependencyWalker(context);
             var node = await DoWalkAsync(walker, "A");
 
-            var downgrades = new List<Tuple<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>>();
-            var cycles = new List<GraphNode<RemoteResolveResult>>();
+            var result = node.Analyze();
 
-            GetDowngrades(node, downgrades, cycles);
-
-            Assert.Equal(1, downgrades.Count);
-            var downgraded = downgrades[0].Item1;
-            var downgradedBy = downgrades[0].Item2;
+            Assert.Equal(1, result.Downgrades.Count);
+            var downgraded = result.Downgrades[0].Item1;
+            var downgradedBy = result.Downgrades[0].Item2;
 
             AssertPath(downgraded, "A 1.0", "B 2.0", "C 2.0");
             AssertPath(downgradedBy, "A 1.0", "C 1.0");
@@ -201,14 +375,11 @@ namespace NuGet.DependencyResolver.Tests
             var walker = new RemoteDependencyWalker(context);
             var node = await DoWalkAsync(walker, "A");
 
-            var downgrades = new List<Tuple<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>>();
-            var cycles = new List<GraphNode<RemoteResolveResult>>();
+            var result = node.Analyze();
 
-            GetDowngrades(node, downgrades, cycles);
-
-            Assert.Equal(1, downgrades.Count);
-            var downgraded = downgrades[0].Item1;
-            var downgradedBy = downgrades[0].Item2;
+            Assert.Equal(1, result.Downgrades.Count);
+            var downgraded = result.Downgrades[0].Item1;
+            var downgradedBy = result.Downgrades[0].Item2;
 
             AssertPath(downgraded, "A 1.0", "B 2.0", "C 2.0", "D 2.0");
             AssertPath(downgradedBy, "A 1.0", "B 2.0", "D 1.0");
@@ -241,12 +412,9 @@ namespace NuGet.DependencyResolver.Tests
             var walker = new RemoteDependencyWalker(context);
             var node = await DoWalkAsync(walker, "A");
 
-            var downgrades = new List<Tuple<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>>();
-            var cycles = new List<GraphNode<RemoteResolveResult>>();
+            var result = node.Analyze();
 
-            GetDowngrades(node, downgrades, cycles);
-
-            Assert.Equal(0, downgrades.Count);
+            Assert.Equal(0, result.Downgrades.Count);
         }
 
         [Fact]
@@ -275,12 +443,9 @@ namespace NuGet.DependencyResolver.Tests
             var walker = new RemoteDependencyWalker(context);
             var node = await DoWalkAsync(walker, "A");
 
-            var downgrades = new List<Tuple<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>>();
-            var cycles = new List<GraphNode<RemoteResolveResult>>();
+            var result = node.Analyze();
 
-            GetDowngrades(node, downgrades, cycles);
-
-            Assert.Equal(0, downgrades.Count);
+            Assert.Equal(0, result.Downgrades.Count);
         }
 
         [Fact]
@@ -307,14 +472,11 @@ namespace NuGet.DependencyResolver.Tests
             var walker = new RemoteDependencyWalker(context);
             var node = await DoWalkAsync(walker, "A");
 
-            var downgrades = new List<Tuple<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>>();
-            var cycles = new List<GraphNode<RemoteResolveResult>>();
+            var result = node.Analyze();
 
-            GetDowngrades(node, downgrades, cycles);
-
-            Assert.Equal(1, downgrades.Count);
-            var downgraded = downgrades[0].Item1;
-            var downgradedBy = downgrades[0].Item2;
+            Assert.Equal(1, result.Downgrades.Count);
+            var downgraded = result.Downgrades[0].Item1;
+            var downgradedBy = result.Downgrades[0].Item2;
 
             AssertPath(downgraded, "A 1.0", "C 1.0", "B 2.0");
             AssertPath(downgradedBy, "A 1.0", "B 1.0");
@@ -344,12 +506,9 @@ namespace NuGet.DependencyResolver.Tests
             var walker = new RemoteDependencyWalker(context);
             var node = await DoWalkAsync(walker, "A");
 
-            var downgrades = new List<Tuple<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>>();
-            var cycles = new List<GraphNode<RemoteResolveResult>>();
+            var result = node.Analyze();
 
-            GetDowngrades(node, downgrades, cycles);
-
-            Assert.Equal(0, downgrades.Count);
+            Assert.Equal(0, result.Downgrades.Count);
         }
 
         [Fact]
@@ -381,19 +540,19 @@ namespace NuGet.DependencyResolver.Tests
             var downgrades = new List<Tuple<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>>();
             var cycles = new List<GraphNode<RemoteResolveResult>>();
 
-            GetDowngrades(node, downgrades, cycles);
+            var result = node.Analyze();
 
-            Assert.Equal(2, downgrades.Count);
+            Assert.Equal(2, result.Downgrades.Count);
 
 
-            var d0 = downgrades[0];
+            var d0 = result.Downgrades[0];
             var d0To = d0.Item1;
             var d0By = d0.Item2;
 
             AssertPath(d0To, "A 1.0", "C 1.0", "B 0.8");
             AssertPath(d0By, "A 1.0", "B 0.7");
 
-            var d1 = downgrades[1];
+            var d1 = result.Downgrades[1];
             var d1To = d1.Item1;
             var d1By = d1.Item2;
 
@@ -497,19 +656,6 @@ namespace NuGet.DependencyResolver.Tests
 
             // Assert
             Assert.False(isGreater);
-        }
-
-        private static void GetDowngrades(GraphNode<RemoteResolveResult> node,
-                                          List<Tuple<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>> downgrades,
-                                          List<GraphNode<RemoteResolveResult>> cycles)
-        {
-            var conflicts = new List<Tuple<GraphNode<RemoteResolveResult>, GraphNode<RemoteResolveResult>>>();
-
-            node.CheckCycleAndNearestWins(downgrades, cycles);
-            node.TryResolveConflicts(conflicts);
-
-            // Remove all downgrades that weren't accepted
-            downgrades.RemoveAll(d => d.Item2.Disposition != Disposition.Accepted);
         }
 
         private void AssertPath<TItem>(GraphNode<TItem> node, params string[] items)

@@ -20,7 +20,19 @@ namespace NuGet.DependencyResolver
             Ambiguous
         }
 
-        public static void CheckCycleAndNearestWins<TItem>(this GraphNode<TItem> root,
+        public static AnalyzeResult<TItem> Analyze<TItem>(this GraphNode<TItem> root)
+        {
+            var result = new AnalyzeResult<TItem>();
+
+            root.CheckCycleAndNearestWins(result.Downgrades, result.Cycles);
+            root.TryResolveConflicts(result.VersionConflicts);
+
+            result.Downgrades.RemoveAll(d => d.Item2.Disposition != Disposition.Accepted);
+
+            return result;
+        }
+
+        private static void CheckCycleAndNearestWins<TItem>(this GraphNode<TItem> root,
                                                            List<Tuple<GraphNode<TItem>, GraphNode<TItem>>> downgrades,
                                                            List<GraphNode<TItem>> cycles)
         {
@@ -113,7 +125,7 @@ namespace NuGet.DependencyResolver
             return TryResolveConflicts(root, conflicts);
         }
 
-        public static bool TryResolveConflicts<TItem>(this GraphNode<TItem> root, List<Tuple<GraphNode<TItem>, GraphNode<TItem>>> versionConflicts)
+        private static bool TryResolveConflicts<TItem>(this GraphNode<TItem> root, List<Tuple<GraphNode<TItem>, GraphNode<TItem>>> versionConflicts)
         {
             // now we walk the tree as often as it takes to determine 
             // which paths are accepted or rejected, based on conflicts occuring
