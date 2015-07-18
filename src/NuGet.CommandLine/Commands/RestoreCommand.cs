@@ -253,7 +253,7 @@ namespace NuGet.CommandLine
                 packageRestoredEvent: null,
                 packageRestoreFailedEvent: null,
                 sourceRepositories: packageSources,
-                maxNumberOfParallelTasks: PackageManagementConstants.DefaultMaxDegreeOfParallelism);
+                maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism);
 
             return PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Logger));
         }
