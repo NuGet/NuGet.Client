@@ -229,7 +229,17 @@ namespace NuGet.CommandLine
                 installedPackageReferences = GetInstalledPackageReferences(_packagesConfigFileFullPath);
             }
 
-            var packageRestoreData = installedPackageReferences.Select(reference =>
+            var missingPackageReferences = installedPackageReferences.Where(reference =>
+                !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity));
+
+            if (!missingPackageReferences.Any())
+            {
+                var message = string.Format(NuGetResources.InstallCommandNothingToInstall, "packages.config");
+                Logger.LogInformation(message);
+                return Task.FromResult(0);
+            }
+
+            var packageRestoreData = missingPackageReferences.Select(reference =>
                 new PackageRestoreData(
                     reference,
                     new[] { _solutionFileFullPath ?? _packagesConfigFileFullPath },
