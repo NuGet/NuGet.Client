@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using NuGet.DependencyResolver.Core;
-using NuGet.LibraryModel;
 
 namespace NuGet.DependencyResolver
 {
@@ -27,13 +25,14 @@ namespace NuGet.DependencyResolver
             root.CheckCycleAndNearestWins(result.Downgrades, result.Cycles);
             root.TryResolveConflicts(result.VersionConflicts);
 
-            result.Downgrades.RemoveAll(d => d.Item2.Disposition != Disposition.Accepted);
+            // Remove all downgrades that didn't result in selecting the node we actually downgraded to
+            result.Downgrades.RemoveAll(d => d.DowngradedTo.Disposition != Disposition.Accepted);
 
             return result;
         }
 
         private static void CheckCycleAndNearestWins<TItem>(this GraphNode<TItem> root,
-                                                           List<Tuple<GraphNode<TItem>, GraphNode<TItem>>> downgrades,
+                                                           List<DowngradeResult<TItem>> downgrades,
                                                            List<GraphNode<TItem>> cycles)
         {
             // Cycle
@@ -97,7 +96,11 @@ namespace NuGet.DependencyResolver
                 node.OuterNode.InnerNodes.Remove(node);
             });
 
-            downgrades.AddRange(workingDowngrades.Select(p => Tuple.Create(p.Key, p.Value)));
+            downgrades.AddRange(workingDowngrades.Select(p => new DowngradeResult<TItem>
+            {
+                DowngradedFrom = p.Key,
+                DowngradedTo = p.Value
+            }));
         }
 
         public static string GetPath<TItem>(this GraphNode<TItem> node)
@@ -137,7 +140,7 @@ namespace NuGet.DependencyResolver
             return node.Key.Name + " " + node.Key.VersionRange?.PrettyPrint();
         }
 
-        private static bool TryResolveConflicts<TItem>(this GraphNode<TItem> root, List<Tuple<GraphNode<TItem>, GraphNode<TItem>>> versionConflicts)
+        private static bool TryResolveConflicts<TItem>(this GraphNode<TItem> root, List<VersionConflictResult<TItem>> versionConflicts)
         {
             // now we walk the tree as often as it takes to determine 
             // which paths are accepted or rejected, based on conflicts occuring
@@ -259,7 +262,11 @@ namespace NuGet.DependencyResolver
                         childNode.Key.VersionRange != null &&
                         !childNode.Key.VersionRange.Satisfies(acceptedNode.Item.Key.Version))
                     {
-                        versionConflicts.Add(Tuple.Create(acceptedNode, childNode));
+                        versionConflicts.Add(new VersionConflictResult<TItem>
+                        {
+                            Selected = acceptedNode,
+                            Conflicting = childNode
+                        });
                     }
                 }
             });

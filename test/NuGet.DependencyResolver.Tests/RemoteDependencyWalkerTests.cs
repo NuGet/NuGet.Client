@@ -153,8 +153,8 @@ namespace NuGet.DependencyResolver.Tests
             Assert.Equal(1, result.VersionConflicts.Count);
 
             var conflict = result.VersionConflicts[0];
-            var c1 = conflict.Item1;
-            var c2 = conflict.Item2;
+            var c1 = conflict.Selected;
+            var c2 = conflict.Conflicting;
 
             AssertPath(c1, "A 1.0", "B 2.0", "D 2.0");
             AssertPath(c2, "A 1.0", "C 2.0", "D 1.0");
@@ -186,8 +186,8 @@ namespace NuGet.DependencyResolver.Tests
             Assert.Equal(1, result.VersionConflicts.Count);
 
             var conflict = result.VersionConflicts[0];
-            var c1 = conflict.Item1;
-            var c2 = conflict.Item2;
+            var c1 = conflict.Selected;
+            var c2 = conflict.Conflicting;
 
             AssertPath(c1, "A 1.0", "B 2.0", "D 2.0");
             AssertPath(c2, "A 1.0", "C 2.0", "D 1.0");
@@ -257,8 +257,8 @@ namespace NuGet.DependencyResolver.Tests
             Assert.Equal(1, result.VersionConflicts.Count);
 
             var conflict = result.VersionConflicts[0];
-            var c1 = conflict.Item1;
-            var c2 = conflict.Item2;
+            var c1 = conflict.Selected;
+            var c2 = conflict.Conflicting;
 
             AssertPath(c1, "A 1.0", "B 2.0", "D 2.0", "E 2.0");
             AssertPath(c2, "A 1.0", "F 2.0", "E 1.0");
@@ -291,8 +291,8 @@ namespace NuGet.DependencyResolver.Tests
             Assert.Equal(1, result.VersionConflicts.Count);
 
             var conflict = result.VersionConflicts[0];
-            var c1 = conflict.Item1;
-            var c2 = conflict.Item2;
+            var c1 = conflict.Selected;
+            var c2 = conflict.Conflicting;
 
             AssertPath(c1, "Root 1.0", "B 2.0", "C 1.8");
             AssertPath(c2, "Root 1.0", "A 1.0", "C 1.3.8");
@@ -396,8 +396,8 @@ namespace NuGet.DependencyResolver.Tests
             Assert.Equal(0, result.VersionConflicts.Count);
             Assert.Equal(1, result.Downgrades.Count);
 
-            var downgraded = result.Downgrades[0].Item1;
-            var downgradedBy = result.Downgrades[0].Item2;
+            var downgraded = result.Downgrades[0].DowngradedFrom;
+            var downgradedBy = result.Downgrades[0].DowngradedTo;
             AssertPath(downgraded, "A 1.0", "B 2.0", "D 2.0");
             AssertPath(downgradedBy, "A 1.0", "D 1.0");
         }
@@ -447,8 +447,8 @@ namespace NuGet.DependencyResolver.Tests
             var result = node.Analyze();
 
             Assert.Equal(1, result.Downgrades.Count);
-            var downgraded = result.Downgrades[0].Item1;
-            var downgradedBy = result.Downgrades[0].Item2;
+            var downgraded = result.Downgrades[0].DowngradedFrom;
+            var downgradedBy = result.Downgrades[0].DowngradedTo;
 
             AssertPath(downgraded, "A 1.0", "B 2.0", "C 2.0");
             AssertPath(downgradedBy, "A 1.0", "C 1.0");
@@ -478,8 +478,8 @@ namespace NuGet.DependencyResolver.Tests
             var result = node.Analyze();
 
             Assert.Equal(1, result.Downgrades.Count);
-            var downgraded = result.Downgrades[0].Item1;
-            var downgradedBy = result.Downgrades[0].Item2;
+            var downgraded = result.Downgrades[0].DowngradedFrom;
+            var downgradedBy = result.Downgrades[0].DowngradedTo;
 
             AssertPath(downgraded, "A 1.0", "B 2.0", "C 2.0", "D 2.0");
             AssertPath(downgradedBy, "A 1.0", "B 2.0", "D 1.0");
@@ -575,8 +575,8 @@ namespace NuGet.DependencyResolver.Tests
             var result = node.Analyze();
 
             Assert.Equal(1, result.Downgrades.Count);
-            var downgraded = result.Downgrades[0].Item1;
-            var downgradedBy = result.Downgrades[0].Item2;
+            var downgraded = result.Downgrades[0].DowngradedFrom;
+            var downgradedBy = result.Downgrades[0].DowngradedTo;
 
             AssertPath(downgraded, "A 1.0", "C 1.0", "B 2.0");
             AssertPath(downgradedBy, "A 1.0", "B 1.0");
@@ -646,15 +646,15 @@ namespace NuGet.DependencyResolver.Tests
 
 
             var d0 = result.Downgrades[0];
-            var d0To = d0.Item1;
-            var d0By = d0.Item2;
+            var d0To = d0.DowngradedFrom;
+            var d0By = d0.DowngradedTo;
 
             AssertPath(d0To, "A 1.0", "C 1.0", "B 0.8");
             AssertPath(d0By, "A 1.0", "B 0.7");
 
             var d1 = result.Downgrades[1];
-            var d1To = d1.Item1;
-            var d1By = d1.Item2;
+            var d1To = d1.DowngradedFrom;
+            var d1By = d1.DowngradedTo;
 
             AssertPath(d1To, "A 1.0", "C 1.0", "D 1.0", "B 1.0");
             AssertPath(d1By, "A 1.0", "B 0.7");

@@ -86,28 +86,24 @@ namespace NuGet.Commands
 
             foreach (var g in graphs)
             {
-                foreach (var cycle in g.Cycles)
+                foreach (var cycle in g.AnalyzeResult.Cycles)
                 {
                     _success = false;
                     _log.LogError(Strings.Log_CycleDetected + $" {Environment.NewLine}  {cycle.GetPath()}.");
                 }
 
-                foreach (var versionConflict in g.VersionConflicts)
+                foreach (var versionConflict in g.AnalyzeResult.VersionConflicts)
                 {
                     _success = false;
                     _log.LogError(Strings.FormatLog_VersionConflict(versionConflict.Selected.Key.Name) + $" {Environment.NewLine} {versionConflict.Selected.GetPath()} {Environment.NewLine} {versionConflict.Conflicting.GetPath()}.");
                 }
 
-                foreach (var downgrade in g.Downgrades)
+                foreach (var downgrade in g.AnalyzeResult.Downgrades)
                 {
-                    var downgraded = downgrade.DowngradedTo;
-                    var downgradedBy = downgrade.DowngradedFrom;
+                    var downgraded = downgrade.DowngradedFrom;
+                    var downgradedBy = downgrade.DowngradedTo;
 
-                    // It's only a downgrade if this dependency edge was chosen
-                    if (downgradedBy.Disposition == Disposition.Accepted)
-                    {
-                        _log.LogWarning(Strings.FormatLog_DowngradeWarning(downgraded.Key.Name, downgraded.Key.VersionRange.MinVersion, downgradedBy.Key.VersionRange.MinVersion) + $" {Environment.NewLine} {downgraded.GetPath()} {Environment.NewLine} {downgradedBy.GetPath()}");
-                    }
+                    _log.LogWarning(Strings.FormatLog_DowngradeWarning(downgraded.Key.Name, downgraded.Key.VersionRange.MinVersion, downgradedBy.Key.VersionRange.MinVersion) + $" {Environment.NewLine} {downgraded.GetPath()} {Environment.NewLine} {downgradedBy.GetPath()}");
                 }
             }
 
