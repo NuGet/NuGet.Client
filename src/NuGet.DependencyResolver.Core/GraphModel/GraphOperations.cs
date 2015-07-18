@@ -119,12 +119,6 @@ namespace NuGet.DependencyResolver
             return node.Key.Name + " " + node.Key.VersionRange?.PrettyPrint();
         }
 
-        public static bool TryResolveConflicts<TItem>(this GraphNode<TItem> root)
-        {
-            var conflicts = new List<Tuple<GraphNode<TItem>, GraphNode<TItem>>>();
-            return TryResolveConflicts(root, conflicts);
-        }
-
         private static bool TryResolveConflicts<TItem>(this GraphNode<TItem> root, List<Tuple<GraphNode<TItem>, GraphNode<TItem>>> versionConflicts)
         {
             // now we walk the tree as often as it takes to determine 
