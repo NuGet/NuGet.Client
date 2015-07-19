@@ -186,7 +186,7 @@ namespace NuGet.CommandLine
             return packageSources;
         }
 
-        private Task InstallPackage(
+        private async Task InstallPackage(
             string packageId,
             NuGetVersion version,
             string installPath)
@@ -206,32 +206,49 @@ namespace NuGet.CommandLine
             var primaryRepositories = GetPackageSources(Settings).Select(sourceRepositoryProvider.CreateRepository);
             var fallbackRepositories = GetFallbackSources().Select(sourceRepositoryProvider.CreateRepository);
 
-            if (version == null)
-            {
-                // let package manager locates the latest version to install
-                return packageManager.InstallPackageAsync(
-                    folderProject,
-                    packageId,
-                    new ResolutionContext(
+            var resolutionContext = new ResolutionContext(
                         DependencyBehavior.Lowest,
                         includePrelease: Prerelease,
                         includeUnlisted: true,
-                        versionConstraints: VersionConstraints.None),
-                    new ConsoleProjectContext(Logger),
+                        versionConstraints: VersionConstraints.None);
+
+            if (version == null)
+            {
+                // Find the latest version using NuGetPackageManager
+                version = await NuGetPackageManager.GetLatestVersionAsync(
+                    packageId,
+                    resolutionContext,
                     primaryRepositories,
-                    fallbackRepositories,
                     CancellationToken.None);
+
+                if (version == null)
+                {
+                    var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString("InstallCommandUnableToFindPackage"),
+                        packageId);
+
+                    throw new CommandLineException(message);
+                }
+            }
+
+            var packageIdentity = new PackageIdentity(packageId, version);
+
+            if (folderProject.PackageExists(packageIdentity))
+            {
+                var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    LocalizedResourceManager.GetString("InstallCommandPackageAlreadyExists"),
+                    packageIdentity);
+
+                Logger.LogInformation(message);
             }
             else
             {
-                return packageManager.InstallPackageAsync(
+                await packageManager.InstallPackageAsync(
                     folderProject,
-                    new PackageIdentity(packageId, version),
-                    new ResolutionContext(
-                        DependencyBehavior.Lowest,
-                        includePrelease: Prerelease,
-                        includeUnlisted: true,
-                        versionConstraints: VersionConstraints.None),
+                    packageIdentity,
+                    resolutionContext,
                     new ConsoleProjectContext(Logger),
                     primaryRepositories,
                     fallbackRepositories,

@@ -1718,8 +1718,11 @@ namespace NuGet.PackageManagement
             return GetLatestVersionAsync(packageId, resolutionContext, new List<SourceRepository> { primarySourceRepository }, token);
         }
 
-        private static async Task<NuGetVersion> GetLatestVersionAsync(string packageId, ResolutionContext resolutionContext,
-            IEnumerable<SourceRepository> sources, CancellationToken token)
+        public static async Task<NuGetVersion> GetLatestVersionAsync(
+            string packageId,
+            ResolutionContext resolutionContext,
+            IEnumerable<SourceRepository> sources,
+            CancellationToken token)
         {
             var tasks = new List<Task<NuGetVersion>>();
 

@@ -4750,6 +4750,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to find package &apos;{0}&apos;.
+        /// </summary>
+        public static string InstallCommandUnableToFindPackage {
+            get {
+                return ResourceManager.GetString("InstallCommandUnableToFindPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0}: invalid arguments..
         /// </summary>
         public static string InvalidArguments {

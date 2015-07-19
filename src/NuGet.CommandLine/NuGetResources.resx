@@ -6027,4 +6027,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="SettingsCredentials_UsingSavedCredentials" xml:space="preserve">
     <value>Using credentials from config. UserName: {0}</value>
   </data>
+  <data name="InstallCommandUnableToFindPackage" xml:space="preserve">
+    <value>Unable to find package '{0}'</value>
+  </data>
 </root>
