@@ -164,6 +164,8 @@ namespace NuGet.CommandLine
                 }
             }
 
+            CheckRequireConsent();
+
             // Run the restore
             var command = new Commands.RestoreCommand(Logger, request);
             var result = await command.ExecuteAsync();
@@ -222,7 +224,11 @@ namespace NuGet.CommandLine
                 // So we'll need to verify that the file exists.
                 if (!File.Exists(_packagesConfigFileFullPath))
                 {
-                    string message = String.Format(CultureInfo.CurrentCulture, "RestoreCommandFileNotFound", _packagesConfigFileFullPath);
+                    string message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        "RestoreCommandFileNotFound",
+                        _packagesConfigFileFullPath);
+
                     throw new InvalidOperationException(message);
                 }
 
@@ -234,7 +240,11 @@ namespace NuGet.CommandLine
 
             if (!missingPackageReferences.Any())
             {
-                var message = string.Format(NuGetResources.InstallCommandNothingToInstall, "packages.config");
+                var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    LocalizedResourceManager.GetString("InstallCommandNothingToInstall"),
+                    "packages.config");
+
                 Logger.LogInformation(message);
                 return Task.FromResult(0);
             }
@@ -255,7 +265,35 @@ namespace NuGet.CommandLine
                 sourceRepositories: packageSources,
                 maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism);
 
+            CheckRequireConsent();
             return PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Logger));
+        }
+
+        private void CheckRequireConsent()
+        {
+            if (RequireConsent)
+            {
+                var packageRestoreConsent = new PackageRestoreConsent(new SettingsToLegacySettings(Settings));
+
+                if (packageRestoreConsent.IsGranted)
+                {
+                    string message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage"),
+                        NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
+
+                    Logger.LogInformation(message);
+                }
+                else
+                {
+                    string message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString("InstallCommandPackageRestoreConsentNotFound"),
+                        NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
+
+                    throw new CommandLineException(message);
+                }
+            }
         }
 
         internal void DetermineRestoreMode()
