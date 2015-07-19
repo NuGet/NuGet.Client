@@ -10287,7 +10287,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to If a solution is specified, this command restores NuGet packages that are installed in the solution and in projects contained in the solution. Otherwise, the command restores packages listed in the specified packages.config file..
+        ///   Looks up a localized string similar to If a solution is specified, this command restores NuGet packages that are installed in the solution and in projects contained in the solution. Otherwise, the command restores packages listed in the specified packages.config file or project.json file..
         /// </summary>
         internal static string RestoreCommandUsageDescription {
             get {
@@ -10413,7 +10413,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to [&lt;solution&gt; | &lt;packages.config file&gt;] [options].
+        ///   Looks up a localized string similar to [&lt;solution&gt; | &lt;packages.config file&gt; | &lt;project.json&gt;] [options].
         /// </summary>
         internal static string RestoreCommandUsageSummary {
             get {
