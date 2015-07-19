@@ -27,9 +27,6 @@ namespace NuGet.CommandLine
             get { return _sources; }
         }
 
-        [Option(typeof(NuGetCommand), "CommandFallbackSourceDescription")]
-        public ICollection<string> FallbackSource { get; } = new List<string>();
-
         [Option(typeof(NuGetCommand), "CommandNoCache")]
         public bool NoCache { get; set; }
 
@@ -96,12 +93,7 @@ namespace NuGet.CommandLine
 
             if (packageSources.Count == 0)
             {
-                packageSources.AddRange(packageSourceProvider.LoadPackageSources());
-            }
-
-            foreach (var source in FallbackSource)
-            {
-                packageSources.Add(Common.PackageSourceProviderExtensions.ResolveSource(packageSources, source));
+                packageSources.AddRange(availableSources);
             }
 
             return packageSources;

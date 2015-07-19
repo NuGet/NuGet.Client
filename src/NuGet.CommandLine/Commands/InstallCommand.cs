@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -42,6 +42,9 @@ namespace NuGet.CommandLine
 
         [Option(typeof(NuGetCommand), "InstallCommandSolutionDirectory")]
         public string SolutionDirectory { get; set; }
+
+        [Option(typeof(NuGetCommand), "CommandFallbackSourceDescription")]
+        public ICollection<string> FallbackSource { get; } = new List<string>();
 
         private bool AllowMultipleVersions
         {
@@ -172,6 +175,17 @@ namespace NuGet.CommandLine
             return sourceRepositoryProvider;
         }
 
+        private List<Configuration.PackageSource> GetFallbackSources()
+        {
+            var packageSources = new List<Configuration.PackageSource>();
+            foreach (var source in FallbackSource)
+            {
+                packageSources.Add(Common.PackageSourceProviderExtensions.ResolveSource(packageSources, source));
+            }
+
+            return packageSources;
+        }
+
         private Task InstallPackage(
             string packageId,
             NuGetVersion version,
@@ -190,6 +204,7 @@ namespace NuGet.CommandLine
             var packageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, installPath);
 
             var primaryRepositories = GetPackageSources(Settings).Select(sourceRepositoryProvider.CreateRepository);
+            var fallbackRepositories = GetFallbackSources().Select(sourceRepositoryProvider.CreateRepository);
 
             if (version == null)
             {
@@ -204,7 +219,7 @@ namespace NuGet.CommandLine
                         versionConstraints: VersionConstraints.None),
                     new ConsoleProjectContext(Logger),
                     primaryRepositories,
-                    Enumerable.Empty<SourceRepository>(),
+                    fallbackRepositories,
                     CancellationToken.None);
             }
             else
@@ -219,7 +234,7 @@ namespace NuGet.CommandLine
                         versionConstraints: VersionConstraints.None),
                     new ConsoleProjectContext(Logger),
                     primaryRepositories,
-                    Enumerable.Empty<SourceRepository>(),
+                    fallbackRepositories,
                     CancellationToken.None);
             }
         }
