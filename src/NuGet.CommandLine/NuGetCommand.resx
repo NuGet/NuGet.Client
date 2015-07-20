@@ -482,10 +482,10 @@ nuget update -Self</value>
     <value>Specifies the solution directory. Not valid when restoring packages for a solution.</value>
   </data>
   <data name="RestoreCommandUsageDescription" xml:space="preserve">
-    <value>If a solution is specified, this command restores NuGet packages that are installed in the solution and in projects contained in the solution. Otherwise, the command restores packages listed in the specified packages.config file or project.json file.</value>
+    <value>If a solution is specified, this command restores NuGet packages that are installed in the solution and in projects contained in the solution. Otherwise, the command restores packages listed in the specified packages.config file, Microsoft Build project, or project.json file.</value>
   </data>
   <data name="RestoreCommandUsageSummary" xml:space="preserve">
-    <value>[&lt;solution&gt; | &lt;packages.config file&gt; | &lt;project.json&gt;] [options]</value>
+    <value>[&lt;solution&gt; | &lt;packages.config file&gt; | &lt;project.json&gt; | &lt;Microsoft Build project&gt;] [options]</value>
     <comment>Please don't localize "packages.config"</comment>
   </data>
   <data name="ConfigCommandDesc_csy" xml:space="preserve">
