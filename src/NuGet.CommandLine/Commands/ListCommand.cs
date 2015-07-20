@@ -40,8 +40,7 @@ namespace NuGet.Commands
         [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This call is expensive")]
         public async Task<IEnumerable<SimpleSearchMetadata>> GetPackages()
         {
-            var packageSourceProvider = new Configuration.PackageSourceProvider(Settings);
-            var configurationSources = packageSourceProvider.LoadPackageSources();
+            var configurationSources = SourceProvider.LoadPackageSources();
             IEnumerable<Configuration.PackageSource> packageSources;
             if (Source.Count > 0)
             {
@@ -52,7 +51,7 @@ namespace NuGet.Commands
                 packageSources = configurationSources;
             }
 
-            var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider,
+            var sourceRepositoryProvider = new SourceRepositoryProvider(SourceProvider,
                 Enumerable.Concat(
                     Protocol.Core.v2.FactoryExtensionsV2.GetCoreV2(Repository.Provider),
                     Protocol.Core.v3.FactoryExtensionsV2.GetCoreV3(Repository.Provider)));
