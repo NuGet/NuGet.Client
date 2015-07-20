@@ -75,7 +75,8 @@ namespace NuGet.CommandLine
         {
             var projectFilePath = Path.GetFullPath(Arguments.FirstOrDefault() ?? ".");
             var projectFileName = Path.GetFileName(projectFilePath);
-            if (string.Equals(PackageSpec.PackageSpecFileName, projectFileName, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(PackageSpec.PackageSpecFileName, projectFileName, StringComparison.OrdinalIgnoreCase) ||
+                MsBuildUtility.IsMsBuildBasedProject(projectFileName))
             {
                 return PerformNuGetV3RestoreAsync(projectFilePath);
             }
