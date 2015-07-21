@@ -13,6 +13,7 @@ using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v2;
 
 namespace NuGet.CommandLine
 {
@@ -242,15 +243,25 @@ namespace NuGet.CommandLine
                     reference,
                     new[] { packageRestoreInputs.RestoringWithSolutionFile ? packageRestoreInputs.DirectoryOfSolutionFile : packageRestoreInputs.PackageReferenceFiles[0] },
                     isMissing: true));
-            var packageSources = GetPackageSources(Settings)
-                .Select(sourceRepositoryProvider.CreateRepository);
+            var packageSources = GetPackageSources(Settings);
+
+            if (!NoCache && !string.IsNullOrEmpty(MachineCache.Default?.Source))
+            {
+                packageSources = new[] { new V2PackageSource(MachineCache.Default.Source, () => MachineCache.Default) }
+                    .Concat(packageSources);
+            }
+
+            var repositories = packageSources
+                .Select(sourceRepositoryProvider.CreateRepository)
+                .ToArray();
+
             var packageRestoreContext = new PackageRestoreContext(
                 nuGetPackageManager,
                 packageRestoreData,
                 CancellationToken.None,
                 packageRestoredEvent: null,
                 packageRestoreFailedEvent: null,
-                sourceRepositories: packageSources,
+                sourceRepositories: repositories,
                 maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism);
 
             CheckRequireConsent();
