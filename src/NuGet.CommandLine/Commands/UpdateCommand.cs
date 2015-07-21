@@ -228,11 +228,17 @@ namespace NuGet.CommandLine
             var sourceRepositoryProvider = GetSourceRepositoryProvider();
             var projectDirectory = Path.GetDirectoryName(project.ProjectFullPath);
             var packageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, packagesDirectory);
-            var nugetProject = new MSBuildNuGetProject(project, projectDirectory, packagesDirectory);
+            var nugetProject = new MSBuildNuGetProject(project, packagesDirectory, projectDirectory);
 
             var projectActions = await packageManager.PreviewUpdatePackagesAsync(
                 nugetProject,
-                new ResolutionContext(),
+                new ResolutionContext(
+                    Resolver.DependencyBehavior.Highest,
+                    Prerelease,
+                    includeUnlisted: false,
+                    versionConstraints: Safe ?
+                    VersionConstraints.ExactMajor | VersionConstraints.ExactMinor:
+                    VersionConstraints.None),
                 project.NuGetProjectContext,
                 GetPackageSources().Select(sourceRepositoryProvider.CreateRepository),
                 Enumerable.Empty<SourceRepository>(),

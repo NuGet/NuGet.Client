@@ -1666,7 +1666,9 @@ namespace NuGet.PackageManagement
 
             if (solutionManager == null)
             {
-                throw new ArgumentNullException(nameof(solutionManager));
+                // If the solution manager is null, simply assume that the
+                // package exists on another nuget project to not delete it
+                return true;
             }
 
             var nuGetProjectName = NuGetProject.GetUniqueNameOrName(nuGetProject);

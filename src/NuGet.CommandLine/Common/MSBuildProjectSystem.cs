@@ -21,7 +21,8 @@ namespace NuGet.Common
         {
             ProjectFullPath = projectFullPath;
             _projectDirectory = Path.GetDirectoryName(projectFullPath);
-
+            Project = GetProject(projectFullPath);
+            NuGetProjectContext = projectContext;
         }
 
         public INuGetProjectContext NuGetProjectContext { get; private set; }
@@ -41,7 +42,7 @@ namespace NuGet.Common
                 {
                     return null;
                 }
-                return new NuGetFramework(moniker);
+                return NuGetFramework.Parse(moniker);
             }
         }
 
@@ -49,7 +50,7 @@ namespace NuGet.Common
 
         public void AddBindingRedirects()
         {
-            throw new NotImplementedException();
+            // No-op
         }
 
         public void AddExistingFile(string path)
