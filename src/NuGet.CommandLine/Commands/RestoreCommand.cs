@@ -13,7 +13,6 @@ using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v2;
 
 namespace NuGet.CommandLine
 {
@@ -196,7 +195,7 @@ namespace NuGet.CommandLine
                     Protocol.Core.v3.FactoryExtensionsV2.GetCoreV3(Repository.Provider)));
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, packagesFolderPath);
 
-            var installedPackageReferences = new HashSet<Packaging.PackageReference>();
+            var installedPackageReferences = new HashSet<Packaging.PackageReference>(new PackageReferenceComparer());
             if (packageRestoreInputs.RestoringWithSolutionFile)
             {
                 installedPackageReferences.AddRange(packageRestoreInputs
@@ -227,7 +226,7 @@ namespace NuGet.CommandLine
             var missingPackageReferences = installedPackageReferences.Where(reference =>
                 !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity)).ToArray();
 
-            if (!missingPackageReferences.Any())
+            if (missingPackageReferences.Length == 0)
             {
                 var message = string.Format(
                     CultureInfo.CurrentCulture,
@@ -238,18 +237,12 @@ namespace NuGet.CommandLine
                 return Task.FromResult(0);
             }
 
-            var packageRestoreData = missingPackageReferences.Select(reference =>
+            var packageRestoreData = installedPackageReferences.Select(reference =>
                 new PackageRestoreData(
                     reference,
                     new[] { packageRestoreInputs.RestoringWithSolutionFile ? packageRestoreInputs.DirectoryOfSolutionFile : packageRestoreInputs.PackageReferenceFiles[0] },
                     isMissing: true));
             var packageSources = GetPackageSources(Settings);
-
-            if (!NoCache && !string.IsNullOrEmpty(MachineCache.Default?.Source))
-            {
-                packageSources = new[] { new V2PackageSource(MachineCache.Default.Source, () => MachineCache.Default) }
-                    .Concat(packageSources);
-            }
 
             var repositories = packageSources
                 .Select(sourceRepositoryProvider.CreateRepository)

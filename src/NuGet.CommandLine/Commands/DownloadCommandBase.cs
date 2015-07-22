@@ -6,6 +6,7 @@ using System.Linq;
 using System.Xml.Linq;
 using NuGet.Configuration;
 using NuGet.Packaging;
+using NuGet.Protocol.Core.v2;
 
 namespace NuGet.CommandLine
 {
@@ -89,6 +90,12 @@ namespace NuGet.CommandLine
             var packageSourceProvider = new Configuration.PackageSourceProvider(settings);
             var availableSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
             var packageSources = new List<Configuration.PackageSource>();
+
+            if (!NoCache && !string.IsNullOrEmpty(MachineCache.Default?.Source))
+            {
+                packageSources.Add(new V2PackageSource(MachineCache.Default.Source, () => MachineCache.Default));
+            }
+
             foreach (var source in Source)
             {
                 packageSources.Add(Common.PackageSourceProviderExtensions.ResolveSource(packageSources, source));
