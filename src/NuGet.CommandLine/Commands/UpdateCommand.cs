@@ -89,7 +89,6 @@ namespace NuGet.CommandLine
             // update with solution as parameter
             string solutionDir = Path.GetDirectoryName(inputFile);
             await UpdateAllPackages(solutionDir, context);
-            throw new NotImplementedException();
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
