@@ -209,7 +209,7 @@ namespace NuGet.CommandLine
 
             if (packageSources.Count == 0)
             {
-                packageSources.AddRange(packageSourceProvider.LoadPackageSources());
+                packageSources.AddRange(availableSources);
             }
 
             return packageSources;
