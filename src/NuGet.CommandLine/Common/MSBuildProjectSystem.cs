@@ -19,19 +19,24 @@ namespace NuGet.Common
 
         public MSBuildProjectSystem(string projectFullPath, INuGetProjectContext projectContext)
         {
-            ProjectFullPath = projectFullPath;
             _projectDirectory = Path.GetDirectoryName(projectFullPath);
+            ProjectFullPath = _projectDirectory;
             Project = GetProject(projectFullPath);
+            ProjectName = Path.GetFileName(projectFullPath);
+            ProjectUniqueName = projectFullPath;
             NuGetProjectContext = projectContext;
         }
 
         public INuGetProjectContext NuGetProjectContext { get; private set; }
 
+        /// <summary>
+        /// This does not contain the filename, just the path to the directory where the project file exists
+        /// </summary>
         public string ProjectFullPath { get; }
 
-        public string ProjectName => Path.GetFileNameWithoutExtension(ProjectFullPath);
+        public string ProjectName { get; }
 
-        public string ProjectUniqueName => ProjectFullPath;
+        public string ProjectUniqueName { get; }
 
         public NuGetFramework TargetFramework
         {
