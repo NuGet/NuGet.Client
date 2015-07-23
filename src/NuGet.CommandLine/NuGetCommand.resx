@@ -5239,4 +5239,7 @@ nuget update -Self</value>
   <data name="CommandFallbackSourceDescription" xml:space="preserve">
     <value>A list of packages sources to use as fallbacks for this command.</value>
   </data>
+  <data name="RestoreCommandMsBuildPath" xml:space="preserve">
+    <value>Path to MSBuild, defaults to '%ProgramFiles%\MSBuild\14.0\Bin\MSBuild.exe.</value>
+  </data>
 </root>

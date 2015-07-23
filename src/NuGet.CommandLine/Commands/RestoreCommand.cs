@@ -31,6 +31,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "RestoreCommandSolutionDirectory")]
         public string SolutionDirectory { get; set; }
 
+        [Option(typeof(NuGetCommand), "RestoreCommandMsBuildPath")]
+        public string MsBuildPath { get; set; }
+
         [ImportingConstructor]
         public RestoreCommand()
             : base(MachineCache.Default)
@@ -86,7 +89,7 @@ namespace NuGet.CommandLine
             }
             else if (MsBuildUtility.IsMsBuildBasedProject(projectPath))
             {
-                externalProjects = MsBuildUtility.GetProjectReferences(projectPath);
+                externalProjects = MsBuildUtility.GetProjectReferences(MsBuildPath, projectPath);
 
                 var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(projectPath));
                 var packageSpecFile = Path.Combine(projectDirectory, PackageSpec.PackageSpecFileName);

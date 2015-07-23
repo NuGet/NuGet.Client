@@ -6030,4 +6030,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="InstallCommandUnableToFindPackage" xml:space="preserve">
     <value>Unable to find package '{0}'</value>
   </data>
+  <data name="MsBuildDoesNotExistAtPath" xml:space="preserve">
+    <value>MsBuild.exe does not exist at '{0}'.</value>
+  </data>
 </root>

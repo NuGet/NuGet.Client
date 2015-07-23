@@ -5893,6 +5893,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to MsBuild.exe does not exist at &apos;{0}&apos;..
+        /// </summary>
+        public static string MsBuildDoesNotExistAtPath {
+            get {
+                return ResourceManager.GetString("MsBuildDoesNotExistAtPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Found multiple project files for &apos;{0}&apos;..
         /// </summary>
         public static string MultipleProjectFilesFound {

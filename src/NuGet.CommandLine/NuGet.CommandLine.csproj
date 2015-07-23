@@ -34,7 +34,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="GetProjectsReferencingProjectJsonFiles.target" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalysisResources.Designer.cs">
       <AutoGen>True</AutoGen>

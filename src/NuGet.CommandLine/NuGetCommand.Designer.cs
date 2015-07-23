@@ -9675,6 +9675,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Path to MSBuild, defaults to &apos;%ProgramFiles%\MSBuild\14.0\Bin\MSBuild.exe..
+        /// </summary>
+        internal static string RestoreCommandMsBuildPath {
+            get {
+                return ResourceManager.GetString("RestoreCommandMsBuildPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 禁止使用计算机缓存作为第一个程序包源。.
         /// </summary>
         internal static string RestoreCommandNoCache_chs {
