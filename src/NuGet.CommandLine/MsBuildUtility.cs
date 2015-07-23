@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using Microsoft.Build.Construction;
 using Microsoft.Build.Execution;
+using NuGet.Common;
 
 namespace NuGet.CommandLine
 {
@@ -65,9 +65,10 @@ namespace NuGet.CommandLine
 
         public static IEnumerable<string> GetAllProjectFileNames(string solutionFile)
         {
-            var solution = SolutionFile.Parse(solutionFile);
-            return solution.ProjectsInOrder.Where(project => project.ProjectType != SolutionProjectType.SolutionFolder)
-                .Select(project => project.AbsolutePath);
+            var solution = new Solution(solutionFile);
+            var solutionDirectory = Path.GetDirectoryName(solutionFile);
+            return solution.Projects.Where(project => !project.IsSolutionFolder)
+                .Select(project => Path.Combine(solutionDirectory, project.RelativePath));
         }
     }
 }

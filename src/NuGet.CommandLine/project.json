@@ -1,12 +1,6 @@
 ﻿{
     "frameworks": {
-        "net45": {
-            "frameworkAssemblies": {
-                "Microsoft.Build.Framework": "14.0.0",
-                "Microsoft.Build": "14.0.0",
-                "System.ComponentModel.DataAnnotations": "4.0.0.0"
-            }
-        }
+        "net45": {}
     },
     "runtimes": {
         "win-anycpu": { }
