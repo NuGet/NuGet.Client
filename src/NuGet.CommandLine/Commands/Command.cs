@@ -23,9 +23,6 @@ namespace NuGet.CommandLine
         public IList<string> Arguments { get; private set; }
 
         [Import]
-        public Logging.ILogger Logger { get; set; }
-
-        [Import]
         public IConsole Console { get; set; }
 
         [Import]

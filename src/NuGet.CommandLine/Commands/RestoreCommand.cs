@@ -77,7 +77,7 @@ namespace NuGet.CommandLine
             IEnumerable<string> externalProjects = null;
             if (string.Equals(PackageSpec.PackageSpecFileName, projectFileName, StringComparison.OrdinalIgnoreCase))
             {
-                Logger.LogVerbose($"Reading project file {Arguments[0]}");
+                Console.LogVerbose($"Reading project file {Arguments[0]}");
                 var projectDirectory = Path.GetDirectoryName(projectPath);
                 project = JsonPackageSpecReader.GetPackageSpec(
                     File.ReadAllText(projectPath),
@@ -91,26 +91,26 @@ namespace NuGet.CommandLine
                 var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(projectPath));
                 var packageSpecFile = Path.Combine(projectDirectory, PackageSpec.PackageSpecFileName);
                 project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(packageSpecFile), projectPath, projectPath);
-                Logger.LogVerbose($"Reading project file {projectPath}");
+                Console.LogVerbose($"Reading project file {projectPath}");
             }
             else
             {
                 var file = Path.Combine(projectPath, PackageSpec.PackageSpecFileName);
 
-                Logger.LogVerbose($"Reading project file {file}");
+                Console.LogVerbose($"Reading project file {file}");
                 project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(file), Path.GetFileName(projectPath), file);
             }
-            Logger.LogVerbose($"Loaded project {project.Name} from {project.FilePath}");
+            Console.LogVerbose($"Loaded project {project.Name} from {project.FilePath}");
 
             // Resolve the root directory
             var rootDirectory = PackageSpecResolver.ResolveRootDirectory(projectPath);
-            Logger.LogVerbose($"Found project root directory: {rootDirectory}");
+            Console.LogVerbose($"Found project root directory: {rootDirectory}");
 
             // Resolve the packages directory
             var packagesDir = !string.IsNullOrEmpty(PackagesDirectory) ?
                 PackagesDirectory :
                 Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), ".nuget", "packages");
-            Logger.LogVerbose($"Using packages directory: {packagesDir}");
+            Console.LogVerbose($"Using packages directory: {packagesDir}");
 
             var packageSources = GetPackageSources(Settings);
             var request = new RestoreRequest(
@@ -133,7 +133,7 @@ namespace NuGet.CommandLine
             request.NoCache = NoCache;
 
             // Resolve the packages directory
-            Logger.LogVerbose($"Using packages directory: {request.PackagesDirectory}");
+            Console.LogVerbose($"Using packages directory: {request.PackagesDirectory}");
 
             if (externalProjects != null)
             {
@@ -150,9 +150,9 @@ namespace NuGet.CommandLine
             CheckRequireConsent();
 
             // Run the restore
-            var command = new Commands.RestoreCommand(Logger, request);
+            var command = new Commands.RestoreCommand(Console, request);
             var result = await command.ExecuteAsync();
-            result.Commit(Logger);
+            result.Commit(Console);
         }
 
         private void ReadSettings(PackageRestoreInputs packageRestoreInputs)
@@ -233,7 +233,7 @@ namespace NuGet.CommandLine
                     LocalizedResourceManager.GetString("InstallCommandNothingToInstall"),
                     "packages.config");
 
-                Logger.LogInformation(message);
+                Console.LogInformation(message);
                 return Task.FromResult(0);
             }
 
@@ -258,7 +258,7 @@ namespace NuGet.CommandLine
                 maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism);
 
             CheckRequireConsent();
-            return PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Logger));
+            return PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Console));
         }
 
         private void CheckRequireConsent()
@@ -274,7 +274,7 @@ namespace NuGet.CommandLine
                         LocalizedResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage"),
                         NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
 
-                    Logger.LogInformation(message);
+                    Console.LogInformation(message);
                 }
                 else
                 {

@@ -119,7 +119,7 @@ namespace NuGet.CommandLine
             var packageServer = new PackageServer(source, CommandLineConstants.UserAgent);
             packageServer.SendingRequest += (sender, e) =>
             {
-                Logger.LogDebug(String.Format(CultureInfo.CurrentCulture, "{0} {1}", e.Request.Method, e.Request.RequestUri));
+                Console.LogDebug(String.Format(CultureInfo.CurrentCulture, "{0} {1}", e.Request.Method, e.Request.RequestUri));
             };
 
             IEnumerable<string> packagesToPush = GetPackagesToPush(packagePath);

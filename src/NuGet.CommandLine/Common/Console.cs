@@ -316,17 +316,26 @@ namespace NuGet.Common
 
         public void LogDebug(string data)
         {
-            WriteColor(Out, ConsoleColor.Gray, data);
+            if (Verbosity == Verbosity.Detailed)
+            {
+                WriteColor(Out, ConsoleColor.Gray, data);
+            }
         }
 
         public void LogVerbose(string data)
         {
-            WriteLine(data);
+            if (Verbosity == Verbosity.Detailed)
+            {
+                WriteLine(data);
+            }
         }
 
         public void LogInformation(string data)
         {
-            WriteLine(data);
+            if (Verbosity == Verbosity.Normal || Verbosity == Verbosity.Detailed)
+            {
+                WriteLine(data);
+            }
         }
 
         public void LogWarning(string data)

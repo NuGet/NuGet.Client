@@ -304,7 +304,7 @@ namespace NuGet.CommandLine
                 if (Directory.Exists(packagesDir))
                 {
                     string relativePath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(CurrentDirectory), packagesDir);
-                    Logger.LogVerbose(
+                    Console.LogVerbose(
                         string.Format(
                             CultureInfo.CurrentCulture,
                             LocalizedResourceManager.GetString("LookingForInstalledPackages"),

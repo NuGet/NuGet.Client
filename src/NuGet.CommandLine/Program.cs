@@ -161,7 +161,6 @@ namespace NuGet.CommandLine
                     container.ComposeExportedValue<IConsole>(console);
                     container.ComposeExportedValue<IPackageRepositoryFactory>(new NuGet.Common.CommandLineRepositoryFactory(console));
                     container.ComposeExportedValue<IFileSystem>(fileSystem);
-                    container.ComposeExportedValue<Logging.ILogger>(new CommandOutputLogger());
                     container.ComposeParts(this);
                 }
             }

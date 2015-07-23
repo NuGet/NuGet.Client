@@ -159,7 +159,7 @@ namespace NuGet.CommandLine
                 packageRestoreFailedEvent: null,
                 sourceRepositories: GetPackageSources(Settings).Select(sourceRepositoryProvider.CreateRepository),
                 maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism);
-            return PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Logger));
+            return PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Console));
         }
 
         private SourceRepositoryProvider GetSourceRepositoryProvider()
@@ -226,7 +226,7 @@ namespace NuGet.CommandLine
                     LocalizedResourceManager.GetString("InstallCommandPackageAlreadyExists"),
                     packageIdentity);
 
-                Logger.LogInformation(message);
+                Console.LogInformation(message);
             }
             else
             {
@@ -234,7 +234,7 @@ namespace NuGet.CommandLine
                     folderProject,
                     packageIdentity,
                     resolutionContext,
-                    new ConsoleProjectContext(Logger),
+                    new ConsoleProjectContext(Console),
                     primaryRepositories,
                     Enumerable.Empty<SourceRepository>(),
                     CancellationToken.None);
