@@ -46,7 +46,7 @@
             <NuGetExeDir>$(RootDir)\.nuget</NuGetExeDir>
             <NuGetExePath>$(NuGetExeDir)\nuget.exe</NuGetExePath>
             <NuGetExeSources>@(NuGetSourcesList -> '-source %(Identity)', ' ')</NuGetExeSources>
-            <NuGetCommndLineCmdSources>@(NuGetSourcesList -> '-f %(Identity)', ' ')</NuGetCommndLineCmdSources>
+            <NuGetCommandLineCmdSources>@(NuGetSourcesList -> '-f %(Identity)', ' ')</NuGetCommandLineCmdSources>
         </PropertyGroup>
 
         <MakeDir Directories="$(NuGetExeDir)" Condition="!Exists('$(NuGetExeDir)')" />
@@ -61,7 +61,7 @@
         <Exec Command="$(RootDir)\packages\NuGet.CommandLine\tools\nuget.exe install NuGet.MsBuild.Integration -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre"
               Condition=" !Exists('$(RootDir)\packages\NuGet.MsBuild.Integration') " />
 
-        <Exec Command="$(RootDir)\packages\NuGet.CommandLine\tools\nuget.exe restore $(RootDir)\PackageManagement.sln"  />
+        <Exec Command="$(RootDir)\packages\NuGet.CommandLine\tools\nuget.exe restore $(NuGetCommandLineCmdSources) $(RootDir)\PackageManagement.sln"  />
     </Target>
 
     <ItemGroup>
