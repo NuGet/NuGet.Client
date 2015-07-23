@@ -54,29 +54,14 @@
         <DownloadNuGet OutputFilename="$(NuGetExePath)" Condition=" !Exists('$(NuGetExePath)')" />
 
         <!-- Restore NuGet.CommandLine.Cmd -->
-        <Exec Command="$(NuGetExePath) install NuGet.CommandLine.Cmd -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre $(NuGetExeSources)"
-              Condition=" !Exists('$(RootDir)\packages\NuGet.CommandLine.cmd') " />
+        <Exec Command="$(NuGetExePath) install NuGet.CommandLine -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre -source https://www.myget.org/F/nugetbuild/api/v2 $(NuGetExeSources)"
+              Condition=" !Exists('$(RootDir)\packages\NuGet.CommandLine') " />
 
         <!-- Restore MsBuid script -->
-        <Exec Command="$(NuGetExePath) install NuGet.MsBuild.Integration -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre"
+        <Exec Command="$(RootDir)\packages\NuGet.CommandLine\tools\nuget.exe install NuGet.MsBuild.Integration -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre"
               Condition=" !Exists('$(RootDir)\packages\NuGet.MsBuild.Integration') " />
 
-        <!-- Transitive restore requires project.lock.json to exist. We'll workaround this by listing the projects in a deterministic order -->
-        <ItemGroup>
-            <SrcProjectsToRestore Include="$(RootDir)\src\ProjectManagement\*.csproj" />
-            <SrcProjectsToRestore Include="$(RootDir)\src\PackageManagement\*.csproj" />
-            <SrcProjectsToRestore Include="$(RootDir)\src\PackageManagement.UI\*.csproj" />
-            <SrcProjectsToRestore Include="$(RootDir)\src\NuGet.CommandLine\*.csproj" />
-
-            <TestProjectsToRestore Include="$(RootDir)\test\Test.Utility\*.csproj" />
-            <TestProjectsToRestore Include="$(RootDir)\test\ProjectManagement.Test\*.csproj" />
-            <TestProjectsToRestore Include="$(RootDir)\test\PackageManagement.Test\*.csproj" />
-            <TestProjectsToRestore Include="$(RootDir)\test\NuGet.CommandLine.Test\*.csproj" />
-            <TestProjectsToRestore Include="$(RootDir)\test\StandaloneUI\*.csproj" />
-        </ItemGroup>
-        
-        <Exec Command="$(RootDir)\packages\NuGet.CommandLine.Cmd\build\NuGet.CommandLine.cmd restore $(NuGetCommndLineCmdSources) %(SrcProjectsToRestore.FullPath)"  />
-        <Exec Command="$(RootDir)\packages\NuGet.CommandLine.Cmd\build\NuGet.CommandLine.cmd restore $(NuGetCommndLineCmdSources) %(TestProjectsToRestore.FullPath)"  />
+        <Exec Command="$(RootDir)\packages\NuGet.CommandLine\tools\nuget.exe restore $(RootDir)\PackageManagement.sln"  />
     </Target>
 
     <ItemGroup>
