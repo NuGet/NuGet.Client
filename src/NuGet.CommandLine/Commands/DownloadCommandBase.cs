@@ -101,7 +101,7 @@ namespace NuGet.CommandLine
                 packageSources.Add(Common.PackageSourceProviderExtensions.ResolveSource(packageSources, source));
             }
 
-            if (packageSources.Count == 0)
+            if (Source.Count == 0)
             {
                 packageSources.AddRange(availableSources);
             }
