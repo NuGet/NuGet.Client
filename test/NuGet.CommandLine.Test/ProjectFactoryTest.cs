@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Xml;
 using Microsoft.Build.Evaluation;
 using Moq;
 using NuGet.CommandLine.Test;

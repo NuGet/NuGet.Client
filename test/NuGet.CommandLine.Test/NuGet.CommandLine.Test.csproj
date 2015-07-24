@@ -43,14 +43,8 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="Microsoft.Build, Version=14.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>$(MSBuildExtensionsPath32)\14.0\Bin\Microsoft.Build.dll</HintPath>
-      <SpecificVersion>true</SpecificVersion>
-    </Reference>
-    <Reference Include="Microsoft.Build.Framework, Version=14.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>$(MSBuildExtensionsPath32)\14.0\Bin\Microsoft.Build.Framework.dll</HintPath>
-      <SpecificVersion>true</SpecificVersion>
-    </Reference>
+    <Reference Include="Microsoft.Build, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.Build.Framework, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />
