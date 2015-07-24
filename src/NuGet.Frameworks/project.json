@@ -1,13 +1,13 @@
 ﻿{
-    "version": "3.1.0",
+    "version": "3.1.1",
     "description": "The understanding of target frameworks for NuGet.Packaging",
     "authors": [ "NuGet" ],
     "copyright": "Copyright .NET Foundation. All rights reserved.",
     "projectUrl": "https://github.com/NuGet/NuGet.Packaging/",
     "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Packaging/master/LICENSE",
     "dependencies": {
-        "NuGet.Versioning": "3.1.0-*",
-        "NuGet.Common": { "type": "build",  "version": "3.1.0-*" }
+        "NuGet.Versioning": "3.1.1-*",
+        "NuGet.Common": { "type": "build",  "version": "3.1.1-*" }
     },
     "frameworks": {
         "net45": { },
