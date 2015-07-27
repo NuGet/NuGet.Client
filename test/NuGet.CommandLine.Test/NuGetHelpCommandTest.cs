@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -26,8 +21,7 @@ namespace NuGet.CommandLine.Test
         public void HelpCommand_HelpMessage(string command)
         {
             // Arrange
-            var targetDir = ConfigurationManager.AppSettings["TargetDir"];
-            var nugetexe = Path.Combine(targetDir, "nuget.exe");
+            var nugetexe = Util.GetNuGetExePath();
 
             // Act
             var r = CommandRunner.Run(
@@ -45,8 +39,7 @@ namespace NuGet.CommandLine.Test
         public void HelpCommand_SpecCommand()
         {
             // Arrange
-            var targetDir = ConfigurationManager.AppSettings["TargetDir"];
-            var nugetexe = Path.Combine(targetDir, "nuget.exe");
+            var nugetexe = Util.GetNuGetExePath();
 
             // Act
             var r = CommandRunner.Run(

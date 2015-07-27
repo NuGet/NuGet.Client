@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -16,8 +11,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void DeleteCommand_DeleteFromFileSystemSource()
         {
-            var targetDir = ConfigurationManager.AppSettings["TargetDir"];
-            var nugetexe = Path.Combine(targetDir, "nuget.exe");
+            var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var source = Path.Combine(tempPath, Guid.NewGuid().ToString());
             try
@@ -54,8 +48,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void DeleteCommand_DeleteFromFileSystemSourceUnixStyle()
         {
-            var targetDir = ConfigurationManager.AppSettings["TargetDir"];
-            var nugetexe = Path.Combine(targetDir, "nuget.exe");
+            var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var source = Path.Combine(tempPath, Guid.NewGuid().ToString());
             source = source.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
@@ -90,8 +83,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void DeleteCommand_DeleteFromHttpSource()
         {
-            var targetDir = ConfigurationManager.AppSettings["TargetDir"];
-            var nugetexe = Path.Combine(targetDir, "nuget.exe");
+            var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var mockServerEndPoint = "http://localhost:1234/";
 

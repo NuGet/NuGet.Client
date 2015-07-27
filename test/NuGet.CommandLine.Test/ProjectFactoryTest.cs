@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -99,8 +98,7 @@ namespace NuGet.CommandLine
         public void EnsureProjectFactoryDoesNotAddFileThatIsAlreadyInPackage()
         {
             // Setup
-            var targetDir = ConfigurationManager.AppSettings["TargetDir"];
-            var nugetexe = Path.Combine(targetDir, "nuget.exe");
+            var nugetexe = Util.GetNuGetExePath();
             var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             try
             {

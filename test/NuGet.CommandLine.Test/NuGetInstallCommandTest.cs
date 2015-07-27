@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -11,10 +10,7 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetInstallCommandTest
     {
-        /*
-        Disable those tests because PackageSaveMode is not currently supported.
-
-        [Fact]
+        [Fact(Skip = "PackageSaveMode is not supported yet")]
         public void InstallCommand_PackageSaveModeNuspec()
         {
             var tempPath = Path.GetTempPath();
@@ -57,7 +53,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "PackageSaveMode is not supported yet")]
         public void InstallCommand_PackageSaveModeNupkg()
         {
             var tempPath = Path.GetTempPath();
@@ -100,7 +96,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "PackageSaveMode is not supported yet")]
         public void InstallCommand_PackageSaveModeNuspecNupkg()
         {
             var tempPath = Path.GetTempPath();
@@ -146,7 +142,7 @@ namespace NuGet.CommandLine.Test
         // Test that after a package is installed with -PackageSaveMode nuspec, nuget.exe
         // can detect that the package is already installed when trying to install the same
         // package.
-        [Fact]
+        [Fact(Skip = "PackageSaveMode is not supported yet")]
         public void InstallCommand_PackageSaveModeNuspecReinstall()
         {
             var tempPath = Path.GetTempPath();
@@ -192,7 +188,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Test that PackageSaveMode specified in nuget.config file is used.
-        [Fact]
+        [Fact(Skip = "PackageSaveMode is not supported yet")]
         public void InstallCommand_PackageSaveModeInConfigFile()
         {
             var tempPath = Path.GetTempPath();
@@ -241,7 +237,7 @@ namespace NuGet.CommandLine.Test
                 Util.DeleteDirectory(outputDirectory);
                 Util.DeleteDirectory(source);
             }
-        } */
+        }
 
         // Tests that when package restore is enabled and -RequireConsent is specified,
         // the opt out message is displayed.
@@ -256,8 +252,7 @@ namespace NuGet.CommandLine.Test
             var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
             var proj1Directory = Path.Combine(workingPath, "proj1");
             var currentDirectory = Directory.GetCurrentDirectory();
-            var targetDir = ConfigurationManager.AppSettings["TargetDir"];
-            var nugetexe = Path.Combine(targetDir, "nuget.exe");
+            var nugetexe = Util.GetNuGetExePath();
 
             try
             {
@@ -328,8 +323,7 @@ namespace NuGet.CommandLine.Test
             var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
             var proj1Directory = Path.Combine(workingPath, "proj1");
             var currentDirectory = Directory.GetCurrentDirectory();
-            var targetDir = ConfigurationManager.AppSettings["TargetDir"];
-            var nugetexe = Path.Combine(targetDir, "nuget.exe");
+            var nugetexe = Util.GetNuGetExePath();
 
             try
             {
@@ -392,8 +386,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void InstallCommand_GetLastestReleaseVersion()
         {
-            var targetDir = ConfigurationManager.AppSettings["TargetDir"];
-            var nugetexe = Path.Combine(targetDir, "nuget.exe");
+            var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
             var workingDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
@@ -442,8 +435,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void InstallCommand_GetLastestPrereleaseVersion()
         {
-            var targetDir = ConfigurationManager.AppSettings["TargetDir"];
-            var nugetexe = Path.Combine(targetDir, "nuget.exe");
+            var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
             var workingDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
@@ -493,8 +485,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void InstallCommand_WithVersionSpecified()
         {
-            var targetDir = ConfigurationManager.AppSettings["TargetDir"];
-            var nugetexe = Path.Combine(targetDir, "nuget.exe");
+            var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var workingDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
@@ -567,8 +558,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void InstallCommand_WillTryNewVersionsByAppendingZeros()
         {
-            var targetDir = ConfigurationManager.AppSettings["TargetDir"];
-            var nugetexe = Path.Combine(targetDir, "nuget.exe");
+            var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var workingDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
             var mockServerEndPoint = "http://localhost:1234/";
@@ -627,8 +617,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void InstallCommand_WillUseCachedFile()
         {
-            var targetDir = ConfigurationManager.AppSettings["TargetDir"];
-            var nugetexe = Path.Combine(targetDir, "nuget.exe");
+            var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
             var workingDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
@@ -714,8 +703,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void InstallCommand_DownloadPackageWhenHashChanges()
         {
-            var targetDir = ConfigurationManager.AppSettings["TargetDir"];
-            var nugetexe = Path.Combine(targetDir, "nuget.exe");
+            var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
             var workingDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
@@ -806,8 +794,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void InstallCommand_PreferNonSymbolPackage()
         {
-            var targetDir = ConfigurationManager.AppSettings["TargetDir"];
-            var nugetexe = Path.Combine(targetDir, "nuget.exe");
+            var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var source = Path.Combine(tempPath, Guid.NewGuid().ToString());
             var outputDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
@@ -858,8 +845,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void InstallCommand_DependencyResolutionFailure()
         {
-            var targetDir = ConfigurationManager.AppSettings["TargetDir"];
-            var nugetexe = Path.Combine(targetDir, "nuget.exe");
+            var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var source = Path.Combine(tempPath, Guid.NewGuid().ToString());
             var outputDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());

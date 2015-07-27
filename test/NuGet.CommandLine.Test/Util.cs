@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Globalization;
 using System.IO;
 using System.Net;
@@ -150,6 +151,13 @@ namespace NuGet.CommandLine.Test
 
             server.Get.Add("/nuget", r => "OK");
             return server;
+        }
+
+        public static string GetNuGetExePath()
+        {
+            var targetDir = ConfigurationManager.AppSettings["TargetDir"] ?? Directory.GetCurrentDirectory();
+            var nugetexe = Path.Combine(targetDir, "nuget.exe");
+            return nugetexe;
         }
     }
 }
