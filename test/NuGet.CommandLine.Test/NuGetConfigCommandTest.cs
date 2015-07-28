@@ -25,16 +25,25 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                int result = Program.Main(args);
+                // Set the working directory to C:\, otherwise,
+                // the test will change the nuget.config at the code repo's root directory
+                int result = Program.MainCore(@"c:\", args);
 
                 // Assert
                 Assert.Equal(0, result);
 
-                var settings = Settings.LoadDefaultSettings(
-                    new PhysicalFileSystem(@"c:\"), null, null);
-                var values = settings.GetValues("config", isPath: false);
-                AssertEqualCollections(values, new[] { "Name1", "Value1", "HTTP_PROXY", "http://127.0.0.1", "HTTP_PROXY.USER", @"domain\user" });
-
+                var settings = Configuration.Settings.LoadDefaultSettings(
+                    @"c:\", null, null);
+                var values = settings.GetSettingValues("config", isPath: false);
+                AssertEqualCollections(values, new[]
+                    {
+                        "Name1",
+                        "Value1",
+                        "HTTP_PROXY",
+                        "http://127.0.0.1",
+                        "HTTP_PROXY.USER",
+                        @"domain\user"
+                    });
             }
         }
 
@@ -62,13 +71,20 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, result);
 
-                var settings = Settings.LoadDefaultSettings(
-                    new PhysicalFileSystem(Path.GetDirectoryName(configFile)),
+                var settings = Configuration.Settings.LoadDefaultSettings(
+                    Path.GetDirectoryName(configFile),
                     Path.GetFileName(configFile),
                     null);
-                var values = settings.GetValues("config", isPath: false);
-                AssertEqualCollections(values, new[] { "Name1", "Value1", "HTTP_PROXY", "http://127.0.0.1", "HTTP_PROXY.USER", @"domain\user" });
-
+                var values = settings.GetSettingValues("config", isPath: false);
+                AssertEqualCollections(values, new[]
+                    {
+                        "Name1",
+                        "Value1",
+                        "HTTP_PROXY",
+                        "http://127.0.0.1",
+                        "HTTP_PROXY.USER",
+                        @"domain\user"
+                    });
             }
             finally
             {
@@ -124,7 +140,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        private void AssertEqualCollections(IList<SettingValue> actual, string[] expected)
+        private void AssertEqualCollections(IList<Configuration.SettingValue> actual, string[] expected)
         {
             Assert.Equal(actual.Count, expected.Length / 2);
             for (int i = 0; i < actual.Count; ++i)
