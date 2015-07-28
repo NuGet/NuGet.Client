@@ -65,6 +65,7 @@
     <Compile Include="NuGetDeleteCommandTest.cs" />
     <Compile Include="NuGetHelpCommandTest.cs" />
     <Compile Include="NuGetInstallCommandTest.cs" />
+    <Compile Include="NuGetListCommandTest.cs" />
     <Compile Include="NuGetPackCommandTest.cs" />
     <Compile Include="NuGetRestoreCommandTest.cs" />
     <Compile Include="PackageCreator.cs" />
