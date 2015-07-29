@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
@@ -186,7 +187,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private Task PerformNuGetV2RestoreAsync(PackageRestoreInputs packageRestoreInputs)
+        private async Task PerformNuGetV2RestoreAsync(PackageRestoreInputs packageRestoreInputs)
         {
             ReadSettings(packageRestoreInputs);
             var packagesFolderPath = GetPackagesFolder(packageRestoreInputs);
@@ -237,10 +238,10 @@ namespace NuGet.CommandLine
                     "packages.config");
 
                 Console.LogInformation(message);
-                return Task.FromResult(0);
+                return;
             }
 
-            var packageRestoreData = installedPackageReferences.Select(reference =>
+            var packageRestoreData = missingPackageReferences.Select(reference =>
                 new PackageRestoreData(
                     reference,
                     new[] { packageRestoreInputs.RestoringWithSolutionFile ? packageRestoreInputs.DirectoryOfSolutionFile : packageRestoreInputs.PackageReferenceFiles[0] },
@@ -251,17 +252,24 @@ namespace NuGet.CommandLine
                 .Select(sourceRepositoryProvider.CreateRepository)
                 .ToArray();
 
+            var bag = new ConcurrentBag<PackageRestoreFailedEventArgs>();
+
             var packageRestoreContext = new PackageRestoreContext(
                 nuGetPackageManager,
                 packageRestoreData,
                 CancellationToken.None,
                 packageRestoredEvent: null,
-                packageRestoreFailedEvent: null,
+                packageRestoreFailedEvent: (sender, args) => { bag.Add(args); },
                 sourceRepositories: repositories,
                 maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism);
 
             CheckRequireConsent();
-            return PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Console));
+            await PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Console));
+
+            foreach(var item in bag)
+            {
+                Console.WriteError(item.Exception.Message);
+            }
         }
 
         private void CheckRequireConsent()
