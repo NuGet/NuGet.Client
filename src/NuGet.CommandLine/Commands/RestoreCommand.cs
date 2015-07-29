@@ -43,6 +43,16 @@ namespace NuGet.CommandLine
 
         public override async Task ExecuteCommandAsync()
         {
+            if (!string.IsNullOrEmpty(PackagesDirectory))
+            {
+                PackagesDirectory = Path.GetFullPath(PackagesDirectory);
+            }
+
+            if (!string.IsNullOrEmpty(SolutionDirectory))
+            {
+                SolutionDirectory = Path.GetFullPath(SolutionDirectory);
+            }
+
             var restoreInputs = DetermineRestoreInputs();
             if (restoreInputs.PackageReferenceFiles.Count > 0)
             {
