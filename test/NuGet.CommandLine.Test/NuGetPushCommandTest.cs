@@ -694,17 +694,7 @@ namespace NuGet.CommandLine.Test
         // Asserts that the contents of two files are equal.
         void AssertFileEqual(string fileName1, string fileName2)
         {
-            byte[] content1, content2;
-            using (var r1 = new FileStream(fileName1, FileMode.Open))
-            {
-                content1 = r1.ReadAllBytes();
-            }
-            using (var r1 = new FileStream(fileName2, FileMode.Open))
-            {
-                content2 = r1.ReadAllBytes();
-            }
-
-            Assert.Equal(content1, content2);
+            Assert.Equal(File.ReadAllBytes(fileName1), File.ReadAllBytes(fileName2));
         }
     }
 }

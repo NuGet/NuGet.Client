@@ -146,7 +146,7 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var args = "list test -Source " + mockServerEndPoint + "nuget";
-                var r1 = CommandRunner.Run(
+                var result = CommandRunner.Run(
                     nugetexe,
                     tempPath,
                     args,
@@ -154,12 +154,12 @@ namespace NuGet.CommandLine.Test
                 server.Stop();
 
                 // Assert
-                Assert.Equal(0, r1.Item1);
+                Assert.Equal(0, result.Item1);
                 
                 // verify that only package id & version is displayed
                 var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                     "testPackage2 2.1" + Environment.NewLine;
-                Assert.Equal(expectedOutput, r1.Item2);
+                Assert.Equal(expectedOutput, result.Item2);
                                 
                 Assert.Contains("$filter=IsLatestVersion", searchRequest);
                 Assert.Contains("searchTerm='test", searchRequest);
