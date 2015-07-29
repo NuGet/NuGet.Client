@@ -68,7 +68,7 @@ namespace NuGet.CommandLine
                 "/p:BuildProjectReferences=false " +
                 $"/p:CustomAfterMicrosoftCommonTargets={targetPath} " +
                 $"/p:ResultsFile={resultsPath} " +
-                projectFullPath;
+                $"\"{projectFullPath.Trim('"')}\"";
 
             var processStartInfo = new ProcessStartInfo
             {
