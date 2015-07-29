@@ -1024,7 +1024,7 @@ namespace NuGet.Commands.Test
             const string project = @"
 {
     ""dependencies"": {
-        ""System.Runtime"": ""4.0.10-beta-*""
+        ""System.Runtime"": ""4.0.10-beta-23019""
     },
     ""frameworks"": {
         ""dotnet"": { }
@@ -1036,7 +1036,7 @@ namespace NuGet.Commands.Test
   ""version"": 1,
   ""targets"": {
     "".NETPlatform,Version=v5.0"": {
-      ""System.Runtime/4.0.10-beta-23008"": {
+      ""System.Runtime/4.0.10-beta-23019"": {
         ""compile"": {
           ""ref/dotnet/System.Runtime.dll"": {}
         }
@@ -1044,7 +1044,7 @@ namespace NuGet.Commands.Test
     }
   },
   ""libraries"": {
-    ""System.Runtime/4.0.10-beta-23008"": {
+    ""System.Runtime/4.0.10-beta-23019"": {
       ""sha512"": ""JkGp8sCzxxRY1GS+p1SEk8WcaT8pu++/5b94ar2i/RaUN/OzkcGP/6OLFUxUf1uar75pUvotpiMawVt1dCEUVA=="",
       ""type"": ""Package"",
       ""files"": [
@@ -1064,7 +1064,7 @@ namespace NuGet.Commands.Test
   },
   ""projectFileDependencyGroups"": {
     """": [
-      ""System.Runtime >= 4.0.10-beta-*""
+      ""System.Runtime >= 4.0.10-beta-23019""
     ],
     "".NETPlatform,Version=v5.0"": []
   }
@@ -1075,7 +1075,7 @@ namespace NuGet.Commands.Test
             var sources = new List<PackageSource>();
 
             // TODO(anurse): We should be mocking this out or using a stable source...
-            sources.Add(new PackageSource("https://www.myget.org/F/dotnet-core/api/v2/"));
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
 
             var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
             var projectDir = TestFileSystemUtility.CreateRandomTestFolder();
@@ -1102,7 +1102,7 @@ namespace NuGet.Commands.Test
             // Assert
             Assert.Equal(1, installed.Count);
             Assert.Equal("System.Runtime", installed.Single().Name);
-            Assert.Equal(NuGetVersion.Parse("4.0.10-beta-23008"), installed.Single().Version);
+            Assert.Equal(NuGetVersion.Parse("4.0.10-beta-23019"), installed.Single().Version);
         }
 
         [Fact]
