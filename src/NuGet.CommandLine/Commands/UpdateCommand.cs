@@ -204,7 +204,7 @@ namespace NuGet.CommandLine
             var packageSources = new List<Configuration.PackageSource>();
             foreach (var source in Source)
             {
-                packageSources.Add(Common.PackageSourceProviderExtensions.ResolveSource(packageSources, source));
+                packageSources.Add(Common.PackageSourceProviderExtensions.ResolveSource(availableSources, source));
             }
 
             if (packageSources.Count == 0)
