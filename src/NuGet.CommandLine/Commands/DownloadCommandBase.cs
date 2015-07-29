@@ -98,7 +98,7 @@ namespace NuGet.CommandLine
 
             foreach (var source in Source)
             {
-                packageSources.Add(Common.PackageSourceProviderExtensions.ResolveSource(packageSources, source));
+                packageSources.Add(Common.PackageSourceProviderExtensions.ResolveSource(availableSources, source));
             }
 
             if (Source.Count == 0)
