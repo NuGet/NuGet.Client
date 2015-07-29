@@ -123,7 +123,9 @@ namespace NuGet.CommandLine
             // Resolve the packages directory
             var packagesDir = !string.IsNullOrEmpty(PackagesDirectory) ?
                 PackagesDirectory :
-                Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), ".nuget", "packages");
+                SettingsUtility.GetGlobalPackagesFolder(Settings);
+            packagesDir = Path.GetFullPath(packagesDir);
+
             Console.LogVerbose($"Using packages directory: {packagesDir}");
 
             var packageSources = GetPackageSources(Settings);
@@ -131,14 +133,7 @@ namespace NuGet.CommandLine
                 project,
                 packageSources);
 
-            if (!string.IsNullOrEmpty(PackagesDirectory))
-            {
-                request.PackagesDirectory = PackagesDirectory;
-            }
-            else
-            {
-                request.PackagesDirectory = SettingsUtility.GetGlobalPackagesFolder(Settings);
-            }
+            request.PackagesDirectory = packagesDir;
 
             if (DisableParallelProcessing)
             {
