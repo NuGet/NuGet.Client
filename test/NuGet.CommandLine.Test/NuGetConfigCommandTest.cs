@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -97,6 +96,7 @@ namespace NuGet.CommandLine.Test
         public void ConfigCommand_GetValueWithAsPathOption()
         {
             // Arrange
+            var nugetexe = Util.GetNuGetExePath();
             var configFile = Path.GetTempFileName();
             Util.CreateFile(Path.GetDirectoryName(configFile), Path.GetFileName(configFile), "<configuration/>");
 
@@ -109,7 +109,11 @@ namespace NuGet.CommandLine.Test
                     "-ConfigFile",
                     configFile
                 };
-                Program.Main(args);
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    waitForExit: true);
 
                 // Act
                 args = new string[] {
@@ -119,15 +123,17 @@ namespace NuGet.CommandLine.Test
                     "-ConfigFile",
                     configFile
                 };
-                MemoryStream memoryStream = new MemoryStream();
-                TextWriter writer = new StreamWriter(memoryStream);
-                Console.SetOut(writer);
-                int r = Program.Main(args);
-                writer.Close();
-                var output = Encoding.Default.GetString(memoryStream.ToArray());
+
+                result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                var output = result.Item2;
 
                 // Assert
-                Assert.Equal(0, r);
+                Assert.Equal(0, result.Item1);
 
                 var expectedValue = Path.Combine(Path.GetDirectoryName(configFile), "Value1")
                     + Environment.NewLine;

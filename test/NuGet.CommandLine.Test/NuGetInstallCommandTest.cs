@@ -145,6 +145,7 @@ namespace NuGet.CommandLine.Test
         [Fact(Skip = "PackageSaveMode is not supported yet")]
         public void InstallCommand_PackageSaveModeNuspecReinstall()
         {
+            var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var source = Path.Combine(tempPath, Guid.NewGuid().ToString());
             var outputDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
@@ -167,12 +168,13 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(0, r);
 
                 // Act
-                MemoryStream memoryStream = new MemoryStream();
-                TextWriter writer = new StreamWriter(memoryStream);
-                Console.SetOut(writer);
-                r = Program.Main(args);
-                writer.Close();
-                var output = Encoding.Default.GetString(memoryStream.ToArray());
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                var output = result.Item2;
 
                 // Assert
                 var expectedOutput = "'testPackage1 1.1.0' already installed." +
@@ -439,7 +441,7 @@ namespace NuGet.CommandLine.Test
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
             var workingDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:1234/";
+            var mockServerEndPoint = "http://localhost:1235/";
 
             try
             {
@@ -489,7 +491,7 @@ namespace NuGet.CommandLine.Test
             var tempPath = Path.GetTempPath();
             var workingDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:1234/";
+            var mockServerEndPoint = "http://localhost:1236/";
 
             try
             {
@@ -561,7 +563,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var workingDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:1234/";
+            var mockServerEndPoint = "http://localhost:1237/";
 
             try
             {
@@ -621,7 +623,7 @@ namespace NuGet.CommandLine.Test
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
             var workingDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:1234/";
+            var mockServerEndPoint = "http://localhost:1238/";
 
             try
             {
@@ -707,7 +709,7 @@ namespace NuGet.CommandLine.Test
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
             var workingDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:1234/";
+            var mockServerEndPoint = "http://localhost:1239/";
 
             try
             {

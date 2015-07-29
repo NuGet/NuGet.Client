@@ -906,7 +906,7 @@ EndProject");
             var tempPath = Path.GetTempPath();
             var workingDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:1234/";
+            var mockServerEndPoint = "http://localhost:8901/";
 
             try
             {

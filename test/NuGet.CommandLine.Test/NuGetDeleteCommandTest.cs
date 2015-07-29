@@ -85,7 +85,7 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
-            var mockServerEndPoint = "http://localhost:1234/";
+            var mockServerEndPoint = "http://localhost:9012/";
 
             // Arrange
             var server = new MockServer(mockServerEndPoint);

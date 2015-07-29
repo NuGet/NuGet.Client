@@ -1,21 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
 using Xunit;
-using Xunit.Extensions;
 
 namespace NuGet.CommandLine.Test
 {
-    public class ListCommandTest
+    public class NuGetListCommandTest
     {
         [Fact]
         public void ListCommand_WithUserSpecifiedSource()
         {
             // Arrange
+            var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var repositoryPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
             Util.CreateDirectory(repositoryPath);
@@ -23,17 +20,17 @@ namespace NuGet.CommandLine.Test
             Util.CreateTestPackage("testPackage2", "2.0.0", repositoryPath);
 
             string[] args = new string[] { "list", "-Source", repositoryPath };
-            MemoryStream memoryStream = new MemoryStream();
-            TextWriter writer = new StreamWriter(memoryStream);
-            Console.SetOut(writer);
 
             // Act
-            int r = Program.Main(args);
-            writer.Close();
+            var result = CommandRunner.Run(
+                nugetexe,
+                Directory.GetCurrentDirectory(),
+                string.Join(" ", args),
+                waitForExit: true);
 
             // Assert
-            Assert.Equal(0, r);
-            var output = Encoding.Default.GetString(memoryStream.ToArray());
+            Assert.Equal(0, result.Item1);
+            var output = result.Item2;
             Assert.Equal("testPackage1 1.1.0\r\ntestPackage2 2.0.0\r\n", output);
         }
 
@@ -41,23 +38,24 @@ namespace NuGet.CommandLine.Test
         public void ListCommand_ShowLicenseUrlWithDetailedVerbosity()
         {
             // Arrange
+            var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var repositoryPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
             Util.CreateDirectory(repositoryPath);
             Util.CreateTestPackage("testPackage1", "1.1.0", repositoryPath, new Uri("http://kaka"));
 
             string[] args = new string[] { "list", "-Source", repositoryPath, "-verbosity", "detailed" };
-            MemoryStream memoryStream = new MemoryStream();
-            TextWriter writer = new StreamWriter(memoryStream);
-            Console.SetOut(writer);
 
             // Act
-            int r = Program.Main(args);
-            writer.Close();
+            var r = CommandRunner.Run(
+                nugetexe,
+                Directory.GetCurrentDirectory(),
+                string.Join(" ", args),
+                waitForExit: true);
 
             // Assert
-            Assert.Equal(0, r);
-            var output = Encoding.Default.GetString(memoryStream.ToArray());
+            Assert.Equal(0, r.Item1);
+            var output = r.Item2;
             string[] lines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
             Assert.Equal(4, lines.Length);
@@ -67,10 +65,11 @@ namespace NuGet.CommandLine.Test
             Assert.Equal(" License url: http://kaka", lines[3]);
         }
 
-        [Fact]
+        [Fact(Skip = "nuget.exe list does not return license url. This is a tracked issue")]
         public void ListCommand_WithUserSpecifiedConfigFile()
         {
             // Arrange
+            var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var repositoryPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
             Util.CreateDirectory(repositoryPath);
@@ -96,17 +95,17 @@ namespace NuGet.CommandLine.Test
 
             // Act: execute the list command
             args = new string[] { "list", "-Source", "test_source", "-ConfigFile", configFile };
-            MemoryStream memoryStream = new MemoryStream();
-            TextWriter writer = new StreamWriter(memoryStream);
-            Console.SetOut(writer);
 
-            r = Program.Main(args);
-            writer.Close();
-            File.Delete(configFile);           
+            var result = CommandRunner.Run(
+                nugetexe,
+                Directory.GetCurrentDirectory(),
+                string.Join(" ", args),
+                waitForExit: true);
+            File.Delete(configFile);
 
             // Assert
-            Assert.Equal(0, r);
-            var output = Encoding.Default.GetString(memoryStream.ToArray());
+            Assert.Equal(0, result.Item1);
+            var output = result.Item2;
             Assert.Equal("testPackage1 1.1.0\r\ntestPackage2 2.0.0\r\n", output);
         }
 
@@ -117,7 +116,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:1234/";
+            var mockServerEndPoint = "http://localhost:3456/";
 
             try
             {
@@ -180,7 +179,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:1234/";
+            var mockServerEndPoint = "http://localhost:3457/";
 
             try
             {
@@ -248,7 +247,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:1234/";
+            var mockServerEndPoint = "http://localhost:3458/";
 
             try
             {
@@ -316,7 +315,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:1234/";
+            var mockServerEndPoint = "http://localhost:3459/";
 
             try
             {
@@ -379,7 +378,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:1234/";
+            var mockServerEndPoint = "http://localhost:3460/";
 
             try
             {
@@ -442,7 +441,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:1234/";
+            var mockServerEndPoint = "http://localhost:3461/";
 
             try
             {
@@ -505,7 +504,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:1234/";
+            var mockServerEndPoint = "http://localhost:3462/";
 
             try
             {
