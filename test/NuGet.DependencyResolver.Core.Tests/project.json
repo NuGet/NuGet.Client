@@ -2,7 +2,7 @@
   "version": "1.0.0-*",
 
   "dependencies": {
-    "NuGet.DependencyResolver.Core": "3.1.1-*",
+    "NuGet.DependencyResolver.Core": "3.1.2-*",
     "xunit": "2.1.0-*",
     "xunit.runner.dnx": "2.1.0-*"
   },

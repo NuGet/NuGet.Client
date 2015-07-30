@@ -1,5 +1,5 @@
 {
-    "version": "3.1.1",
+    "version": "3.1.2-*",
     "authors": [ "NuGet" ],
     "description": "NuGet's client configuration settings implementation.",
     "copyright": "Copyright .NET Foundation. All rights reserved.",
@@ -10,7 +10,7 @@
         "warningsAsErrors": true
     },
     "dependencies": {
-        "NuGet.Common": { "type": "build",  "version": "3.0.0" }
+        "NuGet.Common": { "type": "build",  "version": "3.1.2-*" }
     },
     "frameworks": {
         "net45": {

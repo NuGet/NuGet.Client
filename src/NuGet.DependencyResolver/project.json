@@ -1,10 +1,10 @@
 ﻿{
-    "version": "3.1.1",
+    "version": "3.1.2-*",
     "dependencies": {
-        "NuGet.Packaging": "3.1.1-*",
-        "NuGet.Protocol.Core.v3": "3.1.1-*",
-        "NuGet.DependencyResolver.Core": "3.1.1-*",
-        "NuGet.Common": { "type": "build",  "version": "3.1.1-*" }
+        "NuGet.Packaging": "3.1.2-*",
+        "NuGet.Protocol.Core.v3": "3.1.2-*",
+        "NuGet.DependencyResolver.Core": "3.1.2-*",
+        "NuGet.Common": { "type": "build",  "version": "3.1.2-*" }
     },
 
     "frameworks": {
