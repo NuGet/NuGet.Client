@@ -133,6 +133,17 @@ namespace NuGet.ProjectManagement
             return File.Create(fullPath);
         }
 
+        public static Stream GetFileStream(string fullPath)
+        {
+            if (string.IsNullOrEmpty(fullPath)
+                || string.IsNullOrEmpty(Path.GetFileName(fullPath)))
+            {
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(fullPath));
+            }
+            MakeWritable(fullPath);
+            return new FileStream(fullPath, FileMode.Open, FileAccess.ReadWrite);
+        }
+
         public static IEnumerable<string> GetFiles(string root, string path, string filter)
         {
             return GetFiles(root, path, filter, recursive: false);
