@@ -184,7 +184,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return true;
             }
 
-            if (IsTypicalCpsProject(envDTEProject))
+            if (IsProjectCapabilityCompliant(envDTEProject))
             {
                 return true;
             }
@@ -192,7 +192,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return envDTEProject.Kind != null && SupportedProjectTypes.Contains(envDTEProject.Kind) && !HasUnsupportedProjectCapability(envDTEProject);
         }
 
-        private static bool IsTypicalCpsProject(EnvDTEProject envDTEProject)
+        private static bool IsProjectCapabilityCompliant(EnvDTEProject envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -200,7 +200,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var hierarchy = VsHierarchyUtility.ToVsHierarchy(envDTEProject);
 
-            return hierarchy.IsCapabilityMatch("CPS + AssemblyReferences + DeclaredSourceItems + UserSourceItems");
+            return hierarchy.IsCapabilityMatch("AssemblyReferences + DeclaredSourceItems + UserSourceItems");
         }
 
         internal static bool IsSolutionFolder(EnvDTEProject envDTEProject)
@@ -659,7 +659,7 @@ namespace NuGet.PackageManagement.VisualStudio
             int pFound;
             uint itemId;
 
-            if (IsTypicalCpsProject(envDTEProject))
+            if (IsProjectCapabilityCompliant(envDTEProject))
             {
                 // REVIEW: We want to revisit this after RTM - the code in this if statement should be applied to every project type.
                 // We're checking for VSDOCUMENTPRIORITY.DP_Standard here to see if the file is included in the project.
