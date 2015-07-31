@@ -58,6 +58,11 @@ namespace NuGet.Configuration
             }
         }
 
+        /// <summary>
+        /// Gets the <see cref="ISettings"/> that this source originated from. May be null.
+        /// </summary>
+        public ISettings Origin { get; set; }
+
         public PackageSource(string source)
             :
                 this(source, source, isEnabled: true)
