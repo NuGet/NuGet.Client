@@ -135,16 +135,12 @@
             <NuGetExeDir>$(RootDir)\.nuget</NuGetExeDir>
             <NuGetExePath>$(NuGetExeDir)\nuget.exe</NuGetExePath>
             <NuGetExeSources>@(NuGetSourcesList -> '-source %(Identity)', ' ')</NuGetExeSources>
-            <NuGetCommndLineCmdSources>@(NuGetSourcesList -> '-f %(Identity)', ' ')</NuGetCommndLineCmdSources>
+            <NuGetCommndLineCmdSources>@(NuGetSourcesList -> '-Source %(Identity)', ' ')</NuGetCommndLineCmdSources>
         </PropertyGroup>
 
         <MakeDir Directories="$(NuGetExeDir)" Condition="!Exists('$(NuGetExeDir)')" />
         <Message Text="Restoring packages ... " Importance="high" />
         <DownloadNuGet OutputFilename="$(NuGetExePath)" Condition=" !Exists('$(NuGetExePath)')" />
-
-        <!-- Restore NuGet.CommandLine.Cmd -->
-        <Exec Command="$(NuGetExePath) install NuGet.CommandLine.Cmd -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre $(NuGetExeSources)"
-              Condition=" !Exists('$(RootDir)\packages\NuGet.CommandLine.cmd') " />
 
         <!-- Restore MsBuid script -->
         <Exec Command="$(NuGetExePath) install NuGet.MsBuild.Integration -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre"
@@ -164,10 +160,9 @@
             <ProjectsToRestore Include="$(RootDir)\src\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj" />
             <ProjectsToRestore Include="$(RootDir)\src\Options\Options.csproj" />
             <ProjectsToRestore Include="$(RootDir)\src\VsExtension\VsExtension.csproj" />
-
         </ItemGroup>
 
-        <Exec Command="$(RootDir)\packages\NuGet.CommandLine.Cmd\build\NuGet.CommandLine.cmd restore $(NuGetCommndLineCmdSources) %(ProjectsToRestore.FullPath)"  />
+        <Exec Command="$(NuGetExePath) restore $(RootDir)\NuGet.VisualStudioExtension.sln -FallbackSource https://api.nuget.org/v3/index.json $(NuGetCommndLineCmdSources)"  />
     </Target>
 
     <Target Name="Go"
