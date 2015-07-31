@@ -155,18 +155,24 @@ namespace NuGet.ProjectManagement
 
             if (installedPackagesList.Any())
             {
-                // Remove the package reference from packages.config file
-                using (var stream = FileSystemUtility.GetFileStream(FullPath))
+                // Matching packageReference is found and is the only entry
+                // Then just delete the packages.config file 
+                if (installedPackagesList.Count == 1)
                 {
-                    var writer = new PackagesConfigWriter(stream, createNew: false);
-                    writer.RemovePackageEntry(packageReference);
-                    writer.Close();
+                    FileSystemUtility.DeleteFile(FullPath, nuGetProjectContext);
+                }
+                else
+                {
+                    // Remove the package reference from packages.config file
+                    using (var stream = FileSystemUtility.GetFileStream(FullPath))
+                    {
+                        var writer = new PackagesConfigWriter(stream, createNew: false);
+                        writer.RemovePackageEntry(packageReference);
+                        writer.Close();
+                    }
                 }
             }
-            else
-            {
-                FileSystemUtility.DeleteFile(FullPath, nuGetProjectContext);
-            }
+
             nuGetProjectContext.Log(MessageLevel.Info, Strings.RemovedPackageFromPackagesConfig, packageIdentity, Path.GetFileName(FullPath));
             return Task.FromResult(true);
         }
