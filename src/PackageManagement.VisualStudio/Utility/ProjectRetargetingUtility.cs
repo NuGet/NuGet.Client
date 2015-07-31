@@ -183,7 +183,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var installedPackageReferences = (await project.GetInstalledPackagesAsync(CancellationToken.None)).ToList();
             var packageReferencesToUpdateReinstall = new Dictionary<Packaging.PackageReference, Packaging.PackageReference>();
 
-            if (installedPackageReferences != null && installedPackageReferences.Any() )
+            if (installedPackageReferences != null && installedPackageReferences.Any())
             {
                 foreach (var packageReference in installedPackageReferences)
                 {
@@ -207,7 +207,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     try
                     {
-                        using (var stream = new FileStream(packagesConfigFullPath, FileMode.Open, FileAccess.ReadWrite))
+                        using (var stream = FileSystemUtility.GetFileStream(packagesConfigFullPath)
                         {
                             var writer = new PackagesConfigWriter(stream, createNew: false);
                             foreach (var entry in packageReferencesToUpdateReinstall)
