@@ -25,7 +25,7 @@
 
                    Log.LogMessage("Downloading latest version of NuGet.exe...");
                    WebClient webClient = new WebClient();
-                   webClient.DownloadFile("https://nuget.org/nuget.exe", OutputFilename);
+                   webClient.DownloadFile("http://dist.nuget.org/win-x86-commandline/v3.1.0-beta/nuget.exe", OutputFilename);
 
                    return true;
                }
@@ -46,16 +46,12 @@
             <NuGetExeDir>$(RootDir)\.nuget</NuGetExeDir>
             <NuGetExePath>$(NuGetExeDir)\nuget.exe</NuGetExePath>
             <NuGetExeSources>@(NuGetSourcesList -> '-source %(Identity)', ' ')</NuGetExeSources>
-            <NuGetCommndLineCmdSources>@(NuGetSourcesList -> '-f %(Identity)', ' ')</NuGetCommndLineCmdSources>
+            <NuGetCommndLineCmdSources>@(NuGetSourcesList -> '-Source %(Identity)', ' ')</NuGetCommndLineCmdSources>
         </PropertyGroup>
 
         <MakeDir Directories="$(NuGetExeDir)" Condition="!Exists('$(NuGetExeDir)')" />
         <Message Text="Restoring packages ... " Importance="high" />
         <DownloadNuGet OutputFilename="$(NuGetExePath)" Condition=" !Exists('$(NuGetExePath)')" />
-
-        <!-- Restore NuGet.CommandLine.Cmd -->
-        <Exec Command="$(NuGetExePath) install NuGet.CommandLine.Cmd -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre $(NuGetExeSources)"
-              Condition=" !Exists('$(RootDir)\packages\NuGet.CommandLine.cmd') " />
 
         <!-- Restore MsBuid script -->
         <Exec Command="$(NuGetExePath) install NuGet.MsBuild.Integration -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre"
@@ -73,8 +69,7 @@
             <TestProjectsToRestore Include="$(RootDir)\test\StandaloneUI\*.csproj" />
         </ItemGroup>
         
-        <Exec Command="$(RootDir)\packages\NuGet.CommandLine.Cmd\build\NuGet.CommandLine.cmd restore $(NuGetCommndLineCmdSources) %(SrcProjectsToRestore.FullPath)"  />
-        <Exec Command="$(RootDir)\packages\NuGet.CommandLine.Cmd\build\NuGet.CommandLine.cmd restore $(NuGetCommndLineCmdSources) %(TestProjectsToRestore.FullPath)"  />
+        <Exec Command="$(NuGetExePath) restore $(RootDir)\PackageManagement.sln $(NuGetCommndLineCmdSources)"  />
     </Target>
 
     <ItemGroup>
