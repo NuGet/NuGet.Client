@@ -181,16 +181,22 @@ namespace NuGet.PackageManagement.VisualStudio
             Debug.Assert(packagesToBeReinstalled != null);
 
             var installedPackageReferences = (await project.GetInstalledPackagesAsync(CancellationToken.None)).ToList();
-            var updatedPackageReferences = new List<Packaging.PackageReference>();
+            var packageReferencesToUpdateReinstall = new Dictionary<Packaging.PackageReference, Packaging.PackageReference>();
 
-            if (installedPackageReferences != null && installedPackageReferences.Any())
+            if (installedPackageReferences != null && installedPackageReferences.Any() )
             {
                 foreach (var packageReference in installedPackageReferences)
                 {
-                    bool requireReinstallation = packagesToBeReinstalled.Any(p => p.Equals(packageReference.PackageIdentity));
-                    var newPackageReference = new Packaging.PackageReference(packageReference.PackageIdentity, packageReference.TargetFramework,
-                        packageReference.IsUserInstalled, packageReference.IsDevelopmentDependency, requireReinstallation);
-                    updatedPackageReferences.Add(newPackageReference);
+                    bool markForReinstall = packagesToBeReinstalled.Any(p => p.Equals(packageReference.PackageIdentity));
+
+                    // Determine if requireReinstallation attribute needs to be updated.
+                    if (packageReference.RequireReinstallation ^ markForReinstall)
+                    {
+                        var newPackageReference = new Packaging.PackageReference(packageReference.PackageIdentity, packageReference.TargetFramework,
+                            packageReference.IsUserInstalled, packageReference.IsDevelopmentDependency, markForReinstall);
+
+                        packageReferencesToUpdateReinstall.Add(packageReference, newPackageReference);
+                    }
                 }
 
                 var projectFullPath = project.GetMetadata<string>(NuGetProjectMetadataKeys.FullPath);
@@ -201,14 +207,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     try
                     {
-                        // Work around https://github.com/NuGet/Home/issues/585
-                        File.Delete(packagesConfigFullPath);
-                        using (var stream = File.Create(packagesConfigFullPath))
+                        using (var stream = new FileStream(packagesConfigFullPath, FileMode.Open, FileAccess.ReadWrite))
                         {
-                            var writer = new PackagesConfigWriter(stream);
-                            foreach (var pr in updatedPackageReferences)
+                            var writer = new PackagesConfigWriter(stream, createNew: false);
+                            foreach (var entry in packageReferencesToUpdateReinstall)
                             {
-                                writer.WritePackageEntry(pr);
+                                writer.UpdatePackageEntry(entry.Key, entry.Value);
                             }
                             writer.Close();
                         }
