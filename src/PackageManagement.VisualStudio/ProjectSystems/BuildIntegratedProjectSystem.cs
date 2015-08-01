@@ -89,7 +89,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // find the project.json file if it exists in the project
                 // projects with no project.json file should use null for the spec path
                 var jsonConfigItem = project.ProjectItems.OfType<ProjectItem>()
-                    .FirstOrDefault(pi => StringComparer.Ordinal.Equals(pi.Name, BuildIntegratedProjectUtility.ProjectConfigFileName))?.FileNames[0];
+                    .FirstOrDefault(pi => StringComparer.Ordinal.Equals(pi.Name, BuildIntegratedProjectUtility.ProjectConfigFileName))?.FileNames[1];
 
                 var projectUniqueName = await EnvDTEProjectUtility.GetCustomUniqueNameAsync(project);
 
