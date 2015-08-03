@@ -134,7 +134,7 @@
     <None Include="Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\..\..\packages\NuGet.MsBuild.Integration\build\Microsoft.NuGet.targets" />
+  <Import Project="..\..\..\build\common.targets" />
   <Import Project="..\..\..\build\sign.targets" />
   <PropertyGroup>
     <PreBuildEvent>
