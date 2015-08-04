@@ -21,8 +21,8 @@ using System.Runtime.InteropServices;
 // of that DLL is always "1.0.0.0".
 #if !FIXED_ASSEMBLY_VERSION
 
-[assembly: AssemblyVersion("3.1.1.0")]
-[assembly: AssemblyInformationalVersion("3.1.1")]
+[assembly: AssemblyVersion("3.1.2.0")]
+[assembly: AssemblyInformationalVersion("3.1.2")]
 #endif
 
 [assembly: NeutralResourcesLanguage("en-US")]
