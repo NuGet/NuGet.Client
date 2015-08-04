@@ -117,11 +117,14 @@ namespace NuGet.PackageManagement.VisualStudio
                     {
                         // SDK references do not have a SourceProject or child references, 
                         // but they can contain project.json files, and should be part of the closure
+
                         var possibleSdkPath = childReference.Path;
+
                         if (!string.IsNullOrEmpty(possibleSdkPath) && Directory.Exists(possibleSdkPath))
+
                         {
                             var possibleProjectJson = Path.Combine(
-                                                        childReference.Path,
+                                                        possibleSdkPath,
                                                         BuildIntegratedProjectUtility.ProjectConfigFileName);
 
                             if (File.Exists(possibleProjectJson))
@@ -211,6 +214,22 @@ namespace NuGet.PackageManagement.VisualStudio
                     yield return reference;
                 }
             }
+        }
+
+        private static string GetPathSafe(Reference childReference)
+        {
+            string path = null;
+
+            try
+            {
+                path = childReference.Path;
+            }
+            catch
+            {
+                // This is expected for some native project references
+            }
+
+            return path;
         }
     }
 }
