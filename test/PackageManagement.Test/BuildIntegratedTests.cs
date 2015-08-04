@@ -587,7 +587,7 @@ namespace NuGet.Test
         {
             // Arrange
             var packageIdentity = new PackageIdentity("nuget.core", NuGetVersion.Parse("2.8.3"));
-            var dependencyIdentity = new PackageIdentity("Microsoft.Web.Xdt", NuGetVersion.Parse("2.1.0"));
+            var dependencyIdentity = new PackageIdentity("Microsoft.Web.Xdt", NuGetVersion.Parse("2.1.1"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
             var testSettings = new Configuration.NullSettings();
@@ -613,8 +613,10 @@ namespace NuGet.Test
 
             // Assert
             Assert.Equal(2, buildIntegratedProject.ExecuteInitScriptAsyncCalls.Count);
-            Assert.True(buildIntegratedProject.ExecuteInitScriptAsyncCalls.Contains(packageIdentity));
-            Assert.True(buildIntegratedProject.ExecuteInitScriptAsyncCalls.Contains(dependencyIdentity));
+            Assert.True(buildIntegratedProject.ExecuteInitScriptAsyncCalls.Contains(packageIdentity),
+                string.Join("|", buildIntegratedProject.ExecuteInitScriptAsyncCalls));
+            Assert.True(buildIntegratedProject.ExecuteInitScriptAsyncCalls.Contains(dependencyIdentity),
+                string.Join("|", buildIntegratedProject.ExecuteInitScriptAsyncCalls));
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomProjectFolderPath);
