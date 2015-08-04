@@ -54,7 +54,7 @@
         <DownloadNuGet OutputFilename="$(NuGetExePath)" Condition=" !Exists('$(NuGetExePath)')" />
 
         <!-- Restore MsBuid script -->
-        <Exec Command="$(RootDir)\packages\NuGet.CommandLine\tools\nuget.exe install NuGet.MsBuild.Integration -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre"
+        <Exec Command="$(NuGetExePath) install NuGet.MsBuild.Integration -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre"
               Condition=" !Exists('$(RootDir)\packages\NuGet.MsBuild.Integration') " />
 
         <!-- Transitive restore requires project.lock.json to exist. We'll workaround this by listing the projects in a deterministic order -->
