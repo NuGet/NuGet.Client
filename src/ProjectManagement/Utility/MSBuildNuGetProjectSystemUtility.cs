@@ -109,12 +109,11 @@ namespace NuGet.ProjectManagement
                         fileTransformers,
                         fte => fte.InstallExtension, effectivePathForContentFile, out installTransformer);
 
-                    var packagePath = PathUtility.GetPackagePath(file);
                     if (msBuildNuGetProjectSystem.IsSupportedFile(path))
                     {
                         if (installTransformer != null)
                         {
-                            installTransformer.TransformFile(() => packageReader.GetStream(packagePath), path, msBuildNuGetProjectSystem);
+                            installTransformer.TransformFile(() => packageReader.GetStream(file), path, msBuildNuGetProjectSystem);
                         }
                         else
                         {
@@ -126,7 +125,7 @@ namespace NuGet.ProjectManagement
                             {
                                 continue;
                             }
-                            TryAddFile(msBuildNuGetProjectSystem, path, () => packageReader.GetStream(packagePath));
+                            TryAddFile(msBuildNuGetProjectSystem, path, () => packageReader.GetStream(file));
                         }
                     }
                 }
