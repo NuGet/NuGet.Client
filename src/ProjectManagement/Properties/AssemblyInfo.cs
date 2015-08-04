@@ -10,20 +10,3 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("NuGet.ProjectManagement")]
 [assembly: AssemblyDescription("NuGet's project management abstraction layer")]
-
-// Common attributes
-
-[assembly: AssemblyCompany(".NET Foundation")]
-[assembly: AssemblyProduct("NuGet")]
-[assembly: AssemblyCopyright("\x00a9 .NET Foundation. All rights reserved.")]
-[assembly: NeutralResourcesLanguage("en-US")]
-[assembly: CLSCompliant(false)]
-[assembly: ComVisible(false)]
-
-// When built on the build server, the NuGet release version is specified by the build.
-// When built locally, the NuGet release version is the values specified in this file.
-#if !FIXED_ASSEMBLY_VERSION
-
-[assembly: AssemblyVersion("3.1.0.0")]
-[assembly: AssemblyInformationalVersion("3.1.0")]
-#endif

@@ -25,7 +25,7 @@
 
                    Log.LogMessage("Downloading latest version of NuGet.exe...");
                    WebClient webClient = new WebClient();
-                   webClient.DownloadFile("https://nuget.org/nuget.exe", OutputFilename);
+                   webClient.DownloadFile("http://dist.nuget.org/win-x86-commandline/v3.1.0-beta/nuget.exe", OutputFilename);
 
                    return true;
                }
@@ -46,22 +46,30 @@
             <NuGetExeDir>$(RootDir)\.nuget</NuGetExeDir>
             <NuGetExePath>$(NuGetExeDir)\nuget.exe</NuGetExePath>
             <NuGetExeSources>@(NuGetSourcesList -> '-source %(Identity)', ' ')</NuGetExeSources>
-            <NuGetCommandLineCmdSources>@(NuGetSourcesList -> '-f %(Identity)', ' ')</NuGetCommandLineCmdSources>
+            <NuGetCommndLineCmdSources>@(NuGetSourcesList -> '-Source %(Identity)', ' ')</NuGetCommndLineCmdSources>
         </PropertyGroup>
 
         <MakeDir Directories="$(NuGetExeDir)" Condition="!Exists('$(NuGetExeDir)')" />
         <Message Text="Restoring packages ... " Importance="high" />
         <DownloadNuGet OutputFilename="$(NuGetExePath)" Condition=" !Exists('$(NuGetExePath)')" />
 
-        <!-- Restore NuGet.CommandLine.Cmd -->
-        <Exec Command="$(NuGetExePath) install NuGet.CommandLine -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre -source https://www.myget.org/F/nugetbuild/api/v2 $(NuGetExeSources)"
-              Condition=" !Exists('$(RootDir)\packages\NuGet.CommandLine') " />
-
         <!-- Restore MsBuid script -->
         <Exec Command="$(RootDir)\packages\NuGet.CommandLine\tools\nuget.exe install NuGet.MsBuild.Integration -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre"
               Condition=" !Exists('$(RootDir)\packages\NuGet.MsBuild.Integration') " />
 
-        <Exec Command="$(RootDir)\packages\NuGet.CommandLine\tools\nuget.exe restore $(NuGetCommandLineCmdSources) $(RootDir)\PackageManagement.sln"  />
+        <!-- Transitive restore requires project.lock.json to exist. We'll workaround this by listing the projects in a deterministic order -->
+        <ItemGroup>
+            <SrcProjectsToRestore Include="$(RootDir)\src\ProjectManagement\*.csproj" />
+            <SrcProjectsToRestore Include="$(RootDir)\src\PackageManagement\*.csproj" />
+            <SrcProjectsToRestore Include="$(RootDir)\src\PackageManagement.UI\*.csproj" />
+
+            <TestProjectsToRestore Include="$(RootDir)\test\Test.Utility\*.csproj" />
+            <TestProjectsToRestore Include="$(RootDir)\test\ProjectManagement.Test\*.csproj" />
+            <TestProjectsToRestore Include="$(RootDir)\test\PackageManagement.Test\*.csproj" />
+            <TestProjectsToRestore Include="$(RootDir)\test\StandaloneUI\*.csproj" />
+        </ItemGroup>
+        
+        <Exec Command="$(NuGetExePath) restore $(RootDir)\PackageManagement.sln -FallbackSource https://api.nuget.org/v3/index.json $(NuGetCommndLineCmdSources)"  />
     </Target>
 
     <ItemGroup>
