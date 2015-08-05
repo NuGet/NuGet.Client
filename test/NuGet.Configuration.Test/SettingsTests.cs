@@ -1791,6 +1791,31 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void GetGlobalPackagesFolder_FromNuGetConfig_RelativePath()
+        {
+            // Arrange
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+<config>
+<add key=""globalPackagesFolder"" value=""..\..\NuGetPackages"" />
+</config>
+</configuration>";
+
+            var nugetConfigPath = "NuGet.config";
+            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            {
+                TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
+
+                // Act
+                var globalPackagesFolderPath = SettingsUtility.GetGlobalPackagesFolder(settings);
+
+                // Assert
+                Assert.Equal(@"..\..\NuGetPackages", globalPackagesFolderPath);
+            }
+        }
+
+        [Fact]
         public void GetGlobalPackagesFolder_Default()
         {
             // Arrange
