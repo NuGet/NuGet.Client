@@ -185,6 +185,7 @@ namespace NuGet.ProjectManagement.Projects
         /// </summary>
         public virtual Task<bool> ExecuteInitScriptAsync(
             PackageIdentity identity,
+            string packageInstallPath,
             INuGetProjectContext projectContext, 
             bool throwOnFailure)
         {

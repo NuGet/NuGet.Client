@@ -60,6 +60,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BuildIntegratedProjectUtilityTests.cs" />
     <Compile Include="BuildIntegratedTests.cs" />
     <Compile Include="BuildIntegratedRestoreUtilityTests.cs" />
     <Compile Include="NuGetPackageManagerTests.cs" />

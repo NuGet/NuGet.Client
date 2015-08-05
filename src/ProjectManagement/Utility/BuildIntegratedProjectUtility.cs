@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using NuGet.Configuration;
@@ -28,22 +29,29 @@ namespace NuGet.ProjectManagement
         /// </summary>
         public const string ProjectLockFileName = "project.lock.json";
 
-        /// <summary>
-        /// Get the root path of a package from the global folder.
-        /// </summary>
-        public static string GetPackagePathFromGlobalSource(PackageIdentity identity, ISettings settings)
+        public static string GetEffectiveGlobalPackagesFolder(string solutionDirectory, ISettings settings)
         {
-            var pathResolver = new VersionFolderPathResolver(SettingsUtility.GetGlobalPackagesFolder(settings));
-            return pathResolver.GetInstallPath(identity.Id, identity.Version);
+            // solutionDirectory could be null or empty. If not, it should be a full path, not a relative path
+            Debug.Assert(string.IsNullOrEmpty(solutionDirectory) || Path.IsPathRooted(solutionDirectory));
+
+            var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
+            if (string.IsNullOrEmpty(solutionDirectory))
+            {
+                return globalPackagesFolder;
+            }
+
+            return Path.GetFullPath(Path.Combine(solutionDirectory, globalPackagesFolder));
         }
 
         /// <summary>
-        /// nupkg path from the global cache folder
+        /// Get the root path of a package from the global folder.
         /// </summary>
-        public static string GetNupkgPathFromGlobalSource(PackageIdentity identity, ISettings settings)
+        public static string GetPackagePathFromGlobalSource(
+            string effectiveGlobalPackagesFolder,
+            PackageIdentity identity)
         {
-            var pathResolver = new VersionFolderPathResolver(SettingsUtility.GetGlobalPackagesFolder(settings));
-            return pathResolver.GetPackageFileName(identity.Id, identity.Version);
+            var pathResolver = new VersionFolderPathResolver(effectiveGlobalPackagesFolder);
+            return pathResolver.GetInstallPath(identity.Id, identity.Version);
         }
 
         /// <summary>

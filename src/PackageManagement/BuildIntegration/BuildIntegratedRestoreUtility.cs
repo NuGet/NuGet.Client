@@ -31,21 +31,7 @@ namespace NuGet.PackageManagement
             BuildIntegratedNuGetProject project,
             Logging.ILogger logger,
             IEnumerable<string> sources,
-            Configuration.ISettings settings,
-            CancellationToken token)
-        {
-            var globalPath = SettingsUtility.GetGlobalPackagesFolder(settings);
-            return await RestoreAsync(project, logger, sources, globalPath, token);
-        }
-
-        /// <summary>
-        /// Restore a build integrated project and update the lock file
-        /// </summary>
-        public static async Task<RestoreResult> RestoreAsync(
-            BuildIntegratedNuGetProject project,
-            Logging.ILogger logger,
-            IEnumerable<string> sources,
-            string globalPackagesFolderPath,
+            string effectiveGlobalPackagesFolder,
             CancellationToken token)
         {
             // Restore
@@ -54,7 +40,7 @@ namespace NuGet.PackageManagement
                 project.PackageSpec,
                 logger,
                 sources,
-                globalPackagesFolderPath,
+                effectiveGlobalPackagesFolder,
                 token);
 
             // Throw before writing if this has been canceled
@@ -74,22 +60,7 @@ namespace NuGet.PackageManagement
             PackageSpec packageSpec,
             Logging.ILogger logger,
             IEnumerable<string> sources,
-            Configuration.ISettings settings,
-            CancellationToken token)
-        {
-            var globalPath = SettingsUtility.GetGlobalPackagesFolder(settings);
-            return await RestoreAsync(project, packageSpec, logger, sources, globalPath, token);
-        }
-
-        /// <summary>
-        /// Restore without writing the lock file
-        /// </summary>
-        internal static async Task<RestoreResult> RestoreAsync(
-            BuildIntegratedNuGetProject project,
-            PackageSpec packageSpec,
-            Logging.ILogger logger,
-            IEnumerable<string> sources,
-            string globalPackageFolderPath,
+            string effectiveGlobalPackagesFolder,
             CancellationToken token)
         {
             // Restoring packages
@@ -98,7 +69,7 @@ namespace NuGet.PackageManagement
                 project.ProjectName));
 
             var packageSources = sources.Select(source => new Configuration.PackageSource(source));
-            var request = new RestoreRequest(packageSpec, packageSources, globalPackageFolderPath);
+            var request = new RestoreRequest(packageSpec, packageSources, effectiveGlobalPackagesFolder);
             request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
 
             // Add the existing lock file if it exists

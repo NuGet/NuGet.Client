@@ -1372,6 +1372,10 @@ namespace NuGet.PackageManagement
 
             var logger = new ProjectContextLogger(nuGetProjectContext);
 
+            var effectiveGlobalPackagesFolder = BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
+                                                    SolutionManager?.SolutionDirectory,
+                                                    Settings);
+
             // If the lock file does not exist, restore before starting the operations
             if (originalLockFile == null)
             {
@@ -1385,7 +1389,7 @@ namespace NuGet.PackageManagement
                     originalPackageSpec,
                     logger,
                     sources,
-                    Settings,
+                    effectiveGlobalPackagesFolder,
                     token);
 
                 originalLockFile = originalRestoreResult.LockFile;
@@ -1414,7 +1418,7 @@ namespace NuGet.PackageManagement
                 packageSpec,
                 logger,
                 sources,
-                Settings,
+                effectiveGlobalPackagesFolder,
                 token);
 
             return new BuildIntegratedProjectAction(nuGetProjectActions.First().PackageIdentity,
@@ -1509,14 +1513,25 @@ namespace NuGet.PackageManagement
                         restoreResult.LockFile),
                     PackageIdentity.Comparer);
 
+                var effectiveGlobalPackagesFolder = BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
+                                                        SolutionManager?.SolutionDirectory,
+                                                        Settings);
+
                 // Find all dependencies in sorted order, then using the order run init.ps1 for only the new packages.
                 foreach (var package in sortedPackages)
                 {
                     if (addedPackages.Contains(package))
                     {
-                        var packagePath =
-                            BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(package, Settings);
-                        await buildIntegratedProject.ExecuteInitScriptAsync(package, nuGetProjectContext, false);
+                        var packageInstallPath =
+                            BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(
+                                effectiveGlobalPackagesFolder,
+                                package);
+
+                        await buildIntegratedProject.ExecuteInitScriptAsync(
+                            package,
+                            packageInstallPath,
+                            nuGetProjectContext,
+                            false);
                     }
                 }
 
