@@ -293,3 +293,177 @@ function Test-BuildIntegratedTransitiveProjectJsonRestores {
     Assert-ProjectJsonLockFilePackage $project1 NuGet.Versioning 1.0.7
     Assert-ProjectJsonLockFilePackage $project3 NuGet.Versioning 1.0.7
 }
+
+# Verifies that parent projects are restored after an install
+function Test-BuildIntegratedParentProjectIsRestoredAfterInstall {
+    if (!(Verify-BuildIntegratedMsBuildTask)) {
+        Write-Host "Skipping BuildIntegratedMixedLegacyProjects"
+    }
+
+    # Arrange
+    $project1 = New-BuildIntegratedProj UAPApp1
+    $project2 = New-BuildIntegratedProj UAPApp2
+    $project3 = New-BuildIntegratedProj UAPApp3
+    $project4 = New-BuildIntegratedProj UAPApp4
+
+    Add-ProjectReference $project1 $project2
+    Add-ProjectReference $project2 $project3
+    Add-ProjectReference $project3 $project4
+
+    # Act
+    $project3 | Install-Package NuGet.Versioning -Version 1.0.7
+
+    # Assert
+    Assert-ProjectJsonLockFilePackage $project1 NuGet.Versioning 1.0.7
+    Assert-ProjectJsonLockFilePackage $project2 NuGet.Versioning 1.0.7
+    Assert-ProjectJsonLockFilePackage $project3 NuGet.Versioning 1.0.7
+
+    # the child project should not be restored
+    Assert-ProjectJsonLockFileDoesNotExist $project4
+}
+
+# Verifies that parent projects are restored after an uninstall
+function Test-BuildIntegratedParentProjectIsRestoredAfterUnInstall {
+    if (!(Verify-BuildIntegratedMsBuildTask)) {
+        Write-Host "Skipping BuildIntegratedMixedLegacyProjects"
+    }
+
+    # Arrange
+    $project1 = New-BuildIntegratedProj UAPApp1
+    $project2 = New-BuildIntegratedProj UAPApp2
+    $project3 = New-BuildIntegratedProj UAPApp3
+    $project4 = New-BuildIntegratedProj UAPApp4
+
+    Add-ProjectReference $project1 $project2
+    Add-ProjectReference $project2 $project3
+    Add-ProjectReference $project3 $project4
+
+    $project3 | Install-Package NuGet.Versioning -Version 1.0.7
+    Remove-ProjectJsonLockFile $project1
+    Remove-ProjectJsonLockFile $project2
+    Remove-ProjectJsonLockFile $project3
+
+    # Act
+    $project3 | Uninstall-Package NuGet.Versioning -Version 1.0.7
+
+    # Assert
+    Assert-ProjectJsonLockFilePackageNotFound $project1 NuGet.Versioning
+    Assert-ProjectJsonLockFilePackageNotFound $project2 NuGet.Versioning
+    Assert-ProjectJsonLockFilePackageNotFound $project3 NuGet.Versioning
+
+    # the child project should not be restored
+    Assert-ProjectJsonLockFileDoesNotExist $project4
+}
+
+# Verifies that parent projects are restored after an update
+function Test-BuildIntegratedParentProjectIsRestoredAfterUpdate {
+    if (!(Verify-BuildIntegratedMsBuildTask)) {
+        Write-Host "Skipping BuildIntegratedMixedLegacyProjects"
+    }
+
+    # Arrange
+    $project1 = New-BuildIntegratedProj UAPApp1
+    $project2 = New-BuildIntegratedProj UAPApp2
+    $project3 = New-BuildIntegratedProj UAPApp3
+    $project4 = New-BuildIntegratedProj UAPApp4
+
+    Add-ProjectReference $project1 $project2
+    Add-ProjectReference $project2 $project3
+    Add-ProjectReference $project3 $project4
+
+    $project3 | Install-Package NuGet.Versioning -Version 1.0.5
+    Remove-ProjectJsonLockFile $project1
+    Remove-ProjectJsonLockFile $project2
+    Remove-ProjectJsonLockFile $project3
+
+    # Act    
+    $project3 | Update-Package NuGet.Versioning -Version 1.0.7
+
+    # Assert
+    Assert-ProjectJsonLockFilePackage $project1 NuGet.Versioning 1.0.7    
+    Assert-ProjectJsonLockFilePackage $project2 NuGet.Versioning 1.0.7
+    Assert-ProjectJsonLockFilePackage $project3 NuGet.Versioning 1.0.7
+
+    # the child project should not be restored
+    Assert-ProjectJsonLockFileDoesNotExist $project4
+}
+
+# Verify that all build integrated projects are included in the closure, even when a 
+# non-build integrated project exists in between them
+function Test-BuildIntegratedParentProjectIsRestoredAfterInstallWithClassLibInTree {
+    if (!(Verify-BuildIntegratedMsBuildTask)) {
+        Write-Host "Skipping BuildIntegratedMixedLegacyProjects"
+    }
+
+    # Arrange
+    $project1 = New-Project BuildIntegratedClassLibrary
+    $project2 = New-ClassLibrary ClassLib2
+    $project3 = New-Project BuildIntegratedClassLibrary
+
+    Add-ProjectReference $project1 $project2
+    Add-ProjectReference $project2 $project3
+
+    # Act
+    $project3 | Install-Package NuGet.Versioning -Version 1.0.7
+
+    # Assert
+    Assert-ProjectJsonLockFilePackage $project1 NuGet.Versioning 1.0.7
+}
+
+function Test-BuildIntegratedParentProjectsStayLockedOnUninstall {
+    if (!(Verify-BuildIntegratedMsBuildTask)) {
+        Write-Host "Skipping BuildIntegratedMixedLegacyProjects"
+    }
+
+    # Arrange
+    $project1 = New-Project BuildIntegratedClassLibrary
+    $project2 = New-Project BuildIntegratedClassLibrary
+    $project3 = New-ClassLibrary ClassLib2
+
+    Add-ProjectReference $project1 $project2
+    Add-ProjectReference $project2 $project3
+
+    $project2 | Install-Package NuGet.Versioning -Version 1.0.7
+
+    Set-LockFileLocked $project1 $True
+    Set-LockFileLocked $project2 $True
+
+    # Act
+    Uninstall-Package NuGet.Versioning -ProjectName $project2.Name
+
+    $project1Locked = Get-LockFileLocked $project1
+    $project2Locked = Get-LockFileLocked $project2
+
+    # Assert
+    Assert-True $project1 $project1Locked
+    Assert-True $project2 $project2Locked
+}
+
+function Test-BuildIntegratedParentProjectsStayLockedOnBuild {
+    if (!(Verify-BuildIntegratedMsBuildTask)) {
+        Write-Host "Skipping BuildIntegratedMixedLegacyProjects"
+    }
+
+    # Arrange
+    $project1 = New-Project BuildIntegratedClassLibrary
+    $project2 = New-Project BuildIntegratedClassLibrary
+    $project3 = New-ClassLibrary ClassLib2
+
+    Add-ProjectReference $project1 $project2
+    Add-ProjectReference $project2 $project3
+
+    $project2 | Install-Package NuGet.Versioning -Version 1.0.7
+
+    Set-LockFileLocked $project1 $True
+    Set-LockFileLocked $project2 $True
+
+    # Act
+    Build-Solution
+
+    $project1Locked = Get-LockFileLocked $project1
+    $project2Locked = Get-LockFileLocked $project2
+
+    # Assert
+    Assert-True $project1 $project1Locked
+    Assert-True $project2 $project2Locked
+}

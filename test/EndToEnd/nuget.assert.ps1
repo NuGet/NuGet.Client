@@ -1,5 +1,55 @@
 # Nuget specific assert helpers
 
+# Set the locked state of the lock file
+function Set-LockFileLocked {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project,
+        [parameter(Mandatory = $true)]
+        [Boolean]$State
+    )
+
+    $lockFile = Get-ProjectJsonLockFile $Project
+
+    $lockFile.IsLocked = $State
+
+    Set-ProjectJsonLockFile $Project $LockFile
+}
+
+# True if the lock file is locked
+function Get-LockFileLocked {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+
+    $lockFile = Get-ProjectJsonLockFile $Project
+
+    return $lockFile.IsLocked
+}
+
+function Assert-ProjectJsonLockFileExists {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+
+    $projectJsonLockFilePath = Get-ProjectJsonLockFilePath $Project
+
+    Assert-PathExists $projectJsonLockFilePath "project.lock.json file does not exist"
+}
+
+function Assert-ProjectJsonLockFileDoesNotExist {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+
+    $projectJsonLockFilePath = Get-ProjectJsonLockFilePath $Project
+
+    Assert-PathNotExists $projectJsonLockFilePath "project.lock.json file exists"
+}
+
 function Assert-ProjectJsonLockFileRuntimeAssembly {
     param(
         [parameter(Mandatory = $true)]
@@ -180,15 +230,41 @@ function Get-ProjectJsonLockFile {
         $Project
     )
     
-    $dir = Split-Path -parent $Project.FullName
-
-    $projectJsonLockFilePath = Join-Path $dir "project.lock.json"
+    $projectJsonLockFilePath = Get-ProjectJsonLockFilePath $Project
 
     Assert-PathExists $projectJsonLockFilePath "project.lock.json file does not exist"
 
     $lockFileFormat = New-Object 'NuGet.ProjectModel.LockFileFormat'
 
     return $lockFileFormat.Read($projectJsonLockFilePath)
+}
+
+function Set-ProjectJsonLockFile {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project,
+        [parameter(Mandatory = $true)]
+        [NuGet.ProjectModel.LockFile]$LockFile
+    )
+    
+    $projectJsonLockFilePath = Get-ProjectJsonLockFilePath $Project
+
+    $lockFileFormat = New-Object 'NuGet.ProjectModel.LockFileFormat'
+
+    return $lockFileFormat.Write($projectJsonLockFilePath, $LockFile)
+}
+
+function Get-ProjectJsonLockFilePath {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project
+    )
+    
+    $dir = Split-Path -parent $Project.FullName
+
+    $projectJsonLockFilePath = Join-Path $dir "project.lock.json"
+
+    return $projectJsonLockFilePath
 }
 
 function Remove-ProjectJsonLockFile {
