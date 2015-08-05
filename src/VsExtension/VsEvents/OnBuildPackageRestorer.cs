@@ -199,9 +199,12 @@ namespace NuGetVSExtension
         /// Restore projects with project.json and create the lock files.
         /// </summary>
         /// <param name="buildEnabledProjects">Projects containing project.json</param>
-        /// <param name="forceRestore">Force the restore to write out the lock files. This is used for rebuilds.</param>
+        /// <param name="forceRestore">Force the restore to write out the lock files.
+        /// This is used for rebuilds.</param>
         /// <returns></returns>
-        private async Task RestoreBuildIntegratedProjectsAsync(List<BuildIntegratedProjectSystem> buildEnabledProjects, bool forceRestore)
+        private async Task RestoreBuildIntegratedProjectsAsync(
+            List<BuildIntegratedProjectSystem> buildEnabledProjects,
+            bool forceRestore)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -247,7 +250,10 @@ namespace NuGetVSExtension
                             {
                                 var projectName = NuGetProject.GetUniqueNameOrName(project);
                                 await BuildIntegratedProjectRestoreAsync(project, enabledSources, Token);
-                                WriteLine(VerbosityLevel.Normal, Resources.PackageRestoreFinishedForProject, projectName);
+                                WriteLine(
+                                    VerbosityLevel.Normal,
+                                    Resources.PackageRestoreFinishedForProject,
+                                    projectName);
                             }
 
                             WriteLine(canceled: Canceled, hasMissingPackages: true, hasErrors: HasErrors);
@@ -403,7 +409,9 @@ namespace NuGetVSExtension
             }
         }
 
-        private void PackageRestoreManager_PackageRestoreFailedEvent(object sender, PackageRestoreFailedEventArgs args)
+        private void PackageRestoreManager_PackageRestoreFailedEvent(
+            object sender,
+            PackageRestoreFailedEventArgs args)
         {
             if (Token.IsCancellationRequested)
             {
@@ -453,7 +461,7 @@ namespace NuGetVSExtension
             var waitDialogFactory
                 = ServiceLocator.GetGlobalService<SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
 
-            if (String.IsNullOrEmpty(solutionDirectory))
+            if (string.IsNullOrEmpty(solutionDirectory))
             {
                 // If the solution is closed, SolutionDirectory will be unavailable. Just return. Do nothing
                 return;
@@ -483,8 +491,13 @@ namespace NuGetVSExtension
                         // Only show the wait dialog, when there are some packages to restore
                         using (var threadedWaitDialogSession = waitDialogFactory.StartWaitDialog(
                             waitCaption: Resources.DialogTitle,
-                            initialProgress: new ThreadedWaitDialogProgressData(Resources.RestoringPackages,
-                                string.Empty, string.Empty, isCancelable: true, currentStep: 0, totalSteps: 0)))
+                            initialProgress: new ThreadedWaitDialogProgressData(
+                                Resources.RestoringPackages,
+                                string.Empty,
+                                string.Empty,
+                                isCancelable: true,
+                                currentStep: 0,
+                                totalSteps: 0)))
                         {
                             // Only write the PackageRestoreOptOutMessage to output window,
                             // if, there are packages to restore
@@ -512,8 +525,13 @@ namespace NuGetVSExtension
 
                 using (var twd = waitDialogFactory.StartWaitDialog(
                     waitCaption: Resources.DialogTitle,
-                    initialProgress: new ThreadedWaitDialogProgressData(Resources.RestoringPackages,
-                        string.Empty, string.Empty, isCancelable: true, currentStep: 0, totalSteps: 0)))
+                    initialProgress: new ThreadedWaitDialogProgressData(
+                        Resources.RestoringPackages,
+                        string.Empty,
+                        string.Empty,
+                        isCancelable: true,
+                        currentStep: 0,
+                        totalSteps: 0)))
                 {
                     CheckForMissingPackages(packages);
                 }
@@ -533,7 +551,7 @@ namespace NuGetVSExtension
             {
                 var errorText = string.Format(CultureInfo.CurrentCulture,
                     Resources.PackageNotRestoredBecauseOfNoConsent,
-                    String.Join(", ", missingPackages.Select(p => p.ToString())));
+                    string.Join(", ", missingPackages.Select(p => p.ToString())));
                 MessageHelper.ShowError(_errorListProvider,
                     TaskErrorCategory.Error,
                     TaskPriority.High,

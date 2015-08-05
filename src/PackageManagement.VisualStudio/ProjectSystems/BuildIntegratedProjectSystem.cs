@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
-using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -89,7 +88,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 // find the project.json file if it exists in the project
                 // projects with no project.json file should use null for the spec path
                 var jsonConfigItem = project.ProjectItems.OfType<ProjectItem>()
-                    .FirstOrDefault(pi => StringComparer.Ordinal.Equals(pi.Name, BuildIntegratedProjectUtility.ProjectConfigFileName))?.FileNames[1];
+                    .FirstOrDefault(pi => StringComparer.Ordinal.Equals(
+                        pi.Name,
+                        BuildIntegratedProjectUtility.ProjectConfigFileName))?.FileNames[1];
 
                 var projectUniqueName = await EnvDTEProjectUtility.GetCustomUniqueNameAsync(project);
 
@@ -100,7 +101,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     if (childReference.SourceProject != null)
                     {
-                        var childName = await EnvDTEProjectUtility.GetCustomUniqueNameAsync(childReference.SourceProject);
+                        var childName =
+                            await EnvDTEProjectUtility.GetCustomUniqueNameAsync(childReference.SourceProject);
 
                         childReferences.Add(childName);
 
@@ -116,15 +118,21 @@ namespace NuGet.PackageManagement.VisualStudio
                         // SDK references do not have a SourceProject or child references, 
                         // but they can contain project.json files, and should be part of the closure
                         var possibleSdkPath = childReference.Path;
-                        if (!String.IsNullOrEmpty(possibleSdkPath) && Directory.Exists(possibleSdkPath))
+                        if (!string.IsNullOrEmpty(possibleSdkPath) && Directory.Exists(possibleSdkPath))
                         {
-                            var possibleProjectJson = Path.Combine(childReference.Path, BuildIntegratedProjectUtility.ProjectConfigFileName);
+                            var possibleProjectJson = Path.Combine(
+                                                        childReference.Path,
+                                                        BuildIntegratedProjectUtility.ProjectConfigFileName);
+
                             if (File.Exists(possibleProjectJson))
                             {
                                 childReferences.Add(possibleProjectJson);
 
                                 // add the sdk to the results here
-                                results.Add(new BuildIntegratedProjectReference(possibleProjectJson, possibleProjectJson, Enumerable.Empty<string>()));
+                                results.Add(new BuildIntegratedProjectReference(
+                                    possibleProjectJson,
+                                    possibleProjectJson,
+                                    Enumerable.Empty<string>()));
                             }
                         }
                     }
@@ -133,18 +141,25 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (!string.Equals(rootProjectName, projectUniqueName, StringComparison.OrdinalIgnoreCase))
                 {
                     // Don't add the project we're trying to resolve the closure for to the result
-                    results.Add(new BuildIntegratedProjectReference(projectUniqueName, jsonConfigItem, childReferences));
+                    results.Add(new BuildIntegratedProjectReference(
+                        projectUniqueName,
+                        jsonConfigItem,
+                        childReferences));
                 }
             }
 
             return results;
         }
 
-        public override async Threading.Task<bool> ExecuteInitScriptAsync(PackageIdentity identity, INuGetProjectContext projectContext, bool throwOnFailure)
+        public override async Threading.Task<bool> ExecuteInitScriptAsync(
+            PackageIdentity identity,
+            INuGetProjectContext projectContext,
+            bool throwOnFailure)
         {
             if (ScriptExecutor != null)
             {
-                var packageInstallPath = BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(identity, Settings);
+                var packageInstallPath =
+                    BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(identity, Settings);
 
                 var packageReader = new PackageFolderReader(packageInstallPath);
 
@@ -152,18 +167,34 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (toolItemGroups != null)
                 {
-                    // Init.ps1 must be found at the root folder, target frameworks are not recognized here since this is run for the solution.
-                    var toolItemGroup = toolItemGroups.Where(group => group.TargetFramework.IsAny).FirstOrDefault();
+                    // Init.ps1 must be found at the root folder, target frameworks are not recognized here,
+                    // since this is run for the solution.
+                    var toolItemGroup = toolItemGroups
+                                        .Where(group => group.TargetFramework.IsAny)
+                                        .FirstOrDefault();
 
                     if (toolItemGroup != null)
                     {
-                        var initPS1RelativePath = toolItemGroup.Items.Where(p =>
-                            p.StartsWith(PowerShellScripts.InitPS1RelativePath, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                        var initPS1RelativePath = toolItemGroup.Items
+                            .Where(p => p.StartsWith(
+                                PowerShellScripts.InitPS1RelativePath,
+                                StringComparison.OrdinalIgnoreCase))
+                            .FirstOrDefault();
 
                         if (!string.IsNullOrEmpty(initPS1RelativePath))
                         {
-                            initPS1RelativePath = ProjectManagement.PathUtility.ReplaceAltDirSeparatorWithDirSeparator(initPS1RelativePath);
-                            return await ScriptExecutor.ExecuteAsync(identity, packageInstallPath, initPS1RelativePath, EnvDTEProject, this, projectContext, throwOnFailure);
+                            initPS1RelativePath =
+                                ProjectManagement.PathUtility
+                                .ReplaceAltDirSeparatorWithDirSeparator(initPS1RelativePath);
+
+                            return await ScriptExecutor.ExecuteAsync(
+                                identity,
+                                packageInstallPath,
+                                initPS1RelativePath,
+                                EnvDTEProject,
+                                this,
+                                projectContext,
+                                throwOnFailure);
                         }
                     }
                 }
