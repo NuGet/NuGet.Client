@@ -49,7 +49,13 @@ namespace NuGet.PackageManagement
             CancellationToken token)
         {
             // Restore
-            var result = await RestoreAsync(project, project.PackageSpec, logger, sources, globalPackagesFolderPath, token);
+            var result = await RestoreAsync(
+                project,
+                project.PackageSpec,
+                logger,
+                sources,
+                globalPackagesFolderPath,
+                token);
 
             // Throw before writing if this has been canceled
             token.ThrowIfCancellationRequested();
@@ -132,7 +138,9 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Find all packages added to <paramref name="updatedLockFile"/>.
         /// </summary>
-        public static IReadOnlyList<PackageIdentity> GetAddedPackages(LockFile originalLockFile, LockFile updatedLockFile)
+        public static IReadOnlyList<PackageIdentity> GetAddedPackages(
+            LockFile originalLockFile,
+            LockFile updatedLockFile)
         {
             var updatedPackages = updatedLockFile.Targets.SelectMany(target => target.Libraries)
                 .Select(library => new PackageIdentity(library.Name, library.Version));
@@ -148,7 +156,9 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Find all packages removed from <paramref name="updatedLockFile"/>.
         /// </summary>
-        public static IReadOnlyList<PackageIdentity> GetRemovedPackages(LockFile originalLockFile, LockFile updatedLockFile)
+        public static IReadOnlyList<PackageIdentity> GetRemovedPackages(
+            LockFile originalLockFile,
+            LockFile updatedLockFile)
         {
             return GetAddedPackages(updatedLockFile, originalLockFile);
         }
@@ -226,11 +236,14 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Validate that all project.lock.json files are validate for the project.json files, and that no packages are missing.
+        /// Validate that all project.lock.json files are validate for the project.json files,
+        /// and that no packages are missing.
         /// If a full restore is required this will return false.
         /// </summary>
         /// <remarks>Floating versions and project.json files with supports require a full restore.</remarks>
-        public static bool IsRestoreRequired(IReadOnlyList<BuildIntegratedNuGetProject> projects, VersionFolderPathResolver pathResolver)
+        public static bool IsRestoreRequired(
+            IReadOnlyList<BuildIntegratedNuGetProject> projects,
+            VersionFolderPathResolver pathResolver)
         {
             var hashesChecked = new HashSet<string>();
 

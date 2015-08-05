@@ -62,10 +62,12 @@ namespace NuGet.ProjectManagement
             return new ExternalProjectReference(
                 reference.Name,
                 reference.PackageSpecPath,
-                reference.ExternalProjectReferences.Where(externalReference => !externalReference.Equals(reference.Name, StringComparison.OrdinalIgnoreCase)));
+                reference.ExternalProjectReferences.Where(externalReference =>
+                    !externalReference.Equals(reference.Name, StringComparison.OrdinalIgnoreCase)));
         }
 
-        public static IReadOnlyList<PackageIdentity> GetOrderedProjectDependencies(BuildIntegratedNuGetProject buildIntegratedProject)
+        public static IReadOnlyList<PackageIdentity> GetOrderedProjectDependencies(
+            BuildIntegratedNuGetProject buildIntegratedProject)
         {
             var results = new List<PackageIdentity>();
 
@@ -100,14 +102,16 @@ namespace NuGet.ProjectManagement
         /// <summary>
         /// Order dependencies by children first.
         /// </summary>
-        private static IReadOnlyList<PackageDependencyInfo> SortPackagesByDependencyOrder(IEnumerable<PackageDependencyInfo> packages)
+        private static IReadOnlyList<PackageDependencyInfo> SortPackagesByDependencyOrder(
+            IEnumerable<PackageDependencyInfo> packages)
         {
             var sorted = new List<PackageDependencyInfo>();
             var toSort = packages.Distinct().ToList();
 
             while (toSort.Count > 0)
             {
-                // Order packages by parent count, take the child with the lowest number of parents and remove it from the list
+                // Order packages by parent count, take the child with the lowest number of parents
+                // and remove it from the list
                 var nextPackage = toSort.OrderBy(package => GetParentCount(toSort, package.Id))
                     .ThenBy(package => package.Id, StringComparer.OrdinalIgnoreCase).First();
 
@@ -128,7 +132,8 @@ namespace NuGet.ProjectManagement
             foreach (var package in packages)
             {
                 if (package.Dependencies != null
-                    && package.Dependencies.Any(dependency => string.Equals(id, dependency.Id, StringComparison.OrdinalIgnoreCase)))
+                    && package.Dependencies.Any(dependency =>
+                        string.Equals(id, dependency.Id, StringComparison.OrdinalIgnoreCase)))
                 {
                     count++;
                 }

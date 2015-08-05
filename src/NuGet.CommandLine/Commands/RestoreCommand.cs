@@ -104,7 +104,8 @@ namespace NuGet.CommandLine
 
                 var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(projectPath));
                 var packageSpecFile = Path.Combine(projectDirectory, PackageSpec.PackageSpecFileName);
-                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(packageSpecFile), projectPath, projectPath);
+                project = JsonPackageSpecReader.GetPackageSpec(
+                    File.ReadAllText(packageSpecFile), projectPath, projectPath);
                 Console.LogVerbose($"Reading project file {projectPath}");
             }
             else
@@ -112,7 +113,8 @@ namespace NuGet.CommandLine
                 var file = Path.Combine(projectPath, PackageSpec.PackageSpecFileName);
 
                 Console.LogVerbose($"Reading project file {file}");
-                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(file), Path.GetFileName(projectPath), file);
+                project = JsonPackageSpecReader.GetPackageSpec(
+                    File.ReadAllText(file), Path.GetFileName(projectPath), file);
             }
             Console.LogVerbose($"Loaded project {project.Name} from {project.FilePath}");
 
@@ -188,7 +190,8 @@ namespace NuGet.CommandLine
 
                 // Recreate the source provider and credential provider
                 SourceProvider = PackageSourceBuilder.CreateSourceProvider(Settings);
-                HttpClient.DefaultCredentialProvider = new SettingsCredentialProvider(new ConsoleCredentialProvider(Console), SourceProvider, Console);
+                HttpClient.DefaultCredentialProvider =
+                    new SettingsCredentialProvider(new ConsoleCredentialProvider(Console), SourceProvider, Console);
             }
         }
 
@@ -213,15 +216,17 @@ namespace NuGet.CommandLine
             }
             else if (packageRestoreInputs.PackageReferenceFiles.Count > 0)
             {
-                // By default the PackageReferenceFile does not throw if the file does not exist at the specified path.
+                // By default the PackageReferenceFile does not throw
+                // if the file does not exist at the specified path.
                 // So we'll need to verify that the file exists.
                 Debug.Assert(packageRestoreInputs.PackageReferenceFiles.Count == 1,
-                    "Only one packages.config file is allowed to be specified at a time when not performing solution restore.");
+                    "Only one packages.config file is allowed to be specified " +
+                    "at a time when not performing solution restore.");
 
                 var packageReferenceFile = packageRestoreInputs.PackageReferenceFiles[0];
                 if (!File.Exists(packageReferenceFile))
                 {
-                    string message = string.Format(
+                    var message = string.Format(
                         CultureInfo.CurrentCulture,
                         "RestoreCommandFileNotFound",
                         packageReferenceFile);
@@ -249,7 +254,9 @@ namespace NuGet.CommandLine
             var packageRestoreData = missingPackageReferences.Select(reference =>
                 new PackageRestoreData(
                     reference,
-                    new[] { packageRestoreInputs.RestoringWithSolutionFile ? packageRestoreInputs.DirectoryOfSolutionFile : packageRestoreInputs.PackageReferenceFiles[0] },
+                    new[] { packageRestoreInputs.RestoringWithSolutionFile
+                                ? packageRestoreInputs.DirectoryOfSolutionFile
+                                : packageRestoreInputs.PackageReferenceFiles[0] },
                     isMissing: true));
             var packageSources = GetPackageSources(Settings);
 
@@ -266,10 +273,14 @@ namespace NuGet.CommandLine
                 packageRestoredEvent: null,
                 packageRestoreFailedEvent: (sender, args) => { bag.Add(args); },
                 sourceRepositories: repositories,
-                maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism);
+                maxNumberOfParallelTasks: DisableParallelProcessing
+                        ? 1
+                        : PackageManagementConstants.DefaultMaxDegreeOfParallelism);
 
             CheckRequireConsent();
-            await PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Console));
+            await PackageRestoreManager.RestoreMissingPackagesAsync(
+                packageRestoreContext,
+                new ConsoleProjectContext(Console));
 
             foreach(var item in bag)
             {
@@ -285,7 +296,7 @@ namespace NuGet.CommandLine
 
                 if (packageRestoreConsent.IsGranted)
                 {
-                    string message = string.Format(
+                    var message = string.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage"),
                         NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
@@ -294,7 +305,7 @@ namespace NuGet.CommandLine
                 }
                 else
                 {
-                    string message = string.Format(
+                    var message = string.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString("InstallCommandPackageRestoreConsentNotFound"),
                         NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
@@ -413,28 +424,31 @@ namespace NuGet.CommandLine
 
         private string GetPackagesFolder(PackageRestoreInputs packageRestoreInputs)
         {
-            if (!String.IsNullOrEmpty(PackagesDirectory))
+            if (!string.IsNullOrEmpty(PackagesDirectory))
             {
                 return PackagesDirectory;
             }
 
             var repositoryPath = SettingsUtility.GetRepositoryPath(Settings);
-            if (!String.IsNullOrEmpty(repositoryPath))
+            if (!string.IsNullOrEmpty(repositoryPath))
             {
                 return repositoryPath;
             }
 
-            if (!String.IsNullOrEmpty(SolutionDirectory))
+            if (!string.IsNullOrEmpty(SolutionDirectory))
             {
                 return Path.Combine(SolutionDirectory, CommandLineConstants.PackagesDirectoryName);
             }
 
             if (packageRestoreInputs.RestoringWithSolutionFile)
             {
-                return Path.Combine(packageRestoreInputs.DirectoryOfSolutionFile, CommandLineConstants.PackagesDirectoryName);
+                return Path.Combine(
+                    packageRestoreInputs.DirectoryOfSolutionFile,
+                    CommandLineConstants.PackagesDirectoryName);
             }
 
-            throw new InvalidOperationException(LocalizedResourceManager.GetString("RestoreCommandCannotDeterminePackagesFolder"));
+            throw new InvalidOperationException(
+                LocalizedResourceManager.GetString("RestoreCommandCannotDeterminePackagesFolder"));
         }
 
         private static string ConstructPackagesConfigFromProjectName(string projectName)
@@ -448,7 +462,7 @@ namespace NuGet.CommandLine
         private string GetPackageReferenceFile(string projectFile)
         {
             var projectName = Path.GetFileNameWithoutExtension(projectFile);
-            string pathWithProjectName = Path.Combine(
+            var pathWithProjectName = Path.Combine(
                 Path.GetDirectoryName(projectFile),
                 ConstructPackagesConfigFromProjectName(projectName));
             if (File.Exists(pathWithProjectName))
@@ -474,7 +488,9 @@ namespace NuGet.CommandLine
                 }
 
                 var packagesConfigFilePath = GetPackageReferenceFile(projectFile);
-                var projectJsonPath = Path.Combine(Path.GetDirectoryName(projectFile), PackageSpec.PackageSpecFileName);
+                var projectJsonPath = Path.Combine(
+                    Path.GetDirectoryName(projectFile),
+                    PackageSpec.PackageSpecFileName);
 
                 if (File.Exists(packagesConfigFilePath))
                 {
