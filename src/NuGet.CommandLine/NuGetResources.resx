@@ -6033,4 +6033,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="MsBuildDoesNotExistAtPath" xml:space="preserve">
     <value>MsBuild.exe does not exist at '{0}'.</value>
   </data>
+  <data name="RestoreCommandCannotDetermineGlobalPackagesFolder" xml:space="preserve">
+    <value>'globalPackagesFolder' setting is a relative path. To determine full path, please provide either 'SolutionDirectory' switch or a solution file as a parameter. To ignore 'globalPackagesFolder' setting, use 'PackagesDirectory' switch</value>
+  </data>
 </root>

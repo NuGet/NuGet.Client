@@ -9430,6 +9430,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;globalPackagesFolder&apos; setting is a relative path. To determine full path, please provide either &apos;SolutionDirectory&apos; switch or a solution file as a parameter. To ignore &apos;globalPackagesFolder&apos; setting, use &apos;PackagesDirectory&apos; switch.
+        /// </summary>
+        public static string RestoreCommandCannotDetermineGlobalPackagesFolder {
+            get {
+                return ResourceManager.GetString("RestoreCommandCannotDetermineGlobalPackagesFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot determine the packages folder to restore NuGet packages. Please specify either -PackagesDirectory or -SolutionDirectory..
         /// </summary>
         public static string RestoreCommandCannotDeterminePackagesFolder {

@@ -64,16 +64,24 @@ namespace NuGet.CommandLine
                 // Read the settings outside of parallel loops.
                 ReadSettings(restoreInputs);
 
+                // Resolve the packages directory
+                var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(Settings);
+                var packagesDir = GetEffectiveGlobalPackagesFolder(
+                                    PackagesDirectory,
+                                    SolutionDirectory,
+                                    restoreInputs,
+                                    globalPackagesFolder);
+
                 var v3RestoreTasks = new List<Task>();
                 foreach (var file in restoreInputs.V3RestoreFiles)
                 {
                     if (DisableParallelProcessing)
                     {
-                        await PerformNuGetV3RestoreAsync(file);
+                        await PerformNuGetV3RestoreAsync(packagesDir, file);
                     }
                     else
                     {
-                        v3RestoreTasks.Add(PerformNuGetV3RestoreAsync(file));
+                        v3RestoreTasks.Add(PerformNuGetV3RestoreAsync(packagesDir, file));
                     }
                 }
 
@@ -84,7 +92,43 @@ namespace NuGet.CommandLine
             }
         }
 
-        private async Task PerformNuGetV3RestoreAsync(string projectPath)
+        private static string GetEffectiveGlobalPackagesFolder(
+            string packagesDirectoryParameter,
+            string solutionDirectoryParameter,
+            PackageRestoreInputs packageRestoreInputs,
+            string globalPackagesFolder)
+        {
+            if (!string.IsNullOrEmpty(packagesDirectoryParameter))
+            {
+                return packagesDirectoryParameter;
+            }
+
+            if (!string.IsNullOrEmpty(solutionDirectoryParameter) || packageRestoreInputs.RestoringWithSolutionFile)
+            {
+                var solutionDirectory = packageRestoreInputs.RestoringWithSolutionFile ?
+                    packageRestoreInputs.DirectoryOfSolutionFile :
+                    solutionDirectoryParameter;
+
+                return Path.Combine(solutionDirectory, globalPackagesFolder);
+            }
+
+            // If PackagesDirectory parameter is not provided,
+            //    solution directory is not available, and,
+            //    globalPackagesFolder setting is a relative path,
+            // Throw
+            if (!Path.IsPathRooted(globalPackagesFolder))
+            {
+                var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    LocalizedResourceManager.GetString("RestoreCommandCannotDetermineGlobalPackagesFolder"));
+
+                throw new CommandLineException(message);
+            }
+
+            return globalPackagesFolder;
+        }
+
+        private async Task PerformNuGetV3RestoreAsync(string packagesDir, string projectPath)
         {
             var projectFileName = Path.GetFileName(projectPath);
             PackageSpec project;
@@ -121,12 +165,6 @@ namespace NuGet.CommandLine
             // Resolve the root directory
             var rootDirectory = PackageSpecResolver.ResolveRootDirectory(projectPath);
             Console.LogVerbose($"Found project root directory: {rootDirectory}");
-
-            // Resolve the packages directory
-            var packagesDir = !string.IsNullOrEmpty(PackagesDirectory) ?
-                PackagesDirectory :
-                SettingsUtility.GetGlobalPackagesFolder(Settings);
-            packagesDir = Path.GetFullPath(packagesDir);
 
             Console.LogVerbose($"Using packages directory: {packagesDir}");
 

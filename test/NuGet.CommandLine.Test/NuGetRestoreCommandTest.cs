@@ -977,5 +977,141 @@ EndProject");
                 Util.DeleteDirectory(workingDirectory);
             }
         }
+
+        [Fact]
+        public void RestoreCommand_FromProjectJson_RelativeGlobalPackagesFolder()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var nugetexe = Util.GetNuGetExePath();
+
+            try
+            {
+                Util.CreateDirectory(workingPath);
+                Util.CreateDirectory(repositoryPath);
+                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
+                Util.CreateFile(workingPath, "project.json",
+@"{
+  'dependencies': {
+    'packageA': '1.1.0',
+    'packageB': '2.2.0'
+  },
+  'frameworks': {
+                'netcore50': { }
+            }
+}");
+
+                Util.CreateFile(Path.Combine(workingPath, ".nuget"), "nuget.config",
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <config>
+    <add key=""globalPackagesFolder"" value=""..\..\GlobalPackages2"" />
+  </config>
+</configuration>");
+
+                string[] args = new string[] {
+                    "restore",
+                    "-Source",
+                    repositoryPath,
+                    "-solutionDir",
+                    workingPath,
+                    "project.json"
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                var packageFileA = Path.Combine(
+                    workingPath,
+                    @"..\..\GlobalPackages2\packageA\1.1.0\packageA.1.1.0.nupkg");
+
+                var packageFileB = Path.Combine(
+                    workingPath,
+                    @"..\..\GlobalPackages2\packageB\2.2.0\packageB.2.2.0.nupkg");
+
+                Assert.True(File.Exists(packageFileA));
+                Assert.True(File.Exists(packageFileB));
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(currentDirectory);
+                Util.DeleteDirectory(Path.Combine(workingPath, @"..\..\GlobalPackages2"));
+                Util.DeleteDirectory(workingPath);
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_FromProjectJson_RelativeGlobalPackagesFolder_NoSolutionDirectory()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var nugetexe = Util.GetNuGetExePath();
+
+            try
+            {
+                Util.CreateDirectory(workingPath);
+                Util.CreateDirectory(repositoryPath);
+                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
+                Util.CreateFile(workingPath, "project.json",
+@"{
+  'dependencies': {
+    'packageA': '1.1.0',
+    'packageB': '2.2.0'
+  },
+  'frameworks': {
+                'netcore50': { }
+            }
+}");
+
+                Util.CreateFile(Path.Combine(workingPath, ".nuget"), "nuget.config",
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <config>
+    <add key=""globalPackagesFolder"" value=""..\..\GlobalPackages2"" />
+  </config>
+</configuration>");
+
+                string[] args = new string[] {
+                    "restore",
+                    "-Source",
+                    repositoryPath,
+                    "project.json"
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.NotEqual(0, r.Item1);
+                var error = r.Item3;
+                Assert.True(error.Contains(NuGetResources.RestoreCommandCannotDetermineGlobalPackagesFolder));
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(currentDirectory);
+                Util.DeleteDirectory(Path.Combine(workingPath, @"..\..\GlobalPackages2"));
+                Util.DeleteDirectory(workingPath);
+            }
+        }
     }
 }
