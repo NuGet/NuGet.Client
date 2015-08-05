@@ -260,6 +260,7 @@ namespace NuGet.DependencyResolver
                     if (acceptedLibraries.TryGetValue(childNode.Key.Name, out acceptedNode) &&
                         childNode != acceptedNode &&
                         childNode.Key.VersionRange != null &&
+                        string.Equals(childNode.Key.TypeConstraint, acceptedNode.Key.TypeConstraint, StringComparison.Ordinal) &&
                         !childNode.Key.VersionRange.Satisfies(acceptedNode.Item.Key.Version))
                     {
                         versionConflicts.Add(new VersionConflictResult<TItem>
