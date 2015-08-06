@@ -98,34 +98,36 @@ namespace NuGet.CommandLine
             PackageRestoreInputs packageRestoreInputs,
             string globalPackagesFolder)
         {
+            // Return the -PackagesDirectory parameter if specified
             if (!string.IsNullOrEmpty(packagesDirectoryParameter))
             {
                 return packagesDirectoryParameter;
             }
 
-            if (!string.IsNullOrEmpty(solutionDirectoryParameter) || packageRestoreInputs.RestoringWithSolutionFile)
+            // Return the globalPackagesFolder as-is if it is a full path
+            if (Path.IsPathRooted(globalPackagesFolder))
+            {
+                return globalPackagesFolder;
+            }
+            else if (!string.IsNullOrEmpty(solutionDirectoryParameter)
+                || packageRestoreInputs.RestoringWithSolutionFile)
             {
                 var solutionDirectory = packageRestoreInputs.RestoringWithSolutionFile ?
                     packageRestoreInputs.DirectoryOfSolutionFile :
                     solutionDirectoryParameter;
 
+                // -PackagesDirectory parameter was not provided and globalPackagesFolder is a relative path.
+                // Use the solutionDirectory to construct the full path
                 return Path.Combine(solutionDirectory, globalPackagesFolder);
             }
 
-            // If PackagesDirectory parameter is not provided,
-            //    solution directory is not available, and,
-            //    globalPackagesFolder setting is a relative path,
-            // Throw
-            if (!Path.IsPathRooted(globalPackagesFolder))
-            {
-                var message = string.Format(
-                    CultureInfo.CurrentCulture,
-                    LocalizedResourceManager.GetString("RestoreCommandCannotDetermineGlobalPackagesFolder"));
+            // -PackagesDirectory parameter was not provided and globalPackagesFolder is a relative path.
+            // solution directory is not available either. Throw
+            var message = string.Format(
+                CultureInfo.CurrentCulture,
+                LocalizedResourceManager.GetString("RestoreCommandCannotDetermineGlobalPackagesFolder"));
 
-                throw new CommandLineException(message);
-            }
-
-            return globalPackagesFolder;
+            throw new CommandLineException(message);
         }
 
         private async Task PerformNuGetV3RestoreAsync(string packagesDir, string projectPath)
@@ -149,7 +151,10 @@ namespace NuGet.CommandLine
                 var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(projectPath));
                 var packageSpecFile = Path.Combine(projectDirectory, PackageSpec.PackageSpecFileName);
                 project = JsonPackageSpecReader.GetPackageSpec(
-                    File.ReadAllText(packageSpecFile), projectPath, projectPath);
+                    File.ReadAllText(packageSpecFile),
+                    projectPath,
+                    projectPath);
+
                 Console.LogVerbose($"Reading project file {projectPath}");
             }
             else
@@ -158,7 +163,9 @@ namespace NuGet.CommandLine
 
                 Console.LogVerbose($"Reading project file {file}");
                 project = JsonPackageSpecReader.GetPackageSpec(
-                    File.ReadAllText(file), Path.GetFileName(projectPath), file);
+                    File.ReadAllText(file),
+                    Path.GetFileName(projectPath),
+                    file);
             }
             Console.LogVerbose($"Loaded project {project.Name} from {project.FilePath}");
 
@@ -320,7 +327,7 @@ namespace NuGet.CommandLine
                 packageRestoreContext,
                 new ConsoleProjectContext(Console));
 
-            foreach(var item in bag)
+            foreach (var item in bag)
             {
                 Console.WriteError(item.Exception.Message);
             }
