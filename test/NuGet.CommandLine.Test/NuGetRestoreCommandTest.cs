@@ -1079,7 +1079,7 @@ EndProject");
             }
 }");
 
-                Util.CreateFile(Path.Combine(workingPath, ".nuget"), "nuget.config",
+                Util.CreateFile(workingPath, "nuget.config",
 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <config>
