@@ -130,16 +130,16 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            // Note that the value GlobalPackagesFolder must be a full path and not a relative path
-            // Read it like a string and explicitly not as a path
-            var path = settings.GetValue(ConfigSection, GlobalPackagesFolderKey, isPath: false);
+            var path = Environment.GetEnvironmentVariable(GlobalPackagesFolderEnvironmentKey);
             if (!string.IsNullOrEmpty(path))
             {
                 path = path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
                 return path;
             }
 
-            path = Environment.GetEnvironmentVariable(GlobalPackagesFolderEnvironmentKey);
+            // GlobalPackagesFolder path may be relative path. If so, it will be considered relative to
+            // the solution directory, just like the 'repositoryPath' setting
+            path = settings.GetValue(ConfigSection, GlobalPackagesFolderKey, isPath: false);
             if (!string.IsNullOrEmpty(path))
             {
                 path = path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
