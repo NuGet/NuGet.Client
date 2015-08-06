@@ -131,15 +131,16 @@ namespace NuGet.Configuration
             }
 
             var path = Environment.GetEnvironmentVariable(GlobalPackagesFolderEnvironmentKey);
-            if (!string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(path))
             {
-                path = path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
-                return path;
+                // Environment variable for globalPackagesFolder is not set.
+                // Try and get it from nuget settings
+
+                // GlobalPackagesFolder path may be relative path. If so, it will be considered relative to
+                // the solution directory, just like the 'repositoryPath' setting
+                path = settings.GetValue(ConfigSection, GlobalPackagesFolderKey, isPath: false);
             }
 
-            // GlobalPackagesFolder path may be relative path. If so, it will be considered relative to
-            // the solution directory, just like the 'repositoryPath' setting
-            path = settings.GetValue(ConfigSection, GlobalPackagesFolderKey, isPath: false);
             if (!string.IsNullOrEmpty(path))
             {
                 path = path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
