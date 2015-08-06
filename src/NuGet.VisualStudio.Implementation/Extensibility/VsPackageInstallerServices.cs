@@ -55,6 +55,11 @@ namespace NuGet.VisualStudio
                     {
                         InitializePackageManagerAndPackageFolderPath();
 
+                        var effectiveGlobalPackagesFolder =
+                            BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
+                                _solutionManager.SolutionDirectory,
+                                _settings);
+
                         foreach (var project in _solutionManager.GetNuGetProjects())
                         {
                             var installedPackages = await project.GetInstalledPackagesAsync(CancellationToken.None);
@@ -67,8 +72,8 @@ namespace NuGet.VisualStudio
                                 if (buildIntegratedProject != null)
                                 {
                                     installPath = BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(
-                                        package.PackageIdentity,
-                                        _settings);
+                                        effectiveGlobalPackagesFolder,
+                                        package.PackageIdentity);
                                 }
                                 else
                                 {

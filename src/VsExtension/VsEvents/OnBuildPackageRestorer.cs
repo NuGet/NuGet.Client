@@ -168,7 +168,11 @@ namespace NuGetVSExtension
 
                         var forceRestore = Action == vsBuildAction.vsBuildActionRebuildAll;
 
-                        await RestoreBuildIntegratedProjectsAsync(buildEnabledProjects.ToList(), forceRestore);
+                        await RestoreBuildIntegratedProjectsAsync(
+                            solutionDirectory,
+                            buildEnabledProjects.ToList(),
+                            forceRestore);
+
                     }, JoinableTaskCreationOptions.LongRunning);
             }
             catch (Exception ex)
@@ -203,6 +207,7 @@ namespace NuGetVSExtension
         /// This is used for rebuilds.</param>
         /// <returns></returns>
         private async Task RestoreBuildIntegratedProjectsAsync(
+            string solutionDirectory,
             List<BuildIntegratedProjectSystem> buildEnabledProjects,
             bool forceRestore)
         {
@@ -249,7 +254,12 @@ namespace NuGetVSExtension
                             foreach (var project in buildEnabledProjects)
                             {
                                 var projectName = NuGetProject.GetUniqueNameOrName(project);
-                                await BuildIntegratedProjectRestoreAsync(project, enabledSources, Token);
+                                await BuildIntegratedProjectRestoreAsync(
+                                    project,
+                                    solutionDirectory,
+                                    enabledSources,
+                                    Token);
+
                                 WriteLine(
                                     VerbosityLevel.Normal,
                                     Resources.PackageRestoreFinishedForProject,
@@ -315,7 +325,9 @@ namespace NuGetVSExtension
             return false;
         }
 
-        private async Task BuildIntegratedProjectRestoreAsync(BuildIntegratedNuGetProject project,
+        private async Task BuildIntegratedProjectRestoreAsync(
+            BuildIntegratedNuGetProject project,
+            string solutionDirectory,
             IEnumerable<string> enabledSources,
             CancellationToken token)
         {
@@ -324,11 +336,15 @@ namespace NuGetVSExtension
 
             var projectName = NuGetProject.GetUniqueNameOrName(project);
 
+            var effectiveGlobalPackagesFolder = BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
+                                                    SolutionManager?.SolutionDirectory,
+                                                    Settings);
+
             // Pass down the CancellationToken from the dialog
             var restoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(project,
                 this,
                 enabledSources,
-                Settings,
+                effectiveGlobalPackagesFolder,
                 token);
 
             if (!restoreResult.Success)

@@ -153,14 +153,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override async Threading.Task<bool> ExecuteInitScriptAsync(
             PackageIdentity identity,
+            string packageInstallPath,
             INuGetProjectContext projectContext,
             bool throwOnFailure)
         {
             if (ScriptExecutor != null)
             {
-                var packageInstallPath =
-                    BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(identity, Settings);
-
                 var packageReader = new PackageFolderReader(packageInstallPath);
 
                 var toolItemGroups = packageReader.GetToolItems();
