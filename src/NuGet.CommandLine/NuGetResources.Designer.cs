@@ -9430,7 +9430,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;globalPackagesFolder&apos; setting is a relative path. To determine full path, please provide either &apos;SolutionDirectory&apos; switch or a solution file as a parameter. To ignore &apos;globalPackagesFolder&apos; setting, use &apos;PackagesDirectory&apos; switch.
+        ///   Looks up a localized string similar to &apos;globalPackagesFolder&apos; setting is a relative path. To determine full path, please specify either -SolutionDirectory or a solution file as a parameter. To ignore &apos;globalPackagesFolder&apos; setting, specify -PackagesDirectory..
         /// </summary>
         public static string RestoreCommandCannotDetermineGlobalPackagesFolder {
             get {
