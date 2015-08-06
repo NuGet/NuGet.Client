@@ -514,6 +514,9 @@ namespace NuGet.Commands.Test
             var previousLockFile = result.LockFile;
             request.ExistingLockFile = result.LockFile;
 
+            // wait half a second to make sure the time difference can be picked up
+            await Task.Delay(500);
+
             command = new RestoreCommand(logger, request);
             result = await command.ExecuteAsync();
             result.Commit(logger);
