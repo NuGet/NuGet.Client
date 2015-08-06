@@ -1545,7 +1545,7 @@ namespace NuGet.PackageManagement
                         parent,
                         logger,
                         projectAction.Sources,
-                        Settings,
+                        effectiveGlobalPackagesFolder,
                         token);
                 }
             }

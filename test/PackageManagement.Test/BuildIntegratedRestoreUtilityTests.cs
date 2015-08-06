@@ -664,10 +664,16 @@ namespace NuGet.Test
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
                 new TestNuGetProjectContext());
             var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+
+            var effectiveGlobalPackagesFolder =
+                BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
+                    null,
+                    Configuration.NullSettings.Instance);
+
             var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
                 Logging.NullLogger.Instance,
                 sources,
-                Configuration.NullSettings.Instance,
+                effectiveGlobalPackagesFolder,
                 CancellationToken.None);
 
             var format = new LockFileFormat();
@@ -683,7 +689,7 @@ namespace NuGet.Test
             result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
                 Logging.NullLogger.Instance,
                 sources,
-                Configuration.NullSettings.Instance,
+                effectiveGlobalPackagesFolder,
                 CancellationToken.None);
 
             // Assert
