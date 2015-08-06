@@ -1,6 +1,6 @@
 {
     "dependencies": {
-        "NuGet.Resolver": "3.1.1-*"
+        "NuGet.Resolver": "3.1.2-*"
     },
     "frameworks": {
         "net45": {}
