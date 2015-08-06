@@ -464,6 +464,10 @@ namespace NuGet.Commands.Test
 
             command = new RestoreCommand(logger, request);
             result = await command.ExecuteAsync();
+
+            // wait half a second to make sure the time difference can be picked up
+            await Task.Delay(500);
+
             result.Commit(logger, true);
 
             var currentDate = File.GetLastWriteTime(lockFilePath);
