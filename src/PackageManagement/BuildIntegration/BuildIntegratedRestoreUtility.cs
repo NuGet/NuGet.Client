@@ -95,6 +95,9 @@ namespace NuGet.PackageManagement
             var request = new RestoreRequest(packageSpec, packageSources, globalPackageFolderPath);
             request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
 
+            // Add the existing lock file if it exists
+            request.ExistingLockFile = GetLockFile(project, logger);
+
             // Find the full closure of project.json files and referenced projects
             var projectReferences = await project.GetProjectReferenceClosureAsync();
             request.ExternalProjects = projectReferences
@@ -303,6 +306,82 @@ namespace NuGet.PackageManagement
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Find the list of parent projects which directly or indirectly reference the child project.
+        /// </summary>
+        public static async Task<IReadOnlyList<BuildIntegratedNuGetProject>> GetParentProjectsInClosure(
+            ISolutionManager solutionManager,
+            BuildIntegratedNuGetProject target)
+        {
+            var projects = solutionManager.GetNuGetProjects().OfType<BuildIntegratedNuGetProject>().ToList();
+
+            return await GetParentProjectsInClosure(projects, target);
+        }
+
+        /// <summary>
+        /// Find the list of parent projects which directly or indirectly reference the child project.
+        /// </summary>
+        public static async Task<IReadOnlyList<BuildIntegratedNuGetProject>> GetParentProjectsInClosure(
+            IReadOnlyList<BuildIntegratedNuGetProject> projects,
+            BuildIntegratedNuGetProject target)
+        {
+            if (projects == null)
+            {
+                throw new ArgumentNullException(nameof(projects));
+            }
+
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
+            var parents = new HashSet<BuildIntegratedNuGetProject>();
+
+            var targetProjectJson = Path.GetFullPath(target.JsonConfigPath);
+
+            foreach (var project in projects)
+            {
+                // do not count the target as a parent
+                if (!target.Equals(project))
+                {
+                    var closure = await project.GetProjectReferenceClosureAsync();
+
+                    // find all projects which have a child reference matching the same project.json path as the target
+                    if (closure.Any(reference =>
+                        !string.IsNullOrEmpty(reference.PackageSpecPath) &&
+                        string.Equals(targetProjectJson, 
+                            Path.GetFullPath(reference.PackageSpecPath),
+                            StringComparison.OrdinalIgnoreCase)))
+                    {
+                        parents.Add(project);
+                    }
+                }
+            }
+
+            // sort parents by name to make this more deterministic during restores
+            return parents.OrderBy(parent => parent.ProjectName).ToList();
+        }
+
+        /// <summary>
+        /// Returns the lockfile if it exists, otherwise null.
+        /// </summary>
+        private static LockFile GetLockFile(BuildIntegratedNuGetProject project, Logging.ILogger logger)
+        {
+            LockFile lockFile = null;
+
+            var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(project.JsonConfigPath);
+
+            if (File.Exists(lockFilePath))
+            {
+                var format = new LockFileFormat();
+
+                // A corrupt lock file will log errors and return null
+                lockFile = format.Read(lockFilePath, logger);
+            }
+
+            return lockFile;
         }
     }
 }

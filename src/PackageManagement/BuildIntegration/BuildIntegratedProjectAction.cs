@@ -24,11 +24,17 @@ namespace NuGet.PackageManagement
         /// </summary>
         public JObject UpdatedProjectJson { get; }
 
+        /// <summary>
+        /// Sources used for package restore.
+        /// </summary>
+        public IReadOnlyList<string> Sources { get; }
+
         public BuildIntegratedProjectAction(PackageIdentity packageIdentity,
             NuGetProjectActionType nuGetProjectActionType,
             LockFile originalLockFile,
             JObject updatedProjectJson,
-            RestoreResult restoreResult)
+            RestoreResult restoreResult,
+            IReadOnlyList<string> sources)
             : base(packageIdentity, nuGetProjectActionType)
         {
             if (packageIdentity == null)
@@ -51,9 +57,15 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(restoreResult));
             }
 
+            if (sources == null)
+            {
+                throw new ArgumentNullException(nameof(sources));
+            }
+
             OriginalLockFile = originalLockFile;
             RestoreResult = restoreResult;
             UpdatedProjectJson = updatedProjectJson;
+            Sources = sources;
         }
 
         public IReadOnlyList<NuGetProjectAction> GetProjectActions()

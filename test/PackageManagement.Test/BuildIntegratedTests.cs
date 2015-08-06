@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
@@ -23,6 +22,208 @@ namespace NuGet.Test
 {
     public class BuildIntegratedTests
     {
+        [Fact]
+        public async Task TestPacManBuildIntegratedUpdatePackageTransitiveWithLockedTrue()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("1.0.5"));
+            var packageIdentity2 = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("1.0.7"));
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new Configuration.NullSettings();
+            var deleteOnRestartManager = new TestDeleteOnRestartManager();
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager,
+                deleteOnRestartManager);
+
+            var token = CancellationToken.None;
+
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+
+            var projectFolderPaths = new List<string>();
+            var configs = new List<string>();
+            var lockFiles = new List<string>();
+            var buildIntegratedProjects = new List<TestBuildIntegratedNuGetProject>();
+
+            // Create projects
+            for (int i = 0; i < 4; i++)
+            {
+                var folder = TestFilesystemUtility.CreateRandomTestFolder();
+                var config = Path.Combine(folder, "project.json");
+
+                projectFolderPaths.Add(folder);
+                configs.Add(config);
+
+                CreateConfigJson(config);
+
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, folder);
+                var buildIntegratedProject = new TestBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
+
+                buildIntegratedProjects.Add(buildIntegratedProject);
+
+                lockFiles.Add(BuildIntegratedProjectUtility.GetLockFilePath(config));
+
+                testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
+            }
+
+            // Link projects
+            var reference1 = CreateReference(buildIntegratedProjects[1], buildIntegratedProjects[2]);
+            var reference2 = CreateReference(buildIntegratedProjects[2], buildIntegratedProjects[3]);
+            var reference3 = CreateReference(buildIntegratedProjects[3]);
+            var normalReference = CreateReference("myproj");
+
+            buildIntegratedProjects[0].ProjectReferences.Add(reference1);
+            buildIntegratedProjects[0].ProjectReferences.Add(reference2);
+            buildIntegratedProjects[0].ProjectReferences.Add(reference3);
+            buildIntegratedProjects[0].ProjectReferences.Add(normalReference);
+
+            buildIntegratedProjects[1].ProjectReferences.Add(reference2);
+            buildIntegratedProjects[1].ProjectReferences.Add(reference3);
+            buildIntegratedProjects[1].ProjectReferences.Add(normalReference);
+
+            buildIntegratedProjects[2].ProjectReferences.Add(reference3);
+            buildIntegratedProjects[2].ProjectReferences.Add(normalReference);
+
+            string message = string.Empty;
+
+            var format = new LockFileFormat();
+
+            await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[2], packageIdentity, new ResolutionContext(), new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+            // Lock everything
+            for (int i = 0; i < 3; i++)
+            {
+                var lockFile = format.Read(lockFiles[i]);
+                lockFile.IsLocked = true;
+                format.Write(lockFiles[i], lockFile);
+            }
+
+            // Act
+            await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[2], packageIdentity2, new ResolutionContext(), new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+            var parsedLockFiles = new List<LockFile>();
+
+            for (int i = 0; i < 3; i++)
+            {
+                var lockFile = format.Read(lockFiles[i]);
+                parsedLockFiles.Add(lockFile);
+            }
+
+            // Assert
+            Assert.True(parsedLockFiles[0].IsLocked);
+            Assert.True(parsedLockFiles[1].IsLocked);
+            Assert.True(parsedLockFiles[2].IsLocked);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory);
+
+            foreach (var folder in projectFolderPaths)
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(folder);
+            }
+        }
+
+        // Verify that parent projects are restored when a child project is updated
+        [Fact]
+        public async Task TestPacManBuildIntegratedInstallPackageTransitive()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("1.0.7"));
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new Configuration.NullSettings();
+            var deleteOnRestartManager = new TestDeleteOnRestartManager();
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager,
+                deleteOnRestartManager);
+
+            var token = CancellationToken.None;
+
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+
+            var projectFolderPaths = new List<string>();
+            var configs = new List<string>();
+            var lockFiles = new List<string>();
+            var buildIntegratedProjects = new List<TestBuildIntegratedNuGetProject>();
+
+            // Create projects
+            for (int i = 0; i < 4; i++)
+            {
+                var folder = TestFilesystemUtility.CreateRandomTestFolder();
+                var config = Path.Combine(folder, "project.json");
+
+                projectFolderPaths.Add(folder);
+                configs.Add(config);
+
+                CreateConfigJson(config);
+
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, folder);
+                var buildIntegratedProject = new TestBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
+
+                buildIntegratedProjects.Add(buildIntegratedProject);
+
+                lockFiles.Add(BuildIntegratedProjectUtility.GetLockFilePath(config));
+
+                testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
+            }
+
+            // Link projects
+            var reference1 = CreateReference(buildIntegratedProjects[1], buildIntegratedProjects[2]);
+            var reference2 = CreateReference(buildIntegratedProjects[2], buildIntegratedProjects[3]);
+            var reference3 = CreateReference(buildIntegratedProjects[3]);
+            var normalReference = CreateReference("myproj");
+
+            buildIntegratedProjects[0].ProjectReferences.Add(reference1);
+            buildIntegratedProjects[0].ProjectReferences.Add(reference2);
+            buildIntegratedProjects[0].ProjectReferences.Add(reference3);
+            buildIntegratedProjects[0].ProjectReferences.Add(normalReference);
+
+            buildIntegratedProjects[1].ProjectReferences.Add(reference2);
+            buildIntegratedProjects[1].ProjectReferences.Add(reference3);
+            buildIntegratedProjects[1].ProjectReferences.Add(normalReference);
+
+            buildIntegratedProjects[2].ProjectReferences.Add(reference3);
+            buildIntegratedProjects[2].ProjectReferences.Add(normalReference);
+
+            string message = string.Empty;
+
+            var format = new LockFileFormat();
+
+            // Act
+            await nuGetPackageManager.InstallPackageAsync(buildIntegratedProjects[2], packageIdentity, new ResolutionContext(), new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
+
+            var parsedLockFiles = new List<LockFile>();
+
+            for (int i = 0; i < 3; i++)
+            {
+                var lockFile = format.Read(lockFiles[i]);
+                parsedLockFiles.Add(lockFile);
+            }
+
+            // Assert
+            Assert.NotNull(parsedLockFiles[0].GetLibrary("NuGet.Versioning", NuGetVersion.Parse("1.0.7")));
+            Assert.NotNull(parsedLockFiles[1].GetLibrary("NuGet.Versioning", NuGetVersion.Parse("1.0.7")));
+            Assert.NotNull(parsedLockFiles[2].GetLibrary("NuGet.Versioning", NuGetVersion.Parse("1.0.7")));
+            Assert.False(File.Exists(lockFiles[3]));
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory);
+
+            foreach (var folder in projectFolderPaths)
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(folder);
+            }
+        }
+
         [Fact]
         public async Task TestPacManBuildIntegratedInstallPackage()
         {
@@ -209,7 +410,7 @@ namespace NuGet.Test
 
             await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
                 buildIntegratedProject,
-                actions, 
+                actions,
                 new TestNuGetProjectContext(),
                 CancellationToken.None);
 
@@ -398,7 +599,7 @@ namespace NuGet.Test
 
             await nuGetPackageManager.ExecuteNuGetProjectActionsAsync(
                 buildIntegratedProject,
-                actions, 
+                actions,
                 new TestNuGetProjectContext(),
                 CancellationToken.None);
 
@@ -456,6 +657,60 @@ namespace NuGet.Test
 
             // Assert
             Assert.Equal("Package 'newtonsoft.json' to be uninstalled could not be found in project 'TestProjectName'", message);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomProjectFolderPath);
+        }
+
+        [Fact]
+        public async Task TestPacManBuildIntegratedUninstallPackageNoRollback()
+        {
+            // uninstall json.net from a project where a parent depends on it
+            // this should result in the item being removed from project.json, but still existing in the lock file
+
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new Configuration.NullSettings();
+            var deleteOnRestartManager = new TestDeleteOnRestartManager();
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager,
+                deleteOnRestartManager);
+
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+            var token = CancellationToken.None;
+
+            var basicConfig = BasicConfig;
+            var dependencies = basicConfig["dependencies"] as JObject;
+            dependencies.Add(new JProperty("bad2l3kj42lk4234234", "99999.9.9"));
+            dependencies.Add(new JProperty("nuget.versioning", "1.0.7"));
+
+            using (var writer = new StreamWriter(randomConfig))
+            {
+                writer.Write(basicConfig.ToString());
+            }
+
+            var projectTargetFramework = NuGetFramework.Parse("netcore50");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
+            var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+
+            // Check that there are no packages returned by PackagesConfigProject
+            var installedPackages = (await buildIntegratedProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(2, installedPackages.Count);
+            Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
+
+            // Act
+            await nuGetPackageManager.UninstallPackageAsync(buildIntegratedProject, "nuget.versioning",
+                new UninstallationContext(), new TestNuGetProjectContext(), token);
+
+            // Assert
+            // Check the number of packages and packages returned by PackagesConfigProject after the installation
+            installedPackages = (await buildIntegratedProject.GetInstalledPackagesAsync(token)).ToList();
+            Assert.Equal(1, installedPackages.Count);
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomProjectFolderPath);
@@ -762,6 +1017,7 @@ namespace NuGet.Test
         private class TestBuildIntegratedNuGetProject : BuildIntegratedNuGetProject
         {
             public HashSet<PackageIdentity> ExecuteInitScriptAsyncCalls { get; } = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
+            public List<BuildIntegratedProjectReference> ProjectReferences { get; } = new List<BuildIntegratedProjectReference>();
 
             public TestBuildIntegratedNuGetProject(string jsonConfig, IMSBuildNuGetProjectSystem msbuildProjectSystem)
                 : base(jsonConfig, msbuildProjectSystem)
@@ -775,6 +1031,23 @@ namespace NuGet.Test
 
                 return base.ExecuteInitScriptAsync(identity, projectContext, throwOnFailure);
             }
+
+            public override Task<IReadOnlyList<BuildIntegratedProjectReference>> GetProjectReferenceClosureAsync()
+            {
+                return Task.FromResult<IReadOnlyList<BuildIntegratedProjectReference>>(ProjectReferences);
+            }
+        }
+
+        private BuildIntegratedProjectReference CreateReference(BuildIntegratedNuGetProject project, params BuildIntegratedNuGetProject[] children)
+        {
+            var childConfigs = children.Select(child => child.JsonConfigPath).ToList();
+
+            return new BuildIntegratedProjectReference(project.JsonConfigPath, project.JsonConfigPath, childConfigs);
+        }
+
+        private BuildIntegratedProjectReference CreateReference(string name)
+        {
+            return new BuildIntegratedProjectReference(name, null, Enumerable.Empty<string>());
         }
     }
 }

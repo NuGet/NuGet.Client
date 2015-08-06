@@ -361,10 +361,10 @@ namespace NuGet.PackageManagement
                         NuGetVersion latestVersion = await GetLatestVersionAsync(
                             installedPackage.PackageIdentity.Id,
                             resolutionContext,
-                            primarySources, 
+                            primarySources,
                             token);
 
-                        if (latestVersion != null  && latestVersion > installedPackage.PackageIdentity.Version)
+                        if (latestVersion != null && latestVersion > installedPackage.PackageIdentity.Version)
                         {
                             lowLevelActions.Add(NuGetProjectAction.CreateUninstallProjectAction(installedPackage.PackageIdentity));
                             lowLevelActions.Add(NuGetProjectAction.CreateInstallProjectAction(
@@ -1421,7 +1421,8 @@ namespace NuGet.PackageManagement
                 nuGetProjectActions.First().NuGetProjectActionType,
                 originalLockFile,
                 rawPackageSpec,
-                restoreResult);
+                restoreResult,
+                sources.ToList());
         }
 
         /// <summary>
@@ -1441,12 +1442,21 @@ namespace NuGet.PackageManagement
             }
             else
             {
-                projectAction = await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, nuGetProjectActions, nuGetProjectContext, token);
+                projectAction = await PreviewBuildIntegratedProjectActionsAsync(
+                    buildIntegratedProject, 
+                    nuGetProjectActions, 
+                    nuGetProjectContext, 
+                    token);
             }
+
+            var uninstallOnly = projectAction.GetProjectActions()
+                .All(action => action.NuGetProjectActionType == NuGetProjectActionType.Uninstall);
 
             var restoreResult = projectAction.RestoreResult;
 
-            if (restoreResult.Success)
+            // Avoid committing the changes if the restore did not succeed
+            // For uninstalls continue even if the restore failed to avoid blocking the user
+            if (restoreResult.Success || uninstallOnly)
             {
                 // Write out project.json
                 // This can be replaced with the PackageSpec writer once it has been added to the library
@@ -1476,7 +1486,7 @@ namespace NuGet.PackageManagement
                     }
                     else
                     {
-                        // uninstall
+                        // uninstall 
                         nuGetProjectContext.Log(
                             ProjectManagement.MessageLevel.Info,
                             Strings.SuccessfullyUninstalled,
@@ -1499,6 +1509,20 @@ namespace NuGet.PackageManagement
                         var packagePath = BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(package, Settings);
                         await buildIntegratedProject.ExecuteInitScriptAsync(package, nuGetProjectContext, false);
                     }
+                }
+
+                // Restore parent projects. These will be updated to include the transitive changes.
+                var parents = await BuildIntegratedRestoreUtility.GetParentProjectsInClosure(SolutionManager, buildIntegratedProject);
+
+                foreach (var parent in parents)
+                {
+                    // Restore and commit the lock file to disk regardless of the result
+                    var parentResult = await BuildIntegratedRestoreUtility.RestoreAsync(
+                        parent,
+                        logger,
+                        projectAction.Sources,
+                        Settings,
+                        token);
                 }
             }
             else

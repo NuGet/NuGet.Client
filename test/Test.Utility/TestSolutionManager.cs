@@ -15,7 +15,7 @@ namespace Test.Utility
 {
     public class TestSolutionManager : ISolutionManager
     {
-        private List<NuGetProject> NuGetProjects { get; }
+        public List<NuGetProject> NuGetProjects { get; set; }
 
         public string SolutionDirectory { get; }
 

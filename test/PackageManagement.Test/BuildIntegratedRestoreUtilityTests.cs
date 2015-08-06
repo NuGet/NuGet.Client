@@ -12,6 +12,7 @@ using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.ProjectModel;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -632,6 +633,59 @@ namespace NuGet.Test
             TestFilesystemUtility.DeleteRandomTestFolders(rootFolder);
         }
 
+        [Fact]
+        public async Task BuildIntegratedRestoreUtility_StayLocked()
+        {
+            // Arrange
+            var projectName = "testproj";
+
+            var rootFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
+            projectFolder.Create();
+            var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+
+            CreateConfigJson(projectConfig.FullName);
+
+            var sources = new List<string>
+                {
+                    "https://www.nuget.org/api/v2/"
+                };
+
+            var projectTargetFramework = NuGetFramework.Parse("uap10.0");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
+                new TestNuGetProjectContext());
+            var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+
+            var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
+                Logging.NullLogger.Instance,
+                sources,
+                Configuration.NullSettings.Instance,
+                CancellationToken.None);
+
+            var format = new LockFileFormat();
+
+            var path = Path.Combine(projectFolder.FullName, "project.lock.json");
+
+            // Set the lock file to locked=true
+            var lockFile = result.LockFile;
+            lockFile.IsLocked = true;
+            format.Write(path, lockFile);
+
+            // Act
+            result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
+                Logging.NullLogger.Instance,
+                sources,
+                Configuration.NullSettings.Instance,
+                CancellationToken.None);
+
+            // Assert
+            Assert.True(result.LockFile.IsLocked);
+            Assert.True(result.Success);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(rootFolder);
+        }
+
         private static void CreateConfigJson(string path)
         {
             using (var writer = new StreamWriter(path))
@@ -660,7 +714,7 @@ namespace NuGet.Test
 
         private class TestBuildIntegratedNuGetProject : BuildIntegratedNuGetProject
         {
-            public IReadOnlyList<BuildIntegratedProjectReference> ProjectClosure { get; set;}
+            public IReadOnlyList<BuildIntegratedProjectReference> ProjectClosure { get; set; }
 
             public TestBuildIntegratedNuGetProject(string jsonConfig, IMSBuildNuGetProjectSystem msbuildProjectSystem)
                 : base(jsonConfig, msbuildProjectSystem)
