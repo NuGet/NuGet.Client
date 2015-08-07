@@ -40,8 +40,7 @@ namespace NuGet.VisualStudio
             if (nuGetProject == null)
             {
                 VSNuGetProjectFactory factory =
-                    new VSNuGetProjectFactory(() => PackagesFolderPathUtility.GetPackagesFolderPath(solutionManager, settings),
-                    settings);
+                    new VSNuGetProjectFactory(() => PackagesFolderPathUtility.GetPackagesFolderPath(solutionManager, settings));
                 nuGetProject = factory.CreateNuGetProject(project, projectContext);
             }
 

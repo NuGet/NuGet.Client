@@ -20,23 +20,15 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private EmptyNuGetProjectContext EmptyNuGetProjectContext { get; }
 
-        private Configuration.ISettings Settings { get; }
-
         // TODO: Add IDeleteOnRestartManager, VsPackageInstallerEvents and IVsFrameworkMultiTargeting to constructor
-        public VSNuGetProjectFactory(Func<string> packagesPath, Configuration.ISettings settings)
+        public VSNuGetProjectFactory(Func<string> packagesPath)
         {
             if (packagesPath == null)
             {
                 throw new ArgumentNullException(nameof(packagesPath));
             }
 
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
             _packagesPath = packagesPath;
-            Settings = settings;
             EmptyNuGetProjectContext = new EmptyNuGetProjectContext();
         }
 
@@ -76,7 +68,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (File.Exists(jsonConfig))
                 {
-                    result = new BuildIntegratedProjectSystem(jsonConfig, envDTEProject, msBuildNuGetProjectSystem, EnvDTEProjectUtility.GetCustomUniqueName(envDTEProject), Settings);
+                    result = new BuildIntegratedProjectSystem(jsonConfig, envDTEProject, msBuildNuGetProjectSystem, EnvDTEProjectUtility.GetCustomUniqueName(envDTEProject));
                 }
                 else
                 {

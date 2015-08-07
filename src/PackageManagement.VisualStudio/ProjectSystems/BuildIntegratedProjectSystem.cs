@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,6 +15,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using VSLangProj;
+using VSLangProj80;
 using EnvDTEProject = EnvDTE.Project;
 using Threading = System.Threading.Tasks;
 
@@ -25,20 +28,16 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private IScriptExecutor _scriptExecutor;
 
-        private Configuration.ISettings Settings { get; }
-
         public BuildIntegratedProjectSystem(
             string jsonConfigPath,
             EnvDTEProject envDTEProject,
             IMSBuildNuGetProjectSystem msbuildProjectSystem,
-            string uniqueName,
-            Configuration.ISettings settings)
+            string uniqueName)
             : base(jsonConfigPath, msbuildProjectSystem)
         {
             InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, uniqueName);
 
             EnvDTEProject = envDTEProject;
-            Settings = settings;
         }
 
         /// <summary>
@@ -62,7 +61,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Returns the closure of all project to project references below this project.
         /// </summary>
         /// <remarks>This uses DTE and should be called from the UI thread.</remarks>
-        public override async Task<IReadOnlyList<BuildIntegratedProjectReference>> GetProjectReferenceClosureAsync()
+        public override async Task<IReadOnlyList<BuildIntegratedProjectReference>> GetProjectReferenceClosureAsync(Logging.ILogger logger)
         {
             // DTE calls need to be done from the main thread
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -96,48 +95,82 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 var childReferences = new List<string>();
 
+                var hasMissingReferences = false;
+
                 // find all references in the project
                 foreach (var childReference in GetProjectReferences(project))
                 {
-                    if (childReference.SourceProject != null)
+                    try
                     {
-                        var childName =
-                            await EnvDTEProjectUtility.GetCustomUniqueNameAsync(childReference.SourceProject);
+                        var reference3 = childReference as Reference3;
 
-                        childReferences.Add(childName);
-
-                        // avoid looping by checking if we already have this project
-                        if (!uniqueProjects.Contains(childName))
+                        if (reference3 != null && !reference3.Resolved)
                         {
-                            toProcess.Enqueue(childReference.SourceProject);
-                            uniqueProjects.Add(childName);
+                            // Skip missing references and show a warning
+                            hasMissingReferences = true;
+                            continue;
                         }
-                    }
-                    else
-                    {
-                        // SDK references do not have a SourceProject or child references, 
-                        // but they can contain project.json files, and should be part of the closure
 
-                        var possibleSdkPath = childReference.Path;
-
-                        if (!string.IsNullOrEmpty(possibleSdkPath) && Directory.Exists(possibleSdkPath))
-
+                        // Skip missing references
+                        if (childReference.SourceProject != null)
                         {
-                            var possibleProjectJson = Path.Combine(
-                                                        possibleSdkPath,
-                                                        BuildIntegratedProjectUtility.ProjectConfigFileName);
+                            var childName =
+                                await EnvDTEProjectUtility.GetCustomUniqueNameAsync(childReference.SourceProject);
 
-                            if (File.Exists(possibleProjectJson))
+                            childReferences.Add(childName);
+
+                            // avoid looping by checking if we already have this project
+                            if (!uniqueProjects.Contains(childName))
                             {
-                                childReferences.Add(possibleProjectJson);
-
-                                // add the sdk to the results here
-                                results.Add(new BuildIntegratedProjectReference(
-                                    possibleProjectJson,
-                                    possibleProjectJson,
-                                    Enumerable.Empty<string>()));
+                                toProcess.Enqueue(childReference.SourceProject);
+                                uniqueProjects.Add(childName);
                             }
                         }
+                        else
+                        {
+                            // SDK references do not have a SourceProject or child references, 
+                            // but they can contain project.json files, and should be part of the closure
+
+                            var possibleSdkPath = childReference.Path;
+
+                            if (!string.IsNullOrEmpty(possibleSdkPath) && Directory.Exists(possibleSdkPath))
+                            {
+                                var possibleProjectJson = Path.Combine(
+                                                            possibleSdkPath,
+                                                            BuildIntegratedProjectUtility.ProjectConfigFileName);
+
+                                if (File.Exists(possibleProjectJson))
+                                {
+                                    childReferences.Add(possibleProjectJson);
+
+                                    // add the sdk to the results here
+                                    results.Add(new BuildIntegratedProjectReference(
+                                        possibleProjectJson,
+                                        possibleProjectJson,
+                                        Enumerable.Empty<string>()));
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Exceptions are expected in some scenarios for native projects,
+                        // ignore them and show a warning
+                        hasMissingReferences = true;
+
+                        Debug.Fail("Unable to find project closure: " + ex.ToString());
+                    }
+
+                    if (hasMissingReferences)
+                    {
+                        // Log a warning message once per project
+                        var warning = string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Warning_ErrorDuringProjectClosureWalk,
+                            projectUniqueName,
+                            rootProjectName);
+
+                        logger.LogWarning(warning);
                     }
                 }
 
@@ -214,22 +247,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     yield return reference;
                 }
             }
-        }
-
-        private static string GetPathSafe(Reference childReference)
-        {
-            string path = null;
-
-            try
-            {
-                path = childReference.Path;
-            }
-            catch
-            {
-                // This is expected for some native project references
-            }
-
-            return path;
         }
     }
 }
