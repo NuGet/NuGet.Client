@@ -207,7 +207,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     try
                     {
-                        using (var stream = FileSystemUtility.GetFileStream(packagesConfigFullPath)
+                        using (var stream = FileSystemUtility.GetFileStream(packagesConfigFullPath))
                         {
                             var writer = new PackagesConfigWriter(stream, createNew: false);
                             foreach (var entry in packageReferencesToUpdateReinstall)
