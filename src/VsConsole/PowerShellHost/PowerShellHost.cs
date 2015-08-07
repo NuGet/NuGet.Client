@@ -382,11 +382,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             if (!string.IsNullOrEmpty(pathToPackage))
                             {
                                 var toolsPath = Path.Combine(pathToPackage, "tools");
+                                var scriptPath = Path.Combine(toolsPath, PowerShellScripts.Init);
 
                                 if (Directory.Exists(toolsPath))
                                 {
                                     AddPathToEnvironment(toolsPath);
-                                    Runspace.ExecuteScript(toolsPath, PowerShellScripts.Init, package);
+                                    Runspace.ExecuteScript(pathToPackage, scriptPath, package);
                                 }
                             }
                         }

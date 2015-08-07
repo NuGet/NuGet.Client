@@ -182,13 +182,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         // Was passing in IPackage
         public void ExecuteScript(string installPath, string scriptPath, PackageIdentity package)
         {
-            string fullPath = Path.Combine(installPath, scriptPath);
-            if (File.Exists(fullPath))
+            if (File.Exists(scriptPath))
             {
-                string folderPath = Path.GetDirectoryName(fullPath);
+                string folderPath = Path.GetDirectoryName(scriptPath);
 
                 Invoke(
-                    "$__pc_args=@(); $input|%{$__pc_args+=$_}; & " + PathUtility.EscapePSPath(fullPath) + " $__pc_args[0] $__pc_args[1] $__pc_args[2]; Remove-Variable __pc_args -Scope 0",
+                    "$__pc_args=@(); $input|%{$__pc_args+=$_}; & " + PathUtility.EscapePSPath(scriptPath) + " $__pc_args[0] $__pc_args[1] $__pc_args[2]; Remove-Variable __pc_args -Scope 0",
                     new object[] { installPath, folderPath, package },
                     outputResults: true);
             }
