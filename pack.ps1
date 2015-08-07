@@ -33,7 +33,7 @@ function Pack(
 
     # create the output folder
     if ((Test-Path nupkgs) -eq 1) {
-        Remove-Item -Path nupkgs | Out-Null
+        Remove-Item -Path nupkgs -Force | Out-Null
     }
 
     New-Item -ItemType directory -Path nupkgs | Out-Null
