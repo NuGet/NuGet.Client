@@ -160,18 +160,18 @@ namespace NuGet.PackageManagement.VisualStudio
 
                         Debug.Fail("Unable to find project closure: " + ex.ToString());
                     }
+                }
 
-                    if (hasMissingReferences)
-                    {
-                        // Log a warning message once per project
-                        var warning = string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.Warning_ErrorDuringProjectClosureWalk,
-                            projectUniqueName,
-                            rootProjectName);
+                if (hasMissingReferences)
+                {
+                    // Log a warning message once per project
+                    var warning = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Warning_ErrorDuringProjectClosureWalk,
+                        projectUniqueName,
+                        rootProjectName);
 
-                        logger.LogWarning(warning);
-                    }
+                    logger.LogWarning(warning);
                 }
 
                 if (!string.Equals(rootProjectName, projectUniqueName, StringComparison.OrdinalIgnoreCase))
