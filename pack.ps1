@@ -31,13 +31,6 @@ function Pack(
     Write-Host "Project to build: $projectPath" -ForegroundColor Cyan
     Write-Host "Package version: $version" -ForegroundColor Cyan
 
-    # create the output folder
-    if ((Test-Path nupkgs) -eq 1) {
-        Remove-Item -Path nupkgs -Force | Out-Null
-    }
-
-    New-Item -ItemType directory -Path nupkgs | Out-Null
-
     # Pack
 	Write-Host "Project path is $ProjectPath"
 	if ($IncludeReferencedProjects) {		
@@ -80,6 +73,16 @@ function Build()
 	  	throw "Build failed"
 	}	
     Write-Host "Build complete! configuration: $Configuration" -ForegroundColor Cyan
+}
+
+# create or clean the output folder
+if ((Test-Path nupkgs) -eq 0) 
+{
+	New-Item -ItemType directory -Path nupkgs | Out-Null
+}
+else
+{
+	Remove-Item -Path nupkgs\*.nupkg -Force | Out-Null
 }
 
 Build
