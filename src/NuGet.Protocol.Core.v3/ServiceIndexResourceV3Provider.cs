@@ -20,8 +20,13 @@ namespace NuGet.Protocol.Core.v3
     /// </summary>
     public class ServiceIndexResourceV3Provider : ResourceProvider
     {
-        private static readonly TimeSpan MaxCacheDuration = TimeSpan.FromMinutes(40);
-        private readonly ConcurrentDictionary<string, ServiceIndexCacheInfo> _cache;
+        private static readonly TimeSpan _defaultCacheDuration = TimeSpan.FromMinutes(40);
+        protected readonly ConcurrentDictionary<string, ServiceIndexCacheInfo> _cache;
+
+        /// <summary>
+        /// Maximum amount of time to store index.json
+        /// </summary>
+        public TimeSpan MaxCacheDuration { get; protected set; }
 
         public ServiceIndexResourceV3Provider()
             : base(typeof(ServiceIndexResourceV3),
@@ -29,11 +34,9 @@ namespace NuGet.Protocol.Core.v3
                   NuGetResourceProviderPositions.Last)
         {
             _cache = new ConcurrentDictionary<string, ServiceIndexCacheInfo>(StringComparer.OrdinalIgnoreCase);
+            MaxCacheDuration = _defaultCacheDuration;
         }
 
-        protected virtual DateTime UtcNow => DateTime.UtcNow;
-
-        // TODO: refresh the file when it gets old
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             ServiceIndexResourceV3 index = null;
@@ -45,10 +48,13 @@ namespace NuGet.Protocol.Core.v3
                 (source.PackageSource.IsHttp &&
                 url.EndsWith(".json", StringComparison.OrdinalIgnoreCase)))
             {
+                var utcNow = DateTime.UtcNow;
+                var entryValidCutoff = utcNow.Subtract(MaxCacheDuration);
+
                 ServiceIndexCacheInfo cacheInfo;
                 // check the cache before downloading the file
                 if (!_cache.TryGetValue(url, out cacheInfo) ||
-                    UtcNow - cacheInfo.CachedTime > MaxCacheDuration)
+                    entryValidCutoff > cacheInfo.CachedTime)
                 {
                     var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
 
@@ -62,12 +68,16 @@ namespace NuGet.Protocol.Core.v3
                     }
                     catch (JsonReaderException)
                     {
-                        _cache.TryAdd(url, new ServiceIndexCacheInfo { CachedTime = UtcNow });
+                        var entry = new ServiceIndexCacheInfo { CachedTime = utcNow };
+                        _cache.AddOrUpdate(url, entry, (key, value) => entry);
+
                         return new Tuple<bool, INuGetResource>(false, null);
                     }
                     catch (HttpRequestException)
                     {
-                        _cache.TryAdd(url, new ServiceIndexCacheInfo { CachedTime = UtcNow });
+                        var entry = new ServiceIndexCacheInfo { CachedTime = utcNow };
+                        _cache.AddOrUpdate(url, entry, (key, value) => entry);
+
                         return new Tuple<bool, INuGetResource>(false, null);
                     }
 
@@ -82,7 +92,7 @@ namespace NuGet.Protocol.Core.v3
                             SemanticVersion.TryParse((string)versionToken, out version) &&
                             version.Major == 3)
                         {
-                            index = new ServiceIndexResourceV3(json, UtcNow);
+                            index = new ServiceIndexResourceV3(json, utcNow);
                         }
                     }
                 }
@@ -92,13 +102,20 @@ namespace NuGet.Protocol.Core.v3
                 }
 
                 // cache the value even if it is null to avoid checking it again later
-                _cache.TryAdd(url, new ServiceIndexCacheInfo { CachedTime = UtcNow, Index = index });
+                var cacheEntry = new ServiceIndexCacheInfo
+                {
+                    CachedTime = utcNow,
+                    Index = index
+                };
+
+                // If the cache entry has expired it will already exist
+                _cache.AddOrUpdate(url, cacheEntry, (key, value) => cacheEntry);
             }
 
             return new Tuple<bool, INuGetResource>(index != null, index);
         }
 
-        private class ServiceIndexCacheInfo
+        protected class ServiceIndexCacheInfo
         {
             public ServiceIndexResourceV3 Index { get; set; }
 

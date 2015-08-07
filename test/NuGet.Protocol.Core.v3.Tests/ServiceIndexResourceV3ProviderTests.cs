@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
+using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using Test.Utility;
@@ -156,7 +157,6 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
             var startTime = DateTime.UtcNow;
 
             // Act - 1
-            provider.SetUtcNow(startTime);
             var result = await provider.TryCreate(sourceRepository, default(CancellationToken));
 
             // Assert - 1
@@ -164,24 +164,55 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
             Assert.Null(result.Item2);
 
             // Act - 2
-            provider.SetUtcNow(startTime.AddMinutes(45));
+            var minutesago45 = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(45));
+
+            var index = new ServiceIndexResourceV3(new JObject(), minutesago45);
+
+            provider.ReplaceCache(source, minutesago45, index);
+
             result = await provider.TryCreate(sourceRepository, default(CancellationToken));
+            var result2 = await provider.TryCreate(sourceRepository, default(CancellationToken));
 
             // Assert - 2
             Assert.True(result.Item1);
-            var resource = Assert.IsType<ServiceIndexResourceV3>(result.Item2);
-            Assert.NotNull(resource.Index);
+            Assert.True(index != result.Item2);         // Previous entry was expired
+            Assert.True(result.Item2 == result2.Item2); // Same as last request
+
+            // Act - 3
+            var minutesago20 = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(20));
+
+            index = new ServiceIndexResourceV3(new JObject(), minutesago20);
+
+            provider.ReplaceCache(source, minutesago20, index);
+
+            result = await provider.TryCreate(sourceRepository, default(CancellationToken));
+            result2 = await provider.TryCreate(sourceRepository, default(CancellationToken));
+
+            // Assert - 3
+            Assert.True(result.Item1);
+            Assert.True(result2.Item1);
+            Assert.True(index == result.Item2);   // Same
+            Assert.True(index == result2.Item2);  // Same
         }
 
         private class TestableSerivceIndexResourceProvider : ServiceIndexResourceV3Provider
         {
-            private DateTime _utcNow;
-
-            protected override DateTime UtcNow => _utcNow;
-
-            public void SetUtcNow(DateTime utcNow)
+            public void SetDuration(TimeSpan span)
             {
-                _utcNow = utcNow;
+                MaxCacheDuration = span;
+            }
+
+            public void ReplaceCache(string url, DateTime date, ServiceIndexResourceV3 index)
+            {
+                _cache.Clear();
+
+                var entry = new ServiceIndexCacheInfo()
+                {
+                    CachedTime = date,
+                    Index = index
+                };
+
+                _cache.TryAdd(url, entry);
             }
         }
     }
