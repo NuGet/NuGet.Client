@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
+using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
@@ -100,7 +101,16 @@ namespace NuGet.ProjectManagement.Projects
         /// <summary>
         /// Retrieve the full closure of project to project references.
         /// </summary>
-        public virtual Task<IReadOnlyList<BuildIntegratedProjectReference>> GetProjectReferenceClosureAsync()
+        public Task<IReadOnlyList<BuildIntegratedProjectReference>> GetProjectReferenceClosureAsync()
+        {
+            return GetProjectReferenceClosureAsync(NullLogger.Instance);
+        }
+
+        /// <summary>
+        /// Retrieve the full closure of project to project references.
+        /// Warnings and errors encountered will be logged.
+        /// </summary>
+        public virtual Task<IReadOnlyList<BuildIntegratedProjectReference>> GetProjectReferenceClosureAsync(ILogger logger)
         {
             // This cannot be resolved with DTE currently, it is overridden at a higher level
             return Task.FromResult<IReadOnlyList<BuildIntegratedProjectReference>>(

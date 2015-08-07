@@ -76,7 +76,7 @@ namespace NuGet.PackageManagement
             request.ExistingLockFile = GetLockFile(project, logger);
 
             // Find the full closure of project.json files and referenced projects
-            var projectReferences = await project.GetProjectReferenceClosureAsync();
+            var projectReferences = await project.GetProjectReferenceClosureAsync(logger);
             request.ExternalProjects = projectReferences
                 .Where(reference => !string.IsNullOrEmpty(reference.PackageSpecPath))
                 .Select(reference => BuildIntegratedProjectUtility.ConvertProjectReference(reference))

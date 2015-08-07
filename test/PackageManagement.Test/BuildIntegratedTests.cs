@@ -1038,7 +1038,7 @@ namespace NuGet.Test
                 return base.ExecuteInitScriptAsync(identity, packageInstallPath, projectContext, throwOnFailure);
             }
 
-            public override Task<IReadOnlyList<BuildIntegratedProjectReference>> GetProjectReferenceClosureAsync()
+            public override Task<IReadOnlyList<BuildIntegratedProjectReference>> GetProjectReferenceClosureAsync(Logging.ILogger logger)
             {
                 return Task.FromResult<IReadOnlyList<BuildIntegratedProjectReference>>(ProjectReferences);
             }
