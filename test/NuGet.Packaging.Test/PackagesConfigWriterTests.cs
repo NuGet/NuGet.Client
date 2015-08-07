@@ -254,9 +254,9 @@ namespace NuGet.Packaging.Test
 
             using (var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
             {
-                var fileWriter = new StreamWriter(fileStream);
-
-                string content = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                using (var fileWriter = new StreamWriter(fileStream))
+                {
+                    string content = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <packages>
         <package id = ""packageA"" version = ""1.0.0"" targetFramework = ""win81"" userInstalled = ""true"" protocolVersion = ""V2"" />
         <package id = ""Microsoft.ApplicationInsights.PersistenceChannel"" version = ""0.14.3-build00177"" targetFramework = ""win81"" />
@@ -265,8 +265,8 @@ namespace NuGet.Packaging.Test
         <package id = ""System.Numerics.Vectors"" version = ""4.0.0"" targetFramework = ""win81"" />
 </packages>";
 
-                fileWriter.Write(content);
-                fileWriter.Close();
+                    fileWriter.Write(content);
+                }
             }
 
             var stream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite);
