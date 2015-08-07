@@ -66,6 +66,8 @@ function Build()
     Write-Host "Building! configuration: $Configuration" -ForegroundColor Cyan
     
     $msbuildExe = "${env:ProgramFiles(x86)}\MSBuild\14.0\Bin\msbuild.exe"
+
+    & $msbuildExe "build\build.msbuild" /t:Clean /m
     
     & $msbuildExe "build\build.msbuild" "/p:Configuration=$Configuration" /p:EnableCodeAnalysis=true /p:NUGET_BUILD_FEEDS=$PushTarget /m /v:M  /fl /flp:v=D $msbuildParameters
 	if ($lastexitcode -ne 0) 
