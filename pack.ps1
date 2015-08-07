@@ -32,9 +32,11 @@ function Pack(
     Write-Host "Package version: $version" -ForegroundColor Cyan
 
     # create the output folder
-    if ((Test-Path nupkgs) -eq 0) {
-        New-Item -ItemType directory -Path nupkgs | Out-Null
+    if ((Test-Path nupkgs) -eq 1) {
+        Remove-Item -Path nupkgs | Out-Null
     }
+
+    New-Item -ItemType directory -Path nupkgs | Out-Null
 
     # Pack
 	Write-Host "Project path is $ProjectPath"
