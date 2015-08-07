@@ -157,6 +157,17 @@ namespace NuGet.Common
             return Directory.EnumerateFiles(path, filter, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
         }
 
+        public IEnumerable<string> GetFullPaths(string fileName)
+        {
+            return Project.Items.Where(
+                projectItem =>
+                {
+                    var itemFileName = Path.GetFileName(projectItem.EvaluatedInclude);
+                    return string.Equals(fileName, itemFileName, StringComparison.OrdinalIgnoreCase);
+                })
+                .Select(projectItem => Path.Combine(_projectDirectory, projectItem.EvaluatedInclude));
+        }
+
         public dynamic GetPropertyValue(string propertyName)
         {
             return Project.GetPropertyValue(propertyName);

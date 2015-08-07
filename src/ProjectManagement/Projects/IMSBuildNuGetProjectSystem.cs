@@ -54,6 +54,14 @@ namespace NuGet.ProjectManagement
         IEnumerable<string> GetFiles(string path, string filter, bool recursive);
 
         /// <summary>
+        /// Returns the list of full paths of the files in the project that match the file name.
+        /// </summary>
+        /// <param name="fileName">the file name</param>
+        /// <returns>The list of full paths.</returns>
+        /// <remarks>We should combine GetFiles & GetFullPaths into one method.</remarks>
+        IEnumerable<string> GetFullPaths(string fileName);
+
+        /// <summary>
         /// Returns the directories under the directory <paramref name="path" />.
         /// </summary>
         /// <param name="path">The directory under which to search for subdirectories.</param>

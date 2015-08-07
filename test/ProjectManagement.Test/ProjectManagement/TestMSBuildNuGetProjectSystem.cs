@@ -195,6 +195,12 @@ namespace Test.Utility
             return Files.Where(f => f.StartsWith(path));
         }
 
+        public IEnumerable<string> GetFullPaths(string fileName)
+        {
+            return Files.Where(f => f.Equals(fileName, StringComparison.OrdinalIgnoreCase))
+                .Select(f => Path.Combine(ProjectFullPath, f));
+        }
+
         public IEnumerable<string> GetDirectories(string path)
         {
             return GetFiles(path, "*.*", recursive: true);
