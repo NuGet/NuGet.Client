@@ -190,12 +190,16 @@
         <PropertyGroup>
             <EnableCodeAnalysis Condition="'$(EnableCodeAnalysis)' == ''" >true</EnableCodeAnalysis>
         </PropertyGroup>
-        <MSBuild Projects="$(NuGetRoot)\NuGet.sln" Targets="Build" Properties="EnableCodeAnalysis=$(EnableCodeAnalysis);DeployExtension=false" />
+        <MSBuild Projects="$(NuGetRoot)\NuGet.VisualStudioExtension.sln" Targets="Build" Properties="EnableCodeAnalysis=$(EnableCodeAnalysis);DeployExtension=false" />
     </Target>
 
     <Target Name="BuildMono">
         <MSBuild Projects="@(MonoProjects)"
                  Targets="Build" />
+    </Target>
+	
+	<Target Name="Clean">
+      <MSBuild Projects="$(NuGetRoot)\NuGet.VisualStudioExtension.sln" Targets="Clean" />
     </Target>
 
     <Target Name="VerifyAssembliesInVSIX">

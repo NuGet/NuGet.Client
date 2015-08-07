@@ -13,13 +13,4 @@
 		/> 
     <xunit Assembly="$(TargetDir)$(AssemblyName).dll" />
 </Target>
-<Target Name="MakeNuGetReferencesPrivate" 
-	AfterTargets="ResolveNuGetPackageAssets"
-	Condition="Exists('$(MSBuildBinPath)\..\Imports\Microsoft.Common.Props\ImportBefore\Microsoft.NuGet.ImportBefore.props')">
-  <ItemGroup>
-    <Reference Include="@(_ReferencesFromNuGetPackages)">
-      <Private>True</Private>
-    </Reference>
-  </ItemGroup>
-</Target>
 </Project>
