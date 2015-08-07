@@ -11,14 +11,3 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("NuGet Command Line")]
 [assembly: AssemblyDescription("NuGet Command Line")]
-
-// Common attributes
-
-[assembly: AssemblyCompany(".NET Foundation")]
-[assembly: AssemblyProduct("NuGet")]
-[assembly: AssemblyCopyright("\x00a9 .NET Foundation. All rights reserved.")]
-[assembly: NeutralResourcesLanguage("en-US")]
-[assembly: CLSCompliant(false)]
-[assembly: ComVisible(false)]
-[assembly: AssemblyVersion("3.1.0.0")]
-[assembly: AssemblyInformationalVersion("3.1.0")]
