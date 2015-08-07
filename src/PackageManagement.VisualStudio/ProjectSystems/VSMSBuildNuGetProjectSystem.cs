@@ -796,6 +796,23 @@ namespace NuGet.PackageManagement.VisualStudio
                 });
         }
 
+        public IEnumerable<string> GetFullPaths(string fileName)
+        {
+            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                MicrosoftBuildEvaluationProject buildProject = EnvDTEProjectUtility.AsMicrosoftBuildEvaluationProject(EnvDTEProject);
+                return buildProject.Items.Where(
+                    projectItem =>
+                    {
+                        var itemFileName = Path.GetFileName(projectItem.EvaluatedInclude);
+                        return string.Equals(fileName, itemFileName, StringComparison.OrdinalIgnoreCase);
+                    })
+                    .Select(projectItem => Path.Combine(ProjectFullPath, projectItem.EvaluatedInclude));
+            });
+        }
+
         public virtual IEnumerable<string> GetDirectories(string path)
         {
             return ThreadHelper.JoinableTaskFactory.Run(async delegate

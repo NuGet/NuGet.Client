@@ -54,7 +54,8 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Get the configuration file
-            XDocument document = GetConfiguration();
+            var configFileFullPath = GetConfigurationFileFullPath();
+            XDocument document = GetConfiguration(configFileFullPath);
 
             // Get the runtime element
             XElement runtime = document.Root.Element("runtime");
@@ -102,7 +103,20 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Save the file
-            Save(document);
+            Save(configFileFullPath, document);
+        }
+
+        private string GetConfigurationFileFullPath()
+        {
+            var fullPaths = MSBuildNuGetProjectSystem.GetFullPaths(ConfigurationFile);
+            if (!fullPaths.IsEmpty())
+            {
+                return fullPaths.Last();
+            }
+            else
+            {
+                return Path.Combine(MSBuildNuGetProjectSystem.ProjectFullPath, ConfigurationFile);
+            }
         }
 
         public void RemoveBindingRedirects(IEnumerable<AssemblyBinding> bindingRedirects)
@@ -119,7 +133,8 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Get the configuration file
-            XDocument document = GetConfiguration();
+            var configFileFullPath = GetConfigurationFileFullPath();
+            XDocument document = GetConfiguration(configFileFullPath);
 
             // Get all of the current bindings in config
             ILookup<AssemblyBinding, XElement> currentBindings = GetAssemblyBindings(document);
@@ -141,7 +156,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Save the file
-            Save(document);
+            Save(configFileFullPath, document);
         }
 
         private static void RemoveElement(XElement element)
@@ -173,13 +188,13 @@ namespace NuGet.PackageManagement.VisualStudio
             return assemblyBinding;
         }
 
-        private void Save(XDocument document)
+        private void Save(string configFileFullPath, XDocument document)
         {
             using (var memoryStream = new MemoryStream())
             {
                 document.Save(memoryStream);
                 memoryStream.Seek(0, SeekOrigin.Begin);
-                MSBuildNuGetProjectSystem.AddFile(ConfigurationFile, memoryStream);
+                MSBuildNuGetProjectSystem.AddFile(configFileFullPath, memoryStream);
             }
         }
 
@@ -211,12 +226,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 .Elements(DependentAssemblyName);
         }
 
-        private XDocument GetConfiguration()
+        private XDocument GetConfiguration(string configFileFullPath)
         {
             return ProjectManagement.XmlUtility.GetOrCreateDocument(
                 "configuration",
-                MSBuildNuGetProjectSystem.ProjectFullPath,
-                ConfigurationFile,
+                Path.GetDirectoryName(configFileFullPath),
+                Path.GetFileName(configFileFullPath),
                 MSBuildNuGetProjectSystem.NuGetProjectContext);
         }
 
