@@ -14,6 +14,14 @@ namespace NuGet.Commands
     public class MSBuildRestoreResult
     {
         /// <summary>
+        /// The macros that we may use in MSBuild to replace path roots.
+        /// </summary>
+        private static readonly string[] MacroCandidates = new[]
+        {
+            "UserProfile", // e.g. C:\users\myusername
+        };
+
+        /// <summary>
         /// Gets a boolean indicating if the necessary MSBuild file could be generated
         /// </summary>
         public bool Success { get; }
@@ -101,6 +109,23 @@ namespace NuGet.Commands
                 }
             }
         }
+
+        private static string ReplacePathsWithMacros(string path)
+        {
+            foreach (var macroName in MacroCandidates)
+            {
+                string macroValue = Environment.GetEnvironmentVariable(macroName);
+                if (path.StartsWith(macroValue, StringComparison.OrdinalIgnoreCase))
+                {
+                    path = $"$({macroName})\\{path.Substring(macroValue.Length)}";
+                }
+
+                break;
+            }
+
+            return path;
+        }
+
         private void GenerateMSBuildErrorFile(string path)
         {
             var ns = XNamespace.Get("http://schemas.microsoft.com/developer/msbuild/2003");
@@ -135,7 +160,7 @@ namespace NuGet.Commands
                     new XElement(ns + "PropertyGroup",
                         new XAttribute("Condition", "'$(NuGetPackageRoot)' == ''"),
 
-                        new XElement(ns + "NuGetPackageRoot", RepositoryRoot)),
+                        new XElement(ns + "NuGetPackageRoot", ReplacePathsWithMacros(RepositoryRoot))),
                     new XElement(ns + "ImportGroup", imports.Select(i =>
                         new XElement(ns + "Import",
                             new XAttribute("Project", Path.Combine("$(NuGetPackageRoot)", i)),
