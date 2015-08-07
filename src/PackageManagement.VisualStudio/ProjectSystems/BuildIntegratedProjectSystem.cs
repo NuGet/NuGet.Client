@@ -165,6 +165,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (hasMissingReferences)
                 {
                     // Log a warning message once per project
+                    // This warning contains only the names of the root project and the project with the
+                    // broken reference. Attempting to display more details on the actual reference 
+                    // that has the problem may lead to another exception being thrown.
                     var warning = string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.Warning_ErrorDuringProjectClosureWalk,
