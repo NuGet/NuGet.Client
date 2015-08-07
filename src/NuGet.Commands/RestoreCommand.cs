@@ -474,13 +474,18 @@ namespace NuGet.Commands
             // Use empty string as the key of dependencies shared by all frameworks
             lockFile.ProjectFileDependencyGroups.Add(new ProjectFileDependencyGroup(
                 string.Empty,
-                project.Dependencies.Select(x => x.LibraryRange.ToLockFileDependencyGroupString())));
+                project.Dependencies
+                    .Select(group => group.LibraryRange.ToLockFileDependencyGroupString())
+                    .OrderBy(group => group)));
 
-            foreach (var frameworkInfo in project.TargetFrameworks)
+            foreach (var frameworkInfo in project.TargetFrameworks
+                                            .OrderBy(framework => framework.FrameworkName.ToString()))
             {
                 lockFile.ProjectFileDependencyGroups.Add(new ProjectFileDependencyGroup(
                     frameworkInfo.FrameworkName.ToString(),
-                    frameworkInfo.Dependencies.Select(x => x.LibraryRange.ToLockFileDependencyGroupString())));
+                    frameworkInfo.Dependencies
+                        .Select(x => x.LibraryRange.ToLockFileDependencyGroupString())
+                        .OrderBy(dependency => dependency)));
             }
 
             // Record all libraries used
@@ -523,7 +528,9 @@ namespace NuGet.Commands
             var librariesWithWarnings = new HashSet<LibraryIdentity>();
 
             // Add the targets
-            foreach (var targetGraph in targetGraphs)
+            foreach (var targetGraph in targetGraphs
+                .OrderBy(graph => graph.Framework.ToString())
+                .ThenBy(graph => graph.RuntimeIdentifier))
             {
                 var target = new LockFileTarget();
                 target.TargetFramework = targetGraph.Framework;

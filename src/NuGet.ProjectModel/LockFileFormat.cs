@@ -256,32 +256,44 @@ namespace NuGet.ProjectModel
 
             if (library.Dependencies.Count > 0)
             {
-                json[DependenciesProperty] = WriteObject(library.Dependencies, WritePackageDependency);
+                var ordered = library.Dependencies.OrderBy(dependency => dependency.Id);
+
+                json[DependenciesProperty] = WriteObject(ordered, WritePackageDependency);
             }
 
             if (library.FrameworkAssemblies.Count > 0)
             {
-                json[FrameworkAssembliesProperty] = WriteArray(library.FrameworkAssemblies, WriteString);
+                var ordered = library.FrameworkAssemblies.OrderBy(assembly => assembly);
+
+                json[FrameworkAssembliesProperty] = WriteArray(ordered, WriteString);
             }
 
             if (library.CompileTimeAssemblies.Count > 0)
             {
-                json[CompileProperty] = WriteObject(library.CompileTimeAssemblies, WriteFileItem);
+                var ordered = library.CompileTimeAssemblies.OrderBy(assembly => assembly.Path);
+
+                json[CompileProperty] = WriteObject(ordered, WriteFileItem);
             }
 
             if (library.RuntimeAssemblies.Count > 0)
             {
-                json[RuntimeProperty] = WriteObject(library.RuntimeAssemblies, WriteFileItem);
+                var ordered = library.RuntimeAssemblies.OrderBy(assembly => assembly.Path);
+
+                json[RuntimeProperty] = WriteObject(ordered, WriteFileItem);
             }
 
             if (library.ResourceAssemblies.Count > 0)
             {
-                json[ResourceProperty] = WriteObject(library.ResourceAssemblies, WriteFileItem);
+                var ordered = library.ResourceAssemblies.OrderBy(assembly => assembly.Path);
+
+                json[ResourceProperty] = WriteObject(ordered, WriteFileItem);
             }
 
             if (library.NativeLibraries.Count > 0)
             {
-                json[NativeProperty] = WriteObject(library.NativeLibraries, WriteFileItem);
+                var ordered = library.NativeLibraries.OrderBy(assembly => assembly.Path);
+
+                json[NativeProperty] = WriteObject(ordered, WriteFileItem);
             }
 
             return new JProperty(library.Name + "/" + library.Version.ToNormalizedString(), json);
@@ -377,7 +389,9 @@ namespace NuGet.ProjectModel
 
         private static void WritePathArray(JToken json, string property, IEnumerable<string> items, Func<string, JToken> writeItem)
         {
-            WriteArray(json, property, items.Select(f => GetPathWithForwardSlashes(f)), writeItem);
+            var orderedItems = items.Select(f => GetPathWithForwardSlashes(f)).OrderBy(f => f).ToList();
+
+            WriteArray(json, property, orderedItems, writeItem);
         }
 
         private static JArray WriteArray<TItem>(IEnumerable<TItem> items, Func<TItem, JToken> writeItem)

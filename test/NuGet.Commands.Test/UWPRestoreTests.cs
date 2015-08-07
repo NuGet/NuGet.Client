@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
@@ -56,15 +57,33 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var command = new RestoreCommand(logger, request);
 
+#if !DNXCORE50
+            var expectedStream = Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream("NuGet.Commands.Test.compiler.resources.uwpBlankApp.json");
+
+            JObject expectedJson = null;
+
+            using (var reader = new StreamReader(expectedStream))
+            {
+                expectedJson = JObject.Parse(reader.ReadToEnd());
+            }
+#endif
+
             // Act
             var result = await command.ExecuteAsync();
             result.Commit(logger);
+
+            var lockFileJson = JObject.Parse(File.OpenText(request.LockFilePath).ReadToEnd());
 
             // Assert
             Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
             Assert.Equal(0, logger.Errors);
             Assert.Equal(0, logger.Warnings);
             Assert.Equal(118, result.GetAllInstalled().Count);
+
+#if !DNXCORE50
+            Assert.Equal(expectedJson.ToString(), lockFileJson.ToString());
+#endif
         }
 
         // Verify that File > New Project > Class Library (Portable) can restore without errors or warnings.
