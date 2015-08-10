@@ -12,5 +12,6 @@
   </metadata>
   <files>
       <file src="NuGet.exe" target="tools" />
+	  <file src="NuGet.pdb" target="tools" />
   </files>
 </package>
