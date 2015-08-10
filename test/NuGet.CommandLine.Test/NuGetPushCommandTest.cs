@@ -240,7 +240,7 @@ namespace NuGet.CommandLine.Test
 
         // Tests that push command will terminate even when there is an infinite
         // redirection loop.
-        [Fact(Skip = "Redirection with push fails. This is tracked by an issue")]
+        [Fact]
         public void PushCommand_PushToServerWithInfiniteRedirectionLoop()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -274,9 +274,8 @@ namespace NuGet.CommandLine.Test
                 server.Stop();
 
                 // Assert
-                var output = result.Item2;
                 Assert.NotEqual(0, result.Item1);
-                Assert.Contains("Too many automatic redirections were attempted.", output);
+                Assert.Contains("Too many automatic redirections were attempted.", result.Item3);
             }
             finally
             {
@@ -286,7 +285,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Tests that push command generates error when it detects invalid redirection location.
-        [Fact(Skip = "Redirection with push fails. This is tracked by an issue")]
+        [Fact]
         public void PushCommand_PushToServerWithInvalidRedirectionLocation()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -315,9 +314,8 @@ namespace NuGet.CommandLine.Test
                 server.Stop();
 
                 // Assert
-                var output = result.Item2;
                 Assert.NotEqual(0, result.Item1);
-                Assert.Contains("The remote server returned an error: (302)", output);
+                Assert.Contains("The remote server returned an error: (302)", result.Item3);
             }
             finally
             {
