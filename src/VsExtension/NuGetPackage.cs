@@ -61,9 +61,8 @@ namespace NuGetVSExtension
     [Guid(GuidList.guidNuGetPkgString)]
     public sealed class NuGetPackage : Package, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
-        // This product version will be updated by the build script to match the daily build version.
         // It is displayed in the Help - About box of Visual Studio
-        public const string ProductVersion = "3.0.0";
+        public const string ProductVersion = "3.1.2";
         private static readonly object _credentialsPromptLock = new object();
 
         private static readonly string[] _visualizerSupportedSKUs = { "Premium", "Ultimate" };
