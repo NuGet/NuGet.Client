@@ -46,10 +46,20 @@ namespace NuGet.PackageManagement.UI
 
             if (dependency != null)
             {
-                InstalledVersion = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Resources.Text_InstalledVersion,
-                    dependency.VersionRange.OriginalString);
+                if (dependency.VersionRange.MinVersion == dependency.VersionRange.MaxVersion)
+                {
+                    InstalledVersion = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Resources.Text_InstalledVersion,
+                        dependency.VersionRange.MinVersion);
+                }
+                else
+                {
+                    InstalledVersion = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Resources.Text_InstalledVersion,
+                        dependency.VersionRange.ToNormalizedString());
+                }
             }
             else
             {
