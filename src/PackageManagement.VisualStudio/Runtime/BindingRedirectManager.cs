@@ -18,6 +18,7 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private static readonly XName AssemblyBindingName = AssemblyBinding.GetQualifiedName("assemblyBinding");
         private static readonly XName DependentAssemblyName = AssemblyBinding.GetQualifiedName("dependentAssembly");
+        private static readonly XName BindingRedirectName = AssemblyBinding.GetQualifiedName("bindingRedirect");
 
         private string ConfigurationFile { get; set; }
         private IMSBuildNuGetProjectSystem MSBuildNuGetProjectSystem { get; set; }
@@ -26,11 +27,13 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             if (String.IsNullOrEmpty(configurationFile))
             {
-                throw new ArgumentException(ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty, "configurationFile");
+                throw new ArgumentException(
+                    ProjectManagement.Strings.Argument_Cannot_Be_Null_Or_Empty,
+                    nameof(configurationFile));
             }
             if (msBuildNuGetProjectSystem == null)
             {
-                throw new ArgumentNullException("msBuildNuGetProjectSystem");
+                throw new ArgumentNullException(nameof(msBuildNuGetProjectSystem));
             }
 
             ConfigurationFile = configurationFile;
@@ -82,7 +85,8 @@ namespace NuGet.PackageManagement.VisualStudio
                         }
 
                         UpdateBindingRedirectElement(existingBindings.First(), bindingRedirect);
-                        // Since we have a binding element, the assembly binding node (parent node) must exist. We don't need to do anything more here.
+                        // Since we have a binding element, the assembly binding node (parent node) must exist.
+                        // We don't need to do anything more here.
                         continue;
                     }
                 }
@@ -209,16 +213,33 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private XDocument GetConfiguration()
         {
-            return ProjectManagement.XmlUtility.GetOrCreateDocument("configuration", MSBuildNuGetProjectSystem.ProjectFullPath, ConfigurationFile, MSBuildNuGetProjectSystem.NuGetProjectContext);
+            return ProjectManagement.XmlUtility.GetOrCreateDocument(
+                "configuration",
+                MSBuildNuGetProjectSystem.ProjectFullPath,
+                ConfigurationFile,
+                MSBuildNuGetProjectSystem.NuGetProjectContext);
         }
 
-        private static void UpdateBindingRedirectElement(XElement element, AssemblyBinding bindingRedirect)
+        private static void UpdateBindingRedirectElement(
+            XElement existingDependentAssemblyElement,
+            AssemblyBinding newBindingRedirect)
         {
-            var bindingRedirectElement = element.Element(AssemblyBinding.GetQualifiedName("bindingRedirect"));
+            var existingBindingRedirectElement = existingDependentAssemblyElement.Element(BindingRedirectName);
             // Since we've successfully parsed this node, it has to be valid and this child must exist.
-            Debug.Assert(bindingRedirectElement != null);
-            bindingRedirectElement.Attribute("oldVersion").SetValue(bindingRedirect.OldVersion);
-            bindingRedirectElement.Attribute("newVersion").SetValue(bindingRedirect.NewVersion);
+            if (existingBindingRedirectElement != null)
+            {
+                existingBindingRedirectElement.Attribute("oldVersion").SetValue(newBindingRedirect.OldVersion);
+                existingBindingRedirectElement.Attribute("newVersion").SetValue(newBindingRedirect.NewVersion);
+            }
+            else
+            {
+                // At this point, <dependentAssemblyElement> already exists, but <bindingRedirectElement> does not.
+                // So, extract the <bindingRedirectElement> from the newDependencyAssemblyElement, and add it
+                // to the existingDependentAssemblyElement
+                var newDependentAssemblyElement = newBindingRedirect.ToXElement();
+                var newBindingRedirectElement = newDependentAssemblyElement.Element(BindingRedirectName);
+                existingDependentAssemblyElement.AddIndented(newBindingRedirectElement);
+            }
         }
     }
 }
