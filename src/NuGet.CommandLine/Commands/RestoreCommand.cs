@@ -12,6 +12,7 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
+using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 
@@ -134,39 +135,47 @@ namespace NuGet.CommandLine
         {
             var projectFileName = Path.GetFileName(projectPath);
             PackageSpec project;
+            string projectJsonPath = null;
+
             IEnumerable<string> externalProjects = null;
             if (string.Equals(PackageSpec.PackageSpecFileName, projectFileName, StringComparison.OrdinalIgnoreCase))
             {
                 Console.LogVerbose($"Reading project file {Arguments[0]}");
                 var projectDirectory = Path.GetDirectoryName(projectPath);
+
+                projectJsonPath = projectPath;
+
                 project = JsonPackageSpecReader.GetPackageSpec(
-                    File.ReadAllText(projectPath),
+                    File.ReadAllText(projectJsonPath),
                     Path.GetFileName(projectDirectory),
-                    projectPath);
+                    projectJsonPath);
             }
             else if (MsBuildUtility.IsMsBuildBasedProject(projectPath))
             {
                 externalProjects = MsBuildUtility.GetProjectReferences(MsBuildPath, projectPath);
 
                 var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(projectPath));
-                var packageSpecFile = Path.Combine(projectDirectory, PackageSpec.PackageSpecFileName);
-                project = JsonPackageSpecReader.GetPackageSpec(
-                    File.ReadAllText(packageSpecFile),
-                    projectPath,
-                    projectPath);
+                projectJsonPath = Path.Combine(projectDirectory, PackageSpec.PackageSpecFileName);
 
                 Console.LogVerbose($"Reading project file {projectPath}");
+
+                project = JsonPackageSpecReader.GetPackageSpec(
+                    File.ReadAllText(projectJsonPath),
+                    projectPath,
+                    projectPath);
             }
             else
             {
-                var file = Path.Combine(projectPath, PackageSpec.PackageSpecFileName);
+                projectJsonPath = Path.Combine(projectPath, PackageSpec.PackageSpecFileName);
 
-                Console.LogVerbose($"Reading project file {file}");
+                Console.LogVerbose($"Reading project file {projectJsonPath}");
+
                 project = JsonPackageSpecReader.GetPackageSpec(
-                    File.ReadAllText(file),
+                    File.ReadAllText(projectJsonPath),
                     Path.GetFileName(projectPath),
-                    file);
+                    projectJsonPath);
             }
+
             Console.LogVerbose($"Loaded project {project.Name} from {project.FilePath}");
 
             // Resolve the root directory
@@ -186,7 +195,17 @@ namespace NuGet.CommandLine
             {
                 request.MaxDegreeOfConcurrency = 1;
             }
+            else
+            {
+                request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
+            }
+
             request.NoCache = NoCache;
+
+            // Read the existing lock file, this is needed to support IsLocked=true
+            var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(projectJsonPath);
+            request.LockFilePath = lockFilePath;
+            request.ExistingLockFile = BuildIntegratedRestoreUtility.GetLockFile(lockFilePath, Console);
 
             // Resolve the packages directory
             Console.LogVerbose($"Using packages directory: {request.PackagesDirectory}");

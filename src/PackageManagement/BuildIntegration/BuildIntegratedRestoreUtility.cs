@@ -353,9 +353,17 @@ namespace NuGet.PackageManagement
         /// </summary>
         private static LockFile GetLockFile(BuildIntegratedNuGetProject project, Logging.ILogger logger)
         {
-            LockFile lockFile = null;
-
             var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(project.JsonConfigPath);
+
+            return GetLockFile(lockFilePath, logger);
+        }
+
+        /// <summary>
+        /// Returns the lockfile if it exists, otherwise null.
+        /// </summary>
+        public static LockFile GetLockFile(string lockFilePath, Logging.ILogger logger)
+        {
+            LockFile lockFile = null;
 
             if (File.Exists(lockFilePath))
             {
