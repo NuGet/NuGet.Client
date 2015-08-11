@@ -140,6 +140,7 @@ namespace NuGet.CommandLine
             IEnumerable<string> externalProjects = null;
             if (string.Equals(PackageSpec.PackageSpecFileName, projectFileName, StringComparison.OrdinalIgnoreCase))
             {
+                // Restore a project.json file using the directory as the Id
                 Console.LogVerbose($"Reading project file {Arguments[0]}");
                 var projectDirectory = Path.GetDirectoryName(projectPath);
 
@@ -152,6 +153,8 @@ namespace NuGet.CommandLine
             }
             else if (MsBuildUtility.IsMsBuildBasedProject(projectPath))
             {
+                // Restore a .csproj or other msbuild project file using the 
+                // file name without the extension as the Id
                 externalProjects = MsBuildUtility.GetProjectReferences(MsBuildPath, projectPath);
 
                 var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(projectPath));
@@ -159,20 +162,26 @@ namespace NuGet.CommandLine
 
                 Console.LogVerbose($"Reading project file {projectPath}");
 
+                var projectName = Path.GetFileNameWithoutExtension(projectPath);
+
                 project = JsonPackageSpecReader.GetPackageSpec(
                     File.ReadAllText(projectJsonPath),
-                    projectPath,
-                    projectPath);
+                    projectName,
+                    projectJsonPath);
             }
             else
             {
+                // Restore an unknown file type using the file name
+                // without the extension as the Id
                 projectJsonPath = Path.Combine(projectPath, PackageSpec.PackageSpecFileName);
 
                 Console.LogVerbose($"Reading project file {projectJsonPath}");
 
+                var projectName = Path.GetFileNameWithoutExtension(projectPath);
+
                 project = JsonPackageSpecReader.GetPackageSpec(
                     File.ReadAllText(projectJsonPath),
-                    Path.GetFileName(projectPath),
+                    projectName,
                     projectJsonPath);
             }
 
