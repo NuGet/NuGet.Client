@@ -260,13 +260,69 @@ function Test-BuildIntegratedMixedLegacyProjects {
     Remove-Item -Recurse -Force $packagesDir
     Assert-False (Test-Path $packagesDir)
 
+    # delete the lock file
+    $lockFile = Get-ProjectJsonLockFilePath $project2
+    Remove-Item $lockFile
+    Assert-False (Test-Path $lockFile)
+
     # Act
     Build-Solution
 
     # Assert
     Assert-True (Test-Path $packagesDir)
     Assert-Package $project1 Newtonsoft.Json
+    Assert-True (Test-Path $lockFile)
     Assert-ProjectJsonLockFilePackage $project2 NuGet.Versioning 1.0.7
+}
+
+function Test-BuildIntegratedMixedLegacyProjectsProjectJsonOnly {
+    if (!(Verify-BuildIntegratedMsBuildTask)) {
+        Write-Host "Skipping BuildIntegratedMixedLegacyProjects"
+    }
+
+    # Arrange
+    $project1 = New-ClassLibrary
+    $project1 | Install-Package Newtonsoft.Json -Version 5.0.6
+
+    $project2 = New-Project BuildIntegratedClassLibrary
+    $project2 | Install-Package NuGet.Versioning -Version 1.0.7
+
+    # delete the lock file
+    $lockFile = Get-ProjectJsonLockFilePath $project2
+    Remove-Item $lockFile
+    Assert-False (Test-Path $lockFile)
+
+    # Act
+    Build-Solution
+
+    # Assert
+    Assert-True (Test-Path $lockFile)
+    Assert-ProjectJsonLockFilePackage $project2 NuGet.Versioning 1.0.7
+}
+
+function Test-BuildIntegratedMixedLegacyProjectsPackagesFolderOnly {
+    if (!(Verify-BuildIntegratedMsBuildTask)) {
+        Write-Host "Skipping BuildIntegratedMixedLegacyProjects"
+    }
+
+    # Arrange
+    $project1 = New-ClassLibrary
+    $project1 | Install-Package Newtonsoft.Json -Version 5.0.6
+
+    $project2 = New-Project BuildIntegratedClassLibrary
+    $project2 | Install-Package NuGet.Versioning -Version 1.0.7
+
+    # delete the packages folder
+    $packagesDir = Get-PackagesDir
+    Remove-Item -Recurse -Force $packagesDir
+    Assert-False (Test-Path $packagesDir)
+
+    # Act
+    Build-Solution
+
+    # Assert
+    Assert-True (Test-Path $packagesDir)
+    Assert-Package $project1 Newtonsoft.Json
 }
 
 # Verifies that project.json that specified in project.json referenced transitively through a non-project.json project
