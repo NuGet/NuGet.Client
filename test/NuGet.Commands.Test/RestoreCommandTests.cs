@@ -401,6 +401,9 @@ namespace NuGet.Commands.Test
 
             var lastDate = File.GetLastWriteTimeUtc(lockFilePath);
 
+            // wait half a second to make sure the time difference can be picked up
+            await Task.Delay(500);
+
             request = new RestoreRequest(spec, sources, packagesDir);
             request.MaxDegreeOfConcurrency = 1;
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
