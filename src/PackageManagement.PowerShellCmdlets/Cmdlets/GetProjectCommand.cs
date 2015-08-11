@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         private void Preprocess()
         {
-            CheckForSolutionOpen();
+            CheckSolutionState();
             GetNuGetProject();
         }
 

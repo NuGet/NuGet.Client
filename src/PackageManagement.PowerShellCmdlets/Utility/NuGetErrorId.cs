@@ -13,6 +13,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         public const string NoCompatibleProjects = "NuGetNoCompatibleProjects";
         public const string ProjectNotFound = "NuGetProjectNotFound";
         public const string NoActiveSolution = "NuGetNoActiveSolution";
+        public const string UnsavedSolution = "NuGetUnsavedSolution";
         public const string FileNotFound = "NuGetFileNotFound";
         public const string FileExistsNoClobber = "NuGetFileExistsNoClobber";
         public const string TooManySpecFiles = "NuGetTooManySpecFiles";

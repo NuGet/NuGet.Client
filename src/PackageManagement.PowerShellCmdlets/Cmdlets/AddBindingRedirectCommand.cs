@@ -32,7 +32,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             ThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    CheckForSolutionOpen();
+                    CheckSolutionState();
 
                     var projects = new List<Project>();
 

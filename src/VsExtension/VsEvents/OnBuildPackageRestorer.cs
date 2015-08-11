@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -170,6 +171,7 @@ namespace NuGetVSExtension
                 }
 
                 var solutionDirectory = SolutionManager.SolutionDirectory;
+                var isSolutionAvailable = SolutionManager.IsSolutionAvailable;
 
                 ThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
@@ -177,11 +179,16 @@ namespace NuGetVSExtension
                         // Note that projects that are not supported by NuGet, will not show up in this list
                         var projects = SolutionManager.GetNuGetProjects().ToList();
 
+                        // Get MSBuildOutputVerbosity from _dte
+                        _msBuildOutputVerbosity = GetMSBuildOutputVerbositySetting(_dte);
+
                         // Check if there are any projects that are not INuGetIntegratedProject, that is,
                         // projects with packages.config. If so, perform package restore on them
                         if (projects.Any(project => !(project is INuGetIntegratedProject)))
                         {
-                            await RestorePackagesOrCheckForMissingPackagesAsync(solutionDirectory);
+                            await RestorePackagesOrCheckForMissingPackagesAsync(
+                                solutionDirectory,
+                                isSolutionAvailable);
                         }
 
                         // Call DNU to restore for BuildIntegratedProjectSystem projects
@@ -192,7 +199,8 @@ namespace NuGetVSExtension
                         await RestoreBuildIntegratedProjectsAsync(
                             solutionDirectory,
                             buildEnabledProjects.ToList(),
-                            forceRestore);
+                            forceRestore,
+                            isSolutionAvailable);
 
                     }, JoinableTaskCreationOptions.LongRunning);
             }
@@ -248,12 +256,31 @@ namespace NuGetVSExtension
         private async Task RestoreBuildIntegratedProjectsAsync(
             string solutionDirectory,
             List<BuildIntegratedProjectSystem> buildEnabledProjects,
-            bool forceRestore)
+            bool forceRestore,
+            bool isSolutionAvailable)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             if (buildEnabledProjects.Any() && IsConsentGranted(Settings))
             {
+                if (!isSolutionAvailable)
+                {
+                    var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(Settings);
+                    if (!Path.IsPathRooted(globalPackagesFolder))
+                    {
+                        var message = string.Format(
+                            CultureInfo.CurrentCulture,
+                            NuGet.PackageManagement.VisualStudio.Strings.RelativeGlobalPackagesFolder,
+                            globalPackagesFolder);
+
+                        WriteLine(VerbosityLevel.Quiet, message);
+
+                        // Cannot restore packages since globalPackagesFolder is a relative path
+                        // and the solution is not available
+                        return;
+                    }
+                }
+
                 var enabledSources = SourceRepositoryProvider.GetRepositories()
                     .Select(repo => repo.PackageSource.Source);
 
@@ -514,7 +541,9 @@ namespace NuGetVSExtension
             }
         }
 
-        private async Task RestorePackagesOrCheckForMissingPackagesAsync(string solutionDirectory)
+        private async Task RestorePackagesOrCheckForMissingPackagesAsync(
+            string solutionDirectory,
+            bool isSolutionAvailable)
         {
             // To be sure, switch to main thread before doing anything on this method
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -537,6 +566,19 @@ namespace NuGetVSExtension
 
                 if (!packages.Any())
                 {
+                    if (!isSolutionAvailable)
+                    {
+                        MessageHelper.ShowError(_errorListProvider,
+                            TaskErrorCategory.Error,
+                            TaskPriority.High,
+                            NuGet.PackageManagement.VisualStudio.Strings.SolutionIsNotSaved,
+                            hierarchyItem: null);
+
+                        WriteLine(
+                            VerbosityLevel.Quiet,
+                            NuGet.PackageManagement.VisualStudio.Strings.SolutionIsNotSaved);
+                    }
+
                     // Restore is not applicable, since, there is no project with installed packages
                     return;
                 }

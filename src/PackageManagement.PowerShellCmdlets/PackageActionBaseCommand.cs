@@ -59,7 +59,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected virtual void Preprocess()
         {
-            CheckForSolutionOpen();
+            CheckSolutionState();
             UpdateActiveSourceRepository(Source);
             GetNuGetProject(ProjectName);
             DetermineFileConflictAction();

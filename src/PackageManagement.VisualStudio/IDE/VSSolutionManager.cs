@@ -16,6 +16,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Configuration;
 using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using EnvDTEProject = EnvDTE.Project;
 
@@ -27,6 +28,8 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         private readonly DTE _dte;
         private readonly SolutionEvents _solutionEvents;
+        private readonly CommandEvents _solutionSaveEvent;
+        private readonly CommandEvents _solutionSaveAsEvent;
         private readonly IVsMonitorSelection _vsMonitorSelection;
         private readonly uint _solutionLoadedUICookie;
         private readonly IVsSolution _vsSolution;
@@ -35,6 +38,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private bool _initialized;
         //add solutionOpenedRasied to make sure ProjectRename and ProjectAdded event happen after solutionOpened event
         private bool _solutionOpenedRaised;
+
+        private string _solutionDirectoryBeforeSaveSolution;
 
         public INuGetProjectContext NuGetProjectContext { get; set; }
 
@@ -97,6 +102,17 @@ namespace NuGet.PackageManagement.VisualStudio
             _solutionEvents.ProjectRemoved += OnEnvDTEProjectRemoved;
             _solutionEvents.ProjectRenamed += OnEnvDTEProjectRenamed;
 
+            var vSStd97CmdIDGUID = VSConstants.GUID_VSStandardCommandSet97.ToString("B");
+            var solutionSaveID = (int)VSConstants.VSStd97CmdID.SaveSolution;
+            var solutionSaveAsID = (int)VSConstants.VSStd97CmdID.SaveSolutionAs;
+
+            _solutionSaveEvent = _dte.Events.CommandEvents[vSStd97CmdIDGUID, solutionSaveID];
+            _solutionSaveAsEvent = _dte.Events.CommandEvents[vSStd97CmdIDGUID, solutionSaveAsID];
+
+            _solutionSaveEvent.BeforeExecute += SolutionSaveAs_BeforeExecute;
+            _solutionSaveEvent.AfterExecute += SolutionSaveAs_AfterExecute;
+            _solutionSaveAsEvent.BeforeExecute += SolutionSaveAs_BeforeExecute;
+            _solutionSaveAsEvent.AfterExecute += SolutionSaveAs_AfterExecute;
         }
 
         public NuGetProject GetNuGetProject(string nuGetProjectSafeName)
@@ -186,9 +202,48 @@ namespace NuGet.PackageManagement.VisualStudio
                         await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                         return _dte != null &&
                                _dte.Solution != null &&
-                               _dte.Solution.IsOpen &&
-                               !IsSolutionSavedAsRequired();
+                               _dte.Solution.IsOpen;
                     });
+            }
+        }
+
+        public bool IsSolutionAvailable
+        {
+            get
+            {
+                return ThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    if (!IsSolutionOpen)
+                    {
+                        // Solution is not open. Return false.
+                        return false;
+                    }
+
+                    if (!DoesSolutionRequireAnInitialSaveAs())
+                    {
+                        // Solution is open and 'Save As' is not required. Return true.
+                        return true;
+                    }
+
+                    Init();
+                    var projects = _nuGetAndEnvDTEProjectCache.GetNuGetProjects().ToList();
+                    if (projects.Any(project => !(project is INuGetIntegratedProject)))
+                    {
+                        // Solution is open, but not saved. That is, 'Save as' is required.
+                        // And, there is a packages.config based project. Return false.
+                        return false;
+                    }
+
+                    // Solution is open and not saved. And, only contains project.json based projects.
+                    // Check if globalPackagesFolder is a full path. If so, solution is available.
+
+                    var settings = ServiceLocator.GetInstance<Configuration.ISettings>();
+                    var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
+
+                    return Path.IsPathRooted(globalPackagesFolder);
+                });
             }
         }
 
@@ -245,7 +300,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Checks whether the current solution is saved to disk, as opposed to be in memory.
         /// </summary>
-        private bool IsSolutionSavedAsRequired()
+        private bool DoesSolutionRequireAnInitialSaveAs()
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
@@ -307,6 +362,40 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             _solutionOpenedRaised = false;
+        }
+
+        private void SolutionSaveAs_BeforeExecute(
+            string Guid,
+            int ID,
+            object CustomIn,
+            object CustomOut,
+            ref bool CancelDefault)
+        {
+            _solutionDirectoryBeforeSaveSolution = SolutionDirectory;
+        }
+
+        private void SolutionSaveAs_AfterExecute(string Guid, int ID, object CustomIn, object CustomOut)
+        {
+            // If SolutionDirectory before solution save was null
+            // Or, if SolutionDirectory before solution save is different from the current one
+            // Reset cache among other things
+            if (string.IsNullOrEmpty(_solutionDirectoryBeforeSaveSolution)
+                || !string.Equals(
+                    _solutionDirectoryBeforeSaveSolution,
+                    SolutionDirectory,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                // Call OnBeforeClosing() to reset the project cache among other things
+                // After that, call OnSolutionExistsAndFullyLoaded() to load cache, raise events and more
+
+                OnBeforeClosing();
+
+                ThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    OnSolutionExistsAndFullyLoaded();
+                });
+            }
         }
 
         private void OnEnvDTEProjectRenamed(EnvDTEProject envDTEProject, string oldName)

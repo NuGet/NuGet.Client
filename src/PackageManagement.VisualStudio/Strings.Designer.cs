@@ -187,6 +187,24 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;globalPackagesFolder&apos; from nuget.config file or the environment variable is &apos;{0}&apos;, a relative path and the solution is not saved. Please save your solution or configure a &apos;globalPackagesFolder&apos; which is a full path..
+        /// </summary>
+        public static string RelativeGlobalPackagesFolder {
+            get {
+                return ResourceManager.GetString("RelativeGlobalPackagesFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Solution is not saved. Please save your solution before managing NuGet packages..
+        /// </summary>
+        public static string SolutionIsNotSaved {
+            get {
+                return ResourceManager.GetString("SolutionIsNotSaved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Uninstalling NuGet package {0}..
         /// </summary>
         public static string UninstallingPackage {

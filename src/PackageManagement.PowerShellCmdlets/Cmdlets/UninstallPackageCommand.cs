@@ -46,7 +46,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         private void Preprocess()
         {
-            CheckForSolutionOpen();
+            CheckSolutionState();
             GetNuGetProject(ProjectName);
             ThreadHelper.JoinableTaskFactory.Run(CheckMissingPackagesAsync);
         }

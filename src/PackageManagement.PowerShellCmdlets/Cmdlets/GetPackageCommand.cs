@@ -110,7 +110,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // If Remote & Updates set of parameters are not specified, list the installed package.
             if (!UseRemoteSource)
             {
-                CheckForSolutionOpen();
+                CheckSolutionState();
 
                 var packagesToDisplay = ThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
@@ -155,7 +155,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 // Get package udpates from the current source and taking targetframeworks into account.
                 else
                 {
-                    CheckForSolutionOpen();
+                    CheckSolutionState();
                     ThreadHelper.JoinableTaskFactory.Run(async delegate
                     {
                         await WriteUpdatePackagesFromRemoteSourceAsyncInSolution();
