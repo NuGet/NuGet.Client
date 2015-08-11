@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Text;
 using Moq;
 
 namespace NuGet.CommandLine.Test
@@ -39,6 +40,38 @@ namespace NuGet.CommandLine.Test
 
             var packageFileName = string.Format("{0}.{1}.nupkg", packageId, version);
             var packageFileFullPath = Path.Combine(path, packageFileName);
+            using (var fileStream = File.Create(packageFileFullPath))
+            {
+                packageBuilder.Save(fileStream);
+            }
+
+            return packageFileFullPath;
+        }
+
+        /// <summary>
+        /// Creates a basic package builder for unit tests.
+        /// </summary>
+        public static PackageBuilder CreateTestPackageBuilder(string packageId, string version)
+        {
+            var packageBuilder = new PackageBuilder
+            {
+                Id = packageId,
+                Version = new SemanticVersion(version)
+            };
+            packageBuilder.Description = string.Format(
+                CultureInfo.InvariantCulture,
+                "desc of {0} {1}",
+                packageId, version);
+
+            packageBuilder.Authors.Add("test author");
+
+            return packageBuilder;
+        }
+
+        public static string CreateTestPackage(PackageBuilder packageBuilder, string directory)
+        {
+            var packageFileName = string.Format("{0}.{1}.nupkg", packageBuilder.Id, packageBuilder.Version);
+            var packageFileFullPath = Path.Combine(directory, packageFileName);
             using (var fileStream = File.Create(packageFileFullPath))
             {
                 packageBuilder.Save(fileStream);
@@ -93,6 +126,20 @@ namespace NuGet.CommandLine.Test
 
             string effectivePath;
             var fx = VersionUtility.ParseFrameworkNameFromFilePath(name, out effectivePath);
+            file.SetupGet(f => f.EffectivePath).Returns(effectivePath);
+            file.SetupGet(f => f.TargetFramework).Returns(fx);
+
+            return file.Object;
+        }
+
+        public static IPackageFile CreatePackageFile(string path, string content)
+        {
+            var file = new Mock<IPackageFile>();
+            file.SetupGet(f => f.Path).Returns(path);
+            file.Setup(f => f.GetStream()).Returns(new MemoryStream(Encoding.UTF8.GetBytes(content)));
+
+            string effectivePath;
+            var fx = VersionUtility.ParseFrameworkNameFromFilePath(path, out effectivePath);
             file.SetupGet(f => f.EffectivePath).Returns(effectivePath);
             file.SetupGet(f => f.TargetFramework).Returns(fx);
 
