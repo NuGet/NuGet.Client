@@ -594,7 +594,7 @@ namespace Proj2
         // Test that when creating a package from project A, the output of a referenced project
         // will be added to the same target framework folder as A, regardless of the target
         // framework of the referenced project.
-        [Fact(Skip = "This scenario fails and is tracked by an issue")]
+        [Fact]
         public void PackCommand_ReferencedProjectWithDifferentTarget()
         {
             var nugetexe = Util.GetNuGetExePath();
