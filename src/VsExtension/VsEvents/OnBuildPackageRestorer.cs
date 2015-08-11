@@ -32,7 +32,6 @@ namespace NuGetVSExtension
         private const string LogEntrySource = "NuGet PackageRestorer";
 
         private readonly DTE _dte;
-        private bool _outputOptOutMessage;
 
         private Dictionary<string, BuildIntegratedProjectCacheEntry> _buildIntegratedCache
             = new Dictionary<string, BuildIntegratedProjectCacheEntry>(StringComparer.Ordinal);
@@ -67,8 +66,17 @@ namespace NuGetVSExtension
 
         private int CurrentCount;
 
-        private bool HasErrors { get; set; }
-        private bool Canceled { get; set; }
+        // Restore summary
+        // True if any of restores had errors
+        private bool _hasErrors;
+        // True if any of the restores were canceled
+        private bool _canceled;
+        // True if any restores failed to restore all packages
+        private bool _hasMissingPackages;
+        // True if restore actions were taken and the summary should be displayed
+        private bool _displayRestoreSummary;
+        // If false the opt out message should be displayed
+        private bool _hasOptOutBeenShown;
 
         private enum VerbosityLevel
         {
@@ -125,6 +133,15 @@ namespace NuGetVSExtension
 
         private void BuildEvents_OnBuildBegin(vsBuildScope scope, vsBuildAction Action)
         {
+            // Reset flags for the final status messsage
+            _hasErrors = false;
+            _canceled = false;
+            _hasMissingPackages = false;
+            _displayRestoreSummary = false;
+            _hasOptOutBeenShown = false;
+            // Get MSBuildOutputVerbosity from _dte
+            _msBuildOutputVerbosity = GetMSBuildOutputVerbositySetting(_dte);
+
             try
             {
                 _errorListProvider.Tasks.Clear();
@@ -133,6 +150,12 @@ namespace NuGetVSExtension
 
                 if (Action == vsBuildAction.vsBuildActionClean)
                 {
+                    // Clear the project.json restore cache on clean to ensure that the next build restores again
+                    if (_buildIntegratedCache != null)
+                    {
+                        _buildIntegratedCache.Clear();
+                    }
+
                     return;
                 }
 
@@ -145,8 +168,6 @@ namespace NuGetVSExtension
                 {
                     return;
                 }
-
-                _outputOptOutMessage = true;
 
                 var solutionDirectory = SolutionManager.SolutionDirectory;
 
@@ -197,6 +218,24 @@ namespace NuGetVSExtension
                 PackageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
                 PackageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreManager_PackageRestoreFailedEvent;
             }
+
+            if (_displayRestoreSummary)
+            {
+                // If actions were performed, display the summary
+                WriteLine(_canceled, _hasMissingPackages, _hasErrors);
+            }
+        }
+
+        private void DisplayOptOutMessage()
+        {
+            if (!_hasOptOutBeenShown)
+            {
+                _hasOptOutBeenShown = true;
+
+                // Only write the PackageRestoreOptOutMessage to output window,
+                // if, there are packages to restore
+                WriteLine(VerbosityLevel.Quiet, Resources.PackageRestoreOptOutMessage);
+            }
         }
 
         /// <summary>
@@ -215,43 +254,44 @@ namespace NuGetVSExtension
 
             if (buildEnabledProjects.Any() && IsConsentGranted(Settings))
             {
-                // Get MSBuildOutputVerbosity from _dte
-                _msBuildOutputVerbosity = GetMSBuildOutputVerbositySetting(_dte);
-
                 var enabledSources = SourceRepositoryProvider.GetRepositories()
                     .Select(repo => repo.PackageSource.Source);
 
-                if (_outputOptOutMessage)
+                // No-op all project closures are up to date and all packages exist on disk.
+                if (await IsRestoreRequired(buildEnabledProjects, forceRestore))
                 {
-                    // No-op all project closures are up to date and all packages exist on disk.
-                    if (await IsRestoreRequired(buildEnabledProjects, forceRestore))
+                    var waitDialogFactory
+                        = ServiceLocator.GetGlobalService<SVsThreadedWaitDialogFactory,
+                            IVsThreadedWaitDialogFactory>();
+
+                    // NOTE: During restore for build integrated projects,
+                    //       We might show the dialog even if there are no packages to restore
+                    // When both currentStep and totalSteps are 0, we get a marquee on the dialog
+                    using (var threadedWaitDialogSession = waitDialogFactory.StartWaitDialog(
+                        waitCaption: Resources.DialogTitle,
+                        initialProgress: new ThreadedWaitDialogProgressData(Resources.RestoringPackages,
+                            string.Empty,
+                            string.Empty,
+                            isCancelable: true,
+                            currentStep: 0,
+                            totalSteps: 0)))
                     {
-                        var waitDialogFactory
-                            = ServiceLocator.GetGlobalService<SVsThreadedWaitDialogFactory,
-                                IVsThreadedWaitDialogFactory>();
+                        // Display the restore opt out message if it has not been shown yet
+                        DisplayOptOutMessage();
 
-                        // NOTE: During restore for build integrated projects,
-                        //       We might show the dialog even if there are no packages to restore
-                        // When both currentStep and totalSteps are 0, we get a marquee on the dialog
-                        using (var threadedWaitDialogSession = waitDialogFactory.StartWaitDialog(
-                            waitCaption: Resources.DialogTitle,
-                            initialProgress: new ThreadedWaitDialogProgressData(Resources.RestoringPackages,
-                                string.Empty,
-                                string.Empty,
-                                isCancelable: true,
-                                currentStep: 0,
-                                totalSteps: 0)))
+                        Token = threadedWaitDialogSession.UserCancellationToken;
+                        ThreadedWaitDialogProgress = threadedWaitDialogSession.Progress;
+
+                        // Restore packages and create the lock file for each project
+                        foreach (var project in buildEnabledProjects)
                         {
-                            // NOTE: During restore for build integrated projects,
-                            // We might show PackageRestoreOptOutMessage even if there are no packages to restore
-                            WriteLine(VerbosityLevel.Quiet, Resources.PackageRestoreOptOutMessage);
-                            _outputOptOutMessage = false;
+                            // Mark this as having missing packages so that we will not 
+                            // display a noop message in the summary
+                            _hasMissingPackages = true;
+                            _displayRestoreSummary = true;
 
-                            Token = threadedWaitDialogSession.UserCancellationToken;
-                            ThreadedWaitDialogProgress = threadedWaitDialogSession.Progress;
-
-                            // Restore packages and create the lock file for each project
-                            foreach (var project in buildEnabledProjects)
+                            // Skip further restores if the user has clicked cancel
+                            if (!Token.IsCancellationRequested)
                             {
                                 var projectName = NuGetProject.GetUniqueNameOrName(project);
                                 await BuildIntegratedProjectRestoreAsync(
@@ -265,8 +305,11 @@ namespace NuGetVSExtension
                                     Resources.PackageRestoreFinishedForProject,
                                     projectName);
                             }
+                        }
 
-                            WriteLine(canceled: Canceled, hasMissingPackages: true, hasErrors: HasErrors);
+                        if (Token.IsCancellationRequested)
+                        {
+                            _canceled = true;
                         }
                     }
                 }
@@ -349,6 +392,9 @@ namespace NuGetVSExtension
 
             if (!restoreResult.Success)
             {
+                // Mark this as having errors
+                _hasErrors = true;
+
                 // Invalidate cached results for the project. This will cause it to restore the next time.
                 _buildIntegratedCache.Remove(projectName);
                 await BuildIntegratedProjectReportErrorAsync(projectName, restoreResult, token);
@@ -365,13 +411,13 @@ namespace NuGetVSExtension
             {
                 // If an operation is canceled, a single message gets shown in the summary
                 // that package restore has been canceled. Do not report it as separate errors
-                Canceled = true;
+                _canceled = true;
                 return;
             }
 
             // HasErrors will be used to show a message in the output window, that, Package restore failed
             // If Canceled is not already set to true
-            HasErrors = true;
+            _hasErrors = true;
 
             // Switch to main thread to update the error list window or output window
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -400,7 +446,7 @@ namespace NuGetVSExtension
         {
             if (Token.IsCancellationRequested)
             {
-                Canceled = true;
+                _canceled = true;
                 return;
             }
 
@@ -434,7 +480,7 @@ namespace NuGetVSExtension
                 // If an operation is canceled, a single message gets shown in the summary
                 // that package restore has been canceled
                 // Do not report it as separate errors
-                Canceled = true;
+                _canceled = true;
                 return;
             }
 
@@ -442,7 +488,7 @@ namespace NuGetVSExtension
             {
                 // HasErrors will be used to show a message in the output window, that, Package restore failed
                 // If Canceled is not already set to true
-                HasErrors = true;
+                _hasErrors = true;
                 ThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                     {
                         // Switch to main thread to update the error list window or output window
@@ -473,7 +519,6 @@ namespace NuGetVSExtension
             // To be sure, switch to main thread before doing anything on this method
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            _msBuildOutputVerbosity = GetMSBuildOutputVerbositySetting(_dte);
             var waitDialogFactory
                 = ServiceLocator.GetGlobalService<SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
 
@@ -488,8 +533,6 @@ namespace NuGetVSExtension
 
             if (IsConsentGranted(Settings))
             {
-                HasErrors = false;
-                Canceled = false;
                 CurrentCount = 0;
 
                 if (!packages.Any())
@@ -502,36 +545,29 @@ namespace NuGetVSExtension
                 TotalCount = missingPackagesList.Count;
                 if (TotalCount > 0)
                 {
-                    if (_outputOptOutMessage)
+                    // Only show the wait dialog, when there are some packages to restore
+                    using (var threadedWaitDialogSession = waitDialogFactory.StartWaitDialog(
+                        waitCaption: Resources.DialogTitle,
+                        initialProgress: new ThreadedWaitDialogProgressData(
+                            Resources.RestoringPackages,
+                            string.Empty,
+                            string.Empty,
+                            isCancelable: true,
+                            currentStep: 0,
+                            totalSteps: 0)))
                     {
-                        // Only show the wait dialog, when there are some packages to restore
-                        using (var threadedWaitDialogSession = waitDialogFactory.StartWaitDialog(
-                            waitCaption: Resources.DialogTitle,
-                            initialProgress: new ThreadedWaitDialogProgressData(
-                                Resources.RestoringPackages,
-                                string.Empty,
-                                string.Empty,
-                                isCancelable: true,
-                                currentStep: 0,
-                                totalSteps: 0)))
-                        {
-                            // Only write the PackageRestoreOptOutMessage to output window,
-                            // if, there are packages to restore
-                            WriteLine(VerbosityLevel.Quiet, Resources.PackageRestoreOptOutMessage);
-                            _outputOptOutMessage = false;
+                        Token = threadedWaitDialogSession.UserCancellationToken;
+                        ThreadedWaitDialogProgress = threadedWaitDialogSession.Progress;
 
-                            Token = threadedWaitDialogSession.UserCancellationToken;
-                            ThreadedWaitDialogProgress = threadedWaitDialogSession.Progress;
+                        // Display the restore opt out message if it has not been shown yet
+                        DisplayOptOutMessage();
 
-                            await RestoreMissingPackagesInSolutionAsync(solutionDirectory, packages, Token);
+                        await RestoreMissingPackagesInSolutionAsync(solutionDirectory, packages, Token);
 
-                            WriteLine(canceled: Canceled, hasMissingPackages: true, hasErrors: HasErrors);
-                        }
+                        // Mark that work is being done during this restore
+                        _hasMissingPackages = true;
+                        _displayRestoreSummary = true;
                     }
-                }
-                else
-                {
-                    WriteLine(canceled: false, hasMissingPackages: false, hasErrors: false);
                 }
             }
             else
@@ -732,7 +768,7 @@ namespace NuGetVSExtension
                 // If an operation is canceled, don't log anything, simply return
                 // And, show a single message gets shown in the summary that package restore has been canceled
                 // Do not report it as separate errors
-                Canceled = true;
+                _canceled = true;
                 return;
             }
 
@@ -751,7 +787,9 @@ namespace NuGetVSExtension
 
                 // Only show messages with VerbosityLevel.Normal. That is, info messages only.
                 // Do not show errors, warnings, verbose or debug messages on the progress dialog
-                if (verbosityLevel == VerbosityLevel.Normal)
+                // Avoid showing indented messages, these are typically not useful for the progress dialog since
+                // they are missing the context of the parent text above it
+                if (verbosityLevel == VerbosityLevel.Normal && message.Length == message.TrimStart().Length)
                 {
                     // When both currentStep and totalSteps are 0, we get a marquee on the dialog
                     var progressData = new ThreadedWaitDialogProgressData(message,
