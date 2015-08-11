@@ -143,6 +143,11 @@ namespace Test.Utility
             get { return NuGetProjects.Count > 0; }
         }
 
+        public bool IsSolutionAvailable
+        {
+            get { return IsSolutionOpen; }
+        }
+
         public INuGetProjectContext NuGetProjectContext { get; set; }
 
 #pragma warning disable 0067

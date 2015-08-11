@@ -146,6 +146,11 @@ namespace NuGet.PackageManagement
         private async Task<Dictionary<Packaging.PackageReference, List<string>>> GetPackagesReferencesDictionaryAsync(CancellationToken token)
         {
             var packageReferencesDict = new Dictionary<Packaging.PackageReference, List<string>>(new PackageReferenceComparer());
+            if (!SolutionManager.IsSolutionAvailable)
+            {
+                return packageReferencesDict;
+            }
+
             foreach (var nuGetProject in SolutionManager.GetNuGetProjects())
             {
                 // skip project k projects and build aware projects

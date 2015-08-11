@@ -34,9 +34,17 @@ namespace NuGet.PackageManagement
         NuGetProject DefaultNuGetProject { get; }
 
         /// <summary>
-        /// Gets the current open solution directory, can only be called from the main UI thread.
+        /// Returns true if the solution is open
         /// </summary>
         bool IsSolutionOpen { get; }
+
+        /// <summary>
+        /// Returns true if the solution is available to manage nuget packages.
+        /// That is, if the solution is open and a solution file is available.
+        /// For solutions with only BuildIntegratedProject(s), and a globalPackagesFolder which is
+        /// not a relative path, it will return true, even if the solution file is not available.
+        /// </summary>
+        bool IsSolutionAvailable { get; }
 
         INuGetProjectContext NuGetProjectContext { get; set; }
 

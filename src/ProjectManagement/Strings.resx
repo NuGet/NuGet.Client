@@ -234,6 +234,9 @@
   <data name="RemovingPackageFromMSBuildProject" xml:space="preserve">
     <value>Removing package '{0}' from project '{1}'</value>
   </data>
+  <data name="SolutionDirectoryMustBeRooted" xml:space="preserve">
+    <value>Solution directory '{0}' must be a rooted path.</value>
+  </data>
   <data name="TokenHasNoValue" xml:space="preserve">
     <value>The replacement token '{0}' has no value</value>
   </data>
