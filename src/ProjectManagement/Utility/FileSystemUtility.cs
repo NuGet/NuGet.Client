@@ -305,13 +305,15 @@ namespace NuGet.ProjectManagement
             }
         }
 
-        // HACK: TODO: This is kinda bad that there is a PendAddFiles method here while delete files performs necessary pending and deletion
-        // Need to update package extraction in Packaging to use a filesystem abstraction or'
-        // just return files to be added in a clean form for projectmanagement to do the addition
-        public static void PendAddFiles(IEnumerable<string> addedPackageFiles, string packagesDir, INuGetProjectContext nuGetProjectContext)
+        // PendAddFiles method here is called after addition of files during package extraction
+        // whereas, delete files performs necessary pending followed by the deletion of files in a single method
+        public static void PendAddFiles(
+            IEnumerable<string> addedPackageFiles,
+            string packagesDir,
+            INuGetProjectContext nuGetProjectContext)
         {
             var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
-            if (sourceControlManager != null)
+            if (sourceControlManager != null && sourceControlManager.IsPackagesFolderBoundToSourceControl())
             {
                 sourceControlManager.PendAddFiles(addedPackageFiles, packagesDir, nuGetProjectContext);
             }

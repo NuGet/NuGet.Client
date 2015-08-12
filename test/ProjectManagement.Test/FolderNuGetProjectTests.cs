@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -238,6 +239,118 @@ namespace ProjectManagement.Test
             Assert.False(folderNuGetProject.PackageExists(unNormalizedPackageIdentity));
             // Check that the package directories are deleted
             Assert.False(Directory.Exists(packageDirectoryPath));
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomTestSourcePath, randomTestDestinationPath);
+        }
+
+        [Fact]
+        public async Task TestFolderNuGetProjectInstall_SourceControlEnabled()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
+            var randomTestSourcePath = TestFilesystemUtility.CreateRandomTestFolder();
+            var packageFileInfo = TestPackages.GetLegacyTestPackage(
+                randomTestSourcePath,
+                packageIdentity.Id,
+                packageIdentity.Version.ToNormalizedString());
+
+            var randomTestDestinationPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var folderNuGetProject = new FolderNuGetProject(randomTestDestinationPath);
+            var packagePathResolver = new PackagePathResolver(randomTestDestinationPath);
+            var packageInstallPath = packagePathResolver.GetInstallPath(packageIdentity);
+            var nupkgFilePath
+                = Path.Combine(packageInstallPath, packagePathResolver.GetPackageFileName(packageIdentity));
+            var testSourceControlManager = new TestSourceControlManager();
+            var testNuGetProjectContext = new TestNuGetProjectContext()
+            {
+                SourceControlManagerProvider = new TestSourceControlManagerProvider(testSourceControlManager)
+            };
+
+            var token = CancellationToken.None;
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+            {
+                // Act
+                await folderNuGetProject.InstallPackageAsync(
+                    packageIdentity,
+                    packageStream,
+                    testNuGetProjectContext,
+                    token);
+            }
+
+            // Assert
+            Assert.True(File.Exists(nupkgFilePath));
+
+            Assert.Equal(5, testSourceControlManager.PendAddedFiles.Count);
+            Assert.True(testSourceControlManager.PendAddedFiles.Contains(nupkgFilePath));
+            var expectedEntries = new[]
+            {
+                    "lib/test.dll",
+                    "lib/net40/test40.dll",
+                    "lib/net40/test40b.dll",
+                    "lib/net45/test45.dll"
+            };
+
+            foreach(var entry in expectedEntries)
+            {
+                Assert.True(testSourceControlManager.PendAddedFiles.Contains(
+                    Path.Combine(packageInstallPath, entry)));
+            }
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomTestSourcePath, randomTestDestinationPath);
+        }
+
+        [Fact]
+        public async Task TestFolderNuGetProjectInstall_SourceControlDisabled()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("packageA", new NuGetVersion("1.0.0"));
+            var randomTestSourcePath = TestFilesystemUtility.CreateRandomTestFolder();
+            var packageFileInfo = TestPackages.GetLegacyTestPackage(
+                randomTestSourcePath,
+                packageIdentity.Id,
+                packageIdentity.Version.ToNormalizedString());
+
+            // Create a nuget.config file with source control disabled
+            File.WriteAllText(
+                Path.Combine(randomTestSourcePath, "nuget.config"),
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <solution>
+    <add key=""disableSourceControlIntegration"" value=""true"" />
+  </solution >
+</configuration>");
+
+            var settings = new Settings(randomTestSourcePath);
+
+            var randomTestDestinationPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var folderNuGetProject = new FolderNuGetProject(randomTestDestinationPath);
+            var packagePathResolver = new PackagePathResolver(randomTestDestinationPath);
+            var packageInstallPath = packagePathResolver.GetInstallPath(packageIdentity);
+            var nupkgFilePath
+                = Path.Combine(packageInstallPath, packagePathResolver.GetPackageFileName(packageIdentity));
+            var testSourceControlManager = new TestSourceControlManager(settings);
+            var testNuGetProjectContext = new TestNuGetProjectContext()
+            {
+                SourceControlManagerProvider = new TestSourceControlManagerProvider(testSourceControlManager)
+            };
+
+            var token = CancellationToken.None;
+            using (var packageStream = GetDownloadResourceResult(packageFileInfo))
+            {
+                // Act
+                await folderNuGetProject.InstallPackageAsync(
+                    packageIdentity,
+                    packageStream,
+                    testNuGetProjectContext,
+                    token);
+            }
+
+            // Assert
+            Assert.True(File.Exists(nupkgFilePath));
+
+            Assert.Equal(0, testSourceControlManager.PendAddedFiles.Count);
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestSourcePath, randomTestDestinationPath);

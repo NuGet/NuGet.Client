@@ -66,6 +66,8 @@
     <Compile Include="PackagesConfigNuGetProjectTests.cs" />
     <Compile Include="ProjectManagement\TestMSBuildNuGetProjectSystem.cs" />
     <Compile Include="ProjectManagement\TestNuGetProjectContext.cs" />
+    <Compile Include="ProjectManagement\TestSourceControlManager.cs" />
+    <Compile Include="ProjectManagement\TestSourceControlManagerProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

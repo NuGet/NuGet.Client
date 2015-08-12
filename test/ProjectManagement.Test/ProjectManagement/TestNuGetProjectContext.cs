@@ -26,10 +26,7 @@ namespace Test.Utility
 
         public PackageExtractionContext PackageExtractionContext { get; set; }
 
-        public ISourceControlManagerProvider SourceControlManagerProvider
-        {
-            get { return null; }
-        }
+        public ISourceControlManagerProvider SourceControlManagerProvider { get; set; }
 
         public ExecutionContext ExecutionContext
         {
