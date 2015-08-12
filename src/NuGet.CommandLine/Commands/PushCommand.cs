@@ -137,14 +137,7 @@ namespace NuGet.CommandLine
             // Push the package to the server
             IPackage package;
             var sourceUri = new Uri(source);
-            if (sourceUri.IsFile)
-            {
-                package = new OptimizedZipPackage(packageToPush);
-            }
-            else
-            {
-                package = new PushLocalPackage(packageToPush);
-            }
+            package = new OptimizedZipPackage(packageToPush);
 
             string sourceName = CommandLineUtility.GetSourceDisplayName(source);
             Console.WriteLine(LocalizedResourceManager.GetString("PushCommandPushingPackage"), package.GetFullName(), sourceName);
@@ -235,36 +228,6 @@ namespace NuGet.CommandLine
             else
             {
                 return false;
-            }
-        }
-
-        private class PushLocalPackage : LocalPackage
-        {
-            private readonly string _filePath;
-
-            public PushLocalPackage(string filePath)
-            {
-                _filePath = filePath;
-            }
-
-            public override void ExtractContents(IFileSystem fileSystem, string extractPath)
-            {
-                throw new NotSupportedException();
-            }
-
-            public override Stream GetStream()
-            {
-                return File.OpenRead(_filePath);
-            }
-
-            protected override IEnumerable<IPackageAssemblyReference> GetAssemblyReferencesCore()
-            {
-                throw new NotSupportedException();
-            }
-
-            protected override IEnumerable<IPackageFile> GetFilesBase()
-            {
-                throw new NotSupportedException();
             }
         }
     }
