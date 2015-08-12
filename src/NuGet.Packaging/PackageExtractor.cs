@@ -131,7 +131,7 @@ namespace NuGet.Packaging
                         }
                     }
 
-                    filesAdded.Add(file);
+                    filesAdded.Add(targetPath);
                 }
             }
 
