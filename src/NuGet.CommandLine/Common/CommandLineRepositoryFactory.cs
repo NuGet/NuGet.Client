@@ -5,8 +5,6 @@ namespace NuGet.Common
 {
     public class CommandLineRepositoryFactory : PackageRepositoryFactory
     {
-        public static readonly string UserAgent = "NuGet Command Line";
-
         private readonly IConsole _console;
 
         public CommandLineRepositoryFactory(IConsole console)

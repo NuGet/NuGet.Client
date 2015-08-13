@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine
 {
@@ -110,6 +111,7 @@ namespace NuGet.CommandLine
                 SourceProvider = PackageSourceBuilder.CreateSourceProvider(Settings);
                 SetDefaultCredentialProvider();
                 RepositoryFactory = new CommandLineRepositoryFactory(Console);
+                UserAgent.UserAgentString = UserAgent.CreateUserAgentString(CommandLineConstants.UserAgent);
 
                 ExecuteCommandAsync().Wait();
             }
