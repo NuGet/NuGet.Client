@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Net;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -1112,6 +1113,95 @@ EndProject");
                 Directory.SetCurrentDirectory(currentDirectory);
                 Util.DeleteDirectory(Path.Combine(workingPath, @"..\..\GlobalPackages2"));
                 Util.DeleteDirectory(workingPath);
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_InvalidPackagesConfigFile()
+        {
+            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var nugetexe = Util.GetNuGetExePath();
+                var packagesConfigPath = Path.Combine(randomTestFolder, "packages.config");
+                var contents = @"blah <packages>
+  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
+</packages>";
+                File.WriteAllText(packagesConfigPath, contents);
+
+                var args = new string[]
+                {
+                    "--debug",
+                    "restore",
+                    packagesConfigPath,
+                    "-PackagesDirectory",
+                    randomTestFolder
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.NotEqual(0, r.Item1);
+                var error = r.Item3;
+                Assert.True(error.Contains("Error parsing packages.config file"));
+            }
+            finally
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_InvalidSolutionFile()
+        {
+            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var nugetexe = Util.GetNuGetExePath();
+                var solutionFile = Path.Combine(randomTestFolder, "A.sln");
+                var contents = @"Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project(asdfasdf""{ FAE04EC0 - 301F - 11D3 - BF4B - 00C04F79EFBC}
+                "") = ""proj1"", ""proj1\proj1.csproj"", ""{ A04C59CC - 7622 - 4223 - B16B - CDF2ECAD438D}
+                ""
+EndProjectblah
+Project(""{ FAE04EC0 - 301F - 11D3 - BF4B - 00C04F79EFBC}
+                "") = ""proj2"", ""proj2\proj2.csproj"", ""{ 42641DAE - D6C4 - 49D4 - 92EA - 749D2573554A}
+                ""
+EndProject";
+                File.WriteAllText(solutionFile, contents);
+
+                var args = new string[]
+                {
+                    "restore",
+                    solutionFile,
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    randomTestFolder,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.NotEqual(0, r.Item1);
+                var error = r.Item3;
+                Assert.True(error.Contains("Error parsing solution file"));
+            }
+            finally
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
             }
         }
     }

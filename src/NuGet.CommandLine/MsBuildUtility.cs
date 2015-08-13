@@ -107,10 +107,23 @@ namespace NuGet.CommandLine
 
         public static IEnumerable<string> GetAllProjectFileNames(string solutionFile)
         {
-            var solution = new Solution(solutionFile);
-            var solutionDirectory = Path.GetDirectoryName(solutionFile);
-            return solution.Projects.Where(project => !project.IsSolutionFolder)
-                .Select(project => Path.Combine(solutionDirectory, project.RelativePath));
+            try
+            {
+                var solution = new Solution(solutionFile);
+                var solutionDirectory = Path.GetDirectoryName(solutionFile);
+                return solution.Projects.Where(project => !project.IsSolutionFolder)
+                    .Select(project => Path.Combine(solutionDirectory, project.RelativePath));
+            }
+            catch (Exception ex)
+            {
+                var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    LocalizedResourceManager.GetString("Error_SolutionFileParseError"),
+                    solutionFile,
+                    ex.Message);
+
+                throw new CommandLineException(message);
+            }
         }
     }
 }

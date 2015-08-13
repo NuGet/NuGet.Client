@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 using NuGet.Configuration;
 using NuGet.Packaging;
@@ -78,8 +79,22 @@ namespace NuGet.CommandLine
         {
             if (File.Exists(projectConfigFilePath))
             {
-                var reader = new PackagesConfigReader(XDocument.Load(projectConfigFilePath));
-                return reader.GetPackages();
+                try
+                {
+                    var xDocument = XDocument.Load(projectConfigFilePath);
+                    var reader = new PackagesConfigReader(XDocument.Load(projectConfigFilePath));
+                    return reader.GetPackages();
+                }
+                catch (XmlException ex)
+                {
+                    var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString("Error_PackagesConfigParseError"),
+                        projectConfigFilePath,
+                        ex.Message);
+
+                    throw new CommandLineException(message);
+                }
             }
 
             return Enumerable.Empty<Packaging.PackageReference>();

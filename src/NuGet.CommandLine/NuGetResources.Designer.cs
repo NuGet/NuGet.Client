@@ -2986,6 +2986,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error parsing packages.config file at {0}: {1}.
+        /// </summary>
+        public static string Error_PackagesConfigParseError {
+            get {
+                return ResourceManager.GetString("Error_PackagesConfigParseError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error occurred when processing file &apos;{0}&apos;: {1}.
         /// </summary>
         public static string Error_ProcessingNuspecFile {
@@ -3234,6 +3243,15 @@ namespace NuGet.CommandLine {
         public static string Error_SettingsIsNull_trk {
             get {
                 return ResourceManager.GetString("Error_SettingsIsNull_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error parsing solution file at {0}: {1}.
+        /// </summary>
+        public static string Error_SolutionFileParseError {
+            get {
+                return ResourceManager.GetString("Error_SolutionFileParseError", resourceCulture);
             }
         }
         

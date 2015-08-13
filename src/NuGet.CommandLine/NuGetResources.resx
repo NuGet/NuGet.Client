@@ -6037,4 +6037,10 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
     <value>'globalPackagesFolder' setting is a relative path. To determine full path, please specify either -SolutionDirectory or a solution file as a parameter. To ignore 'globalPackagesFolder' setting, specify -PackagesDirectory.</value>
     <comment>Please do not localize 'globalPackagesFolder', -SolutionDirectory or -PackagesDirectory</comment>
   </data>
+  <data name="Error_PackagesConfigParseError" xml:space="preserve">
+    <value>Error parsing packages.config file at {0}: {1}</value>
+  </data>
+  <data name="Error_SolutionFileParseError" xml:space="preserve">
+    <value>Error parsing solution file at {0}: {1}</value>
+  </data>
 </root>

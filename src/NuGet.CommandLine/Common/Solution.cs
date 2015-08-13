@@ -27,7 +27,14 @@ namespace NuGet.Common
             using (var streamReader = new StreamReader(solutionFileName))
             {
                 _solutionReaderProperty.SetValue(solutionParser, streamReader, index: null);
-                _parseSolutionMethod.Invoke(solutionParser, parameters: null);
+                try
+                {
+                    _parseSolutionMethod.Invoke(solutionParser, parameters: null);
+                }
+                catch (TargetInvocationException ex)
+                {
+                    throw ex.InnerException ?? ex;
+                }
             }
             var projects = new List<ProjectInSolution>();
             foreach (var proj in (object[])_projectsProperty.GetValue(solutionParser, index: null))
