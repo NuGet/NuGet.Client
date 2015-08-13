@@ -416,7 +416,6 @@ namespace NuGet.CommandLine.Test
                         workingDirectory,
                         args,
                         waitForExit: true);
-                    server.Stop();
 
                     // Assert
                     Assert.Equal(0, r1.Item1);
@@ -467,7 +466,6 @@ namespace NuGet.CommandLine.Test
                         workingDirectory,
                         args,
                         waitForExit: true);
-                    server.Stop();
 
                     // Assert
                     Assert.Equal(0, r1.Item1);
@@ -542,7 +540,6 @@ namespace NuGet.CommandLine.Test
                         workingDirectory,
                         args,
                         waitForExit: true);
-                    server.Stop();
 
                     // Assert
                     Assert.Equal(0, r1.Item1);
@@ -600,7 +597,6 @@ namespace NuGet.CommandLine.Test
                         workingDirectory,
                         args,
                         waitForExit: true);
-                    server.Stop();
 
                     // Assert
                     Assert.Equal(1, r1.Item1);
@@ -687,7 +683,6 @@ namespace NuGet.CommandLine.Test
                         workingDirectory,
                         args,
                         waitForExit: true);
-                    server.Stop();
 
                     // Assert
                     Assert.True(0 == r1.Item1, r1.Item2 + " " + r1.Item3);

@@ -402,14 +402,14 @@ namespace NuGet.CommandLine.Test
                     server.Get.Add("/nuget", r =>
                     {
                         var h = r.Headers["Authorization"];
-                        var credential = System.Text.Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+                        var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
                         credentialForGetRequest.Add(credential);
                         return HttpStatusCode.OK;
                     });
                     server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
                     {
                         var h = r.Headers["Authorization"];
-                        var credential = System.Text.Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+                        var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
                         credentialForPutRequest.Add(credential);
 
                         if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))

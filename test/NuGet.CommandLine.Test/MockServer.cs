@@ -28,7 +28,7 @@ namespace NuGet.CommandLine.Test
         /// </summary>
         public MockServer()
         {
-            this._portReserver = new PortReserver();
+            _portReserver = new PortReserver();
 
             _listener = new HttpListener();
             _listener.Prefixes.Add(_portReserver.BaseUri);
@@ -289,7 +289,7 @@ namespace NuGet.CommandLine.Test
         public string ToODataFeed(IEnumerable<IPackage> packages, string title)
         {
             string nsAtom = "http://www.w3.org/2005/Atom";
-            var id = string.Format(CultureInfo.InvariantCulture, "{0}{1}", this.Uri, title);
+            var id = string.Format(CultureInfo.InvariantCulture, "{0}{1}", Uri, title);
             XDocument doc = new XDocument(
                 new XElement(XName.Get("feed", nsAtom),
                     new XElement(XName.Get("id", nsAtom), id),
@@ -315,11 +315,11 @@ namespace NuGet.CommandLine.Test
             string nsMetadata = "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata";
             string downloadUrl = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}package/{1}/{2}", this.Uri, package.Id, package.Version);
+                "{0}package/{1}/{2}", Uri, package.Id, package.Version);
             string entryId = string.Format(
                 CultureInfo.InvariantCulture,
                 "{0}Packages(Id='{1}',Version='{2}')",
-                this.Uri, package.Id, package.Version);
+                Uri, package.Id, package.Version);
 
             var entry = new XElement(XName.Get("entry", nsAtom),
                 new XAttribute(XNamespace.Xmlns + "d", nsDataService.ToString()),
@@ -351,10 +351,10 @@ namespace NuGet.CommandLine.Test
                 if (disposing)
                 {
                     // Closing the http listener
-                    this.Stop();
+                    Stop();
 
                     // Disposing the PortReserver
-                    this._portReserver.Dispose();
+                    _portReserver.Dispose();
                 }
                 
                 _disposedValue = true;
