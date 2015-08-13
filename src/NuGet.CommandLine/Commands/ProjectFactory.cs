@@ -13,6 +13,7 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using NuGet.Common;
+using NuGet.Configuration;
 
 namespace NuGet.CommandLine
 {
@@ -21,7 +22,7 @@ namespace NuGet.CommandLine
     {
         private readonly Project _project;
         private Logging.ILogger _logger;
-        private ISettings _settings;
+        private Configuration.ISettings _settings;
 
         // Files we want to always exclude from the resulting package
         private static readonly HashSet<string> _excludeFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
@@ -47,7 +48,7 @@ namespace NuGet.CommandLine
         private const string TransformFileExtension = ".transform";
 
         [Import]
-        public IMachineWideSettings MachineWideSettings { get; set; }
+        public Configuration.IMachineWideSettings MachineWideSettings { get; set; }
 
         public ProjectFactory(string path, IDictionary<string, string> projectProperties)
             : this(new Project(path, projectProperties, null))
@@ -69,14 +70,14 @@ namespace NuGet.CommandLine
             }
         }
 
-        private ISettings DefaultSettings
+        private Configuration.ISettings DefaultSettings
         {
             get
             {
                 if (null == _settings)
                 {
-                    _settings = Settings.LoadDefaultSettings(
-                        new PhysicalFileSystem(_project.DirectoryPath),
+                    _settings = Configuration.Settings.LoadDefaultSettings(
+                        _project.DirectoryPath,
                         null,
                         MachineWideSettings);
                 }
@@ -751,7 +752,7 @@ namespace NuGet.CommandLine
         private IPackageRepository GetPackagesRepository()
         {
             string solutionDir = GetSolutionDir();
-            string defaultValue = DefaultSettings.GetRepositoryPath();
+            string defaultValue = SettingsUtility.GetRepositoryPath(DefaultSettings);
 
             string target = null;
             if (!String.IsNullOrEmpty(solutionDir))
