@@ -86,7 +86,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 ErrorHandler.ThrowOnFailure(hr);
             }
 
-            UserAgent.VisualStudioInfo = VSVersionHelper.GetFullVsVersionString();
+            UserAgent.UserAgentString
+                = UserAgent.CreateUserAgentStringForVisualStudio(
+                    UserAgent.NuGetClientName,
+                    VSVersionHelper.GetFullVsVersionString());
 
             _solutionEvents.BeforeClosing += OnBeforeClosing;
             _solutionEvents.AfterClosing += OnAfterClosing;
