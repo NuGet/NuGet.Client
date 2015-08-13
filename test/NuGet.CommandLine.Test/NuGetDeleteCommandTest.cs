@@ -85,33 +85,33 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
-            var mockServerEndPoint = "http://localhost:9012/";
 
             // Arrange
-            var server = new MockServer(mockServerEndPoint);
-            server.Start();
-            bool deleteRequestIsCalled = false;
-
-            server.Delete.Add("/nuget/testPackage1/1.1", request =>
+            using (var server = new MockServer())
             {
-                deleteRequestIsCalled = true;
-                return HttpStatusCode.OK;
-            });
+                server.Start();
+                bool deleteRequestIsCalled = false;
 
-            // Act
-            string[] args = new string[] {
+                server.Delete.Add("/nuget/testPackage1/1.1", request =>
+                {
+                    deleteRequestIsCalled = true;
+                    return HttpStatusCode.OK;
+                });
+
+                // Act
+                string[] args = new string[] {
                     "delete", "testPackage1", "1.1.0",
-                    "-Source", mockServerEndPoint + "nuget", "-NonInteractive" };
-            var r = CommandRunner.Run(
-                nugetexe,
-                Directory.GetCurrentDirectory(),
-                string.Join(" ", args),
-                waitForExit: true);
-            server.Stop();
+                    "-Source", server.Uri + "nuget", "-NonInteractive" };
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    waitForExit: true);
 
-            // Assert
-            Assert.Equal(0, r.Item1);
-            Assert.True(deleteRequestIsCalled);
+                // Assert
+                Assert.Equal(0, r.Item1);
+                Assert.True(deleteRequestIsCalled);
+            }            
         }
     }
 }

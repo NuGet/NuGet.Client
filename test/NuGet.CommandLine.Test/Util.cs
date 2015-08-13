@@ -149,9 +149,9 @@ namespace NuGet.CommandLine.Test
         /// <summary>
         /// Creates a mock server that contains the specified list of packages
         /// </summary>
-        public static MockServer CreateMockServer(string mockServerEndPoint, IList<IPackage> packages)
+        public static MockServer CreateMockServer(IList<IPackage> packages)
         {
-            var server = new MockServer(mockServerEndPoint);
+            var server = new MockServer();
 
             server.Get.Add("/nuget/$metadata", r =>
                    MockServerResource.NuGetV2APIMetadata);

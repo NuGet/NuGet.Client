@@ -135,7 +135,6 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:2345/";
 
             try
             {
@@ -144,34 +143,36 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                var server = new MockServer(mockServerEndPoint);
-                server.Get.Add("/push", r => "OK");
-                server.Put.Add("/push", r =>
+                using (var server = new MockServer())
                 {
-                    byte[] buffer = MockServer.GetPushedPackage(r);
-                    using (var of = new FileStream(outputFileName, FileMode.Create))
+                    server.Get.Add("/push", r => "OK");
+                    server.Put.Add("/push", r =>
                     {
-                        of.Write(buffer, 0, buffer.Length);
-                    }
+                        byte[] buffer = MockServer.GetPushedPackage(r);
+                        using (var of = new FileStream(outputFileName, FileMode.Create))
+                        {
+                            of.Write(buffer, 0, buffer.Length);
+                        }
 
-                    return HttpStatusCode.Created;
-                });
-                server.Start();
+                        return HttpStatusCode.Created;
+                    });
+                    server.Start();
 
-                // Act
-                string[] args = new string[] { "push", packageFileName, "-Source", mockServerEndPoint + "push" };
-                var result = CommandRunner.Run(
-                                nugetexe,
-                                Directory.GetCurrentDirectory(),
-                                string.Join(" ", args),
-                                true);
-                server.Stop();
+                    // Act
+                    string[] args = new string[] { "push", packageFileName, "-Source", server.Uri + "push" };
+                    var result = CommandRunner.Run(
+                                    nugetexe,
+                                    Directory.GetCurrentDirectory(),
+                                    string.Join(" ", args),
+                                    true);
+                    server.Stop();
 
-                // Assert
-                Assert.Equal(0, result.Item1);
-                var output = result.Item2;
-                Assert.Contains("Your package was pushed.", output);
-                AssertFileEqual(packageFileName, outputFileName);
+                    // Assert
+                    Assert.Equal(0, result.Item1);
+                    var output = result.Item2;
+                    Assert.Contains("Your package was pushed.", output);
+                    AssertFileEqual(packageFileName, outputFileName);
+                }
             }
             finally
             {
@@ -187,7 +188,6 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:2346/";
 
             try
             {
@@ -196,40 +196,42 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                var server = new MockServer(mockServerEndPoint);
-                server.Get.Add("/redirect", r => "OK");
-                server.Put.Add("/redirect", r =>
-                    new Action<HttpListenerResponse>(
-                        res =>
-                        {
-                            res.Redirect(mockServerEndPoint + "nuget");
-                        }));
-                server.Put.Add("/nuget", r =>
+                using (var server = new MockServer())
                 {
-                    byte[] buffer = MockServer.GetPushedPackage(r);
-                    using (var of = new FileStream(outputFileName, FileMode.Create))
+                    server.Get.Add("/redirect", r => "OK");
+                    server.Put.Add("/redirect", r =>
+                        new Action<HttpListenerResponse>(
+                            res =>
+                            {
+                                res.Redirect(server.Uri + "nuget");
+                            }));
+                    server.Put.Add("/nuget", r =>
                     {
-                        of.Write(buffer, 0, buffer.Length);
-                    }
+                        byte[] buffer = MockServer.GetPushedPackage(r);
+                        using (var of = new FileStream(outputFileName, FileMode.Create))
+                        {
+                            of.Write(buffer, 0, buffer.Length);
+                        }
 
-                    return HttpStatusCode.Created;
-                });
-                server.Start();
+                        return HttpStatusCode.Created;
+                    });
+                    server.Start();
 
-                // Act
-                string[] args = new string[] { "push", packageFileName, "-Source", mockServerEndPoint + "redirect" };
-                var result = CommandRunner.Run(
-                    nugetexe,
-                    Directory.GetCurrentDirectory(),
-                    string.Join(" ", args),
-                    true);
-                server.Stop();
+                    // Act
+                    string[] args = new string[] { "push", packageFileName, "-Source", server.Uri + "redirect" };
+                    var result = CommandRunner.Run(
+                        nugetexe,
+                        Directory.GetCurrentDirectory(),
+                        string.Join(" ", args),
+                        true);
+                    server.Stop();
 
-                // Assert
-                var output = result.Item2;
-                Assert.Equal(0, result.Item1);
-                Assert.Contains("Your package was pushed.", output);
-                AssertFileEqual(packageFileName, outputFileName);
+                    // Assert
+                    var output = result.Item2;
+                    Assert.Equal(0, result.Item1);
+                    Assert.Contains("Your package was pushed.", output);
+                    AssertFileEqual(packageFileName, outputFileName);
+                }
             }
             finally
             {
@@ -246,7 +248,6 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:2347/";
 
             try
             {
@@ -254,28 +255,30 @@ namespace NuGet.CommandLine.Test
                 Util.CreateDirectory(packageDirectory);
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
 
-                var server = new MockServer(mockServerEndPoint);
-                server.Get.Add("/redirect", r => "OK");
-                server.Put.Add("/redirect", r =>
-                    new Action<HttpListenerResponse>(
-                        res =>
-                        {
-                            res.Redirect(mockServerEndPoint + "redirect");
-                        }));
-                server.Start();
+                using (var server = new MockServer())
+                {
+                    server.Get.Add("/redirect", r => "OK");
+                    server.Put.Add("/redirect", r =>
+                        new Action<HttpListenerResponse>(
+                            res =>
+                            {
+                                res.Redirect(server.Uri + "redirect");
+                            }));
+                    server.Start();
 
-                // Act
-                string[] args = new string[] { "push", packageFileName, "-Source", mockServerEndPoint + "redirect" };
-                var result = CommandRunner.Run(
-                    nugetexe,
-                    Directory.GetCurrentDirectory(),
-                    string.Join(" ", args),
-                    true);
-                server.Stop();
+                    // Act
+                    string[] args = new string[] { "push", packageFileName, "-Source", server.Uri + "redirect" };
+                    var result = CommandRunner.Run(
+                        nugetexe,
+                        Directory.GetCurrentDirectory(),
+                        string.Join(" ", args),
+                        true);
+                    server.Stop();
 
-                // Assert
-                Assert.NotEqual(0, result.Item1);
-                Assert.Contains("Too many automatic redirections were attempted.", result.Item3);
+                    // Assert
+                    Assert.NotEqual(0, result.Item1);
+                    Assert.Contains("Too many automatic redirections were attempted.", result.Item3);
+                }
             }
             finally
             {
@@ -291,7 +294,6 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:2348/";
 
             try
             {
@@ -299,23 +301,25 @@ namespace NuGet.CommandLine.Test
                 Util.CreateDirectory(packageDirectory);
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
 
-                var server = new MockServer(mockServerEndPoint);
-                server.Get.Add("/redirect", r => "OK");
-                server.Put.Add("/redirect", r => HttpStatusCode.Redirect);
-                server.Start();
+                using (var server = new MockServer())
+                {
+                    server.Get.Add("/redirect", r => "OK");
+                    server.Put.Add("/redirect", r => HttpStatusCode.Redirect);
+                    server.Start();
 
-                // Act
-                string[] args = new string[] { "push", packageFileName, "-Source", mockServerEndPoint + "redirect" };
-                var result = CommandRunner.Run(
-                    nugetexe,
-                    Directory.GetCurrentDirectory(),
-                    string.Join(" ", args),
-                    true);
-                server.Stop();
+                    // Act
+                    string[] args = new string[] { "push", packageFileName, "-Source", server.Uri + "redirect" };
+                    var result = CommandRunner.Run(
+                        nugetexe,
+                        Directory.GetCurrentDirectory(),
+                        string.Join(" ", args),
+                        true);
+                    server.Stop();
 
-                // Assert
-                Assert.NotEqual(0, result.Item1);
-                Assert.Contains("The remote server returned an error: (302)", result.Item3);
+                    // Assert
+                    Assert.NotEqual(0, result.Item1);
+                    Assert.Contains("The remote server returned an error: (302)", result.Item3);
+                }
             }
             finally
             {
@@ -332,7 +336,6 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:2349/";
 
             try
             {
@@ -341,31 +344,33 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                var server = new MockServer(mockServerEndPoint);
-                server.Get.Add("/push", r => "OK");
-                server.Put.Add("/push", r => new Action<HttpListenerResponse>(
-                    response =>
-                    {
-                        response.AddHeader("WWW-Authenticate", "NTLM");
-                        response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                    }));
-                server.Start();
+                using (var server = new MockServer())
+                {
+                    server.Get.Add("/push", r => "OK");
+                    server.Put.Add("/push", r => new Action<HttpListenerResponse>(
+                        response =>
+                        {
+                            response.AddHeader("WWW-Authenticate", "NTLM");
+                            response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                        }));
+                    server.Start();
 
-                // Act
-                var args = "push " + packageFileName +
-                    " -Source " + mockServerEndPoint + "push -NonInteractive";
-                var r1 = CommandRunner.Run(
-                    nugetexe,
-                    packageDirectory,
-                    args,
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
-                server.Stop();
+                    // Act
+                    var args = "push " + packageFileName +
+                        " -Source " + server.Uri + "push -NonInteractive";
+                    var r1 = CommandRunner.Run(
+                        nugetexe,
+                        packageDirectory,
+                        args,
+                        waitForExit: true,
+                        timeOutInMilliseconds: 10000);
+                    server.Stop();
 
-                // Assert
-                Assert.NotEqual(0, r1.Item1);
-                Assert.Contains("Please provide credentials for:", r1.Item2);
-                Assert.Contains("UserName:", r1.Item2);
+                    // Assert
+                    Assert.NotEqual(0, r1.Item1);
+                    Assert.Contains("Please provide credentials for:", r1.Item2);
+                    Assert.Contains("UserName:", r1.Item2);
+                }
             }
             finally
             {
@@ -381,7 +386,6 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:2350/";
 
             List<string> credentialForGetRequest = new List<string>();
             List<string> credentialForPutRequest = new List<string>();
@@ -392,70 +396,72 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                var server = new MockServer(mockServerEndPoint);
-                server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
-                server.Get.Add("/nuget", r =>
+                using (var server = new MockServer())
                 {
-                    var h = r.Headers["Authorization"];
-                    var credential = System.Text.Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                    credentialForGetRequest.Add(credential);
-                    return HttpStatusCode.OK;
-                });
-                server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
-                {
-                    var h = r.Headers["Authorization"];
-                    var credential = System.Text.Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                    credentialForPutRequest.Add(credential);
+                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
+                    server.Get.Add("/nuget", r =>
+                    {
+                        var h = r.Headers["Authorization"];
+                        var credential = System.Text.Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+                        credentialForGetRequest.Add(credential);
+                        return HttpStatusCode.OK;
+                    });
+                    server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
+                    {
+                        var h = r.Headers["Authorization"];
+                        var credential = System.Text.Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+                        credentialForPutRequest.Add(credential);
 
-                    if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))
-                    {
-                        res.StatusCode = (int)HttpStatusCode.OK;
-                    }
-                    else
-                    {
-                        res.AddHeader("WWW-Authenticate", "Basic ");
-                        res.StatusCode = (int)HttpStatusCode.Unauthorized;
-                    }
-                }));
-                server.Start();
+                        if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))
+                        {
+                            res.StatusCode = (int)HttpStatusCode.OK;
+                        }
+                        else
+                        {
+                            res.AddHeader("WWW-Authenticate", "Basic ");
+                            res.StatusCode = (int)HttpStatusCode.Unauthorized;
+                        }
+                    }));
+                    server.Start();
 
-                // Act
-                Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", "true");
-                var args = "push " + packageFileName +
-                    " -Source " + mockServerEndPoint + "nuget";
-                var r1 = CommandRunner.Run(
-                    nugetexe,
-                    packageDirectory,
-                    args,
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000,
-                    inputAction: (w) =>
-                    {
+                    // Act
+                    Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", "true");
+                    var args = "push " + packageFileName +
+                        " -Source " + server.Uri + "nuget";
+                    var r1 = CommandRunner.Run(
+                        nugetexe,
+                        packageDirectory,
+                        args,
+                        waitForExit: true,
+                        timeOutInMilliseconds: 10000,
+                        inputAction: (w) =>
+                        {
                         // This user/password pair is first sent to
                         // GET /nuget, then PUT /nuget
                         w.WriteLine("a");
-                        w.WriteLine("b");
+                            w.WriteLine("b");
 
                         // Send another user/password pair to PUT
                         w.WriteLine("c");
-                        w.WriteLine("d");
+                            w.WriteLine("d");
 
                         // Now send the right user/password to PUT
                         w.WriteLine("testuser");
-                        w.WriteLine("testpassword");
-                    });
-                server.Stop();
+                            w.WriteLine("testpassword");
+                        });
+                    server.Stop();
 
-                // Assert
-                Assert.Equal(0, r1.Item1);
+                    // Assert
+                    Assert.Equal(0, r1.Item1);
 
-                Assert.Equal(1, credentialForGetRequest.Count);
-                Assert.Equal("a:b", credentialForGetRequest[0]);
+                    Assert.Equal(1, credentialForGetRequest.Count);
+                    Assert.Equal("a:b", credentialForGetRequest[0]);
 
-                Assert.Equal(3, credentialForPutRequest.Count);
-                Assert.Equal("a:b", credentialForPutRequest[0]);
-                Assert.Equal("c:d", credentialForPutRequest[1]);
-                Assert.Equal("testuser:testpassword", credentialForPutRequest[2]);
+                    Assert.Equal(3, credentialForPutRequest.Count);
+                    Assert.Equal("a:b", credentialForPutRequest[0]);
+                    Assert.Equal("c:d", credentialForPutRequest[1]);
+                    Assert.Equal("testuser:testpassword", credentialForPutRequest[2]);
+                }
             }
             finally
             {
@@ -472,7 +478,6 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:2351/";
 
             List<string> credentialForGetRequest = new List<string>();
             List<string> credentialForPutRequest = new List<string>();
@@ -483,70 +488,72 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                var server = new MockServer(mockServerEndPoint);
-                server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
-                server.Get.Add("/nuget", r =>
+                using (var server = new MockServer())
                 {
-                    var h = r.Headers["Authorization"];
-                    var credential = System.Text.Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                    credentialForGetRequest.Add(credential);
-                    return HttpStatusCode.OK;
-                });
-                server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
-                {
-                    var h = r.Headers["Authorization"];
-                    var credential = System.Text.Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                    credentialForPutRequest.Add(credential);
+                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
+                    server.Get.Add("/nuget", r =>
+                    {
+                        var h = r.Headers["Authorization"];
+                        var credential = System.Text.Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+                        credentialForGetRequest.Add(credential);
+                        return HttpStatusCode.OK;
+                    });
+                    server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
+                    {
+                        var h = r.Headers["Authorization"];
+                        var credential = System.Text.Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+                        credentialForPutRequest.Add(credential);
 
-                    if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))
-                    {
-                        res.StatusCode = (int)HttpStatusCode.OK;
-                    }
-                    else
-                    {
-                        res.AddHeader("WWW-Authenticate", "Basic ");
-                        res.StatusCode = (int)HttpStatusCode.Unauthorized;
-                    }
-                }));
-                server.Start();
+                        if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))
+                        {
+                            res.StatusCode = (int)HttpStatusCode.OK;
+                        }
+                        else
+                        {
+                            res.AddHeader("WWW-Authenticate", "Basic ");
+                            res.StatusCode = (int)HttpStatusCode.Unauthorized;
+                        }
+                    }));
+                    server.Start();
 
-                // Act
-                Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", "true");
-                var args = "push " + packageFileName +
-                    " -Source " + mockServerEndPoint + "nuget -DisableBuffering";
-                var r1 = CommandRunner.Run(
-                    nugetexe,
-                    packageDirectory,
-                    args,
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000,
-                    inputAction: (w) =>
-                    {
+                    // Act
+                    Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", "true");
+                    var args = "push " + packageFileName +
+                        " -Source " + server.Uri + "nuget -DisableBuffering";
+                    var r1 = CommandRunner.Run(
+                        nugetexe,
+                        packageDirectory,
+                        args,
+                        waitForExit: true,
+                        timeOutInMilliseconds: 10000,
+                        inputAction: (w) =>
+                        {
                         // This user/password pair is first sent to
                         // GET /nuget, then PUT /nuget
                         w.WriteLine("a");
-                        w.WriteLine("b");
+                            w.WriteLine("b");
 
                         // Send another user/password pair to PUT
                         w.WriteLine("c");
-                        w.WriteLine("d");
+                            w.WriteLine("d");
 
                         // Now send the right user/password to PUT
                         w.WriteLine("testuser");
-                        w.WriteLine("testpassword");
-                    });
-                server.Stop();
+                            w.WriteLine("testpassword");
+                        });
+                    server.Stop();
 
-                // Assert
-                Assert.Equal(0, r1.Item1);
+                    // Assert
+                    Assert.Equal(0, r1.Item1);
 
-                Assert.Equal(1, credentialForGetRequest.Count);
-                Assert.Equal("a:b", credentialForGetRequest[0]);
+                    Assert.Equal(1, credentialForGetRequest.Count);
+                    Assert.Equal("a:b", credentialForGetRequest[0]);
 
-                Assert.Equal(3, credentialForPutRequest.Count);
-                Assert.Equal("a:b", credentialForPutRequest[0]);
-                Assert.Equal("c:d", credentialForPutRequest[1]);
-                Assert.Equal("testuser:testpassword", credentialForPutRequest[2]);
+                    Assert.Equal(3, credentialForPutRequest.Count);
+                    Assert.Equal("a:b", credentialForPutRequest[0]);
+                    Assert.Equal("c:d", credentialForPutRequest[1]);
+                    Assert.Equal("testuser:testpassword", credentialForPutRequest[2]);
+                }
             }
             finally
             {
@@ -563,7 +570,6 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:2352/";
 
             IPrincipal getUser = null;
             IPrincipal putUser = null;
@@ -575,40 +581,42 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                var server = new MockServer(mockServerEndPoint);
-                server.Listener.AuthenticationSchemes = AuthenticationSchemes.IntegratedWindowsAuthentication;
-                server.Get.Add("/nuget", r => new Action<HttpListenerResponse, IPrincipal>((res, user) =>
+                using (var server = new MockServer())
                 {
-                    getUser = user;
-                    res.StatusCode = (int)HttpStatusCode.OK;
-                }));
-                server.Put.Add("/nuget", r => new Action<HttpListenerResponse, IPrincipal>((res, user) =>
-                {
-                    putUser = user;
-                    res.StatusCode = (int)HttpStatusCode.OK;
-                }));
-                server.Start();
+                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.IntegratedWindowsAuthentication;
+                    server.Get.Add("/nuget", r => new Action<HttpListenerResponse, IPrincipal>((res, user) =>
+                    {
+                        getUser = user;
+                        res.StatusCode = (int)HttpStatusCode.OK;
+                    }));
+                    server.Put.Add("/nuget", r => new Action<HttpListenerResponse, IPrincipal>((res, user) =>
+                    {
+                        putUser = user;
+                        res.StatusCode = (int)HttpStatusCode.OK;
+                    }));
+                    server.Start();
 
-                // Act
-                var args = "push " + packageFileName +
-                    " -Source " + mockServerEndPoint + "nuget";
-                var r1 = CommandRunner.Run(
-                    nugetexe,
-                    packageDirectory,
-                    args,
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
-                server.Stop();
+                    // Act
+                    var args = "push " + packageFileName +
+                        " -Source " + server.Uri + "nuget";
+                    var r1 = CommandRunner.Run(
+                        nugetexe,
+                        packageDirectory,
+                        args,
+                        waitForExit: true,
+                        timeOutInMilliseconds: 10000);
+                    server.Stop();
 
-                // Assert
-                Assert.Equal(0, r1.Item1);
+                    // Assert
+                    Assert.Equal(0, r1.Item1);
 
-                var currentUser = WindowsIdentity.GetCurrent();
-                Assert.Equal("NTLM", getUser.Identity.AuthenticationType);
-                Assert.Equal(currentUser.Name, getUser.Identity.Name);
+                    var currentUser = WindowsIdentity.GetCurrent();
+                    Assert.Equal("NTLM", getUser.Identity.AuthenticationType);
+                    Assert.Equal(currentUser.Name, getUser.Identity.Name);
 
-                Assert.Equal("NTLM", putUser.Identity.AuthenticationType);
-                Assert.Equal(currentUser.Name, putUser.Identity.Name);
+                    Assert.Equal("NTLM", putUser.Identity.AuthenticationType);
+                    Assert.Equal(currentUser.Name, putUser.Identity.Name);
+                }
             }
             finally
             {
@@ -624,7 +632,6 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:2353/";
 
             IPrincipal getUser = null;
             IPrincipal putUser = null;
@@ -636,50 +643,52 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                var server = new MockServer(mockServerEndPoint);
-                server.Listener.AuthenticationSchemes = AuthenticationSchemes.IntegratedWindowsAuthentication;
-                server.Get.Add("/nuget", r => new Action<HttpListenerResponse, IPrincipal>((res, user) =>
+                using (var server = new MockServer())
                 {
-                    getUser = user;
-                    res.StatusCode = (int)HttpStatusCode.OK;
-                }));
-                server.Put.Add("/nuget", r => new Action<HttpListenerResponse, IPrincipal>((res, user) =>
-                {
-                    putUser = user;
-                    res.StatusCode = (int)HttpStatusCode.OK;
-                }));
-                server.Start();
+                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.IntegratedWindowsAuthentication;
+                    server.Get.Add("/nuget", r => new Action<HttpListenerResponse, IPrincipal>((res, user) =>
+                    {
+                        getUser = user;
+                        res.StatusCode = (int)HttpStatusCode.OK;
+                    }));
+                    server.Put.Add("/nuget", r => new Action<HttpListenerResponse, IPrincipal>((res, user) =>
+                    {
+                        putUser = user;
+                        res.StatusCode = (int)HttpStatusCode.OK;
+                    }));
+                    server.Start();
 
-                // Act
-                var args = "push " + packageFileName +
-                    " -Source " + mockServerEndPoint + "nuget -DisableBuffering";
-                var r1 = CommandRunner.Run(
-                    nugetexe,
-                    packageDirectory,
-                    args,
-                    waitForExit: true,
-                    timeOutInMilliseconds: 10000);
-                server.Stop();
+                    // Act
+                    var args = "push " + packageFileName +
+                        " -Source " + server.Uri + "nuget -DisableBuffering";
+                    var r1 = CommandRunner.Run(
+                        nugetexe,
+                        packageDirectory,
+                        args,
+                        waitForExit: true,
+                        timeOutInMilliseconds: 10000);
+                    server.Stop();
 
-                // Assert
-                if (EnvironmentUtility.IsNet45Installed)
-                {
-                    Assert.Equal(0, r1.Item1);
+                    // Assert
+                    if (EnvironmentUtility.IsNet45Installed)
+                    {
+                        Assert.Equal(0, r1.Item1);
 
-                    var currentUser = WindowsIdentity.GetCurrent();
-                    Assert.Equal("NTLM", getUser.Identity.AuthenticationType);
-                    Assert.Equal(currentUser.Name, getUser.Identity.Name);
+                        var currentUser = WindowsIdentity.GetCurrent();
+                        Assert.Equal("NTLM", getUser.Identity.AuthenticationType);
+                        Assert.Equal(currentUser.Name, getUser.Identity.Name);
 
-                    Assert.Equal("NTLM", putUser.Identity.AuthenticationType);
-                    Assert.Equal(currentUser.Name, putUser.Identity.Name);
-                }
-                else
-                {
-                    // On .net 4.0, the process will get killed since integrated windows
-                    // authentication won't work when buffering is disabled.
-                    Assert.Equal(1, r1.Item1);
-                    Assert.Contains("Failed to process request. 'Unauthorized'", r1.Item3);
-                    Assert.Contains("This request requires buffering data to succeed.", r1.Item3);
+                        Assert.Equal("NTLM", putUser.Identity.AuthenticationType);
+                        Assert.Equal(currentUser.Name, putUser.Identity.Name);
+                    }
+                    else
+                    {
+                        // On .net 4.0, the process will get killed since integrated windows
+                        // authentication won't work when buffering is disabled.
+                        Assert.Equal(1, r1.Item1);
+                        Assert.Contains("Failed to process request. 'Unauthorized'", r1.Item3);
+                        Assert.Contains("This request requires buffering data to succeed.", r1.Item3);
+                    }
                 }
             }
             finally

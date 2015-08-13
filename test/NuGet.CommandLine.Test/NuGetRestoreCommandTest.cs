@@ -906,7 +906,6 @@ EndProject");
             var tempPath = Path.GetTempPath();
             var workingDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var mockServerEndPoint = "http://localhost:8901/";
 
             try
             {
@@ -925,50 +924,52 @@ EndProject");
   <package id=""testPackage1"" version=""1.1.0"" />
 </packages>");
 
-                var server = new MockServer(mockServerEndPoint);
-                bool getPackageByVersionIsCalled = false;
-                bool packageDownloadIsCalled = false;
+                using (var server = new MockServer())
+                {
+                    bool getPackageByVersionIsCalled = false;
+                    bool packageDownloadIsCalled = false;
 
-                server.Get.Add("/nuget/$metadata", r =>
-                   MockServerResource.NuGetV2APIMetadata);
-                server.Get.Add("/nuget/Packages(Id='testPackage1',Version='1.1.0')", r =>
-                    new Action<HttpListenerResponse>(response =>
-                    {
-                        getPackageByVersionIsCalled = true;
-                        response.ContentType = "application/atom+xml;type=entry;charset=utf-8";
-                        var odata = server.ToOData(package);
-                        MockServer.SetResponseContent(response, odata);
-                    }));
-
-                server.Get.Add("/package/testPackage1", r =>
-                    new Action<HttpListenerResponse>(response =>
-                    {
-                        packageDownloadIsCalled = true;
-                        response.ContentType = "application/zip";
-                        using (var stream = package.GetStream())
+                    server.Get.Add("/nuget/$metadata", r =>
+                       MockServerResource.NuGetV2APIMetadata);
+                    server.Get.Add("/nuget/Packages(Id='testPackage1',Version='1.1.0')", r =>
+                        new Action<HttpListenerResponse>(response =>
                         {
-                            var content = stream.ReadAllBytes();
-                            MockServer.SetResponseContent(response, content);
-                        }
-                    }));
+                            getPackageByVersionIsCalled = true;
+                            response.ContentType = "application/atom+xml;type=entry;charset=utf-8";
+                            var odata = server.ToOData(package);
+                            MockServer.SetResponseContent(response, odata);
+                        }));
 
-                server.Get.Add("/nuget", r => "OK");
+                    server.Get.Add("/package/testPackage1", r =>
+                        new Action<HttpListenerResponse>(response =>
+                        {
+                            packageDownloadIsCalled = true;
+                            response.ContentType = "application/zip";
+                            using (var stream = package.GetStream())
+                            {
+                                var content = stream.ReadAllBytes();
+                                MockServer.SetResponseContent(response, content);
+                            }
+                        }));
 
-                server.Start();
+                    server.Get.Add("/nuget", r => "OK");
 
-                // Act
-                var args = "restore packages.config -PackagesDirectory . -Source " + mockServerEndPoint + "nuget";
-                var r1 = CommandRunner.Run(
-                    nugetexe,
-                    workingDirectory,
-                    args,
-                    waitForExit: true);
-                server.Stop();
+                    server.Start();
 
-                // Assert
-                Assert.Equal(0, r1.Item1);
-                Assert.True(getPackageByVersionIsCalled);
-                Assert.True(packageDownloadIsCalled);
+                    // Act
+                    var args = "restore packages.config -PackagesDirectory . -Source " + server.Uri + "nuget";
+                    var r1 = CommandRunner.Run(
+                        nugetexe,
+                        workingDirectory,
+                        args,
+                        waitForExit: true);
+                    server.Stop();
+
+                    // Assert
+                    Assert.Equal(0, r1.Item1);
+                    Assert.True(getPackageByVersionIsCalled);
+                    Assert.True(packageDownloadIsCalled);
+                }
             }
             finally
             {

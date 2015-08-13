@@ -15,28 +15,29 @@ namespace NuGet.CommandLine.Test
     /// A Mock Server that is used to mimic a NuGet Server.
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")]
-    public class MockServer
+    public class MockServer : IDisposable
     {
         HttpListener _listener;
         RouteTable _get, _put, _delete;
-        string _endPoint;
         Task _listenerTask;
+        bool _disposedValue = false;
+        PortReserver _portReserver;
 
         /// <summary>
         /// Initializes an instance of MockServer.
         /// </summary>
-        /// <param name="endPoint">The endpoint of the server.</param>
-        public MockServer(string endPoint)
+        public MockServer()
         {
-            _endPoint = endPoint;
+            this._portReserver = new PortReserver();
+
             _listener = new HttpListener();
-            _listener.Prefixes.Add(endPoint);
+            _listener.Prefixes.Add(_portReserver.BaseUri);
 
             _get = new RouteTable();
             _put = new RouteTable();
             _delete = new RouteTable();
         }
-
+        
         public RouteTable Get
         {
             get { return _get; }
@@ -56,6 +57,8 @@ namespace NuGet.CommandLine.Test
         {
             get { return _listener; }
         }
+
+        public string Uri { get { return _portReserver.BaseUri; } }
 
         /// <summary>
         /// Starts the mock server.
@@ -286,7 +289,7 @@ namespace NuGet.CommandLine.Test
         public string ToODataFeed(IEnumerable<IPackage> packages, string title)
         {
             string nsAtom = "http://www.w3.org/2005/Atom";
-            var id = string.Format(CultureInfo.InvariantCulture, "{0}{1}", _endPoint, title);
+            var id = string.Format(CultureInfo.InvariantCulture, "{0}{1}", this.Uri, title);
             XDocument doc = new XDocument(
                 new XElement(XName.Get("feed", nsAtom),
                     new XElement(XName.Get("id", nsAtom), id),
@@ -312,11 +315,11 @@ namespace NuGet.CommandLine.Test
             string nsMetadata = "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata";
             string downloadUrl = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}package/{1}/{2}", _endPoint, package.Id, package.Version);
+                "{0}package/{1}/{2}", this.Uri, package.Id, package.Version);
             string entryId = string.Format(
                 CultureInfo.InvariantCulture,
                 "{0}Packages(Id='{1}',Version='{2}')",
-                _endPoint, package.Id, package.Version);
+                this.Uri, package.Id, package.Version);
 
             var entry = new XElement(XName.Get("entry", nsAtom),
                 new XAttribute(XNamespace.Xmlns + "d", nsDataService.ToString()),
@@ -339,6 +342,28 @@ namespace NuGet.CommandLine.Test
         {
             XDocument doc = new XDocument(ToODataEntryXElement(package));
             return doc.ToString();
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    // Closing the http listener
+                    this.Stop();
+
+                    // Disposing the PortReserver
+                    this._portReserver.Dispose();
+                }
+                
+                _disposedValue = true;
+            }
+        }
+        
+        public void Dispose()
+        {
+            Dispose(true);
         }
     }
 
