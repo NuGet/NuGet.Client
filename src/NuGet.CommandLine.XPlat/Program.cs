@@ -14,7 +14,7 @@ using NuGet.Frameworks;
 using NuGet.Logging;
 using NuGet.ProjectModel;
 
-namespace NuGet.CommandLine
+namespace NuGet.CommandLine.XPlat
 {
     public class Program
     {

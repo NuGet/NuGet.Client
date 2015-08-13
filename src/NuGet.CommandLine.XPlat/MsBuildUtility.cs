@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using Microsoft.Build.Execution;
 #endif
 
-namespace NuGet.CommandLine
+namespace NuGet.CommandLine.XPlat
 {
     public class MsBuildUtility
     {

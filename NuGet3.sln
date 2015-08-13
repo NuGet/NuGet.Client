@@ -10,7 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.CommandLine", "src\NuGet.CommandLine\NuGet.CommandLine.xproj", "{ECEA066F-F40D-4397-B2CE-8CA24AC22638}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.CommandLine.XPlat", "src\NuGet.CommandLine.XPlat\NuGet.CommandLine.XPlat.xproj", "{ECEA066F-F40D-4397-B2CE-8CA24AC22638}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Client", "src\NuGet.Client\NuGet.Client.xproj", "{BA3543A8-874C-4F42-8757-C7EF7D17C8EE}"
 EndProject

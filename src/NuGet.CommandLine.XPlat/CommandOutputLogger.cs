@@ -5,7 +5,7 @@ using System;
 using Microsoft.Framework.Runtime.Common.CommandLine;
 using NuGet.Logging;
 
-namespace NuGet.CommandLine
+namespace NuGet.CommandLine.XPlat
 {
     /// <summary>
     /// Logger to print formatted command output.
