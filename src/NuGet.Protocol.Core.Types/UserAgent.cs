@@ -4,7 +4,6 @@
 using System;
 using System.Globalization;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.Types
@@ -18,7 +17,11 @@ namespace NuGet.Protocol.Core.Types
         private const string UserAgentWithHostTemplate = "{0}/{1} ({2}, {3})";
 
         public const string NuGetClientName = "NuGet Client V3";
-        public static string VisualStudioInfo = string.Empty; // To be set again by PackageManagement.VisualStudio
+
+        /// <summary>
+        /// To be set by NuGet Clients such as NuGet Extension for Visual Studio or nuget.exe
+        /// </summary>
+        public static string UserAgentString = string.Empty;
 
         /// <summary>
         /// Create user agent string with template of "{0}/{1} ({2})", where {0} is client name,
@@ -33,16 +36,22 @@ namespace NuGet.Protocol.Core.Types
                 throw new ArgumentNullException(nameof(client));
             }
 
-            return String.Format(CultureInfo.InvariantCulture, UserAgentTemplate, client, NuGetClientVersion, OSVersion);
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                UserAgentTemplate,
+                client,
+                NuGetClientVersion,
+                OSVersion);
         }
 
         /// <summary>
-        /// Create user agent string for operations on Visual Studio, with template of "{0}/{1} ({2}, {3})", where {0} is client name,
-        /// {1} is NuGetClientVersion, {2} is OSVersion and {3} is visual studio Version and SKU. {1}, {2} are automatically computed. {3} is passed in.
+        /// Create user agent string for operations on Visual Studio, with template of "{0}/{1} ({2}, {3})",
+        /// where {0} is client name, {1} is NuGetClientVersion, {2} is OSVersion
+        /// and {3} is visual studio Version and SKU. {1}, {2} are automatically computed. {3} is passed in.
         /// </summary>
         /// <param name="client"></param>
         /// <returns></returns>
-        public static string CreateUserAgentStringForVisualStudio(string client)
+        public static string CreateUserAgentStringForVisualStudio(string client, string visualStudioInfo)
         {
             if (client == null)
             {
@@ -55,7 +64,7 @@ namespace NuGet.Protocol.Core.Types
                 client,
                 NuGetClientVersion, /* NuGet version */
                 OSVersion, /* OS version */
-                VisualStudioInfo);  /* VS SKU + version */
+                visualStudioInfo);  /* VS SKU + version */
         }
 
         /// <summary>
@@ -70,7 +79,7 @@ namespace NuGet.Protocol.Core.Types
                 throw new ArgumentNullException(nameof(client));
             }
 
-            if (!String.IsNullOrEmpty(userAgent))
+            if (!string.IsNullOrEmpty(userAgent))
             {
                 client.DefaultRequestHeaders.Add("user-agent", userAgent);
             }

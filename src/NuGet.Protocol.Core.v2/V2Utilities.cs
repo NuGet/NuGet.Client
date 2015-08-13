@@ -33,7 +33,7 @@ namespace NuGet.Protocol.Core.v2
             {
                 return _lprepo;
             }
-            var _userAgent = UserAgent.CreateUserAgentStringForVisualStudio(UserAgent.NuGetClientName);
+            var _userAgent = UserAgent.UserAgentString;
             var events = repo as IHttpClientEvents;
             if (events != null)
             {

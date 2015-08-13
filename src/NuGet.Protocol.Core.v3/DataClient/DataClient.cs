@@ -38,7 +38,7 @@ namespace NuGet.Protocol.Core.v3.Data
             }
 
             // Set user agent
-            var userAgent = UserAgent.CreateUserAgentStringForVisualStudio(UserAgent.NuGetClientName);
+            var userAgent = UserAgent.UserAgentString;
             UserAgent.SetUserAgent(this, userAgent);
         }
 
