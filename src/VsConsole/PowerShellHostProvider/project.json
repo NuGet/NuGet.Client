@@ -2,7 +2,7 @@
     "dependencies": {
         "Microsoft.Bcl": "1.1.9",
         "Microsoft.Bcl.Build": "1.0.21",
-        "NuGet.PackageManagement": "3.1.2-*"
+        "NuGet.PackageManagement": "3.2.0-*"
     },
     "frameworks": {
         "net45": {}

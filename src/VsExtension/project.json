@@ -1,6 +1,6 @@
 {
     "dependencies": {
-      "NuGet.Commands": "3.1.2-*"
+      "NuGet.Commands": "3.2.0-*"
     },
     "frameworks": {
         "net45": {}

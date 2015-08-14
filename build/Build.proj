@@ -53,7 +53,7 @@
              in Common\CommonAssemblyInfo.cs so the version numbers are consistent between binaries built on
              build servers and those built locally. -->
         <MajorVersion>3</MajorVersion>
-        <MinorVersion>0</MinorVersion>
+        <MinorVersion>2</MinorVersion>
         <Patch>0</Patch>
 	    <PrereleaseTag>preview</PrereleaseTag>
 
