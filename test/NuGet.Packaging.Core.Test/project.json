@@ -1,7 +1,7 @@
 ﻿{
-    "version": "3.1.2-*",
+    "version": "3.2.0-*",
     "dependencies": {
-        "NuGet.Packaging.Core": "3.1.2-*",
+        "NuGet.Packaging.Core": "3.2.0-*",
         "xunit": "2.1.0-*",
         "xunit.runner.dnx": "2.1.0-*"
     },

@@ -1,7 +1,7 @@
 {
   "version": "1.0.0-*",
   "dependencies": {
-    "NuGet.Protocol.Core.Types": "3.1.2-*"
+    "NuGet.Protocol.Core.Types": "3.2.0-*"
   },
 
   "frameworks": {
