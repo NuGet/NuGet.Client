@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Logging;
+using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3.Data;
 
 namespace NuGet.Protocol.Core.v3.RemoteRepositories
@@ -22,10 +23,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
     internal class HttpSource
     {
         private const int BufferSize = 8192;
-        private readonly Func<Task<HttpClientHandler>> _messageHandlerFactory;
+        private readonly Func<Task<HttpHandlerResource>> _messageHandlerFactory;
         private readonly Uri _baseUri;
 
-        public HttpSource(string sourceUrl, Func<Task<HttpClientHandler>> messageHandlerFactory)
+        public HttpSource(string sourceUrl, Func<Task<HttpHandlerResource>> messageHandlerFactory)
         {
             _baseUri = new Uri(sourceUrl);
             _messageHandlerFactory = messageHandlerFactory;
@@ -57,12 +58,13 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             var retry = true;
             while (retry)
             {
-                var messageHandler = await _messageHandlerFactory();
-                using (var client = new DataClient(messageHandler))
+                var handlerResource = await _messageHandlerFactory();
+
+                using (var client = new DataClient(handlerResource))
                 {
                     if (credentials != null)
                     {
-                        messageHandler.Credentials = credentials;
+                        handlerResource.ClientHandler.Credentials = credentials;
                     }
 
                     var request = new HttpRequestMessage(HttpMethod.Get, uri);

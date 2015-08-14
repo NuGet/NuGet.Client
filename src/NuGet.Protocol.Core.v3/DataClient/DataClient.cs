@@ -3,17 +3,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Protocol.Core.Types;
-using Newtonsoft.Json;
 #if !DNXCORE50
 using System.Net.Cache;
-
 #endif
 
 namespace NuGet.Protocol.Core.v3.Data
@@ -27,6 +24,14 @@ namespace NuGet.Protocol.Core.v3.Data
         private readonly INuGetMessageHandlerProvider[] _modifiers;
 
         /// <summary>
+        /// Use a HttpHandlerResource containing a message handler.
+        /// </summary>
+        public DataClient(HttpHandlerResource handlerResource)
+            : this(handlerResource.MessageHandler)
+        {
+        }
+
+        /// <summary>
         /// Raw constructor that allows full overriding of all caching and default DataClient behavior.
         /// </summary>
         public DataClient(HttpMessageHandler handler)
@@ -34,7 +39,7 @@ namespace NuGet.Protocol.Core.v3.Data
         {
             if (handler == null)
             {
-                throw new ArgumentNullException("handler");
+                throw new ArgumentNullException(nameof(handler));
             }
 
             // Set user agent
@@ -46,7 +51,7 @@ namespace NuGet.Protocol.Core.v3.Data
         /// DataClient with the default options and caching support
         /// </summary>
         public DataClient()
-            : this(CachingHandler)
+            : this(DefaultHandler)
         {
         }
 
@@ -62,24 +67,35 @@ namespace NuGet.Protocol.Core.v3.Data
         /// <summary>
         /// Default caching handler used by the data client
         /// </summary>
-        public static HttpClientHandler DefaultHandler
+        public static HttpHandlerResourceV3 DefaultHandler
         {
-            get { return AssembleHandlers(CachingHandler, Enumerable.Empty<INuGetMessageHandlerProvider>()); }
+            get
+            {
+                // Client handler at the end of the pipeline
+                var clientHandler = CachingHandler;
+
+                return CreateHandler(clientHandler);
+            }
+        }
+
+        /// <summary>
+        /// Default caching handler used by the data client
+        /// </summary>
+        public static HttpHandlerResourceV3 CreateHandler(HttpClientHandler clientHandler)
+        {
+            // Retry handler wrapping the client
+            var messageHandler = new RetryHandler(clientHandler, 5);
+
+            return new HttpHandlerResourceV3(clientHandler, messageHandler);
         }
 
         /// <summary>
         /// Chain the handlers together
         /// </summary>
-        private static HttpClientHandler AssembleHandlers(HttpClientHandler handler, IEnumerable<INuGetMessageHandlerProvider> modifiers)
+        private static HttpClientHandler AssembleHandlers(
+            HttpClientHandler handler, 
+            IEnumerable<INuGetMessageHandlerProvider> modifiers)
         {
-            // final retry logic
-            // RetryHandler retryHandler = new RetryHandler(handler, 5);
-
-            // auth & proxy
-            //RequestModifierHandler modHandler = new RequestModifierHandler(handler, modifiers);
-
-            //return modHandler;
-
             return handler;
         }
 

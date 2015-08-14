@@ -13,19 +13,31 @@ namespace NuGet.Protocol.Core.v3
     /// </summary>
     public class HttpHandlerResourceV3 : HttpHandlerResource
     {
-        private readonly HttpClientHandler _messageHandler;
+        private readonly HttpClientHandler _clientHandler;
+        private readonly HttpMessageHandler _messageHandler;
 
-        public HttpHandlerResourceV3(HttpClientHandler messageHandler)
+        public HttpHandlerResourceV3(HttpClientHandler clientHandler, HttpMessageHandler messageHandler)
         {
-            if (messageHandler == null)
+            if (clientHandler == null)
             {
-                throw new ArgumentNullException("messageHandler");
+                throw new ArgumentNullException(nameof(clientHandler));
             }
 
+            if (messageHandler == null)
+            {
+                throw new ArgumentNullException(nameof(messageHandler));
+            }
+
+            _clientHandler = clientHandler;
             _messageHandler = messageHandler;
         }
 
-        public override HttpClientHandler MessageHandler
+        public override HttpClientHandler ClientHandler
+        {
+            get { return _clientHandler; }
+        }
+
+        public override HttpMessageHandler MessageHandler
         {
             get { return _messageHandler; }
         }

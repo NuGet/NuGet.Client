@@ -26,7 +26,7 @@ namespace NuGet.Protocol.Core.v3
             if (regResource != null)
             {
                 var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
-                var client = new DataClient(messageHandlerResource.MessageHandler);
+                var client = new DataClient(messageHandlerResource);
 
                 curResource = new MetadataResourceV3(client, regResource);
             }

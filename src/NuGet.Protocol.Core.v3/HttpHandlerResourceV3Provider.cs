@@ -27,9 +27,17 @@ namespace NuGet.Protocol.Core.v3
         {
             HttpHandlerResourceV3 curResource = null;
 
-            // Everyone gets a dataclient
-            var httpHandler = TryGetCredentialAndProxy(source.PackageSource) ?? DataClient.DefaultHandler;
-            curResource = new HttpHandlerResourceV3(httpHandler);
+            var clientHandler = TryGetCredentialAndProxy(source.PackageSource);
+
+            if (clientHandler == null)
+            {
+                curResource = DataClient.DefaultHandler;
+            }
+            else
+            {
+                // replace the handler with the proxy aware handler
+                curResource = DataClient.CreateHandler(clientHandler);
+            }
 
             return Task.FromResult(new Tuple<bool, INuGetResource>(curResource != null, curResource));
         }

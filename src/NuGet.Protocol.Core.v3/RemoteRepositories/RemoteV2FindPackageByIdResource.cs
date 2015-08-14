@@ -42,7 +42,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private TimeSpan _cacheAgeLimitList;
         private TimeSpan _cacheAgeLimitNupkg;
 
-        public RemoteV2FindPackageByIdResource(PackageSource packageSource, Func<Task<HttpClientHandler>> handlerFactory)
+        public RemoteV2FindPackageByIdResource(PackageSource packageSource, Func<Task<HttpHandlerResource>> handlerFactory)
         {
             _baseUri = packageSource.Source.EndsWith("/") ? packageSource.Source : (packageSource.Source + "/");
             _httpSource = new HttpSource(_baseUri, handlerFactory);

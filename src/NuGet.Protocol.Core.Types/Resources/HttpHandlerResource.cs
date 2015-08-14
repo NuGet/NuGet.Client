@@ -11,8 +11,13 @@ namespace NuGet.Protocol.Core.Types
     public abstract class HttpHandlerResource : INuGetResource
     {
         /// <summary>
-        /// HttpClient resource
+        /// HttpClientHandler used for credential support.
         /// </summary>
-        public abstract HttpClientHandler MessageHandler { get; }
+        public abstract HttpClientHandler ClientHandler { get; }
+
+        /// <summary>
+        /// Message handler containing the ClientHandler.
+        /// </summary>
+        public abstract HttpMessageHandler MessageHandler { get; }
     }
 }

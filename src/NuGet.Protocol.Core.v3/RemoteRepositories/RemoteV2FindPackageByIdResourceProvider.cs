@@ -29,7 +29,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             {
                 resource = new RemoteV2FindPackageByIdResource(
                     sourceRepository.PackageSource, 
-                    async () => (await sourceRepository.GetResourceAsync<HttpHandlerResource>(token)).MessageHandler);
+                    async () => (await sourceRepository.GetResourceAsync<HttpHandlerResource>(token)));
             }
 
             return Task.FromResult(Tuple.Create(resource != null, resource));

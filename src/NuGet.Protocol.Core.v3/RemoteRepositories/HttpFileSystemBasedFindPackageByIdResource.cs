@@ -40,7 +40,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private TimeSpan _cacheAgeLimitList;
         private TimeSpan _cacheAgeLimitNupkg;
 
-        public HttpFileSystemBasedFindPackageByIdResource(IReadOnlyList<Uri> baseUris, Func<Task<HttpClientHandler>> handlerFactory)
+        public HttpFileSystemBasedFindPackageByIdResource(IReadOnlyList<Uri> baseUris, Func<Task<HttpHandlerResource>> handlerFactory)
         {
             if (baseUris == null)
             {

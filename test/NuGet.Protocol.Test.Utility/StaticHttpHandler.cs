@@ -62,9 +62,17 @@ namespace Test.Utility
             _messageHandler = messageHandler;
         }
 
-        public override HttpClientHandler MessageHandler
+        public override HttpClientHandler ClientHandler
         {
             get { return _messageHandler; }
+        }
+
+        public override HttpMessageHandler MessageHandler
+        {
+            get
+            {
+                return _messageHandler;
+            }
         }
     }
 

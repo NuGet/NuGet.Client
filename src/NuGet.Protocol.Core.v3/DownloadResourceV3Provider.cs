@@ -35,7 +35,7 @@ namespace NuGet.Protocol.Core.v3
 
                     var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
 
-                    var client = new DataClient(messageHandlerResource.MessageHandler);
+                    var client = new DataClient(messageHandlerResource);
 
                     curResource = new DownloadResourceV3(client, registrationResource);
 

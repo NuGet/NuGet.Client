@@ -30,7 +30,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private TimeSpan _cacheAgeLimitList;
         private TimeSpan _cacheAgeLimitNupkg;
 
-        public RemoteV3FindPackageByIdResource(SourceRepository sourceRepository, Func<Task<HttpClientHandler>> handlerFactory)
+        public RemoteV3FindPackageByIdResource(SourceRepository sourceRepository, Func<Task<HttpHandlerResource>> handlerFactory)
         {
             SourceRepository = sourceRepository;
             _httpSource = new HttpSource(sourceRepository.PackageSource.Source, handlerFactory);
