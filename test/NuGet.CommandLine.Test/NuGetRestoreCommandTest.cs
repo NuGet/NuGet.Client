@@ -1134,7 +1134,6 @@ EndProject");
 
                 var args = new string[]
                 {
-                    "--debug",
                     "restore",
                     packagesConfigPath,
                     "-PackagesDirectory",
