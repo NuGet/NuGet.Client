@@ -322,6 +322,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14. By default the MSBuild in your path is picked, otherwise it defaults to MSBuild 4.0..
+        /// </summary>
+        internal static string CommandMSBuildVersion {
+            get {
+                return ResourceManager.GetString("CommandMSBuildVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Disable using the machine cache as the first package source..
         /// </summary>
         internal static string CommandNoCache {
@@ -9671,15 +9680,6 @@ namespace NuGet.CommandLine {
         internal static string RestoreCommandDisableParallelProcessing_trk {
             get {
                 return ResourceManager.GetString("RestoreCommandDisableParallelProcessing_trk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Path to MSBuild, defaults to &apos;%ProgramFiles%\MSBuild\14.0\Bin\MSBuild.exe..
-        /// </summary>
-        internal static string RestoreCommandMsBuildPath {
-            get {
-                return ResourceManager.GetString("RestoreCommandMsBuildPath", resourceCulture);
             }
         }
         

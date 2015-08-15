@@ -6043,4 +6043,13 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="Error_SolutionFileParseError" xml:space="preserve">
     <value>Error parsing solution file at {0}: {1}</value>
   </data>
+  <data name="Error_UnsupportedMsbuild" xml:space="preserve">
+    <value>This version of msbuild is not supported: '{0}'</value>
+  </data>
+  <data name="Error_CannotFindMsbuild" xml:space="preserve">
+    <value>Cannot find the specified version of msbuild: '{0}'</value>
+  </data>
+  <data name="Error_InvalidMsbuildVersion" xml:space="preserve">
+    <value>Invalid MSBuild version specified: '{0}'</value>
+  </data>
 </root>

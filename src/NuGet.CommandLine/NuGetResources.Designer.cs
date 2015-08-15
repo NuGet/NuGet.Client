@@ -2329,6 +2329,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot find the specified version of msbuild: &apos;{0}&apos;.
+        /// </summary>
+        public static string Error_CannotFindMsbuild {
+            get {
+                return ResourceManager.GetString("Error_CannotFindMsbuild", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot get the GetAllProjectFileNamesMethod from type  Mono.XBuild.CommandLine.SolutionParser..
         /// </summary>
         public static string Error_CannotGetGetAllProjectFileNamesMethod {
@@ -2730,6 +2739,15 @@ namespace NuGet.CommandLine {
         public static string Error_CannotPromptForInput_trk {
             get {
                 return ResourceManager.GetString("Error_CannotPromptForInput_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid MSBuild version specified: &apos;{0}&apos;.
+        /// </summary>
+        public static string Error_InvalidMsbuildVersion {
+            get {
+                return ResourceManager.GetString("Error_InvalidMsbuildVersion", resourceCulture);
             }
         }
         
@@ -3378,6 +3396,15 @@ namespace NuGet.CommandLine {
         public static string Error_SourceProviderIsNull_trk {
             get {
                 return ResourceManager.GetString("Error_SourceProviderIsNull_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This version of msbuild is not supported: &apos;{0}&apos;.
+        /// </summary>
+        public static string Error_UnsupportedMsbuild {
+            get {
+                return ResourceManager.GetString("Error_UnsupportedMsbuild", resourceCulture);
             }
         }
         

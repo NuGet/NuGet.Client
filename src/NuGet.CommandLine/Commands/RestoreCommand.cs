@@ -33,8 +33,8 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "RestoreCommandSolutionDirectory")]
         public string SolutionDirectory { get; set; }
 
-        [Option(typeof(NuGetCommand), "RestoreCommandMsBuildPath")]
-        public string MsBuildPath { get; set; }
+        [Option(typeof(NuGetCommand), "CommandMSBuildVersion")]
+        public string MSBuildVersion { get; set; }
 
         [ImportingConstructor]
         public RestoreCommand()
@@ -42,8 +42,13 @@ namespace NuGet.CommandLine
         {
         }
 
+        // The directory that contains msbuild
+        private string _msbuildDirectory;
+
         public override async Task ExecuteCommandAsync()
         {
+            _msbuildDirectory = MsBuildUtility.GetMsbuildDirectory(MSBuildVersion);
+
             if (!string.IsNullOrEmpty(PackagesDirectory))
             {
                 PackagesDirectory = Path.GetFullPath(PackagesDirectory);
@@ -155,7 +160,7 @@ namespace NuGet.CommandLine
             {
                 // Restore a .csproj or other msbuild project file using the 
                 // file name without the extension as the Id
-                externalProjects = MsBuildUtility.GetProjectReferences(MsBuildPath, projectPath);
+                externalProjects = MsBuildUtility.GetProjectReferences(_msbuildDirectory, projectPath);
 
                 var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(projectPath));
                 projectJsonPath = Path.Combine(projectDirectory, PackageSpec.PackageSpecFileName);
@@ -552,7 +557,7 @@ namespace NuGet.CommandLine
         {
             restoreInputs.DirectoryOfSolutionFile = Path.GetDirectoryName(solutionFileFullPath);
 
-            var projectFiles = MsBuildUtility.GetAllProjectFileNames(solutionFileFullPath);
+            var projectFiles = MsBuildUtility.GetAllProjectFileNames(solutionFileFullPath, _msbuildDirectory);
             foreach (var projectFile in projectFiles)
             {
                 if (!File.Exists(projectFile))
