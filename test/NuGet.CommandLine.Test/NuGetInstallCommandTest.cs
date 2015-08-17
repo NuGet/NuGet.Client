@@ -599,7 +599,7 @@ namespace NuGet.CommandLine.Test
                         waitForExit: true);
 
                     // Assert
-                    Assert.Equal(1, r1.Item1);
+                    Assert.True(1 == r1.Item1, r1.Item2 + " " + r1.Item3);
 
                     Assert.Equal(3, requests.Count);
                     Assert.True(requests[0].EndsWith("Packages(Id='testPackage1',Version='1.1')"));

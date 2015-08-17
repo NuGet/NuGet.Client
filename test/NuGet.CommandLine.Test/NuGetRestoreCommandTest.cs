@@ -968,8 +968,8 @@ EndProject");
 
                     // Assert
                     Assert.Equal(0, r1.Item1);
-                    Assert.True(getPackageByVersionIsCalled);
-                    Assert.True(packageDownloadIsCalled);
+                    Assert.True(getPackageByVersionIsCalled, "getPackageByVersionIsCalled");
+                    Assert.True(packageDownloadIsCalled, "getPackageByVersionIsCalled");
                 }
             }
             finally
