@@ -115,10 +115,13 @@ namespace NuGet.CommandLine
                     // If the AggregateException contains more than one InnerException, it cannot be unwrapped. In which case, simply print out individual error messages
                     message = String.Join(Environment.NewLine, exception.InnerExceptions.Select(getErrorMessage).Distinct(StringComparer.CurrentCulture));
                 }
+                else if (unwrappedEx is System.Reflection.TargetInvocationException)
+                {
+                    message = getErrorMessage(unwrappedEx.InnerException);
+                }
                 else
                 {
-
-                    message = getErrorMessage(ExceptionUtility.Unwrap(exception));
+                    message = getErrorMessage(unwrappedEx);
                 }
                 console.WriteError(message);
                 return 1;

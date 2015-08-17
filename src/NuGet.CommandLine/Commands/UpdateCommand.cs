@@ -41,6 +41,12 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "UpdateCommandFileConflictAction")]
         public ProjectManagement.FileConflictAction FileConflictAction { get; set; }
 
+        [Option(typeof(NuGetCommand), "CommandMSBuildVersion")]
+        public string MSBuildVersion { get; set; }
+
+        // The directory that contains msbuild
+        private string _msbuildDirectory;
+
         public override async Task ExecuteCommandAsync()
         {
             // update with self as parameter
@@ -58,6 +64,7 @@ namespace NuGet.CommandLine
                 throw new CommandLineException(NuGetResources.InvalidFile);
             }
 
+            _msbuildDirectory = MsBuildUtility.GetMsbuildDirectory(MSBuildVersion);
             var context = new UpdateConsoleProjectContext(Console, FileConflictAction);
 
             string inputFileName = Path.GetFileName(inputFile);
@@ -76,7 +83,10 @@ namespace NuGet.CommandLine
                     throw new CommandLineException(NuGetResources.UnableToFindProject, inputFile);
                 }
 
-                var projectSystem = new MSBuildProjectSystem(Path.GetDirectoryName(inputFile), context);
+                var projectSystem = new MSBuildProjectSystem(
+                    _msbuildDirectory, 
+                    Path.GetDirectoryName(inputFile), 
+                    context);
                 await UpdatePackagesAsync(projectSystem, GetRepositoryPath(projectSystem.ProjectFullPath));
                 return;
             }
@@ -147,7 +157,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private static MSBuildProjectSystem GetProject(string path, INuGetProjectContext projectContext)
+        private MSBuildProjectSystem GetProject(string path, INuGetProjectContext projectContext)
         {
             try
             {
@@ -339,7 +349,7 @@ namespace NuGet.CommandLine
             throw new CommandLineException(LocalizedResourceManager.GetString("UnableToLocatePackagesFolder"));
         }
 
-        private static MSBuildProjectSystem GetMSBuildProject(string packageReferenceFilePath, INuGetProjectContext projectContext)
+        private MSBuildProjectSystem GetMSBuildProject(string packageReferenceFilePath, INuGetProjectContext projectContext)
         {
             // Try to locate the project file associated with this packages.config file
             var directory = Path.GetDirectoryName(packageReferenceFilePath);
@@ -355,7 +365,7 @@ namespace NuGet.CommandLine
                 throw new CommandLineException(LocalizedResourceManager.GetString("MultipleProjectFilesFound"), packageReferenceFilePath);
             }
 
-            return new MSBuildProjectSystem(projectFiles[0], projectContext);
+            return new MSBuildProjectSystem(_msbuildDirectory, projectFiles[0], projectContext);
         }
 
 
