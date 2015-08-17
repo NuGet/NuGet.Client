@@ -102,12 +102,20 @@ namespace NuGet.CommandLine
         [ImportMany]
         public IEnumerable<IPackageRule> Rules { get; set; }
 
+        [Option(typeof(NuGetCommand), "CommandMSBuildVersion")]
+        public string MSBuildVersion { get; set; }
+
         // TODO: Temporarily hide the real ConfigFile parameter from the help text.
         // When we fix #3230, we should remove this property.
         public new string ConfigFile { get; set; }
 
+        // The directory that contains msbuild
+        private string _msbuildDirectory;
+
         public override void ExecuteCommand()
         {
+            _msbuildDirectory = MsBuildUtility.GetMsbuildDirectory(MSBuildVersion);
+
             if (Verbose)
             {
                 Console.WriteWarning(LocalizedResourceManager.GetString("Option_VerboseDeprecated"));
@@ -361,7 +369,7 @@ namespace NuGet.CommandLine
 
         private IPackage BuildFromProjectFile(string path)
         {
-            var factory = new ProjectFactory(path, Properties)
+            var factory = new ProjectFactory(_msbuildDirectory, path, Properties)
             {
                 IsTool = Tool,
                 Logger = Console,

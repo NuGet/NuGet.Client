@@ -8,10 +8,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Versioning;
 using System.Xml.Linq;
-using Microsoft.Build.Evaluation;
-using Microsoft.Build.Execution;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Logging;
 using NuGet.Common;
 using NuGet.Configuration;
 
@@ -20,7 +16,15 @@ namespace NuGet.CommandLine
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
     public class ProjectFactory : IPropertyProvider
     {
-        private readonly Project _project;
+        // The type of class Microsoft.Build.Evaluation.Project
+        private Type _projectType;
+
+        // Its type is Microsoft.Build.Evaluation.Project
+        private dynamic _project;
+
+        // The type of class Microsoft.Build.Evaluation.ProjectCollection
+        private Type _projectCollectionType;
+
         private Logging.ILogger _logger;
         private Configuration.ISettings _settings;
 
@@ -35,12 +39,14 @@ namespace NuGet.CommandLine
 
         // Packaging folders
         private const string ContentFolder = "content";
+
         private const string ReferenceFolder = "lib";
         private const string ToolsFolder = "tools";
         private const string SourcesFolder = "src";
 
         // Common item types
         private const string SourcesItemType = "Compile";
+
         private const string ContentItemType = "Content";
         private const string ProjectReferenceItemType = "ProjectReference";
         private const string NuGetConfig = "nuget.config";
@@ -50,12 +56,43 @@ namespace NuGet.CommandLine
         [Import]
         public Configuration.IMachineWideSettings MachineWideSettings { get; set; }
 
-        public ProjectFactory(string path, IDictionary<string, string> projectProperties)
-            : this(new Project(path, projectProperties, null))
+        // the Microsoft.Build.dll assembly
+        private Assembly _msbuildAssembly;
+
+        // the Microsoft.Build.Framework.dll assembly
+        private Assembly _frameworkAssembly;
+
+        public ProjectFactory(string msbuildDirectory, string path, IDictionary<string, string> projectProperties)
         {
+            LoadAssemblies(msbuildDirectory);
+
+            // create project            
+            var project = Activator.CreateInstance(
+                _projectType,
+                path,
+                projectProperties,
+                null);
+            Initialize(project);
         }
 
-        public ProjectFactory(Project project)
+        public ProjectFactory(string msbuildDirectory, dynamic project)
+        {
+            LoadAssemblies(msbuildDirectory);
+            Initialize(project);
+        }
+
+        private ProjectFactory(
+            Assembly msbuildAssembly,
+            Assembly frameworkAssembly,
+            dynamic project)
+        {
+            _msbuildAssembly = msbuildAssembly;
+            _frameworkAssembly = frameworkAssembly;
+            LoadTypes();
+            Initialize(project);
+        }
+
+        private void Initialize(dynamic project)
         {
             _project = project;
             ProjectProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -68,6 +105,30 @@ namespace NuGet.CommandLine
             {
                 TargetFramework = new FrameworkName(targetFrameworkMoniker);
             }
+        }
+
+        // msbuildDirectory is the directory containing the msbuild to be used. E.g. C:\Program Files (x86)\MSBuild\14.0\Bin
+        private void LoadAssemblies(string msbuildDirectory)
+        {
+            if (String.IsNullOrEmpty(msbuildDirectory))
+            {
+                throw new ArgumentNullException(nameof(msbuildDirectory));
+            }
+
+            _msbuildAssembly = Assembly.LoadFile(Path.Combine(msbuildDirectory, "Microsoft.Build.dll"));
+            _frameworkAssembly = Assembly.LoadFile(Path.Combine(msbuildDirectory, "Microsoft.Build.Framework.dll"));
+
+            LoadTypes();
+        }
+
+        private void LoadTypes()
+        {
+            _projectType = _msbuildAssembly.GetType(
+                "Microsoft.Build.Evaluation.Project",
+                throwOnError: true);
+            _projectCollectionType = _msbuildAssembly.GetType(
+                "Microsoft.Build.Evaluation.ProjectCollection",
+                throwOnError: true);
         }
 
         private Configuration.ISettings DefaultSettings
@@ -244,7 +305,7 @@ namespace NuGet.CommandLine
             string value;
             if (!_properties.TryGetValue(propertyName, out value))
             {
-                ProjectProperty property = _project.GetProperty(propertyName);
+                dynamic property = _project.GetProperty(propertyName);
                 if (property != null)
                 {
                     value = property.EvaluatedValue;
@@ -268,25 +329,7 @@ namespace NuGet.CommandLine
                             TargetFramework));
                 }
 
-                using (var projectCollection = new ProjectCollection(ToolsetDefinitionLocations.Registry | ToolsetDefinitionLocations.ConfigurationFile))
-                {
-                    BuildRequestData requestData = new BuildRequestData(_project.FullPath, ProjectProperties, _project.ToolsVersion, new string[0], null);
-                    var parameters = new BuildParameters(projectCollection)
-                    {
-                        Loggers = new[] { new ConsoleLogger { Verbosity = LoggerVerbosity.Quiet } },
-                        NodeExeLocation = typeof(ProjectFactory).Assembly.Location,
-                        ToolsetDefinitionLocations = projectCollection.ToolsetLocations
-                    };
-                    BuildResult result = BuildManager.DefaultBuildManager.Build(parameters, requestData);
-                    // Build the project so that the outputs are created
-                    if (result.OverallResult == BuildResultCode.Failure)
-                    {
-                        // If the build fails, report the error
-                        throw new CommandLineException(LocalizedResourceManager.GetString("FailedToBuildProject"), Path.GetFileName(_project.FullPath));
-                    }
-
-                    TargetPath = ResolveTargetPath(result);
-                }
+                BuildProjectWithMsbuild();
             }
             else
             {
@@ -298,6 +341,85 @@ namespace NuGet.CommandLine
                     throw new CommandLineException(LocalizedResourceManager.GetString("UnableToFindBuildOutput"), TargetPath);
                 }
             }
+        }
+
+        private void BuildProjectWithMsbuild()
+        {
+            var projectCollectionType = _msbuildAssembly.GetType(
+                "Microsoft.Build.Evaluation.ProjectCollection",
+                throwOnError: true);
+            using (dynamic projectCollection = Activator.CreateInstance(projectCollectionType))
+            {
+                var buildRequestDataType = _msbuildAssembly.GetType(
+                    "Microsoft.Build.Execution.BuildRequestData",
+                    throwOnError: true);
+                var requestData = Activator.CreateInstance(
+                    buildRequestDataType,
+                    _project.FullPath,
+                    ProjectProperties,
+                    _project.ToolsVersion,
+                    new string[0],
+                    null);
+
+                var buildParametersType = _msbuildAssembly.GetType(
+                    "Microsoft.Build.Execution.BuildParameters",
+                    throwOnError: true);
+                dynamic parameters = Activator.CreateInstance(
+                    buildParametersType,
+                    projectCollection);
+                var loggers = CreateLoggers();
+                var loggersProperty = buildParametersType.GetProperty("Loggers");
+                loggersProperty.SetMethod.Invoke(parameters, new[] { loggers });
+                parameters.NodeExeLocation = typeof(ProjectFactory).Assembly.Location;
+                parameters.ToolsetDefinitionLocations = projectCollection.ToolsetLocations;
+
+                var buildManagerType = _msbuildAssembly.GetType(
+                    "Microsoft.Build.Execution.BuildManager",
+                    throwOnError: true);
+                var buildMethod = buildManagerType.GetMethod(
+                    "Build",
+                    new[] { buildParametersType, buildRequestDataType });
+                var defaultBuildManagerProperty = buildManagerType.GetProperty(
+                    "DefaultBuildManager",
+                    BindingFlags.Static | BindingFlags.Public);
+                dynamic defaultBuildManager = defaultBuildManagerProperty.GetValue(null);
+
+                // Build the project so that the outputs are created
+                dynamic result = buildMethod.Invoke(defaultBuildManager, new[] { parameters, requestData });
+
+                if (Microsoft.Build.Execution.BuildResultCode.Failure.ToString().Equals(
+                    result.OverallResult.ToString(),
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    // If the build fails, report the error
+                    throw new CommandLineException(LocalizedResourceManager.GetString("FailedToBuildProject"), Path.GetFileName(_project.FullPath));
+                }
+
+                TargetPath = ResolveTargetPath(result);
+            }
+        }
+
+        private object CreateLoggers()
+        {
+            var consoleLoggerType = _msbuildAssembly.GetType(
+                "Microsoft.Build.Logging.ConsoleLogger",
+                throwOnError: true);
+            var consoleLogger = Activator.CreateInstance(
+                consoleLoggerType);
+            var verbosityProperty = consoleLoggerType.GetProperty("Verbosity");
+            verbosityProperty.SetMethod.Invoke(consoleLogger, new object[] { Microsoft.Build.Framework.LoggerVerbosity.Quiet });
+
+            var iloggerType = _frameworkAssembly.GetType(
+                "Microsoft.Build.Framework.ILogger",
+                throwOnError: true);
+            var loggerList = typeof(List<>)
+                .MakeGenericType(iloggerType)
+                .GetConstructor(Type.EmptyTypes)
+                .Invoke(null);
+            var addMethod = loggerList.GetType().GetMethod("Add");
+            addMethod.Invoke(loggerList, new[] { consoleLogger });
+
+            return loggerList;
         }
 
         private string ResolveTargetPath()
@@ -322,10 +444,11 @@ namespace NuGet.CommandLine
             return _project.GetPropertyValue("TargetPath");
         }
 
-        private static bool IsGlobalProperty(ProjectProperty projectProperty)
+        // The type of projectProperty is Microsoft.Build.Evaluation.ProjectProperty
+        private static bool IsGlobalProperty(object projectProperty)
         {
-            // This property isn't available on xbuild (mono)
-            var property = typeof(ProjectProperty).GetProperty("IsGlobalProperty", BindingFlags.Public | BindingFlags.Instance);
+            // This property isn't available on xbuild (mono)            
+            var property = projectProperty.GetType().GetProperty("IsGlobalProperty", BindingFlags.Public | BindingFlags.Instance);
             if (property != null)
             {
                 return (bool)property.GetValue(projectProperty, null);
@@ -336,15 +459,29 @@ namespace NuGet.CommandLine
             return false;
         }
 
-        private string ResolveTargetPath(BuildResult result)
+        private string ResolveTargetPath(dynamic result)
         {
             string targetPath = null;
-            TargetResult targetResult;
-            if (result.ResultsByTarget.TryGetValue("Build", out targetResult))
+
+            object resultsByTarget = result.ResultsByTarget;
+            var tryGetValueMethod = resultsByTarget.GetType().GetMethod(
+                "TryGetValue");
+            object[] args = new object[] { "Build", null };
+            var r = tryGetValueMethod.Invoke(
+                resultsByTarget,
+                args);
+            if ((bool)r)
             {
-                if (targetResult.Items.Any())
+                dynamic targetResult = args[1];
+                var items = targetResult.Items;
+                if (items.Length > 0)
                 {
-                    targetPath = targetResult.Items.First().ItemSpec;
+                    object firstItem = items[0];
+                    var retValue = firstItem.GetType()
+                        .GetProperty("ItemSpec")
+                        .GetMethod
+                        .Invoke(firstItem, null);
+                    targetPath = retValue as string;
                 }
             }
 
@@ -387,7 +524,8 @@ namespace NuGet.CommandLine
         /// <param name="action">The action to be executed.</param>
         private void RecursivelyApply(Action<ProjectFactory> action)
         {
-            using (var projectCollection = new ProjectCollection())
+            var projectCollection = Activator.CreateInstance(_projectCollectionType) as IDisposable;
+            using (projectCollection)
             {
                 RecursivelyApply(action, projectCollection);
             }
@@ -400,7 +538,7 @@ namespace NuGet.CommandLine
         /// <param name="action">The action to be executed.</param>
         /// <param name="alreadyAppliedProjects">The collection of projects that have been processed.
         /// It is used to avoid processing the same project more than once.</param>
-        private void RecursivelyApply(Action<ProjectFactory> action, ProjectCollection alreadyAppliedProjects)
+        private void RecursivelyApply(Action<ProjectFactory> action, dynamic alreadyAppliedProjects)
         {
             action(this);
             foreach (var item in _project.GetItems(ProjectReferenceItemType))
@@ -408,14 +546,16 @@ namespace NuGet.CommandLine
                 string fullPath = item.GetMetadataValue("FullPath");
                 if (!string.IsNullOrEmpty(fullPath) &&
                     !NuspecFileExists(fullPath) &&
-                    alreadyAppliedProjects.GetLoadedProjects(fullPath).IsEmpty())
+                    alreadyAppliedProjects.GetLoadedProjects(fullPath).Count == 0)
                 {
-                    var project = new Project(
+                    dynamic project = Activator.CreateInstance(
+                        _projectType,
                         fullPath,
-                        globalProperties: null,
-                        toolsVersion: null,
-                        projectCollection: alreadyAppliedProjects);
-                    var referencedProject = new ProjectFactory(project);
+                        null,
+                        null,
+                        alreadyAppliedProjects);
+                    var referencedProject = new ProjectFactory(
+                        _msbuildAssembly, _frameworkAssembly, project);
                     referencedProject.Logger = _logger;
                     referencedProject.IncludeSymbols = IncludeSymbols;
                     referencedProject.Build = Build;
@@ -447,14 +587,14 @@ namespace NuGet.CommandLine
         private void AddProjectReferenceDependencies(Dictionary<string, PackageDependency> dependencies)
         {
             var processedProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var projectsToProcess = new Queue<Project>();
-
-            using (var projectCollection = new ProjectCollection())
+            var projectsToProcess = new Queue<object>();
+            dynamic projectCollection = Activator.CreateInstance(_projectCollectionType);
+            using ((IDisposable)projectCollection)
             {
                 projectsToProcess.Enqueue(_project);
                 while (projectsToProcess.Count > 0)
                 {
-                    var project = projectsToProcess.Dequeue();
+                    dynamic project = projectsToProcess.Dequeue();
                     processedProjects.Add(project.FullPath);
 
                     foreach (var projectReference in project.GetItems(ProjectReferenceItemType))
@@ -468,12 +608,13 @@ namespace NuGet.CommandLine
 
                         var loadedProjects = projectCollection.GetLoadedProjects(fullPath);
                         var referencedProject = loadedProjects.Count > 0 ?
-                            loadedProjects.First() :
-                            new Project(
+                            loadedProjects[0] :
+                            Activator.CreateInstance(
+                                _projectType,
                                 fullPath,
-                                globalProperties: project.GlobalProperties,
-                                toolsVersion: null,
-                                projectCollection: projectCollection);
+                                project.GlobalProperties,
+                                null,
+                                projectCollection);
 
                         if (NuspecFileExists(fullPath))
                         {
@@ -492,11 +633,11 @@ namespace NuGet.CommandLine
         // Creates a package dependency from the given project, which has a corresponding
         // nuspec file.
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We want to continue regardless of any error we encounter extracting metadata.")]
-        private PackageDependency CreateDependencyFromProject(Project project)
+        private PackageDependency CreateDependencyFromProject(dynamic project)
         {
             try
             {
-                var projectFactory = new ProjectFactory(project);
+                var projectFactory = new ProjectFactory(_msbuildAssembly, _frameworkAssembly, project);
                 projectFactory.Build = Build;
                 projectFactory.ProjectProperties = ProjectProperties;
                 projectFactory.BuildProject();
@@ -627,7 +768,7 @@ namespace NuGet.CommandLine
                 AddProjectReferenceDependencies(dependencies);
             }
 
-            // TO FIX: when we persist the target framework into packages.config file, 
+            // TO FIX: when we persist the target framework into packages.config file,
             // we need to pull that info into building the PackageDependencySet object
             builder.DependencySets.Clear();
             builder.DependencySets.Add(new PackageDependencySet(null, dependencies.Values));
@@ -635,7 +776,7 @@ namespace NuGet.CommandLine
 
         private void AddDependencies(Dictionary<String, Tuple<IPackage, PackageDependency>> packagesAndDependencies)
         {
-            var file = PackageReferenceFile.CreateFromProject(_project.FullPath);
+            PackageReferenceFile file = PackageReferenceFile.CreateFromProject(_project.FullPath);
             if (!File.Exists(file.FullPath))
             {
                 return;
@@ -795,7 +936,7 @@ namespace NuGet.CommandLine
                 {
                     using (Stream stream = File.OpenRead(configPath))
                     {
-                        // It's possible for the repositoryPath element to be missing in older versions of 
+                        // It's possible for the repositoryPath element to be missing in older versions of
                         // a NuGet.config file.
                         var repositoryPathElement = XmlUtility.LoadSafe(stream).Root.Element("repositoryPath");
                         if (repositoryPathElement != null)
@@ -864,23 +1005,30 @@ namespace NuGet.CommandLine
 
         private IEnumerable<string> GetFiles(string itemType)
         {
-            return _project.GetItems(itemType).Select(item => item.GetMetadataValue("FullPath"));
+            foreach (dynamic item in _project.GetItems(itemType))
+            {
+                // the type of item is ProjectItem
+                var fullPath = item.GetMetadataValue("FullPath") as string;
+                yield return fullPath;
+            }
         }
 
         private void AddFiles(PackageBuilder builder, string itemType, string targetFolder)
         {
-            // Skip files that are added by dependency packages 
-            var references = PackageReferenceFile.CreateFromProject(_project.FullPath).GetPackageReferences();
+            // Skip files that are added by dependency packages
+            PackageReferenceFile packageReferenceFile = PackageReferenceFile.CreateFromProject(_project.FullPath);
+            var references = packageReferenceFile.GetPackageReferences();
             IPackageRepository repository = GetPackagesRepository();
             string projectName = Path.GetFileNameWithoutExtension(_project.FullPath);
 
             var contentFilesInDependencies = new List<IPackageFile>();
             if (references.Any() && repository != null)
             {
-                contentFilesInDependencies = references.Select(reference => repository.FindPackage(reference.Id, reference.Version))
-                                                       .Where(a => a != null)
-                                                       .SelectMany(a => a.GetContentFiles())
-                                                       .ToList();
+                contentFilesInDependencies = references
+                    .Select(reference => repository.FindPackage(reference.Id, reference.Version))
+                    .Where(a => a != null)
+                    .SelectMany(a => a.GetContentFiles())
+                    .ToList();
             }
 
             // Get the content files from the project
@@ -992,7 +1140,7 @@ namespace NuGet.CommandLine
             return isEqual;
         }
 
-        private string GetTargetPath(ProjectItem item)
+        private string GetTargetPath(dynamic item)
         {
             string path = item.UnevaluatedInclude;
             if (item.HasMetadata("Link"))
@@ -1033,7 +1181,7 @@ namespace NuGet.CommandLine
             {
                 get
                 {
-                    // For the pack command, when don't need to throw if a dependency is missing 
+                    // For the pack command, when don't need to throw if a dependency is missing
                     // from a nuspec file.
                     return true;
                 }
@@ -1118,7 +1266,6 @@ namespace NuGet.CommandLine
                     return XElement.Load(stream);
                 }
             }
-
 
             public FrameworkName TargetFramework
             {

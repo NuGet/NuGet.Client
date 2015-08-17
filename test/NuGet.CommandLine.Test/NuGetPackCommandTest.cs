@@ -352,6 +352,123 @@ namespace Proj2
             }
         }
 
+        // Same test as PackCommand_ReferencedProjectWithNuspecFile, but with -MSBuidVersion
+        // set to 14
+        [Fact]
+        public void PackCommand_ReferencedProjectWithNuspecFileWithMsbuild14()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
+            try
+            {
+                // Arrange
+                Util.CreateDirectory(workingDirectory);
+
+                // create test projects. There are 7 projects, with the following
+                // dependency relationships:
+                // proj1 depends on proj2 & proj3
+                // proj2 depends on proj4 & proj5
+                // proj3 depends on proj5 & proj7
+                //
+                // proj2 and proj6 have nuspec files.
+                CreateTestProject(workingDirectory, "proj1",
+                    new string[] {
+                        @"..\proj2\proj2.csproj",
+                        @"..\proj3\proj3.csproj"
+                    });
+                CreateTestProject(workingDirectory, "proj2",
+                    new string[] {
+                        @"..\proj4\proj4.csproj",
+                        @"..\proj5\proj5.csproj"
+                    });
+                CreateTestProject(workingDirectory, "proj3",
+                    new string[] {
+                        @"..\proj6\proj6.csproj",
+                        @"..\proj7\proj7.csproj"
+                    });
+                CreateTestProject(workingDirectory, "proj4", null);
+                CreateTestProject(workingDirectory, "proj5", null);
+                CreateTestProject(workingDirectory, "proj6", null);
+                CreateTestProject(workingDirectory, "proj7", null);
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "proj2"),
+                    "proj2.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>proj2</id>
+    <version>1.0.0.0</version>
+    <title>Proj2</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <dependencies>
+      <dependency id='p1' version='1.5.11' />
+    </dependencies>
+  </metadata>
+</package>");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "proj6"),
+                    "proj6.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>proj6</id>
+    <version>2.0.0.0</version>
+    <title>Proj6</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <dependencies>
+      <dependency id='p2' version='1.5.11' />
+    </dependencies>
+  </metadata>
+</package>");
+
+                // Act
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    @"pack proj1.csproj -build -IncludeReferencedProjects  -MSBuildVersion 14",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+
+                // Assert
+                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.0.nupkg"));
+                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                Array.Sort(files);
+
+                // proj3 and proj7 are included in the package.
+                Assert.Equal(
+                    files,
+                    new string[]
+                    {
+                        @"lib\net40\proj1.dll",
+                        @"lib\net40\proj3.dll",
+                        @"lib\net40\proj7.dll"
+                    });
+
+                // proj2 and proj6 are added as dependencies.
+                var dependencies = package.DependencySets.First().Dependencies.OrderBy(d => d.Id);
+                Assert.Equal(
+                    dependencies,
+                    new PackageDependency[]
+                    {
+                        new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.0.0.0")),
+                        new PackageDependency("proj6", VersionUtility.ParseVersionSpec("2.0.0.0"))
+                    },
+                    new PackageDepencyComparer());
+            }
+            finally
+            {
+                Directory.Delete(workingDirectory, true);
+            }
+        }
+
         // Test that when creating a package from project file, a referenced project that
         // has a nuspec file is added as dependency. withCustomReplacementTokens = true
         // adds the token $prefix$ to the referenced nuspec's id field (see Issue #3536)
@@ -1160,6 +1277,271 @@ namespace Proj1
                 Assert.Contains("Issue: Specify version of dependencies.", r.Item2);
                 Assert.Contains("Description: The version of dependency 'json' is not specified.", r.Item2);
                 Assert.Contains("Solution: Specifiy the version of dependency and rebuild your package.", r.Item2);
+            }
+            finally
+            {
+                Directory.Delete(workingDirectory, true);
+            }
+        }
+
+        // Tests that with -MSBuildVersion set to 14, a projec using C# 6.0 features (nameof in this test)
+        // can be built successfully.
+        [Fact]
+        public void PackCommand_WithMsBuild14()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
+            try
+            {
+                Util.CreateDirectory(workingDirectory);
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var proj2Directory = Path.Combine(workingDirectory, "proj2");
+                Util.CreateDirectory(proj1Directory);
+                Util.CreateDirectory(proj2Directory);
+
+                // create project 1
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
+    <OutputPath>debug_out</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Release'\"" + @">
+    <OutputPath>release_out</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='proj1_file1.cs' />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include='proj1_file2.txt' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file1.cs",
+@"using System;
+
+namespace Proj1
+{
+    public class Class1
+    {
+        public string F(int a)
+        {
+            return nameof(a);
+        }
+    }
+}");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file2.txt",
+                    "file2");
+
+                // Create project 2, which references project 1
+                Util.CreateFile(
+                    proj2Directory,
+                    "proj2.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
+    <OutputPath>debug_out</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Release'\"" + @">
+    <OutputPath>release_out</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include='..\proj1\proj1.csproj' />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include='proj2_file1.cs' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    proj2Directory,
+                    "proj2_file1.cs",
+@"using System;
+
+namespace Proj2
+{
+    public class Class1
+    {
+        public string F2(int a)
+        {
+            return nameof(a);
+        }
+    }
+}");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj2Directory,
+                    @"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -msbuildversion 14",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+
+                // Assert
+
+                // Verify that proj1 was not built using the default config "Debug".
+                Assert.False(Directory.Exists(Path.Combine(proj1Directory, "debug_out")));
+
+                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.0.nupkg"));
+                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                Array.Sort(files);
+                Assert.Equal(
+                    files,
+                    new string[]
+                    {
+                        @"content\proj1_file2.txt",
+                        @"lib\net40\proj1.dll",
+                        @"lib\net40\proj2.dll"
+                    });
+            }
+            finally
+            {
+                Directory.Delete(workingDirectory, true);
+            }
+        }        
+
+        // Tests that pack works with -MSBuildVersion set to 12
+        [Fact]
+        public void PackCommand_WithMsBuild12()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
+            try
+            {
+                Util.CreateDirectory(workingDirectory);
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var proj2Directory = Path.Combine(workingDirectory, "proj2");
+                Util.CreateDirectory(proj1Directory);
+                Util.CreateDirectory(proj2Directory);
+
+                // create project 1
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
+    <OutputPath>debug_out</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Release'\"" + @">
+    <OutputPath>release_out</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='proj1_file1.cs' />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include='proj1_file2.txt' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file1.cs",
+@"using System;
+
+namespace Proj1
+{
+    public class Class1
+    {
+        public string F(int a)
+        {
+            return a.ToString();
+        }
+    }
+}");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file2.txt",
+                    "file2");
+
+                // Create project 2, which references project 1
+                Util.CreateFile(
+                    proj2Directory,
+                    "proj2.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <Config Condition=" + "\" '$(Config)' == ''\"" + @">Debug</Config>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Debug'\"" + @">
+    <OutputPath>debug_out</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" + "\"'$(Config)'=='Release'\"" + @">
+    <OutputPath>release_out</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include='..\proj1\proj1.csproj' />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include='proj2_file1.cs' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    proj2Directory,
+                    "proj2_file1.cs",
+@"using System;
+
+namespace Proj2
+{
+    public class Class1
+    {
+        public string F2(int a)
+        {
+            return a.ToString();
+        }
+    }
+}");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj2Directory,
+                    @"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -MSBuildVersion 12",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+
+                // Assert
+
+                // Verify that proj1 was not built using the default config "Debug".
+                Assert.False(Directory.Exists(Path.Combine(proj1Directory, "debug_out")));
+
+                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.0.nupkg"));
+                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                Array.Sort(files);
+                Assert.Equal(
+                    files,
+                    new string[]
+                    {
+                        @"content\proj1_file2.txt",
+                        @"lib\net40\proj1.dll",
+                        @"lib\net40\proj2.dll"
+                    });
             }
             finally
             {
