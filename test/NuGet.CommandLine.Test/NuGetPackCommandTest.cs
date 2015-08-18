@@ -735,7 +735,7 @@ namespace Proj2
                     proj1Directory,
                     "pack proj1.csproj -build -IncludeReferencedProjects",
                     waitForExit: true);
-                Assert.Equal(0, r.Item1);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
                 var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.0.nupkg"));
