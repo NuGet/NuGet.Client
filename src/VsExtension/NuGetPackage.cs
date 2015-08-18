@@ -681,25 +681,42 @@ namespace NuGetVSExtension
             IVsWindowFrame windowFrame;
             IVsUIShell uiShell = (IVsUIShell)GetService(typeof(SVsUIShell));
 
-            var ppunkDocView = Marshal.GetIUnknownForObject(windowPane);
-            var ppunkDocData = Marshal.GetIUnknownForObject(model);
-            int hr = uiShell.CreateDocumentWindow(
-                windowFlags,
-                documentName,
-                (IVsUIHierarchy)hier,
-                itemId,
-                ppunkDocView,
-                ppunkDocData,
-                ref guidEditorType,
-                null,
-                ref guidCommandUI,
-                null,
-                caption,
-                string.Empty,
-                null,
-                out windowFrame);
-            Marshal.Release(ppunkDocData);
-            Marshal.Release(ppunkDocView);
+            IntPtr ppunkDocView = IntPtr.Zero;
+            IntPtr ppunkDocData = IntPtr.Zero;
+            int hr = 0;
+
+            try
+            {
+                ppunkDocView = Marshal.GetIUnknownForObject(windowPane);
+                ppunkDocData = Marshal.GetIUnknownForObject(model);
+                hr = uiShell.CreateDocumentWindow(
+                    windowFlags,
+                    documentName,
+                    (IVsUIHierarchy)hier,
+                    itemId,
+                    ppunkDocView,
+                    ppunkDocData,
+                    ref guidEditorType,
+                    null,
+                    ref guidCommandUI,
+                    null,
+                    caption,
+                    string.Empty,
+                    null,
+                    out windowFrame);
+            }
+            finally
+            {
+                if (ppunkDocView != IntPtr.Zero)
+                {
+                    Marshal.Release(ppunkDocData);
+                }
+
+                if (ppunkDocData != IntPtr.Zero)
+                {
+                    Marshal.Release(ppunkDocView);
+                }
+            }
 
             ErrorHandler.ThrowOnFailure(hr);
             return windowFrame;
@@ -881,25 +898,42 @@ namespace NuGetVSExtension
                 solutionName);
             var documentName = _dte.Solution.FullName;
 
-            var ppunkDocView = Marshal.GetIUnknownForObject(windowPane);
-            var ppunkDocData = Marshal.GetIUnknownForObject(model);
-            int hr = uiShell.CreateDocumentWindow(
-                windowFlags,
-                documentName,
-                (IVsUIHierarchy)solution,
-                (uint)VSConstants.VSITEMID.Root,
-                ppunkDocView,
-                ppunkDocData,
-                ref guidEditorType,
-                null,
-                ref guidCommandUI,
-                null,
-                caption,
-                string.Empty,
-                null,
-                out windowFrame);
-            Marshal.Release(ppunkDocData);
-            Marshal.Release(ppunkDocView);
+            IntPtr ppunkDocView = IntPtr.Zero;
+            IntPtr ppunkDocData = IntPtr.Zero;
+            int hr = 0;
+
+            try
+            {
+                ppunkDocView = Marshal.GetIUnknownForObject(windowPane);
+                ppunkDocData = Marshal.GetIUnknownForObject(model);
+                hr = uiShell.CreateDocumentWindow(
+                    windowFlags,
+                    documentName,
+                    (IVsUIHierarchy)solution,
+                    (uint)VSConstants.VSITEMID.Root,
+                    ppunkDocView,
+                    ppunkDocData,
+                    ref guidEditorType,
+                    null,
+                    ref guidCommandUI,
+                    null,
+                    caption,
+                    string.Empty,
+                    null,
+                    out windowFrame);
+            }
+            finally
+            {
+                if (ppunkDocView != IntPtr.Zero)
+                {
+                    Marshal.Release(ppunkDocData);
+                }
+
+                if (ppunkDocData != IntPtr.Zero)
+                {
+                    Marshal.Release(ppunkDocView);
+                }
+            }
 
             ErrorHandler.ThrowOnFailure(hr);
             return windowFrame;
