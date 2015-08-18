@@ -197,12 +197,13 @@ namespace NuGet.PackageManagement.VisualStudio
             // One exception is the 'packages.config' file, in which case we want to include
             // it into the project.
             // Other exceptions are 'web.config' and 'app.config'
+            var fileName = Path.GetFileName(path);
             if (File.Exists(Path.Combine(ProjectFullPath, path))
                 && !fileExistsInProject
-                && !path.Equals(Constants.PackageReferenceFile)
-                && !path.Equals("packages." + ProjectName + ".config")
-                && !path.Equals(EnvDTEProjectUtility.WebConfig)
-                && !path.Equals(EnvDTEProjectUtility.AppConfig))
+                && !fileName.Equals(Constants.PackageReferenceFile)
+                && !fileName.Equals("packages." + ProjectName + ".config")
+                && !fileName.Equals(EnvDTEProjectUtility.WebConfig)
+                && !fileName.Equals(EnvDTEProjectUtility.AppConfig))
             {
                 NuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, Strings.Warning_FileAlreadyExists, path);
             }
@@ -795,21 +796,36 @@ namespace NuGet.PackageManagement.VisualStudio
                         select p.Name;
                 });
         }
-
+        
         public IEnumerable<string> GetFullPaths(string fileName)
         {
             return ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                MicrosoftBuildEvaluationProject buildProject = EnvDTEProjectUtility.AsMicrosoftBuildEvaluationProject(EnvDTEProject);
-                return buildProject.Items.Where(
-                    projectItem =>
+                var paths = new List<string>();
+                var projectItemsQueue = new Queue<EnvDTEProjectItems>();
+                projectItemsQueue.Enqueue(EnvDTEProject.ProjectItems);
+                while (projectItemsQueue.Count > 0)
+                {
+                    var items = projectItemsQueue.Dequeue();
+                    foreach (EnvDTE.ProjectItem item in items)
                     {
-                        var itemFileName = Path.GetFileName(projectItem.EvaluatedInclude);
-                        return string.Equals(fileName, itemFileName, StringComparison.OrdinalIgnoreCase);
-                    })
-                    .Select(projectItem => Path.Combine(ProjectFullPath, projectItem.EvaluatedInclude));
+                        if (item.Kind == NuGetVSConstants.VsProjectItemKindPhysicalFile)
+                        {
+                            if (StringComparer.OrdinalIgnoreCase.Equals(item.Name, fileName))
+                            {
+                                paths.Add(item.FileNames[1]);
+                            }
+                        }
+                        else if (item.Kind == NuGetVSConstants.VsProjectItemKindPhysicalFolder)
+                        {
+                            projectItemsQueue.Enqueue(item.ProjectItems);
+                        }
+                    }
+                }
+
+                return paths;
             });
         }
 

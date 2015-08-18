@@ -194,7 +194,20 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 document.Save(memoryStream);
                 memoryStream.Seek(0, SeekOrigin.Begin);
-                MSBuildNuGetProjectSystem.AddFile(configFileFullPath, memoryStream);
+
+                // MSBuildNuGetProjectSystem.AddFile() can't handle full path if the app.config
+                // file does not exist in the project yet. This happens when NuGet first creates 
+                // app.config in the project directory. In this case, only the file name is passed.
+                var path = configFileFullPath;
+                var defaultConfigFile = Path.Combine(
+                    MSBuildNuGetProjectSystem.ProjectFullPath,
+                    ConfigurationFile);
+                if (configFileFullPath.Equals(defaultConfigFile, StringComparison.OrdinalIgnoreCase))
+                {
+                    path = ConfigurationFile;
+                }
+
+                MSBuildNuGetProjectSystem.AddFile(path, memoryStream);
             }
         }
 
