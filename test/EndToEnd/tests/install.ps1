@@ -2891,3 +2891,17 @@ function Disable-Test-InstallPackageInCpsApp
     $item = Get-ProjectItem $p packages.config
     Assert-NotNull $item
 }
+
+function Test-InstallPackageWithEscapedSymbolInPath()
+{
+	param($context)
+
+    # Arrange
+    $p = New-ClassLibrary 
+
+    #Act
+    $p | Install-Package Xam.Plugin.Connectivity -version 1.0.2
+
+    # Assert
+	Assert-Package $p Xam.Plugin.Connectivity
+}
