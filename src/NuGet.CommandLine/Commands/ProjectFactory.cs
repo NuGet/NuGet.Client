@@ -14,16 +14,10 @@ using NuGet.Configuration;
 namespace NuGet.CommandLine
 {
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-    public class ProjectFactory : IPropertyProvider
+    public class ProjectFactory : MSBuildUser, IPropertyProvider
     {
-        // The type of class Microsoft.Build.Evaluation.Project
-        private Type _projectType;
-
         // Its type is Microsoft.Build.Evaluation.Project
         private dynamic _project;
-
-        // The type of class Microsoft.Build.Evaluation.ProjectCollection
-        private Type _projectCollectionType;
 
         private Logging.ILogger _logger;
         private Configuration.ISettings _settings;
@@ -55,12 +49,6 @@ namespace NuGet.CommandLine
 
         [Import]
         public Configuration.IMachineWideSettings MachineWideSettings { get; set; }
-
-        // the Microsoft.Build.dll assembly
-        private Assembly _msbuildAssembly;
-
-        // the Microsoft.Build.Framework.dll assembly
-        private Assembly _frameworkAssembly;
 
         public ProjectFactory(string msbuildDirectory, string path, IDictionary<string, string> projectProperties)
         {
@@ -105,30 +93,6 @@ namespace NuGet.CommandLine
             {
                 TargetFramework = new FrameworkName(targetFrameworkMoniker);
             }
-        }
-
-        // msbuildDirectory is the directory containing the msbuild to be used. E.g. C:\Program Files (x86)\MSBuild\14.0\Bin
-        private void LoadAssemblies(string msbuildDirectory)
-        {
-            if (String.IsNullOrEmpty(msbuildDirectory))
-            {
-                throw new ArgumentNullException(nameof(msbuildDirectory));
-            }
-
-            _msbuildAssembly = Assembly.LoadFile(Path.Combine(msbuildDirectory, "Microsoft.Build.dll"));
-            _frameworkAssembly = Assembly.LoadFile(Path.Combine(msbuildDirectory, "Microsoft.Build.Framework.dll"));
-
-            LoadTypes();
-        }
-
-        private void LoadTypes()
-        {
-            _projectType = _msbuildAssembly.GetType(
-                "Microsoft.Build.Evaluation.Project",
-                throwOnError: true);
-            _projectCollectionType = _msbuildAssembly.GetType(
-                "Microsoft.Build.Evaluation.ProjectCollection",
-                throwOnError: true);
         }
 
         private Configuration.ISettings DefaultSettings

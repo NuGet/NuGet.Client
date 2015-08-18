@@ -69,7 +69,7 @@
             <TestProjectsToRestore Include="$(RootDir)\test\StandaloneUI\*.csproj" />
         </ItemGroup>
         
-        <Exec Command="$(NuGetExePath) restore $(RootDir)\PackageManagement.sln -FallbackSource https://api.nuget.org/v3/index.json $(NuGetCommndLineCmdSources)"  />
+        <Exec Command="$(NuGetExePath) restore $(RootDir)\PackageManagement.sln -FallbackSource https://api.nuget.org/v3/index.json $(NuGetCommndLineCmdSources) -source https://www.myget.org/F/nuget-volatile/api/v2/"  />
     </Target>
 
     <ItemGroup>

@@ -11,22 +11,10 @@ using NuGet.ProjectManagement;
 
 namespace NuGet.Common
 {
-    public class MSBuildProjectSystem : IMSBuildNuGetProjectSystem
+    public class MSBuildProjectSystem : MSBuildUser, IMSBuildNuGetProjectSystem
     {
         private const string TargetName = "EnsureNuGetPackageBuildImports";
         private readonly string _projectDirectory;
-
-        // the Microsoft.Build.dll assembly
-        private Assembly _msbuildAssembly;
-
-        // the Microsoft.Build.Framework.dll assembly
-        private Assembly _frameworkAssembly;
-
-        // The type of class Microsoft.Build.Evaluation.Project
-        private Type _projectType;
-
-        // The type of class Microsoft.Build.Evaluation.ProjectCollection
-        private Type _projectCollectionType;
 
         public MSBuildProjectSystem(
             string msbuildDirectory, 
@@ -41,29 +29,6 @@ namespace NuGet.Common
             ProjectName = Path.GetFileName(projectFullPath);
             ProjectUniqueName = projectFullPath;
             NuGetProjectContext = projectContext;
-        }
-
-        // msbuildDirectory is the directory containing the msbuild to be used. E.g. C:\Program Files (x86)\MSBuild\14.0\Bin
-        private void LoadAssemblies(string msbuildDirectory)
-        {
-            if (String.IsNullOrEmpty(msbuildDirectory))
-            {
-                throw new ArgumentNullException(nameof(msbuildDirectory));
-            }
-
-            _msbuildAssembly = Assembly.LoadFile(Path.Combine(msbuildDirectory, "Microsoft.Build.dll"));
-            _frameworkAssembly = Assembly.LoadFile(Path.Combine(msbuildDirectory, "Microsoft.Build.Framework.dll"));
-            LoadTypes();
-        }
-
-        private void LoadTypes()
-        {
-            _projectType = _msbuildAssembly.GetType(
-                "Microsoft.Build.Evaluation.Project",
-                throwOnError: true);
-            _projectCollectionType = _msbuildAssembly.GetType(
-                "Microsoft.Build.Evaluation.ProjectCollection",
-                throwOnError: true);
         }
 
         public INuGetProjectContext NuGetProjectContext { get; private set; }

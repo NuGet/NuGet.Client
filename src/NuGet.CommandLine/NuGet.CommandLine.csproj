@@ -77,6 +77,7 @@
     <Compile Include="Common\IMSBuildProjectSystem.cs" />
     <Compile Include="Common\LocalizedResourceManager.cs" />
     <Compile Include="Common\MSBuildProjectSystem.cs" />
+    <Compile Include="Common\MSBuildUser.cs" />
     <Compile Include="Common\PackageExtractor.cs" />
     <Compile Include="Common\PackageSourceProviderExtensions.cs" />
     <Compile Include="Common\ProjectHelper.cs" />
