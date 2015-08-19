@@ -47,6 +47,8 @@ namespace NuGet.CommandLine
 
         public override async Task ExecuteCommandAsync()
         {
+            bool restoreResult = true;
+
             _msbuildDirectory = MsBuildUtility.GetMsbuildDirectory(MSBuildVersion);
 
             if (!string.IsNullOrEmpty(PackagesDirectory))
@@ -62,7 +64,8 @@ namespace NuGet.CommandLine
             var restoreInputs = DetermineRestoreInputs();
             if (restoreInputs.PackageReferenceFiles.Count > 0)
             {
-                await PerformNuGetV2RestoreAsync(restoreInputs);
+                var v2RestoreResult = await PerformNuGetV2RestoreAsync(restoreInputs);
+                restoreResult &= v2RestoreResult;
             }
 
             if (restoreInputs.V3RestoreFiles.Count > 0)
@@ -78,7 +81,7 @@ namespace NuGet.CommandLine
                                     restoreInputs,
                                     globalPackagesFolder);
 
-                var v3RestoreTasks = new List<Task>();
+                var v3RestoreTasks = new List<Task<bool>>();
                 foreach (var file in restoreInputs.V3RestoreFiles)
                 {
                     if (DisableParallelProcessing)
@@ -93,8 +96,14 @@ namespace NuGet.CommandLine
 
                 if (v3RestoreTasks.Count > 0)
                 {
-                    await Task.WhenAll(v3RestoreTasks);
+                    var results = await Task.WhenAll(v3RestoreTasks);
+                    restoreResult &= results.All(r => r);
                 }
+            }
+
+            if (!restoreResult)
+            {
+                throw new CommandLineException();
             }
         }
 
@@ -136,7 +145,7 @@ namespace NuGet.CommandLine
             throw new CommandLineException(message);
         }
 
-        private async Task PerformNuGetV3RestoreAsync(string packagesDir, string projectPath)
+        private async Task<bool> PerformNuGetV3RestoreAsync(string packagesDir, string projectPath)
         {
             var projectFileName = Path.GetFileName(projectPath);
             PackageSpec project;
@@ -242,6 +251,8 @@ namespace NuGet.CommandLine
             var command = new Commands.RestoreCommand(Console, request);
             var result = await command.ExecuteAsync();
             result.Commit(Console);
+
+            return result.Success;
         }
 
         private void ReadSettings(PackageRestoreInputs packageRestoreInputs)
@@ -273,7 +284,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private async Task PerformNuGetV2RestoreAsync(PackageRestoreInputs packageRestoreInputs)
+        private async Task<bool> PerformNuGetV2RestoreAsync(PackageRestoreInputs packageRestoreInputs)
         {
             ReadSettings(packageRestoreInputs);
             var packagesFolderPath = GetPackagesFolder(packageRestoreInputs);
@@ -326,7 +337,7 @@ namespace NuGet.CommandLine
                     "packages.config");
 
                 Console.LogInformation(message);
-                return;
+                return true;
             }
 
             var packageRestoreData = missingPackageReferences.Select(reference =>
@@ -356,7 +367,7 @@ namespace NuGet.CommandLine
                         : PackageManagementConstants.DefaultMaxDegreeOfParallelism);
 
             CheckRequireConsent();
-            await PackageRestoreManager.RestoreMissingPackagesAsync(
+            var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
                 packageRestoreContext,
                 new ConsoleProjectContext(Console));
 
@@ -364,6 +375,8 @@ namespace NuGet.CommandLine
             {
                 Console.WriteError(item.Exception.Message);
             }
+
+            return result.Restored;
         }
 
         private void CheckRequireConsent()

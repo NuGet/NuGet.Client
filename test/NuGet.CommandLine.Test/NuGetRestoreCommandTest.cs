@@ -1382,5 +1382,48 @@ EndProject";
                 TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
             }
         }
+
+        // return code should be 1 when restore failed 
+        [Fact]
+        public void RestoreCommand_FromPackagesConfigFileFailed()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var nugetexe = Util.GetNuGetExePath();
+
+            try
+            {
+                Util.CreateDirectory(workingPath);
+                Util.CreateDirectory(repositoryPath);
+                Util.CreateFile(workingPath, "packages.config",
+@"<packages>
+  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
+</packages>");
+
+                string[] args = new string[] { "restore", "-PackagesDirectory", "outputDir", "-Source", repositoryPath };
+
+                // Act
+                var path = Environment.GetEnvironmentVariable("PATH");
+                Environment.SetEnvironmentVariable("PATH", null);
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+                Environment.SetEnvironmentVariable("PATH", path);
+
+                // Assert
+                Assert.Equal(1, r.Item1);
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(currentDirectory);
+                Util.DeleteDirectory(workingPath);
+            }
+        }
     }
 }
