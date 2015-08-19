@@ -99,7 +99,7 @@ namespace NuGet.Packaging
         public override Stream GetStream(string path)
         {
             Stream stream = null;
-
+            path = Uri.EscapeDataString(path.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
             if (!String.IsNullOrEmpty(path))
             {
                 stream = ZipArchiveHelper.OpenFile(_zip, path);
