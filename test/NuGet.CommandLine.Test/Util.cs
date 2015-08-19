@@ -243,5 +243,16 @@ namespace NuGet.CommandLine.Test
             var array = index["resources"] as JArray;
             array.Add(resource);
         }
+
+        public static void CreateConfigForGlobalPackagesFolder(string workingDirectory)
+        {
+            Util.CreateFile(workingDirectory, "nuget.config",
+                        @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <configuration>
+                          <config>
+                            <add key=""globalPackagesFolder"" value=""globalPackages"" />
+                          </config>
+                        </configuration>");
+        }
     }
 }

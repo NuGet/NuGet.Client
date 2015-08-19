@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Configuration;
@@ -22,12 +22,17 @@ namespace NuGet.ProjectManagement
         /// <summary>
         /// project.json
         /// </summary>
-        public const string ProjectConfigFileName = "project.json";
+        public static readonly string ProjectConfigFileName = "project.json";
+
+        /// <summary>
+        /// .project.json
+        /// </summary>
+        public static readonly string ProjectConfigFileEnding = ".project.json";
 
         /// <summary>
         /// Lock file name
         /// </summary>
-        public const string ProjectLockFileName = "project.lock.json";
+        public static readonly string ProjectLockFileName = "project.lock.json";
 
         public static string GetEffectiveGlobalPackagesFolder(string solutionDirectory, ISettings settings)
         {
@@ -68,10 +73,118 @@ namespace NuGet.ProjectManagement
 
         /// <summary>
         /// Create the lock file path from the config file path.
+        /// If the config file includes a project name the 
+        /// lock file will include the name also.
         /// </summary>
         public static string GetLockFilePath(string configFilePath)
         {
-            return Path.Combine(Path.GetDirectoryName(configFilePath), ProjectLockFileName);
+            string lockFilePath = null;
+
+            var dir = Path.GetDirectoryName(configFilePath);
+
+            var projectName = GetProjectNameFromConfigFileName(configFilePath);
+
+            if (projectName == null)
+            {
+                lockFilePath = Path.Combine(dir, ProjectLockFileName);
+            }
+            else
+            {
+                var lockFileWithProject = GetProjectLockFileNameWithProjectName(projectName);
+                lockFilePath = Path.Combine(dir, lockFileWithProject);
+            }
+
+            return lockFilePath;
+        }
+
+        /// <summary>
+        /// Creates a projectName.project.json file name.
+        /// </summary>
+        public static string GetProjectConfigWithProjectName(string projectName)
+        {
+            if (String.IsNullOrEmpty(projectName))
+            {
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "{0}.{1}", projectName, ProjectConfigFileName);
+        }
+
+        /// <summary>
+        /// Creates a projectName.project.lock.json file name.
+        /// </summary>
+        public static string GetProjectLockFileNameWithProjectName(string projectName)
+        {
+            if (String.IsNullOrEmpty(projectName))
+            {
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty);
+            }
+
+            return string.Format(CultureInfo.InvariantCulture, "{0}.{1}", projectName, ProjectLockFileName);
+        }
+
+        /// <summary>
+        /// Parses a projectName.project.json file name into a project name.
+        /// If there is no project name null will be returned.
+        /// </summary>
+        public static string GetProjectNameFromConfigFileName(string configPath)
+        {
+            if (configPath == null)
+            {
+                throw new ArgumentNullException(nameof(configPath));
+            }
+
+            var file = Path.GetFileName(configPath);
+
+            string projectName = null;
+
+            if (file != null && file.EndsWith(ProjectConfigFileEnding, StringComparison.OrdinalIgnoreCase))
+            {
+                var prefixLength = file.Length - ProjectConfigFileName.Length - 1;
+                projectName = file.Substring(0, prefixLength);
+            }
+
+            return projectName;
+        }
+
+        /// <summary>
+        /// True if the file is a project.json or projectname.project.json file.
+        /// </summary>
+        public static bool IsProjectConfig(string configPath)
+        {
+            if (configPath == null)
+            {
+                throw new ArgumentNullException(nameof(configPath));
+            }
+
+            var file = Path.GetFileName(configPath);
+
+            return string.Equals(ProjectConfigFileName, file, StringComparison.OrdinalIgnoreCase)
+                || file.EndsWith(ProjectConfigFileEnding, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Finds the projectName.project.json in a directory. If no projectName.project.json exists
+        /// the default project.json path will be returned regardless of existance.
+        /// </summary>
+        /// <returns>Returns the full path to the project.json file.</returns>
+        public static string GetProjectConfigPath(string directoryPath, string projectName)
+        {
+            if (String.IsNullOrEmpty(projectName))
+            {
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty);
+            }
+
+            // Check for the project name based file first
+            var configPath = Path.Combine(directoryPath, GetProjectConfigWithProjectName(projectName));
+
+            if (!File.Exists(configPath))
+            {
+                // Fallback to project.json
+                configPath = Path.Combine(directoryPath, ProjectConfigFileName);
+            }
+
+            return configPath;
         }
 
         /// <summary>

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -18,6 +19,230 @@ namespace ProjectManagement.Test
 {
     public class BuildIntegratedNuGetProjectTests
     {
+        [Fact]
+        public void BuildIntegratedNuGetProject_GetLockFilePathWithProjectNameOnly()
+        {
+            // Arrange
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var projNameFile = Path.Combine(randomProjectFolderPath, "abc.project.json");
+            CreateFile(projNameFile);
+
+            // Act
+            var path = BuildIntegratedProjectUtility.GetProjectConfigPath(randomProjectFolderPath, "abc");
+            var fileName = Path.GetFileName(path);
+
+            // Assert
+            Assert.Equal(fileName, "abc.project.json");
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomProjectFolderPath);
+        }
+
+        [Fact]
+        public void BuildIntegratedNuGetProject_GetLockFilePathWithBothProjectJsonFiles()
+        {
+            // Arrange
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var projNameFile = Path.Combine(randomProjectFolderPath, "abc.project.json");
+            var projJsonFile = Path.Combine(randomProjectFolderPath, "project.json");
+            CreateFile(projNameFile);
+            CreateFile(projJsonFile);
+
+            // Act
+            var path = BuildIntegratedProjectUtility.GetProjectConfigPath(randomProjectFolderPath, "abc");
+            var fileName = Path.GetFileName(path);
+
+            // Assert
+            Assert.Equal(fileName, "abc.project.json");
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomProjectFolderPath);
+        }
+
+        [Fact]
+        public void BuildIntegratedNuGetProject_GetLockFilePathWithProjectJsonFromAnotherProject()
+        {
+            // Arrange
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var projNameFile = Path.Combine(randomProjectFolderPath, "xyz.project.json");
+            var projJsonFile = Path.Combine(randomProjectFolderPath, "project.json");
+            CreateFile(projNameFile);
+            CreateFile(projJsonFile);
+
+            // Act
+            var path = BuildIntegratedProjectUtility.GetProjectConfigPath(randomProjectFolderPath, "abc");
+            var fileName = Path.GetFileName(path);
+
+            // Assert
+            Assert.Equal(fileName, "project.json");
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomProjectFolderPath);
+        }
+
+        [Fact]
+        public void BuildIntegratedNuGetProject_GetLockFilePathWithProjectNameJsonAndAnotherProject()
+        {
+            // Arrange
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var otherFile = Path.Combine(randomProjectFolderPath, "xyz.project.json");
+            var projJsonFile = Path.Combine(randomProjectFolderPath, "abc.project.json");
+            CreateFile(otherFile);
+            CreateFile(projJsonFile);
+
+            // Act
+            var path = BuildIntegratedProjectUtility.GetProjectConfigPath(randomProjectFolderPath, "abc");
+            var fileName = Path.GetFileName(path);
+
+            // Assert
+            Assert.Equal(fileName, "abc.project.json");
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomProjectFolderPath);
+        }
+
+        [Fact]
+        public void BuildIntegratedNuGetProject_GetLockFilePathWithNoFiles()
+        {
+            // Arrange
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var expected = Path.Combine(randomProjectFolderPath, "project.json");
+
+            // Act
+            var path = BuildIntegratedProjectUtility.GetProjectConfigPath(randomProjectFolderPath, "abc");
+
+            // Assert
+            Assert.Equal(expected, path);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomProjectFolderPath);
+        }
+
+        [Fact]
+        public void BuildIntegratedNuGetProject_GetLockFilePathWithProjectJsonOnly()
+        {
+            // Arrange
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var projJsonFile = Path.Combine(randomProjectFolderPath, "project.json");
+            CreateFile(projJsonFile);
+
+            // Act
+            var path = BuildIntegratedProjectUtility.GetProjectConfigPath(randomProjectFolderPath, "abc");
+            var fileName = Path.GetFileName(path);
+
+            // Assert
+            Assert.Equal(fileName, "project.json");
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomProjectFolderPath);
+        }
+
+        [Theory]
+        [InlineData("abc", "abc.project.json")]
+        [InlineData("ABC", "ABC.project.json")]
+        [InlineData("A B C", "A B C.project.json")]
+        [InlineData("a.b.c", "a.b.c.project.json")]
+        [InlineData(" ", " .project.json")]
+        public void BuildIntegratedNuGetProject_GetProjectConfigWithProjectName(string projectName, string fileName)
+        {
+            // Arrange & Act
+            var generatedName = BuildIntegratedProjectUtility.GetProjectConfigWithProjectName(projectName);
+
+            // Assert
+            Assert.Equal(fileName, generatedName);
+        }
+
+        [Theory]
+        [InlineData("abc", "abc.project.lock.json")]
+        [InlineData("ABC", "ABC.project.lock.json")]
+        [InlineData("A B C", "A B C.project.lock.json")]
+        [InlineData("a.b.c", "a.b.c.project.lock.json")]
+        [InlineData(" ", " .project.lock.json")]
+        public void BuildIntegratedNuGetProject_GetProjectLockFileNameWithProjectName(
+            string projectName,
+            string fileName)
+        {
+            // Arrange & Act
+            var generatedName = BuildIntegratedProjectUtility.GetProjectLockFileNameWithProjectName(projectName);
+
+            // Assert
+            Assert.Equal(fileName, generatedName);
+        }
+
+        [Theory]
+        [InlineData("abc", "abc.project.json")]
+        [InlineData("ABC", "ABC.project.json")]
+        [InlineData("A B C", "A B C.project.json")]
+        [InlineData("a.b.c", "a.b.c.project.json")]
+        [InlineData(" ", " .project.json")]
+        [InlineData("", ".project.json")]
+        public void BuildIntegratedNuGetProject_GetProjectNameFromConfigFileName(
+            string projectName,
+            string fileName)
+        {
+            // Arrange & Act
+            var result = BuildIntegratedProjectUtility.GetProjectNameFromConfigFileName(fileName);
+
+            // Assert
+            Assert.Equal(projectName, result);
+        }
+
+        [Theory]
+        [InlineData("abc.project.json")]
+        [InlineData("a b c.project.json")]
+        [InlineData("MY LONG PROJECT NAME 234234432.project.json")]
+        [InlineData("packages.config.project.json")]
+        [InlineData("111.project.json")]
+        [InlineData("project.json")]
+        [InlineData("prOject.JSon")]
+        [InlineData("xyz.prOject.JSon")]
+        [InlineData("c:\\users\\project.json")]
+        [InlineData("dir\\project.json")]
+        [InlineData("c:\\users\\abc.project.json")]
+        [InlineData("dir\\abc.project.json")]
+        [InlineData(".\\abc.project.json")]
+        public void BuildIntegratedNuGetProject_IsProjectConfig_True(string path)
+        {
+            // Arrange & Act
+            var result = BuildIntegratedProjectUtility.IsProjectConfig(path);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Theory]
+        [InlineData("abcproject.json")]
+        [InlineData("a b c.project.jso")]
+        [InlineData("abc.project..json")]
+        [InlineData("packages.config")]
+        [InlineData("project.json ")]
+        [InlineData("c:\\users\\packages.config")]
+        [InlineData("c:\\users\\abc.project..json")]
+        public void BuildIntegratedNuGetProject_IsProjectConfig_False(string path)
+        {
+            // Arrange & Act
+            var result = BuildIntegratedProjectUtility.IsProjectConfig(path);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData("project.json", "project.lock.json")]
+        [InlineData("dir/project.json", "dir\\project.lock.json")]
+        [InlineData("c:\\users\\project.json", "c:\\users\\project.lock.json")]
+        [InlineData("abc.project.json", "abc.project.lock.json")]
+        [InlineData("dir/abc.project.json", "dir\\abc.project.lock.json")]
+        [InlineData("c:\\users\\abc.project.json", "c:\\users\\abc.project.lock.json")]
+        public void BuildIntegratedNuGetProject_GetLockFilePath(string configPath, string lockFilePath)
+        {
+            // Arrange & Act
+            var result = BuildIntegratedProjectUtility.GetLockFilePath(configPath);
+
+            // Assert
+            Assert.Equal(lockFilePath, result);
+        }
+
         [Fact]
         public async Task TestBuildIntegratedNuGetProjectInstallPackage()
         {
@@ -172,6 +397,11 @@ namespace ProjectManagement.Test
 
                 return json;
             }
+        }
+
+        private static void CreateFile(string path)
+        {
+            File.OpenWrite(path).WriteByte(0);
         }
     }
 }
