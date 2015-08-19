@@ -162,7 +162,7 @@
             <ProjectsToRestore Include="$(RootDir)\src\VsExtension\VsExtension.csproj" />
         </ItemGroup>
 
-        <Exec Command="$(NuGetExePath) restore $(RootDir)\NuGet.VisualStudioExtension.sln -FallbackSource https://api.nuget.org/v3/index.json $(NuGetCommndLineCmdSources)"  />
+        <Exec Command="$(NuGetExePath) restore $(RootDir)\NuGet.VisualStudioExtension.sln -FallbackSource https://api.nuget.org/v3/index.json $(NuGetCommndLineCmdSources) -source https://www.myget.org/F/nuget-volatile/api/v2/"  />
     </Target>
 
     <Target Name="Go"
