@@ -21,6 +21,50 @@ namespace NuGet.Test
     public class BuildIntegratedRestoreUtilityTests
     {
         [Fact]
+        public async Task BuildIntegratedRestoreUtility_RestoreProjectNameProjectJson()
+        {
+            // Arrange
+            var projectName = "testproj";
+
+            var rootFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
+            projectFolder.Create();
+            var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "testproj.project.json"));
+
+            CreateConfigJson(projectConfig.FullName);
+
+            var sources = new List<string>
+                {
+                    "https://www.nuget.org/api/v2/"
+                };
+
+            var projectTargetFramework = NuGetFramework.Parse("uap10.0");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
+                new TestNuGetProjectContext());
+            var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+
+            var effectiveGlobalPackagesFolder =
+                BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
+                    null,
+                    Configuration.NullSettings.Instance);
+
+            // Act
+            var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
+                Logging.NullLogger.Instance,
+                sources,
+                effectiveGlobalPackagesFolder,
+                CancellationToken.None);
+
+            // Assert
+            Assert.True(File.Exists(Path.Combine(projectFolder.FullName, "testproj.project.lock.json")));
+            Assert.True(result.Success);
+            Assert.False(File.Exists(Path.Combine(projectFolder.FullName, "project.lock.json")));
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(rootFolder);
+        }
+
+        [Fact]
         public async Task BuildIntegratedRestoreUtility_IsRestoreRequiredDependencyChanged()
         {
             // Arrange

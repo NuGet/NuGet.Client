@@ -73,7 +73,9 @@ namespace NuGet.PackageManagement
             request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
 
             // Add the existing lock file if it exists
-            request.ExistingLockFile = GetLockFile(project, logger);
+            var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(project.JsonConfigPath);
+            request.LockFilePath = lockFilePath;
+            request.ExistingLockFile = GetLockFile(lockFilePath, logger);
 
             // Find the full closure of project.json files and referenced projects
             var projectReferences = await project.GetProjectReferenceClosureAsync(logger);
@@ -346,16 +348,6 @@ namespace NuGet.PackageManagement
 
             // sort parents by name to make this more deterministic during restores
             return parents.OrderBy(parent => parent.ProjectName).ToList();
-        }
-
-        /// <summary>
-        /// Returns the lockfile if it exists, otherwise null.
-        /// </summary>
-        private static LockFile GetLockFile(BuildIntegratedNuGetProject project, Logging.ILogger logger)
-        {
-            var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(project.JsonConfigPath);
-
-            return GetLockFile(lockFilePath, logger);
         }
 
         /// <summary>
