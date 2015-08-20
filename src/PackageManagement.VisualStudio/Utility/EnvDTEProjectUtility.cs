@@ -1257,7 +1257,15 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public static async Task<bool> HasBuildIntegratedConfig(EnvDTEProject project)
         {
-            return await ContainsFile(project, BuildIntegratedProjectUtility.ProjectConfigFileName);
+            var projectNameConfig = BuildIntegratedProjectUtility.GetProjectConfigWithProjectName(project.Name);
+
+            var containsProjectJson = await ContainsFile(project, projectNameConfig);
+
+            var containsProjectNameJson = await ContainsFile(
+                project,
+                BuildIntegratedProjectUtility.ProjectConfigFileName);
+
+            return containsProjectJson || containsProjectNameJson;
         }
 
         #endregion // Check Project Types

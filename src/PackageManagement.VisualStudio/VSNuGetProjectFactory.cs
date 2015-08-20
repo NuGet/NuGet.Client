@@ -56,19 +56,32 @@ namespace NuGet.PackageManagement.VisualStudio
             var projectK = GetProjectKProject(envDTEProject);
             if (projectK != null)
             {
-                result = new ProjectKNuGetProject(projectK, envDTEProject.Name, EnvDTEProjectUtility.GetCustomUniqueName(envDTEProject));
+                result = new ProjectKNuGetProject(
+                    projectK, 
+                    envDTEProject.Name, 
+                    EnvDTEProjectUtility.GetCustomUniqueName(envDTEProject));
             }
             else
             {
-                var msBuildNuGetProjectSystem = MSBuildNuGetProjectSystemFactory.CreateMSBuildNuGetProjectSystem(envDTEProject, nuGetProjectContext);
+                var msBuildNuGetProjectSystem = MSBuildNuGetProjectSystemFactory.CreateMSBuildNuGetProjectSystem(
+                    envDTEProject, 
+                    nuGetProjectContext);
+
+                var projectName = msBuildNuGetProjectSystem.ProjectName;
+
+                string projectPath = EnvDTEProjectUtility.GetFullPath(envDTEProject);
 
                 // Treat projects with project.json as build integrated projects
-                string projectPath = EnvDTEProjectUtility.GetFullPath(envDTEProject);
-                string jsonConfig = Path.Combine(projectPath, BuildIntegratedProjectUtility.ProjectConfigFileName);
+                // Search for projectName.project.json first, then project.json
+                string jsonConfig = BuildIntegratedProjectUtility.GetProjectConfigPath(projectPath, projectName);
 
                 if (File.Exists(jsonConfig))
                 {
-                    result = new BuildIntegratedProjectSystem(jsonConfig, envDTEProject, msBuildNuGetProjectSystem, EnvDTEProjectUtility.GetCustomUniqueName(envDTEProject));
+                    result = new BuildIntegratedProjectSystem(
+                        jsonConfig,
+                        envDTEProject,
+                        msBuildNuGetProjectSystem,
+                        EnvDTEProjectUtility.GetCustomUniqueName(envDTEProject));
                 }
                 else
                 {
@@ -77,7 +90,10 @@ namespace NuGet.PackageManagement.VisualStudio
                     // Project folder path is the packages config folder path
                     var packagesConfigFolderPath = EnvDTEProjectUtility.GetFullPath(envDTEProject);
 
-                    result = new MSBuildNuGetProject(msBuildNuGetProjectSystem, folderNuGetProjectFullPath, packagesConfigFolderPath);
+                    result = new MSBuildNuGetProject(
+                        msBuildNuGetProjectSystem, 
+                        folderNuGetProjectFullPath, 
+                        packagesConfigFolderPath);
                 }
             }
 

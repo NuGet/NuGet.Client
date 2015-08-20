@@ -61,7 +61,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Returns the closure of all project to project references below this project.
         /// </summary>
         /// <remarks>This uses DTE and should be called from the UI thread.</remarks>
-        public override async Task<IReadOnlyList<BuildIntegratedProjectReference>> GetProjectReferenceClosureAsync(Logging.ILogger logger)
+        public override async Task<IReadOnlyList<BuildIntegratedProjectReference>> GetProjectReferenceClosureAsync(
+            Logging.ILogger logger)
         {
             // DTE calls need to be done from the main thread
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -86,15 +87,42 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 // find the project.json file if it exists in the project
                 // projects with no project.json file should use null for the spec path
-                var jsonConfigItem = project.ProjectItems.OfType<ProjectItem>()
-                    .FirstOrDefault(pi => StringComparer.Ordinal.Equals(
-                        pi.Name,
-                        BuildIntegratedProjectUtility.ProjectConfigFileName))?.FileNames[1];
+                var projectJsonCandidates = project.ProjectItems.OfType<ProjectItem>()
+                    .Select(item => new KeyValuePair<string, ProjectItem>(item.Name, item))
+                    .Where(pair => BuildIntegratedProjectUtility.IsProjectConfig(pair.Key))
+                    .ToList();
+
+                string jsonConfigItem = null;
+
+                if (projectJsonCandidates.Count > 0)
+                {
+                    // Find projectName.project.json first
+                    var projectName = project.Name;
+
+                    var fileWithProjectName = 
+                        BuildIntegratedProjectUtility.GetProjectConfigWithProjectName(projectName);
+
+                    jsonConfigItem = projectJsonCandidates.FirstOrDefault(
+                        pair => string.Equals(
+                            pair.Key,
+                            fileWithProjectName,
+                            StringComparison.OrdinalIgnoreCase))
+                        .Value?.FileNames[1];
+
+                    // Fallback to project.json if needed
+                    if (jsonConfigItem == null)
+                    {
+                        jsonConfigItem = projectJsonCandidates.FirstOrDefault(
+                            pair => string.Equals(
+                                pair.Key,
+                                BuildIntegratedProjectUtility.ProjectConfigFileName,
+                                StringComparison.OrdinalIgnoreCase))
+                           .Value?.FileNames[1];
+                    }
+                }
 
                 var projectUniqueName = await EnvDTEProjectUtility.GetCustomUniqueNameAsync(project);
-
                 var childReferences = new List<string>();
-
                 var hasMissingReferences = false;
 
                 // find all references in the project
@@ -130,6 +158,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         {
                             // SDK references do not have a SourceProject or child references, 
                             // but they can contain project.json files, and should be part of the closure
+                            // SDKs are not projects, only the project.json name is checked here
 
                             var possibleSdkPath = childReference.Path;
 
