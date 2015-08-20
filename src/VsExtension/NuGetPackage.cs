@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
@@ -95,12 +96,14 @@ namespace NuGetVSExtension
         private NuGetSettings _nugetSettings;
 
         private OutputConsoleLogger _outputConsoleLogger;
+        private readonly HashSet<Uri> _credentialRequested;
 
         public NuGetPackage()
         {
             ServiceLocator.InitializePackageServiceProvider(this);
             StandaloneSwitch.IsRunningStandalone = false;
             _nugetSettings = new NuGetSettings();
+            _credentialRequested = new HashSet<Uri>();
         }
 
         private IVsMonitorSelection VsMonitorSelection
@@ -342,9 +345,10 @@ namespace NuGetVSExtension
             PackageSourceProvider packageSourceProvider = new PackageSourceProvider(
                 new SettingsToLegacySettings(Settings));
             var visualStudioCredentialProvider = new VisualStudioCredentialProvider(webProxy);
-            HttpClient.DefaultCredentialProvider = new SettingsCredentialProvider(
+            var settingsCredentialProvider = new SettingsCredentialProvider(
                 visualStudioCredentialProvider,
                 packageSourceProvider);
+            HttpClient.DefaultCredentialProvider = settingsCredentialProvider;
 
             // Set up proxy handling for v3 sources.
             // We need to sync the v2 proxy cache and v3 proxy cache so that the user will not
@@ -374,43 +378,28 @@ namespace NuGetVSExtension
                 v2ProxyCache?.Add(proxy);
             };
 
-            var v2CredentialStoreType = typeof(NuGet.ICredentialCache).Assembly.GetType("NuGet.CredentialStore");
-            var property = v2CredentialStoreType?.GetProperty(
-                "Instance",
-                BindingFlags.Static | BindingFlags.Public);
-            var v2CredentialStore = property?.GetValue(obj: null) as NuGet.ICredentialCache;
-
             NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForCredentials = uri =>
             {
-                var v2Credentials = v2CredentialStore?.GetCredentials(uri);
-                if (v2Credentials != null)
+                bool retrying = _credentialRequested.Contains(uri);
+
+                // Add uri to the hash set so that the next time we know the credentials for this
+                // uri has been requested before. In this case, a dialog will pop up asking
+                // for credentials.
+                if (!retrying)
                 {
-                    // if cached v2 credentials have not been used, try using it first.
-                    return v2Credentials;
+                    _credentialRequested.Add(uri);
                 }
 
-                lock (_credentialsPromptLock)
-                {
-                    // Retry after we acquire the lock. The credential provider could have been updated while
-                    // we were waiting to acquire it.
-                    v2Credentials = v2CredentialStore?.GetCredentials(uri);
-                    if (v2Credentials != null)
-                    {
-                        // if cached v2 credentials have not been used, try using it first.
-                        return v2Credentials;
-                    }
-
-                    return visualStudioCredentialProvider.GetCredentials(
-                        uri,
-                        proxy: null,
-                        credentialType: CredentialType.RequestCredentials,
-                        retrying: false);
-                }
+                return settingsCredentialProvider.GetCredentials(
+                    uri,
+                    proxy: null,
+                    credentialType: CredentialType.RequestCredentials,
+                    retrying: retrying);
             };
 
             NuGet.Protocol.Core.v3.HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
             {
-                v2CredentialStore?.Add(uri, credentials);
+                NuGet.CredentialStore.Instance.Add(uri, credentials);
                 NuGet.Configuration.CredentialStore.Instance.Add(uri, credentials);
             };
         }

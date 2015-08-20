@@ -57,21 +57,18 @@ namespace NuGetVSExtension
             {
                 // The cached credentials that we found are not valid so let's ask the user
                 // until they abort or give us valid credentials.
-
-                // Set the static property WebRequest.DefaultWebProxy so that the right host name
-                // is displayed in the UI by IVsWebProxy.
                 var uriToDisplay = uri;
-                if (credentialType == CredentialType.ProxyCredentials)
+                if (credentialType == CredentialType.ProxyCredentials && proxy != null)
                 {
-                    if (proxy != null)
-                    {
-                        // Display the proxy server's host name when asking for proxy credential
-                        uriToDisplay = proxy.GetProxy(uri);
-                    }
-
-                    WebRequest.DefaultWebProxy = new WebProxy(uriToDisplay);
+                    // Display the proxy server's host name when asking for proxy credentials
+                    uriToDisplay = proxy.GetProxy(uri);
                 }
 
+                // Set the static property WebRequest.DefaultWebProxy so that the right host name
+                // is displayed in the UI by IVsWebProxy. Note that this is just a UI thing, 
+                // so this is needed no matter wether we're prompting for proxy credentials 
+                // or request credentials. 
+                WebRequest.DefaultWebProxy = new WebProxy(uriToDisplay);
                 return PromptForCredentials(uri);
             }
             finally
