@@ -10,8 +10,12 @@
 		File="$(TargetDir)$(AssemblyName).dll.config"
 		Lines="@(Line)"			
 		Overwrite="true"
-		/> 
-	<Message Text="dll to run is $(TargetDir)$(AssemblyName).dll" Importance="high" />
-    <xunit Assemblies="$(TargetDir)$(AssemblyName).dll" />
+		/>
+
+		<Message Text="Running tests synchronously for $(TargetDir)$(AssemblyName).dll" Importance="high" />
+		<xunit Assemblies="$(TargetDir)$(AssemblyName).dll" MaxParallelThreads="1" Condition=" $(XUnitDisableRunInParallel) == 'true' " />
+		
+		<Message Text="Running tests in parallel for $(TargetDir)$(AssemblyName).dll" Importance="high" />
+		<xunit Assemblies="$(TargetDir)$(AssemblyName).dll" Condition=" $(XUnitDisableRunInParallel) == '' OR $(XUnitDisableRunInParallel) == 'false' " />
 </Target>
 </Project>
