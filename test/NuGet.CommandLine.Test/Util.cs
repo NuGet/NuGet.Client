@@ -244,6 +244,16 @@ namespace NuGet.CommandLine.Test
             array.Add(resource);
         }
 
+        public static void AddLegacyUrlResource(JObject index, MockServer serverV2)
+        {
+            var resource = new JObject();
+            resource.Add("@id", string.Format("{0}", serverV2.Uri));
+            resource.Add("@type", "LegacyGallery/2.0.0");
+
+            var array = index["resources"] as JArray;
+            array.Add(resource);
+        }
+
         public static void CreateConfigForGlobalPackagesFolder(string workingDirectory)
         {
             Util.CreateFile(workingDirectory, "nuget.config",

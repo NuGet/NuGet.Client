@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Text;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -34,7 +35,7 @@ namespace NuGet.CommandLine.Test
             Assert.Equal("testPackage1 1.1.0\r\ntestPackage2 2.0.0\r\n", output);
         }
 
-        [Fact(Skip = "nuget.exe list does not return license url. This is a tracked issue")]
+        [Fact]
         public void ListCommand_ShowLicenseUrlWithDetailedVerbosity()
         {
             // Arrange
@@ -65,7 +66,7 @@ namespace NuGet.CommandLine.Test
             Assert.Equal(" License url: http://kaka", lines[3]);
         }
 
-        [Fact(Skip = "nuget.exe list does not return license url. This is a tracked issue")]
+        [Fact]
         public void ListCommand_WithUserSpecifiedConfigFile()
         {
             // Arrange
@@ -174,7 +175,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Tests that list command only show listed packages
-        [Fact(Skip = "This is tracked by an issue")]
+        [Fact]
         public void ListCommand_OnlyShowListed()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -210,7 +211,7 @@ namespace NuGet.CommandLine.Test
                     server.Start();
 
                     // Act
-                    var args = "--debug list test -Source " + server.Uri + "nuget";
+                    var args = "list test -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
                         tempPath,
@@ -219,7 +220,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(0, r1.Item1);
+                    Assert.True(r1.Item1 == 0, r1.Item2 + " " + r1.Item3);
 
                     // verify that only testPackage2 is listed since the package testPackage1
                     // is not listed.
@@ -243,7 +244,7 @@ namespace NuGet.CommandLine.Test
 
         // Tests that list command show delisted packages 
         // when IncludeDelisted is specified.
-        [Fact(Skip = "This is tracked by an issue")]
+        [Fact]
         public void ListCommand_IncludeDelisted()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -288,7 +289,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(0, r1.Item1);
+                    Assert.True(r1.Item1 == 0, r1.Item2 + " " + r1.Item3);
 
                     // verify that both testPackage1 and testPackage2 are listed.
                     var expectedOutput =
@@ -299,9 +300,6 @@ namespace NuGet.CommandLine.Test
                     Assert.Contains("$filter=IsLatestVersion", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
                     Assert.Contains("includePrerelease=false", searchRequest);
-
-                    // verify that "includeDelisted=true" is included in the request
-                    Assert.Contains("includeDelisted=true", searchRequest);
                 }
             }
             finally
@@ -376,7 +374,7 @@ namespace NuGet.CommandLine.Test
 
         // Tests that when -AllVersions is specified, list command sends request 
         // without $filter
-        [Fact(Skip = "This is tracked by an issue")]
+        [Fact]
         public void ListCommand_AllVersions()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -504,7 +502,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Test case when both switches -Prerelease and -AllVersions are specified
-        [Fact(Skip = "This is tracked by an issue")]
+        [Fact]
         public void ListCommand_AllVersionsPrerelease()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -564,6 +562,110 @@ namespace NuGet.CommandLine.Test
             {
                 // Cleanup
                 Util.DeleteDirectory(packageDirectory);
+            }
+        }
+
+        [Fact]
+        public void ListCommand_SimpleV3()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packageDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
+                var package1 = new ZipPackage(packageFileName1);
+                var package2 = new ZipPackage(packageFileName2);
+
+                // Server setup
+                var indexJson = Util.CreateIndexJson();
+                using (var serverV3 = new MockServer())
+                {
+                    serverV3.Get.Add("/", r =>
+                    {
+                        var path = r.Url.AbsolutePath;
+
+                        if (path == "/index.json")
+                        {
+                            return new Action<HttpListenerResponse>(response =>
+                            {
+                                response.StatusCode = 200;
+                                response.ContentType = "text/javascript";
+                                MockServer.SetResponseContent(response, indexJson.ToString());
+                            });
+                        }
+
+                        throw new Exception("This test needs to be updated to support: " + path);
+                    });
+
+                    using (var serverV2 = new MockServer())
+                    {
+                        Util.AddFlatContainerResource(indexJson, serverV3);
+                        Util.AddLegacyUrlResource(indexJson, serverV2);
+                        string searchRequest = string.Empty;
+
+                        serverV2.Get.Add("/", r =>
+                        {
+                            var path = r.Url.AbsolutePath;
+
+                            if (path == "/")
+                            {
+                                return "OK";
+                            }
+
+                            if (path == "/$metadata")
+                            {
+                                return MockServerResource.NuGetV2APIMetadata;
+                            }
+
+                            if (path == "/Search()")
+                            {
+                                return new Action<HttpListenerResponse>(response =>
+                                {
+                                    searchRequest = r.Url.ToString();
+                                    response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
+                                    string feed = serverV2.ToODataFeed(new[] { package1, package2 }, "Search");
+                                    MockServer.SetResponseContent(response, feed);
+                                });
+                            }
+
+                            throw new Exception("This test needs to be updated to support: " + path);
+                        });
+
+                        serverV3.Start();
+                        serverV2.Start();
+
+                        // Act
+                        var args = "list test -Source " + serverV3.Uri + "index.json";
+                        var result = CommandRunner.Run(
+                            nugetexe,
+                            Directory.GetCurrentDirectory(),
+                            args,
+                            waitForExit: true);
+
+                        serverV2.Stop();
+                        serverV3.Stop();
+
+                        // Assert
+                        Assert.True(result.Item1 == 0, result.Item2 + " " + result.Item3);
+
+                        // verify that only package id & version is displayed
+                        var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
+                            "testPackage2 2.1" + Environment.NewLine;
+                        Assert.Equal(expectedOutput, result.Item2);
+
+                        Assert.Contains("$filter=IsLatestVersion", searchRequest);
+                        Assert.Contains("searchTerm='test", searchRequest);
+                        Assert.Contains("includePrerelease=false", searchRequest);
+                    }
+                }
+            }
+            finally
+            {
+                // Cleanup
+                TestFilesystemUtility.DeleteRandomTestFolders(packageDirectory);
             }
         }
     }

@@ -1,25 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.CommandLine;
 using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
-    [Command(typeof(NuGetCommand), "list", "ListCommandDescription",
-        UsageSummaryResourceName = "ListCommandUsageSummary", UsageDescriptionResourceName = "ListCommandUsageDescription",
+    [Command(
+        typeof(NuGetCommand),
+        "list",
+        "ListCommandDescription",
+        UsageSummaryResourceName = "ListCommandUsageSummary",
+        UsageDescriptionResourceName = "ListCommandUsageDescription",
         UsageExampleResourceName = "ListCommandUsageExamples")]
     public class ListCommand : Command
     {
-        // PageSize when a filter is specified.
-        private const int FilteredPageSize = 300;
-        // PageSize when no search filter is specified.
-        private const int UnfilteredPageSize = 30;
-
         private readonly List<string> _sources = new List<string>();
 
         [Option(typeof(NuGetCommand), "ListCommandSourceDescription")]
@@ -37,14 +35,74 @@ namespace NuGet.Commands
         [Option(typeof(NuGetCommand), "ListCommandPrerelease")]
         public bool Prerelease { get; set; }
 
-        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "This call is expensive")]
-        public async Task<IEnumerable<SimpleSearchMetadata>> GetPackages()
+        [Option(typeof(NuGetCommand), "ListCommandIncludeDelisted")]
+        public bool IncludeDelisted { get; set; }
+
+        [SuppressMessage(
+            "Microsoft.Design",
+            "CA1024:UsePropertiesWhereAppropriate",
+            Justification = "This call is expensive")]
+        public IEnumerable<IPackage> GetPackages(IEnumerable<string> listEndpoints)
         {
-            var configurationSources = SourceProvider.LoadPackageSources();
-            IEnumerable<Configuration.PackageSource> packageSources;
+            IPackageRepository packageRepository = GetRepository(listEndpoints);
+            string searchTerm = Arguments != null ? Arguments.FirstOrDefault() : null;
+
+            IQueryable<IPackage> packages = packageRepository.Search(
+                searchTerm,
+                targetFrameworks: Enumerable.Empty<string>(),
+                allowPrereleaseVersions: Prerelease);
+
+            if (AllVersions)
+            {
+                return packages.OrderBy(p => p.Id);
+            }
+            else
+            {
+                if (Prerelease && packageRepository.SupportsPrereleasePackages)
+                {
+                    packages = packages.Where(p => p.IsAbsoluteLatestVersion);
+                }
+                else
+                {
+                    packages = packages.Where(p => p.IsLatestVersion);
+                }
+            }
+
+            var result = packages.OrderBy(p => p.Id)
+                .AsEnumerable();
+
+            // we still need to do client side filtering of delisted & prerelease packages.
+            if (IncludeDelisted == false)
+            {
+                result = result.Where(PackageExtensions.IsListed);
+            }
+            return result.Where(p => Prerelease || p.IsReleaseVersion())
+                       .AsCollapsed();
+        }
+
+        private IPackageRepository GetRepository(IEnumerable<string> listEndpoints)
+        {
+            var repositories = listEndpoints
+                                .Select(RepositoryFactory.CreateRepository)
+                                .ToList();
+
+            var repository = new AggregateRepository(repositories);
+            return repository;
+        }
+
+        private async Task<IList<string>> GetListEndpointsAsync()
+        {
+            var configurationSources = SourceProvider.LoadPackageSources()
+                .Where(p => p.IsEnabled)
+                .ToList();
+
+            IList<Configuration.PackageSource> packageSources;
             if (Source.Count > 0)
             {
-                packageSources = Source.Select(s => Common.PackageSourceProviderExtensions.ResolveSource(configurationSources, s));
+                packageSources
+                    = Source
+                        .Select(s => Common.PackageSourceProviderExtensions.ResolveSource(configurationSources, s))
+                        .ToList();
             }
             else
             {
@@ -56,35 +114,26 @@ namespace NuGet.Commands
                     Protocol.Core.v2.FactoryExtensionsV2.GetCoreV2(Repository.Provider),
                     Protocol.Core.v3.FactoryExtensionsV2.GetCoreV3(Repository.Provider)));
 
-            var resourceTasks = new List<Task<SimpleSearchResource>>();
+            var listCommandResourceTasks = new List<Task<ListCommandResource>>();
+
             foreach (var source in packageSources)
             {
                 var sourceRepository = sourceRepositoryProvider.CreateRepository(source);
-                resourceTasks.Add(sourceRepository.GetResourceAsync<SimpleSearchResource>());
+                listCommandResourceTasks.Add(sourceRepository.GetResourceAsync<ListCommandResource>());
             }
-            var resources = await Task.WhenAll(resourceTasks);
+            var listCommandResources = await Task.WhenAll(listCommandResourceTasks);
 
-            var searchTerm = Arguments.FirstOrDefault();
-            var resultTasks = resources.Where(r => r != null)
-                .Select(r => r.Search(
-                    searchTerm,
-                    new SearchFilter(Enumerable.Empty<string>(), Prerelease, includeDelisted: false),
-                    skip: 0,
-                    take: string.IsNullOrEmpty(searchTerm) ? UnfilteredPageSize : FilteredPageSize,
-                    cancellationToken: CancellationToken.None));
+            var listEndpoints = new List<string>();
+            foreach(var listCommandResource in listCommandResources)
+            {
+                var listEndpoint = listCommandResource.GetListEndpoint();
+                if (listEndpoint != null)
+                {
+                    listEndpoints.Add(listEndpoint);
+                }
+            }
 
-            var results = (await Task.WhenAll(resultTasks)).SelectMany(feedResult => feedResult);
-
-            //if (AllVersions)
-            //{
-            //    results = results.SelectMany(package => package.AllVersions.Select(version =>
-            //                new SimpleSearchMetadata(
-            //                    new Packaging.Core.PackageIdentity(package.Identity.Id, version), 
-            //                    package.Description, 
-            //                    Enumerable.Empty<NuGetVersion>())));
-            //}
-
-            return results.OrderBy(s => s.Identity.Id, StringComparer.Ordinal);
+            return listEndpoints;
         }
 
         public override async Task ExecuteCommandAsync()
@@ -95,7 +144,8 @@ namespace NuGet.Commands
                 Verbosity = Verbosity.Detailed;
             }
 
-            var packages = await GetPackages();
+            var listEndpoints = await GetListEndpointsAsync();
+            var packages = GetPackages(listEndpoints);
 
             bool hasPackages = false;
 
@@ -114,22 +164,17 @@ namespace NuGet.Commands
                      ***********************************************/
                     foreach (var p in packages)
                     {
-                        Console.PrintJustified(0, p.Identity.Id);
-                        if (!AllVersions)
+                        Console.PrintJustified(0, p.Id);
+                        Console.PrintJustified(1, p.Version.ToString());
+                        Console.PrintJustified(1, p.Description);
+                        if (!string.IsNullOrEmpty(p.LicenseUrl?.OriginalString))
                         {
-                            Console.PrintJustified(1, p.Identity.Version.ToNormalizedString());
-                            Console.PrintJustified(1, p.Description);
+                            Console.PrintJustified(1,
+                                string.Format(
+                                    CultureInfo.InvariantCulture,
+                                    LocalizedResourceManager.GetString("ListCommand_LicenseUrl"),
+                                    p.LicenseUrl.OriginalString));
                         }
-                        else
-                        {
-                            Console.PrintJustified(0, p.Description);
-                            foreach (var version in p.AllVersions)
-                            {
-                                Console.PrintJustified(1, version.ToNormalizedString());
-                            }
-                        }
-
-
                         Console.WriteLine();
                         hasPackages = true;
                     }
@@ -142,15 +187,7 @@ namespace NuGet.Commands
                      ***********************************************/
                     foreach (var p in packages)
                     {
-                        Console.PrintJustified(0, p.Identity.Id + " " + p.Identity.Version);
-                        if (AllVersions)
-                        {
-                            foreach (var version in p.AllVersions)
-                            {
-                                Console.PrintJustified(0, p.Identity.Id + " " + version);
-                            }
-                        }
-
+                        Console.PrintJustified(0, p.GetFullName());
                         hasPackages = true;
                     }
                 }
@@ -160,16 +197,6 @@ namespace NuGet.Commands
             {
                 Console.WriteLine(LocalizedResourceManager.GetString("ListCommandNoPackages"));
             }
-        }
-
-        private SourceRepositoryProvider GetSourceRepositoryProvider()
-        {
-            var packageSourceProvider = new Configuration.PackageSourceProvider(Settings);
-            var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider,
-                Enumerable.Concat(
-                    Protocol.Core.v2.FactoryExtensionsV2.GetCoreV2(Repository.Provider),
-                    Protocol.Core.v3.FactoryExtensionsV2.GetCoreV3(Repository.Provider)));
-            return sourceRepositoryProvider;
         }
     }
 }
