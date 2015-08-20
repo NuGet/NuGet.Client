@@ -19,15 +19,17 @@ namespace NuGet.Protocol.Core.v3
 
     public static class ServiceTypes
     {
-        public const string TypeVersion = "/3.0.0-beta";
+        public static readonly string VersionV2 = "/2.0.0";
+        public static readonly string TypeVersion = "/3.0.0-beta";
 
-        public const string SearchQueryService = "SearchQueryService" + TypeVersion;
-        public const string SearchAutocompleteService = "SearchAutocompleteService" + TypeVersion;
-        public const string SearchGalleryQueryService = "SearchGalleryQueryService" + TypeVersion;
-        public const string MetricsService = "MetricsService" + TypeVersion;
-        public const string RegistrationsBaseUrl = "RegistrationsBaseUrl" + TypeVersion;
-        public const string ReportAbuse = "ReportAbuseUriTemplate" + TypeVersion;
-        public const string Stats = "Stats" + TypeVersion;
+        public static readonly string SearchQueryService = "SearchQueryService" + TypeVersion;
+        public static readonly string SearchAutocompleteService = "SearchAutocompleteService" + TypeVersion;
+        public static readonly string SearchGalleryQueryService = "SearchGalleryQueryService" + TypeVersion;
+        public static readonly string MetricsService = "MetricsService" + TypeVersion;
+        public static readonly string RegistrationsBaseUrl = "RegistrationsBaseUrl" + TypeVersion;
+        public static readonly string ReportAbuse = "ReportAbuseUriTemplate" + TypeVersion;
+        public static readonly string Stats = "Stats" + TypeVersion;
+        public static readonly string LegacyGallery = "LegacyGallery" + VersionV2;
     }
 
     public static class Properties

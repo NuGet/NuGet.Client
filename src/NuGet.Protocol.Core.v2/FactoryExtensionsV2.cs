@@ -27,6 +27,7 @@ namespace NuGet.Protocol.Core.v2
             yield return new Lazy<INuGetResourceProvider>(() => new PackageRepositoryResourceV2Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new SearchLatestResourceV2Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new SimpleSearchResourceV2Provider());
+            yield return new Lazy<INuGetResourceProvider>(() => new ListCommandResourceV2Provider());
 
             yield break;
         }
