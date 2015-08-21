@@ -409,7 +409,7 @@ function Test-GetPackageDoesNotThrowIfSolutionIsTemporary {
     New-TextFile
     
     # Act and Assert
-    Assert-Throws { Get-Package } "The current environment doesn't have a solution open."
+    Assert-Throws { Get-Package } "Solution is not saved. Please save your solution before managing NuGet packages."
 }
 
 function Test-GetPackageUpdatesReturnAllVersionsIfFlagIsSpecified 

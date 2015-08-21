@@ -229,10 +229,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     Init();
                     var projects = _nuGetAndEnvDTEProjectCache.GetNuGetProjects().ToList();
-                    if (projects.Any(project => !(project is INuGetIntegratedProject)))
+                    if (!projects.Any() || projects.Any(project => !(project is INuGetIntegratedProject)))
                     {
                         // Solution is open, but not saved. That is, 'Save as' is required.
-                        // And, there is a packages.config based project. Return false.
+                        // And, there are no projects or there is a packages.config based project. Return false.
                         return false;
                     }
 

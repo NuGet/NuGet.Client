@@ -368,7 +368,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             if (string.IsNullOrEmpty(projectName))
             {
                 Project = VsSolutionManager.DefaultNuGetProject;
-                if (VsSolutionManager.IsSolutionOpen
+                if (VsSolutionManager.IsSolutionAvailable
                     && Project == null)
                 {
                     ErrorHandler.WriteProjectNotFoundError("Default", terminating: true);
@@ -377,7 +377,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             else
             {
                 Project = VsSolutionManager.GetNuGetProject(projectName);
-                if (VsSolutionManager.IsSolutionOpen
+                if (VsSolutionManager.IsSolutionAvailable
                     && Project == null)
                 {
                     ErrorHandler.WriteProjectNotFoundError(projectName, terminating: true);
