@@ -206,20 +206,8 @@ namespace NuGetVSExtension
             }
             catch (Exception ex)
             {
-                string message;
-                if (_msBuildOutputVerbosity < 3)
-                {
-                    message = string.Format(CultureInfo.CurrentCulture,
-                        Resources.ErrorOccurredRestoringPackages,
-                        ex.Message);
-                }
-                else
-                {
-                    // output exception detail when _msBuildOutputVerbosity is >= Detailed.
-                    message = string.Format(CultureInfo.CurrentCulture, Resources.ErrorOccurredRestoringPackages, ex);
-                }
-                WriteLine(VerbosityLevel.Quiet, message);
-                ActivityLog.LogError(LogEntrySource, message);
+                // Log the exception to the console and activity log
+                LogException(ex, logError: false);
             }
             finally
             {
@@ -232,6 +220,35 @@ namespace NuGetVSExtension
                 // If actions were performed, display the summary
                 WriteLine(_canceled, _hasMissingPackages, _hasErrors);
             }
+        }
+
+        private void LogException(Exception ex, bool logError)
+        {
+            string message;
+            if (_msBuildOutputVerbosity < 3)
+            {
+                message = string.Format(CultureInfo.CurrentCulture,
+                    Resources.ErrorOccurredRestoringPackages,
+                    ex.Message);
+            }
+            else
+            {
+                // output exception detail when _msBuildOutputVerbosity is >= Detailed.
+                message = string.Format(CultureInfo.CurrentCulture, Resources.ErrorOccurredRestoringPackages, ex);
+            }
+
+            if (logError)
+            {
+                // Write to the error window and console
+                LogError(message);
+            }
+            else
+            {
+                // Write to console
+                WriteLine(VerbosityLevel.Quiet, message);
+            }
+
+            ActivityLog.LogError(LogEntrySource, message);
         }
 
         private void DisplayOptOutMessage()
@@ -321,11 +338,24 @@ namespace NuGetVSExtension
                             if (!Token.IsCancellationRequested)
                             {
                                 var projectName = NuGetProject.GetUniqueNameOrName(project);
-                                await BuildIntegratedProjectRestoreAsync(
-                                    project,
-                                    solutionDirectory,
-                                    enabledSources,
-                                    Token);
+
+                                try
+                                {
+                                    // Restore and create a project.lock.json file
+                                    await BuildIntegratedProjectRestoreAsync(
+                                        project,
+                                        solutionDirectory,
+                                        enabledSources,
+                                        Token);
+                                }
+                                catch (Exception ex)
+                                {
+                                    // Allow other projects to be restored when a single project fails.
+                                    // If an unexpected exception occurs from the RestoreCommand
+                                    // log it to the console and error window.
+                                    LogException(ex, logError: true);
+                                    _hasErrors = true;
+                                }
 
                                 WriteLine(
                                     VerbosityLevel.Normal,
