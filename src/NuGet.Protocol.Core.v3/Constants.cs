@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+﻿ // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -30,6 +30,7 @@ namespace NuGet.Protocol.Core.v3
         public static readonly string ReportAbuse = "ReportAbuseUriTemplate" + TypeVersion;
         public static readonly string Stats = "Stats" + TypeVersion;
         public static readonly string LegacyGallery = "LegacyGallery" + VersionV2;
+        public static readonly string PackagePublish = "PackagePublish" + VersionV2;
     }
 
     public static class Properties
