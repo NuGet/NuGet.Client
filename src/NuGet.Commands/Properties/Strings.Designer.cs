@@ -189,17 +189,9 @@ namespace NuGet.Commands
         /// <summary>
         /// The project does not specify any target frameworks.
         /// </summary>
-        internal static string Log_ProjectDoesNotSpecifyTargetFrameworks
+        internal static string FormatLog_ProjectDoesNotSpecifyTargetFrameworks(object p0)
         {
-            get { return GetString("Log_ProjectDoesNotSpecifyTargetFrameworks"); }
-        }
-
-        /// <summary>
-        /// The project does not specify any target frameworks.
-        /// </summary>
-        internal static string FormatLog_ProjectDoesNotSpecifyTargetFrameworks()
-        {
-            return GetString("Log_ProjectDoesNotSpecifyTargetFrameworks");
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_ProjectDoesNotSpecifyTargetFrameworks"), p0);
         }
 
         /// <summary>

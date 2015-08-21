@@ -149,7 +149,7 @@ namespace NuGet.Commands
         {
             if (_request.Project.TargetFrameworks.Count == 0)
             {
-                _log.LogError(Strings.Log_ProjectDoesNotSpecifyTargetFrameworks);
+                _log.LogError(Strings.FormatLog_ProjectDoesNotSpecifyTargetFrameworks(_request.Project.Name));
                 _success = false;
                 return Enumerable.Empty<RestoreTargetGraph>();
             }
@@ -400,7 +400,7 @@ namespace NuGet.Commands
         {
             // Get the project graph
             var projectFrameworks = project.TargetFrameworks.Select(f => f.FrameworkName).ToList();
-            if (projectFrameworks.Count > 1)
+            if (projectFrameworks.Count > 1 || !targetGraphs.Any())
             {
                 return new MSBuildRestoreResult(project.Name, project.BaseDirectory);
             }
