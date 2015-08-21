@@ -49,7 +49,8 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "Option_ConfigFile")]
         public string ConfigFile { get; set; }
 
-        private HashSet<Uri> _credentialRequested;
+        // Used to check if credential has been requested for a uri. 
+        private readonly HashSet<Uri> _credentialRequested;
 
         public string CurrentDirectory
         {
@@ -175,15 +176,9 @@ namespace NuGet.CommandLine
                     retrying: retrying);
             };
 
-            var v2CredentialStoreType = typeof(NuGet.ICredentialCache).Assembly.GetType("NuGet.CredentialStore");
-            var property = v2CredentialStoreType?.GetProperty(
-                "Instance",
-                BindingFlags.Static | BindingFlags.Public);
-            var v2CredentialStore = property?.GetValue(obj: null) as NuGet.ICredentialCache;
-
             NuGet.Protocol.Core.v3.HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
             {
-                v2CredentialStore?.Add(uri, credentials);
+                NuGet.CredentialStore.Instance.Add(uri, credentials);
                 NuGet.Configuration.CredentialStore.Instance.Add(uri, credentials);
             };
         }
