@@ -5022,6 +5022,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allow unlisted packages to be shown..
+        /// </summary>
+        internal static string ListCommandIncludeDelisted {
+            get {
+                return ResourceManager.GetString("ListCommandIncludeDelisted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Allow prerelease packages to be shown..
         /// </summary>
         internal static string ListCommandPrerelease {

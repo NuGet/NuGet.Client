@@ -229,6 +229,9 @@ nuget install ninject -o c:\foo</value>
   <data name="ListCommandPrerelease" xml:space="preserve">
     <value>Allow prerelease packages to be shown.</value>
   </data>
+  <data name="ListCommandIncludeDelisted" xml:space="preserve">
+    <value>Allow unlisted packages to be shown.</value>
+  </data>
   <data name="ListCommandSourceDescription" xml:space="preserve">
     <value>A list of packages sources to search.</value>
   </data>
