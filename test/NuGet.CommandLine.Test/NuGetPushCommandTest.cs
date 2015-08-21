@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using System.Security.Principal;
 using System.Text;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -436,17 +437,17 @@ namespace NuGet.CommandLine.Test
                         timeOutInMilliseconds: 10000,
                         inputAction: (w) =>
                         {
-                        // This user/password pair is first sent to
-                        // GET /nuget, then PUT /nuget
-                        w.WriteLine("a");
+                            // This user/password pair is first sent to
+                            // GET /nuget, then PUT /nuget
+                            w.WriteLine("a");
                             w.WriteLine("b");
 
-                        // Send another user/password pair to PUT
-                        w.WriteLine("c");
+                            // Send another user/password pair to PUT
+                            w.WriteLine("c");
                             w.WriteLine("d");
 
-                        // Now send the right user/password to PUT
-                        w.WriteLine("testuser");
+                            // Now send the right user/password to PUT
+                            w.WriteLine("testuser");
                             w.WriteLine("testpassword");
                         });
                     server.Stop();
@@ -528,17 +529,17 @@ namespace NuGet.CommandLine.Test
                         timeOutInMilliseconds: 10000,
                         inputAction: (w) =>
                         {
-                        // This user/password pair is first sent to
-                        // GET /nuget, then PUT /nuget
-                        w.WriteLine("a");
+                            // This user/password pair is first sent to
+                            // GET /nuget, then PUT /nuget
+                            w.WriteLine("a");
                             w.WriteLine("b");
 
-                        // Send another user/password pair to PUT
-                        w.WriteLine("c");
+                            // Send another user/password pair to PUT
+                            w.WriteLine("c");
                             w.WriteLine("d");
 
-                        // Now send the right user/password to PUT
-                        w.WriteLine("testuser");
+                            // Now send the right user/password to PUT
+                            w.WriteLine("testuser");
                             w.WriteLine("testpassword");
                         });
                     server.Stop();
@@ -695,6 +696,92 @@ namespace NuGet.CommandLine.Test
             {
                 // Cleanup
                 Util.DeleteDirectory(packageDirectory);
+            }
+        }
+
+        [Fact]
+        public void PushCommand_PushToServerV3()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packagesDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
+                string outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
+
+                // Server setup
+                var indexJson = Util.CreateIndexJson();
+
+                using (var serverV3 = new MockServer())
+                {
+                    serverV3.Get.Add("/", r =>
+                    {
+                        var path = r.Url.AbsolutePath;
+
+                        if (path == "/index.json")
+                        {
+                            return new Action<HttpListenerResponse>(response =>
+                            {
+                                response.StatusCode = 200;
+                                response.ContentType = "text/javascript";
+                                MockServer.SetResponseContent(response, indexJson.ToString());
+                            });
+                        }
+
+                        throw new Exception("This test needs to be updated to support: " + path);
+                    });
+
+                    using (var serverV2 = new MockServer())
+                    {
+                        Util.AddFlatContainerResource(indexJson, serverV3);
+                        Util.AddPublishResource(indexJson, serverV2);
+
+                        serverV2.Get.Add("/push", r => "OK");
+                        serverV2.Put.Add("/push", r =>
+                        {
+                            byte[] buffer = MockServer.GetPushedPackage(r);
+                            using (var of = new FileStream(outputFileName, FileMode.Create))
+                            {
+                                of.Write(buffer, 0, buffer.Length);
+                            }
+
+                            return HttpStatusCode.Created;
+                        });
+
+                        serverV3.Start();
+                        serverV2.Start();
+
+                        // Act
+                        string[] args = new string[]
+                        {
+                            "push",
+                            packageFileName,
+                            "-Source",
+                            serverV3.Uri + "index.json"
+                        };
+
+                        var result = CommandRunner.Run(
+                                        nugetexe,
+                                        Directory.GetCurrentDirectory(),
+                                        string.Join(" ", args),
+                                        true);
+                        serverV2.Stop();
+                        serverV3.Stop();
+
+                        // Assert
+                        Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
+                        var output = result.Item2;
+                        Assert.Contains("Your package was pushed.", output);
+                        AssertFileEqual(packageFileName, outputFileName);
+                    }
+                }
+            }
+            finally
+            {
+                // Cleanup
+                TestFilesystemUtility.DeleteRandomTestFolders(packagesDirectory);
             }
         }
 

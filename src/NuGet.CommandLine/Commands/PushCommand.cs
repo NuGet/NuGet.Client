@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine
 {
@@ -25,7 +28,7 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "PushCommandDisableBufferingDescription")]
         public bool DisableBuffering { get; set; }
 
-        public override void ExecuteCommand()
+        public override async Task ExecuteCommandAsync()
         {
             // First argument should be the package
             string packagePath = Arguments[0];
@@ -45,6 +48,7 @@ namespace NuGet.CommandLine
                 timeout = TimeSpan.FromMinutes(5); // Default to 5 minutes
             }
 
+            source = await GetPushEndpointAsync(source);
             PushPackage(packagePath, source, apiKey, timeout);
 
             if (source.Equals(NuGetConstants.DefaultGalleryServerUrl, StringComparison.OrdinalIgnoreCase))
@@ -53,7 +57,28 @@ namespace NuGet.CommandLine
             }
         }
 
-        public string ResolveSource(string packagePath, string configurationDefaultPushSource = null)
+        private async Task<string> GetPushEndpointAsync(string source)
+        {
+            var packageSource = new Configuration.PackageSource(source);
+
+            var sourceRepositoryProvider = new SourceRepositoryProvider(SourceProvider,
+                Enumerable.Concat(
+                    Protocol.Core.v2.FactoryExtensionsV2.GetCoreV2(Repository.Provider),
+                    Protocol.Core.v3.FactoryExtensionsV2.GetCoreV3(Repository.Provider)));
+
+            var sourceRepository = sourceRepositoryProvider.CreateRepository(packageSource);
+            var pushCommandResource = await sourceRepository.GetResourceAsync<PushCommandResource>();
+
+            if (pushCommandResource != null)
+            {
+                var pushEndpoint = pushCommandResource.GetPushEndpoint();
+                return pushEndpoint;
+            }
+
+            return source;
+        }
+
+        private string ResolveSource(string packagePath, string configurationDefaultPushSource = null)
         {
             string source = Source;
 
