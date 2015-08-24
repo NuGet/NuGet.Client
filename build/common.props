@@ -22,6 +22,7 @@
 		Pre-release version = Minutes since semantic version was set, divided by 5 (to make it fit in a UInt16).
 		-->
 		<PreReleaseVersion>$([MSBuild]::Divide($([System.DateTime]::Now.Subtract($([System.DateTime]::Parse($(SemanticVersionDate)))).TotalMinutes), 5).ToString('F0'))</PreReleaseVersion>
+		<PreReleaseInformationVersion>-Beta-$(PreReleaseVersion)</PreReleaseInformationVersion>
 	</PropertyGroup>
 	
 	<!--Setting the Pre-release/Build meta-data from CI if Version is set-->
@@ -31,7 +32,7 @@
 	
 	<!--Not using the build number for FileVersion on release build-->
 	<PropertyGroup Condition="'$(PublicRelease)' == 'true'">
-		<PreReleaseVersion>0</PreReleaseVersion>
+		<PreReleaseInformationVersion></PreReleaseInformationVersion>
 	</PropertyGroup>
 
   <!-- Generate AssemblyFileVersion and AssemblyVersion attributes. -->
@@ -50,19 +51,22 @@
       <_Parameter1>$(SemanticVersionMajor).$(SemanticVersionMinor).$(SemanticVersionPatch).$(PreReleaseVersion)</_Parameter1>
     </AssemblyAttributes>
     <AssemblyAttributes Include="AssemblyFileVersion">
-      <_Parameter1>$(SemanticVersionMajor).$(SemanticVersionMinor).$(SemanticVersionPatch)$(PreReleaseVersion)</_Parameter1>
+      <_Parameter1>$(SemanticVersionMajor).$(SemanticVersionMinor).$(SemanticVersionPatch).$(PreReleaseVersion)</_Parameter1>
+    </AssemblyAttributes>
+	<AssemblyAttributes Include="AssemblyInformationalVersion">
+      <_Parameter1>$(SemanticVersionMajor).$(SemanticVersionMinor).$(SemanticVersionPatch)$(PreReleaseInformationVersion)</_Parameter1>
     </AssemblyAttributes>
     <AssemblyAttributes Include="AssemblyCompany">
-      <_Parameter1>".NET Foundation"</_Parameter1>
+      <_Parameter1>.NET Foundation</_Parameter1>
     </AssemblyAttributes>
     <AssemblyAttributes Include="AssemblyProduct">
-      <_Parameter1>"NuGet"</_Parameter1>
+      <_Parameter1>NuGet</_Parameter1>
     </AssemblyAttributes>
     <AssemblyAttributes Include="AssemblyCopyright">
-      <_Parameter1>"\x00a9 .NET Foundation. All rights reserved."</_Parameter1>
+      <_Parameter1>\x00a9 .NET Foundation. All rights reserved.</_Parameter1>
     </AssemblyAttributes>
     <AssemblyAttributes Include="System.Resources.NeutralResourcesLanguage">
-      <_Parameter1>"en-US"</_Parameter1>
+      <_Parameter1>en-US</_Parameter1>
     </AssemblyAttributes>
   </ItemGroup>
 </Project>
