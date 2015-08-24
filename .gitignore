@@ -57,6 +57,7 @@ x64/
 *.log
 *.scc
 project.lock.json
+*.g.cs
 
 # Visual C++ cache files
 ipch/

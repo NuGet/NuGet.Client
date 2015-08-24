@@ -1,11 +1,6 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\NuGet.MsBuild.Integration\build\Microsoft.NuGet.targets" 
 	Condition="!Exists('$(MSBuildBinPath)\..\Imports\Microsoft.Common.Props\ImportBefore\Microsoft.NuGet.ImportBefore.props')"  />
-	<ItemGroup>
-		<Compile Include="..\..\Common\CommonAssemblyInfo.cs">
-			<Link>Properties\CommonAssemblyInfo.cs</Link>
-		</Compile>
-	</ItemGroup>
 	<Target Name="MakeNuGetReferencesPrivate" 
 		AfterTargets="ResolveNuGetPackageAssets"
 		Condition="Exists('$(MSBuildBinPath)\..\Imports\Microsoft.Common.Props\ImportBefore\Microsoft.NuGet.ImportBefore.props')">

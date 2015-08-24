@@ -11,3 +11,4 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("NuGet Command Line")]
 [assembly: AssemblyDescription("NuGet Command Line")]
+[assembly: ComVisible(false)]

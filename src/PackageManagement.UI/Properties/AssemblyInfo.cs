@@ -10,3 +10,4 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("NuGet's Package Management UI for Visual Studio")]
 [assembly: AssemblyDescription("NuGet's Package Management UI for Visual Studio")]
+[assembly: ComVisible(false)]
