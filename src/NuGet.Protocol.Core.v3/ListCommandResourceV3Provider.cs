@@ -27,11 +27,12 @@ namespace NuGet.Protocol.Core.v3
 
             if (serviceIndex != null)
             {
+                // Since it is a v3 package source, always return a ListCommandResource object
+                // which may or may not contain a list endpoint.
+                // Returning null here will result in ListCommandResource
+                // getting returned for this very v3 package source as if it was a v2 package source
                 var baseUrl = serviceIndex[ServiceTypes.LegacyGallery].FirstOrDefault();
-                if (baseUrl != null)
-                {
-                    listCommandResource = new ListCommandResource(baseUrl.AbsoluteUri);
-                }
+                listCommandResource = new ListCommandResource(baseUrl?.AbsoluteUri);
             }
 
             var result = new Tuple<bool, INuGetResource>(listCommandResource != null, listCommandResource);

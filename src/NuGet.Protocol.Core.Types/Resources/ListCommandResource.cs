@@ -8,11 +8,7 @@ namespace NuGet.Protocol.Core.Types
 
         public ListCommandResource(string listEndpoint)
         {
-            if (listEndpoint == null)
-            {
-                throw new ArgumentNullException(nameof(listEndpoint));
-            }
-
+            // _listEndpoint may be null
             _listEndpoint = listEndpoint;
         }
 
