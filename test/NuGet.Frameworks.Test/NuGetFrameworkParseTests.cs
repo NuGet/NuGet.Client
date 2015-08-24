@@ -255,10 +255,12 @@ namespace NuGet.Test
         [InlineData("portable-net45+wp8+win8+wpa")]
         [InlineData("portable-net45+win8+wp8+wpa81+monotouch+monoandroid")]
         [InlineData(".NETPortable,Version=v0.0,Profile=Profile259")]
-        // TODO: should bad framework names be supported?
-        //[InlineData(".NETPortable,Version=v0.0,Profile=net45+wp8+win8+wpa+monotouch+monoandroid")]
-        //[InlineData(".NETPortable,Version=v0.0,Profile=net45+wp8+win+wpa")]
-        //[InlineData(".NETPortable,Version=v0.0,Profile=net45+wp8+win8+wpa81")]
+        [InlineData("portable-net45+wp8+win+wpa+win8")]
+        [InlineData("portable-net45+wp8+win+wpa+netcore+netcore45")]
+        [InlineData("portable-net450+net4.5+net45+wp8+wpa+win8+wpa81")]
+        [InlineData("portable-win8+net45+wp8+wpa81+win8+win8")]
+        [InlineData("portable-net45+wp8+win+wpa+win8")]
+        [InlineData("portable-net45+wp8+win+wpa+win8+net4.5")]
         public void NuGetFramework_ParsePCLNormalizeTest(string framework)
         {
             Assert.Equal("Profile259", NuGetFramework.Parse(framework).Profile);
