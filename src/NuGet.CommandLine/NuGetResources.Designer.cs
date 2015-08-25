@@ -5434,6 +5434,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This version of nuget.exe does not support listing packages from package source &apos;{0}&apos;..
+        /// </summary>
+        public static string ListCommand_ListNotSupported {
+            get {
+                return ResourceManager.GetString("ListCommand_ListNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No packages found..
         /// </summary>
         public static string ListCommandNoPackages {

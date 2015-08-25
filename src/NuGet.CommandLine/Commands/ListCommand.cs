@@ -124,12 +124,26 @@ namespace NuGet.Commands
             var listCommandResources = await Task.WhenAll(listCommandResourceTasks);
 
             var listEndpoints = new List<string>();
-            foreach(var listCommandResource in listCommandResources)
+            for (int i = 0; i < listCommandResources.Length; i++)
             {
-                var listEndpoint = listCommandResource.GetListEndpoint();
+                string listEndpoint = null;
+                var listCommandResource = listCommandResources[i];
+                if (listCommandResource != null)
+                {
+                    listEndpoint = listCommandResource.GetListEndpoint();
+                }
+
                 if (listEndpoint != null)
                 {
                     listEndpoints.Add(listEndpoint);
+                }
+                else
+                {
+                    var message = string.Format(
+                        LocalizedResourceManager.GetString("ListCommand_ListNotSupported"),
+                        packageSources[i].Source);
+
+                    Console.LogWarning(message);
                 }
             }
 

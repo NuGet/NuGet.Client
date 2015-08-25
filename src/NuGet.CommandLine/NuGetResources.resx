@@ -6052,4 +6052,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="Error_InvalidMsbuildVersion" xml:space="preserve">
     <value>Invalid MSBuild version specified: '{0}'</value>
   </data>
+  <data name="ListCommand_ListNotSupported" xml:space="preserve">
+    <value>This version of nuget.exe does not support listing packages from package source '{0}'.</value>
+  </data>
 </root>

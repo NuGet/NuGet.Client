@@ -81,11 +81,11 @@ namespace NuGet.CommandLine.Test
             var configFile = Path.GetTempFileName();
             Util.CreateFile(Path.GetDirectoryName(configFile), Path.GetFileName(configFile), "<configuration/>");
 
-            string[] args = new string[] { 
-                "sources", 
-                "Add", 
-                "-Name", 
-                "test_source", 
+            string[] args = new string[] {
+                "sources",
+                "Add",
+                "-Name",
+                "test_source",
                 "-Source",
                 repositoryPath,
                 "-ConfigFile",
@@ -660,6 +660,126 @@ namespace NuGet.CommandLine.Test
                         Assert.Contains("searchTerm='test", searchRequest);
                         Assert.Contains("includePrerelease=false", searchRequest);
                     }
+                }
+            }
+            finally
+            {
+                // Cleanup
+                TestFilesystemUtility.DeleteRandomTestFolders(packageDirectory);
+            }
+        }
+
+        [Fact]
+        public void ListCommand_SimpleV3_NoListEndpoint()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packageDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                // Server setup
+                var indexJson = Util.CreateIndexJson();
+                using (var serverV3 = new MockServer())
+                {
+                    serverV3.Get.Add("/", r =>
+                    {
+                        var path = r.Url.AbsolutePath;
+
+                        if (path == "/index.json")
+                        {
+                            return new Action<HttpListenerResponse>(response =>
+                            {
+                                response.StatusCode = 200;
+                                response.ContentType = "text/javascript";
+                                MockServer.SetResponseContent(response, indexJson.ToString());
+                            });
+                        }
+
+                        throw new Exception("This test needs to be updated to support: " + path);
+                    });
+
+                    serverV3.Start();
+
+                    // Act
+                    var args = "list test -Source " + serverV3.Uri + "index.json";
+                    var result = CommandRunner.Run(
+                        nugetexe,
+                        Directory.GetCurrentDirectory(),
+                        args,
+                        waitForExit: true);
+
+                    serverV3.Stop();
+
+                    // Assert
+                    Assert.True(result.Item1 == 0, result.Item2 + " " + result.Item3);
+
+                    // verify that only package id & version is displayed
+                    var expectedOutput =
+                        string.Format(
+                      "WARNING: This version of nuget.exe does not support listing packages" +
+                      " from package source '{0}'.",
+                      serverV3.Uri + "index.json");
+
+                    // Verify that the output contains the expected output
+                    Assert.True(result.Item2.Contains(expectedOutput));
+                }
+            }
+            finally
+            {
+                // Cleanup
+                TestFilesystemUtility.DeleteRandomTestFolders(packageDirectory);
+            }
+        }
+
+        [Fact]
+        public void ListCommand_UnavailableV3()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packageDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                // Server setup
+                using (var serverV3 = new MockServer())
+                {
+                    serverV3.Get.Add("/", r =>
+                    {
+                        var path = r.Url.AbsolutePath;
+
+                        if (path == "/index.json")
+                        {
+                            return new Action<HttpListenerResponse>(response =>
+                            {
+                                response.StatusCode = 404;
+                                response.ContentType = "text/javascript";
+                                MockServer.SetResponseContent(response, response.StatusCode.ToString());
+                            });
+                        }
+
+                        throw new Exception("This test needs to be updated to support: " + path);
+                    });
+
+                    serverV3.Start();
+
+                    // Act
+                    var args = "list test -Source " + serverV3.Uri + "index.json";
+                    var result = CommandRunner.Run(
+                        nugetexe,
+                        Directory.GetCurrentDirectory(),
+                        args,
+                        waitForExit: true);
+
+                    serverV3.Stop();
+
+                    // Assert
+                    Assert.True(result.Item1 != 0, result.Item2 + " " + result.Item3);
+
+                    Assert.True(
+                        result.Item3.Contains("The remote server returned an error: (404) Not Found."),
+                        "Expected error message not found in " + result.Item3
+                        );
                 }
             }
             finally
