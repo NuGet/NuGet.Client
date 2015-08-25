@@ -785,6 +785,439 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Fact]
+        public void PushCommand_PushToServerV3_NoPushEndpoint()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packagesDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
+                string outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
+
+                // Server setup
+                var indexJson = Util.CreateIndexJson();
+
+                using (var serverV3 = new MockServer())
+                {
+                    serverV3.Get.Add("/", r =>
+                    {
+                        var path = r.Url.AbsolutePath;
+
+                        if (path == "/index.json")
+                        {
+                            return new Action<HttpListenerResponse>(response =>
+                            {
+                                response.StatusCode = 200;
+                                response.ContentType = "text/javascript";
+                                MockServer.SetResponseContent(response, indexJson.ToString());
+                            });
+                        }
+
+                        throw new Exception("This test needs to be updated to support: " + path);
+                    });
+
+                    serverV3.Start();
+
+                    // Act
+                    string[] args = new string[]
+                    {
+                            "push",
+                            packageFileName,
+                            "-Source",
+                            serverV3.Uri + "index.json"
+                    };
+
+                    var result = CommandRunner.Run(
+                                    nugetexe,
+                                    Directory.GetCurrentDirectory(),
+                                    string.Join(" ", args),
+                                    true);
+
+                    serverV3.Stop();
+
+                    // Assert
+                    Assert.True(result.Item1 == 0, result.Item2 + " " + result.Item3);
+
+                    var expectedOutput =
+                        string.Format(
+                      "WARNING: This version of nuget.exe does not support pushing packages to package source '{0}'.",
+                      serverV3.Uri + "index.json");
+
+                    // Verify that the output contains the expected output
+                    Assert.True(result.Item2.Contains(expectedOutput));
+                }
+            }
+            finally
+            {
+                // Cleanup
+                TestFilesystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
+        }
+
+        [Fact]
+        public void PushCommand_PushToServerV3_Unavailable()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packagesDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
+                string outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
+
+                // Server setup
+                var indexJson = Util.CreateIndexJson();
+
+                using (var serverV3 = new MockServer())
+                {
+                    serverV3.Get.Add("/", r =>
+                    {
+                        var path = r.Url.AbsolutePath;
+
+                        if (path == "/index.json")
+                        {
+                            return new Action<HttpListenerResponse>(response =>
+                            {
+                                response.StatusCode = 404;
+                                response.ContentType = "text/javascript";
+                                MockServer.SetResponseContent(response, response.StatusCode.ToString());
+                            });
+                        }
+
+                        throw new Exception("This test needs to be updated to support: " + path);
+                    });
+
+                    serverV3.Start();
+
+                    // Act
+                    string[] args = new string[]
+                    {
+                            "push",
+                            packageFileName,
+                            "-Source",
+                            serverV3.Uri + "index.json"
+                    };
+
+                    var result = CommandRunner.Run(
+                                    nugetexe,
+                                    Directory.GetCurrentDirectory(),
+                                    string.Join(" ", args),
+                                    true);
+
+                    serverV3.Stop();
+
+                    // Assert
+                    Assert.True(result.Item1 != 0, result.Item2 + " " + result.Item3);
+
+                    Assert.True(
+                        result.Item3.Contains("The remote server returned an error: (404) Not Found."),
+                        "Expected error message not found in " + result.Item3
+                        );
+                }
+            }
+            finally
+            {
+                // Cleanup
+                TestFilesystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
+        }
+
+        [Fact]
+        public void PushCommand_PushToServerV3_ApiKey()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packagesDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
+                string outputFileName = Path.Combine(packagesDirectory, "t1.nupkg");
+
+                // Server setup
+                var indexJson = Util.CreateIndexJson();
+
+                using (var serverV3 = new MockServer())
+                {
+                    serverV3.Get.Add("/", r =>
+                    {
+                        var path = r.Url.AbsolutePath;
+
+                        if (path == "/index.json")
+                        {
+                            return new Action<HttpListenerResponse>(response =>
+                            {
+                                response.StatusCode = 200;
+                                response.ContentType = "text/javascript";
+                                MockServer.SetResponseContent(response, indexJson.ToString());
+                            });
+                        }
+
+                        throw new Exception("This test needs to be updated to support: " + path);
+                    });
+
+                    using (var serverV2 = new MockServer())
+                    {
+                        Util.AddFlatContainerResource(indexJson, serverV3);
+                        Util.AddPublishResource(indexJson, serverV2);
+
+                        serverV2.Get.Add("/push", r => "OK");
+                        serverV2.Put.Add("/push", r =>
+                        {
+                            var h = r.Headers["X-NuGet-ApiKey"];
+                            if (!h.Equals("blah-blah", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return HttpStatusCode.Unauthorized;
+                            }
+
+                            byte[] buffer = MockServer.GetPushedPackage(r);
+                            using (var of = new FileStream(outputFileName, FileMode.Create))
+                            {
+                                of.Write(buffer, 0, buffer.Length);
+                            }
+
+                            return HttpStatusCode.Created;
+                        });
+
+                        serverV3.Start();
+                        serverV2.Start();
+
+                        // Act
+                        string[] args = new string[]
+                        {
+                            "push",
+                            packageFileName,
+                            "-Source",
+                            serverV3.Uri + "index.json",
+                            "-ApiKey",
+                            "blah-blah"
+                        };
+
+                        var result = CommandRunner.Run(
+                                        nugetexe,
+                                        Directory.GetCurrentDirectory(),
+                                        string.Join(" ", args),
+                                        true);
+                        serverV2.Stop();
+                        serverV3.Stop();
+
+                        // Assert
+                        Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
+                        var output = result.Item2;
+                        Assert.Contains("Your package was pushed.", output);
+                        AssertFileEqual(packageFileName, outputFileName);
+                    }
+                }
+            }
+            finally
+            {
+                // Cleanup
+                TestFilesystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
+        }
+
+        [Fact]
+        public void PushCommand_PushToServerV3_ApiKeyFromConfig()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", randomTestFolder);
+                string outputFileName = Path.Combine(randomTestFolder, "t1.nupkg");
+
+                // Server setup
+                var indexJson = Util.CreateIndexJson();
+
+                using (var serverV3 = new MockServer())
+                {
+                    serverV3.Get.Add("/", r =>
+                    {
+                        var path = r.Url.AbsolutePath;
+
+                        if (path == "/index.json")
+                        {
+                            return new Action<HttpListenerResponse>(response =>
+                            {
+                                response.StatusCode = 200;
+                                response.ContentType = "text/javascript";
+                                MockServer.SetResponseContent(response, indexJson.ToString());
+                            });
+                        }
+
+                        throw new Exception("This test needs to be updated to support: " + path);
+                    });
+
+                    using (var serverV2 = new MockServer())
+                    {
+                        Util.AddFlatContainerResource(indexJson, serverV3);
+                        Util.AddPublishResource(indexJson, serverV2);
+
+                        serverV2.Get.Add("/push", r => "OK");
+                        serverV2.Put.Add("/push", r =>
+                        {
+                            var h = r.Headers["X-NuGet-ApiKey"];
+                            if (string.IsNullOrEmpty(h)
+                            || !h.Equals("blah-blah", StringComparison.OrdinalIgnoreCase))
+                            {
+                                return HttpStatusCode.Unauthorized;
+                            }
+
+                            byte[] buffer = MockServer.GetPushedPackage(r);
+                            using (var of = new FileStream(outputFileName, FileMode.Create))
+                            {
+                                of.Write(buffer, 0, buffer.Length);
+                            }
+
+                            return HttpStatusCode.Created;
+                        });
+
+                        serverV3.Start();
+                        serverV2.Start();
+
+                        var config = string.Format(@"<?xml version='1.0' encoding='utf-8'?>
+                                                    <configuration>
+                                                      <packageSources>
+                                                        <add key='nuget.org' value='{0}' protocolVersion='3' />
+                                                        <add key='nuget.org' value='{1}' />
+                                                      </packageSources>
+                                                      <packageRestore>
+                                                        <add key='enabled' value='True' />
+                                                        <add key='automatic' value='True' />
+                                                      </packageRestore>
+                                                      <disabledPackageSources />
+                                                      <apikeys>
+                                                        <add key='{2}' value='{3}' />
+                                                      </apikeys>
+                                                    </configuration>",
+                                                    serverV3.Uri + "index.json",
+                                                    serverV2.Uri + "push",
+                                                    serverV2.Uri + "push",
+                                                    Configuration.EncryptionUtility.EncryptString("blah-blah"));
+
+                        var configFileName = Path.Combine(randomTestFolder, "nuget.config");
+                        File.WriteAllText(configFileName, config);
+
+                        // Act
+                        string[] args = new string[]
+                        {
+                            "push",
+                            packageFileName,
+                            "-Source",
+                            serverV3.Uri + "index.json",
+                            "-ConfigFile",
+                            configFileName
+                        };
+
+                        var result = CommandRunner.Run(
+                                        nugetexe,
+                                        Directory.GetCurrentDirectory(),
+                                        string.Join(" ", args),
+                                        true);
+                        serverV2.Stop();
+                        serverV3.Stop();
+
+                        // Assert
+                        Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
+                        var output = result.Item2;
+                        Assert.Contains("Your package was pushed.", output);
+                        AssertFileEqual(packageFileName, outputFileName);
+                    }
+                }
+            }
+            finally
+            {
+                // Cleanup
+                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
+            }
+        }
+
+        [Fact]
+        public void PushCommand_DefaultPushSource()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var randomDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", randomDirectory);
+                string outputFileName = Path.Combine(randomDirectory, "t1.nupkg");
+
+                // Server setup
+                using (var serverV2 = new MockServer())
+                {
+                    serverV2.Get.Add("/push", r => "OK");
+                    serverV2.Put.Add("/push", r =>
+                    {
+                        byte[] buffer = MockServer.GetPushedPackage(r);
+                        using (var of = new FileStream(outputFileName, FileMode.Create))
+                        {
+                            of.Write(buffer, 0, buffer.Length);
+                        }
+
+                        return HttpStatusCode.Created;
+                    });
+
+                    serverV2.Start();
+
+                    var config = string.Format(@"<?xml version='1.0' encoding='utf-8'?>
+                                                    <configuration>
+                                                      <packageSources>
+                                                        <add key='nuget.org' value='{0}' />
+                                                      </packageSources>
+                                                      <packageRestore>
+                                                        <add key='enabled' value='True' />
+                                                        <add key='automatic' value='True' />
+                                                      </packageRestore>
+                                                      <config>
+                                                        <add key='DefaultPushSource' value='{1}' />
+                                                      </config>
+                                                    </configuration>",
+                                                serverV2.Uri + "push",
+                                                serverV2.Uri + "push");
+
+                    string configFileName = Path.Combine(randomDirectory, "nuget.config");
+                    File.WriteAllText(configFileName, config);
+
+                    // Act
+                    string[] args = new string[]
+                    {
+                            "push",
+                            packageFileName,
+                            "-ConfigFile",
+                            configFileName,
+                            "-ApiKey",
+                            "blah-blah"
+                    };
+
+                    var result = CommandRunner.Run(
+                                    nugetexe,
+                                    Directory.GetCurrentDirectory(),
+                                    string.Join(" ", args),
+                                    true);
+                    serverV2.Stop();
+
+                    // Assert
+                    Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
+                    var output = result.Item2;
+                    Assert.Contains("Your package was pushed.", output);
+                    AssertFileEqual(packageFileName, outputFileName);
+                }
+            }
+            finally
+            {
+                // Cleanup
+                TestFilesystemUtility.DeleteRandomTestFolders(randomDirectory);
+            }
+        }
+
         // Asserts that the contents of two files are equal.
         void AssertFileEqual(string fileName1, string fileName2)
         {

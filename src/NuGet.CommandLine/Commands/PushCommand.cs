@@ -35,11 +35,24 @@ namespace NuGet.CommandLine
 
             // Don't push symbols by default
             string source = ResolveSource(packagePath, ConfigurationDefaults.Instance.DefaultPushSource);
+            var pushEndpoint = await GetPushEndpointAsync(source);
 
-            var apiKey = GetApiKey(source);
-            if (String.IsNullOrEmpty(apiKey) && !IsFileSource(source))
+            if (string.IsNullOrEmpty(pushEndpoint))
             {
-                Console.WriteWarning(LocalizedResourceManager.GetString("NoApiKeyFound"), CommandLineUtility.GetSourceDisplayName(source));
+                var message = string.Format(
+                    LocalizedResourceManager.GetString("PushCommand_PushNotSupported"),
+                    source);
+
+                Console.LogWarning(message);
+                return;
+            }
+
+            var apiKey = GetApiKey(pushEndpoint);
+            if (string.IsNullOrEmpty(apiKey) && !IsFileSource(pushEndpoint))
+            {
+                Console.WriteWarning(
+                    LocalizedResourceManager.GetString("NoApiKeyFound"),
+                    CommandLineUtility.GetSourceDisplayName(pushEndpoint));
             }
 
             var timeout = TimeSpan.FromSeconds(Math.Abs(Timeout));
@@ -48,10 +61,9 @@ namespace NuGet.CommandLine
                 timeout = TimeSpan.FromMinutes(5); // Default to 5 minutes
             }
 
-            source = await GetPushEndpointAsync(source);
-            PushPackage(packagePath, source, apiKey, timeout);
+            PushPackage(packagePath, pushEndpoint, apiKey, timeout);
 
-            if (source.Equals(NuGetConstants.DefaultGalleryServerUrl, StringComparison.OrdinalIgnoreCase))
+            if (pushEndpoint.Equals(NuGetConstants.DefaultGalleryServerUrl, StringComparison.OrdinalIgnoreCase))
             {
                 PushSymbols(packagePath, timeout);
             }

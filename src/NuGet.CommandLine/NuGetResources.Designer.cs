@@ -8728,6 +8728,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This version of nuget.exe does not support pushing packages to package source &apos;{0}&apos;..
+        /// </summary>
+        public static string PushCommand_PushNotSupported {
+            get {
+                return ResourceManager.GetString("PushCommand_PushNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There is no default source, please specify a source..
         /// </summary>
         public static string PushCommandNoSourceError {

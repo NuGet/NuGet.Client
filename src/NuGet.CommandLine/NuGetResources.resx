@@ -6055,4 +6055,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="ListCommand_ListNotSupported" xml:space="preserve">
     <value>This version of nuget.exe does not support listing packages from package source '{0}'.</value>
   </data>
+  <data name="PushCommand_PushNotSupported" xml:space="preserve">
+    <value>This version of nuget.exe does not support pushing packages to package source '{0}'.</value>
+  </data>
 </root>
