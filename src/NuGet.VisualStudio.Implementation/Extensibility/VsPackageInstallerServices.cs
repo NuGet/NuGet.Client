@@ -67,6 +67,13 @@ namespace NuGet.VisualStudio
 
                             foreach (var package in installedPackages)
                             {
+                                if (!package.PackageIdentity.HasVersion)
+                                {
+                                    // Currently we are not supporting floating versions 
+                                    // because of that we will skip this package
+                                    continue;
+                                }
+
                                 // find packages using the solution level packages folder
                                 string installPath;
                                 if (buildIntegratedProject != null)
