@@ -25,11 +25,12 @@ namespace NuGet.Protocol.Core.v3
 
             if (serviceIndex != null)
             {
+                // Since it is a v3 package source, always return a PushCommandResource object
+                // which may or may not contain a push endpoint.
+                // Returning null here will result in ListCommandResource
+                // getting returned for this very v3 package source as if it was a v2 package source
                 var baseUrl = serviceIndex[ServiceTypes.PackagePublish].FirstOrDefault();
-                if (baseUrl != null)
-                {
-                    pushCommandResource = new PushCommandResource(baseUrl.AbsoluteUri);
-                }
+                pushCommandResource = new PushCommandResource(baseUrl?.AbsoluteUri);
             }
 
             var result = new Tuple<bool, INuGetResource>(pushCommandResource != null, pushCommandResource);

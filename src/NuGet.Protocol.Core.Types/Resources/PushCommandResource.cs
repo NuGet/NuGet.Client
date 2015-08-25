@@ -8,11 +8,7 @@ namespace NuGet.Protocol.Core.Types
 
         public PushCommandResource(string pushEndpoint)
         {
-            if (pushEndpoint == null)
-            {
-                throw new ArgumentNullException(nameof(pushEndpoint));
-            }
-
+            // _pushEndpoint may be null
             _pushEndpoint = pushEndpoint;
         }
 
