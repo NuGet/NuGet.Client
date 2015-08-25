@@ -14,20 +14,14 @@ namespace NuGet.Protocol.Core.v2
                   NuGetResourceProviderPositions.Last)
         { }
 
-        public override async Task<Tuple<bool, INuGetResource>> TryCreate(
+        public override Task<Tuple<bool, INuGetResource>> TryCreate(
             SourceRepository source,
             CancellationToken token)
         {
-            PushCommandResource pushCommandResource = null;
-            var v2Repo = await GetRepository(source, token);
-
-            if (v2Repo != null && v2Repo.V2Client != null && !string.IsNullOrEmpty(v2Repo.V2Client.Source))
-            {
-                pushCommandResource = new PushCommandResource(v2Repo.V2Client.Source);
-            }
+            var pushCommandResource = new PushCommandResource(source?.PackageSource?.Source);
 
             var result = new Tuple<bool, INuGetResource>(pushCommandResource != null, pushCommandResource);
-            return result;
+            return Task.FromResult(result);
         }
     }
 }
