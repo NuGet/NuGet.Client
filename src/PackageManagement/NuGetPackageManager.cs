@@ -544,6 +544,21 @@ namespace NuGet.PackageManagement
                     throw new InvalidOperationException(Strings.UnableToGatherDependencyInfoForMultiplePackages);
                 }
 
+                // Update-Package ALL packages scenarios must always include the packages in the current project
+                // Scenarios include: (1) a package havign been deleted from a feed (2) a source being removed from nuget config (3) an explicitly specified source 
+                if (packageId == null && packageIdentity == null)
+                {
+                    // BUG #1181 VS2015 : Updating from one feed fails for packages from different feed.
+
+                    DependencyInfoResource packagesFolderResource = await PackagesFolderSourceRepository.GetResourceAsync<DependencyInfoResource>(token);
+                    var packages = new List<SourcePackageDependencyInfo>();
+                    foreach (var installedPackage in projectInstalledPackageReferences)
+                    {
+                        var packageInfo = await packagesFolderResource.ResolvePackage(installedPackage.PackageIdentity, targetFramework, token);
+                        availablePackageDependencyInfoWithSourceSet.Add(packageInfo);
+                    }
+                }
+
                 // Prune the results down to only what we would allow to be installed
                 IEnumerable<SourcePackageDependencyInfo> prunedAvailablePackages = availablePackageDependencyInfoWithSourceSet;
 

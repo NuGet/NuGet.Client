@@ -2850,6 +2850,50 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public async Task TestPacManPreviewUpdateWithNoSource()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new List<NuGet.Configuration.PackageSource>());
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new Configuration.NullSettings();
+            var deleteOnRestartManager = new TestDeleteOnRestartManager();
+            var token = CancellationToken.None;
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager,
+                deleteOnRestartManager);
+            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigFolderPath);
+            var newtonsoftJsonPackageId = "newtonsoft.json";
+            var newtonsoftJsonPackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, NuGetVersion.Parse("4.5.11"));
+
+            var resolutionContext = new ResolutionContext(DependencyBehavior.Highest, false, true, VersionConstraints.None);
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+
+            // Act
+
+            // Update ALL - this should not fail - it should no-op
+
+            var nuGetProjectActions = (await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                msBuildNuGetProject,
+                resolutionContext,
+                testNuGetProjectContext,
+                Enumerable.Empty<SourceRepository>(),
+                Enumerable.Empty<SourceRepository>(),
+                token)).ToList();
+
+            // Hence, no nuget project actions to perform
+            Assert.Equal(0, nuGetProjectActions.Count);
+        }
+
+        [Fact]
         public async Task TestPacManInstallAspNetRazorJa()
         {
             // Arrange
