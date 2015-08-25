@@ -71,7 +71,7 @@ namespace NuGetConsole
                 }
                 if (packageIdentity != null)
                 {
-                    package = new ScriptPackage(packageIdentity.Id, packageIdentity.Version.ToString());
+                    package = new ScriptPackage(packageIdentity.Id, packageIdentity.Version.ToString(), packageInstallPath);
                 }
                 if (fullScriptPath.EndsWith(PowerShellScripts.Init, StringComparison.OrdinalIgnoreCase))
                 {
