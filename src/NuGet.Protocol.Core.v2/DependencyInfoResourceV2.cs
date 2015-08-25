@@ -149,7 +149,7 @@ namespace NuGet.Protocol.Core.v2
                 }
             }
 
-            return new SourcePackageDependencyInfo(identity, deps, packageVersion.Listed, _source);
+            return new SourcePackageDependencyInfo(identity, deps, PackageExtensions.IsListed(packageVersion), _source);
         }
 
         private static NuGetFramework GetFramework(PackageDependencySet dependencySet)
