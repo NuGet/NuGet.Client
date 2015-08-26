@@ -1,8 +1,8 @@
 {
     "dependencies": {
-        "NuGet.Commands": "3.1.1-*",
-        "NuGet.Protocol.Core.v2": "3.1.1-*",
-        "NuGet.Resolver": "3.1.1-*"
+        "NuGet.Commands": "3.2.0-*",
+        "NuGet.Protocol.Core.v2": "3.2.0-*",
+        "NuGet.Resolver": "3.2.0-*"
     },
     "frameworks": {
         "net45": {}
