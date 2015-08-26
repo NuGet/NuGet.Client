@@ -224,7 +224,7 @@ namespace NuGet.CommandLine
                 request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
             }
 
-            request.NoCache = NoCache;
+            request.CacheContext.NoCache = NoCache;
 
             // Read the existing lock file, this is needed to support IsLocked=true
             var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(projectJsonPath);
