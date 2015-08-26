@@ -1218,6 +1218,96 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Fact]
+        public void PushCommand_APIV2Package_Endpoint()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var tempPath = Path.GetTempPath();
+            var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
+
+            try
+            {
+                // Arrange
+                Util.CreateDirectory(packageDirectory);
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
+
+                using (var server = new MockServer())
+                {
+                    server.Get.Add("/", r =>
+                    {
+                        var path = r.Url.AbsolutePath;
+
+                        if (path.Equals("/", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return HttpStatusCode.OK;
+                        }
+
+                        if (path.Equals("/api/v2", StringComparison.OrdinalIgnoreCase)
+                        || path.Equals("/api/v2/", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return HttpStatusCode.OK;
+                        }
+
+                        if (path.Equals("/api/v2/Package", StringComparison.OrdinalIgnoreCase)
+                        || path.Equals("/api/v2/Package/", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return HttpStatusCode.NotFound;
+                        }
+
+                        throw new Exception("This test needs to be updated to support GET for: " + path);
+                    });
+
+                    server.Put.Add("/", r =>
+                    {
+                        var path = r.Url.AbsolutePath;
+
+                        if (path.Equals("/api/v2/Package", StringComparison.OrdinalIgnoreCase)
+                        || path.Equals("/api/v2/Package/", StringComparison.OrdinalIgnoreCase))
+                        {
+                            byte[] buffer = MockServer.GetPushedPackage(r);
+                            using (var of = new FileStream(outputFileName, FileMode.Create))
+                            {
+                                of.Write(buffer, 0, buffer.Length);
+                            }
+
+                            return HttpStatusCode.Created;
+                        }
+
+                        throw new Exception("This test needs to be updated to support PUT for: " + path);
+                    });
+                    server.Start();
+
+                    // Act
+                    string[] args = new string[]
+                    {
+                        "push",
+                        packageFileName,
+                        "-Source",
+                        server.Uri + "/api/v2/Package"
+                    };
+
+                    var result = CommandRunner.Run(
+                                    nugetexe,
+                                    Directory.GetCurrentDirectory(),
+                                    string.Join(" ", args),
+                                    true);
+                    server.Stop();
+
+                    // Assert
+                    Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
+                    var output = result.Item2;
+                    Assert.Contains("Your package was pushed.", output);
+                    AssertFileEqual(packageFileName, outputFileName);
+                }
+            }
+            finally
+            {
+                // Cleanup
+                Util.DeleteDirectory(packageDirectory);
+            }
+        }
+
         // Asserts that the contents of two files are equal.
         void AssertFileEqual(string fileName1, string fileName2)
         {
