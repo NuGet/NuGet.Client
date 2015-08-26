@@ -1576,7 +1576,6 @@ namespace NuGet.PackageManagement
                     // Restore and commit the lock file to disk regardless of the result
                     var parentResult = await BuildIntegratedRestoreUtility.RestoreAsync(
                         parent,
-                        parent.PackageSpec,
                         logger,
                         projectAction.Sources,
                         effectiveGlobalPackagesFolder,

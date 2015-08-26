@@ -34,6 +34,26 @@ namespace NuGet.PackageManagement
             string effectiveGlobalPackagesFolder,
             CancellationToken token)
         {
+            return await RestoreAsync(
+                project,
+                logger,
+                sources,
+                effectiveGlobalPackagesFolder,
+                new SourceCacheContext(),
+                token);
+        }
+
+        /// <summary>
+        /// Restore a build integrated project and update the lock file
+        /// </summary>
+        public static async Task<RestoreResult> RestoreAsync(
+            BuildIntegratedNuGetProject project,
+            Logging.ILogger logger,
+            IEnumerable<string> sources,
+            string effectiveGlobalPackagesFolder,
+            SourceCacheContext cacheContext,
+            CancellationToken token)
+        {
             // Restore
             var result = await RestoreAsync(
                 project,
@@ -41,7 +61,7 @@ namespace NuGet.PackageManagement
                 logger,
                 sources,
                 effectiveGlobalPackagesFolder,
-                new SourceCacheContext(),
+                cacheContext,
                 token);
 
             // Throw before writing if this has been canceled
