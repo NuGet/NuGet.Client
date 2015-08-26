@@ -39,9 +39,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private readonly Dictionary<string, Task<NupkgEntry>> _nupkgCache = new Dictionary<string, Task<NupkgEntry>>(StringComparer.OrdinalIgnoreCase);
         private bool _ignored;
 
-        private TimeSpan _cacheAgeLimitList;
-        private TimeSpan _cacheAgeLimitNupkg;
-
         public RemoteV2FindPackageByIdResource(PackageSource packageSource, Func<Task<HttpHandlerResource>> handlerFactory)
         {
             _baseUri = packageSource.Source.EndsWith("/") ? packageSource.Source : (packageSource.Source + "/");
@@ -62,23 +59,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             }
         }
 
-        public override bool NoCache
+        public override SourceCacheContext CacheContext
         {
-            get { return base.NoCache; }
-            set
-            {
-                base.NoCache = value;
-                if (value)
-                {
-                    _cacheAgeLimitList = TimeSpan.Zero;
-                    _cacheAgeLimitNupkg = TimeSpan.Zero;
-                }
-                else
-                {
-                    _cacheAgeLimitList = TimeSpan.FromMinutes(30);
-                    _cacheAgeLimitNupkg = TimeSpan.FromHours(24);
-                }
-            }
+            get { return base.CacheContext; }
+            set { base.CacheContext = value; }
         }
 
         public bool IgnoreFailure { get; set; }
@@ -157,7 +141,11 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         // However, (1) In most cases the pages grow rather than shrink;
                         // (2) cache for pages is valid for only 30 min.
                         // So we decide to leave current logic and observe.
-                        using (var data = await _httpSource.GetAsync(uri, $"list_{id}_page{page}", retry == 0 ? _cacheAgeLimitList : TimeSpan.Zero, cancellationToken))
+                        using (var data = await _httpSource.GetAsync(
+                            uri, 
+                            $"list_{id}_page{page}",
+                            retry == 0 ? CacheContext.ListMaxAgeTimeSpan : TimeSpan.Zero, 
+                            cancellationToken))
                         {
                             try
                             {
@@ -289,7 +277,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     using (var data = await _httpSource.GetAsync(
                         package.ContentUri,
                         "nupkg_" + package.Id + "." + package.Version,
-                        retry == 0 ? _cacheAgeLimitNupkg : TimeSpan.Zero,
+                        retry == 0 ? CacheContext.NupkgMaxAgeTimeSpan : TimeSpan.Zero,
                         cancellationToken))
                     {
                         return new NupkgEntry

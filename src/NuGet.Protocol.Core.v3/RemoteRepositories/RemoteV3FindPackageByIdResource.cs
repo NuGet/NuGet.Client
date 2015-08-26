@@ -27,8 +27,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private readonly HttpSource _httpSource;
 
         private DependencyInfoResource _dependencyInfoResource;
-        private TimeSpan _cacheAgeLimitList;
-        private TimeSpan _cacheAgeLimitNupkg;
 
         public RemoteV3FindPackageByIdResource(SourceRepository sourceRepository, Func<Task<HttpHandlerResource>> handlerFactory)
         {
@@ -48,23 +46,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             }
         }
 
-        public override bool NoCache
+        public override SourceCacheContext CacheContext
         {
-            get { return base.NoCache; }
-            set
-            {
-                base.NoCache = value;
-                if (value)
-                {
-                    _cacheAgeLimitList = TimeSpan.Zero;
-                    _cacheAgeLimitNupkg = TimeSpan.Zero;
-                }
-                else
-                {
-                    _cacheAgeLimitList = TimeSpan.FromMinutes(30);
-                    _cacheAgeLimitNupkg = TimeSpan.FromHours(24);
-                }
-            }
+            get { return base.CacheContext; }
+            set { base.CacheContext = value; }
         }
 
         public override async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken cancellationToken)
@@ -186,7 +171,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     using (var data = await _httpSource.GetAsync(
                         package.ContentUri,
                         "nupkg_" + package.Identity.Id + "." + package.Identity.Version.ToNormalizedString(),
-                        retry == 0 ? _cacheAgeLimitNupkg : TimeSpan.Zero,
+                        retry == 0 ? CacheContext.NupkgMaxAgeTimeSpan : TimeSpan.Zero,
                         cancellationToken))
                     {
                         return new NupkgEntry
