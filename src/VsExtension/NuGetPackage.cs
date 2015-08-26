@@ -327,9 +327,7 @@ namespace NuGetVSExtension
 
             ProjectRetargetingHandler = new ProjectRetargetingHandler(_dte, SolutionManager, this);
             ProjectUpgradeHandler = new ProjectUpgradeHandler(this, SolutionManager);
-
-            // write default NuGet source to NuGet.Config file
-            NuGet.Configuration.PackageSourceProvider.AddDefaultSourcesToRootNuGetConfig();
+            
             LoadNuGetSettings();
         }
 
