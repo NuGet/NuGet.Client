@@ -13,7 +13,7 @@ namespace NuGet.Protocol.Core.Types
 {
     public abstract class FindPackageByIdResource : INuGetResource
     {
-        public virtual bool NoCache { get; set; }
+        public virtual SourceCacheContext CacheContext { get; set; }
 
         public virtual ILogger Logger { get; set; }
 

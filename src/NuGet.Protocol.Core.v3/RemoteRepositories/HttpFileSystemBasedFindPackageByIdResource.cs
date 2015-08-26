@@ -37,9 +37,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private readonly IReadOnlyList<Uri> _baseUris;
         private bool _ignored;
 
-        private TimeSpan _cacheAgeLimitList;
-        private TimeSpan _cacheAgeLimitNupkg;
-
         public HttpFileSystemBasedFindPackageByIdResource(IReadOnlyList<Uri> baseUris, Func<Task<HttpHandlerResource>> handlerFactory)
         {
             if (baseUris == null)
@@ -69,23 +66,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             }
         }
 
-        public override bool NoCache
+        public override SourceCacheContext CacheContext
         {
-            get { return base.NoCache; }
-            set
-            {
-                base.NoCache = value;
-                if (value)
-                {
-                    _cacheAgeLimitList = TimeSpan.Zero;
-                    _cacheAgeLimitNupkg = TimeSpan.Zero;
-                }
-                else
-                {
-                    _cacheAgeLimitList = TimeSpan.FromMinutes(30);
-                    _cacheAgeLimitNupkg = TimeSpan.FromHours(24);
-                }
-            }
+            get { return base.CacheContext; }
+            set { base.CacheContext = value; }
         }
 
         public bool IgnoreFailure { get; set; }
@@ -159,7 +143,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     var results = new List<PackageInfo>();
                     using (var data = await _httpSource.GetAsync(uri,
                         $"list_{id}",
-                        retry == 0 ? _cacheAgeLimitList : TimeSpan.Zero,
+                        retry == 0 ? CacheContext.ListMaxAgeTimeSpan : TimeSpan.Zero,
                         ignoreNotFounds: true,
                         cancellationToken: cancellationToken))
                     {
@@ -269,7 +253,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     using (var data = await _httpSource.GetAsync(
                         package.ContentUri,
                         "nupkg_" + package.Id + "." + package.Version.ToNormalizedString(),
-                        retry == 0 ? _cacheAgeLimitNupkg : TimeSpan.Zero,
+                        retry == 0 ? CacheContext.NupkgMaxAgeTimeSpan : TimeSpan.Zero,
                         cancellationToken))
                     {
                         return new NupkgEntry

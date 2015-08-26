@@ -1,11 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Commands
 {
@@ -26,6 +28,8 @@ namespace NuGet.Commands
             CompatibilityProfiles = new HashSet<FrameworkRuntimePair>();
 
             PackagesDirectory = packagesDirectory;
+
+            CacheContext = new SourceCacheContext();
         }
 
         /// <summary>
@@ -69,9 +73,9 @@ namespace NuGet.Commands
         public int MaxDegreeOfConcurrency { get; set; } = DefaultDegreeOfConcurrency;
 
         /// <summary>
-        /// If set, ignore the cache when downloading packages
+        /// Cache settings
         /// </summary>
-        public bool NoCache { get; set; }
+        public SourceCacheContext CacheContext { get; set; }
 
         /// <summary>
         /// Additional compatibility profiles to check compatibility with.

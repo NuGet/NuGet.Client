@@ -18,24 +18,17 @@ namespace NuGet.DependencyResolver
     {
         private readonly SourceRepository _sourceRepository;
         private readonly ILogger _logger;
-        private readonly bool _noCache;
+        private readonly SourceCacheContext _cacheContext;
         private FindPackageByIdResource _findPackagesByIdResource;
 
         public SourceRepositoryDependencyProvider(
             SourceRepository sourceRepository,
-            ILogger logger)
-            : this(sourceRepository, logger, noCache: false)
-        {
-        }
-
-        public SourceRepositoryDependencyProvider(
-            SourceRepository sourceRepository,
             ILogger logger,
-            bool noCache)
+            SourceCacheContext cacheContext)
         {
             _sourceRepository = sourceRepository;
             _logger = logger;
-            _noCache = noCache;
+            _cacheContext = cacheContext;
         }
 
         public bool IsHttp => _sourceRepository.PackageSource.IsHttp;
@@ -156,7 +149,7 @@ namespace NuGet.DependencyResolver
             {
                 _findPackagesByIdResource = await _sourceRepository.GetResourceAsync<FindPackageByIdResource>();
                 _findPackagesByIdResource.Logger = _logger;
-                _findPackagesByIdResource.NoCache = _noCache;
+                _findPackagesByIdResource.CacheContext = _cacheContext;
             }
         }
     }

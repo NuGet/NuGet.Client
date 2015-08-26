@@ -181,9 +181,9 @@ namespace NuGet.Commands
             }
 
             context.LocalLibraryProviders.Add(
-                new SourceRepositoryDependencyProvider(nugetRepository, _log));
+                new SourceRepositoryDependencyProvider(nugetRepository, _log, _request.CacheContext));
 
-            foreach (var provider in _request.Sources.Select(s => CreateProviderFromSource(s, _request.NoCache)))
+            foreach (var provider in _request.Sources.Select(s => CreateProviderFromSource(s, _request.CacheContext)))
             {
                 context.RemoteLibraryProviders.Add(provider);
             }
@@ -861,12 +861,12 @@ namespace NuGet.Commands
                 token: token);
         }
 
-        private IRemoteDependencyProvider CreateProviderFromSource(PackageSource source, bool noCache)
+        private IRemoteDependencyProvider CreateProviderFromSource(PackageSource source, SourceCacheContext cacheContext)
         {
             _log.LogVerbose(Strings.FormatLog_UsingSource(source.Source));
 
             var nugetRepository = Repository.Factory.GetCoreV3(source.Source);
-            return new SourceRepositoryDependencyProvider(nugetRepository, _log, noCache);
+            return new SourceRepositoryDependencyProvider(nugetRepository, _log, cacheContext);
         }
     }
 }
