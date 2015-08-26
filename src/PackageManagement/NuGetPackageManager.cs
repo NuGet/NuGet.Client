@@ -1464,8 +1464,11 @@ namespace NuGet.PackageManagement
                     token);
             }
 
-            var uninstallOnly = projectAction.GetProjectActions()
-                .All(action => action.NuGetProjectActionType == NuGetProjectActionType.Uninstall);
+            var actions = projectAction.GetProjectActions();
+
+            // Check if all actions are uninstalls
+            var uninstallOnly = projectAction.NuGetProjectActionType == NuGetProjectActionType.Uninstall
+                && actions.All(action => action.NuGetProjectActionType == NuGetProjectActionType.Uninstall);
 
             var restoreResult = projectAction.RestoreResult;
 

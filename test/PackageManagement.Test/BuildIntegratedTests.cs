@@ -268,6 +268,147 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public async Task TestPacManBuildIntegratedInstallAndRollbackPackage()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("nuget.core", NuGetVersion.Parse("91.0.0"));
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new Configuration.NullSettings();
+            var deleteOnRestartManager = new TestDeleteOnRestartManager();
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager,
+                deleteOnRestartManager);
+
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+            var token = CancellationToken.None;
+
+            CreateConfigJsonNet452(randomConfig);
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                projectTargetFramework,
+                testNuGetProjectContext,
+                randomProjectFolderPath);
+
+            var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+
+            var message = string.Empty;
+
+            // Act
+            var rollback = false;
+
+            try
+            {
+                await nuGetPackageManager.InstallPackageAsync(
+                    buildIntegratedProject,
+                    packageIdentity,
+                    new ResolutionContext(),
+                    new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+            }
+            catch (InvalidOperationException)
+            {
+                // Catch rollback
+                rollback = true;
+            }
+
+            var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
+            var lockFile = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+
+            // Assert
+            Assert.True(rollback);
+            Assert.Equal(0, installedPackages.Count());
+            Assert.False(File.Exists(lockFile));
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(
+                testSolutionManager.SolutionDirectory, 
+                randomProjectFolderPath);
+        }
+
+        [Fact]
+        public async Task TestPacManBuildIntegratedUpdateAndRollbackPackage()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("nuget.core", NuGetVersion.Parse("91.0.0"));
+            var packageIdentity2 = new PackageIdentity("nuget.core", NuGetVersion.Parse("2.8.5"));
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new Configuration.NullSettings();
+            var deleteOnRestartManager = new TestDeleteOnRestartManager();
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager,
+                deleteOnRestartManager);
+
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+            var token = CancellationToken.None;
+
+            CreateConfigJsonNet452(randomConfig);
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                projectTargetFramework,
+                testNuGetProjectContext,
+                randomProjectFolderPath);
+
+            var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+
+            var message = string.Empty;
+
+            await nuGetPackageManager.InstallPackageAsync(
+                    buildIntegratedProject,
+                    packageIdentity2,
+                    new ResolutionContext(),
+                    new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+
+            // Act
+            var rollback = false;
+
+            try
+            {
+                await nuGetPackageManager.InstallPackageAsync(
+                    buildIntegratedProject,
+                    packageIdentity,
+                    new ResolutionContext(),
+                    new TestNuGetProjectContext(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    sourceRepositoryProvider.GetRepositories(),
+                    CancellationToken.None);
+            }
+            catch (InvalidOperationException)
+            {
+                // Catch rollback
+                rollback = true;
+            }
+
+            var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
+            var lockFile = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+
+            // Assert
+            Assert.True(rollback);
+            Assert.Equal(packageIdentity2, installedPackages.Single().PackageIdentity);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(
+                testSolutionManager.SolutionDirectory,
+                randomProjectFolderPath);
+        }
+
+        [Fact]
         public async Task TestPacManBuildIntegratedInstallMultiplePackage()
         {
             // Arrange
