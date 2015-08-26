@@ -1,7 +1,7 @@
 {
     "dependencies": {
       "xunit.runner.visualstudio": "2.0.0",
-      "NuGet.Logging": "3.1.2-*"
+      "NuGet.Logging": "3.2.0-*"
     },
     "frameworks": {
         "net45": {}
