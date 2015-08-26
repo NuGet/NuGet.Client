@@ -20,6 +20,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
 using VSLangProj;
+using VSLangProj80;
 using VsWebSite;
 using Constants = NuGet.ProjectManagement.Constants;
 using EnvDTEProject = EnvDTE.Project;
@@ -1001,12 +1002,15 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 foreach (Reference reference in references)
                 {
+                    var reference3 = reference as Reference3;
+
                     // Get the referenced project from the reference if any
-                    if (reference.SourceProject == null
-                        &&
-                        reference.CopyLocal
-                        &&
-                        File.Exists(reference.Path))
+                    // In C++ projects if reference3.Resolved is false reference3.SourceProject will throw.
+                    if (reference3 != null 
+                        && reference3.Resolved
+                        && reference.SourceProject == null
+                        && reference.CopyLocal
+                        && File.Exists(reference.Path))
                     {
                         assemblies.Add(reference.Path);
                     }
@@ -1081,8 +1085,13 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 foreach (Reference reference in references)
                 {
+                    var reference3 = reference as Reference3;
+
                     // Get the referenced project from the reference if any
-                    if (reference.SourceProject != null)
+                    // C++ projects will throw on reference.SourceProject if reference3.Resolved is false
+                    if (reference3 != null
+                        && reference3.Resolved
+                        && reference.SourceProject != null)
                     {
                         envDTEProjects.Add(reference.SourceProject);
                     }
