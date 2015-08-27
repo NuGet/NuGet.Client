@@ -134,6 +134,55 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public void PackagesConfigWriter_UpdateAttributesFromOriginalConfig()
+        {
+            // Arrange
+            var stream = new MemoryStream();
+            var stream2 = new MemoryStream();
+
+            // Act
+            using (PackagesConfigWriter writer = new PackagesConfigWriter(stream, true))
+            {
+                var vensionRange = new VersionRange(NuGetVersion.Parse("0.5.0"));
+                var packageIdentityA = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.1"));
+                var packageReferenceA = new PackageReference(packageIdentityA, NuGetFramework.Parse("net45"),
+                    userInstalled: false, developmentDependency: false, requireReinstallation: true, allowedVersions: vensionRange);
+
+                writer.AddPackageEntry(packageReferenceA);
+            }
+
+            stream.Seek(0, SeekOrigin.Begin);
+            var xml = XDocument.Load(stream);
+
+            var packageIdentityB = new PackageIdentity("packageA", NuGetVersion.Parse("3.0.1"));
+            var packageReferenceB = new PackageReference(packageIdentityB, NuGetFramework.Parse("dnxcore50"),
+                userInstalled: false, developmentDependency: false, requireReinstallation: false);
+
+            using (PackagesConfigWriter writer = new PackagesConfigWriter(stream2, true))
+            {
+                writer.UpdatePackageEntry(xml, packageReferenceB);
+            }
+
+            stream2.Seek(0, SeekOrigin.Begin);
+            var xml2 = XDocument.Load(stream2);
+            var reader = new PackagesConfigReader(xml2);
+
+            // Assert
+
+            var packages = reader.GetPackages().ToArray();
+            Assert.Equal("1", packages.Count().ToString());
+            Assert.Equal("packageA", packages[0].PackageIdentity.Id);
+            Assert.Equal("3.0.1", packages[0].PackageIdentity.Version.ToNormalizedString());
+            Assert.Equal("dnxcore5", packages[0].TargetFramework.GetShortFolderName());
+
+            // Verify allowedVersions attribute is kept after package update.
+            Assert.Equal("[0.5.0, )", packages[0].AllowedVersions.ToNormalizedString());
+
+            // Verify that RequireReinstallation attribute is removed after package upate.
+            Assert.Equal("False", packages[0].RequireReinstallation.ToString());
+        }
+
+        [Fact]
         public void PackagesConfigWriter_UpdateError()
         {
             // Arrange

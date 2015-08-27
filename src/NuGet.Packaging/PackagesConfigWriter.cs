@@ -182,7 +182,49 @@ namespace NuGet.Packaging
                 matchingNode.ReplaceWith(newPackageNode);
             }
         }
-        
+
+        /// <summary>
+        /// Update a package entry using the original entry as a base if it exists.
+        /// </summary>
+        public void UpdatePackageEntry(XDocument originalConfig, PackageReference newEntry)
+        {
+            if (originalConfig == null)
+            {
+                throw new ArgumentNullException(nameof(originalConfig));
+            }
+
+            if (newEntry == null)
+            {
+                throw new ArgumentNullException(nameof(newEntry));
+            }
+
+            if (_disposed || _closed)
+            {
+                throw new PackagingException(string.Format(CultureInfo.CurrentCulture, Strings.UnableToAddEntry));
+            }
+
+            var originalPackagesNode = originalConfig.Element(XName.Get(PackagesConfig.PackagesNodeName));
+
+            XElement matchingIdNode;
+            if (PackagesConfig.HasAttributeValue(
+                originalPackagesNode,
+                PackagesConfig.IdAttributeName,
+                newEntry.PackageIdentity.Id,
+                out matchingIdNode))
+            {
+                // Find the old entry and update it based on the new entry
+                var packagesNode = _xDocument.Element(XName.Get(PackagesConfig.PackagesNodeName));
+                var newPackageNode = ReplacePackageAttributes(matchingIdNode, newEntry);
+                packagesNode.Add(newPackageNode);
+                SortPackageNodes(packagesNode);
+            }
+            else
+            {
+                // There was no existing entry, add a new one
+                AddPackageEntry(newEntry);
+            }
+        }
+
         /// <summary>
         /// Remove a package entry
         /// </summary>
