@@ -289,7 +289,7 @@ namespace NuGet.Commands
 
             foreach (var pair in runtimesByFramework)
             {
-                _log.LogInformation(Strings.FormatLog_RestoringPackages(pair.Key.DotNetFrameworkName));
+                _log.LogVerbose(Strings.FormatLog_RestoringPackages(pair.Key.DotNetFrameworkName));
 
                 frameworkTasks.Add(WalkDependenciesAsync(projectRange,
                     pair.Key,
@@ -748,7 +748,7 @@ namespace NuGet.Commands
             var resultGraphs = new List<Task<RestoreTargetGraph>>();
             foreach (var runtimeName in runtimeIds)
             {
-                _log.LogInformation(Strings.FormatLog_RestoringPackages(FrameworkRuntimePair.GetName(graph.Framework, runtimeName)));
+                _log.LogVerbose(Strings.FormatLog_RestoringPackages(FrameworkRuntimePair.GetName(graph.Framework, runtimeName)));
 
                 resultGraphs.Add(WalkDependenciesAsync(projectRange,
                     graph.Framework,
