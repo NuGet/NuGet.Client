@@ -57,12 +57,12 @@ namespace NuGetVSExtension
 
         public void Log(MessageLevel level, string message, params object[] args)
         {
-            var s = string.Format(CultureInfo.CurrentCulture, message, args);
-            OutputConsole.WriteLine(s);
-
-            if (level == MessageLevel.Error)
+            if (level == MessageLevel.Info
+                || level == MessageLevel.Error
+                || level == MessageLevel.Warning)
             {
-                ActivityLog.LogError(LogEntrySource, s);
+                var s = string.Format(CultureInfo.CurrentCulture, message, args);
+                OutputConsole.WriteLine(s);
             }
         }
 
