@@ -788,5 +788,141 @@ namespace NuGet.CommandLine.Test
                 TestFilesystemUtility.DeleteRandomTestFolders(packageDirectory);
             }
         }
+
+        [Theory]
+        [InlineData("invalid")]
+        public void ListCommand_InvalidInput_NonSource(string invalidInput)
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            // Act
+            var args = "list test -Source " + invalidInput;
+            var result = CommandRunner.Run(
+                nugetexe,
+                Directory.GetCurrentDirectory(),
+                args,
+                waitForExit: true);
+
+            // Assert
+            Assert.True(
+                result.Item1 != 0,
+                "The run did not fail as desired. Simply got this output:" + result.Item2);
+
+            Assert.True(
+                result.Item3.Contains(
+                    string.Format(
+                        "The specified source '{0}' is invalid. Please provide a valid source.",
+                        invalidInput)),
+                "Expected error message not found in " + result.Item3
+                );
+        }
+
+        [Theory]
+        [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org")]
+        [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/api/v2")]
+        public void ListCommand_InvalidInput_V2_NonExistent(string invalidInput)
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            // Act
+            var args = "list test -Source " + invalidInput;
+            var result = CommandRunner.Run(
+                nugetexe,
+                Directory.GetCurrentDirectory(),
+                args,
+                waitForExit: true);
+
+            // Assert
+            Assert.True(
+                result.Item1 != 0,
+                "The run did not fail as desired. Simply got this output:" + result.Item2);
+
+            Assert.True(
+                result.Item3.Contains(
+                    "The remote name could not be resolved: 'invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org'"),
+                "Expected error message not found in " + result.Item3
+                );
+        }
+
+        [Theory]
+        [InlineData("https://nuget.org/api/blah")]
+        public void ListCommand_InvalidInput_V2_NotFound(string invalidInput)
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            // Act
+            var args = "list test -Source " + invalidInput;
+            var result = CommandRunner.Run(
+                nugetexe,
+                Directory.GetCurrentDirectory(),
+                args,
+                waitForExit: true);
+
+            // Assert
+            Assert.True(
+                result.Item1 != 0,
+                "The run did not fail as desired. Simply got this output:" + result.Item2);
+
+            Assert.True(
+                result.Item3.Contains(
+                    "The remote server returned an error: (404) Not Found."),
+                "Expected error message not found in " + result.Item3
+                );
+        }
+
+        [Theory]
+        [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/v3/index.json")]
+        public void ListCommand_InvalidInput_V3_NonExistent(string invalidInput)
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            // Act
+            var args = "list test -Source " + invalidInput;
+            var result = CommandRunner.Run(
+                nugetexe,
+                Directory.GetCurrentDirectory(),
+                args,
+                waitForExit: true);
+
+            // Assert
+            Assert.True(
+                result.Item1 != 0,
+                "The run did not fail as desired. Simply got this output:" + result.Item2);
+
+            Assert.True(
+                result.Item3.Contains("An error occurred while sending the request."),
+                "Expected error message not found in " + result.Item3
+                );
+        }
+
+        [Theory]
+        [InlineData("https://api.nuget.org/v4/index.json")]
+        public void ListCommand_InvalidInput_V3_NotFound(string invalidInput)
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            // Act
+            var args = "list test -Source " + invalidInput;
+            var result = CommandRunner.Run(
+                nugetexe,
+                Directory.GetCurrentDirectory(),
+                args,
+                waitForExit: true);
+
+            // Assert
+            Assert.True(
+                result.Item1 != 0,
+                "The run did not fail as desired. Simply got this output:" + result.Item2);
+
+            Assert.True(
+                result.Item3.Contains("The remote server returned an error: (400) Bad Request."),
+                "Expected error message not found in " + result.Item3
+                );
+        }
     }
 }

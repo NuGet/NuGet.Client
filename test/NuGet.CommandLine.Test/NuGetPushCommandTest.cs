@@ -1308,6 +1308,228 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Theory]
+        [InlineData("invalid")]
+        public void PushCommand_InvalidInput_NonSource(string invalidInput)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packagesDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
+
+                // Act
+                var args = new string[]
+                {
+                        "push",
+                        packageFileName,
+                        "-Source",
+                        invalidInput
+                };
+
+                var result = CommandRunner.Run(
+                                nugetexe,
+                                Directory.GetCurrentDirectory(),
+                                string.Join(" ", args),
+                                true);
+
+                // Assert
+                Assert.True(
+                    result.Item1 != 0,
+                    "The run did not fail as desired. Simply got this output:" + result.Item2);
+
+                Assert.True(
+                    result.Item3.Contains(
+                        string.Format(
+                            "The specified source '{0}' is invalid. Please provide a valid source.",
+                            invalidInput)),
+                    "Expected error message not found in " + result.Item3
+                    );
+            }
+            finally
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
+        }
+
+        [Theory]
+        [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org")]
+        [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/api/v2")]
+        [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/api/v2/Package")]
+        public void PushCommand_InvalidInput_V2HttpSource(string invalidInput)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packagesDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
+
+                // Act
+                var args = new string[]
+                {
+                        "push",
+                        packageFileName,
+                        "-Source",
+                        invalidInput
+                };
+
+                var result = CommandRunner.Run(
+                                nugetexe,
+                                Directory.GetCurrentDirectory(),
+                                string.Join(" ", args),
+                                true);
+
+                // Assert
+                Assert.True(
+                    result.Item1 != 0,
+                    "The run did not fail as desired. Simply got this output:" + result.Item2);
+
+                Assert.True(
+                    result.Item3.Contains(
+                        "The remote name could not be resolved: 'invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org'"),
+                    "Expected error message not found in " + result.Item3
+                    );
+            }
+            finally
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
+        }
+
+        [Theory]
+        [InlineData("https://nuget.org/api/blah")]
+        public void PushCommand_InvalidInput_V2_NonExistent(string invalidInput)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packagesDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
+
+                // Act
+                var args = new string[]
+                {
+                        "push",
+                        packageFileName,
+                        "-Source",
+                        invalidInput
+                };
+
+                var result = CommandRunner.Run(
+                                nugetexe,
+                                Directory.GetCurrentDirectory(),
+                                string.Join(" ", args),
+                                true);
+
+                // Assert
+                Assert.True(
+                    result.Item1 != 0,
+                    "The run did not fail as desired. Simply got this output:" + result.Item2);
+
+                Assert.True(
+                    result.Item3.Contains(
+                        "The remote server returned an error: (404) Not Found."),
+                    "Expected error message not found in " + result.Item3
+                    );
+            }
+            finally
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
+        }
+
+        [Theory]
+        [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/v3/index.json")]
+        public void PushCommand_InvalidInput_V3_NonExistent(string invalidInput)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packagesDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
+
+                // Act
+                var args = new string[]
+                {
+                        "push",
+                        packageFileName,
+                        "-Source",
+                        invalidInput
+                };
+
+                var result = CommandRunner.Run(
+                                nugetexe,
+                                Directory.GetCurrentDirectory(),
+                                string.Join(" ", args),
+                                true);
+
+                // Assert
+                Assert.True(
+                    result.Item1 != 0,
+                    "The run did not fail as desired. Simply got this output:" + result.Item2);
+
+                Assert.True(
+                    result.Item3.Contains("An error occurred while sending the request."),
+                    "Expected error message not found in " + result.Item3
+                    );
+            }
+            finally
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
+        }
+
+        [Theory]
+        [InlineData("https://api.nuget.org/v4/index.json")]
+        public void PushCommand_InvalidInput_V3_NotFound(string invalidInput)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var packagesDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
+
+                // Act
+                var args = new string[]
+                {
+                        "push",
+                        packageFileName,
+                        "-Source",
+                        invalidInput
+                };
+
+                var result = CommandRunner.Run(
+                                nugetexe,
+                                Directory.GetCurrentDirectory(),
+                                string.Join(" ", args),
+                                true);
+
+                // Assert
+                Assert.True(
+                    result.Item1 != 0,
+                    "The run did not fail as desired. Simply got this output:" + result.Item2);
+
+                Assert.True(
+                    result.Item3.Contains("The remote server returned an error: (400) Bad Request."),
+                    "Expected error message not found in " + result.Item3
+                    );
+            }
+            finally
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
+        }
+
         // Asserts that the contents of two files are equal.
         void AssertFileEqual(string fileName1, string fileName2)
         {

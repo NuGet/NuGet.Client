@@ -14,6 +14,7 @@ namespace NuGet.Common
 
             if (resolvedSource == null)
             {
+                CommandLineUtility.ValidateSource(source);
                 return new Configuration.PackageSource(source);
             }
             else
