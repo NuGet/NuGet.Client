@@ -339,9 +339,25 @@ namespace NuGet.Protocol.Core.v3
         }
 
         /// <summary>
+        /// The source does not have the 'version' property.
+        /// </summary>
+        internal static string Protocol_MissingVersion
+        {
+            get { return GetString("Protocol_MissingVersion"); }
+        }
+
+        /// <summary>
+        /// The source version is not supported: '{0}'.
+        /// </summary>
+        internal static string Protocol_UnsupportedVersion
+        {
+            get { return GetString("Protocol_UnsupportedVersion"); }
+        }
+
+        /// <summary>
         /// An error occurred while retrieving package metadata for '{0}' from source '{1}'.
         /// </summary>
-        internal static string FormatProtocol_PackageMetadataError(object p0, object p1)
+            internal static string FormatProtocol_PackageMetadataError(object p0, object p1)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("Protocol_PackageMetadataError"), p0, p1);
         }

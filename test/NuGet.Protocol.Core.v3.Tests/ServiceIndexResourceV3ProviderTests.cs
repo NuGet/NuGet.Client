@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
@@ -57,7 +58,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
-        public async Task TryCreate_ReturnsFalse_IfSourceLocationReturnsFailureCode()
+        public async Task TryCreate_Throws_IfSourceLocationReturnsFailureCode()
         {
             // Arrange
             var source = "https://does-not-exist.server/does-not-exist.json";
@@ -68,24 +69,37 @@ namespace NuGet.Protocol.Core.v3.Tests
                 new INuGetResourceProvider[] { handlerProvider, provider });
 
             // Act
-            var result = await provider.TryCreate(sourceRepository, default(CancellationToken));
-
-            // Assert
-            Assert.False(result.Item1);
-            Assert.Null(result.Item2);
+            await Assert.ThrowsAsync<HttpRequestException>(async () =>
+            {
+                var result = await provider.TryCreate(sourceRepository, default(CancellationToken));
+            });
         }
 
         [Theory]
         [InlineData("not-valid-json")]
-        [InlineData("{ json: \"that does not contain version.\"")]
         [InlineData(@"<?xml version=""1.0"" encoding=""utf-8""?><service xml:base=""http://www.nuget.org/api/v2/"" 
 xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom""><workspace><atom:title>Default</atom:title>
 <collection href=""Packages""><atom:title>Packages</atom:title></collection></workspace></service>")]
-        [InlineData("{ version: 3 } ")] // version is not a string
-        [InlineData("{ version: { value: 3 } ")] // version is not a string
+        public async Task TryCreate_Throws_IfSourceLocationDoesNotReturnValidJson(string content)
+        {
+            // Arrange
+            var source = "https://fake.server/users.json";
+            var handlerProvider = StaticHttpHandler.CreateHttpHandler(new Dictionary<string, string> { { source, content } });
+            var provider = new ServiceIndexResourceV3Provider();
+            var sourceRepository = new SourceRepository(new PackageSource(source),
+                new INuGetResourceProvider[] { handlerProvider, provider });
+
+            // Act and assert
+            await Assert.ThrowsAsync<JsonReaderException> (async () =>
+            {
+                var result = await provider.TryCreate(sourceRepository, default(CancellationToken));
+            });
+        }
+
+        [Theory]
         [InlineData("{ version: \"not-semver\" } ")]
         [InlineData("{ version: \"3.0.0.0\" } ")] // not strict semver
-        public async Task TryCreate_ReturnsFalse_IfSourceLocationDoesNotReturnValidJson(string content)
+        public async Task TryCreate_Throws_IfInvalidVersionInJson(string content)
         {
             // Arrange
             var source = "https://fake.server/users.json";
@@ -95,11 +109,36 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
                 new INuGetResourceProvider[] { handlerProvider, provider });
 
             // Act
-            var result = await provider.TryCreate(sourceRepository, default(CancellationToken));
+            NuGetProtocolException ex = await Assert.ThrowsAsync<NuGetProtocolException>(async () =>
+            {
+                var result = await provider.TryCreate(sourceRepository, default(CancellationToken));
+            });
 
             // Assert
-            Assert.False(result.Item1);
-            Assert.Null(result.Item2);
+            Assert.True(ex.Message.StartsWith("The source version is not supported"));
+        }
+
+        [Theory]
+        [InlineData("{ json: \"that does not contain version.\" }")]
+        [InlineData("{ version: 3 } ")] // version is not a string
+        [InlineData("{ version: { value: 3 } } ")] // version is not a string
+        public async Task TryCreate_Throws_IfNoVersionInJson(string content)
+        {
+            // Arrange
+            var source = "https://fake.server/users.json";
+            var handlerProvider = StaticHttpHandler.CreateHttpHandler(new Dictionary<string, string> { { source, content } });
+            var provider = new ServiceIndexResourceV3Provider();
+            var sourceRepository = new SourceRepository(new PackageSource(source),
+                new INuGetResourceProvider[] { handlerProvider, provider });
+
+            // Act
+            NuGetProtocolException ex = await Assert.ThrowsAsync<NuGetProtocolException>(async () =>
+            {
+                var result = await provider.TryCreate(sourceRepository, default(CancellationToken));
+            });
+
+            // Assert
+            Assert.Equal(ex.Message, "The source does not have the 'version' property.");
         }
 
         [Fact]
@@ -122,7 +161,8 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
             Assert.NotNull(resource.Index);
         }
 
-        [Fact]
+        // [Fact]
+        // Need a new test for this scenario
         public async Task TryCreate_CachesResultsForFortyMinutes()
         {
             // Arrange

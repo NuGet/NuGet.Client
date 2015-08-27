@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,7 +40,7 @@ namespace NuGet.Protocol.Core.v3
         }
 
         // Read the source's end point to get the index json.
-        // Returns null when there is a failure.
+        // An exception will be thrown on failure.
         private async Task<JObject> GetIndexJson(SourceRepository source, CancellationToken token)
         {
             var uri = new Uri(source.PackageSource.Source);
@@ -63,15 +64,8 @@ namespace NuGet.Protocol.Core.v3
                             HttpHandlerResourceV3.CredentialsSuccessfullyUsed(uri, credentials);
                         }
 
-                        try
-                        {
-                            var text = await response.Content.ReadAsStringAsync();
-                            return JObject.Parse(text);
-                        }
-                        catch (JsonReaderException)
-                        {
-                            return null;
-                        }
+                        var text = await response.Content.ReadAsStringAsync();
+                        return JObject.Parse(text);
                     }
                     else if (response.StatusCode == HttpStatusCode.Unauthorized)
                     {
@@ -83,12 +77,12 @@ namespace NuGet.Protocol.Core.v3
 
                         if (credentials == null)
                         {
-                            return null;
+                            response.EnsureSuccessStatusCode();
                         }
                     }
                     else
                     {
-                        return null;
+                        response.EnsureSuccessStatusCode();
                     }
                 }
             }
@@ -113,26 +107,31 @@ namespace NuGet.Protocol.Core.v3
                     entryValidCutoff > cacheInfo.CachedTime)
                 {
                     var json = await GetIndexJson(source, token);
-                    if (json != null)
+
+                    // Use SemVer instead of NuGetVersion, the service index should always be
+                    // in strict SemVer format                    
+                    JToken versionToken;
+                    if (json.TryGetValue("version", out versionToken) &&
+                        versionToken.Type == JTokenType.String)
                     {
-                        // Use SemVer instead of NuGetVersion, the service index should always be
-                        // in strict SemVer format
                         SemanticVersion version;
-                        JToken versionToken;
-                        if (json.TryGetValue("version", out versionToken) &&
-                            versionToken.Type == JTokenType.String &&
-                            SemanticVersion.TryParse((string)versionToken, out version) &&
+                        if (SemanticVersion.TryParse((string)versionToken, out version) &&
                             version.Major == 3)
                         {
                             index = new ServiceIndexResourceV3(json, utcNow);
                         }
+                        else
+                        {
+                            string errorMessage = string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.Protocol_UnsupportedVersion,
+                                (string)versionToken);
+                            throw new NuGetProtocolException(errorMessage);
+                        }
                     }
                     else
                     {
-                        var entry = new ServiceIndexCacheInfo { CachedTime = utcNow };
-                        _cache.AddOrUpdate(url, entry, (key, value) => entry);
-
-                        return new Tuple<bool, INuGetResource>(false, null);
+                        throw new NuGetProtocolException(Strings.Protocol_MissingVersion);
                     }
                 }
                 else

@@ -177,8 +177,14 @@
   <data name="Protocol_MissingSearchService" xml:space="preserve">
     <value>The source does not have a Search service!</value>
   </data>
+  <data name="Protocol_MissingVersion" xml:space="preserve">
+    <value>The source does not have the 'version' property.</value>
+  </data>
   <data name="Protocol_PackageMetadataError" xml:space="preserve">
     <value>An error occurred while retrieving package metadata for '{0}' from source '{1}'.</value>
+  </data>
+  <data name="Protocol_UnsupportedVersion" xml:space="preserve">
+    <value>The source version is not supported: '{0}'.</value>
   </data>
   <data name="RequiredFeatureUnsupportedException_DefaultMessageWithFeature" xml:space="preserve">
     <value>The '{0}' installation feature was required by a package but is not supported on the current host.</value>
