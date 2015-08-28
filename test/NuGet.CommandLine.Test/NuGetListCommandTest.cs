@@ -777,7 +777,7 @@ namespace NuGet.CommandLine.Test
                     Assert.True(result.Item1 != 0, result.Item2 + " " + result.Item3);
 
                     Assert.True(
-                        result.Item3.Contains("The remote server returned an error: (404) Not Found."),
+                        result.Item3.Contains("Response status code does not indicate success: 404 (Not Found)."),
                         "Expected error message not found in " + result.Item3
                         );
                 }
@@ -920,7 +920,7 @@ namespace NuGet.CommandLine.Test
                 "The run did not fail as desired. Simply got this output:" + result.Item2);
 
             Assert.True(
-                result.Item3.Contains("The remote server returned an error: (400) Bad Request."),
+                result.Item3.Contains("Response status code does not indicate success: 400 (Bad Request)."),
                 "Expected error message not found in " + result.Item3
                 );
         }
