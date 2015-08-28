@@ -1,20 +1,24 @@
 ﻿{
-    "version": "3.2.0-*",
-    "authors": [ "NuGet" ],
-    "description": "NuGet Protocol for PowerShellGet",
-    "copyright": "Copyright .NET Foundation. All rights reserved.",
-    "projectUrl": "https://github.com/NuGet/NuGet.Protocol/",
-    "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE",
-    "tags": [ "nuget protocol" ],
-    "compilationOptions": {
-        "warningsAsErrors": true
-    },
-    "dependencies": {
-        "NuGet.Configuration": "3.2.0-*",
-        "NuGet.Protocol.Core.v3": "3.2.0-*"
-    },
-    "frameworks": {
-        "net45": { },
-        "dnxcore50": { }
-    }
+  "version": "3.2.0",
+  "authors": [
+    "NuGet"
+  ],
+  "description": "NuGet Protocol for PowerShellGet",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "projectUrl": "https://github.com/NuGet/NuGet.Protocol/",
+  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE",
+  "tags": [
+    "nuget protocol"
+  ],
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "NuGet.Configuration": "3.2.0",
+    "NuGet.Protocol.Core.v3": "3.2.0"
+  },
+  "frameworks": {
+    "net45": {},
+    "dnxcore50": {}
+  }
 }

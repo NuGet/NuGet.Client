@@ -1,6 +1,8 @@
 ﻿{
-  "version": "3.2.0-*",
-  "authors": [ "NuGet" ],
+  "version": "3.2.0",
+  "authors": [
+    "NuGet"
+  ],
   "description": "Logger abstractions for NuGet",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
   "projectUrl": "https://github.com/NuGet/NuGet.Home/",
@@ -9,11 +11,13 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Common": { "type": "build", "version": "3.2.0-*" }
+    "NuGet.Common": {
+      "type": "build",
+      "version": "3.2.0"
+    }
   },
   "frameworks": {
-    "net45": {
-    },
+    "net45": {},
     "dnxcore50": {
       "dependencies": {
         "System.Runtime": "4.0.20-beta-*"

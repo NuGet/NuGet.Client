@@ -1,7 +1,7 @@
 ﻿{
   "dependencies": {
     "Moq": "4.2.1408.0717",
-    "NuGet.Protocol.Core.v2": "3.2.0-*",
+    "NuGet.Protocol.Core.v2": "3.2.0",
     "NuGet.Protocol.Test.Utility": "1.0.0-*",
     "xunit": "2.1.0-*",
     "xunit.runner.dnx": "2.1.0-*"
@@ -10,6 +10,6 @@
     "test": "xunit.runner.dnx"
   },
   "frameworks": {
-    "dnx451": { }
+    "dnx451": {}
   }
 }

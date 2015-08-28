@@ -1,16 +1,16 @@
 ﻿{
-    "version": "3.2.0-*",
-    "dependencies": {
-        "NuGet.Packaging": "3.2.0-*",
-        "NuGet.Test.Utility": "3.2.0-*",
-        "xunit": "2.1.0-*",
-        "xunit.runner.dnx": "2.1.0-*"
-    },
-    "commands": {
-        "test": "xunit.runner.dnx"
-    },
-    "frameworks": {
-        "dnx451": {},
-        "dnxcore50": {}
-    }
+  "version": "3.2.0",
+  "dependencies": {
+    "NuGet.Packaging": "3.2.0",
+    "NuGet.Test.Utility": "3.2.0",
+    "xunit": "2.1.0-*",
+    "xunit.runner.dnx": "2.1.0-*"
+  },
+  "commands": {
+    "test": "xunit.runner.dnx"
+  },
+  "frameworks": {
+    "dnx451": {},
+    "dnxcore50": {}
+  }
 }

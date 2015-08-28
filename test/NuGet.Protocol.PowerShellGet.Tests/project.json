@@ -1,6 +1,6 @@
 ﻿{
   "dependencies": {
-    "NuGet.Protocol.PowerShellGet": "3.2.0-*",
+    "NuGet.Protocol.PowerShellGet": "3.2.0",
     "NuGet.Protocol.Test.Utility": "1.0.0-*",
     "xunit": "2.1.0-*",
     "xunit.runner.dnx": "2.1.0-*",
@@ -10,7 +10,7 @@
     "test": "xunit.runner.dnx"
   },
   "frameworks": {
-    "dnx451": { },
+    "dnx451": {},
     "dnxcore50": {
       "dependencies": {
         "System.Runtime.Serialization.Primitives": "4.0.10-beta-*"

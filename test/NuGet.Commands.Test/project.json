@@ -1,8 +1,8 @@
 ﻿{
-  "version": "3.2.0-*",
+  "version": "3.2.0",
   "dependencies": {
-    "NuGet.Commands": "3.2.0-*",
-    "NuGet.Test.Utility": "3.2.0-*",
+    "NuGet.Commands": "3.2.0",
+    "NuGet.Test.Utility": "3.2.0",
     "xunit": "2.1.0-*",
     "xunit.runner.dnx": "2.1.0-*",
     "Microsoft.Framework.Runtime": "1.0.0-beta6"
@@ -11,7 +11,7 @@
     "test": "xunit.runner.dnx"
   },
   "frameworks": {
-    "dnx451": { },
+    "dnx451": {},
     "dnxcore50": {
       "dependencies": {
         "System.Runtime.Serialization.Primitives": "4.0.10-beta-*"

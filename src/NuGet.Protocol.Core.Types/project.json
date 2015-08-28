@@ -1,29 +1,36 @@
 ﻿{
-    "version": "3.2.0-*",
-    "authors": [ "NuGet" ],
-    "description": "NuGet's protocol-level base types used for connecting to API v2 and API v3 repositories.",
-    "copyright": "Copyright .NET Foundation. All rights reserved.",
-    "projectUrl": "https://github.com/NuGet/NuGet.Protocol/",
-    "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE",
-    "tags": [ "nuget protocol" ],
-    "compilationOptions": {
-        "warningsAsErrors": true
+  "version": "3.2.0",
+  "authors": [
+    "NuGet"
+  ],
+  "description": "NuGet's protocol-level base types used for connecting to API v2 and API v3 repositories.",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "projectUrl": "https://github.com/NuGet/NuGet.Protocol/",
+  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE",
+  "tags": [
+    "nuget protocol"
+  ],
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "NuGet.Common": {
+      "type": "build",
+      "version": "3.2.0"
     },
-    "dependencies": {
-        "NuGet.Common": { "type": "build", "version": "3.2.0-*" },
-        "NuGet.Configuration": "3.2.0-*",
-        "NuGet.Packaging": "3.2.0-*"
+    "NuGet.Configuration": "3.2.0",
+    "NuGet.Packaging": "3.2.0"
+  },
+  "frameworks": {
+    "net45": {
+      "frameworkAssemblies": {
+        "System.Net.Http": ""
+      }
     },
-    "frameworks": {
-        "net45": {
-            "frameworkAssemblies": {
-                "System.Net.Http": ""
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Net.Http": "4.0.0-beta-*"
-            }
-        }
+    "dnxcore50": {
+      "dependencies": {
+        "System.Net.Http": "4.0.0-beta-*"
+      }
     }
+  }
 }

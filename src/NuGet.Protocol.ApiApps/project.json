@@ -1,39 +1,43 @@
 ﻿{
-    "version": "3.2.0-*",
-    "authors": [ "NuGet" ],
-    "description": "NuGet Protocol for ApiApps",
-    "copyright": "Copyright .NET Foundation. All rights reserved.",
-    "projectUrl": "https://github.com/NuGet/NuGet.Protocol/",
-    "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE",
-    "tags": [ "nuget protocol apiapp" ],
-    "compilationOptions": {
-        "warningsAsErrors": true
+  "version": "3.2.0",
+  "authors": [
+    "NuGet"
+  ],
+  "description": "NuGet Protocol for ApiApps",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "projectUrl": "https://github.com/NuGet/NuGet.Protocol/",
+  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE",
+  "tags": [
+    "nuget protocol apiapp"
+  ],
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "Newtonsoft.Json": "6.0.6",
+    "NuGet.Configuration": "3.2.0",
+    "NuGet.Protocol.Core.v3": "3.2.0"
+  },
+  "frameworks": {
+    "net45": {
+      "frameworkAssemblies": {
+        "System.Net.Http": "",
+        "System.Net.Http.WebRequest": "",
+        "System.Reflection": "",
+        "System.Threading": "",
+        "System.Threading.Tasks": "",
+        "System.Threading.Tasks.Parallel": "",
+        "System.Dynamic.Runtime": "",
+        "System.Resources.ResourceManager": ""
+      }
     },
-    "dependencies": {
-        "Newtonsoft.Json": "6.0.6",
-        "NuGet.Configuration": "3.2.0-*",
-        "NuGet.Protocol.Core.v3": "3.2.0-*"
-    },
-    "frameworks": {
-        "net45": {
-            "frameworkAssemblies": {
-                "System.Net.Http": "",
-                "System.Net.Http.WebRequest": "",
-                "System.Reflection": "",
-                "System.Threading": "",
-                "System.Threading.Tasks": "",
-                "System.Threading.Tasks.Parallel": "",
-                "System.Dynamic.Runtime": "",
-                "System.Resources.ResourceManager": ""
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Dynamic.Runtime": "4.0.10-beta-*",
-                "System.Net.Http": "4.0.0-beta-*",
-                "System.Threading": "4.0.10-beta-*",
-                "System.Threading.Thread": "4.0.0-beta-*"
-            }
-        }
+    "dnxcore50": {
+      "dependencies": {
+        "System.Dynamic.Runtime": "4.0.10-beta-*",
+        "System.Net.Http": "4.0.0-beta-*",
+        "System.Threading": "4.0.10-beta-*",
+        "System.Threading.Thread": "4.0.0-beta-*"
+      }
     }
+  }
 }

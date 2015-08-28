@@ -1,19 +1,19 @@
 ﻿{
-    "version": "3.2.0-*",
-    "dependencies": {
-        "xunit": "2.1.0-*"
+  "version": "3.2.0",
+  "dependencies": {
+    "xunit": "2.1.0-*"
+  },
+  "frameworks": {
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.IO.Compression": ""
+      }
     },
-    "frameworks": {
-        "dnx451": {
-            "frameworkAssemblies": {
-                "System.IO.Compression": ""
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.IO.Compression.ZipFile": "4.0.0-beta-*",
-                "System.IO.FileSystem": "4.0.0-beta-*"
-            }
-        }
+    "dnxcore50": {
+      "dependencies": {
+        "System.IO.Compression.ZipFile": "4.0.0-beta-*",
+        "System.IO.FileSystem": "4.0.0-beta-*"
+      }
     }
+  }
 }
