@@ -1,14 +1,14 @@
-{
-    "dependencies": {
-        "DotNetZip": "1.9.3",
-        "json-ld.net": "1.0.4",
-        "xunit": "2.0.0",
-        "xunit.runner.visualstudio": "2.0.0"
-    },
-    "frameworks": {
-        "net45": {}
-    },
-    "runtimes": {
-        "win-anycpu": {}
-    }
+﻿{
+  "dependencies": {
+    "DotNetZip": "1.9.3",
+    "json-ld.net": "1.0.4",
+    "xunit": "2.0.0",
+    "xunit.runner.visualstudio": "2.0.0"
+  },
+  "frameworks": {
+    "net45": {}
+  },
+  "runtimes": {
+    "win-anycpu": {}
+  }
 }
