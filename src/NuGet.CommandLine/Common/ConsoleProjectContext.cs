@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Xml.Linq;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 
@@ -16,6 +17,8 @@ namespace NuGet.CommandLine
         public ExecutionContext ExecutionContext => null;
 
         public PackageExtractionContext PackageExtractionContext { get; set; }
+
+        public XDocument OriginalPackagesConfig { get; set; }
 
         public ISourceControlManagerProvider SourceControlManagerProvider => null;
 

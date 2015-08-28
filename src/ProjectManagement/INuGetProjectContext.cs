@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Xml.Linq;
 using NuGet.Packaging;
 
 namespace NuGet.ProjectManagement
@@ -25,6 +26,12 @@ namespace NuGet.ProjectManagement
         PackageExtractionContext PackageExtractionContext { get; set; }
         ISourceControlManagerProvider SourceControlManagerProvider { get; }
         ExecutionContext ExecutionContext { get; }
+
+        /// <summary>
+        /// The original packages.config. This is set by package management
+        /// before the actions are executed.
+        /// </summary>
+        XDocument OriginalPackagesConfig { get; set; }
     }
 
     /// <summary>

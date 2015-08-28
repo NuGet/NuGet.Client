@@ -9,6 +9,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging;
@@ -112,7 +113,18 @@ namespace NuGet.ProjectManagement
                     using (var stream = FileSystemUtility.GetFileStream(FullPath))
                     {
                         var writer = new PackagesConfigWriter(stream, createNew: false);
-                        writer.AddPackageEntry(newPackageReference);
+
+                        if (nuGetProjectContext.OriginalPackagesConfig == null)
+                        {
+                            // Write a new entry
+                            writer.AddPackageEntry(newPackageReference);
+                        }
+                        else
+                        {
+                            // Update the entry based on the original entry if it exists
+                            writer.UpdateOrAddPackageEntry(nuGetProjectContext.OriginalPackagesConfig, newPackageReference);
+                        }
+
                         writer.Close();
                     }
                 }
@@ -123,7 +135,18 @@ namespace NuGet.ProjectManagement
                 using (var stream = FileSystemUtility.CreateFile(FullPath, nuGetProjectContext))
                 {
                     var writer = new PackagesConfigWriter(stream, createNew: true);
-                    writer.AddPackageEntry(newPackageReference);
+
+                    if (nuGetProjectContext.OriginalPackagesConfig == null)
+                    {
+                        // Write a new entry
+                        writer.AddPackageEntry(newPackageReference);
+                    }
+                    else
+                    {
+                        // Update the entry based on the original entry if it exists
+                        writer.UpdateOrAddPackageEntry(nuGetProjectContext.OriginalPackagesConfig, newPackageReference);
+                    }
+
                     writer.Close();
                 }
             }
@@ -182,6 +205,32 @@ namespace NuGet.ProjectManagement
             return Task.FromResult<IEnumerable<PackageReference>>(GetInstalledPackagesList());
         }
 
+        /// <summary>
+        /// Retrieve the packages.config XML.
+        /// This will return null if the file does not exist.
+        /// </summary>
+        public XDocument GetPackagesConfig()
+        {
+            UpdateFullPath();
+            if (File.Exists(FullPath))
+            {
+                try
+                {
+                    return XDocument.Load(FullPath);
+                }
+                catch (XmlException ex)
+                {
+                    throw new InvalidOperationException(string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.ErrorLoadingPackagesConfig,
+                        FullPath,
+                        ex.Message));
+                }
+            }
+
+            return null;
+        }
+
         private void UpdateFullPath()
         {
             if (UsingPackagesProjectNameConfigPath
@@ -199,30 +248,25 @@ namespace NuGet.ProjectManagement
 
         private List<PackageReference> GetInstalledPackagesList()
         {
-            UpdateFullPath();
-            if (File.Exists(FullPath))
+            try
             {
-                try
+                var xml = GetPackagesConfig();
+
+                if (xml != null)
                 {
-                    var reader = new PackagesConfigReader(XDocument.Load(FullPath));
+                    var reader = new PackagesConfigReader(xml);
                     return reader.GetPackages().ToList();
                 }
-                catch (Exception ex)
-                {
-                    if (ex is System.Xml.XmlException ||
+            }
+            catch (Exception ex) 
+                when (ex is System.Xml.XmlException ||
                         ex is PackagesConfigReaderException)
-                    {
-                        throw new InvalidOperationException(string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.ErrorLoadingPackagesConfig,
-                            FullPath,
-                            ex.Message));
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+            {
+                throw new InvalidOperationException(string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.ErrorLoadingPackagesConfig,
+                        FullPath,
+                        ex.Message));
             }
 
             return new List<PackageReference>();

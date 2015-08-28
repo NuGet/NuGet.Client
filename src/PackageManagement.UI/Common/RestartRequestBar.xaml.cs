@@ -8,6 +8,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using System.Xml.Linq;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
@@ -29,6 +30,8 @@ namespace NuGet.PackageManagement.UI
         public ISourceControlManagerProvider SourceControlManagerProvider { get; }
 
         public ProjectManagement.ExecutionContext ExecutionContext { get; }
+
+        public XDocument OriginalPackagesConfig { get; set; }
 
         public RestartRequestBar(IDeleteOnRestartManager deleteOnRestartManager, IVsShell4 vsRestarter)
         {

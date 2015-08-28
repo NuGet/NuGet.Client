@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -36,6 +37,8 @@ namespace Test.Utility
         public bool SkipAssemblyReferences { get; set; }
 
         public bool BindingRedirectsDisabled { get; set; }
+
+        public XDocument OriginalPackagesConfig { get; set; }
 
         public void ReportError(string message)
         {

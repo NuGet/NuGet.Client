@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
@@ -3756,6 +3757,195 @@ namespace NuGet.Test
                     default(CancellationToken)));
             Assert.Equal("Package 'ManagedCodeConventions 1.0.0' uses features that are not supported by the current version of NuGet. " +
                 "To upgrade NuGet, see http://docs.nuget.org/consume/installing-nuget.", ex.Message);
+        }
+
+        [Fact]
+        public async Task TestPacManUpdatePackagePreservePackagesConfigAttributes()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new Configuration.NullSettings();
+            var token = CancellationToken.None;
+            var deleteOnRestartManager = new TestDeleteOnRestartManager();
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager,
+                deleteOnRestartManager);
+            var packagesFolderPath = 
+                PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+
+            using (var writer = new StreamWriter(randomPackagesConfigPath))
+            {
+                writer.WriteLine(@"<packages>
+                <package id=""NuGet.Versioning"" version=""1.0.1"" targetFramework=""net45""
+                    allowedVersions=""[1.0.0, 2.0.0]"" developmentDependency=""true"" future=""abc"" />
+                </packages>");
+            }
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                projectTargetFramework, 
+                new TestNuGetProjectContext());
+
+            var msBuildNuGetProject = new MSBuildNuGetProject(
+                msBuildNuGetProjectSystem, 
+                packagesFolderPath,
+                randomPackagesConfigFolderPath);
+
+            var packageIdentity = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.5"));
+            var packageOld = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.1"));
+
+            // Act
+            await nuGetPackageManager.RestorePackageAsync(
+                packageOld, 
+                new TestNuGetProjectContext(), 
+                sourceRepositoryProvider.GetRepositories(),
+                token);
+
+            var actions = await nuGetPackageManager.PreviewInstallPackageAsync(
+                msBuildNuGetProject,
+                packageIdentity,
+                new ResolutionContext(),
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories().First(),
+                null,
+                token);
+
+            await nuGetPackageManager.InstallPackageAsync(
+                msBuildNuGetProject,
+                packageIdentity,
+                new ResolutionContext(),
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories(),
+                sourceRepositoryProvider.GetRepositories(),
+                token);
+
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject
+                .GetInstalledPackagesAsync(token))
+                .ToList();
+
+            var packagesConfigXML = XDocument.Load(randomPackagesConfigPath);
+            var entry = packagesConfigXML.Element(XName.Get("packages")).Elements(XName.Get("package")).Single();
+
+            // Assert
+            Assert.Equal(2, actions.Count());
+            Assert.Equal(1, packagesInPackagesConfig.Count);
+            Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
+            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
+
+            Assert.Equal("[1.0.0, 2.0.0]", entry.Attribute(XName.Get("allowedVersions")).Value);
+            Assert.Equal("true", entry.Attribute(XName.Get("developmentDependency")).Value);
+            Assert.Equal("abc", entry.Attribute(XName.Get("future")).Value);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(
+                testSolutionManager.SolutionDirectory, 
+                randomPackagesConfigFolderPath);
+        }
+
+        [Fact]
+        public async Task TestPacManUpdatePackagePreservePackagesConfigAttributesMultiplePackages()
+        {
+            // Arrange
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new Configuration.NullSettings();
+            var token = CancellationToken.None;
+            var deleteOnRestartManager = new TestDeleteOnRestartManager();
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager,
+                deleteOnRestartManager);
+            var packagesFolderPath =
+                PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+
+            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+
+            using (var writer = new StreamWriter(randomPackagesConfigPath))
+            {
+                writer.WriteLine(@"<packages>
+                <package id=""NuGet.Versioning"" version=""1.0.1"" targetFramework=""net45""
+                    allowedVersions=""[1.0.0, 2.0.0]"" developmentDependency=""true"" future=""abc"" />
+                <package id=""newtonsoft.json"" version=""6.0.8"" targetFramework=""net45"" />
+                </packages>");
+            }
+
+            var projectTargetFramework = NuGetFramework.Parse("net45");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                projectTargetFramework,
+                new TestNuGetProjectContext());
+
+            var msBuildNuGetProject = new MSBuildNuGetProject(
+                msBuildNuGetProjectSystem,
+                packagesFolderPath,
+                randomPackagesConfigFolderPath);
+
+            var packageIdentity = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.5"));
+            var packageOld = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.1"));
+
+            // Act
+            await nuGetPackageManager.RestorePackageAsync(
+                packageOld,
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories(),
+                token);
+
+            await nuGetPackageManager.RestorePackageAsync(
+                new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8")),
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories(),
+                token);
+
+            var actions = await nuGetPackageManager.PreviewInstallPackageAsync(
+                msBuildNuGetProject,
+                packageIdentity,
+                new ResolutionContext(),
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories().First(),
+                null,
+                token);
+
+            await nuGetPackageManager.InstallPackageAsync(
+                msBuildNuGetProject,
+                packageIdentity,
+                new ResolutionContext(),
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories(),
+                sourceRepositoryProvider.GetRepositories(),
+                token);
+
+            var packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject
+                .GetInstalledPackagesAsync(token))
+                .OrderBy(package => package.PackageIdentity.Id)
+                .ToList();
+
+            var packagesConfigXML = XDocument.Load(randomPackagesConfigPath);
+            var entry = packagesConfigXML.Element(XName.Get("packages"))
+                .Elements(XName.Get("package"))
+                .Single(package => package.Attribute(XName.Get("id")).Value
+                    .Equals("nuget.versioning", StringComparison.OrdinalIgnoreCase));
+
+            // Assert
+            Assert.Equal(2, actions.Count());
+            Assert.Equal(2, packagesInPackagesConfig.Count);
+            Assert.Equal(packageIdentity, packagesInPackagesConfig[1].PackageIdentity);
+            Assert.Equal(projectTargetFramework, packagesInPackagesConfig[1].TargetFramework);
+
+            Assert.Equal("[1.0.0, 2.0.0]", entry.Attribute(XName.Get("allowedVersions")).Value);
+            Assert.Equal("true", entry.Attribute(XName.Get("developmentDependency")).Value);
+            Assert.Equal("abc", entry.Attribute(XName.Get("future")).Value);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(
+                testSolutionManager.SolutionDirectory,
+                randomPackagesConfigFolderPath);
         }
 
         private class TestDownloadResourceProvider : ResourceProvider

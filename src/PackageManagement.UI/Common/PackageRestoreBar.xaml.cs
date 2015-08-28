@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using System.Xml.Linq;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
@@ -30,6 +31,8 @@ namespace NuGet.PackageManagement.UI
         public ISourceControlManagerProvider SourceControlManagerProvider { get; }
 
         public ProjectManagement.ExecutionContext ExecutionContext { get; }
+
+        public XDocument OriginalPackagesConfig { get; set; }
 
         public PackageRestoreBar(ISolutionManager solutionManager, IPackageRestoreManager packageRestoreManager)
         {

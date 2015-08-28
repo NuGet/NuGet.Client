@@ -3,6 +3,7 @@
 
 using System;
 using System.Windows.Threading;
+using System.Xml.Linq;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 
@@ -90,6 +91,8 @@ namespace NuGet.PackageManagement.UI
         public ICommonOperations CommonOperations { get; }
 
         public ExecutionContext ExecutionContext { get; }
+
+        public XDocument OriginalPackagesConfig { get; set; }
 
         public void ReportError(string message)
         {

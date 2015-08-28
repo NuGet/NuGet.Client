@@ -1241,6 +1241,14 @@ namespace NuGet.PackageManagement
             }
             else
             {
+                // Set the original packages config if it exists
+                var msbuildProject = nuGetProject as MSBuildNuGetProject;
+                if (msbuildProject != null)
+                {
+                    nuGetProjectContext.OriginalPackagesConfig = 
+                        msbuildProject.PackagesConfigNuGetProject?.GetPackagesConfig();
+                }
+
                 ExceptionDispatchInfo exceptionInfo = null;
                 var executedNuGetProjectActions = new Stack<NuGetProjectAction>();
                 var packageWithDirectoriesToBeDeleted = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
