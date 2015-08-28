@@ -98,6 +98,17 @@
             </Strings>
         </Button>
 
+        <Button guid="guidDialogCmdSet" id="cmdidRestorePackages" priority="0x0300" type="Button">
+          <Parent guid="guidReferenceContext" id="cmdAddReferenceGroup" />
+          <Icon guid="guidToolbarImages" id="bmpPackageRestore" />
+          <CommandFlag>DefaultInvisible</CommandFlag>
+          <CommandFlag>DynamicVisibility</CommandFlag>
+          <Strings>
+            <CommandName>cmdRestorePackages</CommandName>
+            <ButtonText>Restore NuGet Packa&amp;ges</ButtonText>
+          </Strings>
+        </Button>
+
         <Button guid="guidToolsGroup" id="idGeneralSettings" priority="0xF200" type="Button">
             <Parent guid="guidToolsGroup" id="idToolsGroup"/>
             <Icon guid="guidToolbarImages" id="bmpSourceSettings" />
@@ -146,6 +157,7 @@
   <VisibilityConstraints>
     <VisibilityItem guid="guidDialogCmdSet" id="cmdidAddPackages" context="UICONTEXT_SolutionExistsAndNotBuildingAndNotDebugging" />
     <VisibilityItem guid="guidDialogCmdSet" id="cmdidAddPackagesForSolution" context="UICONTEXT_SolutionExistsAndNotBuildingAndNotDebugging" />
+    <VisibilityItem guid="guidDialogCmdSet" id="cmdidRestorePackages" context="UICONTEXT_SolutionExistsAndNotBuildingAndNotDebugging" />
     <VisibilityItem guid="guidToolsGroup" id="cmdIdVisualizer" context="UICONTEXT_SolutionExists" />
   </VisibilityConstraints>
 
@@ -183,6 +195,9 @@
       <CommandPlacement guid="guidDialogCmdSet" id="cmdidAddPackages" priority="0xF100">
           <Parent guid="guidVenusCmdId" id="IDG_CTX_REFERENCE"/>
       </CommandPlacement>
+    <CommandPlacement guid="guidDialogCmdSet" id="cmdidRestorePackages" priority="0xF101">
+      <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_SOLUTION_BUILD" />
+    </CommandPlacement>
   </CommandPlacements>
 
   <Symbols>
@@ -219,6 +234,7 @@
     <GuidSymbol name="guidDialogCmdSet" value="{25fd982b-8cae-4cbd-a440-e03ffccde106}">
         <IDSymbol name="cmdidAddPackages" value="0x0100" />
         <IDSymbol name="cmdidAddPackagesForSolution" value="0x0200" />
+        <IDSymbol name="cmdidRestorePackages" value="0x0300" />
     </GuidSymbol>
     <GuidSymbol name="guidVenusCmdId" value="{C7547851-4E3A-4E5B-9173-FA6E9C8BD82C}" >
         <IDSymbol name="IDG_VENUS_CTX_REFERENCE" value="27" />

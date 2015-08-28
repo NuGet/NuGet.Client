@@ -450,11 +450,10 @@ namespace NuGetVSExtension
                 OleMenuCommand generalSettingsCommand = new OleMenuCommand(ShowGeneralSettingsOptionPage, generalSettingsCommandID);
                 _mcs.AddCommand(generalSettingsCommand);
 
-                // menu command for Package Visualizer
-                // Package Visualizer is not implemented using the new API yet, so comment out for 3.0-rc.
-                //CommandID visualizerCommandID = new CommandID(GuidList.guidNuGetToolsGroupCmdSet, PkgCmdIDList.cmdIdVisualizer);
-                //OleMenuCommand visualizerCommand = new OleMenuCommand(ExecuteVisualizer, null, QueryStatusForVisualizer, visualizerCommandID);
-                //_mcs.AddCommand(visualizerCommand);
+                // menu command for Package Restore command
+                CommandID restorePackagesCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidRestorePackages);
+                var restorePackagesCommand = new OleMenuCommand(RestorePackages, null, BeforeQueryStatusForPackageRestore, restorePackagesCommandID);
+                _mcs.AddCommand(restorePackagesCommand);
             }
         }
 
@@ -975,6 +974,11 @@ namespace NuGetVSExtension
             }
         }
 
+        private void RestorePackages(object sender, EventArgs args)
+        {
+            
+        }
+
         // For PowerShell, it's okay to query from the worker thread.
         private void BeforeQueryStatusForPowerConsole(object sender, EventArgs args)
         {
@@ -1006,6 +1010,22 @@ namespace NuGetVSExtension
         }
 
         private void BeforeQueryStatusForAddPackageForSolutionDialog(object sender, EventArgs args)
+        {
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                OleMenuCommand command = (OleMenuCommand)sender;
+
+                // Enable the 'Manage NuGet Packages For Solution' dialog menu
+                // a) if the console is NOT busy executing a command, AND
+                // b) if the solution exists and not debugging and not building AND
+                // c) if there are no NuGetProjects. This means that there no loaded, supported projects
+                command.Enabled = !ConsoleStatus.IsBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && SolutionManager.GetNuGetProjects().Any();
+            });
+        }
+
+        private void BeforeQueryStatusForPackageRestore(object sender, EventArgs args)
         {
             ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
