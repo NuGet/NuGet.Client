@@ -515,6 +515,13 @@ namespace NuGet.Commands
                         sha512,
                         correctedPackageName: library.Name);
                 }
+                else
+                {
+                    // Fix slashes for content model patterns
+                    lockFileLib.Files = lockFileLib.Files
+                        .Select(p => p.Replace(Path.DirectorySeparatorChar, '/'))
+                        .ToList();
+                }
 
                 lockFile.Libraries.Add(lockFileLib);
 
