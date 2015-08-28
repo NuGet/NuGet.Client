@@ -388,14 +388,14 @@ namespace NuGet.Packaging
                 // When the attribute is not specified a value in the new node
                 if (string.IsNullOrEmpty(newValue))
                 {
-                    if (!name.Equals(XName.Get(PackagesConfig.allowedVersionsAttributeName)))
+                    if (name.Equals(XName.Get(PackagesConfig.RequireInstallAttributeName)))
                     {
-                        // Remove the attribute, such as requirementReinstallation, developmentDependency and userInstalled.
-                        existingNode.SetAttributeValue(name, null);
+                        // Remove the requirementReinstallation attribute.
+                        existingNode.SetAttributeValue(name, value: null);
                     }
                     else
                     {
-                        // no-op. Keep the allowedVersion attribute as-is.
+                        // no-op. Keep the allowedVersion attribute and all other attributes as-is.
                     }
                 }
                 else

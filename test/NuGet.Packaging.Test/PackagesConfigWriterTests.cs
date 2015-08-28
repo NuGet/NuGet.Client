@@ -342,7 +342,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("utf-8", xml.Declaration.Encoding);
 
             var packageNode = xml.Descendants(PackagesConfig.PackageNodeName).FirstOrDefault();
-            Assert.Equal(packageNode.ToString(), "<package id=\"packageA\" version=\"1.0.1\" targetFramework=\"net45\" protocolVersion=\"V2\" />");
+            Assert.Equal(packageNode.ToString(), "<package id=\"packageA\" version=\"1.0.1\" targetFramework=\"net45\" userInstalled=\"true\" protocolVersion=\"V2\" />");
         }
     }
 }
