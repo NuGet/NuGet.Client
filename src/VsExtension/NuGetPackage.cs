@@ -976,7 +976,7 @@ namespace NuGetVSExtension
 
         private void RestorePackages(object sender, EventArgs args)
         {
-            
+            OnBuildPackageRestorer.RestorePackages();
         }
 
         // For PowerShell, it's okay to query from the worker thread.

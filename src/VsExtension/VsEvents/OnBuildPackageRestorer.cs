@@ -132,23 +132,31 @@ namespace NuGetVSExtension
             _errorListProvider.Tasks.Clear();
         }
 
-        private void BuildEvents_OnBuildBegin(vsBuildScope scope, vsBuildAction Action)
+        /// <summary>
+        /// RestorePackages is triggered by the menu item.  It performs the same
+        /// actions as a build.
+        /// </summary>
+        internal void RestorePackages()
         {
-            // Reset flags for the final status messsage
-            _hasErrors = false;
-            _canceled = false;
-            _hasMissingPackages = false;
-            _displayRestoreSummary = false;
-            _hasOptOutBeenShown = false;
-            // Get MSBuildOutputVerbosity from _dte
-            _msBuildOutputVerbosity = GetMSBuildOutputVerbositySetting(_dte);
-
             try
             {
-                _errorListProvider.Tasks.Clear();
-                PackageRestoreManager.PackageRestoredEvent += PackageRestoreManager_PackageRestored;
-                PackageRestoreManager.PackageRestoreFailedEvent += PackageRestoreManager_PackageRestoreFailedEvent;
+                // Execute
+                Restore(forceRestore: true, showOptOutMessage: false);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception to the console and activity log
+                LogException(ex, logError: true);
+            }
 
+            // Always write out the final status message, even if no actions took place.
+            WriteLine(_canceled, _hasMissingPackages, _hasErrors, forceStatusWrite: true);
+        }
+
+        private void BuildEvents_OnBuildBegin(vsBuildScope scope, vsBuildAction Action)
+        {
+            try
+            {
                 if (Action == vsBuildAction.vsBuildActionClean)
                 {
                     // Clear the project.json restore cache on clean to ensure that the next build restores again
@@ -160,65 +168,80 @@ namespace NuGetVSExtension
                     return;
                 }
 
-                if (UsingOldPackageRestore(_dte.Solution))
-                {
-                    return;
-                }
-
                 if (!IsAutomatic(Settings))
                 {
                     return;
                 }
 
-                var solutionDirectory = SolutionManager.SolutionDirectory;
-                var isSolutionAvailable = SolutionManager.IsSolutionAvailable;
+                var forceRestore = Action == vsBuildAction.vsBuildActionRebuildAll;
 
-                ThreadHelper.JoinableTaskFactory.Run(async delegate
-                    {
-                        // Get the projects from the SolutionManager
-                        // Note that projects that are not supported by NuGet, will not show up in this list
-                        var projects = SolutionManager.GetNuGetProjects().ToList();
-
-                        // Get MSBuildOutputVerbosity from _dte
-                        _msBuildOutputVerbosity = GetMSBuildOutputVerbositySetting(_dte);
-
-                        // Check if there are any projects that are not INuGetIntegratedProject, that is,
-                        // projects with packages.config. If so, perform package restore on them
-                        if (projects.Any(project => !(project is INuGetIntegratedProject)))
-                        {
-                            await RestorePackagesOrCheckForMissingPackagesAsync(
-                                solutionDirectory,
-                                isSolutionAvailable);
-                        }
-
-                        // Call DNU to restore for BuildIntegratedProjectSystem projects
-                        var buildEnabledProjects = projects.OfType<BuildIntegratedProjectSystem>();
-
-                        var forceRestore = Action == vsBuildAction.vsBuildActionRebuildAll;
-
-                        await RestoreBuildIntegratedProjectsAsync(
-                            solutionDirectory,
-                            buildEnabledProjects.ToList(),
-                            forceRestore,
-                            isSolutionAvailable);
-
-                    }, JoinableTaskCreationOptions.LongRunning);
+                // Execute
+                Restore(forceRestore, showOptOutMessage: true);
             }
             catch (Exception ex)
             {
                 // Log the exception to the console and activity log
                 LogException(ex, logError: false);
             }
-            finally
-            {
-                PackageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
-                PackageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreManager_PackageRestoreFailedEvent;
-            }
 
             if (_displayRestoreSummary)
             {
                 // If actions were performed, display the summary
-                WriteLine(_canceled, _hasMissingPackages, _hasErrors);
+                WriteLine(_canceled, _hasMissingPackages, _hasErrors, forceStatusWrite: false);
+            }
+        }
+
+        private void Restore(bool forceRestore, bool showOptOutMessage)
+        {
+            // Reset flags for the final status messsage
+            _hasErrors = false;
+            _canceled = false;
+            _hasMissingPackages = false;
+            _displayRestoreSummary = false;
+            _hasOptOutBeenShown = !showOptOutMessage;
+
+            try
+            {
+                _errorListProvider.Tasks.Clear();
+                PackageRestoreManager.PackageRestoredEvent += PackageRestoreManager_PackageRestored;
+                PackageRestoreManager.PackageRestoreFailedEvent += PackageRestoreManager_PackageRestoreFailedEvent;
+
+                var solutionDirectory = SolutionManager.SolutionDirectory;
+                var isSolutionAvailable = SolutionManager.IsSolutionAvailable;
+
+                ThreadHelper.JoinableTaskFactory.Run(async delegate
+                {
+                    // Get MSBuildOutputVerbosity from _dte
+                    _msBuildOutputVerbosity = GetMSBuildOutputVerbositySetting(_dte);
+
+                    // Get the projects from the SolutionManager
+                    // Note that projects that are not supported by NuGet, will not show up in this list
+                    var projects = SolutionManager.GetNuGetProjects().ToList();
+
+                    // Check if there are any projects that are not INuGetIntegratedProject, that is,
+                    // projects with packages.config. If so, perform package restore on them
+                    if (projects.Any(project => !(project is INuGetIntegratedProject)))
+                    {
+                        await RestorePackagesOrCheckForMissingPackagesAsync(
+                            solutionDirectory,
+                            isSolutionAvailable);
+                    }
+
+                    // Call DNU to restore for BuildIntegratedProjectSystem projects
+                    var buildEnabledProjects = projects.OfType<BuildIntegratedProjectSystem>();
+
+                    await RestoreBuildIntegratedProjectsAsync(
+                        solutionDirectory,
+                        buildEnabledProjects.ToList(),
+                        forceRestore,
+                        isSolutionAvailable);
+
+                }, JoinableTaskCreationOptions.LongRunning);
+            }
+            finally
+            {
+                PackageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
+                PackageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreManager_PackageRestoreFailedEvent;
             }
         }
 
@@ -716,42 +739,40 @@ namespace NuGetVSExtension
             return packageRestoreConsent.IsAutomatic;
         }
 
-        /// <summary>
-        /// Returns true if the solution is using the old style package restore.
-        /// </summary>
-        /// <param name="solution">The solution to check.</param>
-        /// <returns>True if the solution is using the old style package restore.</returns>
-        private static bool UsingOldPackageRestore(Solution solution)
-        {
-            return false;
-            //var nugetSolutionFolder = VsUtility.GetNuGetSolutionFolder(solution);
-            //return File.Exists(Path.Combine(nugetSolutionFolder, "nuget.targets"));
-        }
-
-        private void WriteLine(bool canceled, bool hasMissingPackages, bool hasErrors)
+        private void WriteLine(bool canceled, bool hasMissingPackages, bool hasErrors, bool forceStatusWrite)
         {
             // Write just "PackageRestore Canceled" message if package restore has been canceled
             if (canceled)
             {
-                WriteLine(VerbosityLevel.Minimal, Resources.PackageRestoreCanceled);
+                WriteLine(
+                    forceStatusWrite ? VerbosityLevel.Quiet : VerbosityLevel.Minimal,
+                    Resources.PackageRestoreCanceled);
+
                 return;
             }
 
             // Write just "Nothing to restore" message when there are no missing packages.
             if (!hasMissingPackages)
             {
-                WriteLine(VerbosityLevel.Detailed, Resources.NothingToRestore);
+                WriteLine(
+                    forceStatusWrite ? VerbosityLevel.Quiet : VerbosityLevel.Detailed,
+                    Resources.NothingToRestore);
+
                 return;
             }
 
             // Here package restore has happened. It can finish with/without error.
             if (hasErrors)
             {
-                WriteLine(VerbosityLevel.Minimal, Resources.PackageRestoreFinishedWithError);
+                WriteLine(
+                    forceStatusWrite ? VerbosityLevel.Quiet : VerbosityLevel.Minimal,
+                    Resources.PackageRestoreFinishedWithError);
             }
             else
             {
-                WriteLine(VerbosityLevel.Normal, Resources.PackageRestoreFinished);
+                WriteLine(
+                    forceStatusWrite ? VerbosityLevel.Quiet : VerbosityLevel.Normal,
+                    Resources.PackageRestoreFinished);
             }
         }
 
