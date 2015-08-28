@@ -6,14 +6,14 @@
     <Node Id="C:1.0" Label="C:1.0" />
     <Node Id="C:2.0" Label="C:2.0" />
     <Node Id="D:1.0" Label="D:1.0" />
-    <Node Id="G:1.0" Label="G:1.0" />
+    <Node Id="H:1.0" Label="H:1.0" />
   </Nodes>
   <Links>
     <Link Source="A:1.0" Target="B:1.0" />
     <Link Source="A:1.0" Target="C:1.0" />
     <Link Source="C:1.0" Target="D:1.0" />
     <Link Source="C:2.0" Target="B:1.0" />
-    <Link Source="G:1.0" Target="C:1.0" Label="[1.0]" />
+    <Link Source="H:1.0" Target="C:1.0" Label="[1.0]" />
   </Links>
   <Properties>
     <Property Id="Label" Label="Label" Description="Displayable label of an Annotatable object" DataType="System.String" />

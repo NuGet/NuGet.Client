@@ -327,21 +327,21 @@ function Test-SubTreeUpdateWithConflict {
     
     # Act
     $p | Install-Package A -Source $context.RepositoryPath
-    $p | Install-Package G -Source $context.RepositoryPath
+    $p | Install-Package H -Source $context.RepositoryPath
     Assert-Package $p A 1.0
     Assert-Package $p B 1.0
     Assert-Package $p C 1.0
     Assert-Package $p D 1.0
-    Assert-Package $p G 1.0
+    Assert-Package $p H 1.0
 
-    Assert-Throws { $p | Update-Package C -Source $context.RepositoryPath } "Unable to resolve dependencies. 'C 2.0.0' is not compatible with 'A 1.0.0 constraint: C ($gt 1.0.0)', 'G 1.0.0 constraint: C (= 1.0.0)'."
+    Assert-Throws { $p | Update-Package C -Source $context.RepositoryPath } "Unable to resolve dependencies. 'C 2.0.0' is not compatible with 'A 1.0.0 constraint: C ($gt 1.0.0)', 'H 1.0.0 constraint: C (= 1.0.0)'."
     Assert-Null (Get-ProjectPackage $p C 2.0)
     Assert-Null (Get-SolutionPackage C 2.0)
     Assert-Package $p A 1.0
     Assert-Package $p B 1.0
     Assert-Package $p C 1.0
     Assert-Package $p D 1.0
-    Assert-Package $p G 1.0
+    Assert-Package $p H 1.0
 }
 
 function Test-AddingBindingRedirectAfterUpdate {
