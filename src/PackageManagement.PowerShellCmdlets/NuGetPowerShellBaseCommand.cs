@@ -23,6 +23,7 @@ using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
+using System.Xml.Linq;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -73,6 +74,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         #region Properties
+
+        public XDocument OriginalPackagesConfig { get; set; }
 
         /// <summary>
         /// NuGet Package Manager for PowerShell Cmdlets

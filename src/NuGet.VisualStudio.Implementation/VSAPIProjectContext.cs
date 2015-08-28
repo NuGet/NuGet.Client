@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
+using System.Xml.Linq;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
@@ -51,6 +52,8 @@ namespace NuGet.VisualStudio
         public bool BindingRedirectsDisabled { get; }
 
         public bool SkipBindingRedirects { get; set; }
+
+        public XDocument OriginalPackagesConfig { get; set; }
 
         public void ReportError(string message)
         {

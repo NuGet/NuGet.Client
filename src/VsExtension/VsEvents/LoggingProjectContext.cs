@@ -6,6 +6,7 @@ using System.Globalization;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace NuGetVSExtension
 {
@@ -70,5 +71,7 @@ namespace NuGetVSExtension
             Debug.Assert(false, "Not Implemented");
             return 0;
         }
+
+        public XDocument OriginalPackagesConfig { get; set; }
     }
 }
