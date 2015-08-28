@@ -978,7 +978,9 @@ function UninstallPackageHonorPackageReferencesAccordingToProjectFramework
     Assert-Null (Get-AssemblyReference $p three)
 }
 
-function Test-UninstallPackageRemoveImportStatement
+# This test has been disabled and is tracked by an issue
+# function Test-UninstallPackageRemoveImportStatement
+function UninstallPackageRemoveImportStatement
 {
     param ($context)
 
