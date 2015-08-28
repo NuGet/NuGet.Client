@@ -1,10 +1,9 @@
-{
-    "dependencies": {
-    },
-    "frameworks": {
-        "net45": {}
-    },
-    "runtimes": {
-        "win-anycpu": {}
-    }
+﻿{
+  "dependencies": {},
+  "frameworks": {
+    "net45": {}
+  },
+  "runtimes": {
+    "win-anycpu": {}
+  }
 }
