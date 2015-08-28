@@ -3,7 +3,7 @@ NuGet.PackageManagement
 
 Reading and writing manifests of installed packages
 
-# NuGet CommandLine
+## NuGet CommandLine
 
 This repo contains the `NuGet.exe` command line tool.
 
