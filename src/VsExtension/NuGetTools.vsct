@@ -32,7 +32,7 @@
       </Group>
       <Group guid="guidToolsGroup" id="idToolsGroup" priority="0x100">
         <Parent guid="guidToolsGroup" id="idLibraryPackageManager" />
-      </Group>      
+      </Group>
     </Groups>
 
     <Buttons>
@@ -77,48 +77,48 @@
       </Button>
 
       <Button guid="guidDialogCmdSet" id="cmdidAddPackages" priority="0x0100" type="Button">
-          <Parent guid="guidReferenceContext" id="cmdAddReferenceGroup" />
-          <Icon guid="guidToolbarImages" id="bmpAddNuGetPackage" />
-          <CommandFlag>AllowParams</CommandFlag>
-          <CommandFlag>DefaultInvisible</CommandFlag>
-          <CommandFlag>DynamicVisibility</CommandFlag>
-          <Strings>
-              <CommandName>cmdidAddPackages</CommandName>
-              <ButtonText>Manage &amp;NuGet Packages...</ButtonText>
-          </Strings>
+        <Parent guid="guidReferenceContext" id="cmdAddReferenceGroup" />
+        <Icon guid="guidToolbarImages" id="bmpAddNuGetPackage" />
+        <CommandFlag>AllowParams</CommandFlag>
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <CommandName>cmdidAddPackages</CommandName>
+          <ButtonText>Manage &amp;NuGet Packages...</ButtonText>
+        </Strings>
       </Button>
 
-        <Button guid="guidDialogCmdSet" id="cmdidAddPackagesForSolution" priority="0x0200" type="Button">
-            <Parent guid="guidReferenceContext" id="cmdAddReferenceGroup" />
-            <Icon guid="guidToolbarImages" id="bmpAddNuGetPackage" />
-            <CommandFlag>DefaultInvisible</CommandFlag>
-            <Strings>
-                <CommandName>cmdidAddPackagesForSolution</CommandName>
-                <ButtonText>Manage &amp;NuGet Packages for Solution...</ButtonText>
-            </Strings>
-        </Button>
+      <Button guid="guidDialogCmdSet" id="cmdidAddPackagesForSolution" priority="0x0200" type="Button">
+        <Parent guid="guidReferenceContext" id="cmdAddReferenceGroup" />
+        <Icon guid="guidToolbarImages" id="bmpAddNuGetPackage" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <Strings>
+          <CommandName>cmdidAddPackagesForSolution</CommandName>
+          <ButtonText>Manage &amp;NuGet Packages for Solution...</ButtonText>
+        </Strings>
+      </Button>
 
-        <Button guid="guidDialogCmdSet" id="cmdidRestorePackages" priority="0x0300" type="Button">
-          <Parent guid="guidReferenceContext" id="cmdAddReferenceGroup" />
-          <Icon guid="guidToolbarImages" id="bmpPackageRestore" />
-          <CommandFlag>DefaultInvisible</CommandFlag>
-          <CommandFlag>DynamicVisibility</CommandFlag>
-          <Strings>
-            <CommandName>cmdRestorePackages</CommandName>
-            <ButtonText>Restore NuGet Packa&amp;ges</ButtonText>
-          </Strings>
-        </Button>
+      <Button guid="guidDialogCmdSet" id="cmdidRestorePackages" priority="0x0300" type="Button">
+        <Parent guid="guidReferenceContext" id="cmdAddReferenceGroup" />
+        <Icon guid="guidToolbarImages" id="bmpPackageRestore" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <CommandName>cmdRestorePackages</CommandName>
+          <ButtonText>Restore NuGet Packa&amp;ges</ButtonText>
+        </Strings>
+      </Button>
 
-        <Button guid="guidToolsGroup" id="idGeneralSettings" priority="0xF200" type="Button">
-            <Parent guid="guidToolsGroup" id="idToolsGroup"/>
-            <Icon guid="guidToolbarImages" id="bmpSourceSettings" />
-            <Strings>
-                <CommandName>cmdidGeneralSettings</CommandName>
-                <ButtonText>&amp;Package Manager Settings</ButtonText>
-            </Strings>
-        </Button>
+      <Button guid="guidToolsGroup" id="idGeneralSettings" priority="0xF200" type="Button">
+        <Parent guid="guidToolsGroup" id="idToolsGroup"/>
+        <Icon guid="guidToolbarImages" id="bmpSourceSettings" />
+        <Strings>
+          <CommandName>cmdidGeneralSettings</CommandName>
+          <ButtonText>&amp;Package Manager Settings</ButtonText>
+        </Strings>
+      </Button>
 
-        <!--<Button guid="guidToolsGroup" id="cmdIdVisualizer" priority="0xF150" type="Button">
+      <!--<Button guid="guidToolsGroup" id="cmdIdVisualizer" priority="0xF150" type="Button">
           <Parent guid="guidToolsGroup" id="idToolsGroup" />
           <Icon guid="guidToolbarImages" id="bmpVisualizer" />
           <CommandFlag>DefaultInvisible</CommandFlag>
@@ -136,7 +136,7 @@
         <Parent guid="guidPowerConsoleCmdSet" id="idToolbarHostsGroup" />
         <CommandFlag>IconAndText</CommandFlag>
         <Strings>
-            <ButtonText>Pac&amp;kage source:</ButtonText>
+          <ButtonText>Pac&amp;kage source:</ButtonText>
         </Strings>
       </Combo>
 
@@ -144,7 +144,7 @@
         <Parent guid="guidPowerConsoleCmdSet" id="idToolbarProjectGroup" />
         <CommandFlag>IconAndText</CommandFlag>
         <Strings>
-            <ButtonText>Default pro&amp;ject:</ButtonText>
+          <ButtonText>Default pro&amp;ject:</ButtonText>
         </Strings>
       </Combo>
     </Combos>
@@ -161,7 +161,7 @@
     <VisibilityItem guid="guidToolsGroup" id="cmdIdVisualizer" context="UICONTEXT_SolutionExists" />
   </VisibilityConstraints>
 
-  <CommandPlacements>      
+  <CommandPlacements>
     <CommandPlacement guid="guidPowerConsoleCmdSet" id="cmdidPowerConsole" priority="0x0100">
       <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1"/>
     </CommandPlacement>
@@ -177,31 +177,31 @@
     <CommandPlacement guid="guidDialogCmdSet" id="cmdidAddPackagesForSolution" priority="0xF100">
       <Parent guid="guidToolsGroup" id="idToolsGroup"/>
     </CommandPlacement>
-      <CommandPlacement guid="guidDialogCmdSet" id="cmdidAddPackagesForSolution" priority="0xF100">
-        <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_SOLUTION_BUILD" />
-      </CommandPlacement>
-      <CommandPlacement guid="guidDialogCmdSet" id="cmdidAddPackages" priority="0xF100">
-          <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_REFROOT_ADD"/>
-      </CommandPlacement>
-      <CommandPlacement guid="guidDialogCmdSet" id="cmdidAddPackages" priority="0xF100">
-          <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_PROJECT_ADD"/>
-      </CommandPlacement>
-      <CommandPlacement guid="guidDialogCmdSet" id="cmdidAddPackages" priority="0xF100">
-          <Parent guid="guidSHLMainMenu" id="IDG_VS_PROJ_OPTIONS"/>
-      </CommandPlacement>
-      <CommandPlacement guid="guidDialogCmdSet" id="cmdidAddPackages" priority="0xF100">
-          <Parent guid="guidVenusCmdId" id="IDG_VENUS_CTX_REFERENCE"/>
-      </CommandPlacement>
-      <CommandPlacement guid="guidDialogCmdSet" id="cmdidAddPackages" priority="0xF100">
-          <Parent guid="guidVenusCmdId" id="IDG_CTX_REFERENCE"/>
-      </CommandPlacement>
+    <CommandPlacement guid="guidDialogCmdSet" id="cmdidAddPackagesForSolution" priority="0xF100">
+      <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_SOLUTION_BUILD" />
+    </CommandPlacement>
+    <CommandPlacement guid="guidDialogCmdSet" id="cmdidAddPackages" priority="0xF100">
+      <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_REFROOT_ADD"/>
+    </CommandPlacement>
+    <CommandPlacement guid="guidDialogCmdSet" id="cmdidAddPackages" priority="0xF100">
+      <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_PROJECT_ADD"/>
+    </CommandPlacement>
+    <CommandPlacement guid="guidDialogCmdSet" id="cmdidAddPackages" priority="0xF100">
+      <Parent guid="guidSHLMainMenu" id="IDG_VS_PROJ_OPTIONS"/>
+    </CommandPlacement>
+    <CommandPlacement guid="guidDialogCmdSet" id="cmdidAddPackages" priority="0xF100">
+      <Parent guid="guidVenusCmdId" id="IDG_VENUS_CTX_REFERENCE"/>
+    </CommandPlacement>
+    <CommandPlacement guid="guidDialogCmdSet" id="cmdidAddPackages" priority="0xF100">
+      <Parent guid="guidVenusCmdId" id="IDG_CTX_REFERENCE"/>
+    </CommandPlacement>
     <CommandPlacement guid="guidDialogCmdSet" id="cmdidRestorePackages" priority="0xF101">
       <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_SOLUTION_BUILD" />
     </CommandPlacement>
   </CommandPlacements>
 
   <Symbols>
-    <GuidSymbol name="guidPowerConsolePkg" value="{F7D0E7A3-C60B-422A-BFAE-CEED36ADE7D2}" />    
+    <GuidSymbol name="guidPowerConsolePkg" value="{F7D0E7A3-C60B-422A-BFAE-CEED36ADE7D2}" />
     <GuidSymbol name="guidPowerConsoleCmdSet" value="{1E8A55F6-C18D-407F-91C8-94B02AE1CED6}">
       <IDSymbol name="idToolbar" value="0x1010"/>
       <IDSymbol name="idToolbarHostsGroup" value="0x2000"/>
@@ -232,13 +232,13 @@
       <IDSymobl name="cmdIdVisualizer" value="0x310" />
     </GuidSymbol>
     <GuidSymbol name="guidDialogCmdSet" value="{25fd982b-8cae-4cbd-a440-e03ffccde106}">
-        <IDSymbol name="cmdidAddPackages" value="0x0100" />
-        <IDSymbol name="cmdidAddPackagesForSolution" value="0x0200" />
-        <IDSymbol name="cmdidRestorePackages" value="0x0300" />
+      <IDSymbol name="cmdidAddPackages" value="0x0100" />
+      <IDSymbol name="cmdidAddPackagesForSolution" value="0x0200" />
+      <IDSymbol name="cmdidRestorePackages" value="0x0300" />
     </GuidSymbol>
     <GuidSymbol name="guidVenusCmdId" value="{C7547851-4E3A-4E5B-9173-FA6E9C8BD82C}" >
-        <IDSymbol name="IDG_VENUS_CTX_REFERENCE" value="27" />
-        <IDSymbol name="IDG_CTX_REFERENCE" value="0x102" />
+      <IDSymbol name="IDG_VENUS_CTX_REFERENCE" value="27" />
+      <IDSymbol name="IDG_CTX_REFERENCE" value="0x102" />
     </GuidSymbol>
     <GuidSymbol name="guidReferenceContext" value="{D309F791-903F-11D0-9EFC-00A0C911004F}">
       <IdSymbol name="cmdAddReferenceGroup" value="0x450" />
