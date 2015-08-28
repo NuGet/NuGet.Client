@@ -186,7 +186,7 @@ namespace NuGet.Packaging
         /// <summary>
         /// Update a package entry using the original entry as a base if it exists.
         /// </summary>
-        public void UpdatePackageEntry(XDocument originalConfig, PackageReference newEntry)
+        public void UpdateOrAddPackageEntry(XDocument originalConfig, PackageReference newEntry)
         {
             if (originalConfig == null)
             {

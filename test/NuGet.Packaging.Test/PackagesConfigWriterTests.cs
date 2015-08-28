@@ -160,7 +160,7 @@ namespace NuGet.Packaging.Test
 
             using (PackagesConfigWriter writer = new PackagesConfigWriter(stream2, true))
             {
-                writer.UpdatePackageEntry(xml, packageReferenceB);
+                writer.UpdateOrAddPackageEntry(xml, packageReferenceB);
             }
 
             stream2.Seek(0, SeekOrigin.Begin);
