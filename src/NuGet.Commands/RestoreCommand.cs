@@ -515,7 +515,7 @@ namespace NuGet.Commands
                         sha512,
                         correctedPackageName: library.Name);
                 }
-                else
+                else if (Path.DirectorySeparatorChar != '/')
                 {
                     // Fix slashes for content model patterns
                     lockFileLib.Files = lockFileLib.Files

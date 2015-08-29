@@ -178,10 +178,18 @@ namespace NuGet.Commands
                     using (var nupkgStream = File.OpenRead(package.ZipPath))
                     {
                         var packageReader = new PackageReader(nupkgStream);
-                        files = packageReader
-                                .GetFiles()
-                                .Select(p => p.Replace(Path.DirectorySeparatorChar, '/'))
-                                .ToList();
+
+                        if (Path.DirectorySeparatorChar != '/')
+                        {
+                            files = packageReader
+                                    .GetFiles()
+                                    .Select(p => p.Replace(Path.DirectorySeparatorChar, '/'))
+                                    .ToList();
+                        }
+                        else
+                        {
+                            files = packageReader.GetFiles().ToList();
+                        }
                     }
                 }
 
