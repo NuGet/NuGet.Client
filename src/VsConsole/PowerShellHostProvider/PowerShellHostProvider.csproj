@@ -5,7 +5,7 @@
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
   </PropertyGroup>
   <Import Project="..\..\..\Build\NuGet.Settings.targets" />
-  <Import Project="..\..\Build\Common.props" Condition="Exists('..\..\Build\Common.props')" />
+  <Import Project="..\..\..\Build\Common.props" Condition="Exists('..\..\..\Build\Common.props')" />
   <PropertyGroup>
     <ProjectGuid>{A5E7AEB3-738F-4C39-A459-00F90483B2FE}</ProjectGuid>
     <OutputType>Library</OutputType>
