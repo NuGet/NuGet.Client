@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
-using System.Text;
+using Newtonsoft.Json.Linq;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -773,7 +774,7 @@ namespace NuGet.CommandLine.Test
                         nugetexe,
                         workingDirectory,
                         args,
-                        waitForExit: true);                    
+                        waitForExit: true);
 
                     // Assert
                     Assert.Equal(0, r1.Item1);
@@ -890,6 +891,125 @@ namespace NuGet.CommandLine.Test
                 // Cleanup
                 Util.DeleteDirectory(outputDirectory);
                 Util.DeleteDirectory(source);
+            }
+        }
+
+        // Tests that when credential is saved in the config file, it will be passed 
+        // correctly to both the index.json endpoint and registration endpoint, even
+        // though one uri does not start with the other uri.
+        [Fact]
+        public void InstallCommand_AuthenticatedV3WithCredentialSavedInConfig()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            bool credentialsPassedToRegistrationEndPoint = false;
+
+            try
+            {
+                // Server setup                
+                using (var serverV3 = new MockServer())
+                {
+                    var registrationEndPoint = serverV3.Uri + "w";
+                    var indexJson = Util.CreateIndexJson();
+                    Util.AddRegistrationResource(indexJson, serverV3);
+
+                    serverV3.Get.Add("/a/b/c/index.json", r =>
+                    {
+                        var h = r.Headers["Authorization"];
+                        var credential = String.IsNullOrEmpty(h) ? 
+                            null :
+                            System.Text.Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+
+                        if (StringComparer.OrdinalIgnoreCase.Equals("test_user:test_password", credential))
+                        {
+                            return new Action<HttpListenerResponse>(response =>
+                            {
+                                response.StatusCode = (int)HttpStatusCode.OK;
+                                response.ContentType = "application/json";
+                                MockServer.SetResponseContent(response, indexJson.ToString());
+                            });
+                        }
+                        else
+                        {
+                            return new Action<HttpListenerResponse>(response =>
+                            {
+                                response.AddHeader("WWW-Authenticate", "Basic ");
+                                response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                            });
+                        }
+                    });
+
+                    serverV3.Get.Add("/reg/test_package/index.json", r =>
+                    {
+                        var h = r.Headers["Authorization"];
+                        var credential = String.IsNullOrEmpty(h) ?
+                            null :
+                            System.Text.Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+
+                        if (StringComparer.OrdinalIgnoreCase.Equals("test_user:test_password", credential))
+                        {
+                            credentialsPassedToRegistrationEndPoint = true;
+
+                            return new Action<HttpListenerResponse>(response =>
+                            {
+                                response.StatusCode = (int)HttpStatusCode.OK;
+                                response.ContentType = "text/javascript";
+                                MockServer.SetResponseContent(response, indexJson.ToString());
+                            });
+                        }
+                        else
+                        {
+                            return new Action<HttpListenerResponse>(response =>
+                            {
+                                response.AddHeader("WWW-Authenticate", "Basic ");
+                                response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                            });
+                        }
+                    });
+
+                    serverV3.Start();
+
+                    // create the config file with credentials saved
+                    var config = string.Format(
+@"<configuration>
+  <packageSources>
+    <add key='test' value='{0}' />
+  </packageSources>
+  <packageSourceCredentials>
+    <test>
+      <add key='UserName' value='test_user' />
+      <add key='ClearTextPassword' value='test_password' />
+    </test>
+  </packageSourceCredentials>
+</configuration>
+",
+    serverV3.Uri + "a/b/c/index.json");
+                    var configFileName = Path.Combine(randomTestFolder, "nuget.config");
+                    File.WriteAllText(configFileName, config);
+
+                    // Act
+                    string[] args = new string[]
+                    {
+                        "install test_package",
+                        "-Source ",
+                        serverV3.Uri + "a/b/c/index.json",
+                        "-ConfigFile",
+                        configFileName
+                    };
+                    var result = CommandRunner.Run(
+                        nugetexe,
+                        Directory.GetCurrentDirectory(),
+                        string.Join(" ", args),
+                        true);
+
+                    // Assert
+                    Assert.True(credentialsPassedToRegistrationEndPoint);
+                }
+            }
+            finally
+            {
+                // Cleanup
+                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
             }
         }
     }
