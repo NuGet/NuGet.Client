@@ -1,13 +1,13 @@
 ﻿{
-  "version": "3.2.0",
+  "version": "3.2.0-*",
   "preprocess": "../../compiler/preprocess/*.cs",
   "dependencies": {
-    "NuGet.Versioning": "3.2.0",
-    "NuGet.Packaging": "3.2.0",
+    "NuGet.Versioning": "3.2.0-*",
+    "NuGet.Packaging": "3.2.0-*",
     "Newtonsoft.Json": "6.0.6",
     "NuGet.Common": {
       "type": "build",
-      "version": "3.2.0"
+      "version": "3.2.0-*"
     }
   },
   "compilationOptions": {
