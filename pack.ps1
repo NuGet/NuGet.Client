@@ -8,7 +8,7 @@ param (
     [string]$PFXPath,
     [switch]$DelaySign,
     [string]$MsbuildParameters = '',
-	[Boolean]$PublicRelease,
+	[string]$PublicRelease,
 	[string]$BuildNumber
 	)
 
