@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <Import Project="..\..\..\Build\NuGet.Settings.targets" />
+  <Import Project="..\..\Build\Common.props" Condition="Exists('..\..\Build\Common.props')" />
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <RootNamespace>NuGetConsole</RootNamespace>
@@ -138,9 +139,6 @@
     <Reference Include="System.Xaml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\..\Common\CommonAssemblyInfo.cs">
-      <Link>Properties\CommonAssemblyInfo.cs</Link>
-    </Compile>
     <Compile Include="ConsoleInitializer.cs" />
     <Compile Include="ConsoleContainer.xaml.cs">
       <DependentUpon>ConsoleContainer.xaml</DependentUpon>

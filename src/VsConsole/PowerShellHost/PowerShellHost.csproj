@@ -6,6 +6,7 @@
     <SkipValidatePackageReferences>true</SkipValidatePackageReferences>
   </PropertyGroup>
   <Import Project="..\..\..\Build\NuGet.Settings.targets" />
+  <Import Project="..\..\Build\Common.props" Condition="Exists('..\..\Build\Common.props')" />
   <PropertyGroup>
     <NuGetRoot>$(MSBuildProjectDirectory)\..\..\..</NuGetRoot>
     <ProjectGuid>{5A79EEF3-51C0-4A14-8D37-50EF38AD835D}</ProjectGuid>
@@ -38,9 +39,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\..\Common\CommonAssemblyInfo.cs">
-      <Link>Properties\CommonAssemblyInfo.cs</Link>
-    </Compile>
     <Compile Include="..\..\..\common\CommonResources.cs">
       <Link>Common\CommonResources.cs</Link>
     </Compile>
