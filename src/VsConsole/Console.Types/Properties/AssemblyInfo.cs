@@ -15,3 +15,4 @@ using System.Runtime.InteropServices;
 
 [assembly: ImportedFromTypeLib("NuGet.Console.Types")]
 [assembly: Guid("b5b74c80-0d1f-43c8-8b01-f3c28bd92a45")]
+[assembly: ComVisible(false)]

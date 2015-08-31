@@ -4,6 +4,7 @@
 using System;
 using System.Reflection;
 using System.Resources;
+using System.Runtime.InteropServices;
 
 // Project-specific attributes
 
@@ -13,3 +14,4 @@ using System.Resources;
 // Common attributes
 
 [assembly: CLSCompliant(false)]
+[assembly: ComVisible(false)]

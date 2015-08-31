@@ -11,3 +11,4 @@ using System.Runtime.InteropServices;
 [assembly: Guid("9623cf30-192c-4864-b419-29649169ae30")]
 
 [assembly: ImportedFromTypeLib("NuGet.VisualStudio.Implementation")]
+[assembly: ComVisible(false)]

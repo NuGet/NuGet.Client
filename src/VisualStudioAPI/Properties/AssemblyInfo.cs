@@ -15,3 +15,4 @@ using System.Runtime.InteropServices;
 
 [assembly: ImportedFromTypeLib("NuGet.VisualStudio")]
 [assembly: Guid("228F7591-2777-47D7-B81D-FEADFC71CEB5")]
+[assembly: ComVisible(false)]
