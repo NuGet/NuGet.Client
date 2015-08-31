@@ -7,9 +7,10 @@ param (
     [switch]$SkipTests,
     [string]$PFXPath,
     [switch]$DelaySign,
-    [Parameter(Mandatory=$true)][string]$Version,
-    [string]$MsbuildParameters = ''
-)
+    [string]$MsbuildParameters = '',
+	[Boolean]$PublicRelease,
+	[string]$BuildNumber
+	)
 
 # build the specified project to create the nupkg
 function Pack(
@@ -27,6 +28,10 @@ function Pack(
 
     # build the csproj and dll full paths
     $projectPath = Join-Path $workingDir $ProjectFile    
+
+	# Getting the version
+	$versionInfo = Get-Item "src\NuGet.CommandLine\bin\$Configuration\nuget.exe" | Select-Object -ExpandProperty VersionInfo
+	$version = $versionInfo.ProductVersion;
 
     Write-Host "Project to build: $projectPath" -ForegroundColor Cyan
     Write-Host "Package version: $version" -ForegroundColor Cyan
@@ -69,7 +74,7 @@ function Build()
 
     & $msbuildExe "build\build.msbuild" /t:Clean /m
     
-    & $msbuildExe "build\build.msbuild" "/p:Configuration=$Configuration" /p:EnableCodeAnalysis=true /p:NUGET_BUILD_FEEDS=$PushTarget /m /v:M  /fl /flp:v=D $msbuildParameters
+    & $msbuildExe "build\build.msbuild" "/p:Configuration=$Configuration;PublicReleae=$PublicRelease;BuildNumber=$BuildNumber" /p:EnableCodeAnalysis=true /p:NUGET_BUILD_FEEDS=$PushTarget /m /v:M  /fl /flp:v=D $msbuildParameters
 	if ($lastexitcode -ne 0) 
 	{		
 	  	throw "Build failed"
@@ -88,6 +93,8 @@ else
 }
 
 Build
+Write-Host "Version=$version"
+
 Pack "src\PackageManagement\PackageManagement.csproj" "NuGet.PackageManagement" $true
 Pack "src\PackageManagement.UI\PackageManagement.UI.csproj" "NuGet.PackageManagement.UI" $false
 

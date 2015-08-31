@@ -9,25 +9,27 @@
 		-->
 		<SemanticVersionMajor>3</SemanticVersionMajor>
 		<SemanticVersionMinor>2</SemanticVersionMinor>
-		<SemanticVersionPatch>0</SemanticVersionPatch>
-		
+		<SemanticVersionPatch>0</SemanticVersionPatch>		
 		<!-- 
 		Date when Semantic Version was changed. 
 		Update for every public release.
 		-->
 		<SemanticVersionDate>2015-8-21</SemanticVersionDate>
-
 		<!-- 
 		Pre-release version is used to distinguish internally built NuGet packages.
 		Pre-release version = Minutes since semantic version was set, divided by 5 (to make it fit in a UInt16).
 		-->
 		<PreReleaseVersion>$([MSBuild]::Divide($([System.DateTime]::Now.Subtract($([System.DateTime]::Parse($(SemanticVersionDate)))).TotalMinutes), 5).ToString('F0'))</PreReleaseVersion>
-		<PreReleaseInformationVersion>-Beta-$(PreReleaseVersion)</PreReleaseInformationVersion>
 	</PropertyGroup>
 	
 	<!--Setting the Pre-release/Build meta-data from CI if Version is set-->
-	<PropertyGroup Condition="'$(Version)' != ''">
-		<PreReleaseVersion>$(Version)</PreReleaseVersion>
+	<PropertyGroup Condition="'$(BuildNumber)' != ''">
+		<PreReleaseVersion>$(BuildNumber)</PreReleaseVersion>
+	</PropertyGroup>
+	
+	<!--Setting the product information for Beta builds-->
+	<PropertyGroup>
+		<PreReleaseInformationVersion>-RC-$(PreReleaseVersion)</PreReleaseInformationVersion>
 	</PropertyGroup>
 	
 	<!--Not using the build number for FileVersion on release build-->
@@ -63,7 +65,7 @@
       <_Parameter1>NuGet</_Parameter1>
     </AssemblyAttributes>
     <AssemblyAttributes Include="AssemblyCopyright">
-      <_Parameter1>\x00a9 .NET Foundation. All rights reserved.</_Parameter1>
+      <_Parameter1>.NET Foundation. All rights reserved.</_Parameter1>
     </AssemblyAttributes>
     <AssemblyAttributes Include="System.Resources.NeutralResourcesLanguage">
       <_Parameter1>en-US</_Parameter1>
