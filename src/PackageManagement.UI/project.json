@@ -1,8 +1,8 @@
 ﻿{
   "dependencies": {
     "Microsoft.Bcl.Build": "1.0.21",
-    "NuGet.Protocol.VisualStudio": "3.2.0-*",
-    "NuGet.Resolver": "3.2.0-*"
+    "NuGet.Protocol.VisualStudio": "3.2.0",
+    "NuGet.Resolver": "3.2.0"
   },
   "frameworks": {
     "net45": {}

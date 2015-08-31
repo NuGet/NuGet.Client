@@ -2,7 +2,7 @@
   "dependencies": {
     "Microsoft.Web.Xdt": "2.1.1",
     "Newtonsoft.Json": "6.0.6",
-    "NuGet.Protocol.VisualStudio": "3.2.0-*"
+    "NuGet.Protocol.VisualStudio": "3.2.0"
   },
   "frameworks": {
     "net451": {}

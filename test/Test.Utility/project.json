@@ -1,7 +1,7 @@
 ﻿{
   "dependencies": {
     "DotNetZip": "1.9.3",
-    "NuGet.Protocol.VisualStudio": "3.2.0-*",
+    "NuGet.Protocol.VisualStudio": "3.2.0",
     "xunit": "2.0.0"
   },
   "frameworks": {
