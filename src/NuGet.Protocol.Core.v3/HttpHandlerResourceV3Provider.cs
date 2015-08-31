@@ -14,8 +14,6 @@ namespace NuGet.Protocol.Core.v3
 {
     public class HttpHandlerResourceV3Provider : ResourceProvider
     {
-        private static readonly string[] _authenticationSchemes = new[] { "Basic", "NTLM", "Negotiate" };
-
         public HttpHandlerResourceV3Provider()
             : base(typeof(HttpHandlerResource),
                   nameof(HttpHandlerResourceV3Provider),
@@ -66,12 +64,7 @@ namespace NuGet.Protocol.Core.v3
                 && !String.IsNullOrEmpty(packageSource.UserName)
                 && !String.IsNullOrEmpty(packageSource.Password))
             {
-                var cache = new CredentialCache();
-                foreach (var scheme in _authenticationSchemes)
-                {
-                    cache.Add(uri, scheme, new NetworkCredential(packageSource.UserName, packageSource.Password));
-                }
-                credential = cache;
+                credential = new NetworkCredential(packageSource.UserName, packageSource.Password);
             }
 
             if (proxy != null)
