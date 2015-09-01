@@ -373,20 +373,24 @@ namespace NuGet.PackageManagement
                         }
                     }
 
-                    var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
-
-                    if (buildIntegratedProject != null)
+                    // If the update operation is a no-op there will be no project actions.
+                    if (lowLevelActions.Any())
                     {
-                        // Create a build integrated action
-                        var buildIntegratedAction =
-                            await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, lowLevelActions, nuGetProjectContext, token);
+                        var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
 
-                        actions.Add(buildIntegratedAction);
-                    }
-                    else
-                    {
-                        // Use the low level actions for projectK
-                        actions = lowLevelActions;
+                        if (buildIntegratedProject != null)
+                        {
+                            // Create a build integrated action
+                            var buildIntegratedAction =
+                                await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, lowLevelActions, nuGetProjectContext, token);
+
+                            actions.Add(buildIntegratedAction);
+                        }
+                        else
+                        {
+                            // Use the low level actions for projectK
+                            actions = lowLevelActions;
+                        }
                     }
                 }
                 else
@@ -435,7 +439,7 @@ namespace NuGet.PackageManagement
                         {
                             // Create a build integrated action
                             var buildIntegratedAction =
-                                await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, lowLevelActions, nuGetProjectContext, token);
+                            await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, lowLevelActions, nuGetProjectContext, token);
 
                             actions.Add(buildIntegratedAction);
                         }
@@ -1362,6 +1366,27 @@ namespace NuGet.PackageManagement
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
+            if (nuGetProjectActions == null)
+            {
+                throw new ArgumentNullException(nameof(nuGetProjectActions));
+            }
+
+            if (buildIntegratedProject == null)
+            {
+                throw new ArgumentNullException(nameof(buildIntegratedProject));
+            }
+
+            if (nuGetProjectContext == null)
+            {
+                throw new ArgumentNullException(nameof(nuGetProjectContext));
+            }
+
+            if (!nuGetProjectActions.Any())
+            {
+                // Return null if there are no actions.
+                return null;
+            }
+
             // Find all sources used in the project actions
             var sources = new HashSet<string>(
                 nuGetProjectActions.Where(action => action.SourceRepository != null)
@@ -1455,11 +1480,11 @@ namespace NuGet.PackageManagement
                 token);
 
             return new BuildIntegratedProjectAction(nuGetProjectActions.First().PackageIdentity,
-                nuGetProjectActions.First().NuGetProjectActionType,
-                originalLockFile,
-                rawPackageSpec,
-                restoreResult,
-                sources.ToList());
+                   nuGetProjectActions.First().NuGetProjectActionType,
+                   originalLockFile,
+                   rawPackageSpec,
+                   restoreResult,
+                   sources.ToList());
         }
 
         /// <summary>
@@ -1478,13 +1503,18 @@ namespace NuGet.PackageManagement
             {
                 projectAction = nuGetProjectActions.Single() as BuildIntegratedProjectAction;
             }
-            else
+            else if (nuGetProjectActions.Any())
             {
                 projectAction = await PreviewBuildIntegratedProjectActionsAsync(
                     buildIntegratedProject, 
                     nuGetProjectActions, 
                     nuGetProjectContext, 
                     token);
+            }
+            else
+            {
+                // There are no actions, this is a no-op
+                return;
             }
 
             var actions = projectAction.GetProjectActions();
