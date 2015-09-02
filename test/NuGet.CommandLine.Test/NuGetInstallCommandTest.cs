@@ -916,7 +916,7 @@ namespace NuGet.CommandLine.Test
                     serverV3.Get.Add("/a/b/c/index.json", r =>
                     {
                         var h = r.Headers["Authorization"];
-                        var credential = String.IsNullOrEmpty(h) ? 
+                        var credential = String.IsNullOrEmpty(h) ?
                             null :
                             System.Text.Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
 
@@ -1009,6 +1009,51 @@ namespace NuGet.CommandLine.Test
             finally
             {
                 // Cleanup
+                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
+            }
+        }
+
+        [Fact]
+        public void TestInstallWhenNoFeedAvailable()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Create an empty config file and pass it as -ConfigFile switch.
+                // This imitates the scenario where there is a machine without a default nuget.config under %APPDATA%
+                var config = string.Format(
+    @"<?xml version='1.0' encoding='utf - 8'?>
+<configuration/>
+");
+                var configFileName = Path.Combine(randomTestFolder, "nuget.config");
+                File.WriteAllText(configFileName, config);
+
+                string[] args = new string[]
+                {
+                        "install Newtonsoft.Json",
+                        "-version",
+                        "7.0.1",
+                        "-ConfigFile",
+                        configFileName
+                };
+
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    randomTestFolder,
+                    string.Join(" ", args),
+                    true);
+
+                var expectedPath = Path.Combine(
+                    randomTestFolder,
+                    "Newtonsoft.Json.7.0.1",
+                    "Newtonsoft.Json.7.0.1.nupkg");
+
+                Assert.True(File.Exists(expectedPath), "nuget.exe did not install Newtonsoft.Json.7.0.1");
+            }
+            finally
+            {
                 TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
             }
         }

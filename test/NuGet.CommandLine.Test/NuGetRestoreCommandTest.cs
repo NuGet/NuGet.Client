@@ -1425,5 +1425,64 @@ EndProject";
                 Util.DeleteDirectory(workingPath);
             }
         }
+
+        [Fact]
+        public void RestoreCommand_NoFeedAvailable()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Create an empty config file and pass it as -ConfigFile switch.
+                // This imitates the scenario where there is a machine without a default nuget.config under %APPDATA%
+                var config = string.Format(
+    @"<?xml version='1.0' encoding='utf - 8'?>
+<configuration/>
+");
+                var configFileName = Path.Combine(randomTestFolder, "nuget.config");
+                File.WriteAllText(configFileName, config);
+
+                var packagesConfigFileName = Path.Combine(randomTestFolder, "packages.config");
+                File.WriteAllText(
+                    packagesConfigFileName,
+@"<packages>
+  <package id=""Newtonsoft.Json"" version=""7.0.1"" targetFramework=""net45"" />
+</packages>");
+
+                string[] args
+                    = new string[]
+                    {
+                        "restore",
+                        "-PackagesDirectory",
+                        ".",
+                        "-ConfigFile",
+                        configFileName
+                    };
+
+                // Act
+                var path = Environment.GetEnvironmentVariable("PATH");
+                Environment.SetEnvironmentVariable("PATH", null);
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    randomTestFolder,
+                    string.Join(" ", args),
+                    waitForExit: true);
+                Environment.SetEnvironmentVariable("PATH", path);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                var expectedPath = Path.Combine(
+                    randomTestFolder,
+                    "Newtonsoft.Json.7.0.1",
+                    "Newtonsoft.Json.7.0.1.nupkg");
+
+                Assert.True(File.Exists(expectedPath));
+            }
+            finally
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
+            }
+        }
     }
 }
