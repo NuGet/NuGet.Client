@@ -29,7 +29,7 @@
 	
 	<!--Setting the product information for Beta builds-->
 	<PropertyGroup>
-		<PreReleaseInformationVersion>-RC-$(PreReleaseVersion)</PreReleaseInformationVersion>
+		<PreReleaseInformationVersion>-rc-$(PreReleaseVersion)</PreReleaseInformationVersion>
 	</PropertyGroup>
 	
 	<!--Not using the build number for FileVersion on release build-->
