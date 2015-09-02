@@ -85,39 +85,44 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 var project = toProcess.Dequeue();
 
-                // find the project.json file if it exists in the project
-                // projects with no project.json file should use null for the spec path
-                var projectJsonCandidates = project.ProjectItems.OfType<ProjectItem>()
-                    .Select(item => new KeyValuePair<string, ProjectItem>(item.Name, item))
-                    .Where(pair => BuildIntegratedProjectUtility.IsProjectConfig(pair.Key))
-                    .ToList();
+                // Find projectName.project.json first
+                var projectName = project.Name;
+
+                var fileWithProjectName =
+                    BuildIntegratedProjectUtility.GetProjectConfigWithProjectName(projectName);
 
                 string jsonConfigItem = null;
 
-                if (projectJsonCandidates.Count > 0)
+                // Loop through all root project items. Sub folders will not be part of this.
+                foreach (var filePath in project.ProjectItems.OfType<ProjectItem>()
+                    .Select(p => p.FileNames[1]))
                 {
-                    // Find projectName.project.json first
-                    var projectName = project.Name;
-
-                    var fileWithProjectName = 
-                        BuildIntegratedProjectUtility.GetProjectConfigWithProjectName(projectName);
-
-                    jsonConfigItem = projectJsonCandidates.FirstOrDefault(
-                        pair => string.Equals(
-                            pair.Key,
-                            fileWithProjectName,
-                            StringComparison.OrdinalIgnoreCase))
-                        .Value?.FileNames[1];
-
-                    // Fallback to project.json if needed
-                    if (jsonConfigItem == null)
+                    if (!BuildIntegratedProjectUtility.IsProjectConfig(filePath))
                     {
-                        jsonConfigItem = projectJsonCandidates.FirstOrDefault(
-                            pair => string.Equals(
-                                pair.Key,
-                                BuildIntegratedProjectUtility.ProjectConfigFileName,
-                                StringComparison.OrdinalIgnoreCase))
-                           .Value?.FileNames[1];
+                        continue;
+                    }
+
+                    // The filename is also checked in BuildIntegratedProjectUtility.IsProjectConfig, if it
+                    // is invalid, it will return false above.
+                    var fileName = Path.GetFileName(filePath);
+
+                    // Check for projName.project.json
+                    if (string.Equals(
+                            fileWithProjectName,
+                            fileName,
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        jsonConfigItem = filePath;
+                        break;
+                    }
+
+                    // Fallback to project.json if projName.project.json does not exist
+                    if (string.Equals(
+                            BuildIntegratedProjectUtility.ProjectConfigFileName,
+                            fileName,
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        jsonConfigItem = filePath;
                     }
                 }
 
