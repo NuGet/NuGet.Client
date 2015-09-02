@@ -14,6 +14,34 @@ namespace NuGet.DependencyResolver.Tests
     public class RemoteDependencyWalkerTests
     {
         [Fact]
+        public async Task AllowPreleaseVersionNoConflict()
+        {
+            var context = new RemoteWalkContext();
+            var provider = new DependencyProvider();
+            provider.Package("A", "1.0-beta")
+                    .DependsOn("B", "1.0")
+                    .DependsOn("C", "1.0-beta")
+                    .DependsOn("E", "1.0");
+
+            provider.Package("B", "1.0")
+                    .DependsOn("D", "1.0");
+
+            provider.Package("C", "1.0-beta")
+                    .DependsOn("D", "1.1-beta");
+
+            provider.Package("E", "1.0")
+                    .DependsOn("D", "0.1");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+            var node = await DoWalkAsync(walker, "A");
+
+            var result = node.Analyze();
+
+            Assert.Equal(0, result.VersionConflicts.Count);
+        }
+
+        [Fact]
         public async Task CyclesAreDetected()
         {
             var context = new RemoteWalkContext();
