@@ -46,7 +46,8 @@
         "System.Text.RegularExpressions": "4.0.10-beta-*",
         "System.Threading": "4.0.10-beta-*",
         "System.Xml.XDocument": "4.0.10-beta-*",
-        "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*"
+        "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*",
+        "System.Security.Cryptography.Hashing": "4.0.0-beta-*"
       }
     }
   }
