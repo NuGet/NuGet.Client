@@ -209,8 +209,7 @@ namespace NuGet.CommandLine
 
         private IEnumerable<Configuration.PackageSource> GetPackageSources()
         {
-            var packageSourceProvider = new Configuration.PackageSourceProvider(Settings);
-            var availableSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
+            var availableSources = SourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
             var packageSources = new List<Configuration.PackageSource>();
             foreach (var source in Source)
             {
@@ -285,8 +284,7 @@ namespace NuGet.CommandLine
 
         private SourceRepositoryProvider GetSourceRepositoryProvider()
         {
-            var packageSourceProvider = new Configuration.PackageSourceProvider(Settings);
-            var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider,
+            var sourceRepositoryProvider = new SourceRepositoryProvider(SourceProvider,
                 Enumerable.Concat(
                     Protocol.Core.v2.FactoryExtensionsV2.GetCoreV2(Repository.Provider),
                     Protocol.Core.v3.FactoryExtensionsV2.GetCoreV3(Repository.Provider)));

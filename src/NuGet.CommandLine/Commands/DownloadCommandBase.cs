@@ -102,8 +102,7 @@ namespace NuGet.CommandLine
 
         protected IEnumerable<Configuration.PackageSource> GetPackageSources(Configuration.ISettings settings)
         {
-            var packageSourceProvider = new Configuration.PackageSourceProvider(settings);
-            var availableSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
+            var availableSources = SourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
             var packageSources = new List<Configuration.PackageSource>();
 
             if (!NoCache && !string.IsNullOrEmpty(MachineCache.Default?.Source))
