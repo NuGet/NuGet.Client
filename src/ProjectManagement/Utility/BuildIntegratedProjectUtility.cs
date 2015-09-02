@@ -157,10 +157,25 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentNullException(nameof(configPath));
             }
 
-            var file = Path.GetFileName(configPath);
+            if (configPath.EndsWith(ProjectConfigFileName, StringComparison.OrdinalIgnoreCase))
+            {
+                string file = null;
 
-            return string.Equals(ProjectConfigFileName, file, StringComparison.OrdinalIgnoreCase)
-                || file.EndsWith(ProjectConfigFileEnding, StringComparison.OrdinalIgnoreCase);
+                try
+                {
+                    file = Path.GetFileName(configPath);
+                }
+                catch
+                {
+                    // ignore invalid paths
+                    return false;
+                }
+
+                return string.Equals(ProjectConfigFileName, file, StringComparison.OrdinalIgnoreCase)
+                        || file.EndsWith(ProjectConfigFileEnding, StringComparison.OrdinalIgnoreCase);
+            }
+
+            return false;
         }
 
         /// <summary>

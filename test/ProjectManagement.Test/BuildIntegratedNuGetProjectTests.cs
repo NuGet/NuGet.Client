@@ -218,6 +218,11 @@ namespace ProjectManagement.Test
         [InlineData("project.json ")]
         [InlineData("c:\\users\\packages.config")]
         [InlineData("c:\\users\\abc.project..json")]
+        [InlineData("c:\\users\\")]
+        [InlineData("<Shared>")]
+        [InlineData("<Shared>.Project.json")]
+        [InlineData("\t")]
+        [InlineData("")]
         public void BuildIntegratedNuGetProject_IsProjectConfig_False(string path)
         {
             // Arrange & Act
