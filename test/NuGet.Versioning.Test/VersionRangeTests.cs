@@ -9,6 +9,58 @@ namespace NuGet.Versioning.Test
 {
     public class VersionRangeTests
     {
+        [Theory]
+        [InlineData("[1.0.0]")]
+        [InlineData("[1.0.0, 2.0.0]")]
+        [InlineData("[1.0.0, 2.0.0]")]
+        [InlineData("1.0.0")]
+        [InlineData("1.0.0-beta")]
+        [InlineData("(1.0.0-beta, 2.0.0-alpha)")]
+        [InlineData("(1.0.0-beta, 2.0.0)")]
+        [InlineData("(1.0.0, 2.0.0-alpha)")]
+        [InlineData("1.0.0-beta-*")]
+        [InlineData("[1.0.0-beta-*, ]")]
+        public void VersionRange_SetIncludePrerelease_True(string s)
+        {
+            // Arrange
+            var range = VersionRange.Parse(s);
+
+            // Act
+            var updated = VersionRange.SetIncludePrerelease(range, true);
+
+            // Assert
+            Assert.Equal(range.IsFloating, updated.IsFloating);
+            Assert.Equal(range.Float, updated.Float);
+            Assert.True(updated.IncludePrerelease);
+            Assert.Equal(range.ToNormalizedString(), updated.ToNormalizedString());
+        }
+
+        [Theory]
+        [InlineData("[1.0.0]")]
+        [InlineData("[1.0.0, 2.0.0]")]
+        [InlineData("[1.0.0, 2.0.0]")]
+        [InlineData("1.0.0")]
+        [InlineData("1.0.0-beta")]
+        [InlineData("(1.0.0-beta, 2.0.0-alpha)")]
+        [InlineData("(1.0.0-beta, 2.0.0)")]
+        [InlineData("(1.0.0, 2.0.0-alpha)")]
+        [InlineData("1.0.0-beta-*")]
+        [InlineData("[1.0.0-beta-*, ]")]
+        public void VersionRange_SetIncludePrerelease_False(string s)
+        {
+            // Arrange
+            var range = VersionRange.Parse(s);
+
+            // Act
+            var updated = VersionRange.SetIncludePrerelease(range, false);
+
+            // Assert
+            Assert.Equal(range.IsFloating, updated.IsFloating);
+            Assert.Equal(range.Float, updated.Float);
+            Assert.False(updated.IncludePrerelease);
+            Assert.Equal(range.ToNormalizedString(), updated.ToNormalizedString());
+        }
+
         [Fact]
         public void ParseVersionRangeSingleDigit()
         {

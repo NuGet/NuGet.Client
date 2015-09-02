@@ -52,8 +52,7 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public void SetIncludePrerelease()
         {
-            _versionRange = new VersionRange(_versionRange.MinVersion, _versionRange.IsMinInclusive, _versionRange.MaxVersion,
-                _versionRange.IsMaxInclusive, true, _versionRange.Float);
+            _versionRange = VersionRange.SetIncludePrerelease(_versionRange, includePrerelease: true);
         }
 
         public bool Equals(PackageDependency other)

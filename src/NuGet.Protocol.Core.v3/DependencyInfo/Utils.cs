@@ -27,11 +27,6 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
             return JObject.Parse(json);
         }
 
-        public static VersionRange SetIncludePrerelease(VersionRange range, bool includePrerelease)
-        {
-            return new VersionRange(range.MinVersion, range.IsMinInclusive, range.MaxVersion, range.IsMaxInclusive, includePrerelease);
-        }
-
         public static string Indent(int depth)
         {
             return new string(Enumerable.Repeat(' ', depth).ToArray());
@@ -68,7 +63,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
                 return Enumerable.Empty<JObject>();
             }
 
-            var preFilterRange = Utils.SetIncludePrerelease(range, true);
+            var preFilterRange = VersionRange.SetIncludePrerelease(range, includePrerelease: true);
 
             IList<Task<JObject>> rangeTasks = new List<Task<JObject>>();
 

@@ -226,6 +226,33 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
+        /// Modify an existing range to allow or disallow prerelease versions.
+        /// </summary>
+        /// <param name="range">Existing version range to modify.</param>
+        /// <param name="includePrerelease">True if Satisfies() should allow prerelease versions.</param>
+        /// <returns>A modified version range.</returns>
+        public static VersionRange SetIncludePrerelease(VersionRange range, bool includePrerelease)
+        {
+            if (range.IncludePrerelease == includePrerelease)
+            {
+                // The range is already has this prerelease setting.
+                return range;
+            }
+            else
+            {
+                // Copy the range and apply the new include prerelease setting.
+                return new VersionRange(
+                    range.MinVersion,
+                    range.IsMinInclusive,
+                    range.MaxVersion,
+                    range.IsMaxInclusive,
+                    includePrerelease,
+                    floatRange: range.Float,
+                    originalString: range.OriginalString);
+            }
+        }
+
+        /// <summary>
         /// Returns the smallest range that includes all given versions.
         /// </summary>
         public static VersionRange Combine(IEnumerable<NuGetVersion> versions)
