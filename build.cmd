@@ -16,7 +16,7 @@ copy %CACHED_NUGET% .nuget\nuget.exe > nul
 
 :restore
 IF EXIST packages\KoreBuild goto run
-.nuget\NuGet.exe install KoreBuild -Source https://www.myget.org/F/aspnetmaster/api/v2 -ExcludeVersion -o packages -nocache -pre
+.nuget\NuGet.exe install KoreBuild -Source https://www.myget.org/F/nugetbuild/api/v2 -ExcludeVersion -o packages -nocache -pre
 .nuget\NuGet.exe install Sake -version 0.2 -o packages -ExcludeVersion
 
 IF "%SKIP_DNX_INSTALL%"=="1" goto run
