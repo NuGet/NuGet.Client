@@ -491,7 +491,7 @@ namespace NuGet.CommandLine
                     else if (File.Exists(packagesConfigPath))
                     {
                         // Check for packages.config
-                        packageRestoreInputs.PackageReferenceFiles.Add(projectFilePath);
+                        packageRestoreInputs.PackageReferenceFiles.Add(packagesConfigPath);
                     }
                 }
                 else
