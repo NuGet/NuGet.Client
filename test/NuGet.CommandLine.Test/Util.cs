@@ -3,15 +3,91 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Runtime.Versioning;
 using System.Text;
 using Moq;
 using Newtonsoft.Json.Linq;
+using NuGet.Frameworks;
+using NuGet.Packaging;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine.Test
 {
     public static class Util
     {
+        public static string CreateTestPackage(
+            string packageId,
+            string version,
+            string path,
+            string framework,
+            string dependencyPackageId,
+            string dependencyPackageVersion)
+        {
+            var group = new PackageDependencyGroup(NuGetFramework.AnyFramework, 
+                new List<Packaging.Core.PackageDependency>()
+            {
+                new Packaging.Core.PackageDependency(dependencyPackageId, VersionRange.Parse(dependencyPackageVersion))
+            });
+
+            return CreateTestPackage(packageId, version, path,
+                new List<NuGetFramework>() { NuGetFramework.Parse(framework) },
+                new List<PackageDependencyGroup>() { group });
+        }
+
+        public static string CreateTestPackage(
+            string packageId,
+            string version,
+            string path,
+            List<NuGetFramework> frameworks,
+            List<PackageDependencyGroup> dependencies)
+        {
+            var packageBuilder = new PackageBuilder
+            {
+                Id = packageId,
+                Version = new SemanticVersion(version)
+            };
+
+            packageBuilder.Description = string.Format(
+                CultureInfo.InvariantCulture,
+                "desc of {0} {1}",
+                packageId, version);
+
+            foreach (var framework in frameworks)
+            {
+                var libPath = string.Format(
+                    CultureInfo.InvariantCulture, 
+                    "lib/{0}/file.dll", 
+                    framework.GetShortFolderName());
+
+                packageBuilder.Files.Add(CreatePackageFile(libPath));
+            }
+
+            packageBuilder.Authors.Add("test author");
+
+            foreach (var group in dependencies)
+            {
+                var set = new PackageDependencySet(
+                    null, 
+                    group.Packages.Select(package => 
+                        new PackageDependency(package.Id, 
+                            VersionUtility.ParseVersionSpec(package.VersionRange.ToNormalizedString()))));
+
+                packageBuilder.DependencySets.Add(set);
+            }
+
+            var packageFileName = string.Format("{0}.{1}.nupkg", packageId, version);
+            var packageFileFullPath = Path.Combine(path, packageFileName);
+
+            using (var fileStream = File.Create(packageFileFullPath))
+            {
+                packageBuilder.Save(fileStream);
+            }
+
+            return packageFileFullPath;
+        }
+
         /// <summary>
         /// Creates a test package.
         /// </summary>

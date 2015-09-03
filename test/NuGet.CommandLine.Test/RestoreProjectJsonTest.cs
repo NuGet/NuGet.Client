@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Linq;
 using NuGet.ProjectModel;
 using Xunit;
 
@@ -8,6 +9,418 @@ namespace NuGet.CommandLine.Test
 {
     public class RestoreProjectJsonTest : IDisposable
     {
+        [Fact]
+        public void RestoreProjectJson_FloatReleaseLabelHighestPrelease()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var nugetexe = Util.GetNuGetExePath();
+
+            _dirs.TryAdd(workingPath, false);
+
+            Util.CreateDirectory(workingPath);
+            Util.CreateDirectory(repositoryPath);
+            Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+            Util.CreateTestPackage("packageA", "1.0.0-alpha", repositoryPath);
+            Util.CreateTestPackage("packageA", "1.0.0-beta-01", repositoryPath);
+            Util.CreateTestPackage("packageA", "1.0.0-beta-02", repositoryPath);
+            Util.CreateConfigForGlobalPackagesFolder(workingPath);
+            Util.CreateFile(workingPath, "project.json",
+                                            @"{
+                                            'dependencies': {
+                                            'packageA': '1.0.0-*'
+                                            },
+                                            'frameworks': {
+                                                    'uap10.0': { }
+                                                }
+                                            }");
+
+            string[] args = new string[] {
+                "restore",
+                "-Source",
+                repositoryPath,
+                "-solutionDir",
+                workingPath,
+                "project.json"
+            };
+
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                workingPath,
+                string.Join(" ", args),
+                waitForExit: true);
+
+            var lockFilePath = Path.Combine(workingPath, "project.lock.json");
+            var lockFileFormat = new LockFileFormat();
+
+            var lockFile = lockFileFormat.Read(lockFilePath);
+
+            var installedA = lockFile.Targets.First().Libraries.Single(package => package.Name == "packageA");
+
+            // Assert
+            Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+            Assert.Equal("1.0.0-beta-02", installedA.Version.ToNormalizedString());
+        }
+
+        [Fact]
+        public void RestoreProjectJson_FloatReleaseLabelTakesStable()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var nugetexe = Util.GetNuGetExePath();
+
+            _dirs.TryAdd(workingPath, false);
+
+            Util.CreateDirectory(workingPath);
+            Util.CreateDirectory(repositoryPath);
+            Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+            Util.CreateTestPackage("packageA", "1.0.0", repositoryPath);
+            Util.CreateTestPackage("packageA", "2.0.0", repositoryPath);
+            Util.CreateTestPackage("packageA", "1.0.0-alpha", repositoryPath);
+            Util.CreateTestPackage("packageA", "1.0.0-beta-01", repositoryPath);
+            Util.CreateTestPackage("packageA", "1.0.0-beta-02", repositoryPath);
+            Util.CreateConfigForGlobalPackagesFolder(workingPath);
+            Util.CreateFile(workingPath, "project.json",
+                                            @"{
+                                            'dependencies': {
+                                            'packageA': '1.0.0-*'
+                                            },
+                                            'frameworks': {
+                                                    'uap10.0': { }
+                                                }
+                                            }");
+
+            string[] args = new string[] {
+                "restore",
+                "-Source",
+                repositoryPath,
+                "-solutionDir",
+                workingPath,
+                "project.json"
+            };
+
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                workingPath,
+                string.Join(" ", args),
+                waitForExit: true);
+
+            var lockFilePath = Path.Combine(workingPath, "project.lock.json");
+            var lockFileFormat = new LockFileFormat();
+
+            var lockFile = lockFileFormat.Read(lockFilePath);
+
+            var installedA = lockFile.Targets.First().Libraries.Single(package => package.Name == "packageA");
+
+            // Assert
+            Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+            Assert.Equal("1.0.0", installedA.Version.ToNormalizedString());
+        }
+
+        [Fact]
+        public void RestoreProjectJson_FloatIncludesStableOnly()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var nugetexe = Util.GetNuGetExePath();
+
+            _dirs.TryAdd(workingPath, false);
+
+            Util.CreateDirectory(workingPath);
+            Util.CreateDirectory(repositoryPath);
+            Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+            Util.CreateTestPackage("packageA", "1.0.0", repositoryPath);
+            Util.CreateTestPackage("packageA", "1.0.9", repositoryPath);
+            Util.CreateTestPackage("packageA", "1.0.10", repositoryPath);
+            Util.CreateTestPackage("packageA", "1.1.15", repositoryPath);
+            Util.CreateTestPackage("packageA", "1.0.15-beta", repositoryPath);
+            Util.CreateTestPackage("packageA", "1.0.9-beta", repositoryPath);
+            Util.CreateConfigForGlobalPackagesFolder(workingPath);
+            Util.CreateFile(workingPath, "project.json",
+                                            @"{
+                                            'dependencies': {
+                                            'packageA': '1.0.*'
+                                            },
+                                            'frameworks': {
+                                                    'uap10.0': { }
+                                                }
+                                            }");
+
+            string[] args = new string[] {
+                "restore",
+                "-Source",
+                repositoryPath,
+                "-solutionDir",
+                workingPath,
+                "project.json"
+            };
+
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                workingPath,
+                string.Join(" ", args),
+                waitForExit: true);
+
+            var lockFilePath = Path.Combine(workingPath, "project.lock.json");
+            var lockFileFormat = new LockFileFormat();
+
+            var lockFile = lockFileFormat.Read(lockFilePath);
+
+            var installedA = lockFile.Targets.First().Libraries.Single(package => package.Name == "packageA");
+
+            // Assert
+            Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+            Assert.Equal("1.0.10", installedA.Version.ToNormalizedString());
+        }
+
+        [Fact]
+        public void RestoreProjectJson_RestoreFiltersToStablePackages()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var nugetexe = Util.GetNuGetExePath();
+
+            _dirs.TryAdd(workingPath, false);
+
+            Util.CreateDirectory(workingPath);
+            Util.CreateDirectory(repositoryPath);
+            Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+            Util.CreateTestPackage("packageA", "1.0.0", repositoryPath, "win8", "packageB", "1.0.0");
+            Util.CreateTestPackage("packageB", "1.0.0-beta", repositoryPath);
+            Util.CreateTestPackage("packageB", "2.0.0-beta", repositoryPath);
+            Util.CreateTestPackage("packageB", "3.0.0", repositoryPath);
+            Util.CreateConfigForGlobalPackagesFolder(workingPath);
+            Util.CreateFile(workingPath, "project.json",
+                                            @"{
+                                            'dependencies': {
+                                            'packageA': '1.0.0'
+                                            },
+                                            'frameworks': {
+                                                    'uap10.0': { }
+                                                }
+                                            }");
+
+            string[] args = new string[] {
+                "restore",
+                "-Source",
+                repositoryPath,
+                "-solutionDir",
+                workingPath,
+                "project.json"
+            };
+
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                workingPath,
+                string.Join(" ", args),
+                waitForExit: true);
+
+            var lockFilePath = Path.Combine(workingPath, "project.lock.json");
+            var lockFileFormat = new LockFileFormat();
+
+            var lockFile = lockFileFormat.Read(lockFilePath);
+
+            var installedB = lockFile.Targets.First().Libraries.Where(package => package.Name == "packageB").ToList();
+
+            // Assert
+            Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+            Assert.Equal(1, installedB.Count);
+            Assert.Equal("3.0.0", installedB.Single().Version.ToNormalizedString());
+        }
+
+        [Fact]
+        public void RestoreProjectJson_RestoreBumpsFromStableToPrereleaseWhenNeeded()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var nugetexe = Util.GetNuGetExePath();
+
+            _dirs.TryAdd(workingPath, false);
+
+            Util.CreateDirectory(workingPath);
+            Util.CreateDirectory(repositoryPath);
+            Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+            Util.CreateTestPackage("packageA", "1.0.0", repositoryPath, "win8", "packageC", "1.0.0");
+            Util.CreateTestPackage("packageB", "1.0.0-beta", repositoryPath, "win8", "packageC", "2.0.0-beta");
+            Util.CreateTestPackage("packageC", "1.0.0", repositoryPath);
+            Util.CreateTestPackage("packageC", "2.0.0-beta", repositoryPath);
+            Util.CreateConfigForGlobalPackagesFolder(workingPath);
+            Util.CreateFile(workingPath, "project.json",
+                                            @"{
+                                            'dependencies': {
+                                            'packageA': '1.0.0',
+                                            'packageB': '1.0.0-*'
+                                            },
+                                            'frameworks': {
+                                                    'uap10.0': { }
+                                                }
+                                            }");
+
+            string[] args = new string[] {
+                "restore",
+                "-Source",
+                repositoryPath,
+                "-solutionDir",
+                workingPath,
+                "project.json"
+            };
+
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                workingPath,
+                string.Join(" ", args),
+                waitForExit: true);
+
+            var lockFilePath = Path.Combine(workingPath, "project.lock.json");
+            var lockFileFormat = new LockFileFormat();
+
+            var lockFile = lockFileFormat.Read(lockFilePath);
+
+            var installedC = lockFile.Targets.First().Libraries.Single(package => package.Name == "packageC");
+
+            // Assert
+            Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+            Assert.Equal("2.0.0-beta", installedC.Version.ToNormalizedString());
+        }
+
+        [Fact]
+        public void RestoreProjectJson_RestoreDowngradesStableDependency()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var nugetexe = Util.GetNuGetExePath();
+
+            _dirs.TryAdd(workingPath, false);
+
+            Util.CreateDirectory(workingPath);
+            Util.CreateDirectory(repositoryPath);
+            Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+            Util.CreateTestPackage("packageA", "1.0.0", repositoryPath, "win8", "packageC", "1.0.0");
+            Util.CreateTestPackage("packageB", "1.0.0", repositoryPath, "win8", "packageC", "[2.1.0]");
+            Util.CreateTestPackage("packageC", "3.0.0", repositoryPath);
+            Util.CreateTestPackage("packageC", "2.1.0", repositoryPath);
+            Util.CreateConfigForGlobalPackagesFolder(workingPath);
+            Util.CreateFile(workingPath, "project.json",
+                                            @"{
+                                            'dependencies': {
+                                            'packageA': '1.0.0',
+                                            'packageB': '1.0.0'
+                                            },
+                                            'frameworks': {
+                                                    'uap10.0': { }
+                                                }
+                                            }");
+
+            string[] args = new string[] {
+                "restore",
+                "-Source",
+                repositoryPath,
+                "-solutionDir",
+                workingPath,
+                "project.json"
+            };
+
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                workingPath,
+                string.Join(" ", args),
+                waitForExit: true);
+
+            var lockFilePath = Path.Combine(workingPath, "project.lock.json");
+            var lockFileFormat = new LockFileFormat();
+
+            var lockFile = lockFileFormat.Read(lockFilePath);
+
+            var installedC = lockFile.Targets.First().Libraries.Single(package => package.Name == "packageC");
+
+            // Assert
+            Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+            Assert.Equal("2.1.0", installedC.Version.ToNormalizedString());
+        }
+
+        [Fact(Skip="https://github.com/NuGet/Home/issues/1330")]
+        public void RestoreProjectJson_RestoreDowngradesFromStableToPrereleaseWhenNeeded()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var nugetexe = Util.GetNuGetExePath();
+
+            _dirs.TryAdd(workingPath, false);
+
+            Util.CreateDirectory(workingPath);
+            Util.CreateDirectory(repositoryPath);
+            Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+            Util.CreateTestPackage("packageA", "1.0.0", repositoryPath, "win8", "packageC", "1.0.0");
+            Util.CreateTestPackage("packageB", "1.0.0-beta", repositoryPath, "win8", "packageC", "[2.0.0-beta]");
+            Util.CreateTestPackage("packageC", "3.0.0", repositoryPath);
+            Util.CreateTestPackage("packageC", "2.0.0-beta", repositoryPath);
+            Util.CreateConfigForGlobalPackagesFolder(workingPath);
+            Util.CreateFile(workingPath, "project.json",
+                                            @"{
+                                            'dependencies': {
+                                            'packageA': '1.0.0',
+                                            'packageB': '1.0.0-*'
+                                            },
+                                            'frameworks': {
+                                                    'uap10.0': { }
+                                                }
+                                            }");
+
+            string[] args = new string[] {
+                "restore",
+                "-Source",
+                repositoryPath,
+                "-solutionDir",
+                workingPath,
+                "project.json"
+            };
+
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                workingPath,
+                string.Join(" ", args),
+                waitForExit: true);
+
+            var lockFilePath = Path.Combine(workingPath, "project.lock.json");
+            var lockFileFormat = new LockFileFormat();
+
+            var lockFile = lockFileFormat.Read(lockFilePath);
+
+            var installedC = lockFile.Targets.First().Libraries.Single(package => package.Name == "packageC");
+
+            // Assert
+            Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+            Assert.Equal("2.0.0-beta", installedC.Version.ToNormalizedString());
+        }
+
         [Fact]
         public void RestoreProjectJson_SolutionFileWithAllProjectsInOneFolder()
         {
