@@ -16,6 +16,6 @@
 		<xunit Assemblies="$(TargetDir)$(AssemblyName).dll" MaxParallelThreads="1" Condition=" $(XUnitDisableRunInParallel) == 'true' " />
 		
 		<Message Text="Running tests in parallel for $(TargetDir)$(AssemblyName).dll" Importance="high" />
-		<xunit Assemblies="$(TargetDir)$(AssemblyName).dll" Condition=" $(XUnitDisableRunInParallel) == '' OR $(XUnitDisableRunInParallel) == 'false' " />
+		<xunit Assemblies="$(TargetDir)$(AssemblyName).dll" MaxParallelThreads="4" Condition=" $(XUnitDisableRunInParallel) == '' OR $(XUnitDisableRunInParallel) == 'false' " />
 </Target>
 </Project>
