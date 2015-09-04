@@ -49,7 +49,7 @@ namespace NuGet.CommandLine
         {
             bool restoreResult = true;
 
-            _msbuildDirectory = MsBuildUtility.GetMsbuildDirectory(MSBuildVersion);
+            _msbuildDirectory = MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console);
 
             if (!string.IsNullOrEmpty(PackagesDirectory))
             {

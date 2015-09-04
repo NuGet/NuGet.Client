@@ -114,7 +114,7 @@ namespace NuGet.CommandLine
 
         public override void ExecuteCommand()
         {
-            _msbuildDirectory = MsBuildUtility.GetMsbuildDirectory(MSBuildVersion);
+            _msbuildDirectory = MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console);
 
             if (Verbose)
             {

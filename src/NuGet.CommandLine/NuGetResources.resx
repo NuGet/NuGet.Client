@@ -6058,4 +6058,13 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="PushCommand_PushNotSupported" xml:space="preserve">
     <value>This version of nuget.exe does not support pushing packages to package source '{0}'.</value>
   </data>
+  <data name="MSBuildAutoDetection" xml:space="preserve">
+    <value>MSBuild auto-detection: using msbuild version '{0}' from '{1}'.</value>
+  </data>
+  <data name="MSBuildAutoDetection_Verbose" xml:space="preserve">
+    <value>MSBuild auto-detection: using msbuild version '{0}' from '{1}'. Use option -MSBuildVersion to force nuget to use a specific version of MSBuild.</value>
+  </data>
+  <data name="Error_MSBuildNotInstalled" xml:space="preserve">
+    <value>MSBuild is not installed.</value>
+  </data>
 </root>

@@ -115,86 +115,185 @@ namespace NuGet.CommandLine
             }
         }
 
-        public static string GetMsbuildDirectory(string version)
+        /// <summary>
+        /// Gets the version of MSBuild in PATH. 
+        /// </summary>
+        /// <returns>The version of MSBuild in PATH. Returns null if MSBuild does not exist in PATH.</returns>
+        private static Version GetMSBuildVersionInPath()
         {
-            if (string.IsNullOrEmpty(version))
+            // run msbuild to get the version
+            var processStartInfo = new ProcessStartInfo
             {
-                // default to 4.0
-                version = "4.0";
+                UseShellExecute = false,
+                FileName = "msbuild.exe",
+                Arguments = "/version",
+                RedirectStandardOutput = true
+            };
 
-                // run msbuild to get the version
-                var processStartInfo = new ProcessStartInfo
+            try
+            {
+                using (var process = Process.Start(processStartInfo))
                 {
-                    UseShellExecute = false,
-                    FileName = "msbuild.exe",
-                    Arguments = "/version",
-                    RedirectStandardOutput = true
-                };
+                    process.WaitForExit(10 * 1000);
 
-                try
-                {
-                    using (var process = Process.Start(processStartInfo))
+                    if (process.ExitCode == 0)
                     {
-                        process.WaitForExit(10 * 1000);
+                        var output = process.StandardOutput.ReadToEnd();
 
-                        if (process.ExitCode == 0)
+                        // The output of msbuid /version with MSBuild 14 is:
+                        //
+                        // Microsoft (R) Build Engine version 14.0.23107.0
+                        // Copyright(C) Microsoft Corporation. All rights reserved.
+                        //
+                        // 14.0.23107.0                            
+                        var lines = output.Split(
+                            new[] { Environment.NewLine },
+                            StringSplitOptions.RemoveEmptyEntries);
+
+                        var versionString = lines.LastOrDefault(
+                            line => !string.IsNullOrWhiteSpace(line));
+                        Version version;
+                        if (Version.TryParse(versionString, out version))
                         {
-                            var output = process.StandardOutput.ReadToEnd();
-
-                            // The output of msbuid /version with MSBuild 14 is:
-                            //
-                            // Microsoft (R) Build Engine version 14.0.23107.0
-                            // Copyright(C) Microsoft Corporation. All rights reserved.
-                            //
-                            // 14.0.23107.0                            
-                            var lines = output.Split(
-                                new[] { Environment.NewLine },
-                                StringSplitOptions.RemoveEmptyEntries);
-
-                            version = lines.LastOrDefault(
-                                line => !string.IsNullOrWhiteSpace(line));
+                            return version;
                         }
                     }
                 }
-                catch
+            }
+            catch
+            {
+                // ignore errors                
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the msbuild toolset that matches the given <paramref name="msbuildVersion"/>.
+        /// </summary>
+        /// <param name="msbuildVersion">The msbuild version. Can be null.</param>
+        /// <param name="installedToolsets">List of installed toolsets, 
+        /// ordered by ToolsVersion, from highest to lowest.</param>
+        /// <returns>The matching toolset.</returns>
+        public static Toolset SelectMsbuildToolset(
+            Version msbuildVersion,
+            IList<Toolset> installedToolsets)
+        {
+            Toolset selectedToolset;
+            if (msbuildVersion == null)
+            {
+                // MSBuild does not exist in PATH. In this case, the highest installed version is used
+                selectedToolset = installedToolsets.FirstOrDefault();
+            }
+            else
+            {
+                // Search by major & minor version
+                selectedToolset = installedToolsets.FirstOrDefault(
+                    toolset =>
+                    {
+                        var v = new Version(toolset.ToolsVersion);
+                        return v.Major == msbuildVersion.Major && v.Minor == v.Minor;
+                    });
+
+                if (selectedToolset == null)
                 {
-                    // ignore errors
+                    // no match found. Now search by major only
+                    selectedToolset = installedToolsets.FirstOrDefault(
+                        toolset =>
+                        {
+                            var v = new Version(toolset.ToolsVersion);
+                            return v.Major == msbuildVersion.Major;
+                        });
+                }
+
+                if (selectedToolset == null)
+                {
+                    // still no match. Use the highest installed version in this case
+                    selectedToolset = installedToolsets.FirstOrDefault();
                 }
             }
 
-            var versionString = version.Contains('.') ?
-                version :
-                version + ".0";
-            Version ver;
-            if (!Version.TryParse(versionString, out ver))
+            if (selectedToolset == null)
             {
-                var message = string.Format(
-                    CultureInfo.CurrentCulture,
+                throw new CommandLineException(
                     LocalizedResourceManager.GetString(
-                        nameof(NuGetResources.Error_InvalidMsbuildVersion)),
-                    version);
-
-                throw new CommandLineException(message);
+                            nameof(NuGetResources.Error_MSBuildNotInstalled)));
             }
 
+            return selectedToolset;
+        }
+
+        public static string GetMsbuildDirectory(string version, IConsole console)
+        {
+            List<Toolset> installedToolsets;
             using (var projectCollection = new ProjectCollection())
             {
-                foreach (var toolset in projectCollection.Toolsets)
+                installedToolsets = projectCollection.Toolsets.OrderByDescending(
+                    toolset => new Version(toolset.ToolsVersion)).ToList();                
+            }
+
+            if (string.IsNullOrEmpty(version))
+            {
+                var msbuildVersion = GetMSBuildVersionInPath();
+                var toolset = SelectMsbuildToolset(msbuildVersion, installedToolsets);
+
+                if (console != null)
                 {
-                    var toolsVersion = new Version(toolset.ToolsVersion);
-                    if (toolsVersion.Major == ver.Major &&
-                        toolsVersion.Minor == ver.Minor)
+                    if (console.Verbosity == Verbosity.Detailed)
                     {
-                        return toolset.ToolsPath;
+                        console.WriteLine(
+                            LocalizedResourceManager.GetString(
+                                nameof(NuGetResources.MSBuildAutoDetection_Verbose)),
+                            toolset.ToolsVersion,
+                            toolset.ToolsPath);
+                    }
+                    else
+                    {
+                        console.WriteLine(
+                            LocalizedResourceManager.GetString(
+                                nameof(NuGetResources.MSBuildAutoDetection)),
+                            toolset.ToolsVersion,
+                            toolset.ToolsPath);
                     }
                 }
 
-                var message = string.Format(
-                    CultureInfo.CurrentCulture,
-                    LocalizedResourceManager.GetString(
-                        nameof(NuGetResources.Error_CannotFindMsbuild)),
-                    version);
-                throw new CommandLineException(message);
+                return toolset.ToolsPath;
+            }
+            else
+            {
+                var versionString = version.Contains('.') ?
+                    version :
+                    version + ".0";
+                Version ver;
+                if (!Version.TryParse(versionString, out ver))
+                {
+                    var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString(
+                            nameof(NuGetResources.Error_InvalidMsbuildVersion)),
+                        version);
+
+                    throw new CommandLineException(message);
+                }
+
+                var selectedToolset = installedToolsets.FirstOrDefault(
+                    toolset =>
+                    {
+                        var toolsVersion = new Version(toolset.ToolsVersion);
+                        return (toolsVersion.Major == ver.Major &&
+                            toolsVersion.Minor == ver.Minor);
+                    });
+                if (selectedToolset == null)
+                {
+                    var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString(
+                            nameof(NuGetResources.Error_CannotFindMsbuild)),
+                        version);
+                    throw new CommandLineException(message);
+                }
+
+                return selectedToolset.ToolsPath;
             }
         }
     }

@@ -64,7 +64,7 @@ namespace NuGet.CommandLine
                 throw new CommandLineException(NuGetResources.InvalidFile);
             }
 
-            _msbuildDirectory = MsBuildUtility.GetMsbuildDirectory(MSBuildVersion);
+            _msbuildDirectory = MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console);
             var context = new UpdateConsoleProjectContext(Console, FileConflictAction);
 
             string inputFileName = Path.GetFileName(inputFile);

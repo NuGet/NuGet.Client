@@ -5243,6 +5243,6 @@ nuget update -Self</value>
     <value>A list of packages sources to use as fallbacks for this command.</value>
   </data>
   <data name="CommandMSBuildVersion" xml:space="preserve">
-    <value>Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14. By default the MSBuild in your path is picked, otherwise it defaults to MSBuild 4.0.</value>
+    <value>Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild.</value>
   </data>
 </root>
