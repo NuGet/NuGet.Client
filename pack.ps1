@@ -74,7 +74,7 @@ function Build()
 
     & $msbuildExe "build\build.msbuild" /t:Clean /m
     
-    & $msbuildExe "build\build.msbuild" "/p:Configuration=$Configuration;PublicReleae=$PublicRelease;BuildNumber=$BuildNumber" /p:EnableCodeAnalysis=true /p:NUGET_BUILD_FEEDS=$PushTarget /m /v:M  /fl /flp:v=D $msbuildParameters
+    & $msbuildExe "build\build.msbuild" "/p:Configuration=$Configuration;PublicRelease=$PublicRelease;BuildNumber=$BuildNumber" /p:EnableCodeAnalysis=true /p:NUGET_BUILD_FEEDS=$PushTarget /m /v:M  /fl /flp:v=D $msbuildParameters
 	if ($lastexitcode -ne 0) 
 	{		
 	  	throw "Build failed"
