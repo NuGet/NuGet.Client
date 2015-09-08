@@ -452,7 +452,7 @@ namespace NuGet.CommandLine
             }
             else
             {
-                // An argument was passed in. It might be a solution file, 
+                // An argument was passed in. It might be a solution file or directory,
                 // project file, project.json, or packages.config file
 
                 var projectFilePath = Path.GetFullPath(Arguments.First());
@@ -598,6 +598,17 @@ namespace NuGet.CommandLine
         private void ProcessSolutionFile(string solutionFileFullPath, PackageRestoreInputs restoreInputs)
         {
             restoreInputs.DirectoryOfSolutionFile = Path.GetDirectoryName(solutionFileFullPath);
+
+            // restore packages for the solution
+            var solutionLevelPackagesConfig = Path.Combine(
+                restoreInputs.DirectoryOfSolutionFile,
+                NuGetConstants.NuGetSolutionSettingsFolder,
+                Constants.PackageReferenceFile);
+
+            if (File.Exists(solutionLevelPackagesConfig))
+            {
+                restoreInputs.PackageReferenceFiles.Add(solutionLevelPackagesConfig);
+            }
 
             var projectFiles = MsBuildUtility.GetAllProjectFileNames(solutionFileFullPath, _msbuildDirectory);
             foreach (var projectFile in projectFiles)

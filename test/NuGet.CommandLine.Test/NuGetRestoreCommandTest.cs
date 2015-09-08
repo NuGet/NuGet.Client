@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Net;
+using NuGet.Configuration;
 using Test.Utility;
 using Xunit;
 
@@ -1551,6 +1552,240 @@ EndProject";
             finally
             {
                 TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_LegacySolutionLevelPackages_SolutionDirectory()
+        {
+            var randomRepositoryPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomSolutionFolder = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var nugetexe = Util.GetNuGetExePath();
+                Util.CreateTestPackage("packageA", "1.1.0", randomRepositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", randomRepositoryPath);
+
+                var solutionFile = Path.Combine(randomSolutionFolder, "A.sln");
+
+                var solutionFileContents
+                    = @"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") " +
+@"= ""proj"", ""proj\proj.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
+EndProject";
+
+                File.WriteAllText(solutionFile, solutionFileContents);
+
+                var nugetFolderAtSolutionDirectory
+                    = Path.Combine(randomSolutionFolder, NuGetConstants.NuGetSolutionSettingsFolder);
+                Directory.CreateDirectory(nugetFolderAtSolutionDirectory);
+
+                File.WriteAllText(
+                    Path.Combine(nugetFolderAtSolutionDirectory, Constants.PackageReferenceFile),
+@"<packages>
+  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
+</packages>");
+
+                var projectDirectory = Path.Combine(randomSolutionFolder, "proj");
+                Directory.CreateDirectory(projectDirectory);
+
+                File.WriteAllText(
+                    Path.Combine(projectDirectory, "proj.csproj"),
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='packages.config' />
+  </ItemGroup>
+</Project>");
+
+                File.WriteAllText(
+                    Path.Combine(projectDirectory, "packages.config"),
+@"<packages>
+  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+</packages>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    randomSolutionFolder,
+                    "restore " + randomSolutionFolder + " -Source " + randomRepositoryPath,
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                var packageFileA = Path.Combine(randomSolutionFolder, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(randomSolutionFolder, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
+                Assert.True(File.Exists(packageFileA));
+                Assert.True(File.Exists(packageFileB));
+            }
+            finally
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(randomSolutionFolder, randomRepositoryPath);
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_LegacySolutionLevelPackages_SolutionFile()
+        {
+            var randomRepositoryPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomSolutionFolder = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var nugetexe = Util.GetNuGetExePath();
+                Util.CreateTestPackage("packageA", "1.1.0", randomRepositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", randomRepositoryPath);
+
+                var solutionFile = Path.Combine(randomSolutionFolder, "A.sln");
+
+                var solutionFileContents
+                    = @"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") " +
+@"= ""proj"", ""proj\proj.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
+EndProject";
+
+                File.WriteAllText(solutionFile, solutionFileContents);
+
+                var nugetFolderAtSolutionDirectory
+                    = Path.Combine(randomSolutionFolder, NuGetConstants.NuGetSolutionSettingsFolder);
+                Directory.CreateDirectory(nugetFolderAtSolutionDirectory);
+
+                File.WriteAllText(
+                    Path.Combine(nugetFolderAtSolutionDirectory, Constants.PackageReferenceFile),
+@"<packages>
+  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
+</packages>");
+
+                var projectDirectory = Path.Combine(randomSolutionFolder, "proj");
+                Directory.CreateDirectory(projectDirectory);
+
+                File.WriteAllText(
+                    Path.Combine(projectDirectory, "proj.csproj"),
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='packages.config' />
+  </ItemGroup>
+</Project>");
+
+                File.WriteAllText(
+                    Path.Combine(projectDirectory, "packages.config"),
+@"<packages>
+  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+</packages>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    randomSolutionFolder,
+                    "restore " + solutionFile + " -Source " + randomRepositoryPath,
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                var packageFileA = Path.Combine(randomSolutionFolder, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(randomSolutionFolder, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
+                Assert.True(File.Exists(packageFileA));
+                Assert.True(File.Exists(packageFileB));
+            }
+            finally
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(randomSolutionFolder, randomRepositoryPath);
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_LegacySolutionLevelPackages_NoArgument()
+        {
+            var randomRepositoryPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomSolutionFolder = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var nugetexe = Util.GetNuGetExePath();
+                Util.CreateTestPackage("packageA", "1.1.0", randomRepositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", randomRepositoryPath);
+
+                var solutionFile = Path.Combine(randomSolutionFolder, "A.sln");
+
+                var solutionFileContents
+                    = @"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") " +
+@"= ""proj"", ""proj\proj.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
+EndProject";
+
+                File.WriteAllText(solutionFile, solutionFileContents);
+
+                var nugetFolderAtSolutionDirectory
+                    = Path.Combine(randomSolutionFolder, NuGetConstants.NuGetSolutionSettingsFolder);
+                Directory.CreateDirectory(nugetFolderAtSolutionDirectory);
+
+                File.WriteAllText(
+                    Path.Combine(nugetFolderAtSolutionDirectory, Constants.PackageReferenceFile),
+@"<packages>
+  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
+</packages>");
+
+                var projectDirectory = Path.Combine(randomSolutionFolder, "proj");
+                Directory.CreateDirectory(projectDirectory);
+
+                File.WriteAllText(
+                    Path.Combine(projectDirectory, "proj.csproj"),
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='packages.config' />
+  </ItemGroup>
+</Project>");
+
+                File.WriteAllText(
+                    Path.Combine(projectDirectory, "packages.config"),
+@"<packages>
+  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+</packages>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    randomSolutionFolder,
+                    "restore  -Source " + randomRepositoryPath,
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                var packageFileA = Path.Combine(randomSolutionFolder, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(randomSolutionFolder, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
+                Assert.True(File.Exists(packageFileA));
+                Assert.True(File.Exists(packageFileB));
+            }
+            finally
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(randomSolutionFolder, randomRepositoryPath);
             }
         }
     }
