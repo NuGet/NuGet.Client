@@ -81,9 +81,27 @@ namespace NuGet.Commands
 
             contentItems.Load(files);
 
+            NuspecReader nuspec = null;
+
             var nuspecPath = defaultPackagePathResolver.GetManifestFilePath(package.Id, package.Version);
 
-            var nuspec = new NuspecReader(File.OpenRead(nuspecPath));
+            if (File.Exists(nuspecPath))
+            {
+                using (var stream = File.OpenRead(nuspecPath))
+                {
+                    nuspec = new NuspecReader(stream);
+                }
+            }
+            else
+            {
+                var dir = defaultPackagePathResolver.GetPackageDirectory(package.Id, package.Version);
+                var folderReader = new PackageFolderReader(dir);
+
+                using (var stream = folderReader.GetNuspec())
+                {
+                    nuspec = new NuspecReader(stream);
+                }
+            }
 
             var dependencySet = nuspec
                 .GetDependencyGroups()

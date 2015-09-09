@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging
 {
@@ -62,14 +62,18 @@ namespace NuGet.Packaging
         /// </summary>
         public override Stream GetNuspec()
         {
-            var nuspecFile = _root.GetFiles("*.nuspec", SearchOption.TopDirectoryOnly).FirstOrDefault();
+            var nuspecFiles = _root.GetFiles("*.nuspec", SearchOption.TopDirectoryOnly);
 
-            if (nuspecFile == null)
+            if (nuspecFiles.Length == 0)
             {
-                throw new FileNotFoundException(String.Format(CultureInfo.CurrentCulture, Strings.MissingNuspec, _root.FullName));
+                throw new PackagingException(Strings.MissingNuspec);
+            }
+            else if (nuspecFiles.Length > 1)
+            {
+                throw new PackagingException(Strings.MultipleNuspecFiles);
             }
 
-            return nuspecFile.OpenRead();
+            return nuspecFiles[0].OpenRead();
         }
 
         /// <summary>
@@ -100,7 +104,6 @@ namespace NuGet.Packaging
             yield break;
         }
 
-        // TODO: add support for NuGet.ContentModel here
         protected override IEnumerable<string> GetFiles(string folder)
         {
             var searchFolder = new DirectoryInfo(Path.Combine(_root.FullName, folder));

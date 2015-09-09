@@ -331,6 +331,22 @@ namespace NuGet.Protocol.Core.v3
         }
 
         /// <summary>
+        /// The source does not have the 'version' property.
+        /// </summary>
+        internal static string Protocol_MissingVersion
+        {
+            get { return GetString("Protocol_MissingVersion"); }
+        }
+
+        /// <summary>
+        /// The source does not have the 'version' property.
+        /// </summary>
+        internal static string FormatProtocol_MissingVersion()
+        {
+            return GetString("Protocol_MissingVersion");
+        }
+
+        /// <summary>
         /// An error occurred while retrieving package metadata for '{0}' from source '{1}'.
         /// </summary>
         internal static string Protocol_PackageMetadataError
@@ -339,11 +355,11 @@ namespace NuGet.Protocol.Core.v3
         }
 
         /// <summary>
-        /// The source does not have the 'version' property.
+        /// An error occurred while retrieving package metadata for '{0}' from source '{1}'.
         /// </summary>
-        internal static string Protocol_MissingVersion
+        internal static string FormatProtocol_PackageMetadataError(object p0, object p1)
         {
-            get { return GetString("Protocol_MissingVersion"); }
+            return string.Format(CultureInfo.CurrentCulture, GetString("Protocol_PackageMetadataError"), p0, p1);
         }
 
         /// <summary>
@@ -355,11 +371,11 @@ namespace NuGet.Protocol.Core.v3
         }
 
         /// <summary>
-        /// An error occurred while retrieving package metadata for '{0}' from source '{1}'.
+        /// The source version is not supported: '{0}'.
         /// </summary>
-            internal static string FormatProtocol_PackageMetadataError(object p0, object p1)
+        internal static string FormatProtocol_UnsupportedVersion(object p0)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Protocol_PackageMetadataError"), p0, p1);
+            return string.Format(CultureInfo.CurrentCulture, GetString("Protocol_UnsupportedVersion"), p0);
         }
 
         /// <summary>

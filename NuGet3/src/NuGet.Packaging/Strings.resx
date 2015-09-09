@@ -142,7 +142,7 @@
     <value>MinClientVersion already exists in packages.config</value>
   </data>
   <data name="MissingNuspec" xml:space="preserve">
-    <value>Nuspec file does not exist in package '{0}'</value>
+    <value>Nuspec file does not exist in package.</value>
   </data>
   <data name="PackageEntryAlreadyExist" xml:space="preserve">
     <value>Package entry already exists in packages.config. Id: {0}</value>
@@ -158,5 +158,8 @@
   </data>
   <data name="UnableToAddEntry" xml:space="preserve">
     <value>An error occurred while updating packages.config. The file was closed before the entry could be added.</value>
+  </data>
+  <data name="MultipleNuspecFiles" xml:space="preserve">
+    <value>Package contains multiple nuspec files.</value>
   </data>
 </root>

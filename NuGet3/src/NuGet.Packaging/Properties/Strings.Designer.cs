@@ -107,7 +107,39 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
-        /// Nuspec file does not exist in package '{0}'
+        /// Fail to load packages.config as XML file. Please check it. 
+        /// </summary>
+        internal static string FailToLoadPackagesConfig
+        {
+            get { return GetString("FailToLoadPackagesConfig"); }
+        }
+
+        /// <summary>
+        /// Fail to load packages.config as XML file. Please check it. 
+        /// </summary>
+        internal static string FormatFailToLoadPackagesConfig()
+        {
+            return GetString("FailToLoadPackagesConfig");
+        }
+
+        /// <summary>
+        /// MinClientVersion already exists in packages.config
+        /// </summary>
+        internal static string MinClientVersionAlreadyExist
+        {
+            get { return GetString("MinClientVersionAlreadyExist"); }
+        }
+
+        /// <summary>
+        /// MinClientVersion already exists in packages.config
+        /// </summary>
+        internal static string FormatMinClientVersionAlreadyExist()
+        {
+            return GetString("MinClientVersionAlreadyExist");
+        }
+
+        /// <summary>
+        /// Nuspec file does not exist in package.
         /// </summary>
         internal static string MissingNuspec
         {
@@ -115,11 +147,43 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
-        /// Nuspec file does not exist in package '{0}'
+        /// Nuspec file does not exist in package.
         /// </summary>
-        internal static string FormatMissingNuspec(object p0)
+        internal static string FormatMissingNuspec()
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("MissingNuspec"), p0);
+            return GetString("MissingNuspec");
+        }
+
+        /// <summary>
+        /// Package entry already exists in packages.config. Id: {0}
+        /// </summary>
+        internal static string PackageEntryAlreadyExist
+        {
+            get { return GetString("PackageEntryAlreadyExist"); }
+        }
+
+        /// <summary>
+        /// Package entry already exists in packages.config. Id: {0}
+        /// </summary>
+        internal static string FormatPackageEntryAlreadyExist(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("PackageEntryAlreadyExist"), p0);
+        }
+
+        /// <summary>
+        /// Package entry does not exists in packages.config. Id: {0}, Version: {1}
+        /// </summary>
+        internal static string PackageEntryNotExist
+        {
+            get { return GetString("PackageEntryNotExist"); }
+        }
+
+        /// <summary>
+        /// Package entry does not exists in packages.config. Id: {0}, Version: {1}
+        /// </summary>
+        internal static string FormatPackageEntryNotExist(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("PackageEntryNotExist"), p0, p1);
         }
 
         /// <summary>
@@ -163,35 +227,27 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
-        /// Package entry already exists in packages.config. Id: {0}
+        /// An error occurred while updating packages.config. The file was closed before the entry could be added.
         /// </summary>
-        internal static string PackageEntryAlreadyExist
+        internal static string FormatUnableToAddEntry()
         {
-            get { return GetString("PackageEntryAlreadyExist"); }
+            return GetString("UnableToAddEntry");
         }
 
         /// <summary>
-        /// Package entry does not exists in packages.config. Id: {0}, Version: {1}
+        /// Package contains multiple nuspec files.
         /// </summary>
-        internal static string PackageEntryNotExist
+        internal static string MultipleNuspecFiles
         {
-            get { return GetString("PackageEntryNotExist"); }
+            get { return GetString("MultipleNuspecFiles"); }
         }
 
         /// <summary>
-        /// MinClientVersion already exists in packages.config
+        /// Package contains multiple nuspec files.
         /// </summary>
-        internal static string MinClientVersionAlreadyExist
+        internal static string FormatMultipleNuspecFiles()
         {
-            get { return GetString("MinClientVersionAlreadyExist"); }
-        }
-
-        /// <summary>
-        /// Fail to load packages.config as XML file. Please check it. 
-        /// </summary>
-        internal static string FailToLoadPackagesConfig
-        {
-            get { return GetString("FailToLoadPackagesConfig"); }
+            return GetString("MultipleNuspecFiles");
         }
 
         private static string GetString(string name, params string[] formatterNames)

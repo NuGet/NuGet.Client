@@ -5,14 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Logging;
-using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -89,13 +87,12 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 return null;
             }
 
-            using (var stream = await PackageUtilities.OpenNuspecStreamFromNupkgAsync(
+            var reader = await PackageUtilities.OpenNuspecFromNupkgAsync(
                 packageInfo.Id,
                 OpenNupkgStreamAsync(packageInfo, cancellationToken),
-                Logger))
-            {
-                return GetDependencyInfo(new NuspecReader(stream));
-            }
+                Logger);
+
+            return GetDependencyInfo(reader);
         }
 
         public override async Task<Stream> GetNupkgStreamAsync(string id, NuGetVersion version, CancellationToken cancellationToken)

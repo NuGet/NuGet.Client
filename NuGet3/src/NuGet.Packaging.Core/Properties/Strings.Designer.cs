@@ -27,7 +27,7 @@ namespace NuGet.Packaging.Core
         }
 
         /// <summary>
-        /// Nuspec file does not exist in package '{0}'
+        /// Nuspec file does not exist in package.
         /// </summary>
         internal static string MissingNuspec
         {
@@ -35,11 +35,27 @@ namespace NuGet.Packaging.Core
         }
 
         /// <summary>
-        /// Nuspec file does not exist in package '{0}'
+        /// Nuspec file does not exist in package.
         /// </summary>
-        internal static string FormatMissingNuspec(object p0)
+        internal static string FormatMissingNuspec()
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("MissingNuspec"), p0);
+            return GetString("MissingNuspec");
+        }
+
+        /// <summary>
+        /// Package contains multiple nuspec files.
+        /// </summary>
+        internal static string MultipleNuspecFiles
+        {
+            get { return GetString("MultipleNuspecFiles"); }
+        }
+
+        /// <summary>
+        /// Package contains multiple nuspec files.
+        /// </summary>
+        internal static string FormatMultipleNuspecFiles()
+        {
+            return GetString("MultipleNuspecFiles");
         }
 
         /// <summary>

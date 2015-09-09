@@ -32,14 +32,24 @@ namespace NuGet.Packaging.Core
 
         public virtual Stream GetNuspec()
         {
-            var path = GetFiles().Where(f => f.EndsWith(PackagingCoreConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+            // This is the default implementation. It is overridden and optimized in
+            // PackageReader and PackageFolderReader.
 
-            if (String.IsNullOrEmpty(path))
+            // Find all nuspecs in the root folder.
+            var nuspecPaths = GetFiles().Where(entryPath => IsRoot(entryPath)
+                && entryPath.EndsWith(PackagingCoreConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (nuspecPaths.Count == 0)
             {
                 throw new PackagingException(Strings.MissingNuspec);
             }
+            else if (nuspecPaths.Count > 1)
+            {
+                throw new PackagingException(Strings.MultipleNuspecFiles);
+            }
 
-            return GetStream(path);
+            return GetStream(nuspecPaths.Single());
         }
 
         /// <summary>
@@ -63,6 +73,13 @@ namespace NuGet.Packaging.Core
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        private static readonly char[] Slashes = new char[] { '/', '\\' };
+        private static bool IsRoot(string path)
+        {
+            // True if the path contains no directory slashes.
+            return path.IndexOfAny(Slashes) == -1;
         }
     }
 }

@@ -108,6 +108,26 @@ namespace NuGet.Packaging
             return stream;
         }
 
+        public override Stream GetNuspec()
+        {
+            // Find all nuspec files in the root folder of the zip.
+            var nuspecEntries = ZipArchive.Entries.Where(entry =>
+                entry.Name.Length == entry.FullName.Length
+                    && entry.Name.EndsWith(PackagingCoreConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
+
+            if (nuspecEntries.Length == 0)
+            {
+                throw new PackagingException(Strings.MissingNuspec);
+            }
+            else if (nuspecEntries.Length > 1)
+            {
+                throw new PackagingException(Strings.MultipleNuspecFiles);
+            }
+
+            return nuspecEntries[0].Open();
+        }
+
         /// <summary>
         /// Underlying zip archive
         /// </summary>
