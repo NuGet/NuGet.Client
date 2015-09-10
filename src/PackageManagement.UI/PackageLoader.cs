@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
-using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
+using Mvs = Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -33,6 +33,8 @@ namespace NuGet.PackageManagement.UI
         private readonly PackageLoaderOption _option;
 
         private readonly string _searchText;
+
+        private readonly string LogEntrySource = "NuGet Package Manager";
 
         // The list of packages that have updates available
         private List<UISearchMetadata> _packagesWithUpdates;
@@ -226,10 +228,24 @@ namespace NuGet.PackageManagement.UI
             var localResource = await _packageManager.PackagesFolderSourceRepository
                 .GetResourceAsync<UIMetadataResource>();
 
-            var metadataResource =
+            // UIMetadataResource may not be available
+            // Given that this is the 'Installed' filter, we ignore failures in reaching the remote server
+            // Instead, we will use the local UIMetadataResource
+            UIMetadataResource metadataResource;
+            try
+            {
+                metadataResource =
                 _sourceRepository == null ?
                 null :
                 await _sourceRepository.GetResourceAsync<UIMetadataResource>();
+            }
+            catch (Exception ex)
+            {
+                metadataResource = null;
+                // Write stack to activity log
+                Mvs.ActivityLog.LogError(LogEntrySource, ex.ToString());
+            }
+
             var tasks = new List<Task<UISearchMetadata>>();
             for (int i = 0; i < installedPackages.Length; i++)
             {
@@ -387,6 +403,9 @@ namespace NuGet.PackageManagement.UI
             }
             catch
             {
+                // When a v2 package source throws, it throws an InvalidOperationException or WebException
+                // When a v3 package source throws, it throws an HttpRequestException
+
                 // The remote source is not available. NuGet should not fail but
                 // should use the local resource instead.
                 if (localResource != null)
