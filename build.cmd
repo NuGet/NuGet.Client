@@ -15,13 +15,14 @@ md .nuget
 copy %CACHED_NUGET% .nuget\nuget.exe > nul
 
 :restore
-IF EXIST packages\KoreBuild goto run
+IF EXIST packages\KoreBuild goto dnx
 .nuget\NuGet.exe install KoreBuild -Source https://www.myget.org/F/nugetbuild/api/v2 -ExcludeVersion -o packages -nocache -pre
 .nuget\NuGet.exe install Sake -version 0.2 -o packages -ExcludeVersion
 
+:dnx
 IF "%SKIP_DNX_INSTALL%"=="1" goto run
 SET DNX_FEED=https://www.nuget.org/api/v2
-CALL packages\KoreBuild\build\dnvm install 1.0.0-beta6 -runtime CLR -arch x86
+CALL packages\KoreBuild\build\dnvm install 1.0.0-beta6 -runtime CLR -arch x86 -a default
 CALL packages\KoreBuild\build\dnvm install default -runtime CoreCLR -arch x86
 
 :run
