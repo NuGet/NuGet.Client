@@ -606,6 +606,33 @@ function Test-SimpleBindingRedirects {
     Assert-BindingRedirect $b web.config B '0.0.0.0-2.0.0.0' '2.0.0.0'
 }
 
+# Tests that when there are multip config files, the binding redirects will
+# be added to the right file.
+function Test-SimpleBindingRedirectsMultipleConfigs {
+    param(
+        $context
+    )
+    # Arrange
+    $a = New-WebApplication
+
+    # Add a another web.config under directory test
+    $testDirectory = Join-Path (Get-ProjectDir $a) "test"
+    $file = Join-Path $testDirectory "web.config"	
+    New-Item $testDirectory -ItemType Directory
+    "<configuration></configuration>" > $file
+    $a.ProjectItems.AddFromFile($file)
+
+    # Act
+    $a | Install-Package B -Version 2.0 -Source $context.RepositoryPath
+    $a | Install-Package A -Version 1.0 -Source $context.RepositoryPath
+    
+    # Assert    
+    # the binding redirect should be added to web.config directly under the project directory,
+    # not to file test\web.config.
+    Assert-BindingRedirect $a web.config B '0.0.0.0-2.0.0.0' '2.0.0.0'
+}
+
+
 function Test-BindingRedirectDoesNotAddToSilverlightProject {
     param(
         $context

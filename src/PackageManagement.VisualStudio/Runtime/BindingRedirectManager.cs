@@ -109,9 +109,11 @@ namespace NuGet.PackageManagement.VisualStudio
         private string GetConfigurationFileFullPath()
         {
             var fullPaths = MSBuildNuGetProjectSystem.GetFullPaths(ConfigurationFile);
-            if (!fullPaths.IsEmpty())
+            if (fullPaths.Any())
             {
-                return fullPaths.Last();
+                // if there are multiple configuration files in the project,
+                // we need to pick the one that is directly under the project if it exists.
+                return fullPaths.First();
             }
             else
             {
