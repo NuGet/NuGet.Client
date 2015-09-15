@@ -1,0 +1,154 @@
+﻿/* App Customization CSS file - dark:
+   Contains styles that are meant to override the main theme file for dark themes.
+   **************************************************************************************************/
+
+/* App Loading sequence */
+
+#msls-id-app-loading .ui-icon-loading {
+    background-image: url(Images/msls-loader-dark.gif) !important;
+}
+
+#msls-id-progress-overlay .msls-progress {
+    background: url(Images/msls-loader-dark.gif) no-repeat bottom !important;
+}
+
+/* In dark theme, there is a 1px border on top of buttons. Remove it. */
+.ui-btn-inner {
+    border-top: none;
+}
+
+/* No bold font in metro style. Override globally. */
+.ui-btn {
+    font-weight: normal;
+}
+
+/* Header/dialog/footer icons
+  *****************************************************************/
+
+.msls-large-icon .ui-icon,
+.msls-large-icon .ui-icon-searchfield:after {
+    background-image: url(images/msls-white-icons-36.png)!important;
+    background-color: transparent;
+}
+
+.msls-footer .ui-btn .ui-btn-inner {
+    text-shadow: none;
+}
+
+.msls-large-icon .ui-btn-inner,
+.msls-ctl-button .ui-btn-inner {
+    border-color: transparent;
+}
+
+/* Header/Footer
+  *****************************************************************/
+.msls-header, .msls-footer {
+    border-right: none;
+    border-bottom: none;
+    border-left: none;
+}
+
+.msls-header .ui-shadow,
+.msls-footer .ui-shadow {
+    -moz-box-shadow: 0px 0px 0 transparent;
+    -webkit-box-shadow: 0px 0px 0 transparent;
+    box-shadow: 0px 0px 0 transparent;
+}
+
+.msls-header {
+    border-top: none;
+}
+
+/* Use the body color for the header instead of the header color defined in the theme. */
+.msls-header.ui-bar-a,
+.msls-header.ui-bar-b,
+.msls-header.ui-bar-c,
+.msls-header.ui-bar-d,
+.msls-header.ui-bar-e {
+    background: inherit;
+}
+
+/* Control visual states
+  *****************************************************************/
+
+/* ... disabled */
+
+.ui-body-a .ui-disabled .ui-link {
+    color: #d9d9d9 !important;
+}
+
+/* ... read only */
+
+input.msls-read-only, .msls-read-only.ui-select .ui-btn, textarea.msls-read-only {
+    background-color: transparent;
+    border-color: #595959;
+}
+
+/* ... loading */
+
+.msls-presenter.msls-loading > :not(.msls-presenter) > .msls-state-overlay,
+.msls-presenter.msls-loading > .msls-state-overlay {
+    background-image: url(Images/msls-loader-light.gif);
+}
+
+/* ... display error (errors loading control contents or rendering the control) */
+
+.msls-display-error-icon {
+    background-image: url(images/msls-white-icons-18.png);
+}
+
+/* ... list loading */
+
+.msls-list-loading {
+    background-image: url(Images/msls-loader-light.gif);
+}
+
+/* Focus state
+*****************************************************************/
+
+.ui-focus,
+.ui-btn:focus {
+    -moz-box-shadow: inset 0px 0px 1px #2EB5EF, 0px 0px 0px #2EB5EF;
+    -webkit-box-shadow: inset 0px 0px 1px #2EB5EF, 0px 0px 0px #2EB5EF;
+    box-shadow: inset 0px 0px 0px 1px #2EB5EF, 0px 0px 0px #2EB5EF;
+}
+
+.ui-input-text.ui-focus,
+.ui-input-search.ui-focus {
+    -moz-box-shadow: inset 0px 0px 0px 1px #2EB5EF;
+    -webkit-box-shadow: inset 0px 0px 0px 1px #2EB5EF;
+    box-shadow: inset 0px 0px 0px 1px #2EB5EF;
+}
+
+.ui-bar-a .ui-shadow:focus,
+.ui-bar-b .ui-shadow:focus,
+.ui-bar-c .ui-shadow:focus,
+.ui-bar-d .ui-shadow:focus,
+.ui-bar-e .ui-shadow:focus {
+    -moz-box-shadow: inset 0px 0px 0px #2EB5EF, 0px 0px 0px 1px #2EB5EF;
+    -webkit-box-shadow: inset 0px 0px 0px #2EB5EF, 0px 0px 0px 1px #2EB5EF;
+    box-shadow: inset 0px 0px 0px #2EB5EF, 0px 0px 0px 1px #2EB5EF;
+}
+
+.msls-screen-tab .ui-btn:focus {
+    opacity: 1!important;
+    -moz-box-shadow: inset 0px 0px 0px #2EB5EF;
+    -webkit-box-shadow: inset 0px 0px 0px #2EB5EF;
+    box-shadow: inset 0px 0px 0px #2EB5EF;
+}
+
+/* Links
+***************************************************************/
+.ui-bar-a .ui-link,
+.ui-bar-b .ui-link,
+.ui-bar-c .ui-link,
+.ui-bar-d .ui-link,
+.ui-bar-e .ui-link,
+.ui-body-a .ui-link,
+.ui-body-b .ui-link,
+.ui-body-c .ui-link,
+.ui-body-d .ui-link,
+.ui-body-e .ui-link {
+    font-weight: normal;
+}
+

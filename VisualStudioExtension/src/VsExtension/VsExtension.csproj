@@ -1,0 +1,294 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <NoWarn>1762</NoWarn>
+    <NuGetPackageImportStamp>d386b432</NuGetPackageImportStamp>
+    <ResolveNuGetPackages>true</ResolveNuGetPackages>
+    <PackagesDirectory>$(UserProfile)\.nuget\packages</PackagesDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(VisualStudioVersion)' == '14.0'">
+    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(VisualStudioVersion)' == '12.0'">
+    <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(VisualStudioVersion)' == '11.0'">
+    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>4.0</OldToolsVersion>
+  </PropertyGroup>
+  <Import Project="..\..\Build\NuGet.Settings.targets" />
+  <Import Project="..\..\Build\Common.props" Condition="Exists('..\..\Build\Common.props')" />
+  <PropertyGroup>
+    <ProjectGuid>{D0F9864B-D782-4471-81A2-29555E5DC0D7}</ProjectGuid>
+    <ProjectTypeGuids>{82b43b9b-a64c-4715-b499-d71e9ca2bd60};{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>NuGetVSExtension</RootNamespace>
+    <AssemblyName>NuGet.Tools</AssemblyName>
+    <VsSdkTargets>$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\VSSDK\Microsoft.VsSDK.targets</VsSdkTargets>
+    <DefineConstants Condition="'$(VisualStudioVersion)'=='10.0'">$(DefineConstants);VS10</DefineConstants>
+    <DefineConstants Condition="'$(VisualStudioVersion)'=='11.0'">$(DefineConstants);VS11</DefineConstants>
+    <DefineConstants Condition="'$(VisualStudioVersion)'=='12.0'">$(DefineConstants);VS12</DefineConstants>
+    <DefineConstants Condition="'$(VisualStudioVersion)'=='14.0'">$(DefineConstants);VS14</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <StartAction>Program</StartAction>
+    <StartProgram>$(MSBuildProgramFiles32)\Microsoft Visual Studio $(VisualStudioVersion)\Common7\IDE\devenv.exe</StartProgram>
+    <StartArguments>/rootsuffix Exp /log</StartArguments>
+  </PropertyGroup>
+  <Choose>
+    <When Condition="Exists($(VsSdkTargets))">
+      <PropertyGroup>
+        <GeneratePkgDefFile>true</GeneratePkgDefFile>
+        <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
+        <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
+        <IncludeDebugSymbolsInLocalVSIXDeployment>true</IncludeDebugSymbolsInLocalVSIXDeployment>
+        <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
+        <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
+      </PropertyGroup>
+    </When>
+  </Choose>
+  <ItemGroup>
+    <Compile Include="DataStreamFromComStream.cs" />
+    <Compile Include="FontAndColorsRegistrationAttribute.cs" />
+    <Compile Include="Guids.cs" />
+    <Compile Include="INuGetUIContextFactory.cs" />
+    <Compile Include="NuGetSearchProvider.cs" />
+    <Compile Include="NuGetSearchTask.cs" />
+    <Compile Include="NuGetSettings.cs" />
+    <Compile Include="NuGetStaticSearchResult.cs" />
+    <Compile Include="OutputConsoleLogger.cs" />
+    <Compile Include="PackageManagerWindowPane.cs" />
+    <Compile Include="PkgCmdID.cs" />
+    <Compile Include="NuGetPackage.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ProvideExpressLoadKeyAttribute.cs" />
+    <Compile Include="ProvideSearchProviderAttribute.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <DependentUpon>Resources.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="SettingsToLegacySettings.cs" />
+    <Compile Include="VisualStudioCredentialProvider.cs" />
+    <Compile Include="VisualStudioUIContext.cs" />
+    <Compile Include="VisualStudioUIContextFactory.cs" />
+    <Compile Include="VsEvents\LoggingProjectContext.cs" />
+    <Compile Include="VsEvents\OnBuildPackageRestorer.cs" />
+    <Compile Include="VsEvents\ProjectRetargetingHandler.cs" />
+    <Compile Include="VsEvents\ProjectUpgradeHandler.cs" />
+    <Compile Include="VsUtility.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\VsConsole\PowerShellHost\Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt">
+      <Link>Modules\NuGet\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\VsConsole\PowerShellHost\Scripts\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml">
+      <Link>Modules\NuGet\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Resources\nuget_256.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Resources\nuget_96.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <VSCTCompile Include="NuGetTools.vsct">
+      <ResourceName>Menus.ctmenu</ResourceName>
+      <SubType>Designer</SubType>
+    </VSCTCompile>
+    <Content Include="..\VsConsole\PowerShellHost\Scripts\Add-WrapperMembers.ps1">
+      <Link>Modules\NuGet\Add-WrapperMembers.ps1</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\VsConsole\PowerShellHost\Scripts\NuGet.Format.ps1xml">
+      <Link>Modules\NuGet\NuGet.Format.ps1xml</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\VsConsole\PowerShellHost\Scripts\NuGet.psd1">
+      <Link>Modules\NuGet\NuGet.psd1</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\VsConsole\PowerShellHost\Scripts\nuget.psm1">
+      <Link>Modules\NuGet\nuget.psm1</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\VsConsole\PowerShellHost\Scripts\NuGet.Types.ps1xml">
+      <Link>Modules\NuGet\NuGet.Types.ps1xml</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="..\VsConsole\PowerShellHost\Scripts\Profile.ps1">
+      <Link>Modules\NuGet\Profile.ps1</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <None Include="app.config" />
+    <None Include="project.json" />
+    <None Include="Resources\nugetAbout.ico" />
+    <None Include="Resources\Toolbar.png" />
+    <Content Include="LICENSE.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <None Include="source.extension.vsixmanifest">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj">
+      <Project>{9623cf30-192c-4864-b419-29649169ae30}</Project>
+      <Name>NuGet.VisualStudioImplement</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\Options\Options.csproj">
+      <Project>{53ab7187-cdf3-48b5-b90e-8919d3cb904d}</Project>
+      <Name>Options</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj">
+      <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
+      <Name>PackageManagement.PowerShellCmdlets</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj">
+      <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
+      <Name>PackageManagement.VisualStudio</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\TeamFoundationServer12\TeamFoundationServer12.csproj">
+      <Project>{a07d7e9a-c6d8-4c0f-9359-77a7787b2565}</Project>
+      <Name>TeamFoundationServer12</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TeamFoundationServer14\TeamFoundationServer14.csproj">
+      <Project>{e961d080-f10b-4f11-bea0-056509c086cc}</Project>
+      <Name>TeamFoundationServer14</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\VisualStudio.Interop\VisualStudio.Interop.csproj">
+      <Project>{7DB43FE1-75E1-49F9-B2C8-06A552BA2144}</Project>
+      <Name>VisualStudio.Interop</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bBuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\VisualStudio12\VisualStudio12.csproj" Condition="$(VisualStudioVersion)=='12.0'">
+      <Project>{3dd213f7-999b-4c15-9560-bf9c96cb8c52}</Project>
+      <Name>VisualStudio12</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\VisualStudio14\VisualStudio14.csproj">
+      <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
+      <Name>VisualStudio14</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\VisualStudioAPI\VisualStudioAPI.csproj">
+      <Project>{E5556BC6-A7FD-4D8E-8A7D-7648DF1D7471}</Project>
+      <Name>VisualStudioAPI</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\VsConsole\Console.Types\Console.Types.csproj">
+      <Project>{6fd11460-39a3-4a10-ba63-7541b0a7d053}</Project>
+      <Name>Console.Types</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\VsConsole\Console\Console.csproj">
+      <Project>{50e33da2-af14-486d-81b8-bd8409744a38}</Project>
+      <Name>Console</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\VsConsole\PowerShellHostProvider\PowerShellHostProvider.csproj">
+      <Project>{a5e7aeb3-738f-4c39-a459-00f90483b2fe}</Project>
+      <Name>PowerShellHostProvider</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <ProjectReference Include="..\VsConsole\PowerShellHost\PowerShellHost.csproj">
+      <Project>{5a79eef3-51c0-4a14-8d37-50ef38ad835d}</Project>
+      <Name>PowerShellHost</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="envdte80, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.VisualStudio.OLE.Interop, Version=7.1.40304.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <Reference Include="Microsoft.VisualStudio.Shell.Immutable.10.0, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.Shell.Immutable.14.0, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.Shell.Interop, Version=7.1.40304.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <Reference Include="Microsoft.VisualStudio.Shell.Interop.10.0, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Shell.Interop.11.0, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>..\..\lib\Microsoft.VisualStudio.Shell.Interop.11.0.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Shell.Interop.12.0, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Shell.Interop.14.0.DesignTime, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Shell.Interop.8.0, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <Reference Include="Microsoft.VisualStudio.Shell.Interop.9.0, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <Reference Include="$(ShellAssembly)">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(ShellAssemblyHintPath)</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Threading, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.Resources.ResourceManager" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Threading" />
+    <Reference Include="System.Threading.Tasks" />
+    <Reference Include="System.Threading.Tasks.Parallel" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="VSPackage.resx">
+      <MergeWithCTO>true</MergeWithCTO>
+      <ManifestResourceName>VSPackage</ManifestResourceName>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <PropertyGroup>
+    <GetVsixSourceItemsDependsOn>AddCopyLocalItems;$(GetVsixSourceItemsDependsOn)</GetVsixSourceItemsDependsOn>
+  </PropertyGroup>
+  <Target Name="AddCopyLocalItems">
+    <ItemGroup>
+      <VSIXSourceItem Include="bin\$(Configuration)\*.dll">
+        <VSIXSubPath>$(AssemblyVSIXSubPath)</VSIXSubPath>
+      </VSIXSourceItem>
+    </ItemGroup>
+  </Target>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\..\build\common.targets" />
+  <Import Project="..\..\build\sign.targets" />
+  <Import Condition="Exists($(VsSdkTargets))" Project="$(VsSdkTargets)" />
+  <Import Project="$(PackagesDirectory)\Microsoft.Bcl.Build\1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('$(PackagesDirectory)\Microsoft.Bcl.Build\1.0.21\build\Microsoft.Bcl.Build.targets')" />
+</Project>

@@ -1,0 +1,115 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <!-- There's no client profile on Mono -->
+    <PropertyGroup Condition=" '$(Configuration)' == 'Mono Debug' Or '$(Configuration)' == 'Mono Release' Or '$(OS)' != 'Windows_NT'">
+        <MonoBuild>true</MonoBuild>
+        <DefineConstants>$(DefineConstants);MONO;</DefineConstants>
+	<VisualStudioVersion>11.0</VisualStudioVersion>
+    </PropertyGroup>    
+
+    <!-- Common Build Settings and Configurations -->
+    <PropertyGroup>
+        <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+        <NuGetRoot Condition=" '$(NuGetRoot)' == '' ">$(MsBuildThisFileDirectory)..</NuGetRoot>
+        <Configuration Condition=" '$(Configuration)' == '' Or '$(Configuration)' == 'CI' ">Debug</Configuration>
+        <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+        <PlatformTarget>x86</PlatformTarget>
+        <ProductVersion>8.0.30703</ProductVersion>
+        <SchemaVersion>2.0</SchemaVersion>
+        <AppDesignerFolder>Properties</AppDesignerFolder>
+        <TargetFrameworkProfile />
+        <FileAlignment>512</FileAlignment>
+        <TargetFrameworkProfile />
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
+        <AdditionalSettingsImport Condition=" $(AdditionalSettingsImport) == '' ">$(NuGetRoot)\Extended.Settings.targets</AdditionalSettingsImport>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition=" $(VisualStudioVersion) == '10.0' ">
+        <ShellAssembly>Microsoft.VisualStudio.Shell.10.0, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL</ShellAssembly>
+        <ShellAssemblyHintPath>..\..\lib\VS10\Microsoft.VisualStudio.Shell.10.0.dll</ShellAssemblyHintPath>
+    
+        <MSBuildAssembly>Microsoft.Build</MSBuildAssembly>
+        <VCProjectEngineAssembly>Microsoft.VisualStudio.VCProjectEngine, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</VCProjectEngineAssembly>
+        <VCProjectEngineAssemblyHintPath>..\..\lib\Microsoft.VisualStudio.VCProjectEngine.dll</VCProjectEngineAssemblyHintPath>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" $(VisualStudioVersion) == '11.0' ">
+        <ShellAssembly>Microsoft.VisualStudio.Shell.11.0, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL</ShellAssembly>
+        <MSBuildAssembly>Microsoft.Build</MSBuildAssembly>
+        <VCProjectEngineAssembly>Microsoft.VisualStudio.VCProjectEngine, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</VCProjectEngineAssembly>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" $(VisualStudioVersion) == '12.0' ">        
+        <ShellAssembly>Microsoft.VisualStudio.Shell.12.0, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL</ShellAssembly>
+        <ShellAssemblyHintPath>..\..\lib\VS12\Microsoft.VisualStudio.Shell.12.0.dll</ShellAssemblyHintPath>
+
+        <MSBuildAssembly>Microsoft.Build, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</MSBuildAssembly>
+        <VCProjectEngineAssembly>Microsoft.VisualStudio.VCProjectEngine, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</VCProjectEngineAssembly>
+    </PropertyGroup>
+    <PropertyGroup Condition=" $(VisualStudioVersion) == '14.0' ">
+        <ShellAssembly>Microsoft.VisualStudio.Shell.14.0, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL</ShellAssembly>
+        <ShellAssemblyHintPath>..\..\lib\VS14\Microsoft.VisualStudio.Shell.14.0.dll</ShellAssemblyHintPath>
+
+        <MSBuildAssembly>Microsoft.Build, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</MSBuildAssembly>
+        <VCProjectEngineAssembly>Microsoft.VisualStudio.VCProjectEngine, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</VCProjectEngineAssembly>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" $(VisualStudioVersion) == '11.0' ">
+        <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+        <ComponentHostAssembly>Microsoft.VisualStudio.ComponentModelHost, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</ComponentHostAssembly>
+        <ExtensionManagerAssembly>Microsoft.VisualStudio.ExtensionManager, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL</ExtensionManagerAssembly>
+        <ExtensionsExplorerAssembly>Microsoft.VisualStudio.ExtensionsExplorer, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL</ExtensionsExplorerAssembly>
+        <ExtensionsExplorerUIAssembly>Microsoft.VisualStudio.ExtensionsExplorer.UI, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL</ExtensionsExplorerUIAssembly>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" $(VisualStudioVersion) == '10.0' ">
+        <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+        <ComponentHostAssembly>Microsoft.VisualStudio.ComponentModelHost, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</ComponentHostAssembly>
+        <ExtensionManagerAssembly>Microsoft.VisualStudio.ExtensionManager, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL</ExtensionManagerAssembly>
+        <ExtensionsExplorerAssembly>Microsoft.VisualStudio.ExtensionsExplorer, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL</ExtensionsExplorerAssembly>
+        <ExtensionsExplorerUIAssembly>Microsoft.VisualStudio.ExtensionsExplorer.UI, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL</ExtensionsExplorerUIAssembly>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" $(VisualStudioVersion) == '12.0'">
+        <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+        <ComponentHostAssembly>Microsoft.VisualStudio.ComponentModelHost, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</ComponentHostAssembly>
+        <ExtensionManagerAssembly>Microsoft.VisualStudio.ExtensionManager, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL</ExtensionManagerAssembly>
+        <ExtensionsExplorerAssembly>Microsoft.VisualStudio.ExtensionsExplorer, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL</ExtensionsExplorerAssembly>
+        <ExtensionsExplorerUIAssembly>Microsoft.VisualStudio.ExtensionsExplorer.UI, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL</ExtensionsExplorerUIAssembly>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" $(VisualStudioVersion) == '14.0'">
+        <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+        <ComponentHostAssembly>Microsoft.VisualStudio.ComponentModelHost, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</ComponentHostAssembly>
+        <ExtensionManagerAssembly>Microsoft.VisualStudio.ExtensionManager, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL</ExtensionManagerAssembly>
+        <ExtensionsExplorerAssembly>Microsoft.VisualStudio.ExtensionsExplorer, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL</ExtensionsExplorerAssembly>
+        <ExtensionsExplorerUIAssembly>Microsoft.VisualStudio.ExtensionsExplorer.UI, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL</ExtensionsExplorerUIAssembly>
+    </PropertyGroup>
+
+    <!-- Common settings for Debug and Coverage builds -->
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Coverage' Or '$(Configuration)' == 'Mono Debug'">
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+        <Optimize>false</Optimize>
+        <OutputPath>bin\Debug\</OutputPath>
+        <DefineConstants>$(DefineConstants);DEBUG;CODE_ANALYSIS</DefineConstants>
+    </PropertyGroup>
+
+    <!-- Settings only for Release builds -->
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' Or '$(Configuration)' == 'Mono Release'">
+        <DebugType>pdbonly</DebugType>
+        <Optimize>true</Optimize>
+        <OutputPath>bin\Release\</OutputPath>
+    </PropertyGroup>
+
+    <!-- Settings only for Coverage builds -->
+    <PropertyGroup Condition=" '$(Configuration)' == 'Coverage' ">
+        <OutputPath>bin\Coverage\</OutputPath>
+        <Coverage>true</Coverage>
+        <DefineConstants>$(DefineConstants);CODE_COVERAGE</DefineConstants> 
+    </PropertyGroup>
+
+    <Import Project="$(AdditionalSettingsImport)" Condition="Exists('$(AdditionalSettingsImport)')" />
+</Project>

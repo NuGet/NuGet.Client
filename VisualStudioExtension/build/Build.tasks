@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Go" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <UsingTask TaskName="RegexTransform" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MsBuildToolsVersion).dll">
+        <ParameterGroup>
+            <Items ParameterType="Microsoft.Build.Framework.ITaskItem[]" />
+        </ParameterGroup>
+        <Task>
+            <Using Namespace="System.IO" />
+            <Using Namespace="System.Text.RegularExpressions" />
+            <Using Namespace="Microsoft.Build.Framework" />
+            <Code Type="Fragment" Language="cs">
+                <![CDATA[
+            foreach(ITaskItem item in Items) {
+              string fileName = item.GetMetadata("FullPath");
+              string find = item.GetMetadata("Find");
+              string replaceWith = item.GetMetadata("ReplaceWith");
+              
+              if(!File.Exists(fileName)) {
+                Log.LogError(null, null, null, null, 0, 0, 0, 0, String.Format("Could not find version file: {0}", fileName), new object[0]);
+              }
+              string content = File.ReadAllText(fileName);
+              File.WriteAllText(
+                fileName,
+                Regex.Replace(
+                  content,
+                  find,
+                  replaceWith
+                )
+              );
+            }
+          ]]>
+            </Code>
+        </Task>
+    </UsingTask>
+
+    <UsingTask TaskName="CheckUnexpectedAssemblies" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+        <ParameterGroup>
+            <Items ParameterType="Microsoft.Build.Framework.ITaskItem[]" />
+            <InvalidItems ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+        </ParameterGroup>
+        <Task>
+			<Using Namespace="System" />
+            <Using Namespace="System.IO" />
+            <Using Namespace="System.Text.RegularExpressions" />
+            <Using Namespace="Microsoft.Build.Framework" />
+			<Using Namespace="System.Collections.Generic" />
+            <Code Type="Fragment" Language="cs">
+                <![CDATA[
+				
+			// these dependency assemblies should be included in the vsix
+			HashSet<string> includeAssemblies = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+			{
+				"Microsoft.Web.XmlTransform",
+				"System.Spatial",
+				"Microsoft.Data.Edm",
+				"Microsoft.Data.OData",
+				"Microsoft.Data.Services.Client",
+				"Newtonsoft.Json",
+				"JsonLD"
+			};				
+				
+            var outputItems = new List<ITaskItem>();
+            foreach(ITaskItem item in Items) 
+            {
+                string fileName = item.GetMetadata("Filename");
+              
+                if(!fileName.StartsWith("NuGet") && !includeAssemblies.Contains(fileName))
+                {
+                    Log.LogWarning("The assembly '{0}' is not expected to be in the VSIX.", fileName);
+                    outputItems.Add(item);
+                }
+            }
+			
+            InvalidItems = outputItems.ToArray();
+          ]]>
+            </Code>
+        </Task>
+    </UsingTask>
+
+    <PropertyGroup>
+      <RootDir>$(MSBuildStartupDirectory)</RootDir>
+	  <CodeTaskFactoryDll Condition="'$(MSBuildToolsVersion)' != '14'">$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll</CodeTaskFactoryDll>
+	  <CodeTaskFactoryDll Condition="'$(MSBuildToolsVersion)' == '14'">$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll</CodeTaskFactoryDll>
+    </PropertyGroup>
+	
+	<!-- This works for msbuild 12 -->
+    <UsingTask TaskName="DownloadNuGet" TaskFactory="CodeTaskFactory" AssemblyFile="$(CodeTaskFactoryDll)" >	
+       <ParameterGroup>
+           <OutputFilename ParameterType="System.String" Required="true" />
+       </ParameterGroup>
+       <Task>
+           <Reference Include="System.Core" />
+           <Using Namespace="System" />
+           <Using Namespace="System.IO" />
+           <Using Namespace="System.Net" />
+           <Using Namespace="Microsoft.Build.Framework" />
+           <Using Namespace="Microsoft.Build.Utilities" />
+           <Code Type="Fragment" Language="cs">
+               <![CDATA[
+               try {
+                   OutputFilename = Path.GetFullPath(OutputFilename);
+
+                   Log.LogMessage("Downloading latest version of NuGet.exe...");
+                   WebClient webClient = new WebClient();
+                   webClient.DownloadFile("http://dist.nuget.org/win-x86-commandline/v3.1.0-beta/nuget.exe", OutputFilename);
+
+                   return true;
+               }
+               catch (Exception ex) {
+                   Log.LogErrorFromException(ex);
+                   return false;
+               }
+           ]]>
+           </Code>
+       </Task>
+    </UsingTask>
+
+    <Target Name="DownloadNuGetExe">
+        <PropertyGroup>
+            <NuGetExeDir>$(MsBuildThisFileDirectory)..\.nuget</NuGetExeDir>
+            <NuGetExePath>$(NuGetExeDir)\nuget.exe</NuGetExePath>
+        </PropertyGroup>
+        <MakeDir Directories="$(NuGetExeDir)" Condition="!Exists('$(NuGetExeDir)')" />
+        <Message Text="Restoring packages ... " Importance="high" />
+        <DownloadNuGet OutputFilename="$(NuGetExePath)" Condition=" !Exists('$(NuGetExePath)')" />
+    </Target>
+</Project>

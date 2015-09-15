@@ -1,0 +1,27 @@
+﻿<UserControl x:Class="NuGet.PackageManagement_TestVSExtension.MyControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             Background="{DynamicResource VsBrush.Window}"
+             Foreground="{DynamicResource VsBrush.WindowText}"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300"
+             Name="MyToolWindow">
+    <Grid>
+        <StackPanel Orientation="Vertical">
+            <Button Content="_Clear_All" Click="ClearAll"  Width="50" Height="30" Name="button0"/>
+            <TextBox Name="AddPackageId" Margin="10" Height="30" HorizontalAlignment="Center">jQuery</TextBox>
+            <TextBox Name="AddPackageVersion" Margin="10" Height="30" HorizontalAlignment="Center">1.8.2</TextBox>
+            <Button Content="_AddPackage_Into_Startup_NuGetProject" Click="AddPackage" Width="300" Height="30" Name="button1"/>
+            <TextBox Name="RemovePackageId" Margin="10" Height="30" HorizontalAlignment="Center">jQuery</TextBox>
+            <Button Content="_RemovePackage_From_Startup_NuGetProject" Click="RemovePackage"  Width="300" Height="30" Name="button2"/>
+            <TextBlock Name="Logger"
+                       Height="500"
+                       ScrollViewer.VerticalScrollBarVisibility="Visible"
+                       ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True">
+
+            </TextBlock>
+        </StackPanel>
+    </Grid>
+</UserControl>

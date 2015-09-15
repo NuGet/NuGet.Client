@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+  <Metadata>
+    <Identity Id="NuPackToolsVsix.Microsoft.67e54e40-0ae3-42c5-a949-fddf5739e7a5" Version="3.2.0.0" Language="en-US" Publisher=".NET Foundation" />
+    <DisplayName>NuGet Package Manager</DisplayName>
+    <Description>A collection of tools to automate the process of downloading, installing, upgrading, configuring, and removing packages from a VS Project.</Description>
+    <Icon>Resources/nuget_96.png</Icon>
+    <PreviewImage>Resources/nuget_256.png</PreviewImage>
+  </Metadata>
+  <Installation InstalledByMsi="false" AllUsers="false">
+    <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[14.0]" />
+  </Installation>
+  <Assets>
+    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="PackageManagement.VisualStudio" Path="|PackageManagement.VisualStudio|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.PackageManagement.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.PackageManagement.UI.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.ProjectManagement.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.Protocol.VisualStudio.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="Console" Path="|Console|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="PowerShellHostProvider" Path="|PowerShellHostProvider|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.Configuration.dll" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="VisualStudioAPI" Path="|VisualStudioAPI|" AssemblyName="|VisualStudioAPI;AssemblyName|" />
+    <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="VisualStudio.Interop" Path="|VisualStudio.Interop|" AssemblyName="|VisualStudio.Interop;AssemblyName|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.VisualStudioImplement" Path="|NuGet.VisualStudioImplement|" />
+  </Assets>
+</PackageManifest>

@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Go" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$(MSBuildProjectDirectory)\Build.tasks" />
+
+    <!-- Setup configuration variables -->
+    <PropertyGroup>
+        <Configuration Condition="'$(OS)' == 'Windows_NT' And '$(Configuration)' == ''">Debug</Configuration>
+        <Configuration Condition="'$(OS)' != 'Windows_NT' And '$(Configuration)' == ''">Mono Debug</Configuration>
+        <ConfigFolderPath>$(Configuration)</ConfigFolderPath>
+        <ConfigFolderPath Condition="'$(Configuration)' == 'Mono Debug'">Debug</ConfigFolderPath>
+        <ConfigFolderPath Condition="'$(Configuration)' == 'Mono Release'">Release</ConfigFolderPath>
+    </PropertyGroup>
+
+    <!-- Set MonoBuild to true so we can distinguish building for mono -->
+    <PropertyGroup Condition=" '$(Configuration)' == 'Mono Debug' Or '$(Configuration)' == 'Mono Release' Or '$(OS)' != 'Windows_NT'">
+        <MonoBuild>true</MonoBuild>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+        <NuGetRoot>$(MSBuildProjectDirectory)\..</NuGetRoot>
+        <NuGetTestRoot>$(NuGetRoot)\test</NuGetTestRoot>
+        <NuGetSrcRoot>$(NuGetRoot)\src</NuGetSrcRoot>
+		<NuGetLibRoot>$(NuGetRoot)\lib</NuGetLibRoot>
+        <DropDirectory>$(NuGetRoot)\bin</DropDirectory>
+        <ArtifactDropDirectory>$(DropDirectory)\artifacts</ArtifactDropDirectory>
+        <NuGetDropDirectory>$(DropDirectory)\NuGet</NuGetDropDirectory>
+        <ExeBuildDirectory>$(NuGetSrcRoot)\CommandLine\bin\$(ConfigFolderPath)</ExeBuildDirectory>
+        <ExeDropDirectory>$(NuGetDropDirectory)\Console</ExeDropDirectory>
+        <ServerExtensionsBuildDirectory>$(NuGetSrcRoot)\CommandLine.ServerExtensions\bin\$(ConfigFolderPath)</ServerExtensionsBuildDirectory>
+        <ServerExtensionsDropDirectory>$(NuGetDropDirectory)\CommandLine.ServerExtensions</ServerExtensionsDropDirectory>
+        <VisualStudioAddInBuildDirectory>$(NuGetSrcRoot)\VsExtension\bin\$(ConfigFolderPath)</VisualStudioAddInBuildDirectory>
+        <VisualStudioAddInDropDirectory>$(NuGetDropDirectory)\VisualStudioAddIn</VisualStudioAddInDropDirectory>
+        <EndToEndTestsDirectory>$(NuGetTestRoot)\EndToEnd</EndToEndTestsDirectory>
+        <EndToEndTestsDropDirectory>$(NuGetDropDirectory)\EndToEnd\Artifacts</EndToEndTestsDropDirectory>
+        <ServerBuildDirectory>$(NuGetSrcRoot)\Server</ServerBuildDirectory>
+        <ServerDropDirectory>$(NuGetDropDirectory)\Server</ServerDropDirectory>
+        <NuGetCoreBuildDirectory>$(NuGetSrcRoot)\Core</NuGetCoreBuildDirectory>
+        <NuGetCoreDropDirectory>$(NuGetDropDirectory)\Core</NuGetCoreDropDirectory>
+        <NuGetBuildDropDirectory>$(NuGetDropDirectory)\Build</NuGetBuildDropDirectory>
+        <NuGetVisualStudioBuildDirectory>$(NuGetSrcRoot)\VisualStudio</NuGetVisualStudioBuildDirectory>
+        <NuGetVisualStudioDropDirectory>$(NuGetDropDirectory)\VisualStudio</NuGetVisualStudioDropDirectory>
+        <GenerateTestPackageProjectDirectory>$(NuGetRoot)\Tools\NuGet\GenerateTestPackages</GenerateTestPackageProjectDirectory>
+        <GenerateTestPackageExe>$(GenerateTestPackageProjectDirectory)\bin\$(ConfigFolderPath)\GenerateTestPackages.exe</GenerateTestPackageExe>
+        <ZipExe>$(NuGetRoot)\Tools\7za920\7za.exe</ZipExe>
+        <ILMergeExe>$(NuGetRoot)\Tools\ILMerge\ILMerge.exe</ILMergeExe>
+        <ILMergeArtifactDirectory>$(ArtifactDropDirectory)\ILMerge</ILMergeArtifactDirectory>
+        <ILMergeInternalizeIgnoreFile>$(NuGetRoot)\Build\ilmerge.internalize.ignore.txt</ILMergeInternalizeIgnoreFile>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!-- Specifiy the NuGet release version. When make changes here, please also change the version numbers 
+             in Common\CommonAssemblyInfo.cs so the version numbers are consistent between binaries built on
+             build servers and those built locally. -->
+        <MajorVersion>3</MajorVersion>
+        <MinorVersion>2</MinorVersion>
+        <Patch>0</Patch>
+	    <PrereleaseTag>preview</PrereleaseTag>
+
+        <!-- Ensure that we come up with a new version every 65535 years -->
+        <VersionStartYear>2010</VersionStartYear>
+
+        <!-- Build number is of the format (CurrentYear - VersionStartYear + 1)(2 digit month)(2 digit day) -->
+        <Build>$([MSBuild]::Add(1, $([MSBuild]::Subtract($([System.DateTime]::Now.Year), $(VersionStartYear)))))$([System.DateTime]::Now.ToString("MMdd"))</Build>
+        <Revision>$(BUILD_NUMBER)</Revision>
+        <Version>$(MajorVersion).$(MinorVersion).$(Build).$(Revision)</Version>
+	    <!-- This is the version number of nupkg files produced -->
+        <PackageVersion>$(MajorVersion).$(MinorVersion).$(Patch)</PackageVersion>
+        <PackageVersion Condition="'$(PrereleaseTag)' != ''">$(PackageVersion)-$(PrereleaseTag)</PackageVersion>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!-- Team City under-reports tests when they're run in parallel. We'll specifically disable it in there -->
+        <BuildTestsInParallel Condition=" '$(TEAMCITY_VERSION)' == '' ">true</BuildTestsInParallel>
+        <BuildTestsInParallel Condition=" '$(TEAMCITY_VERSION)' != '' ">false</BuildTestsInParallel>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <RegexTransform Include="$(NuGetSrcRoot)\VsExtension\*.vsixmanifest">
+            <Find><![CDATA[<Version>\d+\.\d+\.\d+\.\d+</Version>]]></Find>
+            <ReplaceWith><![CDATA[<Version>$(Version)</Version>]]></ReplaceWith>
+        </RegexTransform>
+        <RegexTransform Include="$(NuGetSrcRoot)\VsExtension\*.vsixmanifest">
+            <Find><![CDATA[<AllUsers>false</AllUsers>]]></Find>
+            <ReplaceWith><![CDATA[<AllUsers>true</AllUsers>]]></ReplaceWith>
+        </RegexTransform>
+        <RegexTransform Include="$(NuGetRoot)\Common\CommonAssemblyInfo.cs">
+            <Find>AssemblyVersion\("\d+\.\d+\.\d+\.\d+"\)</Find>
+            <ReplaceWith>AssemblyVersion("$(Version)")</ReplaceWith>
+        </RegexTransform>
+        <RegexTransform Include="$(NuGetRoot)\Common\CommonAssemblyInfo.cs">
+            <Find>AssemblyInformationalVersion\("\d+\.\d+\.\d+"\)</Find>
+            <ReplaceWith>AssemblyInformationalVersion("$(PackageVersion)")</ReplaceWith>
+        </RegexTransform>
+        <RegexTransform Include="$(NuGetSrcRoot)\VsConsole\PowerShellHost\Scripts\nuget.psd1">
+            <Find><![CDATA[ModuleVersion = '\d+\.\d+\.\d+\.\d+']]></Find>
+            <ReplaceWith><![CDATA[ModuleVersion = '$(Version)']]></ReplaceWith>
+        </RegexTransform>
+        <RegexTransform Include="$(NuGetSrcRoot)\VsExtension\NuGetPackage.cs">
+            <Find><![CDATA[ProductVersion = "\d+\.\d+\.\d+\.\d+"]]></Find>
+            <ReplaceWith><![CDATA[ProductVersion = "$(Version)"]]></ReplaceWith>
+        </RegexTransform>
+        <RegexTransform Include="$(NuGetSrcRoot)\**\*.nuspec">
+            <Find><![CDATA[<version>\d+\.\d+\.\d+\.\d+</version>]]></Find>
+            <ReplaceWith><![CDATA[<version>$(PackageVersion)</version>]]></ReplaceWith>
+        </RegexTransform>
+    </ItemGroup>
+
+    <ItemGroup>
+        <TestProjects Include="$(NuGetTestRoot)\CommandLine.Test\CommandLine.Test.csproj" Condition="'$(MonoBuild)' == ''" />
+        <TestProjects Include="$(NuGetTestRoot)\Core.Test\Core.Test.csproj" Condition="'$(MonoBuild)' == ''" />
+        <TestProjects Include="$(NuGetTestRoot)\Server.Test\Server.Test.csproj" Condition="'$(MonoBuild)' == ''" />
+        <TestProjects Include="$(NuGetTestRoot)\VisualStudio.Test\VisualStudio.Test.csproj" Condition="'$(MonoBuild)' == ''" />
+        <TestProjects Include="$(NuGetTestRoot)\VisualStudio11.Test\VisualStudio11.Test.csproj" 
+		      Condition="'$(MonoBuild)' == '' and $(VisualStudioVersion) != '10.0'" />
+        <TestProjects Include="$(NuGetTestRoot)\PowerShellCmdlets.Test\PowerShellCmdlets.Test.csproj" Condition="'$(MonoBuild)' == ''" />
+        <TestProjects Include="$(NuGetTestRoot)\PowerShellHost.Test\PowerShellHost.Test.csproj" Condition="'$(MonoBuild)' == ''" />
+        <TestProjects Include="$(NuGetTestRoot)\TeamFoundationServer.Test\TeamFoundationServer.Test.csproj" Condition="'$(MonoBuild)' == ''" />
+        <TestProjects Include="$(NuGetTestRoot)\Test.Integration\Test.Integration.csproj" Condition="'$(MonoBuild)' == ''" />
+        <TestProjects Include="$(NuGetTestRoot)\VsEvents.Test\VsEvents.Test.csproj" Condition="'$(MonoBuild)' == ''" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <MonoProjects Include="$(NuGetSrcRoot)\Core\Core.csproj"/>
+        <MonoProjects Include="$(NuGetSrcRoot)\CommandLine\CommandLine.csproj"/>
+        <MonoProjects Include="@(TestProjects)" />
+    </ItemGroup>
+
+    <Target Name="RestorePackages">
+        <ItemGroup>
+            <NuGetSourcesList Include="$(NUGET_BUILD_FEEDS)" />
+        </ItemGroup>
+
+        <PropertyGroup>
+            <NuGetExeDir>$(RootDir)\.nuget</NuGetExeDir>
+            <NuGetExePath>$(NuGetExeDir)\nuget.exe</NuGetExePath>
+            <NuGetExeSources>@(NuGetSourcesList -> '-source %(Identity)', ' ')</NuGetExeSources>
+            <NuGetCommndLineCmdSources>@(NuGetSourcesList -> '-Source %(Identity)', ' ')</NuGetCommndLineCmdSources>
+        </PropertyGroup>
+
+        <MakeDir Directories="$(NuGetExeDir)" Condition="!Exists('$(NuGetExeDir)')" />
+        <Message Text="Restoring packages ... " Importance="high" />
+        <DownloadNuGet OutputFilename="$(NuGetExePath)" Condition=" !Exists('$(NuGetExePath)')" />
+
+        <!-- Restore MsBuid script -->
+        <Exec Command="$(NuGetExePath) install NuGet.MsBuild.Integration -ExcludeVersion -Out $(RootDir)\packages -NoCache -pre"
+              Condition=" !Exists('$(RootDir)\packages\NuGet.MsBuild.Integration') " />
+
+        <!-- Transitive restore requires project.lock.json to exist. We'll workaround this by listing the projects in a deterministic order -->
+        <ItemGroup>
+            <ProjectsToRestore Include="$(RootDir)\src\VisualStudioAPI\*.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\PackageManagement.VisualStudio\*.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\TeamFoundationServer12\TeamFoundationServer12.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\TeamFoundationServer14\TeamFoundationServer14.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\VsConsole\Console.Types\Console.Types.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\VsConsole\Console\Console.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\VsConsole\PowerShellHost\PowerShellHost.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\VsConsole\PowerShellHostProvider\PowerShellHostProvider.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\Options\Options.csproj" />
+            <ProjectsToRestore Include="$(RootDir)\src\VsExtension\VsExtension.csproj" />
+        </ItemGroup>
+
+        <Exec Command="$(NuGetExePath) restore $(RootDir)\NuGet.VisualStudioExtension.sln -FallbackSource https://api.nuget.org/v3/index.json $(NuGetCommndLineCmdSources) -source https://www.myget.org/F/nuget-volatile/api/v2/"  />
+    </Target>
+
+    <Target Name="Go"
+        DependsOnTargets="CheckFxCop; RestorePackages; UpdateVsixVersion; Build; ReportFxCopResults;
+                                    VerifyAssembliesInVsix; RunTests; CreateDropDirectories; CopyExecutableOutputToDropDirectory; 
+                                    CopyServerExtensionsOutputToDropDirectory;
+                                    CopyVisualStudioAddInOutputToDropDirectory; CopyEndToEndTestsToDropDirectory;
+                                    CopyServerOutputToDropDirectory; CopyLicenseToAllDirectories; BuildPackages">
+    </Target>
+
+    <Target Name="GoMono" DependsOnTargets="BuildMono; RunTests" />
+    <Target Name="GoMonoNoTests" DependsOnTargets="BuildMono" />
+
+    <Target Name="CheckFxCop">
+        <Error
+            Condition="!Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v10.0\CodeAnalysis\fxcoptask.dll') And !Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v11.0\CodeAnalysis\fxcoptask.dll') And !Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v12.0\CodeAnalysis\fxcoptask.dll') And !Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v14.0\CodeAnalysis\fxcoptask.dll')"
+            Text="FxCop not found at $(MSBuildExtensionsPath)\Microsoft\VisualStudio\[v10.0|v11.0|v12.0|v14.0]\CodeAnalysis\fxcoptask.dll. Cannot proceed." />
+    </Target>
+
+    <Target Name="UpdateVsixVersion" Condition="'$(BUILD_NUMBER)' != ''">
+        <RegexTransform Items="@(RegexTransform)" />
+    </Target>
+
+    <Target Name="Build">
+        <PropertyGroup>
+            <EnableCodeAnalysis Condition="'$(EnableCodeAnalysis)' == ''" >true</EnableCodeAnalysis>
+        </PropertyGroup>
+        <MSBuild Projects="$(NuGetRoot)\NuGet.VisualStudioExtension.sln" Targets="Build" Properties="EnableCodeAnalysis=$(EnableCodeAnalysis);DeployExtension=false" />
+    </Target>
+
+    <Target Name="BuildMono">
+        <MSBuild Projects="@(MonoProjects)"
+                 Targets="Build" />
+    </Target>
+	
+	<Target Name="Clean">
+      <MSBuild Projects="$(NuGetRoot)\NuGet.VisualStudioExtension.sln" Targets="Clean" />
+    </Target>
+
+    <Target Name="VerifyAssembliesInVSIX">
+        <PropertyGroup>
+            <VsixFileLocation>$(VisualStudioAddInBuildDirectory)\NuGet.Tools.vsix</VsixFileLocation>
+            <TempVsixDirectory>$(DropDirectory)\Temp</TempVsixDirectory>
+        </PropertyGroup>
+
+        <RemoveDir Directories="$(TempVsixDirectory)" Condition="Exists($(TempVsixDirectory))" />
+
+        <Exec Command="&quot;$(ZipExe)&quot; x -o&quot;$(TempVsixDirectory)&quot; &quot;$(VsixFileLocation)&quot;" />
+
+        <ItemGroup>
+            <VsixAssemblies Include="$(TempVsixDirectory)\*.dll" />
+        </ItemGroup>
+
+        <CheckUnexpectedAssemblies Items="@(VsixAssemblies)">
+            <Output TaskParameter="InvalidItems" ItemName="InvalidFiles" />
+        </CheckUnexpectedAssemblies>
+
+        <ItemGroup Condition=" $(VisualStudioVersion) == '14.0' ">
+            <UnwantedAssembly Include="$(TempVsixDirectory)\NuGet.VisualStudio10.dll" />
+            <UnwantedAssembly Include="$(TempVsixDirectory)\NuGet.VisualStudio12.dll" />
+        </ItemGroup>
+
+        <ItemGroup Condition=" $(VisualStudioVersion) == '12.0' ">
+            <UnwantedAssembly Include="$(TempVsixDirectory)\NuGet.Dialog10.dll" />
+            <UnwantedAssembly Include="$(TempVsixDirectory)\NuGet.Dialog11.dll"></UnwantedAssembly>
+            <UnwantedAssembly Include="$(TempVsixDirectory)\NuGet.VisualStudio10.dll"></UnwantedAssembly>
+            <UnwantedAssembly Include="$(TempVsixDirectory)\NuGet.VisualStudio14.dll" />
+            <UnwantedAssembly Include="$(TempVsixDirectory)\NuGet.TeamFoundationServer10.dll"></UnwantedAssembly>
+            <UnwantedAssembly Include="$(TempVsixDirectory)\NuGet.TeamFoundationServer11.dll"></UnwantedAssembly>
+        </ItemGroup>
+
+        <ItemGroup Condition=" $(VisualStudioVersion) == '11.0' or $(VisualStudioVersion) == '10.0' ">
+            <UnwantedAssembly Include="$(TempVsixDirectory)\NuGet.Dialog.dll"></UnwantedAssembly>
+            <UnwantedAssembly Include="$(TempVsixDirectory)\NuGet.VisualStudio12.dll"></UnwantedAssembly>
+            <UnwantedAssembly Include="$(TempVsixDirectory)\NuGet.VisualStudio14.dll" />
+            <UnwantedAssembly Include="$(TempVsixDirectory)\NuGet.TeamFoundationServer.dll"></UnwantedAssembly>
+        </ItemGroup>
+        
+        <Delete Files="@(InvalidFiles)" />
+        <Delete Files="@(UnwantedAssembly)" />
+        
+        <Exec Command="&quot;$(ZipExe)&quot; a -r &quot;$(VisualStudioAddInBuildDirectory)\NuGet.Tools.zip&quot; &quot;$(TempVsixDirectory)\*.*&quot;" />
+
+        <Delete Files="$(VsixFileLocation)" />
+        <Move SourceFiles="$(VisualStudioAddInBuildDirectory)\NuGet.Tools.zip" DestinationFiles="$(VisualStudioAddInBuildDirectory)\NuGet.Tools.vsix" />
+
+        <RemoveDir Directories="$(TempVsixDirectory)" ContinueOnError="true" />
+    </Target>
+
+    <Target Name="RunTests" Condition=" '$(DisableRunningUnitTests)' != 'true' ">        
+        <MsBuild Projects="@(TestProjects)"
+                 Targets="RunTests"
+                 BuildInParallel="$(BuildTestsInParallel)" />
+    </Target>
+
+    <Target Name="ReportFxCopResults">
+        <ItemGroup>
+            <FxCopOutputItems Include="$(NuGetRoot)\**\*.dll.CodeAnalysisLog.xml" />
+        </ItemGroup>
+        <Message Text="##teamcity[importData type='FxCop' path='%(FxCopOutputItems.Identity)']" />
+    </Target>
+
+    <Target Name="CreateDropDirectories">
+        <Message Text="Making the output directories for the compiled output at '$(DropDirectory)'." />
+        <RemoveDir Directories="$(DropDirectory)" Condition="Exists('$(DropDirectory)')" ContinueOnError="True" />
+        <MakeDir Directories="$(DropDirectory)" Condition="!Exists('$(DropDirectory)')" />
+        <MakeDir Directories="$(ArtifactDropDirectory)" Condition="!Exists('$(ArtifactDropDirectory)')" />
+        <MakeDir Directories="$(NuGetDropDirectory)" Condition="!Exists('$(NuGetDropDirectory)')" />
+        <MakeDir Directories="$(ExeDropDirectory)" Condition="!Exists('$(ExeDropDirectory)')" />
+        <MakeDir Directories="$(ExeDropDirectory)\Signed" Condition="!Exists('$(ExeDropDirectory)\Signed')" />
+        <MakeDir Directories="$(VisualStudioAddInDropDirectory)" Condition="!Exists('$(VisualStudioAddInDropDirectory)')" />
+        <MakeDir Directories="$(ServerDropDirectory)" Condition="!Exists('$(ServerDropDirectory)')" />
+        <MakeDir Directories="$(NuGetCoreDropDirectory)" Condition="!Exists('$(NuGetCoreDropDirectory)')" />
+        <MakeDir Directories="$(NuGetVisualStudioDropDirectory)" Condition="!Exists('$(NuGetVisualStudioDropDirectory)')" />
+        <MakeDir Directories="$(ExtensionsDropDirectory)" Condition="!Exists('$(ExtensionsDropDirectory)')" />
+        <MakeDir Directories="$(ServerExtensionsBuildDirectory)" Condition="!Exists('$(ServerExtensionsBuildDirectory)')" />
+        <MakeDir Directories="$(NuGetBuildDropDirectory)" Condition="!Exists('$(NuGetBuildDropDirectory)')" />
+    </Target>
+
+    <Target Name="CopyExecutableOutputToDropDirectory">
+        <ItemGroup>
+            <ExecutableFiles Include="$(ExeBuildDirectory)\Merged\NuGet.exe;$(NuGetSrcRoot)\CommandLine\Properties\*.nuspec" />
+        </ItemGroup>
+        <Message Text="Copying the NuGet Console output to $(ExeDropDirectory)" />
+        <Copy ContinueOnError="false" SourceFiles="@(ExecutableFiles)" DestinationFolder="$(ExeDropDirectory)" />
+        <Copy Condition="Exists('$(ExeBuildDirectory)\Signed\NuGet.exe')" ContinueOnError="false" SourceFiles="$(ExeBuildDirectory)\Signed\NuGet.exe" DestinationFolder="$(ExeDropDirectory)\Signed" />
+    </Target>
+
+    <Target Name="CopyServerExtensionsOutputToDropDirectory">
+        <Message Text="Rebuilding server extensions" />
+        <MSBuild Projects="$(NuGetSrcRoot)\CommandLine.ServerExtensions\CommandLine.ServerExtensions.csproj" Properties="CIBuild=true;SignAssembly=false" Targets="Clean;Build" />
+        <!-- Since this is an extension, it needs to be compiled against the IL Merged nuget.exe. So we rebuild it with the magic flag that tells it to be compiled -->
+        <ItemGroup>
+            <ServerExtensionsOutputItems Include="$(ServerExtensionsBuildDirectory)\NuGet.ServerExtensions.dll" />
+        </ItemGroup>
+
+        <Message Text="Copying Server extensions output from $(ServerExtensionsBuildDirectory) to $(ServerExtensionsDropDirectory): @(ServerExtensionsOutputItems) " />
+        <Copy ContinueOnError="false"
+              SourceFiles="@(ServerExtensionsOutputItems)"
+              DestinationFolder="$(ServerExtensionsDropDirectory)" />
+
+        <!-- Delete the source file for good measure -->
+        <Delete Files="@(ServerExtensionsOutputItems)" />
+        <!-- also delete the output file in obj folder so that it won't interfere with the next build -->
+        <Delete Files="$(NuGetSrcRoot)\CommandLine.ServerExtensions\obj\$(ConfigFolderPath)\NuGet.ServerExtensions.dll" />
+    </Target>
+
+    <Target Name="CopyVisualStudioAddInOutputToDropDirectory">
+        <ItemGroup>
+            <VisualStudioAddInOutputItems Include="$(VisualStudioAddInBuildDirectory)\**\*.vsix" />
+            <VisualStudioAddInOutputItems Include="$(VisualStudioAddInBuildDirectory)\**\NuGet.VisualStudio.dll" />
+            <VisualStudioAddInOutputItems Include="$(VisualStudioAddInBuildDirectory)\**\NuGet.VisualStudio.pdb" />
+            <VisualStudioAddInOutputItems Include="$(VisualStudioAddInBuildDirectory)\**\NuGet.VisualStudio.Interop.dll" />
+            <VisualStudioAddInOutputItems Include="$(VisualStudioAddInBuildDirectory)\**\NuGet.VisualStudio.Interop.pdb" />
+            <VisualStudioAddInOutputItems Include="$(VisualStudioAddInBuildDirectory)\**\NuGetConsole.Host.PowerShell.dll" />
+            <VisualStudioAddInOutputItems Include="$(VisualStudioAddInBuildDirectory)\**\NuGetConsole.Host.PowerShell.pdb" />
+            <VisualStudioAddInOutputItems Include="$(VisualStudioAddInBuildDirectory)\**\NuGetConsole.Host.PowerShellProvider.dll" />
+            <VisualStudioAddInOutputItems Include="$(VisualStudioAddInBuildDirectory)\**\NuGetConsole.Host.PowerShellProvider.pdb" />
+        </ItemGroup>
+        <Message Text="Copying the NuGet Visual Studio Add-In output to $(VisualStudioAddInDropDirectory)" />
+        <Copy ContinueOnError="false" SourceFiles="@(VisualStudioAddInOutputItems)" DestinationFiles="@(VisualStudioAddInOutputItems ->'$(VisualStudioAddInDropDirectory)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    </Target>
+
+    <Target Name="CopyEndToEndTestsToDropDirectory" Condition=" '$(ProduceEndToEndTest)' == 'true' ">
+        <ItemGroup>
+            <EndToEndTestItems Include="$(EndToEndTestsDirectory)\**\*.*" />
+            <EndToEndTestItems Remove="$(EndToEndTestsDirectory)\bin\**\*.*" />
+        </ItemGroup>
+
+        <Copy ContinueOnError="false" SourceFiles="@(EndToEndTestItems)" DestinationFiles="@(EndToEndTestItems ->'$(EndToEndTestsDropDirectory)\%(RecursiveDir)%(Filename)%(Extension)')" />
+
+        <Message Text="Zipping the EndToEnd directory..." Importance="high" />
+        <Exec Command="&quot;$(ZipExe)&quot; a ..\EndToEnd.zip" WorkingDirectory="$(EndToEndTestsDropDirectory)" />
+    </Target>
+
+    <Target Name="CopyServerOutputToDropDirectory">
+        <ItemGroup>
+            <ServerOutputItems Include="$(ServerBuildDirectory)\**\*.*" Exclude="$(ServerBuildDirectory)\**\*.cs;$(ServerBuildDirectory)\**\*.csp*;$(ServerBuildDirectory)\obj\**\*.*;$(ServerBuildDirectory)\Packages\**\*.*;$(ServerBuildDirectory)\App_Data\**"/>
+        </ItemGroup>
+        <Message Text="Copying the NuGet Server output to $(ServerDropDirectory)" />
+        <Copy ContinueOnError="false" SourceFiles="@(ServerOutputItems)" DestinationFiles="@(ServerOutputItems ->'$(ServerDropDirectory)\www\%(RecursiveDir)%(Filename)%(Extension)')" />
+        <Exec Command="&quot;$(ZipExe)&quot; a ..\server.zip" WorkingDirectory="$(ServerDropDirectory)\www" />
+        <RemoveDir Directories="$(ServerDropDirectory)\www" />
+    </Target>
+
+    <Target Name="CopyLicenseToAllDirectories">
+        <ItemGroup>
+            <LicenseFileItems Include="$(MSBuildProjectDirectory)\..\LICENSE.txt" />
+        </ItemGroup>
+        <Message Text="Copying the License to all drop directories" />
+        <Copy ContinueOnError="false" SourceFiles="@(LicenseFileItems)" DestinationFiles="@(LicenseFileItems -&gt;'$(ExeDropDirectory)\%(RecursiveDir)%(Filename)%(Extension)')" />
+        <Copy ContinueOnError="false" SourceFiles="@(LicenseFileItems)" DestinationFiles="@(LicenseFileItems -&gt;'$(VisualStudioAddInDropDirectory)\%(RecursiveDir)%(Filename)%(Extension)')" />
+        <Copy ContinueOnError="false" SourceFiles="@(LicenseFileItems)" DestinationFiles="@(LicenseFileItems -&gt;'$(ServerDropDirectory)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    </Target>
+
+    <Target Name="BuildPackages">
+        <PropertyGroup>
+            <NuGetExe>$(ExeDropDirectory)\NuGet.exe</NuGetExe>
+        </PropertyGroup>
+
+        <Exec Command="&quot;$(NuGetExe)&quot; pack NuGet.CommandLine.nuspec -NoPackageAnalysis -Version $(PackageVersion)" WorkingDirectory="$(ExeDropDirectory)" />
+        <Exec Command="&quot;$(NuGetExe)&quot; pack -NoPackageAnalysis -Version $(PackageVersion) -o &quot;$(ServerDropDirectory)&quot; -Build -p AdditionalSettingsImport=$(AdditionalSettingsImport) -p Configuration=Release -p VisualStudioVersion=$(VisualStudioVersion) -Symbols -exclude **\NuGet.Core.* -Verbosity detailed" WorkingDirectory="$(ServerBuildDirectory)" />
+        <Exec Command="&quot;$(NuGetExe)&quot; pack -NoPackageAnalysis -Version $(PackageVersion) -o &quot;$(NuGetCoreDropDirectory)&quot; -Build -Symbols -p AdditionalSettingsImport=$(AdditionalSettingsImport)" WorkingDirectory="$(NuGetCoreBuildDirectory)" />
+        <Exec Command="&quot;$(NuGetExe)&quot; pack -NoPackageAnalysis -Version $(PackageVersion) -o &quot;$(NuGetBuildDropDirectory)&quot;" WorkingDirectory="$(NuGetSrcRoot)\Build" />
+
+	<!-- The following does not work on dev12. Need to check if this package is still needed.
+	     
+        <Exec Command="&quot;$(NuGetExe)&quot; pack -NoPackageAnalysis -Version $(PackageVersion) -o &quot;$(NuGetVisualStudioDropDirectory)&quot; -Build -p AdditionalSettingsImport=$(AdditionalSettingsImport) -p Configuration=Release -exclude **\NuGet.Core.*" WorkingDirectory="$(NuGetVisualStudioBuildDirectory)" />
+
+	-->
+    </Target>
+</Project>

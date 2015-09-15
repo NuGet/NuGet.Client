@@ -1,0 +1,2019 @@
+﻿html, body {
+    margin: 0 auto;
+    font-size: 15px;
+    -ms-content-zooming: none;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
+.ui-mobile .msls-vstretch.ui-page-active {
+    overflow: hidden !important;
+}
+
+.msls-clear {
+    clear: both;
+}
+
+.msls-hauto {
+    display: block;
+    float: left;
+    overflow: hidden;
+}
+
+.msls-vauto {
+    overflow: hidden;
+}
+
+.msls-hstretch {
+    overflow: hidden;
+}
+
+.msls-presenter-content:not(.msls-presenter) {
+    overflow: hidden;
+}
+
+.msls-columns-layout > .msls-hstretch {
+    display: block;
+    float: left;
+    min-height: 1px;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}
+
+li > .msls-hauto,
+.msls-li .msls-rows-layout > .msls-hauto.msls-leaf {
+    float: none;
+}
+
+.msls-vstretch {
+    min-width: 1px;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}
+
+.msls-columns-layout > .msls-vstretch {
+    height: 100%;
+}
+
+a.msls-hauto, a.msls-hstretch {
+    float: none;
+}
+
+.msls-hempty {
+    float: left;
+}
+
+.msls-halign-right {
+    float: right;
+}
+
+.msls-hscroll {
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.msls-vscroll {
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    -moz-overflow-scrolling: touch;
+    -o-overflow-scrolling: touch;
+    -ms-overflow-scrolling: touch;
+    overflow-scrolling: touch;
+}
+
+.msls-redraw {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.msls-hscroll.msls-vscroll {
+    overflow-x: auto;
+    overflow-y: auto;
+}
+
+.msls-li .msls-hauto,
+.msls-li .msls-vauto,
+.msls-li .msls-vscroll,
+.msls-li .msls-hscroll.msls-vscroll,
+.msls-li .msls-fixed-width,
+.msls-li .msls-hscroll {
+    overflow: hidden;
+}
+
+
+.msls-content.ui-content:not(.msls-vscroll) {
+    overflow-y: hidden !important;
+}
+
+.msls-content.ui-content:not(.msls-hscroll) {
+    overflow-x: hidden !important;
+}
+
+.msls-collapsed {
+    display: none !important;
+}
+
+.msls-hclip {
+    overflow-x: hidden;
+}
+
+.msls-vclip {
+    overflow-y: hidden;
+}
+
+.msls-leaf {
+    padding: 6px 10px;
+}
+
+.msls-compact-padding.msls-leaf {
+    padding: 0px 2px;
+}
+
+
+.msls-tap {
+    cursor: pointer;
+}
+
+
+.msls-large-icon .ui-icon-msls-ok,
+.msls-large-icon .ui-icon-msls-accept {
+    background-position: -164px 1px;
+}
+
+.msls-large-icon .ui-icon-msls-cancel,
+.msls-large-icon .ui-icon-msls-discard,
+.msls-large-icon .ui-icon-msls-decline {
+    background-position: -105px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-save {
+    background-position: -49px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-logout {
+    background-position: -284px 1px;
+}
+
+.msls-large-icon .ui-icon-msls-back {
+    background-position: -225px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-search {
+    background-position: -1020px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-camera {
+    background-position: -1633px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-trash {
+    background-position: -588px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-add {
+    background-position: -405px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-remove {
+    background-position: -465px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-video {
+    background-position: -1694px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-tag {
+    background-position: -1878px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-gear {
+    background-position: -344px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-contacts {
+    background-position: -1756px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-edit {
+    background-position: -650px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-question {
+    background-position: -527px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-refresh {
+    background-position: -712px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-list {
+    background-position: -1442px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-folder {
+    background-position: -1378px 1px;
+}
+
+.msls-large-icon .ui-icon-msls-move {
+    background-position: -1507px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-text {
+    background-position: -1140px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-attachment {
+    background-position: -1572px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-warning {
+    background-position: -1078px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-star {
+    background-position: -897px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-addfavorite {
+    background-position: -959px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-filter {
+    background-position: -775px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-sort {
+    background-position: -835px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-addpicture {
+    background-position: -1199px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-document {
+    background-position: -1257px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-download {
+    background-position: -1317px 0px;
+}
+
+.msls-large-icon .ui-icon-msls-calendar {
+    background-position: -1813px 0px;
+}
+
+#msls-id-app-loading .ui-icon-loading {
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border-radius: 0;
+    background-image: url(Images/msls-loader-dark.gif);
+    background-size: contain!important;
+    background-repeat: no-repeat;
+}
+
+#msls-id-app-loading .msls-app-loading-img {
+    background: transparent;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    max-width: 200px;
+    max-height: 188px;
+    width: 80%;
+    height: 50%;
+    margin-top: 5%;
+    margin-bottom: 10%;
+}
+
+#msls-id-app-loading {
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    visibility: visible;
+    margin: 0;
+}
+
+    #msls-id-app-loading > * {
+        display: block;
+        margin: 0 auto;
+        padding: 0;
+        outline: 0;
+        border: 0;
+    }
+
+    #msls-id-app-loading .ui-bottom-load {
+        position: absolute;
+        bottom: 5%;
+        left: 0px;
+        width: 100%;
+    }
+
+        #msls-id-app-loading .ui-bottom-load > div {
+            font-size: 16pt;
+            text-align: center;
+            -webkit-text-shadow: none;
+            text-shadow: none;
+            margin: 15% 0 0 0;
+            text-transform: uppercase;
+        }
+
+.msls-large-icon {
+    margin: 0px 10px;
+}
+
+    .msls-large-icon:first-child {
+        margin-left: 0px;
+    }
+
+    .msls-large-icon:last-child {
+        margin-right: 0px;
+    }
+
+.msls-large-icon.ui-btn {
+    background: none;
+    background-image: none;
+    border: none;
+    min-width: 0;
+    border-bottom-width: 0px;
+    color: inherit;
+}
+
+    .msls-large-icon.ui-btn-down-a,
+    .msls-large-icon.ui-btn-down-b,
+    .msls-large-icon.ui-btn-down-c,
+    .msls-large-icon.ui-btn-down-d,
+    .msls-large-icon.ui-btn-down-e {
+        opacity: .8;
+    }
+
+    .msls-large-icon.ui-btn:hover {
+        color: inherit;
+    }
+
+.msls-large-icon,
+.msls-large-icon .ui-btn-inner {
+    width: auto;
+    min-width: 40px;
+}
+
+    .msls-large-icon.ui-btn-icon-notext,
+    .msls-large-icon.ui-btn-icon-notext .ui-btn-inner {
+        height: 40px;
+    }
+
+    .msls-large-icon .ui-icon {
+        background-size: auto 100%;
+        width: 36px;
+        height: 36px;
+        border-width: 2px;
+        border-style: solid;
+        border-radius: 26px;
+    }
+
+    .msls-large-icon.ui-btn-icon-top .ui-icon {
+        top: 0px;
+        position: absolute;
+        left: 50%;
+        margin-left: -20px;
+    }
+
+    .msls-large-icon.ui-btn-icon-top .ui-btn-inner {
+        padding: 42px 0px 0px 0px;
+        width: 80px;
+        white-space: normal;
+        line-height: 14px; }
+
+    .msls-large-icon.ui-btn .ui-btn-text {
+        font-size: 12px;
+    }
+
+    .msls-large-icon.ui-btn-icon-notext .ui-btn-inner .ui-icon {
+        margin: 0px;
+    }
+
+    .msls-large-icon .ui-btn-icon-notext .ui-btn-inner,
+    .msls-large-icon .ui-btn-inner {
+        padding: 0;
+        border-top: none;
+    }
+
+    .msls-large-icon.ui-btn.ui-btn-icon-notext .ui-btn-inner {
+        padding-top: 0px;
+        padding-bottom: 0px;
+    }
+
+.msls-header .msls-buttons-row,
+.msls-footer .msls-buttons-row {
+    float: right;
+}
+
+.msls-buttons-row .ui-btn {
+    display: inline-block;
+}
+
+.msls-footer .msls-large-icon, .msls-header .msls-large-icon {
+    top: 0px;
+}
+
+.msls-header {
+    display: block;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 100%;
+    display: block;
+}
+
+    .msls-header .msls-header-area {
+        padding: 10px 40px;
+    }
+
+.msls-dialog-frame .msls-header-area {
+    padding: 20px 20px 10px 20px;
+}
+
+.msls-header .titles-bar {
+    position: relative;
+    overflow: hidden;
+}
+
+.msls-header .msls-logo-back-area {
+    float: left;
+    padding-top: 10px;
+}
+    .msls-header .msls-logo-back-area .msls-back-button-contain {
+        padding-right: 16px;
+    }
+
+.msls-header .msls-logo {
+    position: relative;
+    padding-right: 16px;
+}
+
+    .msls-header .msls-logo img {
+        max-height: 60px;
+        max-width: 150px;
+        border-collapse: separate;
+    }
+
+.msls-header .msls-title {
+    font-size: 42px;
+    text-align: left;
+    letter-spacing: -1pt;
+    font-weight: 100;
+    margin: 0px;
+    padding-bottom: 5px;
+    line-height: 57px;
+}
+
+    .msls-header .msls-title p {
+        line-height: inherit;
+    }
+
+h1.msls-title .msls-text,
+.msls-control-header .msls-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.msls-header .msls-buttons-row {
+    padding-left: 10px;
+}
+    .msls-header .msls-buttons-row.msls-screen-buttons {
+        padding-top: 10px;
+    }
+
+.msls-header .msls-large-icon.ui-btn {
+    background-color: transparent;
+    min-width: 0px;
+}
+
+.msls-header .msls-tabs-bar {
+    display: block;
+}
+
+.msls-footer {
+    width: 100%;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.msls-footer.ui-page-footer-fixed {
+    padding-bottom: 0;
+}
+
+.msls-footer-content {
+    margin-right: auto;
+}
+
+    .msls-footer-content:not(.msls-footer-content-active) {
+        display: none;
+    }
+
+
+.msls-tabs-bar {
+    margin-top: 0px;
+    clear: both;
+    white-space: nowrap;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+    overflow: auto;
+    overflow-y: hidden;
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+
+.msls-screen-tab {
+    display: inline-block;
+    margin: 0px 24px 0 0;
+}
+
+    .msls-screen-tab:last-child {
+        margin-right: 0px;
+    }
+
+    .msls-screen-tab .ui-btn {
+        min-height: 0;
+        border: none;
+        background: none;
+        margin: 0px;
+        opacity: .6;
+    }
+
+    .msls-screen-tab .ui-controlgroup {
+        margin: 0px;
+    }
+
+    .msls-screen-tab .ui-btn-inner,
+    .msls-screen-tab .ui-mini .ui-btn-inner {
+        padding: 0px;
+    }
+
+    .msls-screen-tab .ui-btn, .msls-screen-tab .ui-btn-text {
+        font-size: 26px;
+        font-weight: 100;
+    }
+
+.msls-tabs-container.ui-controlgroup {
+    margin: 0px;
+}
+
+
+.msls-dialog-frame .msls-screen-tab .ui-btn,
+.msls-dialog-frame .msls-screen-tab .ui-btn-text {
+    font-size: 22px;
+    text-transform: uppercase;
+}
+
+.msls-screen-tab.msls-screen-tab-active .ui-btn {
+    opacity: 1;
+}
+
+.msls-screen-tab a {
+    color: inherit;
+}
+
+.msls-screen-tab .ui-focus {
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+.msls-content {
+    margin: 0px 0px;
+    padding: 0px 30px;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}
+
+.msls-tab-content, .msls-popup-content {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+    .msls-tab-content:not(.msls-tab-content-active) {
+        display: none;
+    }
+
+.msls-page-expired {
+    z-index: 10200;
+}
+
+.msls-page-expired-message {
+    text-align: center;
+    margin-top: 5%;
+}
+
+
+.ui-mobile .msls-dialog {
+    z-index: 10100 !important;
+    position: absolute !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    background: transparent;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    bottom: 1px;
+}
+
+.msls-dialog-frame {
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    max-width: 510px;
+    max-height: 700px;
+    padding: 30px 15px; margin-left: auto;
+    margin-right: auto;
+}
+
+body:not(.msls-enable-modal-scroll-regions) .msls-dialog-frame {
+    max-height: none;
+}
+
+.msls-dialog-frame .msls-header .msls-title {
+    font-size: 29px;
+    line-height: 40px;
+    font-weight: 100;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}
+
+.msls-dialog-inner-frame {
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    height: 100%;
+}
+
+.msls-dialog-frame .msls-header {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.msls-dialog-frame .msls-dialog-buttons {
+    float: right;
+    overflow: visible;
+}
+
+.msls-dialog-frame .msls-content {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+body.msls-show-background-screen .msls-background-page.ui-page {
+    display: block;
+    position: fixed;
+}
+
+#msls-id-dialog-overlay {
+    z-index: 10050;
+}
+
+.msls-overlay {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    opacity: 0;
+}
+
+.msls-overlay-active {
+    opacity: .7 !important;
+    background: #000000;
+}
+
+#msls-id-progress-overlay {
+    z-index: 10400;
+}
+
+    #msls-id-progress-overlay.msls-overlay-active {
+        transition: opacity 1000ms;
+        -ms-transition: opacity 1000ms;
+        -moz-transition: opacity 1000ms;
+        -webkit-transition: opacity 1000ms;
+        -o-transition: opacity 1000ms;
+    }
+
+    #msls-id-progress-overlay .msls-progress {
+        display: block;
+        margin: auto;
+        width: 50px;
+        height: 80px;
+        margin-top: 20%;
+    }
+
+    #msls-id-progress-overlay .msls-progress-icon {
+        width: 36px;
+        height: 36px;
+        margin: auto;
+    }
+
+body:not(.msls-enable-modal-scroll-regions) .msls-modalpicker {
+    max-height: none;
+    max-width: none;
+}
+
+body.msls-stage1 .msls-in, body.msls-stage2 .msls-in, body.msls-stage3 .msls-in,
+body.msls-stage1 .msls-out, body.msls-stage2 .msls-out, body.msls-stage3 .msls-out {
+    transition-property: opacity, transform;
+    -moz-transition-property: opacity, -moz-transform;
+    -ms-transition-property: opacity, -ms-transform;
+    -webkit-transition-property: opacity, -webkit-transform;
+    -o-transition-property: opacity, -o-transform;
+}
+
+body.msls-screen-transition .ui-page.msls-out .msls-content {
+    display: none !important;
+}
+
+body.msls-screen-transition.msls-stage1.msls-full-animation .ui-page.msls-out .msls-content {
+    display: block !important;
+    animation-name: msls-anim-screen-transition;
+    -moz-animation-name: msls-anim-screen-transition;
+    -ms-animation-name: msls-anim-screen-transition;
+    -webkit-animation-name: msls-anim-screen-transition;
+    -o-animation-name: msls-anim-screen-transition;
+    animation-fill-mode: forwards;
+    -moz-animation-fill-mode: forwards;
+    -ms-animation-fill-mode: forwards;
+    -webkit-animation-fill-mode: forwards;
+    -o-animation-fill-mode: forwards;
+    animation-duration: 167ms;
+    -moz-animation-duration: 167ms;
+    -ms-animation-duration: 167ms;
+    -webkit-animation-duration: 167ms;
+    -o-animation-duration: 167ms;
+}
+
+body.msls-screen-transition.msls-stage1.msls-reverse.msls-full-animation .ui-page.msls-out .msls-content {
+    animation-name: msls-anim-screen-transition-reverse;
+    -moz-animation-name: msls-anim-screen-transition-reverse;
+    -ms-animation-name: msls-anim-screen-transition-reverse;
+    -webkit-animation-name: msls-anim-screen-transition-reverse;
+    -o-animation-name: msls-anim-screen-transition-reverse;
+}
+
+body.msls-screen-transition.msls-stage1.msls-quick-animation .ui-page.msls-out .msls-content {
+    display: block !important;
+    transition-property: opacity;
+    -moz-transition-property: opacity;
+    -ms-transition-property: opacity;
+    -webkit-transition-property: opacity;
+    animation-duration: 167ms;
+    -moz-animation-duration: 167ms;
+    -ms-animation-duration: 167ms;
+    -webkit-animation-duration: 167ms;
+    -o-animation-duration: 167ms;
+    opacity: 0;
+}
+
+body.msls-screen-transition.msls-stage1.msls-reverse.msls-quick-animation .ui-page.msls-out .msls-content {
+    opacity: 1;
+}
+
+@-moz-keyframes msls-anim-screen-transition {
+    0% {
+        opacity: 1;
+        -moz-transform: scale(1);
+    }
+
+    20% {
+        -moz-transform: scale(.95);
+    }
+
+    90% {
+        -moz-transform: scale(.95);
+    }
+
+    100% {
+        opacity: 0;
+        -moz-transform: scale(.9) translateX(-5%);
+    }
+}
+
+@-ms-keyframes msls-anim-screen-transition {
+    0% {
+        opacity: 1;
+        -ms-transform: scale(1);
+    }
+
+    20% {
+        -ms-transform: scale(.95);
+    }
+
+    90% {
+        -ms-transform: scale(.95);
+    }
+
+    100% {
+        opacity: 0;
+        -ms-transform: scale(.9) translateX(-5%);
+    }
+}
+
+@-o-keyframes msls-anim-screen-transition {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        -o-transform: translateX(-5%);
+    }
+}
+
+@-webkit-keyframes msls-anim-screen-transition {
+    0% {
+        opacity: 1;
+        -webkit-transform: scale(1);
+    }
+
+    20% {
+        -webkit-transform: scale(.95);
+    }
+
+    90% {
+        -webkit-transform: scale(.95);
+    }
+
+    100% {
+        opacity: 0;
+        -webkit-transform: scale(.9) translateX(-5%);
+    }
+}
+
+@keyframes msls-anim-screen-transition {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    20% {
+        transform: scale(.95);
+    }
+
+    90% {
+        transform: scale(.95);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(.9) translateX(-5%);
+    }
+}
+
+@-moz-keyframes msls-anim-screen-transition-reverse {
+    0% {
+        opacity: 1;
+        -moz-transform: scale(1);
+    }
+
+    20% {
+        -moz-transform: scale(.95);
+    }
+
+    90% {
+        -moz-transform: scale(.95);
+    }
+
+    100% {
+        opacity: 0;
+        -moz-transform: scale(.9) translateX(5%);
+    }
+}
+
+@-ms-keyframes msls-anim-screen-transition-reverse {
+    0% {
+        opacity: 1;
+        -ms-transform: scale(1);
+    }
+
+    20% {
+        -ms-transform: scale(.95);
+    }
+
+    90% {
+        -ms-transform: scale(.95);
+    }
+
+    100% {
+        opacity: 0;
+        -ms-transform: scale(.9) translateX(5%);
+    }
+}
+
+@-o-keyframes msls-anim-screen-transition-reverse {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        -o-transform: translateX(5%);
+    }
+}
+
+@-webkit-keyframes msls-anim-screen-transition-reverse {
+    0% {
+        opacity: 1;
+        -webkit-transform: scale(1);
+    }
+
+    20% {
+        -webkit-transform: scale(.95);
+    }
+
+    90% {
+        -webkit-transform: scale(.95);
+    }
+
+    100% {
+        opacity: 0;
+        -webkit-transform: scale(.9) translateX(5%);
+    }
+}
+
+@keyframes msls-anim-screen-transition-reverse {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    20% {
+        transform: scale(.95);
+    }
+
+    90% {
+        transform: scale(.95);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(.9) translateX(5%);
+    }
+}
+
+body.msls-screen-transition.msls-stage3 .ui-page.msls-out {
+    opacity: 0;
+    transition-duration: 167ms;
+    -moz-transition-duration: 167ms;
+    -ms-transition-duration: 167ms;
+    -webkit-transition-duration: 167ms;
+    -o-transition-duration: 167ms;
+}
+
+body.msls-screen-transition.msls-stage3.msls-full-animation .ui-page.msls-out {
+    transform: translateX(-5%);
+    -moz-transform: translateX(-5%);
+    -ms-transform: translateX(-5%);
+    -webkit-transform: translateX(-5%);
+    -o-transform: translateX(-5%);
+}
+
+body.msls-screen-transition.msls-stage3.msls-reverse.msls-full-animation .ui-page.msls-out {
+    transform: translateX(5%);
+    -moz-transform: translateX(5%);
+    -ms-transform: translateX(5%);
+    -webkit-transform: translateX(5%);
+    -o-transform: translateX(5%);
+}
+
+body.msls-screen-transition.msls-stage1 .ui-page.msls-in {
+    display: none !important;
+}
+
+body.msls-screen-transition.msls-stage2 .ui-page.msls-in,
+body.msls-screen-transition.msls-stage3 .ui-page.msls-in {
+    display: block !important;
+    opacity: 0;
+}
+
+body.msls-screen-transition.msls-stage2.msls-full-animation .ui-page.msls-in {
+    transform: translateX(5%);
+    -moz-transform: translateX(5%);
+    -ms-transform: translateX(5%);
+    -webkit-transform: translateX(5%);
+    -o-transform: translateX(5%);
+}
+
+body.msls-screen-transition.msls-stage2.msls-reverse.msls-full-animation .ui-page.msls-in {
+    transform: translateX(-5%);
+    -moz-transform: translateX(-5%);
+    -ms-transform: translateX(-5%);
+    -webkit-transform: translateX(-5%);
+    -o-transform: translateX(-5%);
+}
+
+body.msls-screen-transition.msls-stage3 .ui-page.msls-in {
+    opacity: 1;
+    transform: translateX(0);
+    -moz-transform: translateX(0);
+    -ms-transform: translateX(0);
+    -webkit-transform: translateX(0);
+    -o-transform: translateX(0);
+    transition-duration: 167ms;
+    -moz-transition-duration: 167ms;
+    -ms-transition-duration: 167ms;
+    -webkit-transition-duration: 167ms;
+    -o-transition-duration: 167ms;
+}
+
+body.msls-screen-transition.msls-stage2.msls-full-animation .ui-page.msls-in .msls-tabs-bar {
+    transform: translateX(5%);
+    -moz-transform: translateX(5%);
+    -ms-transform: translateX(5%);
+    -webkit-transform: translateX(5%);
+    -o-transform: translateX(5%);
+}
+
+body.msls-screen-transition.msls-stage2.msls-reverse.msls-full-animation .ui-page.msls-in .msls-tabs-bar {
+    transform: translateX(-5%);
+    -moz-transform: translateX(-5%);
+    -ms-transform: translateX(-5%);
+    -webkit-transform: translateX(-5%);
+    -o-transform: translateX(-5%);
+}
+
+body.msls-screen-transition.msls-stage2.msls-full-animation .ui-page.msls-in .msls-footer-content {
+    transform: translateY(5%);
+    -moz-transform: translateY(5%);
+    -ms-transform: translateY(5%);
+    -webkit-transform: translateY(5%);
+    -o-transform: translateY(5%);
+}
+
+body.msls-screen-transition.msls-stage2.msls-reverse.msls-full-animation .ui-page.msls-in .msls-footer-content {
+    transform: translateY(-5%);
+    -moz-transform: translateY(-5%);
+    -ms-transform: translateY(-5%);
+    -webkit-transform: translateY(-5%);
+    -o-transform: translateY(-5%);
+}
+
+body.msls-screen-transition.msls-stage3 .ui-page.msls-in .msls-tabs-bar,
+body.msls-screen-transition.msls-stage3 .ui-page.msls-in .msls-footer-content {
+    transform: translateX(0);
+    -moz-transform: translateX(0);
+    -ms-transform: translateX(0);
+    -webkit-transform: translateX(0);
+    -o-transform: translateX(0);
+    transition-property: transform;
+    -moz-transition-property: -moz-transform;
+    -ms-transition-property: -ms-transform;
+    -webkit-transition-property: -webkit-transform;
+    -o-transition-property: -o-transform;
+    transition-duration: 167ms;
+    -moz-transition-duration: 167ms;
+    -ms-transition-duration: 167ms;
+    -webkit-transition-duration: 167ms;
+    -o-transition-duration: 167ms;
+}
+
+body.msls-tab-transition .msls-tab-content.msls-out,
+body.msls-tab-transition .msls-footer-content.msls-out {
+    display: none !important;
+}
+
+body.msls-tab-transition.msls-stage1 .msls-tab-content.msls-out,
+body.msls-tab-transition.msls-stage1 .msls-footer-content.msls-out {
+    display: block !important;
+    transition-duration: 167ms;
+    -moz-transition-duration: 167ms;
+    -ms-transition-duration: 167ms;
+    -webkit-transition-duration: 167ms;
+    -o-transition-duration: 0ms;
+    opacity: 0;
+}
+
+body.msls-tab-transition.msls-stage1 .msls-tab-content.msls-out {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+body.msls-tab-transition.msls-stage1 .msls-tab-content.msls-in,
+body.msls-tab-transition.msls-stage1 .msls-footer-content.msls-in {
+    display: none !important;
+}
+
+body.msls-tab-transition.msls-stage2 .msls-tab-content.msls-in,
+body.msls-tab-transition.msls-stage2 .msls-footer-content.msls-in,
+body.msls-tab-transition.msls-stage3 .msls-tab-content.msls-in,
+body.msls-tab-transition.msls-stage3 .msls-footer-content.msls-in {
+    display: block !important;
+}
+
+body.msls-tab-transition.msls-stage2 .msls-tab-content.msls-in {
+    opacity: 0;
+}
+
+body.msls-tab-transition.msls-stage2.msls-full-animation .msls-tab-content.msls-in {
+    transform: translateX(5%);
+    -moz-transform: translateX(5%);
+    -ms-transform: translateX(5%);
+    -webkit-transform: translateX(5%);
+    -o-transform: translateX(5%);
+}
+
+body.msls-tab-transition.msls-stage2 .msls-footer-content.msls-in {
+    opacity: 0;
+}
+
+body.msls-tab-transition.msls-stage2.msls-full-animation .msls-footer-content.msls-in {
+    transform: translateY(5%);
+    -moz-transform: translateY(5%);
+    -ms-transform: translateY(5%);
+    -webkit-transform: translateY(5%);
+    -o-transform: translateY(5%);
+}
+
+body.msls-tab-transition.msls-stage3 .msls-tab-content.msls-in,
+body.msls-tab-transition.msls-stage3 .msls-footer-content.msls-in {
+    opacity: 1;
+    transform: translateX(0);
+    -moz-transform: translateX(0);
+    -ms-transform: translateX(0);
+    -webkit-transform: translateX(0);
+    -o-transform: translateX(0);
+    transition-duration: 167ms;
+    -moz-transition-duration: 167ms;
+    -ms-transition-duration: 167ms;
+    -webkit-transition-duration: 167ms;
+    -o-transition-duration: 167ms;
+}
+
+body.msls-dialog-transition .msls-dialog-frame {
+    transition-property: opacity, transform;
+    -moz-transition-property: opacity, -moz-transform;
+    -ms-transition-property: opacity, -ms-transform;
+    -webkit-transition-property: opacity, -webkit-transform;
+    transition-duration: 167ms;
+    -moz-transition-duration: 167ms;
+    -ms-transition-duration: 167ms;
+    -webkit-transition-duration: 167ms;
+    -o-transition-duration: 0ms;
+}
+
+body.msls-dialog-transition.msls-reverse .msls-dialog-frame {
+    transition-duration: 267ms;
+    -moz-transition-duration: 267ms;
+    -ms-transition-duration: 267ms;
+    -webkit-transition-duration: 267ms;
+    -o-transition-duration: 0ms;
+}
+
+body.msls-dialog-transition.msls-quick-animation .msls-dialog-frame {
+    transition-duration: 0ms;
+    -moz-transition-duration: 0ms;
+    -ms-transition-duration: 0ms;
+    -webkit-transition-duration: 0ms;
+    -o-transition-duration: 0ms;
+}
+
+body.msls-dialog-transition .msls-dialog.msls-in,
+body.msls-dialog-transition .msls-dialog.msls-out {
+    display: block !important;
+}
+
+body.msls-dialog-transition.msls-stage1 .msls-dialog.msls-in {
+    display: none !important;
+}
+
+.msls-overlay {
+    transition: opacity 100ms;
+    -moz-transition: opacity 100ms;
+    -ms-transition: opacity 100ms;
+    -webkit-transition: opacity 100ms;
+    -o-transition: opacity 100ms;
+}
+
+body.msls-dialog-transition.msls-reverse .msls-overlay {
+    transition-delay: 167ms;
+    -moz-transition-delay: 167ms;
+    -ms-transition-delay: 167ms;
+    -webkit-transition-delay: 167ms;
+    -o-transition-delay: 167ms;
+}
+
+body.msls-dialog-transition.msls-stage2 .msls-in .msls-dialog-frame {
+    opacity: 0;
+}
+
+body.msls-dialog-transition.msls-stage2.msls-full-animation .msls-in .msls-dialog-frame {
+    transform: scale(.9);
+    -moz-transform: scale(.9);
+    -ms-transform: scale(.9);
+    -webkit-transform: scale(.9);
+    -o-transform: scale(1);
+}
+
+body.msls-dialog-transition.msls-stage3 .msls-in .msls-dialog-frame {
+    transform: scale(1);
+    -moz-transform: scale(1);
+    -ms-transform: scale(1);
+    -webkit-transform: scale(1);
+    -o-transform: scale(1);
+    opacity: 1;
+}
+
+body.msls-dialog-transition.msls-stage2.msls-reverse msls-out .msls-dialog-frame {
+    transform: scale(1);
+    -moz-transform: scale(1);
+    -ms-transform: scale(1);
+    -webkit-transform: scale(1);
+    -o-transform: scale(1);
+    opacity: 1;
+}
+
+body.msls-dialog-transition.msls-stage3.msls-reverse .msls-out .msls-dialog-frame {
+    opacity: 0;
+}
+
+body.msls-dialog-transition.msls-stage3.msls-reverse.msls-full-animation .msls-out .msls-dialog-frame {
+    transform: scale(.9);
+    -moz-transform: scale(.9);
+    -ms-transform: scale(.9);
+    -webkit-transform: scale(.9);
+    -o-transform: scale(1);
+}
+
+body.msls-opening-transition .msls-in {
+    transition-duration: 167ms;
+    -moz-transition-duration: 167ms;
+    -ms-transition-duration: 167ms;
+    -webkit-transition-duration: 0ms;
+    -o-transition-duration: 167ms;
+}
+
+body.msls-opening-transition .ui-page.msls-in,
+body.msls-opening-transition .msls-header.msls-in {
+    display: block !important;
+}
+
+body.msls-opening-transition.msls-stage1 .ui-page.msls-in,
+body.msls-opening-transition.msls-stage1 .msls-header.msls-in {
+    display: none !important;
+}
+
+body.msls-opening-transition.msls-stage2 .ui-page.msls-in {
+    opacity: 0;
+}
+
+body.msls-opening-transition.msls-stage2.msls-full-animation .ui-page.msls-in {
+    transform: scale(.9);
+    -moz-transform: scale(.9);
+    -ms-transform: scale(.9);
+    -webkit-transform: scale(.9);
+    -o-transform: scale(1);
+}
+
+body.msls-opening-transition.msls-stage3 .ui-page.msls-in {
+    transform: scale(1);
+    -moz-transform: scale(1);
+    -ms-transform: scale(1);
+    -webkit-transform: scale(1);
+    -o-transform: scale(1);
+    opacity: 1;
+}
+
+body.msls-opening-transition.msls-stage2.msls-full-animation .msls-header.msls-in {
+    transform: translateX(5%);
+    -moz-transform: translateX(5%);
+    -ms-transform: translateX(5%);
+    -webkit-transform: translateX(5%);
+    -o-transform: translateX(5%);
+}
+
+.msls-sharepoint-chrome {
+    display: block;
+    height: 30px;
+    width: 100%;
+    background-color: rgb(0, 114, 198);
+    padding-top: 4px;
+    padding-left: 12px;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}
+
+    .msls-sharepoint-chrome a.msls-sharepoint-chrome-link {
+        font-size: 13px;
+    }
+
+        .msls-sharepoint-chrome a.msls-sharepoint-chrome-link, .msls-sharepoint-chrome a.msls-sharepoint-chrome-link:visited,
+        .msls-sharepoint-chrome a.msls-sharepoint-chrome-link:hover, .msls-sharepoint-chrome a.msls-sharepoint-chrome-link:active {
+            color: #fff;
+        }
+
+select {
+    margin: 0px;
+}
+
+.msls-text-align-right > :first-child {
+    text-align: right;
+}
+
+.msls-text-align-center > :first-child {
+    text-align: center;
+}
+
+.msls-ctl-text-area textarea.ui-mini.ui-input-text {
+    margin: 0px;
+}
+
+.msls-ctl-text-area.msls-presenter-content,
+.msls-ctl-text-area .msls-presenter-content {
+    margin: 0.25em 0;
+}
+
+.msls-font-style-small .msls-text {
+    font-size: 12px;
+    line-height: 20px;
+}
+
+.msls-font-style-normal .msls-text {
+    line-height: 20px;
+}
+
+.msls-font-style-large .msls-text {
+    font-size: 22px;
+    line-height: 30px;
+}
+
+.msls-label {
+    text-align: left;
+    padding: 0px;
+    padding-right: 5px;
+    min-height: 1px;
+    opacity: .7;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}
+
+    .msls-label.msls-label-align-left,
+    .msls-label.msls-label-align-right,
+    .msls-label.msls-label-align-hidden {
+        float: left;
+    }
+
+    .msls-label.msls-label-align-none {
+        display: none;
+    }
+
+    .msls-label.msls-label-align-hidden {
+        visibility: hidden;
+    }
+
+    .msls-label label {
+        margin: 0px;
+        line-height: inherit;
+        font-size: inherit;
+    }
+
+    .msls-label.msls-label-align-right {
+        text-align: right;
+    }
+
+.msls-text {
+    overflow: hidden;
+    word-wrap: normal;
+    white-space: normal;
+}
+
+.msls-li .msls-text {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.msls-background-page .msls-ctl-value-dropdown .ui-btn-text > span:empty:after,
+.ui-page-active .msls-ctl-value-dropdown .ui-btn-text > span:empty:after,
+.msls-background-page .msls-text > span:empty:after,
+.ui-page-active .msls-text > span:empty:after,
+.msls-background-page .msls-text > a:empty:after,
+.ui-page-active .msls-text > a:empty:after {
+    content: "\a0";
+}
+
+
+.msls-ctl-paragraph .msls-text {
+    overflow-y: auto;
+}
+
+.msls-ctl-paragraph .msls-text p {
+    white-space: pre-wrap;
+    font-size: inherit;
+}
+
+.msls-li .msls-ctl-paragraph .msls-text {
+    overflow-y: hidden;
+}
+
+.msls-li .msls-text > p.ui-li-desc {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.msls-ctl-money-viewer .msls-text,
+.msls-ctl-web-address-viewer .msls-text,
+.msls-ctl-email-address-viewer .msls-text,
+.msls-ctl-phone-number-viewer .msls-text,
+.msls-ctl-percent-viewer .msls-text {
+    word-wrap: break-word;
+}
+
+.msls-ctl-text-area textarea.ui-input-text {
+    height: 100% !important;
+    width: 100%;
+    resize: none;
+    overflow-y: auto;
+}
+
+:-ms-input-placeholder {
+    opacity: .7!important;
+}
+
+::-webkit-input-placeholder {
+    opacity: .7!important;
+}
+
+:-moz-placeholder {
+    opacity: .7!important;
+}
+
+
+.msls-control-header {
+    font-size: 22px;
+    line-height: 30px;
+}
+
+.msls-ctl-button span .ui-btn {
+    box-sizing: content-box;
+    -moz-box-sizing: content-box;
+    -webkit-box-sizing: content-box;
+}
+
+.ui-select .ui-btn-inner {
+    text-align: left;
+}
+
+.msls-ctl-flip-switch-control div.ui-slider {
+    -ms-touch-action: none;
+}
+
+
+.msls-image-container,
+.msls-image-border,
+.msls-image-inner {
+    overflow: hidden;
+}
+
+.msls-image-border {
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}
+
+.ui-disabled > .msls-image-inner {
+    display: none;
+}
+
+.msls-popup-content.msls-hauto,
+.msls-popup-content > .msls-ctl-image.msls-hauto {
+    float: none;
+}
+
+    .msls-popup-content > .msls-ctl-image.msls-hauto .msls-image-inner {
+        max-width: 100%;
+        max-height: 100%;
+    }
+
+.msls-ctl-details-modal-picker .msls-text {
+    text-align: left;
+}
+
+.msls-modalpicker {
+    max-height: 588px;
+    max-width: 378px;
+    min-width: 200px;
+}
+
+.msls-modal-picker-clear-container {
+    float: right;
+}
+
+.msls-ctl-details-modal-picker .msls-presenter-content > .msls-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.msls-dateTimePicker-container > fieldset.ui-controlgroup-horizontal div.ui-select,
+.msls-dateTimePicker-container > fieldset.ui-controlgroup-horizontal div.ui-select div.ui-btn {
+    display: block;
+    float: left;
+}
+
+div.msls-dateTimePicker-year {
+    min-width: 59px;
+}
+
+div.msls-dateTimePicker-month {
+    min-width: 53px;
+}
+
+div.msls-dateTimePicker-day {
+    min-width: 80px;
+}
+
+div.msls-dateTimePicker-hour,
+div.msls-dateTimePicker-minute,
+div.msls-dateTimePicker-period {
+    min-width: 64px;
+}
+
+
+.msls-listview {
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    padding-bottom: 1px;
+}
+
+.msls-list-loading {
+    background-repeat: no-repeat;
+    background-color: transparent;
+    background-size: 18px 18px;
+    background-position: center;
+    width: 36px;
+    height: 36px;
+    margin: auto;
+}
+
+ul.msls-listview .ui-li .ui-btn-inner a.ui-link-inherit,
+ul.msls-listview .ui-li-static.ui-li,
+ul.msls-listview li {
+    cursor: pointer;
+}
+
+ul.msls-listview > .ui-li,
+ul.msls-listview > .ui-field-contain.ui-li {
+    position: static;
+    border-width: 1px;
+    max-width: none;
+    min-height: 16px;
+    -webkit-border-radius: inherit;
+    border-radius: inherit;
+}
+
+ul.msls-listview > li > div.ui-btn-inner > div.ui-btn-text {
+    width: auto;
+}
+
+ul.msls-listview .ui-li.ui-btn,
+ul.msls-listview .ui-li-static.ui-li,
+ul.msls-listview li {
+    margin: 10px 0px;
+    padding: 10px;
+}
+
+ul.msls-tile-list li {
+    float: left;
+    overflow: hidden;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}
+
+ul.msls-tile-list .ui-li.ui-btn {
+    margin: 0px 10px 10px 0px;
+}
+
+li.msls-li {
+    font-weight: normal;
+}
+
+.msls-spdoc-link img {
+    display: inline-block;
+    vertical-align: middle;
+    height: 20px;
+    width: 20px;
+}
+.msls-spdoc-link {
+    margin: 0px;
+}
+.msls-spdoc-link a.ui-link {
+    display: inline-block;
+    margin-left: 5px;
+}
+
+
+.msls-presenter, .msls-presenter-content {
+    position: relative;
+}
+
+.msls-li .msls-presenter, .msls-li.msls-presenter-content {
+    position: static;
+}
+
+.msls-state-overlay {
+    position: absolute; left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 1;
+    z-index: 50;
+    background: rgba(0,0,0,0); }
+
+    .msls-state-overlay > div {
+        display: inline-block;
+    }
+
+.msls-executing {
+    opacity: .4;
+}
+
+.ui-disabled .ui-disabled,
+.msls-read-only .ui-disabled {
+    opacity: 1;
+}
+
+.ui-disabled,
+.ui-disabled a,
+.ui-disabled .msls-tap {
+    pointer-events: none !important;
+    cursor: default !important;
+}
+
+.msls-read-only {
+    opacity: .8;
+}
+
+    .msls-read-only .msls-read-only,
+    .ui-disabled .msls-read-only {
+        opacity: 1;
+    }
+
+    input.msls-read-only, .msls-read-only.ui-select .ui-btn, textarea.msls-read-only {
+        background: transparent;
+        border-color: #535353; box-shadow: none;
+        -webkit-box-shadow: none;
+        -moz-box-shadow: none;
+    }
+
+    .msls-read-only.ui-select .ui-icon {
+        display: none;
+    }
+
+.msls-readonly,
+a.msls-readonly,
+.msls-readonly .msls-tap,
+.msls-readonly.msls-tap {
+    pointer-events: none !important;
+    cursor: default !important;
+}
+
+.msls-presenter-content.msls-loading > .msls-state-overlay {
+    background: url(Images/msls-loader-light.gif) no-repeat transparent;
+    background-size: 18px 18px;
+    background-position: center;
+}
+
+.msls-loading .msls-loading {
+    background: none;
+}
+
+#msls-id-progress-overlay .msls-progress-icon.msls-progress-save-icon {
+    width: 36px;
+    height: 36px;
+    margin: auto;
+    background: none;
+    background-image: url(images/msls-white-icons-36.png);
+    background-position: -49px 50%;
+}
+
+.msls-display-error-icon {
+    background: url(images/msls-white-icons-18.png) no-repeat;
+    width: 18px;
+    height: 18px;
+    background-position: -3px 0px;
+    z-index: 1;
+    margin: 2px 3px;
+}
+
+.msls-presenter-content.msls-display-error > :not(.msls-display-error-text):not(.msls-state-overlay) {
+    color: #B4000A;
+    border: 1px solid #B4000A;
+    background: #FFB59B;
+    min-width: 18px;
+    min-height: 18px;
+}
+
+.msls-display-error-text {
+    margin: 3px;
+    color: #d8000c;
+    z-index: 50;
+    padding-left: 20px;
+}
+
+.msls-presenter-content.msls-validation-error > :not(.msls-validation-error-text) {
+    border: 1px solid #d8000c;
+}
+
+.msls-validation-error-text {
+    margin: 3px;
+    color: #d8000c;
+}
+
+@-ms-viewport {
+    width: device-width;
+}
+
+@media screen and (max-width: 400px) and (orientation: portrait), screen and (max-width: 640px) and (max-height: 400px) and (orientation: landscape) {
+    #msls-id-app-loading .msls-app-loading-img {
+        max-width: 100px;
+        max-height: 88px;
+        margin-top: 15%;
+        margin-bottom: 15%;
+    }
+
+    .msls-header .ui-title {
+        font-size: 29px;
+        line-height: 40px;
+    }
+
+    .msls-screen-tab .ui-btn, .msls-screen-tab .ui-btn-text {
+        font-size: 22px;
+        text-transform: uppercase;
+    }
+
+    .msls-control-header {
+        font-size: 21px;
+        line-height: 26px;
+    }
+
+    .msls-footer .ui-btn .ui-btn-text {
+        font-size: 9px;
+        line-height: 9px;
+    }
+
+    .msls-leaf {
+        padding: 5px 9px;
+    }
+
+    .msls-content {
+        padding-left: 9px;
+        padding-right: 9px;
+    }
+
+    ul.msls-listview .ui-li.ui-btn,
+    ul.msls-listview .ui-li-static.ui-li,
+    ul.msls-listview li {
+        margin: 9px 0px;
+        padding: 6px;
+    }
+
+    ul.msls-tile-list .ui-li.ui-btn {
+        margin: 0px 8px 8px 0px;
+    }
+
+    .msls-header .msls-header-area,
+    .msls-dialog-frame .msls-header-area {
+        padding: 10px 18px 0px 18px;
+    }
+
+    .msls-header .msls-buttons-row.msls-screen-buttons {
+        padding-top: 5px;
+    }
+
+    .msls-header .msls-logo-back-area .msls-back-button-contain {
+        padding-right: 10px;
+    }
+
+    .msls-header .msls-logo {
+        padding-right: 10px;
+    }
+    .msls-header .msls-logo img {
+        height: 30px;
+    }
+
+    .msls-large-icon {
+        margin: 0px 6px;
+    }
+
+        .msls-large-icon:first-child {
+            margin-left: 0px;
+        }
+
+        .msls-large-icon:last-child {
+            margin-right: 0px;
+        }
+
+    .msls-header .msls-logo-back-area {
+        width: auto;
+        padding-top: 6px;
+    }
+
+    .msls-screen-tab {
+        margin-right: 18px;
+    }
+
+        .msls-screen-tab .ui-btn-inner {
+            padding: 0px;
+        }
+
+    textarea.ui-input-text {
+        width: 99%;
+    }
+
+    .msls-dialog-frame {
+        padding: 0;
+        max-width: none;
+        max-height: none;
+        margin: 0;
+    }
+
+        .msls-dialog-frame .msls-dialog-inner-frame {
+            border-width: 0px;
+        }
+
+    body.msls-show-background-screen .msls-background-page.ui-page {
+        display: none !important;
+    }
+
+    .msls-modalpicker {
+        max-height: none;
+        max-width: none;
+    }
+
+    .msls-large-icon .ui-icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 15px;
+    }
+
+    .msls-ctl-command-bar-button .msls-large-icon .ui-icon {
+        margin-left: -15px;
+    }
+
+    .ui-btn-icon-top.msls-large-icon .ui-btn-inner {
+        padding-top: 30px;
+    }
+
+    .msls-large-icon.ui-btn-icon-top .ui-btn-inner {
+        width: 45px;
+    }
+
+    .msls-large-icon .ui-btn-icon-top .ui-btn-inner {
+        padding-top: 30px;
+    }
+
+    .msls-large-icon.ui-btn-icon-notext, .msls-large-icon.ui-btn-icon-notext .ui-btn-inner {
+        height: 32px;
+        width: 32px;
+    }
+
+    .msls-large-icon, .msls-large-icon .ui-btn-inner {
+        min-width: 32px;
+    }
+
+    .msls-large-icon .ui-icon-msls-ok,
+    .msls-large-icon .ui-icon-msls-accept {
+        background-position: -119px 1px;
+    }
+
+    .msls-large-icon .ui-icon-msls-cancel,
+    .msls-large-icon .ui-icon-msls-discard,
+    .msls-large-icon .ui-icon-msls-decline {
+        background-position: -76px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-save {
+        background-position: -36px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-logout {
+        background-position: -205px 1px;
+    }
+
+    .msls-large-icon .ui-icon-msls-back {
+        background-position: -162px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-search {
+        background-position: -736px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-camera {
+        background-position: -1180px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-trash {
+        background-position: -425px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-add {
+        background-position: -292px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-remove {
+        background-position: -336px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-video {
+        background-position: -1223px -1px;
+    }
+
+    .msls-large-icon .ui-icon-msls-tag {
+        background-position: -1357px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-gear {
+        background-position: -248px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-contacts {
+        background-position: -1268px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-edit {
+        background-position: -470px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-question {
+        background-position: -380px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-refresh {
+        background-position: -514px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-list {
+        background-position: -1041px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-folder {
+        background-position: -995px 1px;
+    }
+
+    .msls-large-icon .ui-icon-msls-move {
+        background-position: -1088px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-text {
+        background-position: -823px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-attachment {
+        background-position: -1135px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-warning {
+        background-position: -779px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-star {
+        background-position: -648px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-addfavorite {
+        background-position: -693px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-filter {
+        background-position: -560px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-sort {
+        background-position: -603px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-addpicture {
+        background-position: -866px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-document {
+        background-position: -908px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-download {
+        background-position: -952px 0px;
+    }
+
+    .msls-large-icon .ui-icon-msls-calendar {
+        background-position: -1310px 0px;
+    }
+}
+
