@@ -1,0 +1,12 @@
+﻿{
+  "dependencies": {
+    "Microsoft.Web.Xdt": "2.1.0",
+    "NuGet.ProjectModel": "3.2.0"
+  },
+  "frameworks": {
+    "net45": {}
+  },
+  "runtimes": {
+    "win-anycpu": {}
+  }
+}

@@ -1,0 +1,38 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Target Name="_NuGet_GetProjectsReferencingProjectJsonInternal"
+            DependsOnTargets="_SplitProjectReferencesByFileExistence"
+            Returns="@(_ProjectReferencingProjectJsonFile)">
+
+        <ItemGroup>
+            <_ProjectReferencingProjectJsonFile
+                Include="$(MSBuildProjectFullPath)"
+                Condition=" Exists('$(MsBuildProjectDirectory)\project.json') " />
+        </ItemGroup>
+
+        <MSBuild
+          Projects="@(ProjectReference)"
+          Targets="_NuGet_GetProjectsReferencingProjectJsonInternal"
+          BuildInParallel="$(BuildInParallel)"
+          Properties="%(_MSBuildProjectReferenceExistent.SetConfiguration); %(_MSBuildProjectReferenceExistent.SetPlatform);"
+          RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
+
+            <Output
+                TaskParameter="TargetOutputs"
+                ItemName="_ProjectReferencingProjectJsonFile" />
+        </MSBuild>
+    </Target>
+
+    <Target Name="NuGet_GetProjectsReferencingProjectJson">
+        <CallTarget
+            Targets="_NuGet_GetProjectsReferencingProjectJsonInternal">
+            <Output
+                ItemName="_ProjectReferencingProjectJsonFile"
+                TaskParameter="TargetOutputs" />
+        </CallTarget>
+
+        <WriteLinesToFile
+            File="$(ResultsFile)"
+            Lines="@(_ProjectReferencingProjectJsonFile)"
+            Overwrite="true" />
+    </Target>
+</Project>

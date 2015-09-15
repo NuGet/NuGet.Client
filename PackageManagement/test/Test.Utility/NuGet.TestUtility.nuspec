@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>NuGet.TestUtility</id>
+    <version>1.0.0-overrideme</version>
+    <title>NuGet.ProjectManagement</title>
+    <authors>NuGet</authors>
+    <owners>NuGet</owners>
+    <projectUrl>https://github.com/NuGet/NuGet.PackageManagement/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>NuGet TestUtility package</description>
+    <dependencies>
+		<dependency id="DotNetZip" version="1.9.3" />
+                <dependency id="xunit" version="1.9.2" />
+    </dependencies>
+  </metadata>
+</package>

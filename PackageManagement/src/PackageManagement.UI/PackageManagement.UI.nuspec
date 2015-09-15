@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>NuGet.PackageManagement.UI</id>
+    <version>1.0.0-overrideme</version>
+    <title>NuGet's Package Management UI for Visual Studio</title>
+    <authors>NuGet</authors>
+    <copyright>Copyright .NET Foundation. All rights reserved.</copyright>
+    <owners>NuGet</owners>
+    <projectUrl>https://github.com/NuGet/NuGet.Protocol/</projectUrl>
+    <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>NuGet's Package Management UI for Visual Studio</description>
+    <dependencies>
+      <dependency id="NuGet.PackageManagement" version="3.2.0" />
+    </dependencies>
+  </metadata>
+</package>

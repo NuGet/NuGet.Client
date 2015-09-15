@@ -1,0 +1,13 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\NuGet.MsBuild.Integration\build\Microsoft.NuGet.targets" 
+	Condition="!Exists('$(MSBuildBinPath)\..\Imports\Microsoft.Common.Props\ImportBefore\Microsoft.NuGet.ImportBefore.props')"  />
+	<Target Name="MakeNuGetReferencesPrivate" 
+		AfterTargets="ResolveNuGetPackageAssets"
+		Condition="Exists('$(MSBuildBinPath)\..\Imports\Microsoft.Common.Props\ImportBefore\Microsoft.NuGet.ImportBefore.props')">
+	  <ItemGroup>
+		<Reference Include="@(_ReferencesFromNuGetPackages)">
+		  <Private>True</Private>
+		</Reference>
+	  </ItemGroup>
+	</Target>
+</Project>
