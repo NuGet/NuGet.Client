@@ -1818,7 +1818,7 @@ namespace NuGet.Configuration.Test
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>  <packageSources>    <add key=""NuGet.org"" value=""https://NuGet.org"" />  </packageSources>
 </configuration>
-";
+".Replace("\r\n", "\n");
                 var config2Contents =
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -1827,7 +1827,7 @@ namespace NuGet.Configuration.Test
     <add key='NuGet.org' value='https://NuGet.org' />
 </packageSources>
 </configuration>
-";
+".Replace("\r\n", "\n");
                 File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), config1Contents);
 
                 var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
@@ -1863,7 +1863,9 @@ namespace NuGet.Configuration.Test
                 packageSourceProvider.SavePackageSources(sources);
 
                 // Assert - 2
-                Assert.Equal(config1Contents, File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
+                Assert.Equal(config1Contents.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")).Replace("\r\n", "\n"));
+
                 Assert.Equal(
                         @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -1967,7 +1969,7 @@ namespace NuGet.Configuration.Test
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>  <packageSources>    <add key=""test.org"" value=""https://test.org"" />  </packageSources>
 </configuration>
-";
+".Replace("\r\n", "\n");
                 var config2Contents =
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -1975,7 +1977,7 @@ namespace NuGet.Configuration.Test
     <add key='NuGet.org' value='https://NuGet.org' />
 </packageSources>
 </configuration>
-";
+".Replace("\r\n", "\n");
                 File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), config1Contents);
 
                 var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
@@ -2020,8 +2022,8 @@ namespace NuGet.Configuration.Test
     <add key=""test.org"" value=""true"" />
   </disabledPackageSources>
 </configuration>
-",
-                    File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
+".Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")).Replace("\r\n", "\n"));
 
                 Assert.Equal(
                         @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -2030,8 +2032,8 @@ namespace NuGet.Configuration.Test
  <add key=""NuGet.org"" value=""https://NuGet.org"" />
 </packageSources>
 </configuration>
-",
-                    File.ReadAllText(Path.Combine(rootPath, "NuGet.config")));
+".Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(rootPath, "NuGet.config")).Replace("\r\n", "\n"));
             }
         }
 
