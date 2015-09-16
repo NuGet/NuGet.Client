@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>NuGet.CommandLine</id>
-    <version>3.1.0</version>
+    <version>3.3.0</version>
     <authors>.NET Foundation</authors>
     <owners>.NET Foundation</owners>
     <licenseUrl>http://nuget.codeplex.com/license</licenseUrl>

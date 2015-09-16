@@ -1,7 +1,7 @@
 ﻿{
   "version": "1.0.0-*",
   "dependencies": {
-    "NuGet.Protocol.Core.Types": "3.2.0"
+    "NuGet.Protocol.Core.Types": "3.3.0-*"
   },
   "frameworks": {
     "dnx451": {

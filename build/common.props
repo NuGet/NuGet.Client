@@ -8,13 +8,13 @@
 		  Update for every public release. 
 		-->
 		<SemanticVersionMajor>3</SemanticVersionMajor>
-		<SemanticVersionMinor>2</SemanticVersionMinor>
+		<SemanticVersionMinor>3</SemanticVersionMinor>
 		<SemanticVersionPatch>0</SemanticVersionPatch>		
 		<!-- 
 		Date when Semantic Version was changed. 
 		Update for every public release.
 		-->
-		<SemanticVersionDate>2015-8-21</SemanticVersionDate>
+		<SemanticVersionDate>2015-9-14</SemanticVersionDate>
 		<!-- 
 		Pre-release version is used to distinguish internally built NuGet packages.
 		Pre-release version = Minutes since semantic version was set, divided by 5 (to make it fit in a UInt16).
