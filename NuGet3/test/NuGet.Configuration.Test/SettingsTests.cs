@@ -358,7 +358,7 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value=""value"" />
   </NewSectionName>
 </configuration>";
-            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, configFile)));
+            Assert.Equal(result.Replace("\r\n", "\n"), File.ReadAllText(Path.Combine(mockBaseDirectory, configFile)).Replace("\r\n", "\n"));
         }
 
         [Fact]
@@ -387,7 +387,8 @@ namespace NuGet.Configuration.Test
     <add key=""keyTwo"" value=""valueTwo"" />
   </SectionName>
 </configuration>";
-            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, configFile)));
+            Assert.Equal(result.Replace("\r\n", "\n"),
+                File.ReadAllText(Path.Combine(mockBaseDirectory, configFile)).Replace("\r\n", "\n"));
         }
 
         [Fact]
@@ -415,7 +416,8 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value=""NewValue"" />
   </SectionName>
 </configuration>";
-            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, configFile)));
+            Assert.Equal(result.Replace("\r\n", "\n"),
+                File.ReadAllText(Path.Combine(mockBaseDirectory, configFile)).Replace("\r\n", "\n"));
         }
 
         [Fact]
@@ -494,7 +496,8 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value=""value"" />
   </NewSectionName>
 </configuration>";
-            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            Assert.Equal(result.Replace("\r\n", "\n"),
+                File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
         }
 
         [Fact]
@@ -524,7 +527,8 @@ namespace NuGet.Configuration.Test
     <add key=""keyTwo"" value=""valueTwo"" />
   </SectionName>
 </configuration>";
-            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            Assert.Equal(result.Replace("\r\n", "\n"),
+                File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
         }
 
         [Fact]
@@ -554,7 +558,8 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value=""NewValue"" />
   </SectionName>
 </configuration>";
-            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            Assert.Equal(result.Replace("\r\n", "\n"),
+                File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
         }
 
         [Fact]
@@ -590,7 +595,8 @@ namespace NuGet.Configuration.Test
     <add key=""key2"" value=""Value2"" />
   </SectionName>
 </configuration>";
-            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            Assert.Equal(result.Replace("\r\n", "\n"),
+                File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
         }
 
         [Fact]
@@ -623,7 +629,8 @@ namespace NuGet.Configuration.Test
     </MyKey>
   </SectionName>
 </configuration>";
-            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            Assert.Equal(result.Replace("\r\n", "\n"),
+                File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
         }
 
         [Fact]
@@ -666,7 +673,8 @@ namespace NuGet.Configuration.Test
     </MyKey2>
   </SectionName>
 </configuration>";
-            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            Assert.Equal(result.Replace("\r\n", "\n"),
+                File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
         }
 
         [Fact]
@@ -707,7 +715,8 @@ namespace NuGet.Configuration.Test
     </MyKey>
   </SectionName>
 </configuration>";
-            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            Assert.Equal(result.Replace("\r\n", "\n"),
+                File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
         }
 
         [Fact]
@@ -808,7 +817,8 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value=""value"" />
   </SectionName2>
 </configuration>";
-            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            Assert.Equal(result.Replace("\r\n", "\n"),
+                File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
         }
 
         [Fact]
@@ -872,7 +882,8 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value=""value"" />
   </SectionName2>
 </configuration>";
-            Assert.Equal(result, File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)));
+            Assert.Equal(result.Replace("\r\n", "\n"),
+                File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
         }
 
         [Fact]
@@ -1643,20 +1654,20 @@ namespace NuGet.Configuration.Test
   <SectionName>
     <add key=""key1"" value=""value1"" />
   </SectionName>
-</configuration>";
+</configuration>".Replace("\r\n", "\n");
             var a2Config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key2"" value=""value2"" />
     <add key=""key3"" value=""value3"" />
   </SectionName>
-</configuration>";
+</configuration>".Replace("\r\n", "\n");
             var userConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key3"" value=""user"" />
   </SectionName>
-</configuration>";
+</configuration>".Replace("\r\n", "\n");
 
             TestFilesystemUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config"), a1Config);
             TestFilesystemUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE"), a2Config);
@@ -1682,14 +1693,14 @@ namespace NuGet.Configuration.Test
     <add key=""key3"" value=""user"" />
     <add key=""key1"" value=""newValue"" />
   </SectionName>
-</configuration>";
-            Assert.Equal(result, text);
+</configuration>".Replace("\r\n", "\n");
+            Assert.Equal(result, text.Replace("\r\n", "\n"));
 
             text = File.ReadAllText(Path.Combine(mockBaseDirectory, @"NuGet\Config\a1.config"));
-            Assert.Equal(a1Config, text);
+            Assert.Equal(a1Config, text.Replace("\r\n", "\n"));
 
             text = File.ReadAllText(Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\a2.config"));
-            Assert.Equal(a2Config, text);
+            Assert.Equal(a2Config, text.Replace("\r\n", "\n"));
         }
 
         // Tests that when configFileName is not null, the specified
@@ -1722,19 +1733,19 @@ namespace NuGet.Configuration.Test
   <SectionName>
     <add key=""key1"" value=""value1"" />
   </SectionName>
-</configuration>";
+</configuration>".Replace("\r\n", "\n");
             var FileContent2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key3"" value=""user1"" />
   </SectionName>
-</configuration>";
+</configuration>".Replace("\r\n", "\n");
             var FileContent3 = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key3"" value=""user2"" />
   </SectionName>
-</configuration>";
+</configuration>".Replace("\r\n", "\n");
             TestFilesystemUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config"), FileContent1);
             TestFilesystemUtility.CreateConfigurationFile("user1.config", mockBaseDirectory, FileContent2);
             TestFilesystemUtility.CreateConfigurationFile("user2.config", mockBaseDirectory, FileContent3);

@@ -653,9 +653,9 @@ namespace NuGet.Configuration.Test
     <add key=""b"" value=""true"" />
     <add key=""d"" value=""true"" />
   </disabledPackageSources>
-</configuration>";
+</configuration>".Replace("\r\n", "\n");
 
-            Assert.Equal(result, configFileContent);
+            Assert.Equal(result, configFileContent.Replace("\r\n", "\n"));
         }
 
         [Fact]
@@ -704,8 +704,8 @@ namespace NuGet.Configuration.Test
         <add key=""test3"" value=""https://test3.net"" />
     </packageSources>
 </configuration>
-",
-                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
+".Replace("\r\n", "\n"),
+                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")).Replace("\r\n", "\n"));
             }
         }
 
@@ -757,8 +757,8 @@ namespace NuGet.Configuration.Test
         <add key=""test3"" value=""https://test3.net"" />
     </packageSources>
 </configuration>
-",
-                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
+".Replace("\r\n", "\n"),
+                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")).Replace("\r\n", "\n"));
             }
         }
 
@@ -806,8 +806,8 @@ namespace NuGet.Configuration.Test
         <clear />
     </disabledPackageSources>
 </configuration>
-",
-                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
+".Replace("\r\n", "\n"),
+                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")).Replace("\r\n", "\n"));
             }
         }
 
@@ -859,8 +859,8 @@ namespace NuGet.Configuration.Test
     <add key=""key2"" value=""https://test.org/2"" />
     <add key=""test3"" value=""https://test3.net"" />
   </packageSources>
-</configuration>",
-                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, @"dir1\dir2\NuGet.config")));
+</configuration>".Replace("\r\n", "\n"),
+                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, @"dir1\dir2\NuGet.config")).Replace("\r\n", "\n"));
 
                 Assert.Equal(
                      @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -869,8 +869,8 @@ namespace NuGet.Configuration.Test
     <add key=""key1"" value=""https://test.org/1"" /> 
     <clear />   
   </packageSources>
-</configuration>",
-                  File.ReadAllText(Path.Combine(mockBaseDirectory.Path, @"dir1\NuGet.config")));
+</configuration>".Replace("\r\n", "\n"),
+                  File.ReadAllText(Path.Combine(mockBaseDirectory.Path, @"dir1\NuGet.config")).Replace("\r\n", "\n"));
             }
         }
 
@@ -1803,8 +1803,8 @@ namespace NuGet.Configuration.Test
     <add key=""NuGet.org"" value=""true"" />
   </disabledPackageSources>
 </configuration>
-",
-                    File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
+".Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")).Replace("\r\n", "\n"));
             }
         }
 
@@ -1875,8 +1875,8 @@ namespace NuGet.Configuration.Test
     <add key=""NuGet.org"" value=""true"" />
   </disabledPackageSources>
 </configuration>
-",
-                    File.ReadAllText(Path.Combine(rootPath, "NuGet.config")));
+".Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(rootPath, "NuGet.config")).Replace("\r\n", "\n"));
             }
         }
 
@@ -1941,8 +1941,8 @@ namespace NuGet.Configuration.Test
                         @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>  <packageSources>    <add key=""NuGet.org"" value=""https://new.NuGet.org"" />  </packageSources>
 </configuration>
-",
-                    File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
+".Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")).Replace("\r\n", "\n"));
 
                 Assert.Equal(
                          @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -1952,8 +1952,8 @@ namespace NuGet.Configuration.Test
  <add key=""test.org"" value=""https://test.org"" />
 </packageSources>
 </configuration>
-",
-                    File.ReadAllText(Path.Combine(rootPath, "NuGet.config")));
+".Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(rootPath, "NuGet.config")).Replace("\r\n", "\n"));
             }
         }
 
@@ -2106,8 +2106,8 @@ namespace NuGet.Configuration.Test
         <add key=""nuget.org"" value=""https://nuget.org"" />
     </packageSources>
 </configuration>
-",
-                    File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")));
+".Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")).Replace("\r\n", "\n"));
             }
         }
 
@@ -2294,7 +2294,7 @@ namespace NuGet.Configuration.Test
                 PackageSourceProvider.AddDefaultSourcesToRootNuGetConfigCore(settings);
 
                 // Assert
-                Assert.Equal(configContents, File.ReadAllText(configFilePath));
+                Assert.Equal(configContents.Replace("\r\n", "\n"), File.ReadAllText(configFilePath).Replace("\r\n", "\n"));
             }
         }
 
@@ -2332,7 +2332,7 @@ namespace NuGet.Configuration.Test
                 PackageSourceProvider.AddDefaultSourcesToRootNuGetConfigCore(settings);
 
                 // Assert
-                Assert.Equal(configContents, File.ReadAllText(configFilePath));
+                Assert.Equal(configContents.Replace("\r\n", "\n"), File.ReadAllText(configFilePath).Replace("\r\n", "\n"));
             }
         }
 
@@ -2381,7 +2381,7 @@ namespace NuGet.Configuration.Test
                 PackageSourceProvider.AddDefaultSourcesToRootNuGetConfigCore(settings);
 
                 // Assert
-                Assert.Equal(expected, File.ReadAllText(configFilePath));
+                Assert.Equal(expected.Replace("\r\n", "\n"), File.ReadAllText(configFilePath).Replace("\r\n", "\n"));
             }
         }
 
@@ -2429,7 +2429,7 @@ namespace NuGet.Configuration.Test
                 PackageSourceProvider.AddDefaultSourcesToRootNuGetConfigCore(settings);
 
                 // Assert
-                Assert.Equal(expected, File.ReadAllText(configFilePath));
+                Assert.Equal(expected.Replace("\r\n", "\n"), File.ReadAllText(configFilePath).Replace("\r\n", "\n"));
             }
         }
 
@@ -2480,7 +2480,7 @@ namespace NuGet.Configuration.Test
                 PackageSourceProvider.AddDefaultSourcesToRootNuGetConfigCore(settings);
 
                 // Assert
-                Assert.Equal(expected, File.ReadAllText(configFilePath));
+                Assert.Equal(expected.Replace("\r\n", "\n"), File.ReadAllText(configFilePath).Replace("\r\n", "\n"));
             }
         }
 
@@ -2518,7 +2518,7 @@ namespace NuGet.Configuration.Test
                 }
 
                 // Assert
-                Assert.Equal(configContents, File.ReadAllText(configFilePath));
+                Assert.Equal(configContents.Replace("\r\n", "\n"), File.ReadAllText(configFilePath).Replace("\r\n", "\n"));
             }
         }
 
