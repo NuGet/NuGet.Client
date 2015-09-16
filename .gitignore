@@ -5,9 +5,15 @@
 # Project K
 project.lock.json
 artifacts/
-.vs/
+**/.vs/
 
-nupkgs/
+**/nupkgs/*.nupkg
+packages/
+.nuget/nuget.exe
+*/.nuget/
+
+# remove ilmerge log
+mergelog.txt
 
 # User-specific files
 *.suo
@@ -17,7 +23,7 @@ nupkgs/
 # Build results
 
 # Roslyn cache directories
-*.ide/
+**/*.ide/
 
 [Dd]ebug/
 [Rr]elease/
@@ -27,8 +33,6 @@ x64/
 
 # Enable "build/" folder in the NuGet Packages folder since NuGet packages use it for MSBuild targets
 !packages/*/build/
-
-.nuget/
 
 # MSTest test Results
 [Tt]est[Rr]esult*/

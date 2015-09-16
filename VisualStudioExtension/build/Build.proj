@@ -162,7 +162,7 @@
             <ProjectsToRestore Include="$(RootDir)\src\VsExtension\VsExtension.csproj" />
         </ItemGroup>
 
-        <Exec Command="$(NuGetExePath) restore $(RootDir)\NuGet.VisualStudioExtension.sln -FallbackSource https://api.nuget.org/v3/index.json $(NuGetCommndLineCmdSources) -source https://www.myget.org/F/nuget-volatile/api/v2/"  />
+        <Exec Command="$(NuGetExePath) restore $(RootDir)\VisualStudioExtension.sln -FallbackSource https://api.nuget.org/v3/index.json $(NuGetCommndLineCmdSources) -source https://www.myget.org/F/nuget-volatile/api/v2/"  />
     </Target>
 
     <Target Name="Go"
@@ -190,7 +190,7 @@
         <PropertyGroup>
             <EnableCodeAnalysis Condition="'$(EnableCodeAnalysis)' == ''" >true</EnableCodeAnalysis>
         </PropertyGroup>
-        <MSBuild Projects="$(NuGetRoot)\NuGet.VisualStudioExtension.sln" Targets="Build" Properties="EnableCodeAnalysis=$(EnableCodeAnalysis);DeployExtension=false" />
+        <MSBuild Projects="$(NuGetRoot)\VisualStudioExtension.sln" Targets="Build" Properties="EnableCodeAnalysis=$(EnableCodeAnalysis);DeployExtension=false" />
     </Target>
 
     <Target Name="BuildMono">
@@ -199,7 +199,7 @@
     </Target>
 	
 	<Target Name="Clean">
-      <MSBuild Projects="$(NuGetRoot)\NuGet.VisualStudioExtension.sln" Targets="Clean" />
+      <MSBuild Projects="$(NuGetRoot)\VisualStudioExtension.sln" Targets="Clean" />
     </Target>
 
     <Target Name="VerifyAssembliesInVSIX">
