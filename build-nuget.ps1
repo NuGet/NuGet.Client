@@ -183,7 +183,7 @@ $nugetExe = ".nuget\nuget.exe"
 
 if ((Test-Path $nugetExe) -eq $False)
 {
-    wget http://dist.nuget.org/win-x86-commandline/v3.2.0-rc/nuget.exe -O $nugetExe
+    wget http://dist.nuget.org/win-x86-commandline/v3.2.0-rc/nuget.exe -OutFile $nugetExe
 }
 
 & nuget.exe restore .nuget\packages.config -SolutionDirectory .
