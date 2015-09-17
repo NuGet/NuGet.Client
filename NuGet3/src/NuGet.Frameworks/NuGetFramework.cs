@@ -165,7 +165,7 @@ namespace NuGet.Frameworks
                 // add the version if it is non-empty
                 if (!AllFrameworkVersions)
                 {
-                    sb.Append(mappings.GetVersionString(framework.Version));
+                    sb.Append(mappings.GetVersionString(framework.Framework, framework.Version));
                 }
 
                 if (IsPCL)

@@ -70,7 +70,7 @@ namespace NuGet.Test
             Assert.Equal(".NETFramework,Version=v4.5,Profile=Client", expanded[0].ToString());
             Assert.Equal(".NETFramework,Version=v4.5,Profile=Full", expanded[1].ToString());
             Assert.Equal(".NETPlatform,Version=v5.0", expanded[2].ToString()); // dotnet5
-            Assert.Equal(".NETPlatform,Version=v2147483647.0", expanded[3].ToString());
+            Assert.Equal(".NETPlatform,Version=v5.1", expanded[3].ToString());
             Assert.Equal(".NETPlatform,Version=v5.0", expanded[4].ToString());  // dotnet
         }
 

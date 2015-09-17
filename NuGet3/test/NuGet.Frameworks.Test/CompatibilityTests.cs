@@ -9,6 +9,161 @@ namespace NuGet.Test
 {
     public class CompatibilityTests
     {
+        [Theory]
+        // dotnet
+        [InlineData("dotnet", "dotnet", true)]
+        [InlineData("dotnet5.1", "dotnet", true)]
+
+        // dnxcore50 -> dotnet
+        [InlineData("dnxcore50", "dotnet5.4", false)]
+        [InlineData("dnxcore50", "dotnet5.3", true)]
+        [InlineData("dnxcore50", "dotnet5.2", true)]
+        [InlineData("dnxcore50", "dotnet5.1", true)]
+
+        // net -> dotnet
+        [InlineData("net461", "dotnet5.4", true)]
+        [InlineData("net461", "dotnet5.3", true)]
+        [InlineData("net461", "dotnet5.2", true)]
+        [InlineData("net461", "dotnet5.1", true)]
+        [InlineData("net461", "dotnet", true)]
+
+        [InlineData("net46", "dotnet5.4", false)]
+        [InlineData("net46", "dotnet5.3", true)]
+        [InlineData("net46", "dotnet5.2", true)]
+        [InlineData("net46", "dotnet5.1", true)]
+        [InlineData("net46", "dotnet", true)]
+
+        [InlineData("net452", "dotnet5.4", false)]
+        [InlineData("net452", "dotnet5.3", false)]
+        [InlineData("net452", "dotnet5.2", true)]
+        [InlineData("net452", "dotnet5.1", true)]
+        [InlineData("net452", "dotnet", true)]
+
+        [InlineData("net451", "dotnet5.4", false)]
+        [InlineData("net451", "dotnet5.3", false)]
+        [InlineData("net451", "dotnet5.2", true)]
+        [InlineData("net451", "dotnet5.1", true)]
+        [InlineData("net451", "dotnet", true)]
+
+        [InlineData("net45", "dotnet5.4", false)]
+        [InlineData("net45", "dotnet5.3", false)]
+        [InlineData("net45", "dotnet5.2", false)]
+        [InlineData("net45", "dotnet5.1", true)]
+        [InlineData("net45", "dotnet", true)]
+
+        // dnx -> dotnet
+        [InlineData("dnx461", "dotnet5.4", true)]
+        [InlineData("dnx461", "dotnet5.3", true)]
+        [InlineData("dnx461", "dotnet5.2", true)]
+        [InlineData("dnx461", "dotnet5.1", true)]
+        [InlineData("dnx461", "dotnet", true)]
+
+        [InlineData("dnx46", "dotnet5.4", false)]
+        [InlineData("dnx46", "dotnet5.3", true)]
+        [InlineData("dnx46", "dotnet5.2", true)]
+        [InlineData("dnx46", "dotnet5.1", true)]
+        [InlineData("dnx46", "dotnet", true)]
+
+        [InlineData("dnx452", "dotnet5.4", false)]
+        [InlineData("dnx452", "dotnet5.3", false)]
+        [InlineData("dnx452", "dotnet5.2", true)]
+        [InlineData("dnx452", "dotnet5.1", true)]
+        [InlineData("dnx452", "dotnet", true)]
+
+        [InlineData("dnx451", "dotnet5.4", false)]
+        [InlineData("dnx451", "dotnet5.3", false)]
+        [InlineData("dnx451", "dotnet5.2", true)]
+        [InlineData("dnx451", "dotnet5.1", true)]
+        [InlineData("dnx451", "dotnet", true)]
+
+        [InlineData("dnx45", "dotnet5.4", false)]
+        [InlineData("dnx45", "dotnet5.3", false)]
+        [InlineData("dnx45", "dotnet5.2", false)]
+        [InlineData("dnx45", "dotnet5.1", true)]
+        [InlineData("dnx45", "dotnet", true)]
+
+        // uap10 -> netcore50 -> win81 -> wpa81 -> dotnet
+        [InlineData("uap10.0", "netcore50", true)]
+        [InlineData("uap10.0", "win81", true)]
+        [InlineData("uap10.0", "wpa81", true)]
+        [InlineData("uap10.0", "dotnet5.4", false)]
+        [InlineData("uap10.0", "dotnet5.3", true)]
+        [InlineData("uap10.0", "dotnet5.2", true)]
+        [InlineData("uap10.0", "dotnet5.1", true)]
+        [InlineData("netcore50", "win81", true)]
+        [InlineData("netcore50", "wpa81", false)]
+        [InlineData("netcore50", "dotnet5.4", false)]
+        [InlineData("netcore50", "dotnet5.3", true)]
+        [InlineData("netcore50", "dotnet5.2", true)]
+        [InlineData("netcore50", "dotnet5.1", true)]
+
+        // wpa81/win81 -> dotnet
+        [InlineData("wpa81", "dotnet5.4", false)]
+        [InlineData("wpa81", "dotnet5.3", false)]
+        [InlineData("wpa81", "dotnet5.2", true)]
+        [InlineData("wpa81", "dotnet5.1", true)]
+        [InlineData("win81", "dotnet5.4", false)]
+        [InlineData("win81", "dotnet5.3", false)]
+        [InlineData("win81", "dotnet5.2", true)]
+        [InlineData("win81", "dotnet5.1", true)]
+
+        // wp8/win8 -> dotnet
+        [InlineData("wp8", "dotnet5.4", false)]
+        [InlineData("wp8", "dotnet5.3", false)]
+        [InlineData("wp8", "dotnet5.2", false)]
+        [InlineData("wp8", "dotnet5.1", true)]
+        [InlineData("win8", "dotnet5.4", false)]
+        [InlineData("win8", "dotnet5.3", false)]
+        [InlineData("win8", "dotnet5.2", false)]
+        [InlineData("win8", "dotnet5.1", true)]
+
+        // Older things don't support dotnet at all
+        [InlineData("sl4", "dotnet", false)]
+        [InlineData("sl3", "dotnet", false)]
+        [InlineData("sl2", "dotnet", false)]
+        [InlineData("net40", "dotnet", false)]
+        [InlineData("net35", "dotnet", false)]
+        [InlineData("net20", "dotnet", false)]
+        [InlineData("net20", "dotnet", false)]
+
+        // dotnet doesn't support the things that support it
+        [InlineData("dotnet5.1", "net45", false)]
+        [InlineData("dotnet5.2", "net45", false)]
+        [InlineData("dotnet5.2", "net451", false)]
+        [InlineData("dotnet5.2", "net452", false)]
+        [InlineData("dotnet5.1", "net46", false)]
+        [InlineData("dotnet5.2", "net46", false)]
+        [InlineData("dotnet5.3", "net46", false)]
+        [InlineData("dotnet5.1", "net461", false)]
+        [InlineData("dotnet5.2", "net461", false)]
+        [InlineData("dotnet5.3", "net461", false)]
+        [InlineData("dotnet5.4", "net461", false)]
+        [InlineData("dotnet5.1", "dnxcore50", false)]
+        [InlineData("dotnet5.2", "dnxcore50", false)]
+        [InlineData("dotnet5.3", "dnxcore50", false)]
+        [InlineData("dotnet5.4", "dnxcore50", false)]
+
+        // Old-world Portable doesn't support dotnet and vice-versa
+        [InlineData("dotnet", "portable-net40+sl5+win8", false)]
+        [InlineData("dotnet", "portable-net45+win8", false)]
+        [InlineData("portable-net40+sl5+win8", "dotnet", false)]
+        [InlineData("portable-net45+win8", "dotnet", false)]
+        [InlineData("portable-net451+win81", "dotnet", false)]
+        [InlineData("portable-net451+win8+core50", "dotnet", false)]
+        [InlineData("portable-net451+win8+dnxcore50", "dotnet", false)]
+        [InlineData("portable-net451+win8+aspnetcore50", "dotnet", false)]
+        public void Compatibility_FrameworksAreCompatible(string project, string package, bool compatible)
+        {
+            // Arrange
+            var framework1 = NuGetFramework.Parse(project);
+            var framework2 = NuGetFramework.Parse(package);
+
+            var compat = DefaultCompatibilityProvider.Instance;
+
+            // Act & Assert
+            Assert.Equal(compatible, compat.IsCompatible(framework1, framework2));
+        }
+
         [Fact]
         public void Compatibility_UAPWinNonTPM()
         {
@@ -269,7 +424,6 @@ namespace NuGet.Test
         [InlineData("xamarinpsvita")]
         [InlineData("xamarinxboxthreesixty")]
         [InlineData("xamarinxboxone")]
-        [InlineData("sl6")]
         public void Compatibility_ProjectCanInstallDotNetLibraries(string framework)
         {
             // Arrange
@@ -315,6 +469,7 @@ namespace NuGet.Test
         [InlineData("dnxcore")]
         [InlineData("netcore50")]
         [InlineData("netcore60")]
+        [InlineData("sl6")]
         public void Compatibility_DotNetProjectCompatNeg(string framework)
         {
             // Arrange

@@ -33,6 +33,7 @@ namespace NuGet.Frameworks
         public static class FrameworkIdentifiers
         {
             public const string NetPlatform = ".NETPlatform";
+            public const string DotNet = "dotnet";
             public const string Net = ".NETFramework";
             public const string NetCore = ".NETCore";
             public const string WinRT = "WinRT"; // deprecated
@@ -74,6 +75,7 @@ namespace NuGet.Frameworks
             public static readonly NuGetFramework Net451 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 5, 1, 0));
             public static readonly NuGetFramework Net452 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 5, 2, 0));
             public static readonly NuGetFramework Net46 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 0, 0));
+            public static readonly NuGetFramework Net461 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 1, 0));
 
             public static readonly NuGetFramework NetCore45 = new NuGetFramework(FrameworkIdentifiers.NetCore, new Version(4, 5, 0, 0));
             public static readonly NuGetFramework NetCore451 = new NuGetFramework(FrameworkIdentifiers.NetCore, new Version(4, 5, 1, 0));
@@ -99,15 +101,47 @@ namespace NuGet.Frameworks
             public static readonly NuGetFramework AspNetCore50 = new NuGetFramework(FrameworkIdentifiers.AspNetCore, Version5);
 
             public static readonly NuGetFramework Dnx = new NuGetFramework(FrameworkIdentifiers.Dnx, EmptyVersion);
+            public static readonly NuGetFramework Dnx45 = new NuGetFramework(FrameworkIdentifiers.Dnx, new Version(4, 5, 0, 0));
             public static readonly NuGetFramework Dnx451 = new NuGetFramework(FrameworkIdentifiers.Dnx, new Version(4, 5, 1, 0));
             public static readonly NuGetFramework Dnx452 = new NuGetFramework(FrameworkIdentifiers.Dnx, new Version(4, 5, 2, 0));
             public static readonly NuGetFramework DnxCore = new NuGetFramework(FrameworkIdentifiers.DnxCore, EmptyVersion);
             public static readonly NuGetFramework DnxCore50 = new NuGetFramework(FrameworkIdentifiers.DnxCore, Version5);
 
-            public static readonly NuGetFramework DotNet = new NuGetFramework(FrameworkIdentifiers.NetPlatform, EmptyVersion);
-            public static readonly NuGetFramework DotNet50 = new NuGetFramework(FrameworkIdentifiers.NetPlatform, Version5);
+            public static readonly NuGetFramework DotNet
+                = new NuGetFramework(FrameworkIdentifiers.NetPlatform, EmptyVersion);
+            public static readonly NuGetFramework DotNet50 
+                = new NuGetFramework(FrameworkIdentifiers.NetPlatform, Version5);
+            public static readonly NuGetFramework DotNet51
+                = new NuGetFramework(FrameworkIdentifiers.NetPlatform, new Version(5, 1, 0, 0));
+            public static readonly NuGetFramework DotNet52 
+                = new NuGetFramework(FrameworkIdentifiers.NetPlatform, new Version(5, 2, 0, 0));
+            public static readonly NuGetFramework DotNet53 
+                = new NuGetFramework(FrameworkIdentifiers.NetPlatform, new Version(5, 3, 0, 0));
+            public static readonly NuGetFramework DotNet54
+                = new NuGetFramework(FrameworkIdentifiers.NetPlatform, new Version(5, 4, 0, 0));
 
             public static readonly NuGetFramework UAP10 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.UAP, Version10);
+        }
+
+        /// <summary>
+        /// Ranges of dotnet frameworks
+        /// </summary>
+        public static class DotNetGenerationRanges
+        {
+            public static readonly FrameworkRange DotNet50 
+                = new FrameworkRange(CommonFrameworks.DotNet, CommonFrameworks.DotNet50);
+
+            public static readonly FrameworkRange DotNet51
+                = new FrameworkRange(CommonFrameworks.DotNet, CommonFrameworks.DotNet51);
+
+            public static readonly FrameworkRange DotNet52
+                = new FrameworkRange(CommonFrameworks.DotNet, CommonFrameworks.DotNet52);
+
+            public static readonly FrameworkRange DotNet53
+                = new FrameworkRange(CommonFrameworks.DotNet, CommonFrameworks.DotNet53);
+
+            public static readonly FrameworkRange DotNet54
+                = new FrameworkRange(CommonFrameworks.DotNet, CommonFrameworks.DotNet54);
         }
     }
 }
