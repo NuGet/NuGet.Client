@@ -10,4 +10,3 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("NuGet's core package management features")]
 [assembly: AssemblyDescription("NuGet's core package management features")]
-[assembly: ComVisible(false)]
