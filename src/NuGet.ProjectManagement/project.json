@@ -1,0 +1,19 @@
+﻿{
+  "version": "3.3.0-*",
+  "description": "NuGet Project Management",
+  "dependencies": {
+    "Microsoft.Web.Xdt": "2.1.0",
+    "NuGet.ProjectModel": "3.3.0-*",
+    "NuGet.Common": {
+      "version": "3.3.0-*",
+      "type": "build"
+    }
+  },
+  "frameworks": {
+    "net45": { 
+	   "frameworkAssemblies": {
+	      "System.ComponentModel.Composition": ""
+	   }
+	}
+  }
+}

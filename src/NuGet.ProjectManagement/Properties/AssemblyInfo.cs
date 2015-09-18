@@ -10,4 +10,3 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("NuGet.ProjectManagement")]
 [assembly: AssemblyDescription("NuGet's project management abstraction layer")]
-[assembly: ComVisible(false)]
