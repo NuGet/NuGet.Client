@@ -1,1 +1,1 @@
-@dnx %~dp0src/NuGet.CommandLine NuGet.CommandLine %*
+@dnx %~dp0src/NuGet.CommandLine.XPlat NuGet.CommandLine.XPlat %*
