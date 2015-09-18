@@ -1,13 +1,16 @@
 ﻿{
+  "version": "3.3.0-*",
   "dependencies": {
+	"NuGet.PackageManagement": "3.3.0-*",
     "DotNetZip": "1.9.3",
     "NuGet.Protocol.VisualStudio": "3.3.0-*",
-    "xunit": "2.0.0"
+    "xunit": "2.1.0-rc1-build3168"
   },
   "frameworks": {
-    "net45": {}
-  },
-  "runtimes": {
-    "win-anycpu": {}
+    "net45": {
+		"bin": {
+			"assembly": "../../lib/Microsoft.VisualStudio.ProjectSystem.Interop.dll"
+		}
+	}
   }
 }
