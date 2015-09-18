@@ -21,7 +21,7 @@ namespace NuGet.Configuration
         /// Default file name for a settings file is 'NuGet.config'
         /// Also, the machine level setting file at '%APPDATA%\NuGet' always uses this name
         /// </summary>
-        public const string DefaultSettingsFileName = "NuGet.config";
+        public static readonly string DefaultSettingsFileName = "NuGet.Config";
 
         private XDocument ConfigXDocument { get; set; }
         private string ConfigFileName { get; set; }
