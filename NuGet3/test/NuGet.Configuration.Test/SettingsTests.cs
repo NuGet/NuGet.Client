@@ -144,7 +144,7 @@ namespace NuGet.Configuration.Test
         <add Key='key2' Value='value2' />
     </SectionName>
 </configuration>";
-            var nugetConfigPath = "NuGet.config";
+            var nugetConfigPath = "NuGet.Config";
             var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
             TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
             Settings settings = new Settings(mockBaseDirectory);
@@ -168,7 +168,7 @@ namespace NuGet.Configuration.Test
 <add key=""test2"" value=""C:\Temp\Nuget"" />
 </activePackageSource>
 </configuration>";
-            var nugetConfigPath = "NuGet.config";
+            var nugetConfigPath = "NuGet.Config";
             var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
             TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
             Settings settings = new Settings(mockBaseDirectory);
