@@ -135,19 +135,7 @@
       <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
       <Name>PackageManagement.UI</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\PackageManagement\PackageManagement.csproj">
-      <Project>{1cb46687-b482-4f64-869a-ed5280badeb4}</Project>
-      <Name>PackageManagement</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ProjectManagement\ProjectManagement.csproj">
-      <Project>{fcd39e83-d8de-4401-ab12-d824ac2fe07b}</Project>
-      <Name>ProjectManagement</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Test.Utility\Test.Utility.csproj">
-      <Project>{8010a76a-cb15-4484-8f9b-d523fbc34dfa}</Project>
-      <Name>Test.Utility</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\..\..\build\common.targets" />
+  <Import Project="..\..\build\common.targets" />
 </Project>

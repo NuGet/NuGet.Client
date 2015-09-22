@@ -78,6 +78,9 @@ function CleanCache()
 ## Building XProj projects
 function BuildXproj()
 {
+    ## For local build using the following format
+    $env:DNX_BUILD_VERSION="local-$timestamp"
+
     if ($SkipRestore -eq $False)
     {
         Write-Host "Restoring tools"
@@ -92,6 +95,7 @@ function BuildXproj()
 
     $artifacts = Join-Path $executingScriptDirectory "artifacts"
     $artifactsSrc = Join-Path $artifacts "src"
+    $nupkgsDir = Join-Path $executingScriptDirectory "nupkgs"
     $artifactsTest = Join-Path $artifacts "test"
 
     foreach ($file in (Get-ChildItem "src" -rec))
@@ -101,7 +105,9 @@ function BuildXproj()
         if ($ext -eq ".xproj")
         {
             $srcDir = [System.IO.Path]::GetDirectoryName($file.FullName)
-            & dnu pack "$($srcDir)" --out $artifacts
+            $outDir = Join-Path $artifacts $file.BaseName
+
+            & dnu pack "$($srcDir)" --out $outDir
 
             if ($LASTEXITCODE -ne 0)
             {
@@ -137,10 +143,19 @@ function BuildXproj()
              }
         }
     }
+
+    ## Coping nupkgs
+    Write-Host "Coping the packages to" $artifactsPackages
+    Get-ChildItem *.nupkg -Recurse | % { Move-Item $_ $nupkgsDir }
 }
 
 function BuildCSproj()
 {
+    # Restore packages for NuGet.Tooling sloution
+    $nugetExe restore .\NuGet.Tooling.sln
+
+    # Build the sloution
+    & msbuild /p:Configuration:$Configuration .\NuGet.Tooling.sln
 }
 
 ###Functions###
@@ -151,6 +166,7 @@ pushd $executingScriptDirectory
 
 $nugetExe = ".nuget\nuget.exe"
 $dnvmLoc = Join-Path $env:USERPROFILE ".dnx\bin\dnvm.cmd"
+$timestamp = [DateTime]::UtcNow.ToString("yyMMddHHmmss");
 
 # Download NuGet.exe if missing
 if ((Test-Path $nugetExe) -eq $False)
@@ -179,5 +195,8 @@ if($CleanCache)
 
 ## Building all XProj projects
 BuildXproj
+
+## Building the Tooling sloution
+BuildCSproj
 
 popd

@@ -3,7 +3,6 @@
   <PropertyGroup>
     <NoWarn>1762</NoWarn>
   </PropertyGroup>
-  <Import Project="..\..\Build\NuGet.Settings.targets" />
   <PropertyGroup>
     <ProjectGuid>{7DB43FE1-75E1-49F9-B2C8-06A552BA2144}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -41,7 +40,7 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\..\..\build\sign.targets" />
+  <Import Project="..\..\build\sign.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

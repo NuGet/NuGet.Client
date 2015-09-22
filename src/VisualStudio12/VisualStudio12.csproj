@@ -1,10 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-<Import Project="..\..\..\Build\Common.props" Condition="Exists('..\..\..\Build\Common.props')" />
+<Import Project="..\..\Build\Common.props" Condition="Exists('..\..\Build\Common.props')" />
   <PropertyGroup>
     <NoWarn>1762</NoWarn>
   </PropertyGroup>
-  <Import Project="..\..\Build\NuGet.Settings.targets" />
   <PropertyGroup>
     <ProjectGuid>{3DD213F7-999B-4C15-9560-BF9C96CB8C52}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -36,7 +35,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\..\..\build\sign.targets" />
+  <Import Project="..\..\build\sign.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
