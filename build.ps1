@@ -151,10 +151,10 @@ function BuildXproj()
 
 function BuildCSproj()
 {
-    # Restore packages for NuGet.Tooling sloution
+    # Restore packages for NuGet.Tooling solution
     $nugetExe restore .\NuGet.Tooling.sln
 
-    # Build the sloution
+    # Build the solution
     & msbuild /p:Configuration:$Configuration .\NuGet.Tooling.sln
 }
 
@@ -167,12 +167,18 @@ pushd $executingScriptDirectory
 $nugetExe = ".nuget\nuget.exe"
 $dnvmLoc = Join-Path $env:USERPROFILE ".dnx\bin\dnvm.cmd"
 $timestamp = [DateTime]::UtcNow.ToString("yyMMddHHmmss");
+$startTime = [DateTime]::UtcNow
 
+Write-Host 'Build started at ' $startTime
+Write-Host
+
+try
+{
 # Download NuGet.exe if missing
 if ((Test-Path $nugetExe) -eq $False)
 {
     Write-Host "Downloading nuget.exe"
-    wget http://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile $nugetExe
+    wget https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile $nugetExe
 }
 
 ## Validating DNVM installed and install it if missing
@@ -196,7 +202,17 @@ if($CleanCache)
 ## Building all XProj projects
 BuildXproj
 
-## Building the Tooling sloution
+## Building the Tooling solution
 BuildCSproj
 
+}
+finally {
+$endTime = [DateTime]::UtcNow
+
+Write-Host
+Write-Host 'Build ended at ' $endTime
+$diff = [math]::Round(($endTime - $startTime).TotalMinutes, 4)
+Write-Host 'Build took ' $diff 'mins'
+Write-Host
+}
 popd
