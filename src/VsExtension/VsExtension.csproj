@@ -20,6 +20,18 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Coverage' Or '$(Configuration)' == 'Mono Debug'">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>$(DefineConstants);DEBUG;CODE_ANALYSIS</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' Or '$(Configuration)' == 'Mono Release'">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+  </PropertyGroup>
   <Import Project="..\..\Build\Common.props" Condition="Exists('..\..\Build\Common.props')" />
   <PropertyGroup>
     <ProjectGuid>{D0F9864B-D782-4471-81A2-29555E5DC0D7}</ProjectGuid>
@@ -160,10 +172,6 @@
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
-    <ProjectReference Include="..\TeamFoundationServer12\TeamFoundationServer12.csproj">
-      <Project>{a07d7e9a-c6d8-4c0f-9359-77a7787b2565}</Project>
-      <Name>TeamFoundationServer12</Name>
-    </ProjectReference>
     <ProjectReference Include="..\TeamFoundationServer14\TeamFoundationServer14.csproj">
       <Project>{e961d080-f10b-4f11-bea0-056509c086cc}</Project>
       <Name>TeamFoundationServer14</Name>
@@ -173,10 +181,6 @@
       <Name>VisualStudio.Interop</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bBuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
-    </ProjectReference>
-    <ProjectReference Include="..\VisualStudio12\VisualStudio12.csproj" Condition="$(VisualStudioVersion)=='12.0'">
-      <Project>{3dd213f7-999b-4c15-9560-bf9c96cb8c52}</Project>
-      <Name>VisualStudio12</Name>
     </ProjectReference>
     <ProjectReference Include="..\VisualStudio14\VisualStudio14.csproj">
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>

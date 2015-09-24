@@ -4,12 +4,10 @@
 using System;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell.Interop;
-#if VS14
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Designers;
 using Microsoft.VisualStudio.Shell;
-#endif
 using MsBuildProject = Microsoft.Build.Evaluation.Project;
 using Task = System.Threading.Tasks.Task;
 
@@ -17,7 +15,6 @@ namespace NuGet.VisualStudio14
 {
     public static class ProjectHelper
     {
-#if VS14
         public static async Task DoWorkInWriterLockAsync(Project project, IVsHierarchy hierarchy, Action<MsBuildProject> action)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -71,11 +68,5 @@ namespace NuGet.VisualStudio14
 
             return context != null ? context.UnconfiguredProject : null;
         }
-#else
-        public static Task DoWorkInWriterLockAsync(EnvDTE.Project project, IVsHierarchy hierarchy, Action<MsBuildProject> action)
-        {
-            return Task.FromResult(0);
-        }
-#endif
     }
 }

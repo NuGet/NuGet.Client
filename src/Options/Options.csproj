@@ -15,6 +15,13 @@
     <CodeAnalysisRuleSet>..\..\NuGet.ruleset</CodeAnalysisRuleSet>
     <SkipValidatePackageReferences>true</SkipValidatePackageReferences>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Coverage' Or '$(Configuration)' == 'Mono Debug'">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>$(DefineConstants);DEBUG;CODE_ANALYSIS</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="$(ShellAssembly)">
       <SpecificVersion>False</SpecificVersion>

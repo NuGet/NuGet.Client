@@ -11,6 +11,13 @@
     <RunCodeAnalysis Condition="'$(EnableCodeAnalysis)'=='true'">true</RunCodeAnalysis>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Coverage' Or '$(Configuration)' == 'Mono Debug'">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>$(DefineConstants);DEBUG;CODE_ANALYSIS</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />

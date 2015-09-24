@@ -152,10 +152,10 @@ function BuildXproj()
 function BuildCSproj()
 {
     # Restore packages for NuGet.Tooling sloution
-    $nugetExe restore .\NuGet.Tooling.sln
+    .\.nuget\nuget.exe restore .\NuGet.Tooling.sln
 
     # Build the sloution
-    & msbuild /p:Configuration:$Configuration .\NuGet.Tooling.sln
+    & $msbuildExe .\NuGet.Tooling.sln "/p:Configuration=$Configuration;PublicRelease=$PublicRelease"
 }
 
 ###Functions###
@@ -164,6 +164,7 @@ function BuildCSproj()
 $executingScriptDirectory = Split-Path -Path $MyInvocation.MyCommand.Definition -Parent
 pushd $executingScriptDirectory
 
+$msbuildExe = "${env:ProgramFiles(x86)}\MSBuild\14.0\Bin\msbuild.exe"
 $nugetExe = ".nuget\nuget.exe"
 $dnvmLoc = Join-Path $env:USERPROFILE ".dnx\bin\dnvm.cmd"
 $timestamp = [DateTime]::UtcNow.ToString("yyMMddHHmmss");

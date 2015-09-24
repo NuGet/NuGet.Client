@@ -17,6 +17,13 @@
     <RunCodeAnalysis Condition="'$(EnableCodeAnalysis)'=='true'">true</RunCodeAnalysis>
     <NuGetPackageImportStamp>d946fd5a</NuGetPackageImportStamp>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Coverage' Or '$(Configuration)' == 'Mono Debug'">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>$(DefineConstants);DEBUG;CODE_ANALYSIS</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>False</EmbedInteropTypes>
