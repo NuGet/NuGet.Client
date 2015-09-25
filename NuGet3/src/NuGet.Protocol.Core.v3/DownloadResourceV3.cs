@@ -18,33 +18,73 @@ namespace NuGet.Protocol.Core.v3
     {
         private readonly RegistrationResourceV3 _regResource;
         private readonly HttpClient _client;
+        private readonly string _flatContainerBaseUrl;
 
+        /// <summary>
+        /// Download packages using the download url found in the registration resource.
+        /// </summary>
         public DownloadResourceV3(HttpClient client, RegistrationResourceV3 regResource)
+            : this(client)
         {
             if (client == null)
             {
-                throw new ArgumentNullException("client");
-            }
-
-            if (regResource == null)
-            {
-                throw new ArgumentNullException("regResource");
+                throw new ArgumentNullException(nameof(regResource));
             }
 
             _regResource = regResource;
+        }
+
+        /// <summary>
+        /// Download packages using the flat container resource.
+        /// </summary>
+        public DownloadResourceV3(HttpClient client, string flatContainerBaseUrl)
+            : this(client)
+        {
+            if (flatContainerBaseUrl == null)
+            {
+                throw new ArgumentNullException(nameof(flatContainerBaseUrl));
+            }
+
+            _flatContainerBaseUrl = flatContainerBaseUrl.TrimEnd('/');
+        }
+
+        private DownloadResourceV3(HttpClient client)
+        {
+            if (client == null)
+            {
+                throw new ArgumentNullException(nameof(client));
+            }
+
             _client = client;
         }
 
+        /// <summary>
+        /// Get the download url of the package.
+        /// 1. If the identity is a SourcePackageDependencyInfo the SourcePackageDependencyInfo.DownloadUri is used.
+        /// 2. A url will be constructed for the flat container location if the source has that resource.
+        /// 3. The download url will be found in the registration blob as a fallback.
+        /// </summary>
         private async Task<Uri> GetDownloadUrl(PackageIdentity identity, CancellationToken token)
         {
             Uri downloadUri = null;
 
-            var blob = await _regResource.GetPackageMetadata(identity, token);
-
-            if (blob != null
-                && blob["packageContent"] != null)
+            if (_flatContainerBaseUrl != null)
             {
-                downloadUri = new Uri(blob["packageContent"].ToString());
+                var id = identity.Id.ToLowerInvariant();
+                var version = identity.Version.ToNormalizedString().ToLowerInvariant();
+
+                var url = $"{_flatContainerBaseUrl}/{id}/{version}/{id}.{version}.nupkg";
+                downloadUri = new Uri(url);
+            }
+            else if (_regResource != null)
+            {
+                var blob = await _regResource.GetPackageMetadata(identity, token);
+
+                if (blob != null
+                    && blob["packageContent"] != null)
+                {
+                    downloadUri = new Uri(blob["packageContent"].ToString());
+                }
             }
 
             return downloadUri;
@@ -63,31 +103,65 @@ namespace NuGet.Protocol.Core.v3
             {
                 throw new ArgumentNullException(nameof(settings));
             }
-            
-            Uri uri = await GetDownloadUrl(identity, token);
+
+            var uri = await GetDownloadUrl(identity, token);
             if (uri != null)
             {
-                // Uri is not null, so the package exists in the source
-                // Now, check if it is in the global packages folder, before, getting the package stream
-                var packageFromGlobalPackages = GlobalPackagesFolderUtility.GetPackage(identity, settings);
-
-                if (packageFromGlobalPackages != null)
-                {
-                    return packageFromGlobalPackages;
-                }
-
-                using (var packageStream = await _client.GetStreamAsync(uri))
-                {
-                    var downloadResult = await GlobalPackagesFolderUtility.AddPackageAsync(identity,
-                        packageStream,
-                        settings,
-                        token);
-
-                    return downloadResult;
-                }
+                return await GetDownloadResultAsync(identity, uri, settings, token);
             }
 
             return null;
+        }
+
+        public override async Task<DownloadResourceResult> GetDownloadResourceResultAsync(
+            SourcePackageDependencyInfo package,
+            ISettings settings,
+            CancellationToken token)
+        {
+            if (package == null)
+            {
+                throw new ArgumentNullException(nameof(package));
+            }
+
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            var uri = package.DownloadUri ?? await GetDownloadUrl(package, token);
+
+            if (uri != null)
+            {
+                return await GetDownloadResultAsync(package, uri, settings, token);
+            }
+
+            return null;
+        }
+
+        private async Task<DownloadResourceResult> GetDownloadResultAsync(
+            PackageIdentity identity,
+            Uri uri,
+            ISettings settings,
+            CancellationToken token)
+        {
+            // Uri is not null, so the package exists in the source
+            // Now, check if it is in the global packages folder, before, getting the package stream
+            var packageFromGlobalPackages = GlobalPackagesFolderUtility.GetPackage(identity, settings);
+
+            if (packageFromGlobalPackages != null)
+            {
+                return packageFromGlobalPackages;
+            }
+
+            using (var packageStream = await _client.GetStreamAsync(uri))
+            {
+                var downloadResult = await GlobalPackagesFolderUtility.AddPackageAsync(identity,
+                    packageStream,
+                    settings,
+                    token);
+
+                return downloadResult;
+            }
         }
     }
 }

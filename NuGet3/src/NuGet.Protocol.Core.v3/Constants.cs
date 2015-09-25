@@ -21,6 +21,7 @@ namespace NuGet.Protocol.Core.v3
     {
         public static readonly string VersionV2 = "/2.0.0";
         public static readonly string TypeVersion = "/3.0.0-beta";
+        public static readonly string Version300 = "/3.0.0";
 
         public static readonly string SearchQueryService = "SearchQueryService" + TypeVersion;
         public static readonly string SearchAutocompleteService = "SearchAutocompleteService" + TypeVersion;
@@ -31,6 +32,7 @@ namespace NuGet.Protocol.Core.v3
         public static readonly string Stats = "Stats" + TypeVersion;
         public static readonly string LegacyGallery = "LegacyGallery" + VersionV2;
         public static readonly string PackagePublish = "PackagePublish" + VersionV2;
+        public static readonly string PackageBaseAddress = "PackageBaseAddress" + Version300;
     }
 
     public static class Properties
