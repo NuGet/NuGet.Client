@@ -152,7 +152,7 @@ function BuildXproj()
 function BuildCSproj()
 {
     # Restore packages for NuGet.Tooling solution
-    .\.nuget\nuget.exe restore .\NuGet.Tooling.sln
+    .\.nuget\nuget.exe restore .\NuGet.Clients.sln
 
     # Build the solution
     & $msbuildExe .\NuGet.Tooling.sln "/p:Configuration=$Configuration;PublicRelease=$PublicRelease"
