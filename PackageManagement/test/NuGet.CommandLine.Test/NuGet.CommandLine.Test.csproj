@@ -63,6 +63,7 @@
       <DependentUpon>MockServerResource.resx</DependentUpon>
     </Compile>
     <Compile Include="MSBuildUtilityTest.cs" />
+    <Compile Include="NetworkCallCountTest.cs" />
     <Compile Include="NuGetConfigCommandTest.cs" />
     <Compile Include="NuGetDeleteCommandTest.cs" />
     <Compile Include="NuGetHelpCommandTest.cs" />

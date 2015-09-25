@@ -145,7 +145,12 @@ namespace NuGet.PackageManagement
             IEnumerable<SourceRepository> secondarySources, CancellationToken token)
         {
             // Step-1 : Get latest version for packageId
-            var latestVersion = await GetLatestVersionAsync(packageId, resolutionContext, primarySources, token);
+            var latestVersion = await GetLatestVersionAsync(
+                packageId,
+                nuGetProject, 
+                resolutionContext, 
+                primarySources, 
+                token);
 
             if (latestVersion == null)
             {
@@ -228,7 +233,12 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(nuGetProjectContext));
             }
             // Step-1 : Get latest version for packageId
-            var latestVersion = await GetLatestVersionAsync(packageId, resolutionContext, primarySourceRepository, token);
+            var latestVersion = await GetLatestVersionAsync(
+                packageId,
+                nuGetProject,
+                resolutionContext,
+                primarySourceRepository,
+                token);
 
             if (latestVersion == null)
             {
@@ -360,6 +370,7 @@ namespace NuGet.PackageManagement
                     {
                         NuGetVersion latestVersion = await GetLatestVersionAsync(
                             installedPackage.PackageIdentity.Id,
+                            nuGetProject,
                             resolutionContext,
                             primarySources,
                             token);
@@ -409,7 +420,12 @@ namespace NuGet.PackageManagement
                     if (updateToIdentity == null || !updateToIdentity.HasVersion)
                     {
                         // Step-1 : Get latest version for packageId
-                        NuGetVersion latestVersion = await GetLatestVersionAsync(packageId, resolutionContext, primarySources, token);
+                        NuGetVersion latestVersion = await GetLatestVersionAsync(
+                            packageId,
+                            nuGetProject,
+                            resolutionContext, 
+                            primarySources, 
+                            token);
 
                         if (latestVersion == null)
                         {
@@ -961,7 +977,7 @@ namespace NuGet.PackageManagement
                             throw new InvalidOperationException(string.Format(Strings.PackageNotFound, packageIdentity));
                         }
 
-                        nuGetProjectActions.Add(NuGetProjectAction.CreateInstallProjectAction(newPackageToInstall, sourceDepInfo.Source));
+                        nuGetProjectActions.Add(NuGetProjectAction.CreateInstallProjectAction(sourceDepInfo, sourceDepInfo.Source));
                     }
                 }
                 catch (InvalidOperationException)
@@ -1285,10 +1301,14 @@ namespace NuGet.PackageManagement
 
                         if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Install)
                         {
+                            var identityString = String.Format(CultureInfo.InvariantCulture, "{0} {1}",
+                                nuGetProjectAction.PackageIdentity.Id,
+                                nuGetProjectAction.PackageIdentity.Version.ToNormalizedString());
+
                             nuGetProjectContext.Log(
                                 ProjectManagement.MessageLevel.Info,
                                 Strings.SuccessfullyInstalled,
-                                nuGetProjectAction.PackageIdentity,
+                                identityString,
                                 nuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name));
                         }
                         else
@@ -1388,14 +1408,13 @@ namespace NuGet.PackageManagement
             }
 
             // Find all sources used in the project actions
-            var sources = new HashSet<string>(
+            var sources = new HashSet<SourceRepository>(
                 nuGetProjectActions.Where(action => action.SourceRepository != null)
-                    .Select(action => action.SourceRepository.PackageSource.Source),
-                    StringComparer.OrdinalIgnoreCase);
+                    .Select(action => action.SourceRepository),
+                    new SourceRepositoryComparer());
 
             // Add all enabled sources for the existing packages
-            var enabledSources = SourceRepositoryProvider.GetRepositories()
-                .Select(repo => repo.PackageSource.Source);
+            var enabledSources = SourceRepositoryProvider.GetRepositories();
 
             sources.UnionWith(enabledSources);
 
@@ -1843,13 +1862,65 @@ namespace NuGet.PackageManagement
             return true;
         }
 
-        public static Task<NuGetVersion> GetLatestVersionAsync(string packageId, ResolutionContext resolutionContext, SourceRepository primarySourceRepository, CancellationToken token)
+        public static Task<NuGetVersion> GetLatestVersionAsync(
+            string packageId,
+            NuGetFramework framework,
+            ResolutionContext resolutionContext,
+            SourceRepository primarySourceRepository, 
+            CancellationToken token)
         {
-            return GetLatestVersionAsync(packageId, resolutionContext, new List<SourceRepository> { primarySourceRepository }, token);
+            return GetLatestVersionAsync(
+                packageId, 
+                framework, 
+                resolutionContext, 
+                new List<SourceRepository> { primarySourceRepository },
+                token);
+        }
+
+        public static Task<NuGetVersion> GetLatestVersionAsync(
+            string packageId,
+            NuGetProject project,
+            ResolutionContext resolutionContext,
+            SourceRepository primarySourceRepository,
+            CancellationToken token)
+        {
+            NuGetFramework framework;
+            if (!project.TryGetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework, out framework))
+            {
+                // Default to the any framework if the project does not specify a framework.
+                framework = NuGetFramework.AnyFramework;
+            }
+
+            return GetLatestVersionAsync(
+                packageId,
+                framework,
+                resolutionContext,
+                new List<SourceRepository> { primarySourceRepository },
+                token);
         }
 
         public static async Task<NuGetVersion> GetLatestVersionAsync(
             string packageId,
+            NuGetProject project,
+            ResolutionContext resolutionContext,
+            IEnumerable<SourceRepository> sources,
+            CancellationToken token)
+        {
+            var tasks = new List<Task<NuGetVersion>>();
+
+            NuGetFramework framework;
+            if (!project.TryGetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework, out framework))
+            {
+                // Default to the any framework if the project does not specify a framework.
+                framework = NuGetFramework.AnyFramework;
+            }
+
+            return await GetLatestVersionAsync(packageId, framework, resolutionContext, sources, token);
+        }
+
+        public static async Task<NuGetVersion> GetLatestVersionAsync(
+            string packageId,
+            NuGetFramework framework,
             ResolutionContext resolutionContext,
             IEnumerable<SourceRepository> sources,
             CancellationToken token)
@@ -1858,24 +1929,43 @@ namespace NuGet.PackageManagement
 
             foreach (var source in sources)
             {
-                tasks.Add(Task.Run(async () => await GetLatestVersionCoreAsync(packageId, resolutionContext, source, token)));
+                tasks.Add(Task.Run(async ()
+                    => await GetLatestVersionCoreAsync(packageId, framework, resolutionContext, source, token)));
             }
 
             var versions = await Task.WhenAll(tasks);
             return versions.Where(v => v != null).Max();
         }
 
-        private static async Task<NuGetVersion> GetLatestVersionCoreAsync(string packageId, ResolutionContext resolutionContext, SourceRepository source, CancellationToken token)
+        private static async Task<NuGetVersion> GetLatestVersionCoreAsync(
+            string packageId,
+            NuGetFramework framework,
+            ResolutionContext resolutionContext,
+            SourceRepository source,
+            CancellationToken token)
         {
-            NuGetVersion latestVersion = null;
+            var dependencyInfoResource = await source.GetResourceAsync<DependencyInfoResource>();
 
-            var metadataResource = await source.GetResourceAsync<MetadataResource>();
+            // Resolve the package for the project framework and cache the results in the 
+            // resolution context for the gather to use during the next step.
+            // Using the metadata resource will result in multiple calls to the same url during an install.
+            var packages = await dependencyInfoResource.ResolvePackages(packageId, framework, token);
 
-            if (metadataResource != null)
-            {
-                latestVersion = await metadataResource.GetLatestVersion(packageId,
-                    resolutionContext.IncludePrerelease, resolutionContext.IncludeUnlisted, token);
-            }
+            Debug.Assert(resolutionContext.GatherCache != null);
+
+            // Cache the results, even if the package was not found.
+            resolutionContext.GatherCache.AddAllPackagesForId(
+                source.PackageSource,
+                packageId,
+                framework,
+                packages.ToList());
+
+            // Find the latest version
+            var latestVersion = packages.Where(package => (package.Listed || resolutionContext.IncludeUnlisted)
+                && (resolutionContext.IncludePrerelease || !package.Version.IsPrerelease))
+                .OrderByDescending(package => package.Version, VersionComparer.Default)
+                .Select(package => package.Version)
+                .FirstOrDefault();
 
             return latestVersion;
         }

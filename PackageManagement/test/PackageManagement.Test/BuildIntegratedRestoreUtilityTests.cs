@@ -12,6 +12,10 @@ using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v2;
+using NuGet.Protocol.Core.v3;
+using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -33,10 +37,10 @@ namespace NuGet.Test
 
             CreateConfigJson(projectConfig.FullName);
 
-            var sources = new List<string>
-                {
-                    "https://www.nuget.org/api/v2/"
-                };
+            var sources = new List<SourceRepository>
+            {
+                Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
+            };
 
             var projectTargetFramework = NuGetFramework.Parse("uap10.0");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
@@ -87,7 +91,10 @@ namespace NuGet.Test
                 writer.Write(json.ToString());
             }
 
-            var sources = new List<string> { "https://www.nuget.org/api/v2/" };
+            var sources = new List<SourceRepository>
+            {
+                Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
+            };
 
             var projectTargetFramework = NuGetFramework.Parse("uap10.0");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
@@ -144,7 +151,10 @@ namespace NuGet.Test
                 writer.Write(json.ToString());
             }
 
-            var sources = new List<string> { "https://www.nuget.org/api/v2/" };
+            var sources = new List<SourceRepository>
+            {
+                Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
+            };
 
             var projectTargetFramework = NuGetFramework.Parse("uap10.0");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
@@ -201,7 +211,10 @@ namespace NuGet.Test
                 writer.Write(json.ToString());
             }
 
-            var sources = new List<string> { "https://www.nuget.org/api/v2/" };
+            var sources = new List<SourceRepository>
+            {
+                Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
+            };
 
             var projectTargetFramework = NuGetFramework.Parse("uap10.0");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
@@ -259,7 +272,10 @@ namespace NuGet.Test
                 writer.Write(json.ToString());
             }
 
-            var sources = new List<string> { "https://www.nuget.org/api/v2/" };
+            var sources = new List<SourceRepository>
+            {
+                Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
+            };
 
             var projectTargetFramework = NuGetFramework.Parse("uap10.0");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
@@ -312,7 +328,10 @@ namespace NuGet.Test
                 writer.Write(json.ToString());
             }
 
-            var sources = new List<string> { "https://www.nuget.org/api/v2/" };
+            var sources = new List<SourceRepository>
+            {
+                Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
+            };
 
             var projectTargetFramework = NuGetFramework.Parse("uap10.0");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
@@ -657,10 +676,10 @@ namespace NuGet.Test
 
             CreateConfigJson(projectConfig.FullName);
 
-            var sources = new List<string>
-                {
-                    "https://www.nuget.org/api/v2/"
-                };
+            var sources = new List<SourceRepository>
+            {
+                Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
+            };
 
             var projectTargetFramework = NuGetFramework.Parse("uap10.0");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
@@ -698,10 +717,11 @@ namespace NuGet.Test
             projectFolder.Create();
             var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
             CreateConfigJson(projectConfig.FullName);
-            var sources = new List<string>
-                {
-                    "https://www.nuget.org/api/v2/"
-                };
+
+            var sources = new List<SourceRepository>
+            {
+                Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
+            };
 
             var projectTargetFramework = NuGetFramework.Parse("uap10.0");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
@@ -756,10 +776,10 @@ namespace NuGet.Test
 
             File.WriteAllText(projectConfig.FullName, ProjectJsonWithPackage);
 
-            var sources = new List<string>
-                {
-                    "https://www.nuget.org/api/v2/"
-                };
+            var sources = new List<SourceRepository>
+            {
+                Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
+            };
 
             var projectTargetFramework = NuGetFramework.Parse("uap10.0");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,

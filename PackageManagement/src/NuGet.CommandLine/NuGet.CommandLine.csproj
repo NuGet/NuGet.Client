@@ -46,6 +46,7 @@
     </Compile>
     <Compile Include="CommandLineMachineWideSettings.cs" />
     <Compile Include="CommandLineParser.cs" />
+    <Compile Include="CommandLineSourceRepositoryProvider.cs" />
     <Compile Include="CommandManager.cs" />
     <Compile Include="CommandOutputLogger.cs" />
     <Compile Include="Commands\Command.cs" />

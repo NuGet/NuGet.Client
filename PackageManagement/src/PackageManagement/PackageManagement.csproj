@@ -108,6 +108,7 @@
     </Compile>
     <Compile Include="Utility\PackageReferenceComparer.cs" />
     <Compile Include="Utility\PackagesFolderPathUtility.cs" />
+    <Compile Include="Utility\SourceKindGroup.cs" />
     <Compile Include="Utility\SourceRepositoryComparer.cs" />
     <Compile Include="Utility\TriggerEventMethod.cs" />
     <Compile Include="Utility\UriHelper.cs" />

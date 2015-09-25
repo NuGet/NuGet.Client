@@ -5,7 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
@@ -18,19 +18,23 @@ namespace NuGet.PackageManagement
     internal class GatherCache
     {
         // These are typically the primary targets or installed packages which perform the lookup on only a single version.
-        private readonly ConcurrentDictionary<SourceAndPackageIdentity, SourcePackageDependencyInfo> _singleVersion
-            = new ConcurrentDictionary<SourceAndPackageIdentity, SourcePackageDependencyInfo>();
+        private readonly ConcurrentDictionary<GatherSingleCacheKey, SourcePackageDependencyInfo> _singleVersion
+            = new ConcurrentDictionary<GatherSingleCacheKey, SourcePackageDependencyInfo>();
 
         // This contains the full list of package versions for the package id
-        private readonly ConcurrentDictionary<SourceAndPackageId, List<SourcePackageDependencyInfo>> _allPackageVersions
-            = new ConcurrentDictionary<SourceAndPackageId, List<SourcePackageDependencyInfo>>();
+        private readonly ConcurrentDictionary<GatherAllCacheKey, List<SourcePackageDependencyInfo>> _allPackageVersions
+            = new ConcurrentDictionary<GatherAllCacheKey, List<SourcePackageDependencyInfo>>();
 
         /// <summary>
         /// Add a single package
         /// </summary>
-        public void AddPackageFromSingleVersionLookup(Configuration.PackageSource source, PackageIdentity identity, SourcePackageDependencyInfo package)
+        public void AddPackageFromSingleVersionLookup(
+            Configuration.PackageSource source,
+            PackageIdentity identity,
+            NuGetFramework framework,
+            SourcePackageDependencyInfo package)
         {
-            var key = new SourceAndPackageIdentity(identity, source);
+            var key = new GatherSingleCacheKey(identity, source, framework);
 
             _singleVersion.TryAdd(key, package);
         }
@@ -38,9 +42,13 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Add the full list of versions for a package
         /// </summary>
-        public void AddAllPackagesForId(Configuration.PackageSource source, string packageId, List<SourcePackageDependencyInfo> packages)
+        public void AddAllPackagesForId(
+            Configuration.PackageSource source,
+            string packageId,
+            NuGetFramework framework,
+            List<SourcePackageDependencyInfo> packages)
         {
-            var key = new SourceAndPackageId(packageId, source);
+            var key = new GatherAllCacheKey(packageId, source, framework);
 
             _allPackageVersions.TryAdd(key, packages);
         }
@@ -48,9 +56,12 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Retrieve an exact version of a package
         /// </summary>
-        public GatherCacheResult GetPackage(Configuration.PackageSource source, PackageIdentity package)
+        public GatherCacheResult GetPackage(
+            Configuration.PackageSource source,
+            PackageIdentity package,
+            NuGetFramework framework)
         {
-            var key = new SourceAndPackageIdentity(package, source);
+            var key = new GatherSingleCacheKey(package, source, framework);
 
             var hasEntry = false;
 
@@ -61,7 +72,7 @@ namespace NuGet.PackageManagement
             if (!hasEntry)
             {
                 // Try finding the packages from cached all packages results
-                var allPackagesResult = GetPackages(source, package.Id);
+                var allPackagesResult = GetPackages(source, package.Id, framework);
 
                 if (allPackagesResult.HasEntry)
                 {
@@ -82,9 +93,12 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Retrieve all versions of a package id
         /// </summary>
-        public GatherCacheResult GetPackages(Configuration.PackageSource source, string packageId)
+        public GatherCacheResult GetPackages(
+            Configuration.PackageSource source,
+            string packageId,
+            NuGetFramework framework)
         {
-            var key = new SourceAndPackageId(packageId, source);
+            var key = new GatherAllCacheKey(packageId, source, framework);
 
             List<SourcePackageDependencyInfo> result;
 
@@ -96,19 +110,25 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Cache key for a package id and version
         /// </summary>
-        private class SourceAndPackageIdentity : IEquatable<SourceAndPackageIdentity>
+        private class GatherSingleCacheKey : IEquatable<GatherSingleCacheKey>
         {
-            public SourceAndPackageIdentity(PackageIdentity package, Configuration.PackageSource source)
+            public GatherSingleCacheKey(
+                PackageIdentity package,
+                Configuration.PackageSource source,
+                NuGetFramework framework)
             {
                 Package = package;
                 Source = source;
+                Framework = framework;
             }
+
+            public NuGetFramework Framework { get; }
 
             public PackageIdentity Package { get; }
 
             public Configuration.PackageSource Source { get; }
 
-            public bool Equals(SourceAndPackageIdentity other)
+            public bool Equals(GatherSingleCacheKey other)
             {
                 if (other == null)
                 {
@@ -121,12 +141,13 @@ namespace NuGet.PackageManagement
                 }
 
                 return Package.Equals(other.Package)
-                    && Source.Equals(other.Source);
+                    && Source.Equals(other.Source)
+                    && Framework.Equals(other.Framework);
             }
 
             public override bool Equals(object obj)
             {
-                return Equals(obj as SourceAndPackageIdentity);
+                return Equals(obj as GatherSingleCacheKey);
             }
 
             public override int GetHashCode()
@@ -135,6 +156,7 @@ namespace NuGet.PackageManagement
 
                 combiner.AddObject(Package);
                 combiner.AddObject(Source);
+                combiner.AddObject(Framework);
 
                 return combiner.CombinedHash;
             }
@@ -143,18 +165,23 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Cache key for a package id and all versions
         /// </summary>
-        private class SourceAndPackageId : IEquatable<SourceAndPackageId>
+        private class GatherAllCacheKey : IEquatable<GatherAllCacheKey>
         {
-            public SourceAndPackageId(string packageId, Configuration.PackageSource source)
+            public GatherAllCacheKey(
+                string packageId,
+                Configuration.PackageSource source,
+                NuGetFramework framework)
             {
                 PackageId = packageId;
                 Source = source;
+                Framework = framework;
             }
 
+            public NuGetFramework Framework { get; set; }
             public string PackageId { get; set; }
             public Configuration.PackageSource Source { get; set; }
 
-            public bool Equals(SourceAndPackageId other)
+            public bool Equals(GatherAllCacheKey other)
             {
                 if (other == null)
                 {
@@ -167,12 +194,13 @@ namespace NuGet.PackageManagement
                 }
 
                 return string.Equals(PackageId, other.PackageId, StringComparison.OrdinalIgnoreCase)
-                    && Source.Equals(other.Source);
+                    && Source.Equals(other.Source)
+                    && Framework.Equals(other.Framework);
             }
 
             public override bool Equals(object obj)
             {
-                return Equals(obj as SourceAndPackageId);
+                return Equals(obj as GatherAllCacheKey);
             }
 
             public override int GetHashCode()
@@ -181,6 +209,7 @@ namespace NuGet.PackageManagement
 
                 combiner.AddObject(PackageId.ToUpperInvariant());
                 combiner.AddObject(Source);
+                combiner.AddObject(Framework);
 
                 return combiner.CombinedHash;
             }

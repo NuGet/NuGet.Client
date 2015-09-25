@@ -14,7 +14,6 @@ using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
-using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine
 {
@@ -208,10 +207,15 @@ namespace NuGet.CommandLine
 
             Console.LogVerbose($"Using packages directory: {packagesDir}");
 
-            var packageSources = GetPackageSources(Settings);
+            // Convert package sources to repositories
+            var sourceProvider = GetSourceRepositoryProvider();
+            var repositories = GetPackageSources(Settings).Select(source => sourceProvider.CreateRepository(source));
+
+            // Create a restore request
             var request = new RestoreRequest(
                 packageSpec,
-                packageSources);
+                repositories,
+                packagesDirectory: null);
 
             request.PackagesDirectory = packagesDir;
 
@@ -263,6 +267,11 @@ namespace NuGet.CommandLine
             return result.Success;
         }
 
+        private CommandLineSourceRepositoryProvider GetSourceRepositoryProvider()
+        {
+            return new CommandLineSourceRepositoryProvider(SourceProvider);
+        }
+
         private void ReadSettings(PackageRestoreInputs packageRestoreInputs)
         {
             if (!string.IsNullOrEmpty(SolutionDirectory) || packageRestoreInputs.RestoringWithSolutionFile)
@@ -297,10 +306,7 @@ namespace NuGet.CommandLine
             ReadSettings(packageRestoreInputs);
             var packagesFolderPath = GetPackagesFolder(packageRestoreInputs);
 
-            var sourceRepositoryProvider = new SourceRepositoryProvider(SourceProvider,
-                Enumerable.Concat(
-                    Protocol.Core.v2.FactoryExtensionsV2.GetCoreV2(Repository.Provider),
-                    Protocol.Core.v3.FactoryExtensionsV2.GetCoreV3(Repository.Provider)));
+            var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, packagesFolderPath);
 
             var installedPackageReferences = new HashSet<Packaging.PackageReference>(new PackageReferenceComparer());

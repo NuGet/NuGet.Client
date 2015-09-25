@@ -35,6 +35,7 @@ namespace NuGet.PackageManagement
             IncludePrerelease = includePrelease;
             IncludeUnlisted = includeUnlisted;
             VersionConstraints = versionConstraints;
+            GatherCache = new GatherCache();
         }
 
         /// <summary>

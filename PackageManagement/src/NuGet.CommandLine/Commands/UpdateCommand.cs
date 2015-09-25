@@ -282,12 +282,9 @@ namespace NuGet.CommandLine
                 CancellationToken.None);
         }
 
-        private SourceRepositoryProvider GetSourceRepositoryProvider()
+        private CommandLineSourceRepositoryProvider GetSourceRepositoryProvider()
         {
-            var sourceRepositoryProvider = new SourceRepositoryProvider(SourceProvider,
-                Enumerable.Concat(
-                    Protocol.Core.v2.FactoryExtensionsV2.GetCoreV2(Repository.Provider),
-                    Protocol.Core.v3.FactoryExtensionsV2.GetCoreV3(Repository.Provider)));
+            var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
             return sourceRepositoryProvider;
         }
 
