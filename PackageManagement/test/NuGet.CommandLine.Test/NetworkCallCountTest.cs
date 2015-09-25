@@ -36,9 +36,14 @@ namespace NuGet.CommandLine.Test
 
                 // Server setup
                 var indexJson = Util.CreateIndexJson();
+                var indexJson2 = Util.CreateIndexJson();
 
                 Util.AddFlatContainerResource(indexJson, server);
                 Util.AddRegistrationResource(indexJson, server);
+
+                Util.AddFlatContainerResource(indexJson2, server2);
+                Util.AddRegistrationResource(indexJson2, server2);
+
                 var hitsByUrl = new ConcurrentDictionary<string, int>();
                 var hitsByUrl2 = new ConcurrentDictionary<string, int>();
 
@@ -52,7 +57,7 @@ namespace NuGet.CommandLine.Test
 
                 server2.Get.Add("/", request =>
                 {
-                    return ServerHandler(request, hitsByUrl2, server2, indexJson, localRepo, v2ResetEvent, v3ResetEvent);
+                    return ServerHandler(request, hitsByUrl2, server2, indexJson2, localRepo, v2ResetEvent, v3ResetEvent);
                 });
 
                 server.Start();
@@ -188,7 +193,7 @@ namespace NuGet.CommandLine.Test
                 var globalFolderCount = Directory.GetDirectories(
                     globalFolder.FullName, "*", SearchOption.TopDirectoryOnly)
                     .Count();
-                var machineCacheCount = Directory.GetFiles(MachineCache.Default.Source).Count();
+                var machineCacheCount = GetMachineCacheCount();
                 var packagesFolderCount = Directory.GetDirectories(
                     packagesFolder.FullName, "*", SearchOption.TopDirectoryOnly)
                     .Count();
@@ -328,8 +333,6 @@ namespace NuGet.CommandLine.Test
                 {
                     Assert.True(1 == hitsByUrl[url], url);
                 }
-
-                Assert.Equal(3, hitsByUrl.Count);
             }
         }
 
@@ -393,8 +396,6 @@ namespace NuGet.CommandLine.Test
                 {
                     Assert.True(1 == hitsByUrl[url], url);
                 }
-
-                Assert.Equal(3, hitsByUrl.Count);
             }
         }
 
@@ -454,8 +455,6 @@ namespace NuGet.CommandLine.Test
                 {
                     Assert.True(1 == hitsByUrl[url], url);
                 }
-
-                Assert.Equal(5, hitsByUrl.Count);
             }
         }
 
@@ -517,8 +516,6 @@ namespace NuGet.CommandLine.Test
                 {
                     Assert.True(1 == hitsByUrl[url], url);
                 }
-
-                Assert.Equal(3, hitsByUrl.Count);
             }
         }
 
@@ -670,9 +667,14 @@ namespace NuGet.CommandLine.Test
 
                 // Server setup
                 var indexJson = Util.CreateIndexJson();
+                var indexJson2 = Util.CreateIndexJson();
 
                 Util.AddFlatContainerResource(indexJson, server);
                 Util.AddRegistrationResource(indexJson, server);
+
+                Util.AddFlatContainerResource(indexJson2, server2);
+                Util.AddRegistrationResource(indexJson2, server2);
+
                 var hitsByUrl = new ConcurrentDictionary<string, int>();
                 var hitsByUrl2 = new ConcurrentDictionary<string, int>();
 
@@ -683,7 +685,7 @@ namespace NuGet.CommandLine.Test
 
                 server2.Get.Add("/", request =>
                 {
-                    return ServerHandler(request, hitsByUrl2, server2, indexJson, localRepo);
+                    return ServerHandler(request, hitsByUrl2, server2, indexJson2, localRepo);
                 });
 
                 server.Start();
@@ -773,8 +775,6 @@ namespace NuGet.CommandLine.Test
                 {
                     Assert.True(1 == hitsByUrl[url], url);
                 }
-
-                Assert.Equal(10, hitsByUrl.Count);
             }
         }
 
@@ -821,6 +821,8 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args),
                     waitForExit: true);
 
+                server.Stop();
+
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
                 Assert.Equal(1, hitsByUrl["/index.json"]);
@@ -829,10 +831,6 @@ namespace NuGet.CommandLine.Test
                 {
                     Assert.True(1 == hitsByUrl[url], url);
                 }
-
-                var urls = hitsByUrl.Count + "|" + String.Join("|", hitsByUrl.Select(e => $"{e.Key} {e.Value}"));
-
-                Assert.True(4 == hitsByUrl.Count, urls);
             }
         }
 
@@ -888,8 +886,6 @@ namespace NuGet.CommandLine.Test
                 {
                     Assert.True(1 == hitsByUrl[url], url);
                 }
-
-                Assert.Equal(4, hitsByUrl.Count);
             }
         }
 
@@ -1217,6 +1213,16 @@ namespace NuGet.CommandLine.Test
             }
 
             throw new Exception("This test needs to be updated to support: " + path);
+        }
+
+        private static int GetMachineCacheCount()
+        {
+            if (Directory.Exists(MachineCache.Default.Source))
+            {
+                return Directory.GetFiles(MachineCache.Default.Source).Count();
+            }
+
+            return 0;
         }
 
         /// <summary>

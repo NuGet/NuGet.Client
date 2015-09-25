@@ -33,16 +33,28 @@ namespace NuGet.CommandLine.Test
                 RedirectStandardInput = inputAction != null
             };
 
-            StreamReader standardOutput;
-            StreamReader errorOutput;
             int exitCode = 1;
+
+            var output = new StringBuilder();
+            var errors = new StringBuilder();
 
             using (Process p = new Process())
             {
+                p.OutputDataReceived += (o, e) =>
+                {
+                    output.AppendLine(e.Data);
+                };
+
+                p.ErrorDataReceived += (o, e) =>
+                {
+                    errors.AppendLine(e.Data);
+                };
+
                 p.StartInfo = psi;
                 p.Start();
-                standardOutput = p.StandardOutput;
-                errorOutput = p.StandardError;
+
+                p.BeginErrorReadLine();
+                p.BeginOutputReadLine();
 
                 if (inputAction != null)
                 {
@@ -58,16 +70,13 @@ namespace NuGet.CommandLine.Test
                     }
                 }
 
-                result = standardOutput.ReadToEnd();
-                error = errorOutput.ReadToEnd();
-
                 if (p.HasExited)
                 {
                     exitCode = p.ExitCode;
                 }
             }
 
-            return Tuple.Create(exitCode, result, error);
+            return Tuple.Create(exitCode, output.ToString(), error.ToString());
         }
     }
 }
