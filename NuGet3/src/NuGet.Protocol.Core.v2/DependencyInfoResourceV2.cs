@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -149,7 +148,32 @@ namespace NuGet.Protocol.Core.v2
                 }
             }
 
-            return new SourcePackageDependencyInfo(identity, deps, PackageExtensions.IsListed(packageVersion), _source);
+            SourcePackageDependencyInfo result = null;
+
+            var dataPackage = packageVersion as DataServicePackage;
+
+            if (dataPackage != null)
+            {
+                // Online package
+                result = new SourcePackageDependencyInfo(
+                    identity,
+                    deps,
+                    PackageExtensions.IsListed(packageVersion),
+                    _source,
+                    dataPackage.DownloadUrl,
+                    dataPackage.PackageHash);
+            }
+            else
+            {
+                // Offline package
+                result = new SourcePackageDependencyInfo(
+                    identity,
+                    deps,
+                    PackageExtensions.IsListed(packageVersion),
+                    _source);
+            }
+
+            return result;
         }
 
         private static NuGetFramework GetFramework(PackageDependencySet dependencySet)
