@@ -1,0 +1,34 @@
+﻿{
+  "version": "3.3.0-*",
+  "authors": [
+    "NuGet"
+  ],
+  "description": "NuGet Protocol v2",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "projectUrl": "https://github.com/NuGet/NuGet.Protocol/",
+  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE",
+  "tags": [
+    "nuget protocol"
+  ],
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "NuGet.Configuration": "3.3.0-*",
+    "NuGet.Packaging": "3.3.0-*",
+    "NuGet.Protocol.Core.Types": "3.3.0-*",
+    "NuGet.Core": "2.9.0",
+    "NuGet.Common": {
+      "type": "build",
+      "version": "3.3.0-*"
+    }
+  },
+  "frameworks": {
+    "net45": {
+      "frameworkAssemblies": {
+        "System.Collections.Concurrent": "",
+        "System.Runtime.Serialization": ""
+      }
+    }
+  }
+}

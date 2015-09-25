@@ -1,0 +1,18 @@
+﻿{
+  "version": "3.3.0-*",
+  "dependencies": {
+    "NuGet.LibraryModel": "3.3.0-*",
+    "NuGet.Frameworks": "3.3.0-*",
+    "NuGet.Protocol.Core.v3": "3.3.0-*",
+    "NuGet.Repositories": "3.3.0-*",
+    "NuGet.RuntimeModel": "3.3.0-*",
+    "NuGet.Common": {
+      "type": "build",
+      "version": "3.3.0-*"
+    }
+  },
+  "frameworks": {
+    "net45": {},
+    "dnxcore50": {}
+  }
+}

@@ -1,0 +1,25 @@
+﻿{
+  "version": "3.3.0-*",
+  "description": "NuGet's dependency resolver within the NuGet.Packaging package",
+  "authors": [
+    "NuGet"
+  ],
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "projectUrl": "https://github.com/NuGet/NuGet.Packaging/",
+  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Packaging/master/LICENSE",
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "NuGet.Packaging": "3.3.0-*",
+    "NuGet.Protocol.Core.Types": "3.3.0-*",
+    "NuGet.Common": {
+      "type": "build",
+      "version": "3.3.0-*"
+    }
+  },
+  "frameworks": {
+    "net45": {},
+    "dnxcore50": {}
+  }
+}

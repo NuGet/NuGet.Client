@@ -1,0 +1,22 @@
+﻿{
+  "version": "3.3.0-*",
+  "dependencies": {
+    "Newtonsoft.Json": "6.0.6",
+    "NuGet.DependencyResolver.Core": "3.3.0-*",
+    "NuGet.Common": {
+      "type": "build",
+      "version": "3.3.0-*"
+    }
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "frameworks": {
+    "net45": {},
+    "dnxcore50": {
+      "dependencies": {
+        "System.Dynamic.Runtime": "4.0.10-*"
+      }
+    }
+  }
+}

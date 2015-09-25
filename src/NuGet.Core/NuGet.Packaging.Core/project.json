@@ -1,0 +1,36 @@
+﻿{
+  "version": "3.3.0-*",
+  "description": "The core data structures for NuGet.Packaging",
+  "authors": [
+    "NuGet"
+  ],
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "projectUrl": "https://github.com/NuGet/NuGet.Packaging/",
+  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Packaging/master/LICENSE",
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "NuGet.Packaging.Core.Types": "3.3.0-*",
+    "NuGet.Common": {
+      "type": "build",
+      "version": "3.3.0-*"
+    }
+  },
+  "frameworks": {
+    "net45": {
+      "frameworkAssemblies": {
+        "System.Xml": "",
+        "System.Xml.Linq": "",
+        "System.IO.Compression": ""
+      }
+    },
+    "dnxcore50": {
+      "dependencies": {
+        "System.IO": "4.0.10-beta-*",
+        "System.IO.Compression": "4.0.0-beta-*",
+        "System.Xml.XDocument": "4.0.10-beta-*"
+      }
+    }
+  }
+}

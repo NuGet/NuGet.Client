@@ -1,0 +1,47 @@
+﻿{
+  "version": "3.3.0-*",
+  "authors": [
+    "NuGet"
+  ],
+  "description": "NuGet Protocol for 3.1.0 servers",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "projectUrl": "https://github.com/NuGet/NuGet.Protocol/",
+  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE",
+  "tags": [
+    "nuget protocol"
+  ],
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "NuGet.Common": {
+      "type": "build",
+      "version": "3.3.0-*"
+    },
+    "NuGet.Logging": "3.3.0-*",
+    "NuGet.Packaging": "3.3.0-*",
+    "NuGet.Protocol.Core.Types": "3.3.0-*",
+    "Newtonsoft.Json": "6.0.6"
+  },
+  "frameworks": {
+    "net45": {
+      "frameworkAssemblies": {
+        "System.Collections.Concurrent": "",
+        "System.IdentityModel": "",
+        "System.Net.Http": "",
+        "System.Net.Http.WebRequest": "",
+        "System.ServiceModel": ""
+      }
+    },
+    "dnxcore50": {
+      "dependencies": {
+        "System.Dynamic.Runtime": "4.0.10-beta-*",
+        "System.Net.Http.WinHttpHandler": "4.0.0-beta-*",
+        "System.ObjectModel": "4.0.10-beta-*",
+        "System.Runtime.InteropServices": "4.0.20-beta-*",
+        "System.Threading": "4.0.10-beta-*",
+        "System.Threading.Thread": "4.0.0-beta-*"
+      }
+    }
+  }
+}

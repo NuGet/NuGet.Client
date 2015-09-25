@@ -1,0 +1,14 @@
+﻿{
+  "dependencies": {
+    "Microsoft.Bcl": "1.1.9",
+    "Microsoft.Bcl.Build": "1.0.21",
+    "NuGet.PackageManagement": "3.3.0-*",
+    "NuGet.Protocol.VisualStudio": "3.3.0-*"
+  },
+  "frameworks": {
+    "net45": {}
+  },
+  "runtimes": {
+    "win-anycpu": {}
+  }
+}
