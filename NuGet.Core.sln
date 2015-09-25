@@ -10,47 +10,47 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.CommandLine.XPlat", "src\NuGet.CommandLine.XPlat\NuGet.CommandLine.XPlat.xproj", "{ECEA066F-F40D-4397-B2CE-8CA24AC22638}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.CommandLine.XPlat", "src\NuGet.Core\NuGet.CommandLine.XPlat\NuGet.CommandLine.XPlat.xproj", "{ECEA066F-F40D-4397-B2CE-8CA24AC22638}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Client", "src\NuGet.Client\NuGet.Client.xproj", "{BA3543A8-874C-4F42-8757-C7EF7D17C8EE}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Client", "src\NuGet.Core\NuGet.Client\NuGet.Client.xproj", "{BA3543A8-874C-4F42-8757-C7EF7D17C8EE}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Versioning", "src\NuGet.Versioning\NuGet.Versioning.xproj", "{24E62AB7-64E4-4975-9417-883559D1BC19}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Versioning", "src\NuGet.Core\NuGet.Versioning\NuGet.Versioning.xproj", "{24E62AB7-64E4-4975-9417-883559D1BC19}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Packaging", "src\NuGet.Packaging\NuGet.Packaging.xproj", "{BD6BBC90-60BE-4E7D-8458-91E9CDA66ABE}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Packaging", "src\NuGet.Core\NuGet.Packaging\NuGet.Packaging.xproj", "{BD6BBC90-60BE-4E7D-8458-91E9CDA66ABE}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Repositories", "src\NuGet.Repositories\NuGet.Repositories.xproj", "{24DE9E2C-4ADC-48E6-ADF0-1E2B00596ECD}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Repositories", "src\NuGet.Core\NuGet.Repositories\NuGet.Repositories.xproj", "{24DE9E2C-4ADC-48E6-ADF0-1E2B00596ECD}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Common", "src\NuGet.Common\NuGet.Common.xproj", "{98BEE375-A5A0-4FC2-9B7A-25DB41C8045D}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Common", "src\NuGet.Core\NuGet.Common\NuGet.Common.xproj", "{98BEE375-A5A0-4FC2-9B7A-25DB41C8045D}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Packaging.Core", "src\NuGet.Packaging.Core\NuGet.Packaging.Core.xproj", "{D65583E4-8084-466A-BA4B-55A797EA047B}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Packaging.Core", "src\NuGet.Core\NuGet.Packaging.Core\NuGet.Packaging.Core.xproj", "{D65583E4-8084-466A-BA4B-55A797EA047B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Frameworks", "src\NuGet.Frameworks\NuGet.Frameworks.xproj", "{9A9A9F26-597A-4FA6-A4F1-415063484D9C}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Frameworks", "src\NuGet.Core\NuGet.Frameworks\NuGet.Frameworks.xproj", "{9A9A9F26-597A-4FA6-A4F1-415063484D9C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.ContentModel", "src\NuGet.ContentModel\NuGet.ContentModel.xproj", "{6CA365CF-221D-4E7A-99B2-162AAC486D24}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.ContentModel", "src\NuGet.Core\NuGet.ContentModel\NuGet.ContentModel.xproj", "{6CA365CF-221D-4E7A-99B2-162AAC486D24}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Packaging.Core.Types", "src\NuGet.Packaging.Core.Types\NuGet.Packaging.Core.Types.xproj", "{46275450-3B62-4E89-8F7E-3FE2EE8513D2}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Packaging.Core.Types", "src\NuGet.Core\NuGet.Packaging.Core.Types\NuGet.Packaging.Core.Types.xproj", "{46275450-3B62-4E89-8F7E-3FE2EE8513D2}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.ProjectModel", "src\NuGet.ProjectModel\NuGet.ProjectModel.xproj", "{F013E43F-B6D5-4F59-ACF0-EECEC2C794F5}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.ProjectModel", "src\NuGet.Core\NuGet.ProjectModel\NuGet.ProjectModel.xproj", "{F013E43F-B6D5-4F59-ACF0-EECEC2C794F5}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Configuration", "src\NuGet.Configuration\NuGet.Configuration.xproj", "{E3EF26E1-80A7-4573-B3A4-1D4B0042616E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Configuration", "src\NuGet.Core\NuGet.Configuration\NuGet.Configuration.xproj", "{E3EF26E1-80A7-4573-B3A4-1D4B0042616E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.RuntimeModel", "src\NuGet.RuntimeModel\NuGet.RuntimeModel.xproj", "{79FA1E82-C09B-4F6E-B4E0-CF0F8AE5D365}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.RuntimeModel", "src\NuGet.Core\NuGet.RuntimeModel\NuGet.RuntimeModel.xproj", "{79FA1E82-C09B-4F6E-B4E0-CF0F8AE5D365}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.LibraryModel", "src\NuGet.LibraryModel\NuGet.LibraryModel.xproj", "{13883E8E-7DE1-4EDD-8E4A-C5357BA8CD81}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.LibraryModel", "src\NuGet.Core\NuGet.LibraryModel\NuGet.LibraryModel.xproj", "{13883E8E-7DE1-4EDD-8E4A-C5357BA8CD81}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.DependencyResolver.Core", "src\NuGet.DependencyResolver.Core\NuGet.DependencyResolver.Core.xproj", "{CF8E1753-EE98-410F-BB4B-6624B19C6B64}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.DependencyResolver.Core", "src\NuGet.Core\NuGet.DependencyResolver.Core\NuGet.DependencyResolver.Core.xproj", "{CF8E1753-EE98-410F-BB4B-6624B19C6B64}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Packaging.Build", "src\NuGet.Packaging.Build\NuGet.Packaging.Build.xproj", "{0B486712-FA2E-42D7-A8E5-C836138EF13A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Packaging.Build", "src\NuGet.Core\NuGet.Packaging.Build\NuGet.Packaging.Build.xproj", "{0B486712-FA2E-42D7-A8E5-C836138EF13A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.Core.Types", "src\NuGet.Protocol.Core.Types\NuGet.Protocol.Core.Types.xproj", "{37C02980-2278-4494-8FF7-208D8078C21E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.Core.Types", "src\NuGet.Core\NuGet.Protocol.Core.Types\NuGet.Protocol.Core.Types.xproj", "{37C02980-2278-4494-8FF7-208D8078C21E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.Core.v3", "src\NuGet.Protocol.Core.v3\NuGet.Protocol.Core.v3.xproj", "{020F4C88-3A5C-4B89-9868-089E867CC223}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.Core.v3", "src\NuGet.Core\NuGet.Protocol.Core.v3\NuGet.Protocol.Core.v3.xproj", "{020F4C88-3A5C-4B89-9868-089E867CC223}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.Core.v2", "src\NuGet.Protocol.Core.v2\NuGet.Protocol.Core.v2.xproj", "{47120CFB-BAFA-4FCC-B35A-AC62907D3AF4}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.Core.v2", "src\NuGet.Core\NuGet.Protocol.Core.v2\NuGet.Protocol.Core.v2.xproj", "{47120CFB-BAFA-4FCC-B35A-AC62907D3AF4}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.VisualStudio", "src\NuGet.Protocol.VisualStudio\NuGet.Protocol.VisualStudio.xproj", "{DE390D30-B8FF-44D7-8411-A4553B38A0B1}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.VisualStudio", "src\NuGet.Core\NuGet.Protocol.VisualStudio\NuGet.Protocol.VisualStudio.xproj", "{DE390D30-B8FF-44D7-8411-A4553B38A0B1}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Resolver", "src\NuGet.Resolver\NuGet.Resolver.xproj", "{51AA27A9-B8B4-458F-9211-E6889B441573}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Resolver", "src\NuGet.Core\NuGet.Resolver\NuGet.Resolver.xproj", "{51AA27A9-B8B4-458F-9211-E6889B441573}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{7323F93B-D141-4001-BB9E-7AF14031143E}"
 EndProject
@@ -72,11 +72,11 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Versioning.Test", "te
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.Core.v2.Tests", "test\NuGet.Protocol.Core.v2.Tests\NuGet.Protocol.Core.v2.Tests.xproj", "{C7CB867C-CD8C-4417-BFFC-E6E8F7C0C72C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Commands", "src\NuGet.Commands\NuGet.Commands.xproj", "{567E8582-0E73-4A34-A7D3-ED9486415523}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Commands", "src\NuGet.Core\NuGet.Commands\NuGet.Commands.xproj", "{567E8582-0E73-4A34-A7D3-ED9486415523}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.DependencyResolver", "src\NuGet.DependencyResolver\NuGet.DependencyResolver.xproj", "{002AE92E-01E5-4A38-996B-731A7A048D58}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.DependencyResolver", "src\NuGet.Core\NuGet.DependencyResolver\NuGet.DependencyResolver.xproj", "{002AE92E-01E5-4A38-996B-731A7A048D58}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Logging", "src\NuGet.Logging\NuGet.Logging.xproj", "{C1C5B715-CD4C-44C2-B074-BA638612AC2F}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Logging", "src\NuGet.Core\NuGet.Logging\NuGet.Logging.xproj", "{C1C5B715-CD4C-44C2-B074-BA638612AC2F}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.DependencyResolver.Core.Tests", "test\NuGet.DependencyResolver.Core.Tests\NuGet.DependencyResolver.Core.Tests.xproj", "{AD489758-39EE-43D6-B4B0-F94F2E465044}"
 EndProject
@@ -88,19 +88,19 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.ProjectModel.Test", "
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.DependencyResolver.Tests", "test\NuGet.DependencyResolver.Tests\NuGet.DependencyResolver.Tests.xproj", "{D8420941-38DF-4954-9623-7C52F319E9E6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Test.Utility", "src\NuGet.Test.Utility\NuGet.Test.Utility.xproj", "{DAA50E3A-79B8-42B7-81D8-EEB0FA41F0DB}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Test.Utility", "src\NuGet.Core\NuGet.Test.Utility\NuGet.Test.Utility.xproj", "{DAA50E3A-79B8-42B7-81D8-EEB0FA41F0DB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.Test.Utility", "src\NuGet.Protocol.Test.Utility\NuGet.Protocol.Test.Utility.xproj", "{F9EE08EE-2A5D-4B15-B62C-A77B73C4B140}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.Test.Utility", "src\NuGet.Core\NuGet.Protocol.Test.Utility\NuGet.Protocol.Test.Utility.xproj", "{F9EE08EE-2A5D-4B15-B62C-A77B73C4B140}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.PackageManagement", "src\NuGet.PackageManagement\NuGet.PackageManagement.xproj", "{394AEB96-493C-4839-A5AC-8D93CD2FAD40}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.PackageManagement", "src\NuGet.Core\NuGet.PackageManagement\NuGet.PackageManagement.xproj", "{394AEB96-493C-4839-A5AC-8D93CD2FAD40}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.ProjectManagement", "src\NuGet.ProjectManagement\NuGet.ProjectManagement.xproj", "{2995463D-9849-4BD3-8A87-0B7E1C5E6812}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.ProjectManagement", "src\NuGet.Core\NuGet.ProjectManagement\NuGet.ProjectManagement.xproj", "{2995463D-9849-4BD3-8A87-0B7E1C5E6812}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.PackageManagement.Test", "test\NuGet.PackageManagement.Test\NuGet.PackageManagement.Test.xproj", "{118222E0-C4A0-4141-9637-5D9EFE79D7C4}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.ProjectManagement.Test", "test\NuGet.ProjectManagement.Test\NuGet.ProjectManagement.Test.xproj", "{22FAED52-0AD6-493B-8091-6404EF3B255B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Test.Utility", "src\Test.Utility\Test.Utility.xproj", "{CA285053-F013-45CC-A2EA-7581A37585D4}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Test.Utility", "src\NuGet.Core\Test.Utility\Test.Utility.xproj", "{CA285053-F013-45CC-A2EA-7581A37585D4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

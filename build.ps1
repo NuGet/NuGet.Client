@@ -94,7 +94,7 @@ function BuildXproj()
     }
 
     $artifacts = Join-Path $executingScriptDirectory "artifacts"
-    $artifactsSrc = Join-Path $artifacts "src"
+    $artifactsSrc = Join-Path $artifacts "src\NuGet.Core"
     $nupkgsDir = Join-Path $executingScriptDirectory "nupkgs"
     $artifactsTest = Join-Path $artifacts "test"
 
@@ -146,7 +146,7 @@ function BuildXproj()
 
     ## Coping nupkgs
     Write-Host "Coping the packages to" $artifactsPackages
-    Get-ChildItem *.nupkg -Recurse | % { Move-Item $_ $nupkgsDir }
+    Get-ChildItem $artifacts\*.nupkg -Recurse | % { Move-Item $_ $nupkgsDir }
 }
 
 function BuildCSproj()
