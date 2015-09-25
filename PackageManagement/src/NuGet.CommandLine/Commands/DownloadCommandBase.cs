@@ -105,9 +105,22 @@ namespace NuGet.CommandLine
             var availableSources = SourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
             var packageSources = new List<Configuration.PackageSource>();
 
-            if (!NoCache && !string.IsNullOrEmpty(MachineCache.Default?.Source))
+            if (!NoCache)
             {
-                packageSources.Add(new V2PackageSource(MachineCache.Default.Source, () => MachineCache.Default));
+                // Add the v2 machine cache
+                if (!string.IsNullOrEmpty(MachineCache.Default?.Source))
+                {
+                    packageSources.Add(new V2PackageSource(MachineCache.Default.Source, () => MachineCache.Default));
+                }
+
+                // Add the v3 global packages folder
+                var globalPackageFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
+
+                if (!string.IsNullOrEmpty(globalPackageFolder) && Directory.Exists(globalPackageFolder))
+                {
+                    packageSources.Add(new V2PackageSource(globalPackageFolder, 
+                        () => new LocalPackageRepository(globalPackageFolder)));
+                }
             }
 
             foreach (var source in Source)
