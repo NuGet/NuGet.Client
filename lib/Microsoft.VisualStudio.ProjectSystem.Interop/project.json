@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0-*",
+  "frameworks": {
+    "net45": {
+      "bin": {
+        "assembly": "Microsoft.VisualStudio.ProjectSystem.Interop.dll"
+      }
+    }
+  }
+}

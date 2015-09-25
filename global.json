@@ -1,5 +1,6 @@
 {
-    "sources": [
-      "src" 
-    ]
+  "projects": [
+    "src",
+    "lib"
+  ]
 }

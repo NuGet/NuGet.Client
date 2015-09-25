@@ -1,16 +1,20 @@
 ﻿{
   "version": "3.3.0-*",
   "dependencies": {
-	"NuGet.PackageManagement": "3.3.0-*",
-    "DotNetZip": "1.9.3",
+    "NuGet.PackageManagement": "3.3.0-*",
+    "NuGet.ProjectManagement": "3.3.0-*",
     "NuGet.Protocol.VisualStudio": "3.3.0-*",
+    "Microsoft.VisualStudio.ProjectSystem.Interop": "",
+    "DotNetZip": "1.9.3",
     "xunit": "2.1.0-rc1-build3168"
   },
   "frameworks": {
     "net45": {
-		"bin": {
-			"assembly": "../../lib/Microsoft.VisualStudio.ProjectSystem.Interop.dll"
-		}
-	}
+      "frameworkAssemblies": {
+        "System.Threading.Tasks": "", 
+        "System.Runtime": "",
+        "System.Runtime.Serialization": ""
+      }
+    }
   }
 }

@@ -5,6 +5,8 @@
     <NuGetPackageImportStamp>d386b432</NuGetPackageImportStamp>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <PackagesDirectory>$(UserProfile)\.nuget\packages</PackagesDirectory>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '14.0'">
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
@@ -32,6 +34,12 @@
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Mono Release'">
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
   <Import Project="..\..\Build\Common.props" Condition="Exists('..\..\Build\Common.props')" />
   <PropertyGroup>
     <ProjectGuid>{D0F9864B-D782-4471-81A2-29555E5DC0D7}</ProjectGuid>
@@ -50,6 +58,7 @@
     <StartAction>Program</StartAction>
     <StartProgram>$(MSBuildProgramFiles32)\Microsoft Visual Studio $(VisualStudioVersion)\Common7\IDE\devenv.exe</StartProgram>
     <StartArguments>/rootsuffix Exp /log</StartArguments>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <Choose>
     <When Condition="Exists($(VsSdkTargets))">

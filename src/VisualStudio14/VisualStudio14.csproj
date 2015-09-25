@@ -3,9 +3,12 @@
   <Import Project="..\..\Build\Common.props" Condition="Exists('..\..\Build\Common.props')" />
   <PropertyGroup>
     <NoWarn>1762</NoWarn>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS;VS12</DefineConstants>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <ProjectGuid>{EEA49A74-6EFC-410E-9745-BAD367AC151D}</ProjectGuid>
@@ -29,11 +32,13 @@
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Mono Release'">
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="$(MSBuildAssembly)" />
-    <Reference Include="$(ShellAssembly)">
-      <HintPath>$(ShellAssemblyHintPath)</HintPath>
-    </Reference>
     <Reference Include="envdte, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>

@@ -4,6 +4,11 @@
     <PackagesDirectory>$(UserProfile)\.nuget\packages</PackagesDirectory>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <SkipValidatePackageReferences>true</SkipValidatePackageReferences>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <Import Project="..\..\..\Build\Common.props" Condition="Exists('..\..\..\Build\Common.props')" />
   <PropertyGroup>
