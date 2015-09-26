@@ -7,7 +7,7 @@ namespace NuGet.Protocol.Core.v2
     /// <summary>
     /// A simple wrapper used to pass a package identity in a legacy IPackageMetadata.
     /// </summary>
-    public class PackageNameWrapper : IPackageMetadata
+    internal class PackageNameWrapper : IPackageMetadata
     {
         private readonly PackageIdentity _identity;
 

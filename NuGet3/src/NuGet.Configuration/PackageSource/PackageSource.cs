@@ -14,6 +14,7 @@ namespace NuGet.Configuration
 
         private readonly int _hashCode;
         private bool? _isHttp;
+        private bool? _isLocal;
 
         public string Name { get; private set; }
 
@@ -55,6 +56,30 @@ namespace NuGet.Configuration
                 }
 
                 return _isHttp.Value;
+            }
+        }
+
+        /// <summary>
+        /// True if the source path is file based. Unc shares are not included.
+        /// </summary>
+        public bool IsLocal
+        {
+            get
+            {
+                if (!_isLocal.HasValue)
+                {
+                    Uri uri;
+                    if (Uri.TryCreate(Source, UriKind.Absolute, out uri))
+                    {
+                        _isLocal = uri.IsFile;
+                    }
+                    else
+                    {
+                        _isLocal = false;
+                    }
+                }
+
+                return _isLocal.Value;
             }
         }
 
