@@ -112,10 +112,29 @@ namespace NuGet.PackageManagement
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.DownloadResourceNotFound, sourceRepository.PackageSource.Source));
             }
 
-            var downloadResourceResult = await downloadResource.GetDownloadResourceResultAsync(packageIdentity, settings, token);
+            DownloadResourceResult downloadResourceResult = null;
+
+            // Check if the package identity has the download url
+            var sourceInfo = packageIdentity as SourcePackageDependencyInfo;
+
+            if (sourceInfo != null)
+            {
+                downloadResourceResult
+                    = await downloadResource.GetDownloadResourceResultAsync(sourceInfo, settings, token);
+            }
+            else
+            {
+                downloadResourceResult 
+                    = await downloadResource.GetDownloadResourceResultAsync(packageIdentity, settings, token);
+            }
+
             if (downloadResourceResult == null)
             {
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.DownloadStreamNotAvailable, packageIdentity, sourceRepository.PackageSource.Source));
+                throw new InvalidOperationException(string.Format(
+                    CultureInfo.CurrentCulture, 
+                    Strings.DownloadStreamNotAvailable, 
+                    packageIdentity, 
+                    sourceRepository.PackageSource.Source));
             }
 
             if (downloadResourceResult.PackageReader == null)
