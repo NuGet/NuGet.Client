@@ -126,49 +126,53 @@ namespace NuGet.Protocol.Core.v2
 
                 try
                 {
-                    var package = V2Client.FindPackage(identity.Id, version);
+                    var dataServiceRepo = V2Client as DataServicePackageRepository;
 
-                    token.ThrowIfCancellationRequested();
-
-                    if (package != null)
+                    if (dataServiceRepo != null)
                     {
+                        var sourceUri = new Uri(dataServiceRepo.Source);
+                        dataServiceRepo = new DataServicePackageRepository(sourceUri);
+                    }
+
+                    if (dataServiceRepo != null)
+                    {
+                        var package = dataServiceRepo.FindPackage(identity.Id, version);
+                        token.ThrowIfCancellationRequested();
+
+                        // For online sources get the url and retrieve it with cancel support
                         var dataServicePackage = package as DataServicePackage;
-                        var dataServiceRepo = V2Client as DataServicePackageRepository;
+                        var url = dataServicePackage.DownloadUrl;
 
-                        if (dataServicePackage != null && dataServiceRepo != null)
+                        var downloadedPackage = DownloadToMachineCache(
+                            MachineCache.Default,
+                            identity,
+                            dataServiceRepo,
+                            url,
+                            token);
+
+                        if (downloadedPackage != null)
                         {
-                            // For online sources get the url and retrieve it with cancel support
-                            var url = dataServicePackage.DownloadUrl;
+                            return new DownloadResourceResult(downloadedPackage.GetStream());
+                        }
+                    }
+                    else
+                    {
+                        var package = V2Client.FindPackage(identity.Id, version);
 
-                            var downloadedPackage = DownloadToMachineCache(
-                                MachineCache.Default,
-                                identity,
-                                dataServiceRepo,
-                                url,
-                                token);
-
-                            if (downloadedPackage != null)
+                        // Use a folder reader for unzipped repos
+                        if (V2Client is UnzippedPackageRepository)
+                        {
+                            var packagePath = Path.Combine(V2Client.Source, identity.Id + "." + version);
+                            var directoryInfo = new DirectoryInfo(packagePath);
+                            if (directoryInfo.Exists)
                             {
-                                return new DownloadResourceResult(downloadedPackage.GetStream());
+                                return new DownloadResourceResult(
+                                    package.GetStream(),
+                                    new PackageFolderReader(directoryInfo));
                             }
                         }
-                        else
-                        {
-                            // Use a folder reader for unzipped repos
-                            if (V2Client is UnzippedPackageRepository)
-                            {
-                                var packagePath = Path.Combine(V2Client.Source, identity.Id + "." + version);
-                                var directoryInfo = new DirectoryInfo(packagePath);
-                                if (directoryInfo.Exists)
-                                {
-                                    return new DownloadResourceResult(
-                                        package.GetStream(),
-                                        new PackageFolderReader(directoryInfo));
-                                }
-                            }
 
-                            return new DownloadResourceResult(package.GetStream());
-                        }
+                        return new DownloadResourceResult(package.GetStream());
                     }
 
                     return null;

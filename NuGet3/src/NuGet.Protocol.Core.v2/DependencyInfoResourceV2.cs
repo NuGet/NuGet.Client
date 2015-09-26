@@ -63,7 +63,7 @@ namespace NuGet.Protocol.Core.v2
                 try
                 {
                     // Retrieve all packages
-                    var repoPackage = V2Client.FindPackage(package.Id, legacyVersion, allowPrereleaseVersions: true, allowUnlisted: true);
+                    var repoPackage = GetSource().FindPackage(package.Id, legacyVersion, allowPrereleaseVersions: true, allowUnlisted: true);
 
                     if (repoPackage != null)
                     {
@@ -110,7 +110,7 @@ namespace NuGet.Protocol.Core.v2
             try
             {
                 // Retrieve all packages
-                var repoPackages = V2Client.FindPackagesById(packageId);
+                var repoPackages = GetSource().FindPackagesById(packageId);
 
                 // Convert from v2 to v3 types and enumerate the list to finish all server requests before returning
                 results = repoPackages.Select(p => CreateDependencyInfo(p, projectFramework)).ToList();
@@ -174,6 +174,19 @@ namespace NuGet.Protocol.Core.v2
             }
 
             return result;
+        }
+
+        private IPackageRepository GetSource()
+        {
+            var dataServiceRepo = V2Client as DataServicePackageRepository;
+
+            if (dataServiceRepo != null)
+            {
+                var sourceUri = new Uri(dataServiceRepo.Source);
+                dataServiceRepo = new DataServicePackageRepository(sourceUri);
+            }
+
+            return dataServiceRepo ?? V2Client;
         }
 
         private static NuGetFramework GetFramework(PackageDependencySet dependencySet)

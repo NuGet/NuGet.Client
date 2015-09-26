@@ -56,34 +56,41 @@ namespace NuGet.Protocol.Core.v3
 
                 using (var client = new DataClient(messageHandlerResource))
                 {
-                    var response = await client.GetAsync(uri, token);
-
-                    if (response.IsSuccessStatusCode)
+                    try
                     {
-                        if (HttpHandlerResourceV3.CredentialsSuccessfullyUsed != null && credentials != null)
-                        {
-                            HttpHandlerResourceV3.CredentialsSuccessfullyUsed(uri, credentials);
-                        }
+                        var response = await client.GetAsync(uri, token);
 
-                        var text = await response.Content.ReadAsStringAsync();
-                        return JObject.Parse(text);
-                    }
-                    else if (response.StatusCode == HttpStatusCode.Unauthorized)
-                    {
-                        credentials = null;
-                        if (HttpHandlerResourceV3.PromptForCredentials != null)
+                        if (response.IsSuccessStatusCode)
                         {
-                            credentials = HttpHandlerResourceV3.PromptForCredentials(uri);
-                        }
+                            if (HttpHandlerResourceV3.CredentialsSuccessfullyUsed != null && credentials != null)
+                            {
+                                HttpHandlerResourceV3.CredentialsSuccessfullyUsed(uri, credentials);
+                            }
 
-                        if (credentials == null)
+                            var text = await response.Content.ReadAsStringAsync();
+                            return JObject.Parse(text);
+                        }
+                        else if (response.StatusCode == HttpStatusCode.Unauthorized)
+                        {
+                            credentials = null;
+                            if (HttpHandlerResourceV3.PromptForCredentials != null)
+                            {
+                                credentials = HttpHandlerResourceV3.PromptForCredentials(uri);
+                            }
+
+                            if (credentials == null)
+                            {
+                                response.EnsureSuccessStatusCode();
+                            }
+                        }
+                        else
                         {
                             response.EnsureSuccessStatusCode();
                         }
                     }
-                    else
+                    catch (Exception)
                     {
-                        response.EnsureSuccessStatusCode();
+                        throw;
                     }
                 }
             }
