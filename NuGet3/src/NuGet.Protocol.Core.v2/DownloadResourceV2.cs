@@ -26,93 +26,12 @@ namespace NuGet.Protocol.Core.v2
             V2Client = resource.V2Client;
         }
 
-        public override async Task<DownloadResourceResult> GetDownloadResourceResultAsync(
-            SourcePackageDependencyInfo package,
-            Configuration.ISettings settings,
-            CancellationToken token)
-        {
-            if (package == null)
-            {
-                throw new ArgumentNullException(nameof(package));
-            }
-
-            return await Task.Run(async () =>
-                {
-                    var dataServiceRepo = V2Client as DataServicePackageRepository;
-                    IPackage newPackage = null;
-
-                    // Using the below code the machine cache can be used with a hash. The fallback
-                    // is to just download the package.
-                    //
-                    // If this is a SourcePackageDependencyInfo object with everything populated 
-                    // and it is from an online source, use the machine cache and download it using the
-                    // given url.
-                    // If this info is not provided fallback to the old method.
-                    if (dataServiceRepo != null
-                            && !string.IsNullOrEmpty(package.PackageHash)
-                            && package.DownloadUri != null)
-                    {
-                        var version = SemanticVersion.Parse(package.Version.ToString());
-                        var cacheRepository = MachineCache.Default;
-
-                        try
-                        {
-                            try
-                            {
-                                // Try finding the package in the machine cache
-                                var localPackage = cacheRepository.FindPackage(package.Id, version)
-                                    as OptimizedZipPackage;
-
-                                // Validate the package matches the hash
-                                if (localPackage != null
-                                    && localPackage.IsValid
-                                    && MatchPackageHash(localPackage, package.PackageHash))
-                                {
-                                    newPackage = localPackage;
-                                }
-                            }
-                            catch
-                            {
-                                // Ignore cache failures here to match NuGet.Core
-                                // The bad package will be deleted and replaced during the download.
-                            }
-
-                            // If the local package does not exist in the cache download it from the source
-                            if (newPackage == null)
-                            {
-                                newPackage = DownloadToMachineCache(
-                                    cacheRepository, 
-                                    package, 
-                                    dataServiceRepo, 
-                                    package.DownloadUri,
-                                    token);
-                            }
-
-                            // Read the package from the machine cache
-                            if (newPackage != null)
-                            {
-                                return new DownloadResourceResult(newPackage.GetStream());
-                            }
-
-                            return null;
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new NuGetProtocolException(Strings.FormatProtocol_FailedToDownloadPackage(package, V2Client.Source), ex);
-                        }
-                    }
-
-                    // package did not contain the needed info, fall back to looking up the package
-                    return await GetDownloadResourceResultAsync(package, settings, token);
-                });
-        }
-
-        public override Task<DownloadResourceResult> GetDownloadResourceResultAsync(PackageIdentity identity,
+        public override Task<DownloadResourceResult> GetDownloadResourceResultAsync(
+            PackageIdentity identity,
             Configuration.ISettings settings,
             CancellationToken token)
         {
             // settings are not used here, since, global packages folder are not used for v2 sources
-
             if (identity == null)
             {
                 throw new ArgumentNullException(nameof(identity));
@@ -122,60 +41,27 @@ namespace NuGet.Protocol.Core.v2
             {
                 token.ThrowIfCancellationRequested();
 
-                var version = SemanticVersion.Parse(identity.Version.ToString());
-
                 try
                 {
+                    var sourcePackage = identity as SourcePackageDependencyInfo;
                     var dataServiceRepo = V2Client as DataServicePackageRepository;
 
-                    if (dataServiceRepo != null)
+                    if (sourcePackage != null 
+                        && dataServiceRepo != null
+                        && sourcePackage.PackageHash != null
+                        && sourcePackage.DownloadUri != null)
                     {
-                        var sourceUri = new Uri(dataServiceRepo.Source);
-                        dataServiceRepo = new DataServicePackageRepository(sourceUri);
-                    }
-
-                    if (dataServiceRepo != null)
-                    {
-                        var package = dataServiceRepo.FindPackage(identity.Id, version);
-                        token.ThrowIfCancellationRequested();
-
-                        // For online sources get the url and retrieve it with cancel support
-                        var dataServicePackage = package as DataServicePackage;
-                        var url = dataServicePackage.DownloadUrl;
-
-                        var downloadedPackage = DownloadToMachineCache(
-                            MachineCache.Default,
-                            identity,
-                            dataServiceRepo,
-                            url,
-                            token);
-
-                        if (downloadedPackage != null)
-                        {
-                            return new DownloadResourceResult(downloadedPackage.GetStream());
-                        }
+                        // If this is a SourcePackageDependencyInfo object with everything populated 
+                        // and it is from an online source, use the machine cache and download it using the
+                        // given url.
+                        // If this info is not provided fallback to the old method.
+                        return DownloadFromUrl(sourcePackage, dataServiceRepo, token);
                     }
                     else
                     {
-                        var package = V2Client.FindPackage(identity.Id, version);
-
-                        // Use a folder reader for unzipped repos
-                        if (V2Client is UnzippedPackageRepository)
-                        {
-                            var packagePath = Path.Combine(V2Client.Source, identity.Id + "." + version);
-                            var directoryInfo = new DirectoryInfo(packagePath);
-                            if (directoryInfo.Exists)
-                            {
-                                return new DownloadResourceResult(
-                                    package.GetStream(),
-                                    new PackageFolderReader(directoryInfo));
-                            }
-                        }
-
-                        return new DownloadResourceResult(package.GetStream());
+                        // Look up the package from the id and version and download it.
+                        return DownloadFromIdentity(identity, V2Client, token);
                     }
-
-                    return null;
                 }
                 catch (Exception ex)
                 {
@@ -184,17 +70,132 @@ namespace NuGet.Protocol.Core.v2
             });
         }
 
+        private static DownloadResourceResult DownloadFromUrl(
+            SourcePackageDependencyInfo package,
+            DataServicePackageRepository dataServiceRepo,
+            CancellationToken token)
+        {
+            IPackage newPackage = null;
+            var version = SemanticVersion.Parse(package.Version.ToString());
+            var cacheRepository = MachineCache.Default;
+
+            try
+            {
+                try
+                {
+                    // Try finding the package in the machine cache
+                    var localPackage = cacheRepository.FindPackage(package.Id, version)
+                        as OptimizedZipPackage;
+
+                    // Validate the package matches the hash
+                    if (localPackage != null
+                        && localPackage.IsValid
+                        && MatchPackageHash(localPackage, package.PackageHash))
+                    {
+                        newPackage = localPackage;
+                    }
+                }
+                catch
+                {
+                    // Ignore cache failures here to match NuGet.Core
+                    // The bad package will be deleted and replaced during the download.
+                }
+
+                // If the local package does not exist in the cache download it from the source
+                if (newPackage == null)
+                {
+                    newPackage = DownloadToMachineCache(
+                        cacheRepository,
+                        package,
+                        dataServiceRepo,
+                        package.DownloadUri,
+                        token);
+                }
+
+                // Read the package from the machine cache
+                if (newPackage != null)
+                {
+                    return new DownloadResourceResult(newPackage.GetStream());
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new NuGetProtocolException(Strings.FormatProtocol_FailedToDownloadPackage(
+                    package,
+                    dataServiceRepo.Source),
+                    ex);
+            }
+
+            return null;
+        }
+
+        private static DownloadResourceResult DownloadFromIdentity(
+            PackageIdentity identity, 
+            IPackageRepository repository, 
+            CancellationToken token)
+        {
+            var version = SemanticVersion.Parse(identity.Version.ToString());
+            var dataServiceRepo = repository as DataServicePackageRepository;
+
+            if (dataServiceRepo != null)
+            {
+                // Clone the repo to allow for concurrent calls
+                var sourceUri = new Uri(dataServiceRepo.Source);
+                dataServiceRepo = new DataServicePackageRepository(sourceUri);
+
+                var package = dataServiceRepo.FindPackage(identity.Id, version);
+                token.ThrowIfCancellationRequested();
+
+                // For online sources get the url and retrieve it with cancel support
+                var dataServicePackage = package as DataServicePackage;
+                var url = dataServicePackage.DownloadUrl;
+
+                var downloadedPackage = DownloadToMachineCache(
+                    MachineCache.Default,
+                    identity,
+                    dataServiceRepo,
+                    url,
+                    token);
+
+                if (downloadedPackage != null)
+                {
+                    return new DownloadResourceResult(downloadedPackage.GetStream());
+                }
+            }
+            else
+            {
+                var package = repository.FindPackage(identity.Id, version);
+
+                // Use a folder reader for unzipped repos
+                if (repository is UnzippedPackageRepository)
+                {
+                    var packagePath = Path.Combine(repository.Source, identity.Id + "." + version);
+                    var directoryInfo = new DirectoryInfo(packagePath);
+                    if (directoryInfo.Exists)
+                    {
+                        return new DownloadResourceResult(
+                            package.GetStream(),
+                            new PackageFolderReader(directoryInfo));
+                    }
+                }
+
+                return new DownloadResourceResult(package.GetStream());
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// True if the given package matches hash
         /// </summary>
-        private bool MatchPackageHash(IPackage package, string hash)
+        private static bool MatchPackageHash(IPackage package, string hash)
         {
             var hashProvider = new CryptoHashProvider("SHA512");
 
             return package != null && package.GetHash(hashProvider).Equals(hash, StringComparison.OrdinalIgnoreCase);
         }
 
-        private IPackage DownloadToMachineCache(
+        private static IPackage DownloadToMachineCache(
             IPackageCacheRepository cacheRepository,
             PackageIdentity package,
             DataServicePackageRepository dataServiceRepo,
@@ -206,6 +207,7 @@ namespace NuGet.Protocol.Core.v2
             IPackage newPackage = null;
 
             FileInfo tmpFile = null;
+            FileStream tmpFileStream = null;
 
             var downloadClient = new HttpClient(downloadUri)
             {
@@ -233,10 +235,10 @@ namespace NuGet.Protocol.Core.v2
 
                     // If the machine cache is using the physical file system we can find the 
                     // path of temp file and clean it up. Otherwise NuGet.Core will just leave the temp file.
-                    var fileStream = stream as FileStream;
-                    if (fileStream != null)
+                    tmpFileStream = stream as FileStream;
+                    if (tmpFileStream != null)
                     {
-                        tmpFile = new FileInfo(fileStream.Name);
+                        tmpFile = new FileInfo(tmpFileStream.Name);
                     }
                 }
                 finally
@@ -257,7 +259,7 @@ namespace NuGet.Protocol.Core.v2
                 }
             }
 
-            // After the stream is no longer in use, delete the tmp file if it still exists after a canceled task
+            // After the stream is no longer in use, delete the tmp file
             // NuGet.Core does not properly clean these up since it does not have cancel support.
             if (tmpFile != null && token.IsCancellationRequested && tmpFile.Exists)
             {
@@ -267,8 +269,7 @@ namespace NuGet.Protocol.Core.v2
                 }
                 catch
                 {
-                    // Ignore exceptions
-                    Debug.Fail("Unable to remove tmp file from v2 download");
+                    // Ignore exceptions for tmp file clean up
                 }
             }
 

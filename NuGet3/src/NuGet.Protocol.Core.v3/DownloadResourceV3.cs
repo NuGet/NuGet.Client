@@ -67,9 +67,16 @@ namespace NuGet.Protocol.Core.v3
         private async Task<Uri> GetDownloadUrl(PackageIdentity identity, CancellationToken token)
         {
             Uri downloadUri = null;
+            var sourcePackage = identity as SourcePackageDependencyInfo;
 
-            if (_flatContainerBaseUrl != null)
+            if (sourcePackage?.DownloadUri != null)
             {
+                // Read the already provided url
+                downloadUri = sourcePackage?.DownloadUri;
+            }
+            else if (_flatContainerBaseUrl != null)
+            {
+                // Construct the url
                 var id = identity.Id.ToLowerInvariant();
                 var version = identity.Version.ToNormalizedString().ToLowerInvariant();
 
@@ -78,6 +85,7 @@ namespace NuGet.Protocol.Core.v3
             }
             else if (_regResource != null)
             {
+                // Read the url from the registration information
                 var blob = await _regResource.GetPackageMetadata(identity, token);
 
                 if (blob != null
@@ -108,31 +116,6 @@ namespace NuGet.Protocol.Core.v3
             if (uri != null)
             {
                 return await GetDownloadResultAsync(identity, uri, settings, token);
-            }
-
-            return null;
-        }
-
-        public override async Task<DownloadResourceResult> GetDownloadResourceResultAsync(
-            SourcePackageDependencyInfo package,
-            ISettings settings,
-            CancellationToken token)
-        {
-            if (package == null)
-            {
-                throw new ArgumentNullException(nameof(package));
-            }
-
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
-            var uri = package.DownloadUri ?? await GetDownloadUrl(package, token);
-
-            if (uri != null)
-            {
-                return await GetDownloadResultAsync(package, uri, settings, token);
             }
 
             return null;

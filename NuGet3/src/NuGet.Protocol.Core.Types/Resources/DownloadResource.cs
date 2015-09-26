@@ -19,11 +19,6 @@ namespace NuGet.Protocol.Core.Types
             ISettings settings,
             CancellationToken token);
 
-        public abstract Task<DownloadResourceResult> GetDownloadResourceResultAsync(
-            SourcePackageDependencyInfo package,
-            ISettings settings,
-            CancellationToken token);
-
         public event EventHandler<PackageProgressEventArgs> Progress;
     }
 }
