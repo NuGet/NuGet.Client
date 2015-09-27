@@ -20,9 +20,6 @@ namespace NuGet.CommandLine.Test
             int timeOutInMilliseconds = 60000,
            Action<StreamWriter> inputAction = null)
         {
-            string result = String.Empty;
-            string error = String.Empty;
-
             ProcessStartInfo psi = new ProcessStartInfo(Path.GetFullPath(process), arguments)
             {
                 WorkingDirectory = Path.GetFullPath(workingDirectory),
@@ -42,12 +39,18 @@ namespace NuGet.CommandLine.Test
             {
                 p.OutputDataReceived += (o, e) =>
                 {
-                    output.AppendLine(e.Data);
+                    if (e.Data != null)
+                    {
+                        output.AppendLine(e.Data);
+                    }
                 };
 
                 p.ErrorDataReceived += (o, e) =>
                 {
-                    errors.AppendLine(e.Data);
+                    if (e.Data != null)
+                    {
+                        errors.AppendLine(e.Data);
+                    }
                 };
 
                 p.StartInfo = psi;
@@ -76,7 +79,7 @@ namespace NuGet.CommandLine.Test
                 }
             }
 
-            return Tuple.Create(exitCode, output.ToString(), error.ToString());
+            return Tuple.Create(exitCode, output.ToString(), errors.ToString());
         }
     }
 }

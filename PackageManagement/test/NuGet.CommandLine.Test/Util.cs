@@ -358,11 +358,12 @@ namespace NuGet.CommandLine.Test
             var globalFolder = new XElement(XName.Get("add"));
             globalFolder.Add(new XAttribute(XName.Get("key"), "globalPackagesFolder"));
             globalFolder.Add(new XAttribute(XName.Get("value"), Path.Combine(workingPath, "globalPackages")));
+            config.Add(globalFolder);
 
             var solutionDir = new XElement(XName.Get("add"));
             solutionDir.Add(new XAttribute(XName.Get("key"), "repositoryPath"));
-            solutionDir.Add(new XAttribute(XName.Get("value"), workingPath));
-            config.Add(globalFolder);
+            solutionDir.Add(new XAttribute(XName.Get("value"), Path.Combine(workingPath, "packages")));
+            config.Add(solutionDir);
 
             var packageSources = new XElement(XName.Get("packageSources"));
             configuration.Add(packageSources);

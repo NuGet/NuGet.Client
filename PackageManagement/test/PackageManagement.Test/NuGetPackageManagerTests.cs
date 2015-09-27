@@ -4024,14 +4024,6 @@ namespace NuGet.Test
         private class TestDownloadResource : DownloadResource
         {
             public override Task<DownloadResourceResult> GetDownloadResourceResultAsync(
-                SourcePackageDependencyInfo package, 
-                Configuration.ISettings settings, 
-                CancellationToken token)
-            {
-                return GetDownloadResourceResultAsync(package, settings, token);
-            }
-
-            public override Task<DownloadResourceResult> GetDownloadResourceResultAsync(
                 PackageIdentity identity,
                 Configuration.ISettings settings,
                 CancellationToken token)

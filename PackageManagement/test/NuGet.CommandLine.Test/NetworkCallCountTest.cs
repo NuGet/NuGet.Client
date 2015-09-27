@@ -6,13 +6,542 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
     public class NetworkCallCountTest : IDisposable
     {
+        [Fact]
+        public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesWithAllMissingPackages()
+        {
+            // Arrange
+            var testCount = 100;
+
+            using (var server2 = new MockServer())
+            using (var server = new MockServer())
+            {
+                var tempPath = Path.GetTempPath();
+                var guid = Guid.NewGuid();
+                var workingPath = Path.Combine(tempPath, guid.ToString());
+                _dirs.TryAdd(workingPath, false);
+                var repositoryPath = Path.Combine(workingPath, "repo");
+                var repositoryPath2 = Path.Combine(workingPath, "repo2");
+                var repositoryPath3 = Path.Combine(workingPath, "repo3");
+                var allRepo = Path.Combine(workingPath, "allRepo");
+                var packagesFolderPath = Path.Combine(workingPath, "packages");
+
+                Directory.CreateDirectory(workingPath);
+                Directory.CreateDirectory(allRepo);
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(repositoryPath2);
+                Directory.CreateDirectory(repositoryPath3);
+                Directory.CreateDirectory(packagesFolderPath);
+
+                var packagesConfigPath = Path.Combine(workingPath, "packages.config");
+
+                var doc = new XDocument();
+                var root = new XElement(XName.Get("packages"));
+                doc.Add(root);
+
+                var expectedPackages = new HashSet<PackageIdentity>();
+
+                for (int i = 0; i < testCount; i++)
+                {
+                    var id = $"package{i}";
+                    var version = $"1.0.{i}";
+
+                    var entry = new XElement(XName.Get("package"));
+                    entry.Add(new XAttribute(XName.Get("id"), id));
+                    entry.Add(new XAttribute(XName.Get("version"), version));
+
+                    root.Add(entry);
+                }
+
+                Util.CreateFile(workingPath, "packages.config", doc.ToString());
+
+                var nugetexe = Util.GetNuGetExePath();
+                var serverRepo = new LocalPackageRepository(repositoryPath);
+                var server2Repo = new LocalPackageRepository(repositoryPath2);
+                var allPackageRepo = new LocalPackageRepository(allRepo);
+
+                // Server setup
+                var indexJson = Util.CreateIndexJson();
+                var indexJson2 = Util.CreateIndexJson();
+
+                Util.AddFlatContainerResource(indexJson, server);
+                Util.AddRegistrationResource(indexJson, server);
+                var hitsByUrl = new ConcurrentDictionary<string, int>();
+
+                Util.AddFlatContainerResource(indexJson2, server2);
+                Util.AddRegistrationResource(indexJson2, server2);
+                var hitsByUrl2 = new ConcurrentDictionary<string, int>();
+
+                server.Get.Add("/", request =>
+                {
+                    return ServerHandler(request, hitsByUrl, server, indexJson, serverRepo);
+                });
+
+                server2.Get.Add("/", request =>
+                {
+                    return ServerHandler(request, hitsByUrl2, server2, indexJson2, server2Repo);
+                });
+
+                server.Start();
+                server2.Start();
+
+                var sources = new List<string>() { server2.Uri + "nuget", server.Uri + "index.json", repositoryPath3 };
+                Util.CreateNuGetConfig(workingPath, sources);
+
+                string[] args = new string[] {
+                    "restore",
+                    packagesConfigPath
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true,
+                    timeOutInMilliseconds: (int)TimeSpan.FromMinutes(3).TotalMilliseconds);
+
+                server.Stop();
+                server2.Stop();
+
+                var packagesFolder = new LocalPackageRepository(packagesFolderPath);
+                var allPackages = packagesFolder.GetPackages().ToList();
+
+                // Assert
+                Assert.True(0 != r.Item1, r.Item2 + " " + r.Item3);
+
+                Assert.Equal(1, hitsByUrl["/index.json"]);
+                Assert.Equal(1, hitsByUrl2["/nuget"]);
+
+                Assert.Equal(0, allPackages.Count());
+                Assert.Equal(0,
+                    Directory.Exists(MachineCache.Default.Source) ?
+                    Directory.GetFiles(MachineCache.Default.Source, "*.tmp").Count()
+                    : 0);
+            }
+        }
+
+        [Fact]
+        public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesWithPartialMissingPackages()
+        {
+            // Arrange
+            var testCount = 100;
+
+            using (var server2 = new MockServer())
+            using (var server = new MockServer())
+            {
+                var tempPath = Path.GetTempPath();
+                var guid = Guid.NewGuid();
+                var workingPath = Path.Combine(tempPath, guid.ToString());
+                _dirs.TryAdd(workingPath, false);
+                var repositoryPath = Path.Combine(workingPath, "repo");
+                var repositoryPath2 = Path.Combine(workingPath, "repo2");
+                var repositoryPath3 = Path.Combine(workingPath, "repo3");
+                var allRepo = Path.Combine(workingPath, "allRepo");
+                var packagesFolderPath = Path.Combine(workingPath, "packages");
+                MachineCache.Default.Clear();
+
+                Directory.CreateDirectory(workingPath);
+                Directory.CreateDirectory(allRepo);
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(repositoryPath2);
+                Directory.CreateDirectory(repositoryPath3);
+                Directory.CreateDirectory(packagesFolderPath);
+
+                var packagesConfigPath = Path.Combine(workingPath, "packages.config");
+
+                var doc = new XDocument();
+                var root = new XElement(XName.Get("packages"));
+                doc.Add(root);
+
+                var expectedPackages = new HashSet<PackageIdentity>();
+
+                for (int i = 0; i < testCount; i++)
+                {
+                    var id = $"package{i}";
+                    var version = $"1.0.{i}";
+
+                    var entry = new XElement(XName.Get("package"));
+                    entry.Add(new XAttribute(XName.Get("id"), id));
+                    entry.Add(new XAttribute(XName.Get("version"), version));
+
+                    if (i % 3 == 0)
+                    {
+                        // Missing
+                    }
+                    else if (i % 25 == 0)
+                    {
+                        Util.CreatePackage(repositoryPath3, id, version);
+                    }
+                    else if (i % 10 == 0)
+                    {
+                        Util.CreatePackage(repositoryPath, id, version);
+                        Util.CreatePackage(repositoryPath2, id, version);
+                    }
+                    else
+                    {
+                        Util.CreatePackage(repositoryPath, id, version);
+                    }
+
+                    if (i % 3 != 0)
+                    {
+                        // Add to the all repo also if it is not missing
+                        Util.CreatePackage(allRepo, id, version);
+                        expectedPackages.Add(new PackageIdentity(id, new NuGetVersion(version)));
+                    }
+
+                    root.Add(entry);
+                }
+
+                Util.CreateFile(workingPath, "packages.config", doc.ToString());
+
+                var nugetexe = Util.GetNuGetExePath();
+                var serverRepo = new LocalPackageRepository(repositoryPath);
+                var server2Repo = new LocalPackageRepository(repositoryPath2);
+                var allPackageRepo = new LocalPackageRepository(allRepo);
+
+                // Server setup
+                var indexJson = Util.CreateIndexJson();
+                var indexJson2 = Util.CreateIndexJson();
+
+                Util.AddFlatContainerResource(indexJson, server);
+                Util.AddRegistrationResource(indexJson, server);
+                var hitsByUrl = new ConcurrentDictionary<string, int>();
+
+                Util.AddFlatContainerResource(indexJson2, server2);
+                Util.AddRegistrationResource(indexJson2, server2);
+                var hitsByUrl2 = new ConcurrentDictionary<string, int>();
+
+                server.Get.Add("/", request =>
+                {
+                    return ServerHandler(request, hitsByUrl, server, indexJson, serverRepo);
+                });
+
+                server2.Get.Add("/", request =>
+                {
+                    return ServerHandler(request, hitsByUrl2, server2, indexJson2, server2Repo);
+                });
+
+                server.Start();
+                server2.Start();
+
+                var sources = new List<string>() { server2.Uri + "nuget", server.Uri + "index.json", repositoryPath3 };
+                Util.CreateNuGetConfig(workingPath, sources);
+
+                string[] args = new string[] {
+                    "restore",
+                    packagesConfigPath
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true,
+                    timeOutInMilliseconds: (int)TimeSpan.FromMinutes(3).TotalMilliseconds);
+
+                server.Stop();
+                server2.Stop();
+
+                var packagesFolder = new LocalPackageRepository(packagesFolderPath);
+                var allPackages = packagesFolder.GetPackages().ToList();
+
+                // Assert
+                Assert.True(0 != r.Item1, r.Item2 + " " + r.Item3);
+
+                Assert.Equal(1, hitsByUrl["/index.json"]);
+                Assert.Equal(1, hitsByUrl2["/nuget"]);
+
+                Assert.Equal(expectedPackages.Count, allPackages.Count());
+
+                foreach (var package in expectedPackages)
+                {
+                    Assert.True(allPackages.Any(p => p.Id == package.Id
+                        && p.Version.ToNormalizedString() == package.Version.ToNormalizedString()));
+                }
+
+                Assert.Equal(0, Directory.GetFiles(MachineCache.Default.Source, "*.tmp").Count());
+            }
+        }
+
+        [Fact]
+        public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesMainlyV3()
+        {
+            // Arrange
+            var testCount = 100;
+
+            using (var server2 = new MockServer())
+            using (var server = new MockServer())
+            {
+                var tempPath = Path.GetTempPath();
+                var guid = Guid.NewGuid();
+                var workingPath = Path.Combine(tempPath, guid.ToString());
+                _dirs.TryAdd(workingPath, false);
+                var repositoryPath = Path.Combine(workingPath, "repo");
+                var repositoryPath2 = Path.Combine(workingPath, "repo2");
+                var repositoryPath3 = Path.Combine(workingPath, "repo3");
+                var allRepo = Path.Combine(workingPath, "allRepo");
+                var packagesFolderPath = Path.Combine(workingPath, "packages");
+                MachineCache.Default.Clear();
+
+                Directory.CreateDirectory(workingPath);
+                Directory.CreateDirectory(allRepo);
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(repositoryPath2);
+                Directory.CreateDirectory(repositoryPath3);
+                Directory.CreateDirectory(packagesFolderPath);
+
+                var packagesConfigPath = Path.Combine(workingPath, "packages.config");
+
+                var doc = new XDocument();
+                var root = new XElement(XName.Get("packages"));
+                doc.Add(root);
+
+                var expectedPackages = new HashSet<PackageIdentity>();
+
+                for (int i=0; i < testCount; i++)
+                {
+                    var id = $"package{i}";
+                    var version = $"1.0.{i}";
+
+                    var entry = new XElement(XName.Get("package"));
+                    entry.Add(new XAttribute(XName.Get("id"), id));
+                    entry.Add(new XAttribute(XName.Get("version"), version));
+
+                    if (i % 25 == 0)
+                    {
+                        Util.CreatePackage(repositoryPath3, id, version);
+                    }
+                    else if (i % 10 == 0)
+                    {
+                        Util.CreatePackage(repositoryPath, id, version);
+                        Util.CreatePackage(repositoryPath2, id, version);
+                    }
+                    else
+                    {
+                        Util.CreatePackage(repositoryPath, id, version);
+                    }
+
+                    // Add to the all repo also
+                    Util.CreatePackage(allRepo, id, version);
+
+                    root.Add(entry);
+
+                    expectedPackages.Add(new PackageIdentity(id, new NuGetVersion(version)));
+                }
+
+                Util.CreateFile(workingPath, "packages.config", doc.ToString());
+
+                var nugetexe = Util.GetNuGetExePath();
+                var serverRepo = new LocalPackageRepository(repositoryPath);
+                var server2Repo = new LocalPackageRepository(repositoryPath2);
+
+                // Server setup
+                var indexJson = Util.CreateIndexJson();
+                var indexJson2 = Util.CreateIndexJson();
+
+                Util.AddFlatContainerResource(indexJson, server);
+                Util.AddRegistrationResource(indexJson, server);
+                var hitsByUrl = new ConcurrentDictionary<string, int>();
+
+                Util.AddFlatContainerResource(indexJson2, server2);
+                Util.AddRegistrationResource(indexJson2, server2);
+                var hitsByUrl2 = new ConcurrentDictionary<string, int>();
+
+                server.Get.Add("/", request =>
+                {
+                    return ServerHandler(request, hitsByUrl, server, indexJson, serverRepo);
+                });
+
+                server2.Get.Add("/", request =>
+                {
+                    return ServerHandler(request, hitsByUrl2, server2, indexJson2, server2Repo);
+                });
+
+                server.Start();
+                server2.Start();
+
+                var sources = new List<string>() { server2.Uri + "nuget", server.Uri + "index.json", repositoryPath3 };
+                Util.CreateNuGetConfig(workingPath, sources);
+
+                string[] args = new string[] {
+                    "restore",
+                    packagesConfigPath
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true,
+                    timeOutInMilliseconds: (int)TimeSpan.FromMinutes(3).TotalMilliseconds);
+
+                server.Stop();
+                server2.Stop();
+
+                var packagesFolder = new LocalPackageRepository(packagesFolderPath);
+                var allPackages = packagesFolder.GetPackages().ToList();
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                Assert.Equal(testCount, allPackages.Count());
+
+                foreach (var package in expectedPackages)
+                {
+                    Assert.True(allPackages.Any(p => p.Id == package.Id 
+                        && p.Version.ToNormalizedString() == package.Version.ToNormalizedString()));
+                }
+
+                Assert.Equal(0, Directory.GetFiles(MachineCache.Default.Source, "*.tmp").Count());
+            }
+        }
+
+        [Fact]
+        public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesMainlyV2()
+        {
+            // Arrange
+            var testCount = 100;
+
+            using (var server2 = new MockServer())
+            using (var server = new MockServer())
+            {
+                var tempPath = Path.GetTempPath();
+                var guid = Guid.NewGuid();
+                var workingPath = Path.Combine(tempPath, guid.ToString());
+                _dirs.TryAdd(workingPath, false);
+                var repositoryPath = Path.Combine(workingPath, "repo");
+                var repositoryPath2 = Path.Combine(workingPath, "repo2");
+                var repositoryPath3 = Path.Combine(workingPath, "repo3");
+                var allRepo = Path.Combine(workingPath, "allRepo");
+                var packagesFolderPath = Path.Combine(workingPath, "packages");
+                MachineCache.Default.Clear();
+
+                Directory.CreateDirectory(workingPath);
+                Directory.CreateDirectory(allRepo);
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(repositoryPath2);
+                Directory.CreateDirectory(repositoryPath3);
+                Directory.CreateDirectory(packagesFolderPath);
+
+                var packagesConfigPath = Path.Combine(workingPath, "packages.config");
+
+                var doc = new XDocument();
+                var root = new XElement(XName.Get("packages"));
+                doc.Add(root);
+
+                var expectedPackages = new HashSet<PackageIdentity>();
+
+                for (int i = 0; i < testCount; i++)
+                {
+                    var id = $"package{i}";
+                    var version = $"1.0.{i}";
+
+                    var entry = new XElement(XName.Get("package"));
+                    entry.Add(new XAttribute(XName.Get("id"), id));
+                    entry.Add(new XAttribute(XName.Get("version"), version));
+
+                    if (i % 25 == 0)
+                    {
+                        Util.CreatePackage(repositoryPath3, id, version);
+                    }
+                    else if (i % 10 == 0)
+                    {
+                        Util.CreatePackage(repositoryPath, id, version);
+                        Util.CreatePackage(repositoryPath2, id, version);
+                    }
+                    else
+                    {
+                        Util.CreatePackage(repositoryPath, id, version);
+                    }
+
+                    // Add to the all repo also
+                    Util.CreatePackage(allRepo, id, version);
+
+                    root.Add(entry);
+
+                    expectedPackages.Add(new PackageIdentity(id, new NuGetVersion(version)));
+                }
+
+                Util.CreateFile(workingPath, "packages.config", doc.ToString());
+
+                var nugetexe = Util.GetNuGetExePath();
+                var serverRepo = new LocalPackageRepository(repositoryPath);
+                var server2Repo = new LocalPackageRepository(repositoryPath2);
+
+                // Server setup
+                var indexJson = Util.CreateIndexJson();
+                var indexJson2 = Util.CreateIndexJson();
+
+                Util.AddFlatContainerResource(indexJson, server);
+                Util.AddRegistrationResource(indexJson, server);
+                var hitsByUrl = new ConcurrentDictionary<string, int>();
+
+                Util.AddFlatContainerResource(indexJson2, server2);
+                Util.AddRegistrationResource(indexJson2, server2);
+                var hitsByUrl2 = new ConcurrentDictionary<string, int>();
+
+                server.Get.Add("/", request =>
+                {
+                    return ServerHandler(request, hitsByUrl, server, indexJson, serverRepo);
+                });
+
+                server2.Get.Add("/", request =>
+                {
+                    return ServerHandler(request, hitsByUrl2, server2, indexJson2, server2Repo);
+                });
+
+                server.Start();
+                server2.Start();
+
+                var sources = new List<string>() { server2.Uri + "index.json", server.Uri + "nuget", repositoryPath3 };
+                Util.CreateNuGetConfig(workingPath, sources);
+
+                string[] args = new string[] {
+                    "restore",
+                    packagesConfigPath
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true,
+                    timeOutInMilliseconds: (int)TimeSpan.FromMinutes(3).TotalMilliseconds);
+
+                server.Stop();
+                server2.Stop();
+
+                var packagesFolder = new LocalPackageRepository(packagesFolderPath);
+                var allPackages = packagesFolder.GetPackages().ToList();
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                Assert.Equal(testCount, allPackages.Count());
+
+                foreach (var package in expectedPackages)
+                {
+                    Assert.True(allPackages.Any(p => p.Id == package.Id
+                        && p.Version.ToNormalizedString() == package.Version.ToNormalizedString()));
+                }
+
+                Assert.Equal(0, Directory.GetFiles(MachineCache.Default.Source, "*.tmp").Count());
+            }
+        }
+
         [Fact]
         public void NetworkCallCount_CancelPackageDownloadForV3()
         {
@@ -224,9 +753,14 @@ namespace NuGet.CommandLine.Test
 
                 // Server setup
                 var indexJson = Util.CreateIndexJson();
+                var indexJson2 = Util.CreateIndexJson();
 
                 Util.AddFlatContainerResource(indexJson, server);
                 Util.AddRegistrationResource(indexJson, server);
+
+                Util.AddFlatContainerResource(indexJson2, server2);
+                Util.AddRegistrationResource(indexJson2, server2);
+
                 var hitsByUrl = new ConcurrentDictionary<string, int>();
                 var hitsByUrl2 = new ConcurrentDictionary<string, int>();
 
@@ -237,11 +771,12 @@ namespace NuGet.CommandLine.Test
 
                 server2.Get.Add("/", request =>
                 {
-                    return ServerHandler(request, hitsByUrl2, server2, indexJson, localRepo);
+                    return ServerHandler(request, hitsByUrl2, server2, indexJson2, localRepo);
                 });
 
                 server.Start();
                 server2.Start();
+
                 var sources = new List<string>() { server.Uri + "index.json", server2.Uri + "nuget", repositoryPath };
                 Util.CreateNuGetConfig(workingPath, sources);
 
@@ -262,15 +797,15 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
-                // Zero online calls should be made here, everything exists locally
+                // Network calls can happen multiple times here with cancelation
                 foreach (var url in hitsByUrl.Keys)
                 {
-                    Assert.True(0 == hitsByUrl[url], url);
+                    Assert.True(2 >= hitsByUrl[url], url + " " + hitsByUrl[url]);
                 }
 
                 foreach (var url in hitsByUrl2.Keys)
                 {
-                    Assert.True(0 == hitsByUrl2[url], url);
+                    Assert.True(2 >= hitsByUrl2[url], url + " " + hitsByUrl2[url]);
                 }
             }
         }
@@ -573,15 +1108,8 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
-                foreach (var url in hitsByUrl.Keys)
-                {
-                    Assert.True(1 == hitsByUrl[url], url);
-                }
-
-                foreach (var url in hitsByUrl2.Keys)
-                {
-                    Assert.True(1 == hitsByUrl2[url], url);
-                }
+                Assert.Equal(1, hitsByUrl["/index.json"]);
+                Assert.Equal(1, hitsByUrl2["/nuget"]);
             }
         }
 
@@ -1033,186 +1561,194 @@ namespace NuGet.CommandLine.Test
             ManualResetEventSlim v2DownloadWait,
             ManualResetEventSlim v3DownloadWait)
         {
-            var path = request.Url.AbsolutePath;
-            var parts = request.Url.AbsolutePath.Split('/');
-            var repositoryPath = localRepo.Source;
-
-            // track hits on the url
-            var urlHits = hitsByUrl.AddOrUpdate(request.RawUrl, 1, (s, i) => i + 1);
-
-            if (path == "/index.json")
+            try
             {
-                return new Action<HttpListenerResponse>(response =>
+                var path = request.Url.AbsolutePath;
+                var parts = request.Url.AbsolutePath.Split('/');
+                var repositoryPath = localRepo.Source;
+
+                // track hits on the url
+                var urlHits = hitsByUrl.AddOrUpdate(request.RawUrl, 1, (s, i) => i + 1);
+
+                if (path == "/index.json")
                 {
-                    response.StatusCode = 200;
-                    response.ContentType = "text/javascript";
-                    MockServer.SetResponseContent(response, indexJson.ToString());
-                });
-            }
-            else if (path.StartsWith("/nuget/Packages(Id="))
-            {
-                var splitOnSingleQuote = path.Split('\'');
-
-                var id = splitOnSingleQuote.Skip(1).First();
-                var version = splitOnSingleQuote.Skip(3).First();
-
-                var file = new FileInfo(Path.Combine(repositoryPath, $"{id}.{version}.nupkg"));
-
-                if (file.Exists)
-                {
-                    var package = new ZipPackage(file.FullName);
-
                     return new Action<HttpListenerResponse>(response =>
                     {
-                        response.ContentType = "application/atom+xml;type=entry;charset=utf-8";
-                        var odata = server.ToOData(package);
-                        MockServer.SetResponseContent(response, odata);
+                        response.StatusCode = 200;
+                        response.ContentType = "text/javascript";
+                        MockServer.SetResponseContent(response, indexJson.ToString());
                     });
                 }
-                else
+                else if (path.StartsWith("/nuget/Packages(Id="))
                 {
-                    return new Action<HttpListenerResponse>(response =>
-                    {
-                        response.StatusCode = 404;
-                    });
-                }
-            }
-            else if (path.StartsWith("/packages/"))
-            {
-                v3DownloadWait.Wait();
+                    var splitOnSingleQuote = path.Split('\'');
 
-                var file = new FileInfo(Path.Combine(repositoryPath, parts.Last()));
+                    var id = splitOnSingleQuote.Skip(1).First();
+                    var version = splitOnSingleQuote.Skip(3).First();
 
-                if (file.Exists)
-                {
-                    return new Action<HttpListenerResponse>(response =>
+                    var file = new FileInfo(Path.Combine(repositoryPath, $"{id}.{version}.nupkg"));
+
+                    if (file.Exists)
                     {
-                        response.ContentType = "application/zip";
-                        using (var stream = file.OpenRead())
+                        var package = new ZipPackage(file.FullName);
+
+                        return new Action<HttpListenerResponse>(response =>
                         {
-                            var content = stream.ReadAllBytes();
-                            MockServer.SetResponseContent(response, content);
-                        }
-                    });
-                }
-                else
-                {
-                    return new Action<HttpListenerResponse>(response =>
+                            response.ContentType = "application/atom+xml;type=entry;charset=utf-8";
+                            var odata = server.ToOData(package);
+                            MockServer.SetResponseContent(response, odata);
+                        });
+                    }
+                    else
                     {
-                        response.StatusCode = 404;
-                    });
-                }
-            }
-            else if (path.StartsWith("/package/") || path.StartsWith("/nuget/package/"))
-            {
-                v2DownloadWait.Wait();
-
-                var id = parts.Reverse().Skip(1).First();
-                var version = parts.Last();
-
-                var file = new FileInfo(Path.Combine(repositoryPath, $"{id}.{version}.nupkg"));
-
-                if (file.Exists)
-                {
-                    return new Action<HttpListenerResponse>(response =>
-                    {
-                        response.ContentType = "application/zip";
-                        using (var stream = file.OpenRead())
+                        return new Action<HttpListenerResponse>(response =>
                         {
-                            var content = stream.ReadAllBytes();
-                            MockServer.SetResponseContent(response, content);
-                        }
+                            response.StatusCode = 404;
+                        });
+                    }
+                }
+                else if (path.StartsWith("/packages/"))
+                {
+                    v3DownloadWait.Wait();
+
+                    var file = new FileInfo(Path.Combine(repositoryPath, parts.Last()));
+
+                    if (file.Exists)
+                    {
+                        return new Action<HttpListenerResponse>(response =>
+                        {
+                            response.ContentType = "application/zip";
+                            using (var stream = file.OpenRead())
+                            {
+                                var content = stream.ReadAllBytes();
+                                MockServer.SetResponseContent(response, content);
+                            }
+                        });
+                    }
+                    else
+                    {
+                        return new Action<HttpListenerResponse>(response =>
+                        {
+                            response.StatusCode = 404;
+                        });
+                    }
+                }
+                else if (path.StartsWith("/package/") || path.StartsWith("/nuget/package/"))
+                {
+                    v2DownloadWait.Wait();
+
+                    var id = parts.Reverse().Skip(1).First();
+                    var version = parts.Last();
+
+                    var file = new FileInfo(Path.Combine(repositoryPath, $"{id}.{version}.nupkg"));
+
+                    if (file.Exists)
+                    {
+                        return new Action<HttpListenerResponse>(response =>
+                        {
+                            response.ContentType = "application/zip";
+                            using (var stream = file.OpenRead())
+                            {
+                                var content = stream.ReadAllBytes();
+                                MockServer.SetResponseContent(response, content);
+                            }
+                        });
+                    }
+                    else
+                    {
+                        return new Action<HttpListenerResponse>(response =>
+                        {
+                            response.StatusCode = 404;
+                        });
+                    }
+                }
+                else if (path.StartsWith("/reg/") && path.EndsWith("/index.json"))
+                {
+                    var id = parts.Reverse().Skip(1).First();
+                    var version = "1.0.0";
+
+                    return new Action<HttpListenerResponse>(response =>
+                    {
+                        response.ContentType = "text/javascript";
+
+                        var regBlob = Util.CreateSinglePackageRegistrationBlob(server, id, version);
+
+                        MockServer.SetResponseContent(response, regBlob.ToString());
                     });
                 }
-                else
+                else if (path.StartsWith("/flat/") && path.EndsWith("/index.json"))
                 {
                     return new Action<HttpListenerResponse>(response =>
                     {
-                        response.StatusCode = 404;
-                    });
-                }
-            }
-            else if (path.StartsWith("/reg/") && path.EndsWith("/index.json"))
-            {
-                var id = parts.Reverse().Skip(1).First();
-                var version = "1.0.0";
+                        response.ContentType = "text/javascript";
 
-                return new Action<HttpListenerResponse>(response =>
-                {
-                    response.ContentType = "text/javascript";
-
-                    var regBlob = Util.CreateSinglePackageRegistrationBlob(server, id, version);
-
-                    MockServer.SetResponseContent(response, regBlob.ToString());
-                });
-            }
-            else if (path.StartsWith("/flat/") && path.EndsWith("/index.json"))
-            {
-                return new Action<HttpListenerResponse>(response =>
-                {
-                    response.ContentType = "text/javascript";
-
-                    MockServer.SetResponseContent(response, @"{
+                        MockServer.SetResponseContent(response, @"{
                               ""versions"": [
                                 ""1.0.0""
                               ]
                             }");
-                });
-            }
-            else if (path.StartsWith("/flat/") && path.EndsWith(".nupkg"))
-            {
-                v3DownloadWait.Wait();
-
-                var file = new FileInfo(Path.Combine(repositoryPath, parts.Last()));
-
-                if (file.Exists)
+                    });
+                }
+                else if (path.StartsWith("/flat/") && path.EndsWith(".nupkg"))
                 {
-                    return new Action<HttpListenerResponse>(response =>
+                    v3DownloadWait.Wait();
+
+                    var file = new FileInfo(Path.Combine(repositoryPath, parts.Last()));
+
+                    if (file.Exists)
                     {
-                        response.ContentType = "application/zip";
-                        using (var stream = file.OpenRead())
+                        return new Action<HttpListenerResponse>(response =>
                         {
-                            var content = stream.ReadAllBytes();
-                            MockServer.SetResponseContent(response, content);
-                        }
+                            response.ContentType = "application/zip";
+                            using (var stream = file.OpenRead())
+                            {
+                                var content = stream.ReadAllBytes();
+                                MockServer.SetResponseContent(response, content);
+                            }
+                        });
+                    }
+                    else
+                    {
+                        return new Action<HttpListenerResponse>(response =>
+                        {
+                            response.StatusCode = 404;
+                        });
+                    }
+                }
+                else if (path.StartsWith("/nuget/FindPackagesById()"))
+                {
+                    var id = request.QueryString.Get("id").Trim('\'');
+                    var package = localRepo.FindPackagesById(id).Single();
+
+                    return new Action<HttpListenerResponse>(response =>
+                    {
+                        response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
+                        var feed = server.ToODataFeed(new[] { package }, "FindPackagesById");
+                        MockServer.SetResponseContent(response, feed);
                     });
                 }
-                else
+                else if (path == "/nuget/$metadata")
                 {
                     return new Action<HttpListenerResponse>(response =>
                     {
-                        response.StatusCode = 404;
+                        MockServer.SetResponseContent(response, MockServerResource.NuGetV2APIMetadata);
                     });
                 }
-            }
-            else if (path.StartsWith("/nuget/FindPackagesById()"))
-            {
-                var id = request.QueryString.Get("id").Trim('\'');
-                var package = localRepo.FindPackagesById(id).Single();
+                else if (path == "/nuget")
+                {
+                    return new Action<HttpListenerResponse>(response =>
+                    {
+                        response.StatusCode = 200;
+                    });
+                }
 
-                return new Action<HttpListenerResponse>(response =>
-                {
-                    response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
-                    var feed = server.ToODataFeed(new[] { package }, "FindPackagesById");
-                    MockServer.SetResponseContent(response, feed);
-                });
+                throw new Exception("This test needs to be updated to support: " + path);
             }
-            else if (path == "/nuget/$metadata")
+            catch (Exception)
             {
-                return new Action<HttpListenerResponse>(response =>
-                {
-                    MockServer.SetResponseContent(response, MockServerResource.NuGetV2APIMetadata);
-                });
+                // Debug here
+                throw;
             }
-            else if (path == "/nuget")
-            {
-                return new Action<HttpListenerResponse>(response =>
-                {
-                    response.StatusCode = 200;
-                });
-            }
-
-            throw new Exception("This test needs to be updated to support: " + path);
         }
 
         private static int GetMachineCacheCount()
@@ -1223,6 +1759,22 @@ namespace NuGet.CommandLine.Test
             }
 
             return 0;
+        }
+
+        /// <summary>
+        /// Fully delete the machine cache including temp files
+        /// </summary>
+        private static void ClearMachineCache()
+        {
+            var dir = MachineCache.Default.Source;
+
+            if (Directory.Exists(dir))
+            {
+                foreach (var file in Directory.GetFiles(MachineCache.Default.Source))
+                {
+                    File.Delete(file);
+                }
+            }
         }
 
         /// <summary>
@@ -1244,6 +1796,12 @@ namespace NuGet.CommandLine.Test
                     Console.WriteLine("Unable to delete: " + dir);
                 }
             }
+        }
+
+        public NetworkCallCountTest()
+        {
+            // Clear the machine cache before each test
+            ClearMachineCache();
         }
     }
 }
