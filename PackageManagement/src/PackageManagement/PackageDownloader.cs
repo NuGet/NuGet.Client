@@ -47,27 +47,54 @@ namespace NuGet.PackageManagement
 
             using (var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token))
             {
-                var tasks = new List<Task<DownloadResourceResult>>(sources
-                    .Select(s => GetDownloadResourceResultAsync(s, packageIdentity, settings, linkedTokenSource.Token)));
+                // Create a group of local sources that will go first, then everything else.
+                var groups = new Queue<List<SourceRepository>>();
+                var localGroup = new List<SourceRepository>();
+                var otherGroup = new List<SourceRepository>();
+                groups.Enqueue(localGroup);
+                groups.Enqueue(otherGroup);
 
-                while (tasks.Any())
+                foreach (var source in sources)
                 {
-                    var completedTask = await Task.WhenAny(tasks);
-
-                    if (completedTask.Status == TaskStatus.RanToCompletion)
+                    if (source.PackageSource.IsLocal)
                     {
-                        // Cancel the other tasks, since, they may still be running
-                        linkedTokenSource.Cancel();
-
-                        return completedTask.Result;
+                        localGroup.Add(source);
                     }
                     else
                     {
-                        token.ThrowIfCancellationRequested();
+                        otherGroup.Add(source);
+                    }
+                }
 
-                        // In this case, completedTask did not run to completion.
-                        // That is, it faulted or got canceled. Remove it, and try Task.WhenAny again
-                        tasks.Remove(completedTask);
+                while (groups.Count > 0)
+                {
+                    token.ThrowIfCancellationRequested();
+
+                    var sourceGroup = groups.Dequeue();
+
+                    var tasks = sourceGroup.Select(s =>
+                        GetDownloadResourceResultAsync(s, packageIdentity, settings, linkedTokenSource.Token))
+                        .ToList();
+
+                    while (tasks.Any())
+                    {
+                        var completedTask = await Task.WhenAny(tasks);
+
+                        if (completedTask.Status == TaskStatus.RanToCompletion)
+                        {
+                            // Cancel the other tasks, since, they may still be running
+                            linkedTokenSource.Cancel();
+
+                            return completedTask.Result;
+                        }
+                        else
+                        {
+                            token.ThrowIfCancellationRequested();
+
+                            // In this case, completedTask did not run to completion.
+                            // That is, it faulted or got canceled. Remove it, and try Task.WhenAny again
+                            tasks.Remove(completedTask);
+                        }
                     }
                 }
             }
@@ -112,21 +139,8 @@ namespace NuGet.PackageManagement
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.DownloadResourceNotFound, sourceRepository.PackageSource.Source));
             }
 
-            DownloadResourceResult downloadResourceResult = null;
-
-            // Check if the package identity has the download url
-            var sourceInfo = packageIdentity as SourcePackageDependencyInfo;
-
-            if (sourceInfo != null)
-            {
-                downloadResourceResult
-                    = await downloadResource.GetDownloadResourceResultAsync(sourceInfo, settings, token);
-            }
-            else
-            {
-                downloadResourceResult 
-                    = await downloadResource.GetDownloadResourceResultAsync(packageIdentity, settings, token);
-            }
+            var downloadResourceResult 
+                = await downloadResource.GetDownloadResourceResultAsync(packageIdentity, settings, token);
 
             if (downloadResourceResult == null)
             {
