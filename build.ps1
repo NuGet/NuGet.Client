@@ -93,9 +93,7 @@ function BuildXproj()
         }
     }
 
-    $artifacts = Join-Path $executingScriptDirectory "artifacts"
     $artifactsSrc = Join-Path $artifacts "src\NuGet.Core"
-    $nupkgsDir = Join-Path $executingScriptDirectory "nupkgs"
     $artifactsTest = Join-Path $artifacts "test"
 
     foreach ($file in (Get-ChildItem "src" -rec))
@@ -118,12 +116,12 @@ function BuildXproj()
 
     if ($SkipTests -eq $False)
     {
-        foreach ($file in (Get-ChildItem "test" -rec))
+        foreach ($file in (Get-ChildItem "test\NuGet.Core.Tests" -rec))
         {
             RestoreXProj($file)
         }
 
-        foreach ($file in (Get-ChildItem "test" -rec))
+        foreach ($file in (Get-ChildItem "test\NuGet.Core.Tests" -rec))
         {
             $ext = [System.IO.Path]::GetExtension($file.FullName)
 
@@ -167,6 +165,8 @@ pushd $executingScriptDirectory
 $msbuildExe = "${env:ProgramFiles(x86)}\MSBuild\14.0\Bin\msbuild.exe"
 $nugetExe = ".nuget\nuget.exe"
 $dnvmLoc = Join-Path $env:USERPROFILE ".dnx\bin\dnvm.cmd"
+$nupkgsDir = Join-Path $executingScriptDirectory "nupkgs"
+$artifacts = Join-Path $executingScriptDirectory "artifacts"
 $timestamp = [DateTime]::UtcNow.ToString("yyMMddHHmmss");
 $startTime = [DateTime]::UtcNow
 
@@ -186,6 +186,11 @@ if ((Test-Path $dnvmLoc) -eq $False)
     Write-Host "Downloading DNVM"
     &{$Branch='dev';iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.ps1'))}
 }
+
+## Clean artifacts and nupkgs folder
+Remove-Item $nupkgsDir\*.nupkg
+Remove-Item $artifacts\*.* -Recurse
+
 
 ## Make sure the needed DNX runtimes ex
 Write-Host "Validating the correct DNX runtime set"
