@@ -76,10 +76,10 @@
           <EmbedInteropTypes>True</EmbedInteropTypes>
         </Reference>
         <Reference Include="Microsoft.VisualStudio.ProjectSystem.V14Only">
-          <HintPath>..\..\lib\VS14\Microsoft.VisualStudio.ProjectSystem.V14Only.dll</HintPath>
+          <HintPath>..\..\..\lib\VS14\Microsoft.VisualStudio.ProjectSystem.V14Only.dll</HintPath>
         </Reference>
         <Reference Include="Microsoft.VisualStudio.Threading">
-          <HintPath>..\..\lib\VS14\Microsoft.VisualStudio.Threading.dll</HintPath>
+          <HintPath>..\..\..\lib\VS14\Microsoft.VisualStudio.Threading.dll</HintPath>
         </Reference>
       </ItemGroup>
     </When>
@@ -97,7 +97,7 @@
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
-      <HintPath>..\..\lib\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
+      <HintPath>..\..\..\lib\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.Shell.Interop, Version=7.1.40304.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">

@@ -155,7 +155,7 @@ function BuildCSproj()
     .\.nuget\nuget.exe restore .\NuGet.Clients.sln
 
     # Build the solution
-    & $msbuildExe .\NuGet.Tooling.sln "/p:Configuration=$Configuration;PublicRelease=$PublicRelease"
+    & $msbuildExe .\NuGet.Clients.sln "/p:Configuration=$Configuration;PublicRelease=$PublicRelease"
 }
 
 ###Functions###

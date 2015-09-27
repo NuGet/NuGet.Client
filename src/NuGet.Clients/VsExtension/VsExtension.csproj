@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\..\Build\Common.props" Condition="Exists('..\..\..\Build\Common.props')" />
   <PropertyGroup>
     <NoWarn>1762</NoWarn>
     <NuGetPackageImportStamp>d386b432</NuGetPackageImportStamp>
@@ -10,17 +11,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '14.0'">
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(VisualStudioVersion)' == '12.0'">
-    <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(VisualStudioVersion)' == '11.0'">
-    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
-    <OldToolsVersion>4.0</OldToolsVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Coverage' Or '$(Configuration)' == 'Mono Debug'">
     <DebugSymbols>true</DebugSymbols>
@@ -40,7 +30,6 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
-  <Import Project="..\..\..\Build\Common.props" Condition="Exists('..\..\..\Build\Common.props')" />
   <PropertyGroup>
     <ProjectGuid>{D0F9864B-D782-4471-81A2-29555E5DC0D7}</ProjectGuid>
     <ProjectTypeGuids>{82b43b9b-a64c-4715-b499-d71e9ca2bd60};{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -49,9 +38,6 @@
     <RootNamespace>NuGetVSExtension</RootNamespace>
     <AssemblyName>NuGet.Tools</AssemblyName>
     <VsSdkTargets>$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\VSSDK\Microsoft.VsSDK.targets</VsSdkTargets>
-    <DefineConstants Condition="'$(VisualStudioVersion)'=='10.0'">$(DefineConstants);VS10</DefineConstants>
-    <DefineConstants Condition="'$(VisualStudioVersion)'=='11.0'">$(DefineConstants);VS11</DefineConstants>
-    <DefineConstants Condition="'$(VisualStudioVersion)'=='12.0'">$(DefineConstants);VS12</DefineConstants>
     <DefineConstants Condition="'$(VisualStudioVersion)'=='14.0'">$(DefineConstants);VS14</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -174,6 +160,10 @@
     <ProjectReference Include="..\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj">
       <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
       <Name>PackageManagement.PowerShellCmdlets</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PackageManagement.UI\PackageManagement.UI.csproj">
+      <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
+      <Name>PackageManagement.UI</Name>
     </ProjectReference>
     <ProjectReference Include="..\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj">
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
