@@ -75,7 +75,9 @@ namespace NuGet.CommandLine
             }
         }
 
-        protected IEnumerable<Packaging.PackageReference> GetInstalledPackageReferences(string projectConfigFilePath)
+        protected IEnumerable<Packaging.PackageReference> GetInstalledPackageReferences(
+            string projectConfigFilePath,
+            bool allowDuplicatePackageIds)
         {
             if (File.Exists(projectConfigFilePath))
             {
@@ -83,7 +85,7 @@ namespace NuGet.CommandLine
                 {
                     var xDocument = XDocument.Load(projectConfigFilePath);
                     var reader = new PackagesConfigReader(XDocument.Load(projectConfigFilePath));
-                    return reader.GetPackages();
+                    return reader.GetPackages(allowDuplicatePackageIds);
                 }
                 catch (XmlException ex)
                 {

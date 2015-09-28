@@ -144,7 +144,11 @@ namespace NuGet.CommandLine
         {
             var sourceRepositoryProvider = GetSourceRepositoryProvider();
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, installPath);
-            var installedPackageReferences = GetInstalledPackageReferences(packagesConfigFilePath);
+
+            var installedPackageReferences = GetInstalledPackageReferences(
+                packagesConfigFilePath,
+                allowDuplicatePackageIds: true);
+
             var packageRestoreData = installedPackageReferences.Select(reference =>
                 new PackageRestoreData(
                     reference,
