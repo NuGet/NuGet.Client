@@ -446,15 +446,16 @@ namespace NuGet.PackageManagement.UI
             };
         }
 
-        // Creates the list of installed packages that have updates available
-        private async Task CreatePackagesWithUpdatesAsync(CancellationToken ct)
+        // Creates the list of installed packages that have updates available.
+        // Returns the number of packages that have updates available.
+        public async Task<int> CreatePackagesWithUpdatesAsync(CancellationToken ct)
         {
             _packagesWithUpdates = new List<UISearchMetadata>();
             var metadataResource = await _sourceRepository.GetResourceAsync<UIMetadataResource>();
 
             if (metadataResource == null)
             {
-                return;
+                return 0;
             }
 
             var installedPackages = (await GetInstalledPackagesAsync(latest: false, token: ct))
@@ -487,6 +488,8 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
             }
+
+            return _packagesWithUpdates.Count;
         }
 
         public async Task<LoadResult> LoadItemsAsync(int startIndex, CancellationToken cancellationToken)

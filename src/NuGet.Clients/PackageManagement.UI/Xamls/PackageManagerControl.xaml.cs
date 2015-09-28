@@ -72,7 +72,8 @@ namespace NuGet.PackageManagement.UI
             _windowSearchHostFactory = searchFactory;
             if (_windowSearchHostFactory != null)
             {
-                _windowSearchHost = _windowSearchHostFactory.CreateWindowSearchHost(_searchControlParent);
+                _windowSearchHost = _windowSearchHostFactory.CreateWindowSearchHost(
+                    _topPanel.SearchControlParent);
                 _windowSearchHost.SetupSearch(this);
                 _windowSearchHost.IsVisible = true;
             }
@@ -95,6 +96,7 @@ namespace NuGet.PackageManagement.UI
 
             // UI is initialized. Start the first search
             SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+            RefreshAvailableUpdatesCount();
 
             // register with the UI controller
             var controller = model.UIController as NuGetUI;
@@ -117,26 +119,9 @@ namespace NuGet.PackageManagement.UI
 
         private void InitializeFilterList(UserSettings settings)
         {
-            _filter.DisplayMemberPath = "Text";
-            var items = new[]
-                {
-                    new FilterItem(Filter.All, Resx.Resources.Filter_All),
-                    new FilterItem(Filter.Installed, Resx.Resources.Filter_Installed),
-                    new FilterItem(Filter.UpdatesAvailable, Resx.Resources.Filter_UpgradeAvailable)
-                };
-
-            foreach (var item in items)
-            {
-                _filter.Items.Add(item);
-            }
-
             if (settings != null)
             {
-                _filter.SelectedItem = items.First(item => item.Filter == settings.SelectedFilter);
-            }
-            else
-            {
-                _filter.SelectedItem = items[0];
+                _topPanel.SelectFilter(settings.SelectedFilter);
             }
         }
 
@@ -193,7 +178,7 @@ namespace NuGet.PackageManagement.UI
             _detailModel.Options.ShowPreviewWindow = settings.ShowPreviewWindow;
             _detailModel.Options.RemoveDependencies = settings.RemoveDependencies;
             _detailModel.Options.ForceRemove = settings.ForceRemove;
-            _checkboxPrerelease.IsChecked = settings.IncludePrerelease;
+            _topPanel.CheckboxPrerelease.IsChecked = settings.IncludePrerelease;
 
             SetSelectedDepencyBehavior(settings.DependencyBehavior);
 
@@ -218,14 +203,14 @@ namespace NuGet.PackageManagement.UI
             _dontStartNewSearch = true;
             try
             {
-                var oldActiveSource = _sourceRepoList.SelectedItem as SourceRepository;
+                var oldActiveSource = _topPanel.SourceRepoList.SelectedItem as SourceRepository;
                 var newSources = GetEnabledSources();
 
                 // Update the source repo list with the new value.
-                _sourceRepoList.Items.Clear();
+                _topPanel.SourceRepoList.Items.Clear();
                 foreach (var source in newSources)
                 {
-                    _sourceRepoList.Items.Add(source);
+                    _topPanel.SourceRepoList.Items.Add(source);
                 }
 
                 SetNewActiveSource(newSources, oldActiveSource);
@@ -240,6 +225,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     SaveSettings();
                     SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+                    RefreshAvailableUpdatesCount();
                 }
             }
             finally
@@ -285,13 +271,8 @@ namespace NuGet.PackageManagement.UI
             settings.ForceRemove = _detailModel.Options.ForceRemove;
             settings.DependencyBehavior = _detailModel.Options.SelectedDependencyBehavior.Behavior;
             settings.FileConflictAction = _detailModel.Options.SelectedFileConflictAction.Action;
-            settings.IncludePrerelease = _checkboxPrerelease.IsChecked == true;
-
-            var filterItem = _filter.SelectedItem as FilterItem;
-            if (filterItem != null)
-            {
-                settings.SelectedFilter = filterItem.Filter;
-            }
+            settings.IncludePrerelease = _topPanel.CheckboxPrerelease.IsChecked == true;
+            settings.SelectedFilter = _topPanel.Filter;
 
             Model.Context.AddSettings(GetSettingsKey(), settings);
         }
@@ -343,7 +324,7 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
-            _sourceRepoList.SelectedItem = ActiveSource;
+            _topPanel.SourceRepoList.SelectedItem = ActiveSource;
             if (ActiveSource != null)
             {
                 Model.Context.SourceProvider.PackageSourceProvider.SaveActivePackageSource(ActiveSource.PackageSource);
@@ -458,11 +439,11 @@ namespace NuGet.PackageManagement.UI
         private void InitSourceRepoList(UserSettings settings)
         {
             // init source repo list
-            _sourceRepoList.Items.Clear();
+            _topPanel.SourceRepoList.Items.Clear();
             var enabledSources = GetEnabledSources();
             foreach (var source in enabledSources)
             {
-                _sourceRepoList.Items.Add(source);
+                _topPanel.SourceRepoList.Items.Add(source);
             }
 
             // get active source name.
@@ -493,7 +474,7 @@ namespace NuGet.PackageManagement.UI
 
             if (ActiveSource != null)
             {
-                _sourceRepoList.SelectedItem = ActiveSource;
+                _topPanel.SourceRepoList.SelectedItem = ActiveSource;
             }
         }
 
@@ -501,8 +482,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                var filterItem = _filter.SelectedItem as FilterItem;
-                return filterItem != null && filterItem.Filter == Filter.Installed;
+                return _topPanel.Filter == Filter.Installed;
             }
         }
 
@@ -510,14 +490,13 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                var filterItem = _filter.SelectedItem as FilterItem;
-                return filterItem != null && filterItem.Filter == Filter.UpdatesAvailable;
+                return _topPanel.Filter == Filter.UpdatesAvailable;
             }
         }
 
         public bool IncludePrerelease
         {
-            get { return _checkboxPrerelease.IsChecked == true; }
+            get { return _topPanel.CheckboxPrerelease.IsChecked == true; }
         }
 
         internal SourceRepository ActiveSource { get; private set; }
@@ -529,12 +508,7 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                 {
-                    var filterItem = _filter.SelectedItem as FilterItem;
-                    var filter = filterItem != null ?
-                        filterItem.Filter :
-                        Filter.All;
-
-                    var option = new PackageLoaderOption(filter, IncludePrerelease);
+                    var option = new PackageLoaderOption(_topPanel.Filter, IncludePrerelease);
                     var loader = new PackageLoader(
                         option,
                         Model.Context.PackageManager,
@@ -546,7 +520,24 @@ namespace NuGet.PackageManagement.UI
                 });
         }
 
-        private void SettingsButtonClick(object sender, RoutedEventArgs e)
+        private void RefreshAvailableUpdatesCount()
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+                _topPanel._labelUpgradeAvailable.Count = 0;
+                var updatesLoader = new PackageLoader(
+                    new PackageLoaderOption(Filter.UpdatesAvailable, IncludePrerelease),
+                    Model.Context.PackageManager,
+                    Model.Context.Projects,
+                    ActiveSource,
+                    String.Empty);
+                await updatesLoader.InitializeAsync();
+                int updatesCount = await updatesLoader.CreatePackagesWithUpdatesAsync(CancellationToken.None);
+                _topPanel._labelUpgradeAvailable.Count = updatesCount;
+            });
+        }
+
+        private void SettingsButtonClicked(object sender, EventArgs e)
         {
             Model.UIController.LaunchNuGetOptionsDialog();
         }
@@ -570,9 +561,9 @@ namespace NuGet.PackageManagement.UI
             else
             {
                 _packageDetail.Visibility = Visibility.Visible;
-                var selectedFilter = _filter.SelectedItem as FilterItem;
-                await _detailModel.SetCurrentPackage(selectedPackage,
-                                                     selectedFilter == null ? Filter.All : selectedFilter.Filter);
+                await _detailModel.SetCurrentPackage(
+                    selectedPackage,
+                    _topPanel.Filter);
 
                 _packageDetail.DataContext = _detailModel;
                 _packageDetail.ScrollToHome();
@@ -601,26 +592,27 @@ namespace NuGet.PackageManagement.UI
                 packageSource.Source);
         }
 
-        private void SourceRepoList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void SourceRepoList_SelectionChanged(object sender, EventArgs e)
         {
             if (_dontStartNewSearch || !_initialized)
             {
                 return;
             }
 
-            ActiveSource = _sourceRepoList.SelectedItem as SourceRepository;
+            ActiveSource = _topPanel.SourceRepoList.SelectedItem as SourceRepository;
             if (ActiveSource != null)
             {
-                _sourceTooltip.Visibility = Visibility.Visible;
-                _sourceTooltip.DataContext = GetPackageSourceTooltip(ActiveSource.PackageSource);
+                _topPanel.SourceToolTip.Visibility = Visibility.Visible;
+                _topPanel.SourceToolTip.DataContext = GetPackageSourceTooltip(ActiveSource.PackageSource);
 
                 Model.Context.SourceProvider.PackageSourceProvider.SaveActivePackageSource(ActiveSource.PackageSource);
                 SaveSettings();
                 SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+                RefreshAvailableUpdatesCount();
             }
         }
 
-        private void Filter_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void Filter_SelectionChanged(object sender, EventArgs e)
         {
             if (_initialized)
             {
@@ -649,12 +641,14 @@ namespace NuGet.PackageManagement.UI
                         continue;
                     }
 
-                    package.StatusProvider = new Lazy<Task<PackageStatus>>(async () => await GetPackageStatus(
+                    package.StatusProvider = new Lazy<Task<PackageStatus>>(async () => await GetPackageInfo(
                        package.Id,
                        installedPackages,
                        package.Versions));
                 }
             }
+
+            RefreshAvailableUpdatesCount();
         }
 
         private static IReadOnlyList<Packaging.PackageReference> GetInstalledPackages(IEnumerable<NuGetProject> projects)
@@ -681,7 +675,7 @@ namespace NuGet.PackageManagement.UI
         /// <param name="installedPackages">All installed pacakges.</param>
         /// <param name="allVersions">List of all versions of the package.</param>
         /// <returns>The status of the package in the installation target.</returns>
-        private static async Task<PackageStatus> GetPackageStatus(
+        private static async Task<PackageStatus> GetPackageInfo(
             string packageId,
             IReadOnlyList<Packaging.PackageReference> installedPackages,
             Lazy<Task<IEnumerable<VersionInfo>>> allVersions)
@@ -699,24 +693,24 @@ namespace NuGet.PackageManagement.UI
                 .OrderBy(r => r.PackageIdentity.Version)
                 .FirstOrDefault();
 
-            PackageStatus status;
+            PackageStatus result;
             if (minimumInstalledPackage != null)
             {
                 if (minimumInstalledPackage.PackageIdentity.Version < latestStableVersion)
                 {
-                    status = PackageStatus.UpdateAvailable;
+                    result = PackageStatus.UpdateAvailable;
                 }
                 else
                 {
-                    status = PackageStatus.Installed;
+                    result = PackageStatus.Installed;
                 }
             }
             else
             {
-                status = PackageStatus.NotInstalled;
+                result = PackageStatus.NotInstalled;
             }
 
-            return status;
+            return result;
         }
 
         private void SearchControl_SearchStart(object sender, EventArgs e)
@@ -729,15 +723,18 @@ namespace NuGet.PackageManagement.UI
             SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
         }
 
-        private void CheckboxPrerelease_CheckChanged(object sender, RoutedEventArgs e)
+        private void CheckboxPrerelease_CheckChanged(object sender, EventArgs e)
         {
             if (!_initialized)
             {
                 return;
             }
 
-            RegistrySettingUtility.SetBooleanSetting(Constants.IncludePrereleaseRegistryName, _checkboxPrerelease.IsChecked == true);
+            RegistrySettingUtility.SetBooleanSetting(
+                Constants.IncludePrereleaseRegistryName, 
+                _topPanel.CheckboxPrerelease.IsChecked == true);
             SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+            RefreshAvailableUpdatesCount();
         }
 
         internal class SearchQuery : IVsSearchQuery
@@ -783,7 +780,7 @@ namespace NuGet.PackageManagement.UI
             // so that the code can be run on both dev12 & dev14. If we use the type directly,
             // there will be type mismatch error.
             dynamic settings = pSearchSettings;
-            settings.ControlMinWidth = (uint)_searchControlParent.MinWidth;
+            settings.ControlMinWidth = (uint)_topPanel.SearchControlParent.MinWidth;
             settings.ControlMaxWidth = uint.MaxValue;
             settings.SearchWatermark = GetSearchText();
         }
