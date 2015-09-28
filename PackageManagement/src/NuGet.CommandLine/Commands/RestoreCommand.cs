@@ -46,7 +46,7 @@ namespace NuGet.CommandLine
 
         public override async Task ExecuteCommandAsync()
         {
-            bool restoreResult = true;
+            var success = true;
 
             _msbuildDirectory = MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console);
 
@@ -64,7 +64,7 @@ namespace NuGet.CommandLine
             if (restoreInputs.PackageReferenceFiles.Count > 0)
             {
                 var v2RestoreResult = await PerformNuGetV2RestoreAsync(restoreInputs);
-                restoreResult &= v2RestoreResult;
+                success &= v2RestoreResult;
             }
 
             if (restoreInputs.V3RestoreFiles.Count > 0)
@@ -85,7 +85,8 @@ namespace NuGet.CommandLine
                 {
                     if (DisableParallelProcessing)
                     {
-                        await PerformNuGetV3RestoreAsync(packagesDir, file);
+                        var v3RestoreResult = await PerformNuGetV3RestoreAsync(packagesDir, file);
+                        success &= v3RestoreResult;
                     }
                     else
                     {
@@ -96,11 +97,11 @@ namespace NuGet.CommandLine
                 if (v3RestoreTasks.Count > 0)
                 {
                     var results = await Task.WhenAll(v3RestoreTasks);
-                    restoreResult &= results.All(r => r);
+                    success &= results.All(r => r);
                 }
             }
 
-            if (!restoreResult)
+            if (!success)
             {
                 throw new CommandLineException();
             }
