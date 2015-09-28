@@ -79,7 +79,7 @@ function CleanCache()
 function BuildXproj()
 {
     ## For local build using the following format
-    $env:DNX_BUILD_VERSION="local-$timestamp"
+    $env:DNX_BUILD_VERSION="beta-$timestamp"
 
     if ($SkipRestore -eq $False)
     {
@@ -149,8 +149,16 @@ function BuildXproj()
 
 function BuildCSproj()
 {
+    #Building the microsoft interop package for the test.utility
+    $interopLib = ".\lib\Microsoft.VisualStudio.ProjectSystem.Interop"
+    & dnu restore $interopLib -s https://www.myget.org/F/nuget-volatile/api/v2/ -s https://www.nuget.org/api/v2/
+    & dnu pack $interopLib
+    Get-ChildItem $interopLib\*.nupkg -Recurse | % { Move-Item $_ $nupkgsDir }
+
+
+
     # Restore packages for NuGet.Tooling solution
-    .\.nuget\nuget.exe restore .\NuGet.Clients.sln
+    & $nugetExe restore .\NuGet.Clients.sln
 
     # Build the solution
     & $msbuildExe .\NuGet.Clients.sln "/p:Configuration=$Configuration;PublicRelease=$PublicRelease"
@@ -188,9 +196,17 @@ if ((Test-Path $dnvmLoc) -eq $False)
 }
 
 ## Clean artifacts and nupkgs folder
-Remove-Item $nupkgsDir\*.nupkg
-Remove-Item $artifacts\*.* -Recurse
+if (Test-Path $nupkgsDir)
+{
+    Write-Host "Cleaning nupkgs folder"
+    Remove-Item $nupkgsDir\*.nupkg
+}
 
+if( Test-Path $artifacts)
+{
+    Write-Host "Cleaning the artifacts folder"
+    Remove-Item $artifacts\*.* -Recurse
+}
 
 ## Make sure the needed DNX runtimes ex
 Write-Host "Validating the correct DNX runtime set"
