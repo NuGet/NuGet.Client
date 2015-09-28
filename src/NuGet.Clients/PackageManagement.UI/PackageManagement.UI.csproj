@@ -197,6 +197,9 @@
     <Compile Include="Xamls\FileConflictDialog.xaml.cs">
       <DependentUpon>FileConflictDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Xamls\FilterLabel.xaml.cs">
+      <DependentUpon>FilterLabel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Xamls\InstalledIndicator.xaml.cs">
       <DependentUpon>InstalledIndicator.xaml</DependentUpon>
     </Compile>
@@ -214,6 +217,9 @@
       <DependentUpon>PackageManagerControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\PackageStatusToInstallImageConverter.cs" />
+    <Compile Include="Xamls\PackageManagerTopPanel.xaml.cs">
+      <DependentUpon>PackageManagerTopPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Xamls\PackageMetadataControl.xaml.cs">
       <DependentUpon>PackageMetadataControl.xaml</DependentUpon>
     </Compile>
@@ -258,6 +264,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Xamls\FilterLabel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Xamls\InstalledIndicator.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -277,6 +287,10 @@
     <Page Include="Xamls\PackageManagerControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Xamls\PackageManagerTopPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Xamls\PackageMetadataControl.xaml">
       <SubType>Designer</SubType>
