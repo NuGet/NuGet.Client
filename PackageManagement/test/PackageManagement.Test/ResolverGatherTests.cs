@@ -205,6 +205,77 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public async Task ResolverGather_VerifyCacheWorksWithCachedNulls()
+        {
+            // Arrange
+            var target = CreatePackage("a", "2.0.0");
+            IEnumerable<PackageIdentity> targets = new[] { target };
+
+            var framework = NuGetFramework.Parse("net451");
+
+            var repoA = new List<SourcePackageDependencyInfo>();
+            var repoB = new List<SourcePackageDependencyInfo>();
+            var repoInstalled = new List<SourcePackageDependencyInfo>();
+
+            var primaryRepo = new List<SourceRepository>();
+            primaryRepo.Add(CreateRepo("a", repoA));
+
+            var repos = new List<SourceRepository>();
+            repos.Add(CreateRepo("a", repoA));
+            repos.Add(CreateRepo("b", repoB));
+
+            var installedPackages = new List<PackageIdentity>();
+
+            // this contains the cache
+            var resolutionContext = new ResolutionContext();
+
+            var context = new GatherContext();
+            context.PrimaryTargets = targets.ToList();
+            context.InstalledPackages = installedPackages;
+            context.TargetFramework = framework;
+            context.PrimarySources = primaryRepo;
+            context.AllSources = repos;
+            context.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+            context.ResolutionContext = resolutionContext;
+
+            var contextAOnly = new GatherContext();
+            contextAOnly.PrimaryTargets = targets.ToList();
+            contextAOnly.InstalledPackages = installedPackages;
+            contextAOnly.TargetFramework = framework;
+            contextAOnly.PrimarySources = primaryRepo;
+            contextAOnly.AllSources = repos;
+            contextAOnly.PackagesFolderSource = CreateRepo("installed", repoInstalled);
+            contextAOnly.ResolutionContext = resolutionContext;
+
+            // Run the first time
+            try
+            {
+                await ResolverGather.GatherAsync(context, CancellationToken.None);
+            }
+            catch (InvalidOperationException)
+            {
+
+            }
+
+            // Act
+            // Run again
+            Exception result = null;
+
+            try
+            {
+                await ResolverGather.GatherAsync(contextAOnly, CancellationToken.None);
+            }
+            catch (InvalidOperationException ex)
+            {
+                result = ex;
+            }
+
+            // Assert
+            // If this fails there will be a null ref or argument exception
+            Assert.Equal("Package 'a' is not found", result.Message);
+        }
+
+        [Fact]
         public async Task ResolverGather_VerifyCacheIsUsed()
         {
             // Arrange

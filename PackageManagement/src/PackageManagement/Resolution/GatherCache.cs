@@ -86,7 +86,13 @@ namespace NuGet.PackageManagement
                 }
             }
 
-            var packages = new List<SourcePackageDependencyInfo>() { result };
+            var packages = new List<SourcePackageDependencyInfo>(1);
+
+            if (result != null)
+            {
+                packages.Add(result);
+            }
+
             return new GatherCacheResult(hasEntry, packages);
         }
 
