@@ -153,7 +153,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                 if (!_isPackageInstalled)
                 {
-                    Log(ProjectManagement.MessageLevel.Error, Resources.PackageNotInstalledInAnyProject, Id);
+                    Log(ProjectManagement.MessageLevel.Error, Resources.Cmdlets_PackageNotInstalledInAnyProject, Id);
                 }
             }
             catch (Exception ex)
