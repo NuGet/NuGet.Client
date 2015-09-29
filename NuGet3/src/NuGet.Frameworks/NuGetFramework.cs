@@ -261,6 +261,21 @@ namespace NuGet.Frameworks
         }
 
         /// <summary>
+        /// True if the framework is packages based.
+        /// Ex: dotnet, dnxcore
+        /// </summary>
+        public bool IsPackageBased
+        {
+            get
+            {
+                return FrameworkConstants.FrameworkIdentifiers.NetPlatform
+                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
+                    || FrameworkConstants.FrameworkIdentifiers.DnxCore
+                    .Equals(Framework, StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        /// <summary>
         /// True if this framework matches for all versions.
         /// Ex: net
         /// </summary>
