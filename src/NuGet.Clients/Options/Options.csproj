@@ -21,7 +21,6 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>$(DefineConstants);DEBUG;CODE_ANALYSIS</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -128,5 +127,4 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\..\build\common.targets" />
   <Import Project="..\..\..\build\sign.targets" />
-  <Import Project="$(PackagesDirectory)\Microsoft.Bcl.Build\1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('$(PackagesDirectory)\Microsoft.Bcl.Build\1.0.21\build\Microsoft.Bcl.Build.targets')" />
 </Project>

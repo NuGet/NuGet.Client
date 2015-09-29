@@ -32,13 +32,6 @@ function RestoreXProj($file)
 ## Clean the machine level cache from all package
 function CleanCache()
 {
-	Write-Host Removing MEF cache
-
-	if (Test-Path $env:localappdata\Microsoft\VisualStudio\14.0Exp)
-	{
-		rm -r $env:localappdata\Microsoft\VisualStudio\14.0Exp -Force
-	}
-
 	Write-Host Removing DNX packages
 
 	if (Test-Path $env:userprofile\.dnx\packages)
@@ -83,9 +76,6 @@ function BuildXproj()
 
     if ($SkipRestore -eq $False)
     {
-        Write-Host "Restoring tools"
-        & $nugetExe restore .nuget\packages.config -SolutionDirectory .
-
         Write-Host "Restoring XProj packages"
         foreach ($file in (Get-ChildItem "src" -rec))
         {
@@ -155,10 +145,8 @@ function BuildCSproj()
     & dnu pack $interopLib
     Get-ChildItem $interopLib\*.nupkg -Recurse | % { Move-Item $_ $nupkgsDir }
 
-
-
     # Restore packages for NuGet.Tooling solution
-    & $nugetExe restore .\NuGet.Clients.sln
+    & $nugetExe restore -msbuildVersion 14 .\NuGet.Clients.sln
 
     # Build the solution
     & $msbuildExe .\NuGet.Clients.sln "/p:Configuration=$Configuration;PublicRelease=$PublicRelease"
@@ -186,6 +174,13 @@ if ((Test-Path $nugetExe) -eq $False)
 {
     Write-Host "Downloading nuget.exe"
     wget https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile $nugetExe
+}
+
+# Restoring tools required for build
+if ($SkipRestore -eq $False)
+{
+    Write-Host "Restoring tools"
+    & $nugetExe restore .nuget\packages.config -SolutionDirectory .
 }
 
 ## Validating DNVM installed and install it if missing

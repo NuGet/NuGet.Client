@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\..\..\Build\Common.props" Condition="Exists('..\..\..\..\Build\Common.props')" />
   <PropertyGroup>
     <PackagesDirectory>$(UserProfile)\.nuget\packages</PackagesDirectory>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
@@ -10,9 +11,7 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
-  <Import Project="..\..\..\..\Build\Common.props" Condition="Exists('..\..\..\..\Build\Common.props')" />
   <PropertyGroup>
-    <NuGetRoot>$(MSBuildProjectDirectory)\..\..\..</NuGetRoot>
     <ProjectGuid>{5A79EEF3-51C0-4A14-8D37-50EF38AD835D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -26,7 +25,6 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>$(DefineConstants);DEBUG;CODE_ANALYSIS</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
@@ -64,9 +62,6 @@
       <DependentUpon>CommonResources.cs</DependentUpon>
     </Compile>
     <Compile Include="Common\GlobalSuppressions.cs" />
-    <Compile Include="DebugConstants.cs" Condition=" '$(Configuration)' == 'Debug' ">
-      <InProject>false</InProject>
-    </Compile>
     <Compile Include="IRunspaceManager.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="ProjectExtensions.cs">
@@ -137,20 +132,4 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\..\..\Build\common.targets" />
   <Import Project="..\..\..\..\Build\sign.targets" />
-  <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
-  </PropertyGroup>
-  <Target Name="BeforeBuild" Condition=" '$(Configuration)' == 'Debug' ">
-    <PropertyGroup>
-      <DebugConstants>$(MSBuildProjectDirectory)\DebugConstants.cs</DebugConstants>
-    </PropertyGroup>
-    <WriteLinesToFile File="$(DebugConstants)" Lines="#if DEBUG&#xD;&#xA;using System.IO%3B&#xD;&#xA;namespace NuGetConsole.Host.PowerShell {&#xD;&#xA;    public static class DebugConstants {&#xD;&#xA;        internal static string TestModulePath = Path.Combine(%40&quot;$(NuGetRoot)&quot;, %40&quot;test\EndToEnd\NuGet.Tests.psm1&quot;)%3B&#xD;&#xA;    }&#xD;&#xA;}&#xD;&#xA;#endif" Overwrite="true" />
-  </Target>
-  <Import Project="$(PackagesDirectory)\Microsoft.Bcl.Build\1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('$(PackagesDirectory)\Microsoft.Bcl.Build\1.0.21\build\Microsoft.Bcl.Build.targets')" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.  
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

@@ -121,15 +121,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             {
                 runspace.ImportModule(functionalTestPath);
             }
-#if DEBUG
-            else
-            {
-                if (File.Exists(DebugConstants.TestModulePath))
-                {
-                    runspace.ImportModule(DebugConstants.TestModulePath);
-                }
-            }
-#endif
         }
 
         private static void LoadProfilesIntoRunspace(RunspaceDispatcher runspace)
