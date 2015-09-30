@@ -216,31 +216,31 @@
   <data name="Cmdlet_YesAll" xml:space="preserve">
     <value>Yes to &amp;All</value>
   </data>
-  <data name="Cmdlets_Log_NoActionsWhatIf" xml:space="preserve">
+  <data name="Cmdlet_Log_NoActionsWhatIf" xml:space="preserve">
     <value>None</value>
   </data>
-  <data name="Cmdlets_Log_OperationWhatIf" xml:space="preserve">
+  <data name="Cmdlet_Log_OperationWhatIf" xml:space="preserve">
     <value>WhatIf: {0}</value>
   </data>
-  <data name="Cmdlets_FileConflictTitle" xml:space="preserve">
+  <data name="Cmdlet_FileConflictTitle" xml:space="preserve">
     <value>File Conflict</value>
   </data>
-  <data name="Cmdlets_PackageNotInstalledInAnyProject" xml:space="preserve">
+  <data name="Cmdlet_PackageNotInstalledInAnyProject" xml:space="preserve">
     <value>'{0}' was not installed in any project. Update failed.</value>
   </data>
-  <data name="Cmdlets_UnknownPackage" xml:space="preserve">
+  <data name="Cmdlet_UnknownPackage" xml:space="preserve">
     <value>Unable to find package '{0}'.</value>
   </data>
-  <data name="Cmdlets_UnknownPackageSpecificVersion" xml:space="preserve">
+  <data name="Cmdlet_UnknownPackageSpecificVersion" xml:space="preserve">
     <value>Unable to find version '{1}' of package '{0}'.</value>
   </data>
-  <data name="Cmdlets_ExecutingScript" xml:space="preserve">
+  <data name="Cmdlet_ExecutingScript" xml:space="preserve">
     <value>Executing script file '{0}'</value>
   </data>
   <data name="Cmdlet_NoPackageActions" xml:space="preserve">
     <value>No package actions available to be executed.</value>
   </data>
-  <data name="Cmdlets_NoProjectsToSyncPackage" xml:space="preserve">
+  <data name="Cmdlet_NoProjectsToSyncPackage" xml:space="preserve">
     <value>There are no other projects to sync the package '{0}'.</value>
   </data>
   <data name="Cmdlet_MissingPackages" xml:space="preserve">

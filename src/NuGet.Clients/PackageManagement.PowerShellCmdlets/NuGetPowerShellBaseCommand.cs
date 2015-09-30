@@ -811,7 +811,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     new ChoiceDescription(Resources.Cmdlet_NoAll, Resources.Cmdlet_FileConflictNoAllHelp)
                 };
 
-            int choice = Host.UI.PromptForChoice(Resources.Cmdlets_FileConflictTitle, message, choices, defaultChoice: 2);
+            int choice = Host.UI.PromptForChoice(Resources.Cmdlet_FileConflictTitle, message, choices, defaultChoice: 2);
 
             Debug.Assert(choice >= 0 && choice < 4);
             switch (choice)
@@ -921,7 +921,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 if (path != null)
                 {
                     string command = "& " + ProjectManagement.PathUtility.EscapePSPath(path) + " $__rootPath $__toolsPath $__package $__project";
-                    LogCore(ProjectManagement.MessageLevel.Info, String.Format(CultureInfo.CurrentCulture, Resources.Cmdlets_ExecutingScript, path));
+                    LogCore(ProjectManagement.MessageLevel.Info, String.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_ExecutingScript, path));
 
                     InvokeCommand.InvokeScript(command, false, PipelineResultTypes.Error, null, null);
                 }

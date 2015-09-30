@@ -97,6 +97,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Executing script file &apos;{0}&apos;.
+        /// </summary>
+        internal static string Cmdlet_ExecutingScript {
+            get {
+                return ResourceManager.GetString("Cmdlet_ExecutingScript", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to parse package identities from file {0} with exception: {1}.
         /// </summary>
         internal static string Cmdlet_FailToParsePackages {
@@ -129,6 +138,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         internal static string Cmdlet_FileConflictNoHelp {
             get {
                 return ResourceManager.GetString("Cmdlet_FileConflictNoHelp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to File Conflict.
+        /// </summary>
+        internal static string Cmdlet_FileConflictTitle {
+            get {
+                return ResourceManager.GetString("Cmdlet_FileConflictTitle", resourceCulture);
             }
         }
         
@@ -192,6 +210,24 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         internal static string Cmdlet_InvalidPSDrive {
             get {
                 return ResourceManager.GetString("Cmdlet_InvalidPSDrive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to None.
+        /// </summary>
+        internal static string Cmdlet_Log_NoActionsWhatIf {
+            get {
+                return ResourceManager.GetString("Cmdlet_Log_NoActionsWhatIf", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to WhatIf: {0}.
+        /// </summary>
+        internal static string Cmdlet_Log_OperationWhatIf {
+            get {
+                return ResourceManager.GetString("Cmdlet_Log_OperationWhatIf", resourceCulture);
             }
         }
         
@@ -268,6 +304,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There are no other projects to sync the package &apos;{0}&apos;..
+        /// </summary>
+        internal static string Cmdlet_NoProjectsToSyncPackage {
+            get {
+                return ResourceManager.GetString("Cmdlet_NoProjectsToSyncPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The current environment doesn&apos;t have a solution open..
         /// </summary>
         internal static string Cmdlet_NoSolution {
@@ -309,6 +354,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         internal static string Cmdlet_PackageNotInstalled {
             get {
                 return ResourceManager.GetString("Cmdlet_PackageNotInstalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; was not installed in any project. Update failed..
+        /// </summary>
+        internal static string Cmdlet_PackageNotInstalledInAnyProject {
+            get {
+                return ResourceManager.GetString("Cmdlet_PackageNotInstalledInAnyProject", resourceCulture);
             }
         }
         
@@ -358,6 +412,24 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to find package &apos;{0}&apos;..
+        /// </summary>
+        internal static string Cmdlet_UnknownPackage {
+            get {
+                return ResourceManager.GetString("Cmdlet_UnknownPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to find version &apos;{1}&apos; of package &apos;{0}&apos;..
+        /// </summary>
+        internal static string Cmdlet_UnknownPackageSpecificVersion {
+            get {
+                return ResourceManager.GetString("Cmdlet_UnknownPackageSpecificVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The package &apos;{0}&apos; does not provide the requested URL..
         /// </summary>
         internal static string Cmdlet_UrlMissing {
@@ -381,78 +453,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets {
         internal static string Cmdlet_YesAll {
             get {
                 return ResourceManager.GetString("Cmdlet_YesAll", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Executing script file &apos;{0}&apos;.
-        /// </summary>
-        internal static string Cmdlets_ExecutingScript {
-            get {
-                return ResourceManager.GetString("Cmdlets_ExecutingScript", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to File Conflict.
-        /// </summary>
-        internal static string Cmdlets_FileConflictTitle {
-            get {
-                return ResourceManager.GetString("Cmdlets_FileConflictTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to None.
-        /// </summary>
-        internal static string Cmdlets_Log_NoActionsWhatIf {
-            get {
-                return ResourceManager.GetString("Cmdlets_Log_NoActionsWhatIf", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to WhatIf: {0}.
-        /// </summary>
-        internal static string Cmdlets_Log_OperationWhatIf {
-            get {
-                return ResourceManager.GetString("Cmdlets_Log_OperationWhatIf", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to There are no other projects to sync the package &apos;{0}&apos;..
-        /// </summary>
-        internal static string Cmdlets_NoProjectsToSyncPackage {
-            get {
-                return ResourceManager.GetString("Cmdlets_NoProjectsToSyncPackage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; was not installed in any project. Update failed..
-        /// </summary>
-        internal static string Cmdlets_PackageNotInstalledInAnyProject {
-            get {
-                return ResourceManager.GetString("Cmdlets_PackageNotInstalledInAnyProject", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to find package &apos;{0}&apos;..
-        /// </summary>
-        internal static string Cmdlets_UnknownPackage {
-            get {
-                return ResourceManager.GetString("Cmdlets_UnknownPackage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to find version &apos;{1}&apos; of package &apos;{0}&apos;..
-        /// </summary>
-        internal static string Cmdlets_UnknownPackageSpecificVersion {
-            get {
-                return ResourceManager.GetString("Cmdlets_UnknownPackageSpecificVersion", resourceCulture);
             }
         }
     }
