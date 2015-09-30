@@ -13,7 +13,6 @@ namespace NuGet.Configuration
     public class PackageSourceProvider : IPackageSourceProvider
     {
         private const int MaxSupportedProtocolVersion = 3;
-        private static Lazy<bool> _isMono = new Lazy<bool>(() => Type.GetType("Mono.Runtime") != null);
 
         private ISettings Settings { get; set; }
         private readonly IEnumerable<PackageSource> _providerDefaultPrimarySources;
@@ -84,7 +83,7 @@ namespace NuGet.Configuration
         {
 #if !DNXCORE50
             // Global default NuGet source doesn't make sense on Mono
-            if (_isMono.Value)
+            if (RuntimeEnvironmentHelper.IsMono)
             {
                 return Enumerable.Empty<PackageSource>();
             }
