@@ -131,6 +131,12 @@ namespace NuGet.CommandLine
                 {
                     message = getErrorMessage(unwrappedEx.InnerException);
                 }
+                else if (unwrappedEx is ExitCodeException)
+                {
+                    // Return the exit code without writing out the exception type
+                    var exitCodeEx = unwrappedEx as ExitCodeException;
+                    return exitCodeEx.ExitCode;
+                }
                 else
                 {
                     message = getErrorMessage(unwrappedEx);

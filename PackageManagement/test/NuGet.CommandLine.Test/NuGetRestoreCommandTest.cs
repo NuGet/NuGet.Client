@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using NuGet.Configuration;
 using Test.Utility;
@@ -10,6 +11,117 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetRestoreCommandTest
     {
+        [Fact]
+        public void RestoreCommand_BadInputPath()
+        {
+            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var nugetexe = Util.GetNuGetExePath();
+                var solutionPath = "bad/pat.h/myfile.blah";
+
+                var args = new string[]
+                {
+                    "restore",
+                    solutionPath,
+                    "-PackagesDirectory",
+                    randomTestFolder
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.NotEqual(0, r.Item1);
+                var error = r.Item3;
+                Assert.Contains("could not find a part of the path", r.Item3, StringComparison.OrdinalIgnoreCase);
+            }
+            finally
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_MissingSolutionFile()
+        {
+            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var nugetexe = Util.GetNuGetExePath();
+                var solutionPath = Path.Combine(randomTestFolder, "solution.sln");
+
+                var args = new string[]
+                {
+                    "restore",
+                    solutionPath,
+                    "-PackagesDirectory",
+                    randomTestFolder
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.NotEqual(0, r.Item1);
+                var error = r.Item3;
+                Assert.Contains("could not find a part of the path", r.Item3, StringComparison.OrdinalIgnoreCase);
+            }
+            finally
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_MissingPackagesConfigFile()
+        {
+            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var nugetexe = Util.GetNuGetExePath();
+                var packagesConfigPath = Path.Combine(randomTestFolder, "packages.config");
+
+                var args = new string[]
+                {
+                    "restore",
+                    packagesConfigPath,
+                    "-PackagesDirectory",
+                    randomTestFolder
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.NotEqual(0, r.Item1);
+                var error = r.Item3;
+                Assert.Contains("input file does not exist", r.Item3, StringComparison.OrdinalIgnoreCase);
+            }
+            finally
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
+            }
+        }
+
         [Fact]
         public void RestoreCommand_FromPackagesConfigFile()
         {
@@ -1488,6 +1600,13 @@ EndProject";
 
                 // Assert
                 Assert.Equal(1, r.Item1);
+                Assert.False(r.Item2.IndexOf("exception", StringComparison.OrdinalIgnoreCase) > -1);
+                Assert.False(r.Item3.IndexOf("exception", StringComparison.OrdinalIgnoreCase) > -1);
+
+                Assert.True(r.Item2.IndexOf("Unable to find version '1.1.0' of package 'packageA'.",
+                    StringComparison.OrdinalIgnoreCase) > -1);
+                Assert.True(r.Item3.IndexOf("Unable to find version '1.1.0' of package 'packageA'.",
+                    StringComparison.OrdinalIgnoreCase) > -1);
             }
             finally
             {
