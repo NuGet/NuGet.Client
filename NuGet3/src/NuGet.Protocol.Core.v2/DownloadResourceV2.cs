@@ -44,18 +44,16 @@ namespace NuGet.Protocol.Core.v2
                 try
                 {
                     var sourcePackage = identity as SourcePackageDependencyInfo;
-                    var dataServiceRepo = V2Client as DataServicePackageRepository;
+                    var repository = V2Client as DataServicePackageRepository;
 
-                    if (sourcePackage != null 
-                        && dataServiceRepo != null
-                        && sourcePackage.PackageHash != null
-                        && sourcePackage.DownloadUri != null)
+                    if (repository != null 
+                        && sourcePackage?.PackageHash != null
+                        && sourcePackage?.DownloadUri != null)
                     {
                         // If this is a SourcePackageDependencyInfo object with everything populated 
                         // and it is from an online source, use the machine cache and download it using the
                         // given url.
-                        // If this info is not provided fallback to the old method.
-                        return DownloadFromUrl(sourcePackage, dataServiceRepo, token);
+                        return DownloadFromUrl(sourcePackage, repository, token);
                     }
                     else
                     {
@@ -72,7 +70,7 @@ namespace NuGet.Protocol.Core.v2
 
         private static DownloadResourceResult DownloadFromUrl(
             SourcePackageDependencyInfo package,
-            DataServicePackageRepository dataServiceRepo,
+            DataServicePackageRepository repository,
             CancellationToken token)
         {
             IPackage newPackage = null;
@@ -107,7 +105,7 @@ namespace NuGet.Protocol.Core.v2
                     newPackage = DownloadToMachineCache(
                         cacheRepository,
                         package,
-                        dataServiceRepo,
+                        repository,
                         package.DownloadUri,
                         token);
                 }
@@ -122,7 +120,7 @@ namespace NuGet.Protocol.Core.v2
             {
                 throw new NuGetProtocolException(Strings.FormatProtocol_FailedToDownloadPackage(
                     package,
-                    dataServiceRepo.Source),
+                    repository.Source),
                     ex);
             }
 
@@ -198,7 +196,7 @@ namespace NuGet.Protocol.Core.v2
         private static IPackage DownloadToMachineCache(
             IPackageCacheRepository cacheRepository,
             PackageIdentity package,
-            DataServicePackageRepository dataServiceRepo,
+            DataServicePackageRepository repository,
             Uri downloadUri,
             CancellationToken token)
         {
@@ -209,6 +207,7 @@ namespace NuGet.Protocol.Core.v2
             FileInfo tmpFile = null;
             FileStream tmpFileStream = null;
 
+            // Create a v2 http client
             var downloadClient = new HttpClient(downloadUri)
             {
                 UserAgent = UserAgent.UserAgentString
@@ -224,8 +223,8 @@ namespace NuGet.Protocol.Core.v2
             {
                 try
                 {
-                    dataServiceRepo.PackageDownloader.ProgressAvailable += progressHandler;
-                    dataServiceRepo.PackageDownloader.DownloadPackage(downloadClient, packageName, stream);
+                    repository.PackageDownloader.ProgressAvailable += progressHandler;
+                    repository.PackageDownloader.DownloadPackage(downloadClient, packageName, stream);
                 }
                 catch (OperationCanceledException)
                 {
@@ -243,7 +242,7 @@ namespace NuGet.Protocol.Core.v2
                 }
                 finally
                 {
-                    dataServiceRepo.PackageDownloader.ProgressAvailable -= progressHandler;
+                    repository.PackageDownloader.ProgressAvailable -= progressHandler;
                 }
             };
 

@@ -8,16 +8,6 @@ namespace NuGet.Protocol.Core.Types
 {
     public class SourcePackageDependencyInfo : PackageDependencyInfo
     {
-        public SourcePackageDependencyInfo(string id, NuGetVersion version, bool listed, SourceRepository source)
-            : this(
-                  id,
-                  version,
-                  dependencies: Enumerable.Empty<PackageDependency>(),
-                  listed: listed,
-                  source: source)
-        {
-        }
-
         public SourcePackageDependencyInfo(
             string id,
             NuGetVersion version,
@@ -49,21 +39,6 @@ namespace NuGet.Protocol.Core.Types
                   source,
                   downloadUri,
                   packageHash)
-        {
-        }
-
-        public SourcePackageDependencyInfo(
-            PackageIdentity identity,
-            IEnumerable<PackageDependency> dependencies,
-            bool listed,
-            SourceRepository source)
-            : this(
-                  identity,
-                  dependencies,
-                  listed,
-                  source,
-                  downloadUri: null,
-                  packageHash: null)
         {
         }
 

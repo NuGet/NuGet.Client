@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using NuGet.Packaging.Core;
 
 namespace NuGet.Protocol.Core.v2
@@ -38,7 +40,7 @@ namespace NuGet.Protocol.Core.v2
         {
             get
             {
-                throw new NotImplementedException();
+                return new List<string>();
             }
         }
 
@@ -46,7 +48,7 @@ namespace NuGet.Protocol.Core.v2
         {
             get
             {
-                throw new NotImplementedException();
+                return string.Empty;
             }
         }
 
@@ -54,7 +56,7 @@ namespace NuGet.Protocol.Core.v2
         {
             get
             {
-                throw new NotImplementedException();
+                return new List<PackageDependencySet>();
             }
         }
 
@@ -62,7 +64,7 @@ namespace NuGet.Protocol.Core.v2
         {
             get
             {
-                throw new NotImplementedException();
+                return string.Empty;
             }
         }
 
@@ -70,7 +72,7 @@ namespace NuGet.Protocol.Core.v2
         {
             get
             {
-                throw new NotImplementedException();
+                return false;
             }
         }
 
@@ -78,7 +80,7 @@ namespace NuGet.Protocol.Core.v2
         {
             get
             {
-                throw new NotImplementedException();
+                return new List<FrameworkAssemblyReference>();
             }
         }
 
@@ -86,7 +88,7 @@ namespace NuGet.Protocol.Core.v2
         {
             get
             {
-                throw new NotImplementedException();
+                return null;
             }
         }
 
@@ -94,7 +96,7 @@ namespace NuGet.Protocol.Core.v2
         {
             get
             {
-                throw new NotImplementedException();
+                return "en-us";
             }
         }
 
@@ -102,7 +104,7 @@ namespace NuGet.Protocol.Core.v2
         {
             get
             {
-                throw new NotImplementedException();
+                return null;
             }
         }
 
@@ -110,7 +112,7 @@ namespace NuGet.Protocol.Core.v2
         {
             get
             {
-                throw new NotImplementedException();
+                return new Version(2, 5, 0, 0);
             }
         }
 
@@ -118,7 +120,7 @@ namespace NuGet.Protocol.Core.v2
         {
             get
             {
-                throw new NotImplementedException();
+                return new List<string>();
             }
         }
 
@@ -126,7 +128,7 @@ namespace NuGet.Protocol.Core.v2
         {
             get
             {
-                throw new NotImplementedException();
+                return new Collection<PackageReferenceSet>();
             }
         }
 
@@ -134,7 +136,7 @@ namespace NuGet.Protocol.Core.v2
         {
             get
             {
-                throw new NotImplementedException();
+                return null;
             }
         }
 
@@ -142,7 +144,7 @@ namespace NuGet.Protocol.Core.v2
         {
             get
             {
-                throw new NotImplementedException();
+                return string.Empty;
             }
         }
 
@@ -150,7 +152,7 @@ namespace NuGet.Protocol.Core.v2
         {
             get
             {
-                throw new NotImplementedException();
+                return false;
             }
         }
 
@@ -158,7 +160,7 @@ namespace NuGet.Protocol.Core.v2
         {
             get
             {
-                throw new NotImplementedException();
+                return string.Empty;
             }
         }
 
@@ -166,7 +168,7 @@ namespace NuGet.Protocol.Core.v2
         {
             get
             {
-                throw new NotImplementedException();
+                return string.Empty;
             }
         }
 
@@ -174,7 +176,7 @@ namespace NuGet.Protocol.Core.v2
         {
             get
             {
-                throw new NotImplementedException();
+                return string.Empty;
             }
         }
 

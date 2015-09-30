@@ -14,39 +14,26 @@ namespace NuGet.Commands
 {
     public class RestoreRequest
     {
-        public static readonly int DefaultDegreeOfConcurrency = 8;
-
-        public RestoreRequest(PackageSpec project, IEnumerable<PackageSource> sources)
-            : this(project, sources, packagesDirectory: null)
-        { }
+        public static readonly int DefaultDegreeOfConcurrency = 16;
 
         public RestoreRequest(PackageSpec project, IEnumerable<PackageSource> sources, string packagesDirectory)
-            : this(project, packagesDirectory)
+            : this(
+                  project,
+                  sources.Select(source => Repository.Factory.GetCoreV3(source.Source)),
+                  packagesDirectory)
         {
-            if (sources == null)
-            {
-                throw new ArgumentNullException(nameof(sources));
-            }
-
-            Sources = sources.Select(source => Repository.Factory.GetCoreV3(source.Source)).ToList();
         }
 
         public RestoreRequest(PackageSpec project, IEnumerable<SourceRepository> sources, string packagesDirectory)
-            : this(project, packagesDirectory)
-        {
-            if (sources == null)
-            {
-                throw new ArgumentNullException(nameof(sources));
-            }
-
-            Sources = sources.ToList();
-        }
-
-        private RestoreRequest(PackageSpec project, string packagesDirectory)
         {
             if (project == null)
             {
                 throw new ArgumentNullException(nameof(project));
+            }
+
+            if (sources == null)
+            {
+                throw new ArgumentNullException(nameof(sources));
             }
 
             Project = project;
@@ -57,6 +44,8 @@ namespace NuGet.Commands
             PackagesDirectory = packagesDirectory;
 
             CacheContext = new SourceCacheContext();
+
+            Sources = sources.ToList();
         }
 
         /// <summary>

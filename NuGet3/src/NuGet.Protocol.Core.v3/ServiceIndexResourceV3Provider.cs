@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
@@ -56,41 +55,34 @@ namespace NuGet.Protocol.Core.v3
 
                 using (var client = new DataClient(messageHandlerResource))
                 {
-                    try
+                    var response = await client.GetAsync(uri, token);
+
+                    if (response.IsSuccessStatusCode)
                     {
-                        var response = await client.GetAsync(uri, token);
-
-                        if (response.IsSuccessStatusCode)
+                        if (HttpHandlerResourceV3.CredentialsSuccessfullyUsed != null && credentials != null)
                         {
-                            if (HttpHandlerResourceV3.CredentialsSuccessfullyUsed != null && credentials != null)
-                            {
-                                HttpHandlerResourceV3.CredentialsSuccessfullyUsed(uri, credentials);
-                            }
-
-                            var text = await response.Content.ReadAsStringAsync();
-                            return JObject.Parse(text);
+                            HttpHandlerResourceV3.CredentialsSuccessfullyUsed(uri, credentials);
                         }
-                        else if (response.StatusCode == HttpStatusCode.Unauthorized)
+
+                        var text = await response.Content.ReadAsStringAsync();
+                        return JObject.Parse(text);
+                    }
+                    else if (response.StatusCode == HttpStatusCode.Unauthorized)
+                    {
+                        credentials = null;
+                        if (HttpHandlerResourceV3.PromptForCredentials != null)
                         {
-                            credentials = null;
-                            if (HttpHandlerResourceV3.PromptForCredentials != null)
-                            {
-                                credentials = HttpHandlerResourceV3.PromptForCredentials(uri);
-                            }
-
-                            if (credentials == null)
-                            {
-                                response.EnsureSuccessStatusCode();
-                            }
+                            credentials = HttpHandlerResourceV3.PromptForCredentials(uri);
                         }
-                        else
+
+                        if (credentials == null)
                         {
                             response.EnsureSuccessStatusCode();
                         }
                     }
-                    catch (Exception)
+                    else
                     {
-                        throw;
+                        response.EnsureSuccessStatusCode();
                     }
                 }
             }
@@ -118,8 +110,9 @@ namespace NuGet.Protocol.Core.v3
                     var release = false;
                     try
                     {
-                        // wait up to a minute for the lock, if we cannot get it just retrieve the file again.
-                        release = await _semaphore.WaitAsync(TimeSpan.FromMinutes(1), token);
+                        await _semaphore.WaitAsync(token);
+                        release = true;
+
                         token.ThrowIfCancellationRequested();
 
                         // check the cache again, another thread may have finished this one waited for the lock
@@ -129,7 +122,7 @@ namespace NuGet.Protocol.Core.v3
                             var json = await GetIndexJson(source, token);
 
                             // Use SemVer instead of NuGetVersion, the service index should always be
-                            // in strict SemVer format                    
+                            // in strict SemVer format
                             JToken versionToken;
                             if (json.TryGetValue("version", out versionToken) &&
                                 versionToken.Type == JTokenType.String)

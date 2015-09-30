@@ -63,7 +63,11 @@ namespace NuGet.Protocol.Core.v2
                 try
                 {
                     // Retrieve all packages
-                    var repoPackage = GetSource().FindPackage(package.Id, legacyVersion, allowPrereleaseVersions: true, allowUnlisted: true);
+                    var repoPackage = GetRepository().FindPackage(
+                        package.Id, 
+                        legacyVersion, 
+                        allowPrereleaseVersions: true, 
+                        allowUnlisted: true);
 
                     if (repoPackage != null)
                     {
@@ -110,7 +114,7 @@ namespace NuGet.Protocol.Core.v2
             try
             {
                 // Retrieve all packages
-                var repoPackages = GetSource().FindPackagesById(packageId);
+                var repoPackages = GetRepository().FindPackagesById(packageId);
 
                 // Convert from v2 to v3 types and enumerate the list to finish all server requests before returning
                 results = repoPackages.Select(p => CreateDependencyInfo(p, projectFramework)).ToList();
@@ -170,23 +174,26 @@ namespace NuGet.Protocol.Core.v2
                     identity,
                     deps,
                     PackageExtensions.IsListed(packageVersion),
-                    _source);
+                    _source,
+                    downloadUri: null,
+                    packageHash: null);
             }
 
             return result;
         }
 
-        private IPackageRepository GetSource()
+        private IPackageRepository GetRepository()
         {
-            var dataServiceRepo = V2Client as DataServicePackageRepository;
+            var repository = V2Client as DataServicePackageRepository;
 
-            if (dataServiceRepo != null)
+            if (repository != null)
             {
-                var sourceUri = new Uri(dataServiceRepo.Source);
-                dataServiceRepo = new DataServicePackageRepository(sourceUri);
+                var sourceUri = new Uri(repository.Source);
+                repository = new DataServicePackageRepository(sourceUri);
             }
 
-            return dataServiceRepo ?? V2Client;
+            // If the repository is not a DataServicePackageRepository just return the current one.
+            return repository ?? V2Client;
         }
 
         private static NuGetFramework GetFramework(PackageDependencySet dependencySet)

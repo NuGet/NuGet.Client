@@ -26,7 +26,7 @@ namespace NuGet.Protocol.Core.v3
         public DownloadResourceV3(HttpClient client, RegistrationResourceV3 regResource)
             : this(client)
         {
-            if (client == null)
+            if (regResource == null)
             {
                 throw new ArgumentNullException(nameof(regResource));
             }
