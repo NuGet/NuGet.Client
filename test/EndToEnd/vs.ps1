@@ -125,11 +125,23 @@ function New-Project {
     # Make sure there is a solution
     Ensure-Solution
     
-    # Get the zip file where the project template is located
-    $projectTemplatePath = Join-Path $TemplatePath "$TemplateName.zip"
+	if ($TemplateName -eq 'DNXClassLibrary' -or $TemplateName -eq 'DNXConsoleApp')
+	{
+		# Get the zip file where the project template is located
+		$projectTemplatePath = $TemplateName + '.vstemplate|FrameworkVersion=4.5'
+		$lang = 'CSharp/Web'
+
+		# Find the vs template file
+		$projectTemplateFilePath = $dte.Solution.GetProjectTemplate($projectTemplatePath, $lang)
+	}
+	else
+	{
+		# Get the zip file where the project template is located
+		$projectTemplatePath = Join-Path $TemplatePath "$TemplateName.zip"
     
-    # Find the vs template file
-    $projectTemplateFilePath = @(Get-ChildItem $projectTemplatePath -Filter *.vstemplate)[0].FullName    
+		# Find the vs template file
+		$projectTemplateFilePath = @(Get-ChildItem $projectTemplatePath -Filter *.vstemplate)[0].FullName
+	} 
 
     # Get the output path of the project
     if($SolutionFolder) {
@@ -518,7 +530,25 @@ function New-DNXClassLibrary
 
     try 
     {
-		$SolutionFolder | New-Project DNXClassLibrary $ProjectName
+        $SolutionFolder | New-Project DNXClassLibrary $ProjectName
+    }
+    catch {
+        # If we're unable to create the project that means we probably don't have some SDK installed
+        # Signal to the runner that we want to skip this test        
+        throw "SKIP: $($_)"
+    }
+}
+
+function New-DNXConsoleApp
+{
+    param(
+        [string]$ProjectName,
+        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+    )
+
+    try 
+    {
+        $SolutionFolder | New-Project DNXConsoleApp $ProjectName
     }
     catch {
         # If we're unable to create the project that means we probably don't have some SDK installed

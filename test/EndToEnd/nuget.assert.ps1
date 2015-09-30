@@ -180,6 +180,47 @@ function Assert-ProjectJsonDependency {
     Assert-True $found "Package $Id $Range is not referenced in $($Project.Name)"    
 }
 
+function Assert-ProjectJsonDependencyWithinTargetFramework {
+    param(
+        [parameter(Mandatory = $true)]
+        $Project,
+        [parameter(Mandatory = $true)]
+        [string]$Id,
+        [string]$Range
+    )
+
+    $projectJson = Get-ProjectJsonPackageSpec $Project
+
+    Assert-NotNull $projectJson
+
+    $found = $false
+
+    foreach ($targetFrameworkInfo in $projectJson.TargetFrameworks) {
+
+        foreach ($dependency in $targetFrameworkInfo.Dependencies) {
+
+			$library = $dependency.LibraryRange
+
+			if ($library.Name.ToUpperInvariant().Equals($Id.ToUpperInvariant()))
+			{
+				if ($Range)
+				{
+					if ($library.VersionRange.OriginalString.ToUpperInvariant().Equals($Range.ToUpperInvariant()))
+					{
+						$found = $true
+					}
+				}
+				else
+				{
+					$found = $true
+				}
+			}
+		}
+    }
+
+    Assert-True $found "Package $Id $Range is not referenced in $($Project.Name)"    
+}
+
 function Assert-ProjectJsonDependencyNotFound {
     param(
         [parameter(Mandatory = $true)]
