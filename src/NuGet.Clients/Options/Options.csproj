@@ -13,7 +13,6 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NuGet.Options</RootNamespace>
     <AssemblyName>NuGet.Options</AssemblyName>
-    <RunCodeAnalysis Condition="'$(EnableCodeAnalysis)'=='true'">true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>..\..\..\NuGet.ruleset</CodeAnalysisRuleSet>
     <SkipValidatePackageReferences>true</SkipValidatePackageReferences>
   </PropertyGroup>
@@ -27,11 +26,6 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="$(ShellAssembly)">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(ShellAssemblyHintPath)</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualStudio.Shell.Interop, Version=7.1.40304.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="Microsoft.VisualStudio.Shell.Interop.8.0, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
@@ -105,11 +99,6 @@
     <EmbeddedResource Include="PackageSourcesOptionsControl.resx">
       <DependentUpon>PackageSourcesOptionsControl.cs</DependentUpon>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\..\CodeAnalysisDictionary.xml">
-      <Link>Properties\CodeAnalysisDictionary.xml</Link>
-    </CodeAnalysisDictionary>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PackageManagement.UI\PackageManagement.UI.csproj">

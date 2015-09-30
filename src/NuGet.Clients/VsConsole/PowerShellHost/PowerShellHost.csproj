@@ -18,7 +18,6 @@
     <RootNamespace>NuGetConsole.Host.PowerShell</RootNamespace>
     <AssemblyName>NuGetConsole.Host.PowerShell</AssemblyName>
     <CodeAnalysisRuleSet>..\..\..\..\NuGet.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis Condition="'$(EnableCodeAnalysis)'=='true'">true</RunCodeAnalysis>
     <NuGetPackageImportStamp>d946fd5a</NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Coverage' Or '$(Configuration)' == 'Mono Debug'">
@@ -119,11 +118,6 @@
       <Project>{6FD11460-39A3-4A10-BA63-7541B0A7D053}</Project>
       <Name>Console.Types</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\..\..\CodeAnalysisDictionary.xml">
-      <Link>Properties\CodeAnalysisDictionary.xml</Link>
-    </CodeAnalysisDictionary>
   </ItemGroup>
   <ItemGroup>
     <None Include="Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt" />

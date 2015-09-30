@@ -13,7 +13,6 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>44966557</NuGetPackageImportStamp>
-    <RunCodeAnalysis Condition="'$(EnableCodeAnalysis)'=='true'">true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>..\..\..\NuGet.ruleset</CodeAnalysisRuleSet>
     <PackagesDirectory>$(UserProfile)\.nuget\packages</PackagesDirectory>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>

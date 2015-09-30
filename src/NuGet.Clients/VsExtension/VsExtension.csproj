@@ -1,11 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <Import Project="..\..\..\Build\Common.props" Condition="Exists('..\..\..\Build\Common.props')" />
   <PropertyGroup>
     <NoWarn>1762</NoWarn>
     <NuGetPackageImportStamp>d386b432</NuGetPackageImportStamp>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <PackagesDirectory>$(UserProfile)\.nuget\packages</PackagesDirectory>
+	<VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile />
 	<ProjectGuid>{D0F9864B-D782-4471-81A2-29555E5DC0D7}</ProjectGuid>
@@ -241,4 +243,5 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\..\build\common.targets" />
   <Import Project="..\..\..\build\sign.targets" />
+  <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

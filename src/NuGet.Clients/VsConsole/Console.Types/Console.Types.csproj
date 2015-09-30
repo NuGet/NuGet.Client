@@ -8,7 +8,6 @@
     <RootNamespace>NuGetConsole</RootNamespace>
     <AssemblyName>NuGet.Console.Types</AssemblyName>
     <CodeAnalysisRuleSet>..\..\..\..\NuGet.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis Condition="'$(EnableCodeAnalysis)'=='true'">true</RunCodeAnalysis>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile />
@@ -63,11 +62,6 @@
     <Compile Include="Token.cs" />
     <Compile Include="TokenType.cs" />
     <Compile Include="VsKeyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\..\..\CodeAnalysisDictionary.xml">
-      <Link>Properties\CodeAnalysisDictionary.xml</Link>
-    </CodeAnalysisDictionary>
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />

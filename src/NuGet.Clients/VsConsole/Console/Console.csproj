@@ -8,7 +8,6 @@
     <ProjectGuid>{50E33DA2-AF14-486D-81B8-BD8409744A38}</ProjectGuid>
     <CreateVsixContainer>False</CreateVsixContainer>
     <DeployExtension>False</DeployExtension>
-    <RunCodeAnalysis Condition="'$(EnableCodeAnalysis)'=='true'">true</RunCodeAnalysis>
     <CodeAnalysisRuleSet>..\..\..\..\NuGet.ruleset</CodeAnalysisRuleSet>
     <NuGetPackageImportStamp>751ce4af</NuGetPackageImportStamp>
     <PackagesDirectory>$(UserProfile)\.nuget\packages</PackagesDirectory>
@@ -27,9 +26,6 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="$(ComponentHostAssembly)">
-      <Private>False</Private>
-    </Reference>
     <Reference Include="envdte, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
@@ -58,37 +54,6 @@
       <HintPath>$(ProgramFiles)\Microsoft Visual Studio $(VisualStudioVersion)\Common7\IDE\CommonExtensions\Microsoft\Editor\Microsoft.VisualStudio.Language.StandardClassification.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.VisualStudio.OLE.Interop">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="$(ShellAssembly)">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\$(ShellAssemblyHintPath)</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.Shell.14.0, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(ProgramFiles)\Microsoft Visual Studio $(VisualStudioVersion)\VSSDK\VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.VisualStudio.Shell.14.0.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop.11.0, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-      <Private>False</Private>
-      <HintPath>..\..\..\..\lib\Microsoft.VisualStudio.Shell.Interop.11.0.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop.8.0">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop.9.0">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.Shell.Interop.10.0">
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Microsoft.VisualStudio.Text.Data, Version=$(VisualStudioVersion)0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(ProgramFiles)\Microsoft Visual Studio $(VisualStudioVersion)\Common7\IDE\CommonExtensions\Microsoft\Editor\Microsoft.VisualStudio.Text.Data.dll</HintPath>
@@ -109,17 +74,6 @@
       <HintPath>$(ProgramFiles)\Microsoft Visual Studio $(VisualStudioVersion)\Common7\IDE\CommonExtensions\Microsoft\Editor\Microsoft.VisualStudio.Text.UI.Wpf.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.VisualStudio.TextManager.Interop">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.Shell.Immutable.10.0">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.TextManager.Interop.10.0, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.VisualStudio.Threading, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Collections.Concurrent" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -130,12 +84,6 @@
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="System.Net.Http.Extensions">
-      <HintPath>..\..\..\..\packages\Microsoft.Net.Http.2.2.28\lib\net45\System.Net.Http.Extensions.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net.Http.Primitives">
-      <HintPath>..\..\..\..\packages\Microsoft.Net.Http.2.2.28\lib\net45\System.Net.Http.Primitives.dll</HintPath>
-    </Reference>
     <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.Reflection" />
     <Reference Include="System.Resources.ResourceManager" />
@@ -219,11 +167,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <CodeAnalysisDictionary Include="..\..\..\CodeAnalysisDictionary.xml">
-      <Link>Properties\CodeAnalysisDictionary.xml</Link>
-    </CodeAnalysisDictionary>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\PackageManagement.PowerShellCmdlets\PackageManagement.PowerShellCmdlets.csproj">
       <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
       <Name>PackageManagement.PowerShellCmdlets</Name>
@@ -255,10 +198,6 @@
     <None Include="app.config" />
     <None Include="project.json" />
   </ItemGroup>
-  <Choose>
-    <When Condition="Exists($(VsSdkTargets))" />
-    <Otherwise />
-  </Choose>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\..\..\Build\common.targets" />
   <Import Project="..\..\..\..\Build\sign.targets" />

@@ -17,7 +17,6 @@
     <RootNamespace>NuGetConsole.Host.PowerShellProvider</RootNamespace>
     <AssemblyName>NuGetConsole.Host.PowerShellProvider</AssemblyName>
     <CodeAnalysisRuleSet>..\..\..\..\NuGet.ruleset</CodeAnalysisRuleSet>
-    <RunCodeAnalysis Condition="'$(EnableCodeAnalysis)'=='true'">true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' Or '$(Configuration)' == 'Coverage' Or '$(Configuration)' == 'Mono Debug'">
     <DebugSymbols>true</DebugSymbols>
@@ -67,11 +66,6 @@
       <Project>{5A79EEF3-51C0-4A14-8D37-50EF38AD835D}</Project>
       <Name>PowerShellHost</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDictionary Include="..\..\..\CodeAnalysisDictionary.xml">
-      <Link>Properties\CodeAnalysisDictionary.xml</Link>
-    </CodeAnalysisDictionary>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">

@@ -33,7 +33,7 @@
 	</PropertyGroup>
 	
 	<!--Build output setting-->
-	<PropertyGroup>
+	<PropertyGroup>	
 		<EnlistmentRoot>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), 'build.ps1'))</EnlistmentRoot>        
 		<EnlistmentRootSrc>$(EnlistmentRoot)\src</EnlistmentRootSrc>
         
