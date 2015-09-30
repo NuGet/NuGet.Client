@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -14,6 +15,7 @@ namespace NuGet.PackageManagement.UI
     public abstract class NuGetUIContextBase : INuGetUIContext
     {
         private readonly NuGetProject[] _projects;
+        private readonly IEnumerable<IPackageManagerProvider> _packageManagerProviders;
 
         protected NuGetUIContextBase(
             ISourceRepositoryProvider sourceProvider,
@@ -22,7 +24,8 @@ namespace NuGet.PackageManagement.UI
             UIActionEngine uiActionEngine,
             IPackageRestoreManager packageRestoreManager,
             IOptionsPageActivator optionsPageActivator,
-            IEnumerable<NuGetProject> projects)
+            IEnumerable<NuGetProject> projects,
+            IEnumerable<IPackageManagerProvider> packageManagerProviders)
         {
             SourceProvider = sourceProvider;
             SolutionManager = solutionManager;
@@ -32,6 +35,7 @@ namespace NuGet.PackageManagement.UI
             PackageRestoreManager = packageRestoreManager;
             OptionsPageActivator = optionsPageActivator;
             _projects = projects.ToArray();
+            _packageManagerProviders = packageManagerProviders;
         }
 
         public ISourceRepositoryProvider SourceProvider { get; }
@@ -58,5 +62,10 @@ namespace NuGet.PackageManagement.UI
         public abstract void PersistSettings();
 
         public abstract void ApplyShowPreviewSetting(bool show);
+
+        public IEnumerable<IPackageManagerProvider> PackageManagerProviders
+        {
+            get { return _packageManagerProviders; }
+        }
     }
 }

@@ -108,6 +108,7 @@
     <Compile Include="Extensibility\IVsPackageRestorer.cs" />
     <Compile Include="Extensibility\IVsPackageUninstaller.cs" />
     <Compile Include="Extensibility\VsPackageEventHandler.cs" />
+    <Compile Include="IPackageManagerProvider.cs" />
     <Compile Include="IRegistryKey.cs" />
     <Compile Include="IVsTemplateWizard.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

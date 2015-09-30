@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -37,5 +38,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         /// <param name="show">The value of the setting.</param>
         void ApplyShowPreviewSetting(bool show);
+
+        IEnumerable<IPackageManagerProvider> PackageManagerProviders { get; }
     }
 }

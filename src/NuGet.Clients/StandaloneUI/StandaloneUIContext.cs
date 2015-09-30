@@ -27,7 +27,7 @@ namespace StandaloneUI
             IOptionsPageActivator optionsPageActivator,
             IEnumerable<NuGetProject> projects)
             :
-                base(sourceProvider, solutionManager, packageManager, uiActionEngine, packageRestoreManager, optionsPageActivator, projects)
+                base(sourceProvider, solutionManager, packageManager, uiActionEngine, packageRestoreManager, optionsPageActivator, projects, null)
         {
             _settingsFile = settingsFile;
             LoadSettings();

@@ -96,9 +96,9 @@
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
       <Name>PackageManagement.VisualStudio</Name>
     </ProjectReference>
-    <ProjectReference Include="..\VisualStudioAPI\VisualStudioAPI.csproj">
+    <ProjectReference Include="..\VisualStudio\VisualStudio.csproj">
       <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
-      <Name>VisualStudioAPI</Name>
+      <Name>VisualStudio</Name>
     </ProjectReference>
     <ProjectReference Include="..\VsConsole\Console.Types\Console.Types.csproj">
       <Project>{6fd11460-39a3-4a10-ba63-7541b0a7d053}</Project>
