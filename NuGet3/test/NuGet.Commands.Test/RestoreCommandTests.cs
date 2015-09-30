@@ -130,6 +130,64 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public async Task RestoreCommand_LeftOverNupkg_Overwritten()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+            var projectDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(packagesDir);
+            _testFolders.Add(projectDir);
+
+            var configJson = JObject.Parse(@"
+            {
+                ""dependencies"": {
+                    ""Newtonsoft.Json"": ""7.0.1""
+                },
+                ""frameworks"": {
+                    ""dotnet"": {
+                        ""imports"": ""portable-net452+win81"",
+                        ""warn"": false
+                    }
+                }
+            }");
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+            var logger = new TestLogger();
+
+            // Create left over nupkg to simulate a corrupted install
+            var nupkgFolder = Path.Combine(packagesDir, "NewtonSoft.json", "7.0.1");
+            var nupkgPath = Path.Combine(nupkgFolder, "Newtonsoft.Json.7.0.1.nupkg");
+
+            Directory.CreateDirectory(nupkgFolder);
+
+            using (File.Create(nupkgPath))
+            {
+            }
+
+            Assert.True(File.Exists(nupkgPath));
+
+            var fileSize = new FileInfo(nupkgPath).Length;
+
+            Assert.True(fileSize == 0, "Dummy nupkg file bigger than expected");
+
+            // create the request
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.MaxDegreeOfConcurrency = 1;
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+
+            // Assert
+            var newFileSize = new FileInfo(nupkgPath).Length;
+
+            Assert.True(newFileSize > 0, "Downloaded file not overriding the dummy nupkg");
+        }
+
+        [Fact]
         public async Task RestoreCommand_FrameworkImport_WarnOn()
         {
             // Arrange
