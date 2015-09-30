@@ -273,6 +273,11 @@ namespace NuGet.Common
             NuGetProjectContext = nuGetProjectContext;
         }
 
+        public void Save()
+        {
+            Project.Save();
+        }
+
         private IEnumerable<dynamic> GetItems(string itemType, string name)
         {
             foreach (dynamic i in Project.GetItems(itemType))

@@ -85,7 +85,7 @@ namespace NuGet.CommandLine
 
                 var projectSystem = new MSBuildProjectSystem(
                     _msbuildDirectory, 
-                    Path.GetDirectoryName(inputFile), 
+                    inputFile,
                     context);
                 await UpdatePackagesAsync(projectSystem, GetRepositoryPath(projectSystem.ProjectFullPath));
                 return;
@@ -280,6 +280,8 @@ namespace NuGet.CommandLine
                 projectActions,
                 project.NuGetProjectContext,
                 CancellationToken.None);
+
+            project.Save();
         }
 
         private CommandLineSourceRepositoryProvider GetSourceRepositoryProvider()
