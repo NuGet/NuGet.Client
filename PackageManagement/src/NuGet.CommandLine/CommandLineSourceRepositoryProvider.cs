@@ -12,8 +12,8 @@ namespace NuGet.CommandLine
     public class CommandLineSourceRepositoryProvider : ISourceRepositoryProvider
     {
         private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
-        private List<Lazy<INuGetResourceProvider>> _resourceProviders;
-        private List<SourceRepository> _repositories = new List<SourceRepository>();
+        private readonly List<Lazy<INuGetResourceProvider>> _resourceProviders;
+        private readonly List<SourceRepository> _repositories = new List<SourceRepository>();
 
         // There should only be one instance of the source repository for each package source.
         private static ConcurrentDictionary<Configuration.PackageSource, SourceRepository> _sources 
@@ -27,8 +27,16 @@ namespace NuGet.CommandLine
             _resourceProviders.AddRange(Protocol.Core.v2.FactoryExtensionsV2.GetCoreV2(Repository.Provider));
             _resourceProviders.AddRange(Protocol.Core.v3.FactoryExtensionsV2.GetCoreV3(Repository.Provider));
 
-            // Refresh the package sources
-            Init();
+            // Create repositories
+            foreach (var source in _packageSourceProvider.LoadPackageSources())
+            {
+                if (source.IsEnabled)
+                {
+                    // Create and cache the repo.
+                    var sourceRepo = CreateRepository(source);
+                    _repositories.Add(sourceRepo);
+                }
+            }
         }
 
         /// <summary>
@@ -50,19 +58,6 @@ namespace NuGet.CommandLine
         public Configuration.IPackageSourceProvider PackageSourceProvider
         {
             get { return _packageSourceProvider; }
-        }
-
-        private void Init()
-        {
-            foreach (var source in _packageSourceProvider.LoadPackageSources())
-            {
-                if (source.IsEnabled)
-                {
-                    // Create and cache the repo.
-                    var sourceRepo = CreateRepository(source);
-                    _repositories.Add(sourceRepo);
-                }
-            }
         }
     }
 }

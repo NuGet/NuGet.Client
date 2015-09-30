@@ -1385,7 +1385,11 @@ namespace NuGet.Test
         private static SourcePackageDependencyInfo CreateDependencyInfo(string id, string version, params string[] dependencyIds)
         {
             return new SourcePackageDependencyInfo(CreatePackage(id, version),
-                dependencyIds.Select(depId => new Packaging.Core.PackageDependency(depId, new VersionRange(NuGetVersion.Parse("1.0.0")))), true, null);
+                dependencyIds.Select(depId => new Packaging.Core.PackageDependency(depId, new VersionRange(NuGetVersion.Parse("1.0.0")))),
+                true,
+                source: null,
+                downloadUri: null,
+                packageHash: null);
         }
 
         private static PackageIdentity CreatePackage(string id, string version)

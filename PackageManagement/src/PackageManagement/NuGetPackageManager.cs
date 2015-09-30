@@ -1958,7 +1958,7 @@ namespace NuGet.PackageManagement
                 source.PackageSource,
                 packageId,
                 framework,
-                packages.ToList());
+                packages.AsList());
 
             // Find the latest version
             var latestVersion = packages.Where(package => (package.Listed || resolutionContext.IncludeUnlisted)
