@@ -81,13 +81,9 @@
     <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\NuGet.CommandLine\NuGet.CommandLine.csproj">
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.CommandLine\NuGet.CommandLine.csproj">
       <Project>{957c4e99-3644-47dd-8f9a-ae36f41ebe4a}</Project>
       <Name>NuGet.CommandLine</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Test.Utility\Test.Utility.csproj">
-      <Project>{8010a76a-cb15-4484-8f9b-d523fbc34dfa}</Project>
-      <Name>Test.Utility</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -104,5 +100,9 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('$(PackagesPath)\xunit.core\2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props')" Text="$([System.String]::Format('$(ErrorText)', '$(PackagesPath)\xunit.core\2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.core.props'))" />
+  </Target>
+  <UsingTask AssemblyFile="..\..\..\packages\xunit.runner.msbuild.2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.runner.msbuild.dll" TaskName="Xunit.Runner.MSBuild.xunit" />
+  <Target Name="RunTests" AfterTargets="Build" Condition=" '$(RunTests)' == 'true' ">
+	  <xunit Assemblies="bin\$(Configuration)\$(AssemblyName).dll" />
   </Target>
 </Project>

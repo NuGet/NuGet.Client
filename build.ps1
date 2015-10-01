@@ -149,7 +149,7 @@ function BuildCSproj()
     & $nugetExe restore -msbuildVersion 14 .\NuGet.Clients.sln
 
     # Build the solution
-    & $msbuildExe .\NuGet.Clients.sln "/p:Configuration=$Configuration;PublicRelease=$PublicRelease"
+    & $msbuildExe .\NuGet.Clients.sln "/p:Configuration=$Configuration;PublicRelease=$PublicRelease;RunTests=!$SkipTests"
 }
 
 function ILMergeNuGet()
@@ -172,7 +172,7 @@ pushd $executingScriptDirectory
 
 $msbuildExe = "${env:ProgramFiles(x86)}\MSBuild\14.0\Bin\msbuild.exe"
 $nugetExe = ".nuget\nuget.exe"
-$ILMerge = "packages\ILMerge.2.14.1208\tools\ILMerge.exe"
+$ILMerge = Join-Path $executingScriptDirectory "packages\ILMerge.2.14.1208\tools\ILMerge.exe"
 $dnvmLoc = Join-Path $env:USERPROFILE ".dnx\bin\dnvm.cmd"
 $nupkgsDir = Join-Path $executingScriptDirectory "nupkgs"
 $artifacts = Join-Path $executingScriptDirectory "artifacts"
@@ -232,6 +232,8 @@ BuildXproj
 
 ## Building the Tooling solution
 BuildCSproj
+
+ILMergeNuGet
 
 ## Calculating Build time
 $endTime = [DateTime]::UtcNow

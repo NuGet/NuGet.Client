@@ -212,7 +212,7 @@ namespace Test.Utility
 
         private static FileInfo GetFileInfo(string path, string packageId, string packageVersion, out ZipFile zipFile)
         {
-            var file = Guid.NewGuid() + ".nupkg";
+            var file = Path.Combine(path, Guid.NewGuid() + ".nupkg");
             var fileInfo = new FileInfo(file);
 
             zipFile = new ZipFile(fileInfo.FullName);

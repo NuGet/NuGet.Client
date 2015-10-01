@@ -23,6 +23,6 @@
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="NuGet.Configuration.dll" />
     <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="VisualStudioAPI" Path="|VisualStudioAPI|" AssemblyName="|VisualStudioAPI;AssemblyName|" />
     <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="VisualStudio.Interop" Path="|VisualStudio.Interop|" AssemblyName="|VisualStudio.Interop;AssemblyName|" />
-    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.VisualStudioImplement" Path="|NuGet.VisualStudioImplement|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="NuGet.VisualStudioImplement" Path="|NuGet.VisualStudio.Implementation|" />
   </Assets>
 </PackageManifest>

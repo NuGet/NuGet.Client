@@ -7,22 +7,22 @@
     <NuGetPackageImportStamp>d386b432</NuGetPackageImportStamp>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <PackagesDirectory>$(UserProfile)\.nuget\packages</PackagesDirectory>
-	<VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile />
-	<ProjectGuid>{D0F9864B-D782-4471-81A2-29555E5DC0D7}</ProjectGuid>
+    <ProjectGuid>{D0F9864B-D782-4471-81A2-29555E5DC0D7}</ProjectGuid>
     <ProjectTypeGuids>{82b43b9b-a64c-4715-b499-d71e9ca2bd60};{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NuGetVSExtension</RootNamespace>
     <AssemblyName>NuGet.Tools</AssemblyName>
     <DefineConstants Condition="'$(VisualStudioVersion)'=='14.0'">$(DefineConstants);VS14</DefineConstants>
-	<GeneratePkgDefFile>true</GeneratePkgDefFile>
-	<IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
-	<IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
-	<IncludeDebugSymbolsInLocalVSIXDeployment>true</IncludeDebugSymbolsInLocalVSIXDeployment>
-	<CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
-	<CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
+    <GeneratePkgDefFile>true</GeneratePkgDefFile>
+    <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
+    <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
+    <IncludeDebugSymbolsInLocalVSIXDeployment>true</IncludeDebugSymbolsInLocalVSIXDeployment>
+    <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '14.0'">
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
@@ -134,7 +134,7 @@
   <ItemGroup>
     <ProjectReference Include="..\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj">
       <Project>{9623cf30-192c-4864-b419-29649169ae30}</Project>
-      <Name>NuGet.VisualStudioImplement</Name>
+      <Name>NuGet.VisualStudio.Implementation</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
