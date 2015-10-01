@@ -88,7 +88,10 @@ namespace NuGet.Packaging
                             await copyToAsync(nupkgStream);
                             nupkgStream.Seek(0, SeekOrigin.Begin);
 
-                            ExtractPackage(targetPath, nupkgStream);
+                            using (var archive = new ZipArchive(nupkgStream, ZipArchiveMode.Read))
+                            {
+                                ExtractFiles(archive, targetPath, NupkgFilter);
+                            }
                         }
 
                         if (fixNuspecIdCasing)
@@ -154,22 +157,6 @@ namespace NuGet.Packaging
 
                 File.Delete(tmpNuspecFile);
             }
-        }
-
-        private static void ExtractPackage(string targetPath, FileStream stream)
-        {
-            using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
-            {
-                ExtractNupkg(archive, targetPath);
-            }
-        }
-
-        private static void ExtractNupkg(ZipArchive archive, string targetPath)
-        {
-            ExtractFiles(
-                archive,
-                targetPath,
-                shouldInclude: NupkgFilter);
         }
 
         private static bool NupkgFilter(string fullName)
