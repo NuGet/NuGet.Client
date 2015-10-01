@@ -95,6 +95,8 @@ namespace NuGet.PackageManagement.UI
             _initialized = true;
 
             // UI is initialized. Start the first search
+            _packageList.CheckBoxesEnabled = _topPanel.Filter == Filter.UpdatesAvailable;
+            _packageList.IsSolution = this.Model.IsSolution;
             SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
             RefreshAvailableUpdatesCount();
 
@@ -508,9 +510,10 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                 {
-                    var option = new PackageLoaderOption(_topPanel.Filter, IncludePrerelease);
+                    var option = new PackageLoaderOption(_topPanel.Filter, IncludePrerelease);                    
                     var loader = new PackageLoader(
                         option,
+                        Model.IsSolution,
                         Model.Context.PackageManager,
                         Model.Context.Projects,
                         ActiveSource,
@@ -527,6 +530,7 @@ namespace NuGet.PackageManagement.UI
                 _topPanel._labelUpgradeAvailable.Count = 0;
                 var updatesLoader = new PackageLoader(
                     new PackageLoaderOption(Filter.UpdatesAvailable, IncludePrerelease),
+                    Model.IsSolution,
                     Model.Context.PackageManager,
                     Model.Context.Projects,
                     ActiveSource,
@@ -552,7 +556,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         private async Task UpdateDetailPaneAsync()
         {
-            var selectedPackage = _packageList.SelectedItem as SearchResultPackageMetadata;
+            var selectedPackage = _packageList.SelectedItem as PackageItemListViewModel;
             if (selectedPackage == null)
             {
                 _packageDetail.Visibility = Visibility.Hidden;
@@ -616,6 +620,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (_initialized)
             {
+                _packageList.CheckBoxesEnabled = _topPanel.Filter == Filter.UpdatesAvailable;
                 SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
             }
         }
@@ -635,13 +640,13 @@ namespace NuGet.PackageManagement.UI
                 // existing items in the package list
                 foreach (var item in _packageList.Items)
                 {
-                    var package = item as SearchResultPackageMetadata;
+                    var package = item as PackageItemListViewModel;
                     if (package == null)
                     {
                         continue;
                     }
 
-                    package.StatusProvider = new Lazy<Task<PackageStatus>>(async () => await GetPackageInfo(
+                    package.BackgroundLoader = new Lazy<Task<BackgroundLoaderResult>>(async () => await GetPackageInfo(
                        package.Id,
                        installedPackages,
                        package.Versions));
@@ -668,14 +673,14 @@ namespace NuGet.PackageManagement.UI
         }
 
         /// <summary>
-        /// Gets the status of the package specified by <paramref name="packageId" /> in
+        /// Gets the background result of the package specified by <paramref name="packageId" /> in
         /// the specified installation target.
         /// </summary>
         /// <param name="packageId">package id.</param>
         /// <param name="installedPackages">All installed pacakges.</param>
         /// <param name="allVersions">List of all versions of the package.</param>
-        /// <returns>The status of the package in the installation target.</returns>
-        private static async Task<PackageStatus> GetPackageInfo(
+        /// <returns>The background result of the package in the installation target.</returns>
+        private static async Task<BackgroundLoaderResult> GetPackageInfo(
             string packageId,
             IReadOnlyList<Packaging.PackageReference> installedPackages,
             Lazy<Task<IEnumerable<VersionInfo>>> allVersions)
@@ -693,21 +698,34 @@ namespace NuGet.PackageManagement.UI
                 .OrderBy(r => r.PackageIdentity.Version)
                 .FirstOrDefault();
 
-            PackageStatus result;
+            BackgroundLoaderResult result;
             if (minimumInstalledPackage != null)
             {
                 if (minimumInstalledPackage.PackageIdentity.Version < latestStableVersion)
                 {
-                    result = PackageStatus.UpdateAvailable;
+                    result = new BackgroundLoaderResult()
+                    {
+                        LatestVersion = latestStableVersion,
+                        InstalledVersion = minimumInstalledPackage.PackageIdentity.Version,                        
+                        Status = PackageStatus.UpdateAvailable
+                    };
                 }
                 else
                 {
-                    result = PackageStatus.Installed;
+                    result = new BackgroundLoaderResult()
+                    {
+                        InstalledVersion = minimumInstalledPackage.PackageIdentity.Version,
+                        Status = PackageStatus.Installed
+                    };
                 }
             }
             else
             {
-                result = PackageStatus.NotInstalled;
+                result = new BackgroundLoaderResult()
+                {
+                    LatestVersion = latestStableVersion,
+                    Status = PackageStatus.NotInstalled
+                };
             }
 
             return result;
@@ -839,6 +857,89 @@ namespace NuGet.PackageManagement.UI
         {
             _legalDisclaimer.Visibility = Visibility.Collapsed;
             RegistrySettingUtility.SetBooleanSetting(Constants.SuppressUIDisclaimerRegistryName, true);
+        }
+
+        public void ExecuteAction(UserAction action, Action<NuGetUI> setOptions)
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+                this.IsEnabled = false;
+                NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationBegin);
+                try
+                {
+                    var nugetUi = Model.UIController as NuGetUI;
+                    if (nugetUi != null)
+                    {
+                        setOptions(nugetUi);
+                    }
+
+                    var restoreSucceded = await RestoreBar.UIRestorePackagesAsync(CancellationToken.None);
+                    if (restoreSucceded)
+                    {
+                        await Task.Run(() =>
+                            Model.Context.UIActionEngine.PerformActionAsync(
+                                Model.UIController,
+                                action,
+                                this,
+                                CancellationToken.None));
+                    }
+                }
+                finally
+                {
+                    NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationEnd);
+                    IsEnabled = true;
+                }
+            });
+        }
+
+        private void ExecuteUninstallPackageCommand(object sender, ExecutedRoutedEventArgs e)
+        {
+            var package = e.Parameter as PackageItemListViewModel;
+            if (package == null || Model.IsSolution || package.InstalledVersion == null)
+            {
+                return;
+            }
+
+            var action = new UserAction(NuGetProjectActionType.Uninstall, package.Id, package.InstalledVersion);
+            ExecuteAction(
+                action,
+                nugetUi =>
+                {
+                    SetOptions(nugetUi, _detailModel.Options);
+                    nugetUi.Projects = Model.Context.Projects;
+                });
+        }
+
+        private void SetOptions(NuGetUI nugetUi, Options options)
+        {
+            nugetUi.FileConflictAction = options.SelectedFileConflictAction.Action;
+            nugetUi.DependencyBehavior = options.SelectedDependencyBehavior.Behavior;
+            nugetUi.RemoveDependencies = options.RemoveDependencies;
+            nugetUi.ForceRemove = options.ForceRemove;
+            nugetUi.DisplayPreviewWindow = options.ShowPreviewWindow;
+        }
+
+        private void ExecuteInstallPackageCommand(object sender, ExecutedRoutedEventArgs e)
+        {
+            var package = e.Parameter as PackageItemListViewModel;
+            if (package == null || Model.IsSolution)
+            {
+                return;
+            }
+
+            var versionToInstall = package.LatestVersion ?? package.Version;
+            var action = new UserAction(NuGetProjectActionType.Install, package.Id, versionToInstall);
+            ExecuteAction(
+                action,
+                nugetUi =>
+                {
+                    SetOptions(nugetUi, _detailModel.Options);
+                    nugetUi.Projects = Model.Context.Projects;
+                });
+        }
+
+        private void PackageList_UpdateButtonClicked(object sender, EventArgs e)
+        {
         }
     }
 }

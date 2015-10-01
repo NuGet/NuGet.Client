@@ -3,14 +3,15 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using Resx = NuGet.PackageManagement.UI;
 using Mvs = Microsoft.VisualStudio.Shell;
+using Resx = NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -25,6 +26,8 @@ namespace NuGet.PackageManagement.UI
 
         public event SelectionChangedEventHandler SelectionChanged;
 
+        public event EventHandler UpdateButtonClicked;
+
         private CancellationTokenSource _cts;
         private ILoader _loader;
 
@@ -32,12 +35,40 @@ namespace NuGet.PackageManagement.UI
 
         private const string LogEntrySource = "NuGet Package Manager";
 
+        // The count of packages that are selected
+        private int _selectedCount;
+
         public InfiniteScrollList()
         {
             InitializeComponent();
 
+            CheckBoxesEnabled = false;
             _list.ItemsSource = Items;
             _startIndex = 0;
+        }
+
+        // Indicates wether check boxes are enabled on packages
+        private bool _checkBoxesEnabled;
+
+        public bool CheckBoxesEnabled
+        {
+            get
+            {
+                return _checkBoxesEnabled;
+            }
+            set
+            {
+                _checkBoxesEnabled = value;
+                _updateButtonContainer.Visibility =
+                    _checkBoxesEnabled ?
+                    Visibility.Visible :
+                    Visibility.Collapsed;
+            }
+        }
+
+        public bool IsSolution
+        {
+            get; set;
         }
 
         public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
@@ -48,11 +79,21 @@ namespace NuGet.PackageManagement.UI
             _loader = loader;
             _loadingStatusIndicator.LoadingMessage = _loader.LoadingMessage;
 
-            var selectedItem = _list.SelectedItem as SearchResultPackageMetadata;
+            var selectedItem = _list.SelectedItem as PackageItemListViewModel;
 
+            foreach (var item in Items)
+            {
+                var package = item as PackageItemListViewModel;
+                if (package != null)
+                {
+                    package.PropertyChanged -= Package_PropertyChanged;
+                }
+            }
             Items.Clear();
+
             Items.Add(_loadingStatusIndicator);
             _startIndex = 0;
+            _selectedCount = 0;
 
             // now the package list
             await LoadAsync();
@@ -62,7 +103,7 @@ namespace NuGet.PackageManagement.UI
                 // select the the previously selected item if it still exists.
                 foreach (var item in _list.Items)
                 {
-                    var package = item as SearchResultPackageMetadata;
+                    var package = item as PackageItemListViewModel;
                     if (package == null)
                     {
                         continue;
@@ -75,6 +116,8 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
             }
+
+            UpdateCheckBoxStatus();
         }
 
         private Task LoadAsync()
@@ -152,6 +195,12 @@ namespace NuGet.PackageManagement.UI
             // add newly loaded items
             foreach (var package in loadResult.Items)
             {
+                package.PropertyChanged += Package_PropertyChanged;
+                if (package.Selected)
+                {
+                    _selectedCount++;
+                }
+
                 Items.Add(package);
             }
 
@@ -176,6 +225,58 @@ namespace NuGet.PackageManagement.UI
             if (_loadingStatusIndicator.Status != LoadingStatus.NoMoreItems)
             {
                 Items.Add(_loadingStatusIndicator);
+            }
+        }
+
+        private void Package_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            var package = sender as PackageItemListViewModel;
+            if (e.PropertyName == nameof(package.Selected))
+            {
+                if (package.Selected)
+                {
+                    _selectedCount++;
+                }
+                else
+                {
+                    _selectedCount--;
+                }
+
+                UpdateCheckBoxStatus();
+            }
+        }
+
+        // Update the status of the _selectAllPackages check box.
+        private void UpdateCheckBoxStatus()
+        {
+            int packageCount;
+            if (Items.Count == 0)
+            {
+                packageCount = 0;
+            }
+            else
+            {
+                if (Items[Items.Count - 1] == _loadingStatusIndicator)
+                {
+                    packageCount = Items.Count - 1;
+                }
+                else
+                {
+                    packageCount = Items.Count;
+                }
+            }
+
+            if (_selectedCount == 0)
+            {
+                _selectAllPackages.IsChecked = false;
+            }
+            else if (_selectedCount < packageCount)
+            {
+                _selectAllPackages.IsChecked = null;
+            }
+            else
+            {
+                _selectAllPackages.IsChecked = true;
             }
         }
 
@@ -250,6 +351,56 @@ namespace NuGet.PackageManagement.UI
         private void RetryButtonClicked(object sender, RoutedEventArgs e)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => { return LoadAsync(); });
+        }
+
+        private void SelectAllPackagesCheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            foreach (var item in _list.Items)
+            {
+                var package = item as PackageItemListViewModel;
+
+                // note that item could be the loading indicator, thus we need to check
+                // for null here.
+                if (package != null)
+                {
+                    package.Selected = true;
+                }
+            }
+        }
+
+        private void SelectAllPackagesCheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            foreach (var item in _list.Items)
+            {
+                var package = item as PackageItemListViewModel;
+                if (package != null)
+                {
+                    package.Selected = false;
+                }
+            }
+        }
+
+        // Returns true if there are any selected packages
+        private bool AnySelected()
+        {
+            foreach (var item in _list.Items)
+            {
+                var package = item as PackageItemListViewModel;
+                if (package != null && package.Selected)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void _updateButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (UpdateButtonClicked != null && AnySelected())
+            {
+                UpdateButtonClicked(this, EventArgs.Empty);
+            }
         }
     }
 }

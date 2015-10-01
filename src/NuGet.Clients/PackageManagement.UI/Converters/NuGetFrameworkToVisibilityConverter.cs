@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement.UI
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             // no op
-            Debug.Assert(false, "Not Implemented");
+            Debug.Fail("Not Implemented");
             return null;
         }
     }
