@@ -1308,6 +1308,45 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void SettingsValuesProvideOriginData()
+        {
+            // Arrange
+            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <SectionName>
+    <add key=""key1"" value=""value3"" />
+    <add key=""key3"" value=""value4"" />
+  </SectionName>
+</configuration>";
+            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
+            config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <SectionName>
+    <add key=""key1"" value=""value1"" />
+    <add key=""key2"" value=""value2"" />
+  </SectionName>
+</configuration>";
+            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
+
+            // Act
+            var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
+            var values = settings.GetSettingValues("SectionName");
+            var key1Value = values.Where(s => s.Key.Equals("key1")).OrderByDescending(s => s.Priority).First();
+            var key2Value = values.Single(s => s.Key.Equals("key2"));
+            var key3Value = values.Single(s => s.Key.Equals("key3"));
+            var parentConfig = Path.Combine(mockBaseDirectory, "dir1", "NuGet.Config");
+            var childConfig = Path.Combine(mockBaseDirectory, "dir1", "dir2", "NuGet.Config");
+
+            // Assert
+            Assert.Equal(childConfig, ((Settings)key1Value.Origin).ConfigFilePath); // key1 was overidden, so it has a new origin!
+            Assert.Equal(parentConfig, ((Settings)key2Value.Origin).ConfigFilePath);
+            Assert.Equal(childConfig, ((Settings)key3Value.Origin).ConfigFilePath);
+        }
+
+        [Fact]
         public void GetSingleValuesMultipleConfFiles()
         {
             // Arrange
