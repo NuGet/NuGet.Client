@@ -926,6 +926,38 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void LoadPackageSourcesProvidesOriginData()
+        {
+            // Arrange
+            var otherSettings = new Mock<ISettings>(MockBehavior.Strict);
+            var settings = new Mock<ISettings>(MockBehavior.Strict);
+            settings.Setup(s => s.GetSettingValues("packageSources", true))
+                .Returns(new[]
+                    {
+                        new SettingValue("one", "onesource", origin: settings.Object, isMachineWide: true),
+                        new SettingValue("two", "twosource", origin: settings.Object, isMachineWide: false, priority: 1),
+                        new SettingValue("one", "newonesource", origin: otherSettings.Object, isMachineWide: false, priority: 1)
+                    })
+                .Verifiable();
+
+            settings.Setup(s => s.GetSettingValues("disabledPackageSources", false)).Returns(
+                new SettingValue[0]);
+            settings.Setup(s => s.GetNestedValues("packageSourceCredentials", It.IsAny<string>())).Returns(new KeyValuePair<string, string>[0]);
+
+            var provider = CreatePackageSourceProvider(settings.Object);
+
+            // Act
+            var values = provider.LoadPackageSources().ToList();
+
+            // Assert
+            Assert.Equal(2, values.Count);
+            var one = values.Single(s => s.Name.Equals("one"));
+            var two = values.Single(s => s.Name.Equals("two"));
+            Assert.Same(otherSettings.Object, one.Origin);
+            Assert.Same(settings.Object, two.Origin);
+        }
+
+        [Fact]
         public void LoadPackageSourcesReturnCorrectDataFromSettings()
         {
             // Arrange

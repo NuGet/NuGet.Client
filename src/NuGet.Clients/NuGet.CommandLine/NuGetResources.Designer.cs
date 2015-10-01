@@ -14213,7 +14213,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to locate the packages folder. Try specifying it using the repositoryPath switch..
+        ///   Looks up a localized string similar to Unable to locate the packages folder. Verify all the packages are restored before running &apos;nuget.exe update&apos;..
         /// </summary>
         public static string UnableToLocatePackagesFolder {
             get {

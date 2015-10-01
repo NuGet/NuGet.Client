@@ -25,6 +25,19 @@ namespace NuGet.Common
             }
         }
 
+        private static readonly HashSet<string> _unsupportedProjectExtensions 
+            = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+                ".xproj"
+            };
+
+        public static HashSet<string> UnsupportedProjectExtensions
+        {
+            get
+            {
+                return _unsupportedProjectExtensions;
+            }
+        }
+
         public static bool TryGetProjectFile(string directory, out string projectFile)
         {
             projectFile = null;

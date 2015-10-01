@@ -13,9 +13,14 @@ namespace NuGet.Configuration
     public class SettingValue
     {
         public SettingValue(string key, string value, bool isMachineWide, int priority = 0)
+            : this(key, value, origin: null, isMachineWide: isMachineWide, priority: priority)
+        { }
+
+        public SettingValue(string key, string value, ISettings origin, bool isMachineWide, int priority = 0)
         {
             Key = key;
             Value = value;
+            Origin = origin;
             IsMachineWide = isMachineWide;
             Priority = priority;
             AdditionalData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -40,6 +45,11 @@ namespace NuGet.Configuration
         /// The priority of this setting in the nuget.config hierarchy. Bigger number means higher priority
         /// </summary>
         public int Priority { get; set; }
+
+        /// <summary>
+        /// Gets the <see cref="ISettings"/> that provided this value.
+        /// </summary>
+        public ISettings Origin { get; }
 
         /// <summary>
         /// Gets additional values with the specified setting.

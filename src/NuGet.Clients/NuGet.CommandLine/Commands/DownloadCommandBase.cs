@@ -75,7 +75,9 @@ namespace NuGet.CommandLine
             }
         }
 
-        protected IEnumerable<Packaging.PackageReference> GetInstalledPackageReferences(string projectConfigFilePath)
+        protected IEnumerable<Packaging.PackageReference> GetInstalledPackageReferences(
+            string projectConfigFilePath,
+            bool allowDuplicatePackageIds)
         {
             if (File.Exists(projectConfigFilePath))
             {
@@ -83,7 +85,7 @@ namespace NuGet.CommandLine
                 {
                     var xDocument = XDocument.Load(projectConfigFilePath);
                     var reader = new PackagesConfigReader(XDocument.Load(projectConfigFilePath));
-                    return reader.GetPackages();
+                    return reader.GetPackages(allowDuplicatePackageIds);
                 }
                 catch (XmlException ex)
                 {
@@ -105,9 +107,22 @@ namespace NuGet.CommandLine
             var availableSources = SourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
             var packageSources = new List<Configuration.PackageSource>();
 
-            if (!NoCache && !string.IsNullOrEmpty(MachineCache.Default?.Source))
+            if (!NoCache)
             {
-                packageSources.Add(new V2PackageSource(MachineCache.Default.Source, () => MachineCache.Default));
+                // Add the v2 machine cache
+                if (!string.IsNullOrEmpty(MachineCache.Default?.Source))
+                {
+                    packageSources.Add(new V2PackageSource(MachineCache.Default.Source, () => MachineCache.Default));
+                }
+
+                // Add the v3 global packages folder
+                var globalPackageFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
+
+                if (!string.IsNullOrEmpty(globalPackageFolder) && Directory.Exists(globalPackageFolder))
+                {
+                    packageSources.Add(new V2PackageSource(globalPackageFolder, 
+                        () => new LocalPackageRepository(globalPackageFolder)));
+                }
             }
 
             foreach (var source in Source)

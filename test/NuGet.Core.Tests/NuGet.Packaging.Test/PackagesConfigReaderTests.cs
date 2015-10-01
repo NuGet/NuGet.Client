@@ -167,19 +167,108 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackagesConfigReader_DuplicateEntries()
         {
+            // Arrange
             var doc = XDocument.Parse(
-@"<?xml version=""1.0"" encoding=""utf-8""?>
-<packages>
-  <package id=""test1"" version=""1.0""/>
-  <package id=""test1"" version=""1.0""/>
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+                <packages>
+                  <package id=""test1"" version=""1.0""/>
+                  <package id=""test1"" version=""1.0""/>
 
-  <package id=""test2"" version=""1.0""/>
-  <package id=""test2"" version=""1.0""/>
-</packages>");
+                  <package id=""test2"" version=""1.0""/>
+                  <package id=""test2"" version=""1.0""/>
+                </packages>");
             var reader = new PackagesConfigReader(doc);
 
+            // Act
             var ex = Assert.Throws<PackagesConfigReaderException>(() => reader.GetPackages());
+
+            // Assert
             Assert.Equal(ex.Message, "There are duplicate packages: test1, test2");
+        }
+
+        [Fact]
+        public void PackagesConfigReader_DuplicateEntries_Casing()
+        {
+            // Arrange
+            var doc = XDocument.Parse(
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+                <packages>
+                  <package id=""test1"" version=""1.0""/>
+                  <package id=""TEST1"" version=""1.0""/>
+
+                  <package id=""test2"" version=""1.0""/>
+                  <package id=""TEST2"" version=""1.0""/>
+                </packages>");
+            var reader = new PackagesConfigReader(doc);
+
+            // Act
+            var ex = Assert.Throws<PackagesConfigReaderException>(() => reader.GetPackages());
+
+            // Assert
+            Assert.Equal(ex.Message, "There are duplicate packages: test1, test2");
+        }
+
+        [Fact]
+        public void PackagesConfigReader_AllowDuplicateEntriesFailOnDuplicateVersions()
+        {
+            // Arrange
+            var doc = XDocument.Parse(
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+                <packages>
+                  <package id=""test1"" version=""1.0""/>
+                  <package id=""test1"" version=""1.0""/>
+                  <package id=""test2"" version=""1.0""/>
+                  <package id=""test2"" version=""2.0""/>
+                </packages>");
+            var reader = new PackagesConfigReader(doc);
+
+            // Act
+            var ex = Assert.Throws<PackagesConfigReaderException>(() => 
+                reader.GetPackages(allowDuplicatePackageIds: true));
+
+            // Assert
+            Assert.Equal(ex.Message, "There are duplicate packages: test1.1.0.0");
+        }
+
+        [Fact]
+        public void PackagesConfigReader_AllowDuplicateEntriesNoFailures()
+        {
+            // Arrange
+            var doc = XDocument.Parse(
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+                <packages>
+                  <package id=""test1"" version=""1.0""/>
+                  <package id=""test1"" version=""1.1.0""/>
+                  <package id=""test2"" version=""1.0""/>
+                  <package id=""test2"" version=""2.0""/>
+                </packages>");
+            var reader = new PackagesConfigReader(doc);
+
+            // Act
+            var packages = reader.GetPackages(allowDuplicatePackageIds: true);
+
+            // Assert
+            Assert.Equal(4, packages.Count());
+        }
+
+        [Fact]
+        public void PackagesConfigReader_DuplicateEntriesWithNonNormalizedVersions()
+        {
+            // Arrange
+            var doc = XDocument.Parse(
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+                <packages>
+                  <package id=""test1"" version=""1.1.0""/>
+                  <package id=""test1"" version=""1.1""/>
+                </packages>");
+            var reader = new PackagesConfigReader(doc);
+
+            // Act
+            var ex = Assert.Throws<PackagesConfigReaderException>(() =>
+                reader.GetPackages(allowDuplicatePackageIds: true));
+
+            // Assert
+            Assert.Equal(ex.Message, "There are duplicate packages: test1.1.1.0");
         }
     }
 }

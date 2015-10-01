@@ -304,7 +304,7 @@ namespace NuGet.CommandLine.Test
                     CultureInfo.CurrentCulture,
                     NuGet.CommandLine.NuGetResources.RestoreCommandPackageRestoreOptOutMessage,
                     NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
-                Assert.Contains(optOutMessage, r.Item2);
+                Assert.Contains(optOutMessage.Replace("\r\n", "\n"), r.Item2.Replace("\r\n", "\n"));
             }
             finally
             {

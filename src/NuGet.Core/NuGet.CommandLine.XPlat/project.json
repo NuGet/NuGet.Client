@@ -12,7 +12,7 @@
     }
   },
   "commands": {
-    "NuGet.CommandLine": "NuGet.CommandLine"
+    "NuGet.CommandLine.XPlat": "NuGet.CommandLine.XPlat"
   },
   "frameworks": {
     "dnx451": {

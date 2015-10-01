@@ -44,6 +44,7 @@
     </Compile>
     <Compile Include="CommandLineMachineWideSettings.cs" />
     <Compile Include="CommandLineParser.cs" />
+    <Compile Include="CommandLineSourceRepositoryProvider.cs" />
     <Compile Include="CommandManager.cs" />
     <Compile Include="CommandOutputLogger.cs" />
     <Compile Include="Commands\Command.cs" />
@@ -72,6 +73,7 @@
     <Compile Include="Common\Console.cs" />
     <Compile Include="Common\ConsoleCredentialProvider.cs" />
     <Compile Include="Common\ConsoleProjectContext.cs" />
+    <Compile Include="Common\ExitCodeException.cs" />
     <Compile Include="Common\IConsole.cs" />
     <Compile Include="Common\IMSBuildProjectSystem.cs" />
     <Compile Include="Common\LocalizedResourceManager.cs" />
@@ -133,6 +135,7 @@
     <EmbeddedResource Include="NuGetResources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>NuGetResources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

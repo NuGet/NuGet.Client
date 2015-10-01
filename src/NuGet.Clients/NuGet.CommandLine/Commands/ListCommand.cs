@@ -2,7 +2,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using NuGet.CommandLine;
 using NuGet.Protocol.Core.Types;
@@ -109,10 +108,7 @@ namespace NuGet.Commands
                 packageSources = configurationSources;
             }
 
-            var sourceRepositoryProvider = new SourceRepositoryProvider(SourceProvider,
-                Enumerable.Concat(
-                    Protocol.Core.v2.FactoryExtensionsV2.GetCoreV2(Repository.Provider),
-                    Protocol.Core.v3.FactoryExtensionsV2.GetCoreV3(Repository.Provider)));
+            var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
 
             var listCommandResourceTasks = new List<Task<ListCommandResource>>();
 

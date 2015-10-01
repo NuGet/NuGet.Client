@@ -30,7 +30,7 @@ namespace NuGet.PackageManagement
         public static async Task<RestoreResult> RestoreAsync(
             BuildIntegratedNuGetProject project,
             Logging.ILogger logger,
-            IEnumerable<string> sources,
+            IEnumerable<SourceRepository> sources,
             string effectiveGlobalPackagesFolder,
             CancellationToken token)
         {
@@ -49,7 +49,7 @@ namespace NuGet.PackageManagement
         public static async Task<RestoreResult> RestoreAsync(
             BuildIntegratedNuGetProject project,
             Logging.ILogger logger,
-            IEnumerable<string> sources,
+            IEnumerable<SourceRepository> sources,
             string effectiveGlobalPackagesFolder,
             SourceCacheContext cacheContext,
             CancellationToken token)
@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement
             BuildIntegratedNuGetProject project,
             PackageSpec packageSpec,
             Logging.ILogger logger,
-            IEnumerable<string> sources,
+            IEnumerable<SourceRepository> sources,
             string effectiveGlobalPackagesFolder,
             SourceCacheContext cacheContext,
             CancellationToken token)
@@ -90,8 +90,7 @@ namespace NuGet.PackageManagement
                 Strings.BuildIntegratedPackageRestoreStarted,
                 project.ProjectName));
 
-            var packageSources = sources.Select(source => new Configuration.PackageSource(source));
-            var request = new RestoreRequest(packageSpec, packageSources, effectiveGlobalPackagesFolder);
+            var request = new RestoreRequest(packageSpec, sources, effectiveGlobalPackagesFolder);
             request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
             request.CacheContext = cacheContext;
 
