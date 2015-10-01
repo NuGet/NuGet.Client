@@ -205,6 +205,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Update.
+        /// </summary>
+        public static string Button_Update {
+            get {
+                return ResourceManager.GetString("Button_Update", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Yes.
         /// </summary>
         public static string Button_Yes {
@@ -255,6 +264,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Checkbox_RemoveDependencies {
             get {
                 return ResourceManager.GetString("Checkbox_RemoveDependencies", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select all packages.
+        /// </summary>
+        public static string Checkbox_SelectAllPackages {
+            get {
+                return ResourceManager.GetString("Checkbox_SelectAllPackages", resourceCulture);
             }
         }
         
@@ -756,11 +774,29 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to by {0}.
+        /// </summary>
+        public static string Text_ByAuthor {
+            get {
+                return ResourceManager.GetString("Text_ByAuthor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Visual Studio is about to make changes to this solution. Click OK to proceed with the changes listed below..
         /// </summary>
         public static string Text_Changes {
             get {
                 return ResourceManager.GetString("Text_Changes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} downloads.
+        /// </summary>
+        public static string Text_Downloads {
+            get {
+                return ResourceManager.GetString("Text_Downloads", resourceCulture);
             }
         }
         
@@ -936,6 +972,33 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Click to install the package.
+        /// </summary>
+        public static string Tooltip_InstallButton {
+            get {
+                return ResourceManager.GetString("Tooltip_InstallButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Installed version: {0}.
+        /// </summary>
+        public static string ToolTip_InstalledVersion {
+            get {
+                return ResourceManager.GetString("ToolTip_InstalledVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Latest version: {0}.
+        /// </summary>
+        public static string ToolTip_LatestVersion {
+            get {
+                return ResourceManager.GetString("ToolTip_LatestVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Latest stable version is installed.
         /// </summary>
         public static string Tooltip_PackageInstalled {
@@ -945,11 +1008,29 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Click to uninstall the package.
+        /// </summary>
+        public static string Tooltip_UninstallButton {
+            get {
+                return ResourceManager.GetString("Tooltip_UninstallButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Update available.
         /// </summary>
         public static string Tooltip_UpdateAvailable {
             get {
                 return ResourceManager.GetString("Tooltip_UpdateAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Click to update the package.
+        /// </summary>
+        public static string Tooltip_UpdateButton {
+            get {
+                return ResourceManager.GetString("Tooltip_UpdateButton", resourceCulture);
             }
         }
         

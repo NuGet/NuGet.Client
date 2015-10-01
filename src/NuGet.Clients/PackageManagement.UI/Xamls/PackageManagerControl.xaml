@@ -24,6 +24,12 @@
     <CommandBinding
       Command="{x:Static Tools:Commands.FocusOnSearchBox}"
       Executed="FocusOnSearchBox_Executed" />
+    <CommandBinding
+      Command="{x:Static Tools:Commands.UninstallPackageCommand}"
+      Executed="ExecuteUninstallPackageCommand" />
+    <CommandBinding
+      Command="{x:Static Tools:Commands.InstallPackageCommand}"
+      Executed="ExecuteInstallPackageCommand" />
   </UserControl.CommandBindings>
   <UserControl.InputBindings>
     <KeyBinding
@@ -60,9 +66,8 @@
         SettingsButtonClicked="SettingsButtonClicked"
         FilterChanged="Filter_SelectionChanged"
         PrereleaseCheckChanged="CheckboxPrerelease_CheckChanged"
-        SourceRepoListSelectionChanged="SourceRepoList_SelectionChanged"
-        />
-      
+        SourceRepoListSelectionChanged="SourceRepoList_SelectionChanged" />
+
       <Border
         Grid.Row="4"
         BorderThickness="0,1,0,0"
@@ -76,32 +81,37 @@
             <ColumnDefinition
               MinWidth="300" />
           </Grid.ColumnDefinitions>
-          <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition
-              Height="Auto" />
-          </Grid.RowDefinitions>
-          <Tools:InfiniteScrollList
-            x:Name="_packageList"
-            SelectionChanged="PackageList_SelectionChanged">
-          </Tools:InfiniteScrollList>
 
-          <StackPanel
-            Grid.Row="1"
-            Grid.Column="0"
-            Orientation="Vertical"
-            x:Name="_legalDisclaimer"
-            Background="{DynamicResource {x:Static resx:Brushes.LegalMessageBackground}}">
-            <TextBlock
-              Margin="24,12,24,12"
-              TextWrapping="Wrap"
-              Text="{x:Static resx:Resources.Text_LegalDisclaimer}" />
-            <CheckBox
-              Margin="24,0,24,12"
-              Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
-              Content="{x:Static resx:Resources.DoNotShowThisAgain}"
-              Checked="SuppressDisclaimerChecked" />
-          </StackPanel>
+          <!-- left side -->
+          <Grid
+            Grid.Column="0">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="*" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Tools:InfiniteScrollList
+              Grid.Row="0"
+              x:Name="_packageList"
+              SelectionChanged="PackageList_SelectionChanged" 
+              UpdateButtonClicked="PackageList_UpdateButtonClicked" />
+
+            <StackPanel
+              Grid.Row="1"
+              Orientation="Vertical"
+              x:Name="_legalDisclaimer"
+              Background="{DynamicResource {x:Static resx:Brushes.LegalMessageBackground}}">
+              <TextBlock
+                Margin="24,12,24,12"
+                TextWrapping="Wrap"
+                Text="{x:Static resx:Resources.Text_LegalDisclaimer}" />
+              <CheckBox
+                Margin="24,0,24,12"
+                Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
+                Content="{x:Static resx:Resources.DoNotShowThisAgain}"
+                Checked="SuppressDisclaimerChecked" />
+            </StackPanel>
+          </Grid>
 
           <GridSplitter
             Grid.Column="1"
@@ -111,6 +121,8 @@
             VerticalAlignment="Stretch"
             BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
             BorderThickness="1,0" />
+
+          <!-- right side -->
           <Tools:DetailControl
             x:Name="_packageDetail"
             Grid.Column="2"

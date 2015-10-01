@@ -6,7 +6,10 @@ namespace NuGet.PackageManagement.UI
     public enum PackageStatus
     {
         NotInstalled,
+
+        // the latest version is installed
         Installed,
+        
         UpdateAvailable
     }
 }
