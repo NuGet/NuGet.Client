@@ -17,6 +17,8 @@
         <ResourceDictionary
           Source="Resources.xaml" />
       </ResourceDictionary.MergedDictionaries>
+      <Tools:VersionToStringConverter
+        x:Key="VersionToStringConverter" />
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid>
@@ -49,10 +51,7 @@
       x:Name="_metadataGrid"
       Margin="0,8">
       <Grid.RowDefinitions>
-        <!-- place holder for Owners/Publishers -->
-        <RowDefinition
-          Height="0" />
-
+        <RowDefinition />
         <RowDefinition />
         <RowDefinition />
         <RowDefinition />
@@ -67,19 +66,21 @@
         <ColumnDefinition />
       </Grid.ColumnDefinitions>
 
-      <!-- Publisher(s)
-            <TextBlock
-                        Visibility="{Binding Path=Owners,Converter={StaticResource NullToVisibilityConverter}}"
-                        Grid.Row="0" Grid.Column="0" FontWeight="Bold"
-                        Margin="0,8,0,0"
-                        Text="{x:Static resx:Resources.Label_Publishers}" />
-            <TextBlock
-                        Visibility="{Binding Path=Owners,Converter={StaticResource NullToVisibilityConverter}}"
-                        Text="{Binding Path=Owners}"
-                        Margin="8,8,0,0"
-                        TextWrapping="Wrap"
-                        Grid.Row="0" Grid.Column="1" />
-            -->
+      <!-- version -->
+      <TextBlock
+        Visibility="{Binding Path=Authors,Converter={StaticResource NullToVisibilityConverter}}"
+        Grid.Row="0"
+        Grid.Column="0"
+        Margin="0,8,0,0"
+        FontWeight="Bold"
+        Text="{x:Static resx:Resources.Label_Version}" />
+      <TextBlock
+        Grid.Row="0"
+        Grid.Column="1"
+        Visibility="{Binding Path=Version,Converter={StaticResource NullToVisibilityConverter}}"
+        Text="{Binding Path=Version,Converter={StaticResource VersionToStringConverter}}"
+        Margin="8,8,0,0"
+        TextWrapping="Wrap" />
 
       <!-- Author(s) -->
       <TextBlock
@@ -95,7 +96,7 @@
         Margin="8,8,0,0"
         TextWrapping="Wrap"
         Grid.Row="1"
-        Grid.Column="1"></TextBlock>
+        Grid.Column="1" />
 
       <!-- License -->
       <TextBlock

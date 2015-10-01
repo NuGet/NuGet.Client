@@ -42,6 +42,7 @@ namespace NuGet.Protocol.VisualStudio
             Description = description;
             Summary = summary;
             Tags = tags;
+            Published = published;
             DependencySets = dependencySet;
             RequireLicenseAcceptance = requireLicenseAccept;
             Title = title;

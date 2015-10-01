@@ -86,7 +86,15 @@ namespace NuGet.Protocol.VisualStudio
                 metadata = await _metadataResource.GetMetadata(topPackage, token);
             }
 
-            var searchResult = new UISearchMetadata(topPackage, title, summary, iconUrl, versionList, metadata);
+            var searchResult = new UISearchMetadata(
+                topPackage,
+                title,
+                summary,
+                string.Join(", ", metadata.Authors),
+                metadata.DownloadCount,
+                iconUrl,
+                versionList,
+                metadata);
             return searchResult;
         }
 
@@ -95,11 +103,11 @@ namespace NuGet.Protocol.VisualStudio
             NuGetVersion version)
         {
             return new Lazy<Task<IEnumerable<VersionInfo>>>(() =>
-           {
-               var versionList = GetVersionList(package, includePrerelease, version);
+            {
+                var versionList = GetVersionList(package, includePrerelease, version);
 
-               return Task.FromResult(versionList);
-           });
+                return Task.FromResult(versionList);
+            });
         }
 
         private static IEnumerable<VersionInfo> GetVersionList(JObject package, bool includePrerelease, NuGetVersion version)

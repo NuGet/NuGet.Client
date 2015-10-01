@@ -2,19 +2,25 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Windows.Data;
 using NuGet.Versioning;
-using System.Diagnostics;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class VersionToVersionForDisplayConverter : IValueConverter
+    public class VersionToStringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var version = value as NuGetVersion;
-            return new VersionForDisplay(version, string.Empty);
+            if (version == null)
+            {
+                return null;
+            }
+
+            var versionForDisplay = new VersionForDisplay(version, string.Empty);
+            return versionForDisplay.ToString();
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
