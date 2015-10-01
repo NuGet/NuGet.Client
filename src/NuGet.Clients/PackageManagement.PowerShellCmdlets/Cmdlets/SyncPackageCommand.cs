@@ -54,7 +54,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             SubscribeToProgressEvents();
             if (_projects.Count == 0)
             {
-                LogCore(ProjectManagement.MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlets_NoProjectsToSyncPackage, Id));
+                LogCore(ProjectManagement.MessageLevel.Info, string.Format(CultureInfo.CurrentCulture, Resources.Cmdlet_NoProjectsToSyncPackage, Id));
             }
             else if (identity == null)
             {
