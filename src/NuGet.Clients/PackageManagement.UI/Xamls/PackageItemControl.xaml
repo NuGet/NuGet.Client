@@ -4,12 +4,15 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  x:Name="_self"
   mc:Ignorable="d"
   xmlns:ui="clr-namespace:NuGet.PackageManagement.UI"
   xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"
   MinHeight="80"
-  d:DesignHeight="300"
-  d:DesignWidth="300">
+  MouseEnter="UserControl_MouseEnter"
+  MouseLeave="UserControl_MouseLeave"
+  d:DesignHeight="100"
+  d:DesignWidth="400">
   <UserControl.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -26,25 +29,39 @@
         x:Key="SummaryToFontStyleConverter" />
       <ui:SummaryToStringConverter
         x:Key="SummaryToStringConverter" />
+      <ui:VersionToStringConverter
+        x:Key="VersionToStringConverter" />
     </ResourceDictionary>
   </UserControl.Resources>
   <Border
     BorderThickness="0,0,0,1"
     BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+    Background="Transparent"
     Padding="0,16,0,15">
     <Grid
       Margin="24,0,7,0">
       <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
         <ColumnDefinition
           Width="Auto" />
-        <ColumnDefinition />
+        <ColumnDefinition
+          Width="*" />
         <ColumnDefinition
           Width="Auto" />
       </Grid.ColumnDefinitions>
 
+      <!-- check box -->
+      <CheckBox
+        Grid.Column="0"
+        Margin="0,0,5,0"
+        VerticalAlignment="Center"
+        Visibility="{Binding IsUpdateTab, Converter={StaticResource BooleanToVisibilityConverter}}" 
+        IsChecked="{Binding Selected}" 
+        />
+
       <!-- Icon -->
       <Grid
-        Grid.Column="0"
+        Grid.Column="1"
         VerticalAlignment="Top">
         <Grid.RowDefinitions>
           <RowDefinition
@@ -61,11 +78,28 @@
           Style="{StaticResource PackageIconImageStyle}"
           VerticalAlignment="Top"
           Margin="0,0,16,0" />
+        <ui:InstalledIndicator
+          x:Name="_checkMark"
+          Grid.Row="0"
+          Margin="18,20,0,0"
+          Width="16"
+          Height="16"
+          VerticalAlignment="Top"
+          Visibility="{Binding Status, Converter={StaticResource PackageStatusToInstallImageVisibilityConverter}}"
+          ToolTip="{x:Static resx:Resources.Tooltip_PackageInstalled}" />
+        <ui:UpdateAvailableIndicator
+          x:Name="_updateMark"
+          Grid.Row="0"
+          Margin="18,20,0,0"
+          Width="16"
+          Height="16"
+          VerticalAlignment="Top"
+          Visibility="{Binding Status, Converter={StaticResource PackageStatusToUpdateImageVisibilityConverter}}"
+        ToolTip="{x:Static resx:Resources.Tooltip_UpdateAvailable}" />
 
         <TextBlock
           Grid.Row="1"
           Text="{x:Static resx:Resources.Label_PackagePrerelease}"
-          FontStyle="Italic"
           FontSize="9"
           Margin="0,3,0,0"
           HorizontalAlignment="Left"
@@ -74,24 +108,35 @@
 
       <!-- title & summary-->
       <Grid
-        Grid.Column="1"
+        Grid.Column="2"
         VerticalAlignment="Top"
         MinHeight="48">
         <Grid.RowDefinitions>
-          <RowDefinition />
-          <RowDefinition
-            Height="32"
-            MaxHeight="32" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="4" />
+          <RowDefinition Height="32" MaxHeight="32"/>
         </Grid.RowDefinitions>
-        <TextBlock
+        <StackPanel
           Grid.Row="0"
-          FontWeight="Bold"
-          TextTrimming="CharacterEllipsis"
-          TextWrapping="NoWrap"
-          AutomationProperties.AutomationId="id"
-          Text="{Binding Id}" />
+          Orientation="Horizontal">
+          <TextBlock
+            FontWeight="Bold"
+            FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}"
+            TextTrimming="CharacterEllipsis"
+            TextWrapping="NoWrap"
+            AutomationProperties.AutomationId="id"
+            VerticalAlignment="Top"
+            Text="{Binding Id}" />
+          <TextBlock
+            TextTrimming="CharacterEllipsis"
+            TextWrapping="NoWrap"
+            Text="{Binding AuthorAndDownloadText}"
+            VerticalAlignment="Bottom"
+            Margin="5,4,0,0" />
+        </StackPanel>
+
         <TextBlock
-          Grid.Row="1"
+          Grid.Row="2"
           Text="{Binding Summary, Converter={StaticResource SummaryToStringConverter}}"
           FontStyle="{Binding Summary, Converter={StaticResource SummaryToFontStyleConverter}}"
           TextTrimming="CharacterEllipsis"
@@ -110,24 +155,86 @@
         </Grid.ToolTip>
       </Grid>
 
-      <ui:InstalledIndicator
-        x:Name="_checkMark"
-        Grid.Column="2"
-        Margin="16,0,12,0"
-        Width="16"
-        Height="16"
+      <Grid
+        Grid.Column="3"
         VerticalAlignment="Top"
-        Visibility="{Binding Status, Converter={StaticResource PackageStatusToInstallImageVisibilityConverter}}"
-        ToolTip="{x:Static resx:Resources.Tooltip_PackageInstalled}" />
-      <ui:UpdateAvailableIndicator
-        x:Name="_updateMark"
-        Grid.Column="2"
-        Margin="16,0,12,0"
-        Width="16"
-        Height="16"
-        VerticalAlignment="Top"
-        Visibility="{Binding Status, Converter={StaticResource PackageStatusToUpdateImageVisibilityConverter}}"
-        ToolTip="{x:Static resx:Resources.Tooltip_UpdateAvailable}" />
+        Margin="10,0,0,0">
+        <Grid.RowDefinitions>
+          <RowDefinition />
+          <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="16"/>
+          <ColumnDefinition />
+          <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        
+        <!-- row 0 -->
+        <!-- installed indicator -->
+        <ui:InstalledIndicator
+          Grid.Row="0"
+          Grid.Column="0"
+          Width="12"
+          Height="12"
+          IsGrayed="True"
+          VerticalAlignment="Center"
+          Visibility="{Binding InstalledVersionIndicatorVisibility}" />
+
+        <!-- installed version -->
+        <TextBlock
+          Grid.Row="0"
+          Grid.Column="1"
+          Width="95"
+          VerticalAlignment="Center"
+          Visibility="{Binding IsSolution, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
+          Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}}"
+          ToolTip="{Binding InstalledVersionToolTip}" />
+
+        <!-- uninstall button -->
+        <ui:UninstallButton
+          x:Name="_uninstallButton"
+          Grid.Row="0"
+          Grid.Column="2"
+          Click="UninstallButtonClicked"
+          Margin="5,0,0,0"
+          Width="16"
+          Height="16"
+          ToolTip="{x:Static resx:Resources.Tooltip_UninstallButton}" />
+
+        <!-- row 1 -->
+        <!-- latest version -->
+        <TextBlock
+          Grid.Row="1"
+          Grid.Column="1"
+          Width="95"
+          Margin="0,5,0,0"
+          VerticalAlignment="Center"
+          Visibility="{Binding LatestVersion, Converter={StaticResource NullToVisibilityConverter}}"
+          Text="{Binding LatestVersion, Converter={StaticResource VersionToStringConverter}}"
+          ToolTip="{Binding LatestVersionToolTip}" />
+
+        <!-- install button -->
+        <ui:InstallButton
+          x:Name="_installButton"
+          Grid.Row="1"
+          Grid.Column="2"
+          Click="InstallButtonClicked"
+          Margin="5,5,0,0"
+          Width="16"
+          Height="16"
+          ToolTip="{x:Static resx:Resources.Tooltip_InstallButton}" />
+
+        <!-- update button. It occupies the exact same position of the install button -->
+        <ui:UpdateButton
+          x:Name="_updateButton"
+          Grid.Row="1"
+          Grid.Column="2"
+          Margin="5,5,0,0"
+          Width="16"
+          Height="16"
+          Click="InstallButtonClicked"
+          ToolTip="{x:Static resx:Resources.Tooltip_UpdateButton}" />        
+      </Grid>
     </Grid>
   </Border>
 </UserControl>

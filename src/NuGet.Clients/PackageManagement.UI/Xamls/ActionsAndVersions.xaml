@@ -17,9 +17,6 @@
         <ResourceDictionary
           Source="Resources.xaml" />
       </ResourceDictionary.MergedDictionaries>
-      <Tools:VersionToVersionForDisplayConverter
-        x:Key="VersionToVersionForDisplayConverter" />
-
       <ControlTemplate
         x:Key="SeparatorControlTemplate">
         <Separator
