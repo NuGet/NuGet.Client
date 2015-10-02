@@ -219,7 +219,8 @@ namespace NuGet.Common
 
         public void RemoveFile(string path)
         {
-            FileSystemUtility.DeleteFile(path, NuGetProjectContext);
+            var fullPath = Path.Combine(ProjectFullPath, path);
+            FileSystemUtility.DeleteFile(fullPath, NuGetProjectContext);
         }
 
         public void RemoveImport(string targetFullPath)

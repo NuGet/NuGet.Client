@@ -96,7 +96,12 @@ namespace NuGet.CommandLine.Test
         /// <param name="version">The version of the created package.</param>
         /// <param name="path">The directory where the package is created.</param>
         /// <returns>The full path of the created package file.</returns>
-        public static string CreateTestPackage(string packageId, string version, string path, Uri licenseUrl = null)
+        public static string CreateTestPackage(
+            string packageId,
+            string version,
+            string path,
+            Uri licenseUrl = null,
+            params string[] contentFiles)
         {
             var packageBuilder = new PackageBuilder
             {
@@ -113,7 +118,20 @@ namespace NuGet.CommandLine.Test
                 packageBuilder.LicenseUrl = licenseUrl;
             }
 
-            packageBuilder.Files.Add(CreatePackageFile(@"content\test1.txt"));
+            if (contentFiles == null || contentFiles.Length == 0)
+            {
+                packageBuilder.Files.Add(CreatePackageFile(@"content\test1.txt"));
+            }
+            else
+            {
+                foreach(var contentFile in contentFiles)
+                {
+                    var packageFilePath = Path.Combine("content", contentFile);
+                    var packageFile = CreatePackageFile(packageFilePath);
+                    packageBuilder.Files.Add(packageFile);
+                }
+            }
+
             packageBuilder.Authors.Add("test author");
 
             var packageFileName = string.Format("{0}.{1}.nupkg", packageId, version);
