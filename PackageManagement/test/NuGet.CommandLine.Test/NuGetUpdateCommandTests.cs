@@ -53,28 +53,10 @@ namespace NuGet.CommandLine.Test
                 Util.CreateFile(
                     projectDirectory,
                     "proj1.csproj",
-    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include='proj1_file1.cs' />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include='proj1_file2.txt' />
-  </ItemGroup>
-  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
-</Project>");
+                    Util.CreateProjFileContent());
 
                 Util.CreateFile(solutionDirectory, "a.sln",
-                    @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"", ""proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
-EndProject");
+                    Util.CreateSolutionFileContent());
 
                 var projectFile = Path.Combine(projectDirectory, "proj1.csproj");
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
@@ -86,7 +68,11 @@ EndProject");
                 using (var stream = File.OpenRead(a1Package))
                 {
                     var downloadResult = new DownloadResourceResult(stream);
-                    await msBuildProject.InstallPackageAsync(a1, downloadResult, testNuGetProjectContext, CancellationToken.None);
+                    await msBuildProject.InstallPackageAsync(
+                        a1,
+                        downloadResult,
+                        testNuGetProjectContext,
+                        CancellationToken.None);
                 }
 
                 var args = new[]
@@ -151,28 +137,10 @@ EndProject");
                 Util.CreateFile(
                     projectDirectory,
                     "proj1.csproj",
-    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include='proj1_file1.cs' />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include='proj1_file2.txt' />
-  </ItemGroup>
-  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
-</Project>");
+                    Util.CreateProjFileContent());
 
                 Util.CreateFile(solutionDirectory, "a.sln",
-                    @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"", ""proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
-EndProject");
+                    Util.CreateSolutionFileContent());
 
                 var projectFile = Path.Combine(projectDirectory, "proj1.csproj");
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
@@ -184,7 +152,11 @@ EndProject");
                 using (var stream = File.OpenRead(a1Package))
                 {
                     var downloadResult = new DownloadResourceResult(stream);
-                    await msBuildProject.InstallPackageAsync(a1, downloadResult, testNuGetProjectContext, CancellationToken.None);
+                    await msBuildProject.InstallPackageAsync(
+                        a1,
+                        downloadResult,
+                        testNuGetProjectContext,
+                        CancellationToken.None);
                 }
 
                 var args = new[]
@@ -248,28 +220,10 @@ EndProject");
                 Util.CreateFile(
                     projectDirectory,
                     "proj1.csproj",
-    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include='proj1_file1.cs' />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include='proj1_file2.txt' />
-  </ItemGroup>
-  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
-</Project>");
+                    Util.CreateProjFileContent());
 
                 Util.CreateFile(solutionDirectory, "a.sln",
-                    @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"", ""proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
-EndProject");
+                    Util.CreateSolutionFileContent());
 
                 var projectFile = Path.Combine(projectDirectory, "proj1.csproj");
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
@@ -281,7 +235,11 @@ EndProject");
                 using (var stream = File.OpenRead(a1Package))
                 {
                     var downloadResult = new DownloadResourceResult(stream);
-                    await msBuildProject.InstallPackageAsync(a1, downloadResult, testNuGetProjectContext, CancellationToken.None);
+                    await msBuildProject.InstallPackageAsync(
+                        a1,
+                        downloadResult,
+                        testNuGetProjectContext,
+                        CancellationToken.None);
                 }
 
                 var args = new[]
@@ -347,28 +305,10 @@ EndProject");
                 Util.CreateFile(
                     projectDirectory,
                     "proj1.csproj",
-    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include='proj1_file1.cs' />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include='proj1_file2.txt' />
-  </ItemGroup>
-  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
-</Project>");
+                    Util.CreateProjFileContent());
 
                 Util.CreateFile(solutionDirectory, "a.sln",
-                    @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"", ""proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
-EndProject");
+                    Util.CreateSolutionFileContent());
 
                 var projectFile = Path.Combine(projectDirectory, "proj1.csproj");
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
@@ -380,7 +320,11 @@ EndProject");
                 using (var stream = File.OpenRead(a1Package))
                 {
                     var downloadResult = new DownloadResourceResult(stream);
-                    await msBuildProject.InstallPackageAsync(a1, downloadResult, testNuGetProjectContext, CancellationToken.None);
+                    await msBuildProject.InstallPackageAsync(
+                        a1,
+                        downloadResult,
+                        testNuGetProjectContext,
+                        CancellationToken.None);
                 }
 
                 var args = new[]
@@ -445,28 +389,10 @@ EndProject");
                 Util.CreateFile(
                     projectDirectory,
                     "proj1.csproj",
-    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include='proj1_file1.cs' />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include='proj1_file2.txt' />
-  </ItemGroup>
-  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
-</Project>");
+                    Util.CreateProjFileContent());
 
                 Util.CreateFile(solutionDirectory, "a.sln",
-                    @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"", ""proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
-EndProject");
+                    Util.CreateSolutionFileContent());
 
                 var projectFile = Path.Combine(projectDirectory, "proj1.csproj");
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
@@ -479,7 +405,11 @@ EndProject");
                 using (var stream = File.OpenRead(a1Package))
                 {
                     var downloadResult = new DownloadResourceResult(stream);
-                    await msBuildProject.InstallPackageAsync(a1, downloadResult, testNuGetProjectContext, CancellationToken.None);
+                    await msBuildProject.InstallPackageAsync(
+                        a1,
+                        downloadResult,
+                        testNuGetProjectContext,
+                        CancellationToken.None);
                 }
 
                 var args = new[]
@@ -544,29 +474,10 @@ EndProject");
                 Util.CreateFile(
                     projectDirectory,
                     "proj1.csproj",
-    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include='proj1_file1.cs' />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include='proj1_file2.txt' />
-  </ItemGroup>
-  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
-</Project>");
+                    Util.CreateProjFileContent());
 
                 Util.CreateFile(solutionDirectory, "a.sln",
-                    @"
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"",
-""proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
-EndProject");
+                    Util.CreateSolutionFileContent());
 
                 var projectFile = Path.Combine(projectDirectory, "proj1.csproj");
                 var solutionFile = Path.Combine(solutionDirectory, "a.sln");
@@ -591,24 +502,11 @@ EndProject");
                 // Replace proj1.csproj with content files on it, like Install-Package from VS would have.
                 File.Delete(projectFile);
                 File.WriteAllText(projectFile,
-    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include='proj1_file1.cs' />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include='proj1_file2.txt' />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include='test1.txt' />
-  </ItemGroup>
-  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
-</Project>");
+                    Util.CreateProjFileContent(
+                        "proj1",
+                        "v4.5",
+                        references: null,
+                        contentFiles: new[] { "test1.txt" }));
 
                 var args = new[]
                 {

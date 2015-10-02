@@ -26,7 +26,7 @@ namespace NuGet.CommandLine.Test
             string dependencyPackageId,
             string dependencyPackageVersion)
         {
-            var group = new PackageDependencyGroup(NuGetFramework.AnyFramework, 
+            var group = new PackageDependencyGroup(NuGetFramework.AnyFramework,
                 new List<Packaging.Core.PackageDependency>()
             {
                 new Packaging.Core.PackageDependency(dependencyPackageId, VersionRange.Parse(dependencyPackageVersion))
@@ -58,8 +58,8 @@ namespace NuGet.CommandLine.Test
             foreach (var framework in frameworks)
             {
                 var libPath = string.Format(
-                    CultureInfo.InvariantCulture, 
-                    "lib/{0}/file.dll", 
+                    CultureInfo.InvariantCulture,
+                    "lib/{0}/file.dll",
                     framework.GetShortFolderName());
 
                 packageBuilder.Files.Add(CreatePackageFile(libPath));
@@ -70,9 +70,9 @@ namespace NuGet.CommandLine.Test
             foreach (var group in dependencies)
             {
                 var set = new PackageDependencySet(
-                    null, 
-                    group.Packages.Select(package => 
-                        new PackageDependency(package.Id, 
+                    null,
+                    group.Packages.Select(package =>
+                        new PackageDependency(package.Id,
                             VersionUtility.ParseVersionSpec(package.VersionRange.ToNormalizedString()))));
 
                 packageBuilder.DependencySets.Add(set);
@@ -124,7 +124,7 @@ namespace NuGet.CommandLine.Test
             }
             else
             {
-                foreach(var contentFile in contentFiles)
+                foreach (var contentFile in contentFiles)
                 {
                     var packageFilePath = Path.Combine("content", contentFile);
                     var packageFile = CreatePackageFile(packageFilePath);
@@ -503,6 +503,72 @@ namespace NuGet.CommandLine.Test
             catalogEntry.Add(new JProperty("tags", new JArray()));
 
             return regBlob;
+        }
+
+        public static string CreateProjFileContent(
+            string projectName = "proj1",
+            string targetFrameworkVersion = "v4.5",
+            string[] references = null,
+            string[] contentFiles = null)
+        {
+            var referencesFormat = "<Reference Include='{0}' />";
+
+            var contentFileFormat = @"<Content Include = '{0}' />";
+
+            var projFileFormat = @"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>{0}</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='proj1_file1.cs' />
+  </ItemGroup>
+  {1}
+  {2}
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>";
+
+            var referencesSection = new StringBuilder();
+            if (references != null)
+            {
+                referencesSection.Append("<ItemGroup>");
+                foreach(var reference in references)
+                {
+                    var referenceEntry = string.Format(referencesFormat, reference);
+                    referencesSection.Append(referenceEntry);
+                }
+                referencesSection.Append("</ItemGroup>");
+            }
+
+            var contentFilesSection = new StringBuilder();
+            if (contentFiles != null)
+            {
+                contentFilesSection.Append("<ItemGroup>");
+                foreach (var contentFile in contentFiles)
+                {
+                    var contentFileEntry = string.Format(contentFileFormat, contentFile);
+                    contentFilesSection.Append(contentFileEntry);
+                }
+                contentFilesSection.Append("</ItemGroup>");
+            }
+
+            return string.Format(
+                projFileFormat,
+                targetFrameworkVersion,
+                referencesSection.ToString(),
+                contentFilesSection.ToString());
+        }
+
+        public static string CreateSolutionFileContent()
+        {
+            return @"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"",
+""proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
+EndProject";
         }
     }
 }
