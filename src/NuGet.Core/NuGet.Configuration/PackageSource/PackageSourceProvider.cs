@@ -178,8 +178,10 @@ namespace NuGet.Configuration
             AddDefaultSourcesToRootNuGetConfigCore(settings);
         }
 
-        // Internal for unit testing.
-        internal static void AddDefaultSourcesToRootNuGetConfigCore(ISettings settings)
+        /// <summary>
+        /// For internal use only
+        /// </summary>
+        public static void AddDefaultSourcesToRootNuGetConfigCore(ISettings settings)
         {
             var sourceSettings = settings.GetSettingValues(ConfigurationContants.PackageSources).ToList();
 
@@ -424,7 +426,7 @@ namespace NuGet.Configuration
             // Case 1. primary/ secondary Package Source is already present matching both feed source and the feed name. Set IsOfficial to true
             // Case 2. primary/ secondary Package Source is already present matching feed source but with a different feed name. DO NOTHING
             // Case 3. primary/ secondary Package Source is not present, but there is another feed source with the same feed name. Override that feed entirely
-            // Case 4. primary/ secondary Package Source is not present, simply, add it. In addition, if Primary is getting added 
+            // Case 4. primary/ secondary Package Source is not present, simply, add it. In addition, if Primary is getting added
             // for the first time, promote Primary to Enabled and demote secondary to disabled, if it is already enabled
 
             var defaultPackageSourcesToBeAdded = new List<PackageSource>();

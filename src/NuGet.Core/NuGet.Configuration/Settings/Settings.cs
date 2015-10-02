@@ -123,8 +123,10 @@ namespace NuGet.Configuration
                 loadAppDataSettings: true);
         }
 
-        // Internal for unit testing.
-        internal static ISettings LoadDefaultSettings(
+        /// <summary>
+        /// For internal use only
+        /// </summary>
+        public static ISettings LoadDefaultSettings(
             string root,
             string configFileName,
             IMachineWideSettings machineWideSettings,
@@ -183,7 +185,7 @@ namespace NuGet.Configuration
         private static void LoadUserSpecificSettings(
             List<Settings> validSettingFiles,
             string root,
-            string configFileName, 
+            string configFileName,
             IMachineWideSettings machineWideSettings
             )
         {
@@ -513,7 +515,7 @@ namespace NuGet.Configuration
                 {
                     nodesToRemove.Clear();
                 }
-                else 
+                else
                 {
                     nodesToRemove.Add(element);
                 }
