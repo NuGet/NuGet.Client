@@ -95,7 +95,7 @@ function BuildXproj()
             $srcDir = [System.IO.Path]::GetDirectoryName($file.FullName)
             $outDir = Join-Path $artifacts $file.BaseName
 
-            & dnu pack "$($srcDir)" --out $outDir
+            & dnu pack "$($srcDir)" --configuration $Configuration --out $outDir
 
             if ($LASTEXITCODE -ne 0)
             {
