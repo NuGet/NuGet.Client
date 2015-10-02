@@ -234,7 +234,7 @@ if( Test-Path $artifacts)
 Write-Host "Validating the correct DNX runtime set"
 $env:DNX_FEED="https://www.nuget.org/api/v2"
 & dnvm install 1.0.0-beta7 -runtime CoreCLR -arch x86
-& dnvm install 1.0.0-beta7 -runtime CLR -arch x86 -a default
+& dnvm install 1.0.0-beta7 -runtime CLR -arch x86 -alias default
 
 if($CleanCache)
 {
