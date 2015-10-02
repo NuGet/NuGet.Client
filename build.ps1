@@ -5,7 +5,8 @@ param (
     [switch]$Fast,
 	[switch]$CleanCache,
 	[switch]$PublicRelease,
-	[switch]$SkipILMerge
+	[switch]$SkipILMerge,
+	[switch]$DelaySign
 )
 
 ###Functions###
@@ -148,6 +149,11 @@ function BuildCSproj()
 
     # Restore packages for NuGet.Tooling solution
     & $nugetExe restore -msbuildVersion 14 .\NuGet.Clients.sln
+
+    if ($DelaySign)
+    {
+        $env:NUGET_DELAYSIGN="true"
+    }
 
     # Build the solution
     & $msbuildExe .\NuGet.Clients.sln "/p:Configuration=$Configuration;PublicRelease=$PublicRelease;RunTests=!$SkipTests"
