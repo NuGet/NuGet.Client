@@ -349,15 +349,17 @@ namespace NuGet.PackageManagement.VisualStudio
                         string fullPath = Path.Combine(ProjectFullPath, referencePath);
 
                         // Add a reference to the project
-                        dynamic reference = EnvDTEProjectUtility.GetReferences(EnvDTEProject).Add(fullPath);
+                        var references = EnvDTEProjectUtility.GetReferences(EnvDTEProject);
+
+                        dynamic reference = references.Add(fullPath);
 
                         if (reference != null)
                         {
                             var path = GetReferencePath(reference);
 
-                            // If path != fullPath, we need to set CopyLocal thru msbuild by setting Private 
+                            // If path != fullPath, we need to set CopyLocal thru msbuild by setting Private
                             // to true.
-                            // This happens if the assembly appears in any of the search paths that VS uses to 
+                            // This happens if the assembly appears in any of the search paths that VS uses to
                             // locate assembly references.
                             // Most commonly, it happens if this assembly is in the GAC or in the output path.
                             if (path != null
@@ -643,7 +645,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             string fileName = Path.GetFileName(path);
 
-            // exclude all file names with the pattern as "web.*.config", 
+            // exclude all file names with the pattern as "web.*.config",
             // e.g. web.config, web.release.config, web.debug.config
             return !(fileName.StartsWith("web.", StringComparison.OrdinalIgnoreCase) &&
                      fileName.EndsWith(".config", StringComparison.OrdinalIgnoreCase));
@@ -679,7 +681,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
 
                 // Remove the NuGetImportStamp so that VC++ project file won't be updated with this stamp on disk,
-                // which causes unnecessary source control pending changes. 
+                // which causes unnecessary source control pending changes.
                 try
                 {
                     propStore.RemoveProperty(NuGetImportStamp, string.Empty, (uint)_PersistStorageType.PST_PROJECT_FILE);
@@ -699,7 +701,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                // Silverlight projects and Windows Phone projects do not support binding redirect. 
+                // Silverlight projects and Windows Phone projects do not support binding redirect.
                 // They both share the same identifier as "Silverlight"
                 return !SilverlightTargetFrameworkIdentifier.Equals(TargetFramework.DotNetFrameworkName, StringComparison.OrdinalIgnoreCase);
             }
@@ -798,8 +800,8 @@ namespace NuGet.PackageManagement.VisualStudio
         }
 
         /// <summary>
-        /// Returns the list of full paths of all files in the project whose name is 
-        /// <paramref name="fileName"/>. BFS algorithm is used. Thus, the files directly under 
+        /// Returns the list of full paths of all files in the project whose name is
+        /// <paramref name="fileName"/>. BFS algorithm is used. Thus, the files directly under
         /// the project are returned first. Then files one-level deep are returned, and so-on.
         /// </summary>
         /// <param name="fileName">The file name to search.</param>
