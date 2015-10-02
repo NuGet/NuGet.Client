@@ -150,6 +150,15 @@ function BuildCSproj()
 
     # Build the solution
     & $msbuildExe .\NuGet.Clients.sln "/p:Configuration=$Configuration;PublicRelease=$PublicRelease;RunTests=!$SkipTests"
+
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "NuGet.Clients.sln Build failed "
+    }
+
+    Write-Host "Coping the Vsix to $artifacts"
+    $visxLocation = Join-Path $artifacts "$Configuration\NuGet.Clients\VsExtension"
+    Copy-Item $visxLocation\NuGet.Tools.vsix $artifacts
 }
 
 function ILMergeNuGet()
@@ -159,7 +168,12 @@ function ILMergeNuGet()
     pushd $nugetArtifictFolder
 
     Write-Output "Creating the ilmerged nuget.exe"		
-    & $ILMerge NuGet.exe NuGet.Client.dll NuGet.Commands.dll NuGet.Configuration.dll NuGet.ContentModel.dll NuGet.Core.dll NuGet.DependencyResolver.Core.dll NuGet.DependencyResolver.dll NuGet.Frameworks.dll NuGet.LibraryModel.dll NuGet.Logging.dll NuGet.PackageManagement.dll NuGet.Packaging.Core.dll NuGet.Packaging.Core.Types.dll NuGet.Packaging.dll NuGet.ProjectManagement.dll NuGet.ProjectModel.dll NuGet.Protocol.Core.Types.dll NuGet.Protocol.Core.v2.dll NuGet.Protocol.Core.v3.dll NuGet.Repositories.dll NuGet.Resolver.dll NuGet.RuntimeModel.dll NuGet.Versioning.dll Microsoft.Web.XmlTransform.dll Newtonsoft.Json.dll /log:mergelog.txt /out:Merged\nuget.exe
+    & $ILMerge NuGet.exe NuGet.Client.dll NuGet.Commands.dll NuGet.Configuration.dll NuGet.ContentModel.dll NuGet.Core.dll NuGet.DependencyResolver.Core.dll NuGet.DependencyResolver.dll NuGet.Frameworks.dll NuGet.LibraryModel.dll NuGet.Logging.dll NuGet.PackageManagement.dll NuGet.Packaging.Core.dll NuGet.Packaging.Core.Types.dll NuGet.Packaging.dll NuGet.ProjectManagement.dll NuGet.ProjectModel.dll NuGet.Protocol.Core.Types.dll NuGet.Protocol.Core.v2.dll NuGet.Protocol.Core.v3.dll NuGet.Repositories.dll NuGet.Resolver.dll NuGet.RuntimeModel.dll NuGet.Versioning.dll Microsoft.Web.XmlTransform.dll Newtonsoft.Json.dll /log:mergelog.txt /out:$artifacts\nuget.exe /ndebug
+
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "ILMerge failed"
+    }
 
     popd
 }
@@ -233,6 +247,7 @@ BuildXproj
 ## Building the Tooling solution
 BuildCSproj
 
+## Merging the NuGet.exe
 ILMergeNuGet
 
 ## Calculating Build time
