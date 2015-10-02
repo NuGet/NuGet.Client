@@ -262,6 +262,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} nuget configuration is invalid..
+        /// </summary>
+        internal static string ProjectHasAnInvalidNuGetConfiguration {
+            get {
+                return ResourceManager.GetString("ProjectHasAnInvalidNuGetConfiguration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Some NuGet packages were installed using a target framework different from the current target framework and may need to be reinstalled. Visit http://docs.nuget.org/docs/workflows/reinstalling-packages for more information.  Packages affected: {0}.
         /// </summary>
         internal static string ProjectUpgradeAndRetargetErrorMessage {

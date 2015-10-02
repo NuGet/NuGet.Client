@@ -528,10 +528,9 @@ namespace NuGet.PackageManagement.VisualStudio
             EnvDTEProjectName oldEnvDTEProjectName;
             _nuGetAndEnvDTEProjectCache.TryGetProjectNameByShortName(EnvDTEProjectUtility.GetName(envDTEProject), out oldEnvDTEProjectName);
 
-            EnvDTEProjectName newEnvDTEProjectName = _nuGetAndEnvDTEProjectCache.AddProject(envDTEProject, GetProjectFactory());
+            var newEnvDTEProjectName = _nuGetAndEnvDTEProjectCache.AddProject(envDTEProject, GetProjectFactory());
 
-            if (String.IsNullOrEmpty(DefaultNuGetProjectName)
-                ||
+            if (string.IsNullOrEmpty(DefaultNuGetProjectName) ||
                 newEnvDTEProjectName.ShortName.Equals(DefaultNuGetProjectName, StringComparison.OrdinalIgnoreCase))
             {
                 DefaultNuGetProjectName = oldEnvDTEProjectName != null ?

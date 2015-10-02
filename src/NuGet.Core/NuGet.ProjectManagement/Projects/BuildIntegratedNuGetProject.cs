@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
@@ -39,15 +38,24 @@ namespace NuGet.ProjectManagement.Projects
             _jsonConfig = new FileInfo(jsonConfig);
             MSBuildNuGetProjectSystem = msbuildProjectSystem;
 
-            var json = GetJson();
+            JObject projectJson;
+            IEnumerable<NuGetFramework> targetFrameworks = Enumerable.Empty<NuGetFramework>();
 
-            var targetFrameworks = JsonConfigUtility.GetFrameworks(json);
+            try
+            {
+                projectJson = GetJson();
+                targetFrameworks = JsonConfigUtility.GetFrameworks(projectJson);
+            }
+            catch (InvalidOperationException)
+            {
+                // Ignore a bad project.json when constructing the project, and treat it as unsupported.
+            }
 
             // Default to unsupported if anything unexpected is returned
             var targetFramework = NuGetFramework.UnsupportedFramework;
 
-            Debug.Assert(targetFrameworks.Count() == 1, "Invalid target framework count");
-
+            // Having more than one framework is not supported, but we pick the first as fallback
+            // We will eventually support more than one framework ala projectK.
             if (targetFrameworks.Count() == 1)
             {
                 targetFramework = targetFrameworks.First();
@@ -58,9 +66,9 @@ namespace NuGet.ProjectManagement.Projects
             InternalMetadata.Add(NuGetProjectMetadataKeys.FullPath, msbuildProjectSystem.ProjectFullPath);
 
             var supported = new List<FrameworkName>
-                {
-                    new FrameworkName(targetFramework.DotNetFrameworkName)
-                };
+            {
+                new FrameworkName(targetFramework.DotNetFrameworkName)
+            };
 
             InternalMetadata.Add(NuGetProjectMetadataKeys.SupportedFrameworks, supported);
         }
@@ -196,7 +204,7 @@ namespace NuGet.ProjectManagement.Projects
         public virtual Task<bool> ExecuteInitScriptAsync(
             PackageIdentity identity,
             string packageInstallPath,
-            INuGetProjectContext projectContext, 
+            INuGetProjectContext projectContext,
             bool throwOnFailure)
         {
             return Task.FromResult(false);
@@ -204,17 +212,33 @@ namespace NuGet.ProjectManagement.Projects
 
         private async Task<JObject> GetJsonAsync()
         {
-            using (var streamReader = new StreamReader(_jsonConfig.OpenRead()))
+            try
             {
-                return JObject.Parse(await streamReader.ReadToEndAsync());
+                using (var streamReader = new StreamReader(_jsonConfig.OpenRead()))
+                {
+                    return JObject.Parse(await streamReader.ReadToEndAsync());
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    string.Format(Strings.ErrorLoadingPackagesConfig, _jsonConfig.FullName, ex.Message), ex);
             }
         }
 
         private JObject GetJson()
         {
-            using (var streamReader = new StreamReader(_jsonConfig.OpenRead()))
+            try
             {
-                return JObject.Parse(streamReader.ReadToEnd());
+                using (var streamReader = new StreamReader(_jsonConfig.OpenRead()))
+                {
+                    return JObject.Parse(streamReader.ReadToEnd());
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    string.Format(Strings.ErrorLoadingPackagesConfig, _jsonConfig.FullName, ex.Message), ex);
             }
         }
 

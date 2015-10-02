@@ -36,6 +36,7 @@ namespace NuGet.PackageManagement.VisualStudio
             nuGetProject = null;
             // First try to find the project name in one of the dictionaries. Then locate the project for that name.
             EnvDTEProjectName envDTEProjectName;
+
             return TryGetNuGetProjectName(name, out envDTEProjectName) &&
                    _nuGetProjectCache.TryGetValue(envDTEProjectName, out nuGetProject);
         }
@@ -124,6 +125,9 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
+            // Create the nuget project first, if this throws we bail out, and not change the cache
+            var nuGetProject = factory.CreateNuGetProject(project);
+
             // First create a project name from the project
             var EnvDTEProjectName = new EnvDTEProjectName(project);
 
@@ -141,7 +145,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Add the entry mapping project name to the actual project
             _envDTEProjectCache[EnvDTEProjectName] = project;
-            _nuGetProjectCache[EnvDTEProjectName] = factory.CreateNuGetProject(project);
+
+            _nuGetProjectCache[EnvDTEProjectName] = nuGetProject;
 
             return EnvDTEProjectName;
         }
@@ -221,7 +226,19 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 foreach (EnvDTEProject project in projects)
                 {
-                    AddProject(project, factory);
+                    try
+                    {
+                        // If a single project fails this method throws and the rest of the projects will never load
+                        AddProject(project, factory);
+                    }
+                    catch (Exception ex)
+                    {
+                        // ignore failed projects
+                        ActivityLog.LogWarning(ExceptionHelper.LogEntrySource,
+                            "The project " + project.Name + " failed to initialize as a nuget project");
+
+                        ExceptionHelper.WriteToActivityLog(ex);
+                    }
                 }
 
                 // Consider that the cache is initialized, only, when there are any projects to add
