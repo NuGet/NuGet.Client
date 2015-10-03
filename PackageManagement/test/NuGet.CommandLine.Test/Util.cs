@@ -511,54 +511,32 @@ namespace NuGet.CommandLine.Test
             string[] references = null,
             string[] contentFiles = null)
         {
-            var referencesFormat = "<Reference Include='{0}' />";
+            XNamespace msbuild = "http://schemas.microsoft.com/developer/msbuild/2003";
 
-            var contentFileFormat = @"<Content Include = '{0}' />";
+            var project = new XElement(msbuild + "Project",
+                new XAttribute("ToolsVersion", "4.0"), new XAttribute("DefaultTargets", "Build"));
 
-            var projFileFormat = @"<Project ToolsVersion='4.0' DefaultTargets='Build'
-    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
-  <PropertyGroup>
-    <OutputType>Library</OutputType>
-    <OutputPath>out</OutputPath>
-    <TargetFrameworkVersion>{0}</TargetFrameworkVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include='proj1_file1.cs' />
-  </ItemGroup>
-  {1}
-  {2}
-  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
-</Project>";
+            project.Add(new XElement(msbuild + "PropertyGroup",
+                  new XElement(msbuild + "OutputType", "Library"),
+                  new XElement(msbuild + "OutputPath", "out"),
+                  new XElement(msbuild + "TargetFrameworkVersion", targetFrameworkVersion)));
 
-            var referencesSection = new StringBuilder();
-            if (references != null)
+            if (references != null && references.Any())
             {
-                referencesSection.Append("<ItemGroup>");
-                foreach(var reference in references)
-                {
-                    var referenceEntry = string.Format(referencesFormat, reference);
-                    referencesSection.Append(referenceEntry);
-                }
-                referencesSection.Append("</ItemGroup>");
+                project.Add(new XElement(msbuild + "ItemGroup",
+                        references.Select(r => new XElement(msbuild + "Reference", new XAttribute("Include", r)))));
             }
 
-            var contentFilesSection = new StringBuilder();
-            if (contentFiles != null)
+            if (contentFiles != null && contentFiles.Any())
             {
-                contentFilesSection.Append("<ItemGroup>");
-                foreach (var contentFile in contentFiles)
-                {
-                    var contentFileEntry = string.Format(contentFileFormat, contentFile);
-                    contentFilesSection.Append(contentFileEntry);
-                }
-                contentFilesSection.Append("</ItemGroup>");
+                project.Add(new XElement(msbuild + "ItemGroup",
+                        contentFiles.Select(c => new XElement(msbuild + "Content", new XAttribute("Include", c)))));
             }
 
-            return string.Format(
-                projFileFormat,
-                targetFrameworkVersion,
-                referencesSection.ToString(),
-                contentFilesSection.ToString());
+            project.Add(new XElement(msbuild + "Import",
+                new XAttribute("Project", @"$(MSBuildToolsPath)\Microsoft.CSharp.targets")));
+
+            return project.ToString();
         }
 
         public static string CreateSolutionFileContent()
