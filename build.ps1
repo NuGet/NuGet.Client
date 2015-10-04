@@ -6,7 +6,8 @@ param (
 	[switch]$CleanCache,
 	[switch]$PublicRelease,
 	[switch]$SkipILMerge,
-	[switch]$DelaySign
+	[switch]$DelaySign,
+    [string]$PFXPath
 )
 
 ###Functions###
@@ -150,11 +151,6 @@ function BuildCSproj()
     # Restore packages for NuGet.Tooling solution
     & $nugetExe restore -msbuildVersion 14 .\NuGet.Clients.sln
 
-    if ($DelaySign)
-    {
-        $env:NUGET_DELAYSIGN="true"
-    }
-
     # Build the solution
     & $msbuildExe .\NuGet.Clients.sln "/p:Configuration=$Configuration;PublicRelease=$PublicRelease;RunTests=!$SkipTests"
 
@@ -247,6 +243,17 @@ if($CleanCache)
 {
 	CleanCache
 }
+
+# enable delay signed build
+if ($DelaySign)
+    {
+        if (Test-Path $PFXPath)
+        {
+            $env:DNX_BUILD_KEY_FILE=$PFXPath
+            $env:DNX_BUILD_DELAY_SIGN=$true
+            $env:NUGET_PFX_PATH= $PFXPath
+        }
+    }
 
 ## Building all XProj projects
 BuildXproj
