@@ -41,7 +41,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             string root;
             if (SolutionManager == null
-                || !SolutionManager.IsSolutionOpen)
+                || !SolutionManager.IsSolutionOpen
+                || string.IsNullOrEmpty(SolutionManager.SolutionDirectory))
             {
                 root = null;
             }
