@@ -100,7 +100,7 @@ namespace NuGet.CommandLine
             return Enumerable.Empty<Packaging.PackageReference>();
         }
 
-        protected IEnumerable<Configuration.PackageSource> GetPackageSources(Configuration.ISettings settings)
+        protected IEnumerable<Configuration.PackageSource> GetPackageSources()
         {
             var availableSources = SourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
             var packageSources = new List<Configuration.PackageSource>();
@@ -123,6 +123,12 @@ namespace NuGet.CommandLine
             foreach (var source in FallbackSource)
             {
                 packageSources.Add(Common.PackageSourceProviderExtensions.ResolveSource(packageSources, source));
+            }
+
+            Console.WriteLine("Feeds used:");
+            foreach (var packageSource in packageSources)
+            {
+                Console.WriteLine(packageSource.Source);
             }
 
             return packageSources;

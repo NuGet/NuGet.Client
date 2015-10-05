@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Globalization;
@@ -157,7 +158,7 @@ namespace NuGet.CommandLine
                 CancellationToken.None,
                 packageRestoredEvent: null,
                 packageRestoreFailedEvent: null,
-                sourceRepositories: GetPackageSources(Settings).Select(sourceRepositoryProvider.CreateRepository),
+                sourceRepositories: GetPackageSources().Select(sourceRepositoryProvider.CreateRepository),
                 maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism);
             return PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Console));
         }
@@ -187,8 +188,7 @@ namespace NuGet.CommandLine
 
             var sourceRepositoryProvider = GetSourceRepositoryProvider();
             var packageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, installPath);
-
-            var primaryRepositories = GetPackageSources(Settings).Select(sourceRepositoryProvider.CreateRepository);
+            var primaryRepositories = GetPackageSources().Select(sourceRepositoryProvider.CreateRepository);
 
             var resolutionContext = new ResolutionContext(
                         DependencyBehavior.Lowest,

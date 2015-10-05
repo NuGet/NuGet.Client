@@ -207,11 +207,10 @@ namespace NuGet.CommandLine
             Console.LogVerbose($"Found project root directory: {rootDirectory}");
 
             Console.LogVerbose($"Using packages directory: {packagesDir}");
-
-            var packageSources = GetPackageSources(Settings);
+            
             var request = new RestoreRequest(
                 packageSpec,
-                packageSources);
+                GetPackageSources());
 
             request.PackagesDirectory = packagesDir;
 
@@ -354,9 +353,7 @@ namespace NuGet.CommandLine
                                 ? packageRestoreInputs.DirectoryOfSolutionFile
                                 : packageRestoreInputs.PackageReferenceFiles[0] },
                     isMissing: true));
-            var packageSources = GetPackageSources(Settings);
-
-            var repositories = packageSources
+            var repositories = GetPackageSources()
                 .Select(sourceRepositoryProvider.CreateRepository)
                 .ToArray();
 
