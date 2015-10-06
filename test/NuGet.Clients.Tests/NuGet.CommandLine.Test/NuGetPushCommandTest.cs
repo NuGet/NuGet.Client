@@ -4,7 +4,7 @@ using System.IO;
 using System.Net;
 using System.Security.Principal;
 using System.Text;
-using NuGet.Test.TestExtensions.TestablePluginCredentialProvider;
+using NuGet.ContentModel;
 using Test.Utility;
 using Xunit;
 
@@ -12,9 +12,10 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetPushCommandTest
     {
+        private string _originalCredentialProvidersEnvar;
         public NuGetPushCommandTest()
         {
-            TestCredentialResponse.ClearAllEnvironmentVariables();
+            _originalCredentialProvidersEnvar = Environment.GetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar);
         }
 
         // Tests pushing to a source that is a file system directory.
@@ -363,7 +364,7 @@ namespace NuGet.CommandLine.Test
 
                     // Act
                     var args = "push " + packageFileName +
-                        " -Source " + server.Uri + "push -NonInteractive";
+                        " -Source " + server.Uri + "push -NonInteractive -ApiKey FooBar";
                     var r1 = CommandRunner.Run(
                         nugetexe,
                         packageDirectory,
@@ -463,10 +464,14 @@ namespace NuGet.CommandLine.Test
                     Assert.Equal(1, credentialForGetRequest.Count);
                     Assert.Equal("a:b", credentialForGetRequest[0]);
 
-                    Assert.Equal(3, credentialForPutRequest.Count);
+                    // Because the credential service caches the answer and attempts
+                    // to use it for token refresh the first request happens twice
+                    // from a server prespective.
+                    Assert.Equal(4, credentialForPutRequest.Count);
                     Assert.Equal("a:b", credentialForPutRequest[0]);
-                    Assert.Equal("c:d", credentialForPutRequest[1]);
-                    Assert.Equal("testuser:testpassword", credentialForPutRequest[2]);
+                    Assert.Equal("a:b", credentialForPutRequest[1]);
+                    Assert.Equal("c:d", credentialForPutRequest[2]);
+                    Assert.Equal("testuser:testpassword", credentialForPutRequest[3]);
                 }
             }
             finally
@@ -555,10 +560,14 @@ namespace NuGet.CommandLine.Test
                     Assert.Equal(1, credentialForGetRequest.Count);
                     Assert.Equal("a:b", credentialForGetRequest[0]);
 
-                    Assert.Equal(3, credentialForPutRequest.Count);
+                    // Because the credential service caches the answer and attempts
+                    // to use it for token refresh the first request happens twice
+                    // from a server prespective.
+                    Assert.Equal(4, credentialForPutRequest.Count);
                     Assert.Equal("a:b", credentialForPutRequest[0]);
-                    Assert.Equal("c:d", credentialForPutRequest[1]);
-                    Assert.Equal("testuser:testpassword", credentialForPutRequest[2]);
+                    Assert.Equal("a:b", credentialForPutRequest[1]);
+                    Assert.Equal("c:d", credentialForPutRequest[2]);
+                    Assert.Equal("testuser:testpassword", credentialForPutRequest[3]);
                 }
             }
             finally
@@ -711,8 +720,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var configPath = Path.Combine(packageDirectory, "NuGet.config");
-            var pluginPath = Util.GetTestablePluginPath();
+            var pluginDirectory = Util.GetTestablePluginDirectory();
 
             List<string> credentialForGetRequest = new List<string>();
             List<string> credentialForPutRequest = new List<string>();
@@ -722,8 +730,6 @@ namespace NuGet.CommandLine.Test
                 Util.CreateDirectory(packageDirectory);
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
-
-                Util.CreateNuGetConfig(packageDirectory, new List<string>(), new List<string>() {pluginPath});
 
                 using (var server = new MockServer())
                 {
@@ -743,23 +749,24 @@ namespace NuGet.CommandLine.Test
 
                         if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))
                         {
-                            res.StatusCode = (int)HttpStatusCode.OK;
+                            res.StatusCode = (int) HttpStatusCode.OK;
                         }
                         else
                         {
                             res.AddHeader("WWW-Authenticate", "Basic ");
-                            res.StatusCode = (int)HttpStatusCode.Unauthorized;
+                            res.StatusCode = (int) HttpStatusCode.Unauthorized;
                         }
                     }));
                     server.Start();
 
                     // Act
                     Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", "true");
-                    Environment.SetEnvironmentVariable(TestCredentialResponse.ResponseUserName, "testuser");
-                    Environment.SetEnvironmentVariable(TestCredentialResponse.ResponsePassword, "testpassword");
+                    Environment.SetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar, pluginDirectory);
+                    Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseUserName, "testuser");
+                    Environment.SetEnvironmentVariable(TestCredentialProvider.ResponsePassword, "testpassword");
+                    Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseExitCode, TestCredentialProvider.SuccessCode);
 
-                    var args = "push " + packageFileName +
-                        " -Source " + server.Uri + "nuget" + " -Config " + configPath;
+                    var args = $"push {packageFileName} -Source {server.Uri}nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
                         packageDirectory,
@@ -786,8 +793,10 @@ namespace NuGet.CommandLine.Test
             {
                 // Cleanup
                 Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", string.Empty);
-                Environment.SetEnvironmentVariable(TestCredentialResponse.ResponseUserName, string.Empty);
-                Environment.SetEnvironmentVariable(TestCredentialResponse.ResponsePassword, string.Empty);
+                Environment.SetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar, _originalCredentialProvidersEnvar);
+                Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseUserName, string.Empty);
+                Environment.SetEnvironmentVariable(TestCredentialProvider.ResponsePassword, string.Empty);
+                Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseExitCode, string.Empty);
                 Util.DeleteDirectory(packageDirectory);
             }
         }
@@ -800,8 +809,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var configPath = Path.Combine(packageDirectory, "NuGet.config");
-            var pluginPath = Util.GetTestablePluginPath();
+            var pluginDirectory = Util.GetTestablePluginDirectory();
 
             List<string> credentialForGetRequest = new List<string>();
             List<string> credentialForPutRequest = new List<string>();
@@ -811,8 +819,6 @@ namespace NuGet.CommandLine.Test
                 Util.CreateDirectory(packageDirectory);
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
-
-                Util.CreateNuGetConfig(packageDirectory, new List<string>(), new List<string>() { pluginPath });
 
                 using (var server = new MockServer())
                 {
@@ -844,11 +850,12 @@ namespace NuGet.CommandLine.Test
 
                     // Act
                     Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", "true");
-                    Environment.SetEnvironmentVariable(TestCredentialResponse.ResponseUserName, string.Empty);
-                    Environment.SetEnvironmentVariable(TestCredentialResponse.ResponsePassword, string.Empty);
+                    Environment.SetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar, pluginDirectory);
+                    Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseUserName, string.Empty);
+                    Environment.SetEnvironmentVariable(TestCredentialProvider.ResponsePassword, string.Empty);
+                    Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseExitCode, TestCredentialProvider.ProviderNotApplicableCode);
 
-                    var args = "push " + packageFileName +
-                        " -Source " + server.Uri + "nuget" + " -Config " + configPath;
+                    var args = $"push {packageFileName} -Source {server.Uri}nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
                         packageDirectory,
@@ -876,20 +883,20 @@ namespace NuGet.CommandLine.Test
             {
                 // Cleanup
                 Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", string.Empty);
+                Environment.SetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar, _originalCredentialProvidersEnvar);
+                Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseExitCode, string.Empty);
                 Util.DeleteDirectory(packageDirectory);
             }
         }
 
-        // Test push command to a server using Plugin credential provider
-        // Plugin is not found, so exception is thrown when providers are loaded on first use
+        // Test Plugin credential provider can have large std output without hanging.
         [Fact]
-        public void PushCommand_PushToServer_ThrowsIfPluginCanNotBeFound()
+        public void PushCommand_PushToServer_DoesNotDeadLockWhenSTDOutLarge()
         {
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var configPath = Path.Combine(packageDirectory, "NuGet.config");
-            var pluginPath = Path.Combine(packageDirectory, "ThisPluginDoesNotExist.exe");
+            var pluginDirectory = Util.GetTestablePluginDirectory();
 
             List<string> credentialForGetRequest = new List<string>();
             List<string> credentialForPutRequest = new List<string>();
@@ -900,16 +907,43 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
 
-                Util.CreateNuGetConfig(packageDirectory, new List<string>(), new List<string>() { pluginPath });
-
                 using (var server = new MockServer())
                 {
+                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
+                    server.Get.Add("/nuget", r =>
+                    {
+                        var h = r.Headers["Authorization"];
+                        var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+                        credentialForGetRequest.Add(credential);
+                        return HttpStatusCode.OK;
+                    });
+                    server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
+                    {
+                        var h = r.Headers["Authorization"];
+                        var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+                        credentialForPutRequest.Add(credential);
+
+                        if (credential.StartsWith("testuser:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            res.StatusCode = (int) HttpStatusCode.OK;
+                        }
+                        else
+                        {
+                            res.AddHeader("WWW-Authenticate", "Basic ");
+                            res.StatusCode = (int) HttpStatusCode.Unauthorized;
+                        }
+                    }));
                     server.Start();
 
-                    // Act
+                    Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", "true");
+                    Environment.SetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar, pluginDirectory);
+                    Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseUserName, "testuser");
 
-                    var args = "push " + packageFileName +
-                        " -Source " + server.Uri + "nuget" + " -Config " + configPath;
+                    var longPassword = new string('a', 10000);
+                    Environment.SetEnvironmentVariable(TestCredentialProvider.ResponsePassword, longPassword);
+
+                    // Act
+                    var args = $"push {packageFileName} -Source {server.Uri}nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
                         packageDirectory,
@@ -922,14 +956,18 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(1, r1.Item1);
+                    Assert.Equal(0, r1.Item1);
 
-                    Assert.Contains($"Credential plugin {pluginPath} not found", r1.Item3);
+                    Assert.Equal(1, credentialForGetRequest.Count);
+                    Assert.Equal(1, credentialForPutRequest.Count);
                 }
             }
             finally
             {
                 // Cleanup
+                Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", string.Empty);
+                Environment.SetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar, _originalCredentialProvidersEnvar);
+                Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseUserName, string.Empty);
                 Util.DeleteDirectory(packageDirectory);
             }
         }
@@ -941,7 +979,7 @@ namespace NuGet.CommandLine.Test
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
             var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var configPath = Path.Combine(packageDirectory, "NuGet.config");
+            var pluginDirectory = Util.GetTestablePluginDirectory();
             var pluginPath = Util.GetTestablePluginPath();
 
             List<string> credentialForGetRequest = new List<string>();
@@ -952,8 +990,6 @@ namespace NuGet.CommandLine.Test
                 Util.CreateDirectory(packageDirectory);
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
-
-                Util.CreateNuGetConfig(packageDirectory, new List<string>(), new List<string>() { pluginPath });
 
                 using (var server = new MockServer())
                 {
@@ -976,11 +1012,11 @@ namespace NuGet.CommandLine.Test
 
                     // Act
                     Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", "true");
-                    Environment.SetEnvironmentVariable(TestCredentialResponse.ResponseShouldAbort, "true");
-                    Environment.SetEnvironmentVariable(TestCredentialResponse.ResponseAbortMessage, "Testing abort.");
+                    Environment.SetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar, pluginDirectory);
+                    Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseMessage, "Testing abort.");
+                    Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseExitCode, TestCredentialProvider.FailCode);
 
-                    var args = "push " + packageFileName +
-                        " -Source " + server.Uri + "nuget" + " -Config " + configPath;
+                    var args = $"push {packageFileName} -Source {server.Uri}nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
                         packageDirectory,
@@ -1009,8 +1045,89 @@ namespace NuGet.CommandLine.Test
             {
                 // Cleanup
                 Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", string.Empty);
-                Environment.SetEnvironmentVariable(TestCredentialResponse.ResponseShouldAbort, string.Empty);
-                Environment.SetEnvironmentVariable(TestCredentialResponse.ResponseAbortMessage, string.Empty);
+                Environment.SetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar, _originalCredentialProvidersEnvar);
+                Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseMessage, string.Empty);
+                Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseExitCode, string.Empty);
+                Util.DeleteDirectory(packageDirectory);
+            }
+        }
+
+        // Test push command to a server, plugin provider returns abort
+        [Fact]
+        public void PushCommand_PushToServer_WhenPluginTimesOut_ThrowsAndDoesNotFallBackToConsoleProvider()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var tempPath = Path.GetTempPath();
+            var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
+            var pluginDirectory = Util.GetTestablePluginDirectory();
+            var pluginPath = Util.GetTestablePluginPath();
+
+            List<string> credentialForGetRequest = new List<string>();
+            List<string> credentialForPutRequest = new List<string>();
+            try
+            {
+                // Arrange
+                Util.CreateDirectory(packageDirectory);
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                string outputFileName = Path.Combine(packageDirectory, "t1.nupkg");
+
+                using (var server = new MockServer())
+                {
+                    server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
+                    server.Get.Add("/nuget", r =>
+                    {
+                        var h = r.Headers["Authorization"];
+                        var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+                        credentialForGetRequest.Add(credential);
+                        return HttpStatusCode.OK;
+                    });
+                    server.Put.Add("/nuget", r =>
+                    {
+                        var h = r.Headers["Authorization"];
+                        var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
+                        credentialForPutRequest.Add(credential);
+                        return HttpStatusCode.OK;
+                    });
+                    server.Start();
+
+                    // Act
+                    Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", "true");
+                    Environment.SetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar, pluginDirectory);
+                    Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseDelaySeconds, "10");
+                    Environment.SetEnvironmentVariable("NUGET_CREDENTIAL_PROVIDER_TIMEOUT_SECONDS", "5");
+
+                    var args = $"push {packageFileName} -Source {server.Uri}nuget";
+                    var r1 = CommandRunner.Run(
+                        nugetexe,
+                        packageDirectory,
+                        args,
+                        waitForExit: true,
+                        timeOutInMilliseconds: 10000,
+                        inputAction: (w) =>
+                        {
+                            w.WriteLine("testuser");
+                            w.WriteLine("testpassword");
+                        });
+                    server.Stop();
+
+                    // Assert
+                    Assert.Equal(1, r1.Item1);
+                    Assert.Contains($"Credential plugin {pluginPath} timed out", r1.Item3);
+                    // ensure the process was killed
+                    Assert.Equal(0, System.Diagnostics.Process.GetProcessesByName(Path.GetFileNameWithoutExtension(pluginPath)).Length);
+                    // No requests hit server, since abort during credential acquisition
+                    // and no fallback to console provider
+                    Assert.Equal(0, credentialForGetRequest.Count);
+                    Assert.Equal(0, credentialForPutRequest.Count);
+                }
+            }
+            finally
+            {
+                // Cleanup
+                Environment.SetEnvironmentVariable("FORCE_NUGET_EXE_INTERACTIVE", string.Empty);
+                Environment.SetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar, _originalCredentialProvidersEnvar);
+                Environment.SetEnvironmentVariable(TestCredentialProvider.ResponseDelaySeconds, string.Empty);
+                Environment.SetEnvironmentVariable("NUGET_CREDENTIAL_PROVIDER_TIMEOUT_SECONDS", string.Empty);
                 Util.DeleteDirectory(packageDirectory);
             }
         }
@@ -1850,6 +1967,20 @@ namespace NuGet.CommandLine.Test
         void AssertFileEqual(string fileName1, string fileName2)
         {
             Assert.Equal(File.ReadAllBytes(fileName1), File.ReadAllBytes(fileName2));
+        }
+
+        private class TestCredentialProvider
+        {
+            public static readonly string ResponseMessage = "NUGET_TESTABLECREDENTIALPROVIDER_RESPONSEABORTMESSAGE";
+            public static readonly string ResponseDelaySeconds = "NUGET_TESTABLECREDENTIALPROVIDER_RESPONSEDELAYSECONDS";
+            public static readonly string ResponseExitCode = "NUGET_TESTABLECREDENTIALPROVIDER_RESPONSEEXITCODE";
+            public static readonly string ResponsePassword = "NUGET_TESTABLECREDENTIALPROVIDER_RESPONSEPASSWORD";
+            public static readonly string ResponseShouldThrow = "NUGET_TESTABLECREDENTIALPROVIDER_RESPONSESHOULDTHROW";
+            public static readonly string ResponseUserName = "NUGET_TESTABLECREDENTIALPROVIDER_RESPONSEUSERNAME";
+            public static readonly string SuccessCode = "0";
+            public static readonly string ProviderNotApplicableCode = "1";
+            public static readonly string FailCode = "2";
+
         }
     }
 }

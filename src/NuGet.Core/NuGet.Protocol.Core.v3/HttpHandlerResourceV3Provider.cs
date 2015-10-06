@@ -107,8 +107,7 @@ namespace NuGet.Protocol.Core.v3
                         {
                             // prompt use for proxy credentials.
                             var credentials = await HttpHandlerResourceV3
-                                .PromptForProxyCredentials(request.RequestUri, Proxy, cancellationToken)
-                                .ConfigureAwait(false);
+                                .PromptForProxyCredentials(request.RequestUri, Proxy, cancellationToken);
 
                             if (credentials == null)
                             {

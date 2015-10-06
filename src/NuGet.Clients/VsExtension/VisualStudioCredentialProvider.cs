@@ -7,10 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Credentials;
 
 namespace NuGetVSExtension
 {
-    public class VisualStudioCredentialProvider : NuGet.Credentials.ICredentialProvider
+    public class VisualStudioCredentialProvider : ICredentialProvider
     {
         private readonly IVsWebProxy _webProxyService;
 
@@ -27,9 +28,10 @@ namespace NuGetVSExtension
         /// Returns an ICredentials instance that the consumer would need in order
         /// to properly authenticate to the given Uri.
         /// </summary>
-        public async Task<ICredentials> Get(Uri uri, IWebProxy proxy, bool isProxyRequest, bool isRetry,
+        public async Task<CredentialResponse> Get(Uri uri, IWebProxy proxy, bool isProxyRequest, bool isRetry,
             bool nonInteractive, CancellationToken cancellationToken)
         {
+
             if (uri == null)
             {
                 throw new ArgumentNullException(nameof(uri));
@@ -75,7 +77,8 @@ namespace NuGetVSExtension
 
                 var cred = await PromptForCredentials(uri, cancellationToken);
 
-                return cred;
+                var response = new CredentialResponse(cred, CredentialStatus.Success);
+                return response;
             }
             finally
             {

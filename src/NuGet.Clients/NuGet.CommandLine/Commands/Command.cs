@@ -4,9 +4,9 @@ using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.Credentials;
 using System.Net;
@@ -130,17 +130,15 @@ namespace NuGet.CommandLine
         /// </summary>
         protected void SetDefaultCredentialProvider()
         {
+            var extensionLocator = new ExtensionLocator();
             var providers = new List<Credentials.ICredentialProvider>();
-            var pluginProviders = new PluginCredentialProviderBuilder(Settings).BuildAll();
+            var pluginProviders = new PluginCredentialProviderBuilder(extensionLocator, Settings).BuildAll();
 
-            providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(
-                NullCredentialProvider.Instance, SourceProvider, Console)));
+            providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console)));
             providers.AddRange(pluginProviders);
             providers.Add(new ConsoleCredentialProvider(Console));
 
-            CredentialService.DefaultProviders = providers;
-
-            var credentialService = new CredentialService(Console.WriteError, NonInteractive, useCache: false);
+            var credentialService = new CredentialService(providers, Console.WriteError, NonInteractive);
 
             HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(credentialService);
 

@@ -97,6 +97,7 @@
     <Compile Include="DefaultManifestValuesRule.cs" />
     <Compile Include="DefaultPackageRules.cs" />
     <Compile Include="DiagnosticCommands.cs" />
+    <Compile Include="ExtensionLocator.cs" />
     <Compile Include="FileConflictAction.cs" />
     <Compile Include="ICommandManager.cs" />
     <Compile Include="MsBuildUtility.cs" />

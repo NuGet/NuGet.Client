@@ -309,8 +309,13 @@ namespace NuGet.CommandLine.Test
         public static string GetTestablePluginPath()
         {
             var targetDir = ConfigurationManager.AppSettings["TargetDir"] ?? Directory.GetCurrentDirectory();
-            var plugin = Path.Combine(targetDir, "NuGet.Test.TestExtensions.TestablePluginCredentialProvider.exe");
+            var plugin = Path.Combine(targetDir, "TestableCredentialProvider", "CredentialProvider.Testable.exe");
             return plugin;
+        }
+
+        public static string GetTestablePluginDirectory()
+        {
+            return Path.GetDirectoryName(GetTestablePluginPath());
         }
 
         public static bool IsSuccess(Tuple<int, string, string> result)

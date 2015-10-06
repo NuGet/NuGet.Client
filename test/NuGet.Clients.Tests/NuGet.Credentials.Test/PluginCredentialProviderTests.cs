@@ -36,7 +36,8 @@ namespace NuGet.Credentials.Test
             var result = await provider.Object.Get(
                 uri, null, isProxyRequest, isRetry, nonInteractive, CancellationToken.None);
 
-            Assert.Null(result);
+            Assert.Equal(CredentialStatus.ProviderNotApplicable, result.Status);
+            Assert.Null(result.Credentials);
             _mockProvider.Verify(
                 x => x.Execute(It.IsAny<PluginCredentialRequest>(), It.IsAny<CancellationToken>()), 
                 Times.Never());
@@ -54,14 +55,15 @@ namespace NuGet.Credentials.Test
             var result = await provider.Object.Get(
                 uri, null, isProxyRequest, isRetry, nonInteractive, CancellationToken.None);
 
-            Assert.Null(result);
+            Assert.Equal(CredentialStatus.ProviderNotApplicable, result.Status);
+            Assert.Null(result.Credentials);
             Assert.Equal("http://host/", _actualRequest.Uri);
             Assert.True(_actualRequest.IsRetry);
             Assert.True(_actualRequest.NonInteractive);
         }
 
         [Fact]
-        public async void WhenResponseContainsAbort_ThenThrowPluginException()
+        public async void WhenResponseContainsAbort_ThenThrow()
         {
             var provider = _mockProvider;
             var uri = new Uri("http://host/");
@@ -69,9 +71,9 @@ namespace NuGet.Credentials.Test
             var isRetry = true;
             var nonInteractive = true;
             _mockProvider.Setup(x => x.Execute(It.IsAny<PluginCredentialRequest>(), It.IsAny<CancellationToken>()))
-                .Returns(new PluginCredentialResponse() {Abort = true});
+                .Throws(PluginException.CreateAbortMessage(@"c:\path\plugin.exe", ""));
 
-            var exception = await Record.ExceptionAsync(async () =>await provider.Object.Get(
+            var exception = await Record.ExceptionAsync(async () => await provider.Object.Get(
                 uri, null, isProxyRequest, isRetry, nonInteractive, CancellationToken.None));
 
             Assert.IsAssignableFrom<PluginException>(exception);
@@ -80,7 +82,7 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public async void WhenResponseContainsAbortAndAbortMessage_ThenThrowPluginException()
+        public async void WhenResponseContainsAbortAndAbortMessage_ThenThrow()
         {
             var provider = _mockProvider;
             var uri = new Uri("http://host/");
@@ -88,13 +90,14 @@ namespace NuGet.Credentials.Test
             var isRetry = true;
             var nonInteractive = true;
             _mockProvider.Setup(x => x.Execute(It.IsAny<PluginCredentialRequest>(), It.IsAny<CancellationToken>()))
-                .Returns(new PluginCredentialResponse() { Abort = true, AbortMessage = "Extra message."});
+                .Throws(PluginException.CreateAbortMessage(@"c:\path\plugin.exe", "Extra message."));
 
-            var exception = await Record.ExceptionAsync(async () => await provider.Object.Get(
+            var exception =  await Record.ExceptionAsync(async () => provider.Object.Get(
                 uri, null, isProxyRequest, isRetry, nonInteractive, CancellationToken.None));
 
             Assert.IsAssignableFrom<PluginException>(exception);
-            Assert.Contains(@"Credential plugin c:\path\plugin.exe handles this request, but is unable to provide credentials. Extra message.", 
+            Assert.Contains(
+                @"Credential plugin c:\path\plugin.exe handles this request, but is unable to provide credentials. Extra message.",
                 exception.Message);
         }
 
@@ -110,10 +113,11 @@ namespace NuGet.Credentials.Test
                 .Returns(new PluginCredentialResponse() { Username = "u" });
 
             var result = await provider.Object.Get(
-                uri, null, isProxyRequest, isRetry, nonInteractive, CancellationToken.None) as NetworkCredential;
+                uri, null, isProxyRequest, isRetry, nonInteractive, CancellationToken.None);
 
             Assert.NotNull(result);
-            Assert.Equal("u", result?.UserName);
+            Assert.NotNull(result.Credentials);
+            Assert.Equal("u", ((NetworkCredential)result.Credentials)?.UserName);
         }
 
         [Fact]
@@ -128,10 +132,11 @@ namespace NuGet.Credentials.Test
                 .Returns(new PluginCredentialResponse() { Password = "p" });
 
             var result = await provider.Object.Get(
-                uri, null, isProxyRequest, isRetry, nonInteractive, CancellationToken.None) as NetworkCredential;
+                uri, null, isProxyRequest, isRetry, nonInteractive, CancellationToken.None);
 
             Assert.NotNull(result);
-            Assert.Equal("p", result?.Password);
+            Assert.NotNull(result.Credentials);
+            Assert.Equal("p", ((NetworkCredential)result.Credentials)?.Password);
         }
     }
 }

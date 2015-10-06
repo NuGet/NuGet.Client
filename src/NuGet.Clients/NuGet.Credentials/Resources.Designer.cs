@@ -88,6 +88,15 @@ namespace NuGet.Credentials {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Credential plugin {0} returned {1} with an incorrect payload {2}..
+        /// </summary>
+        internal static string PluginException_IncorrectPayload_Format {
+            get {
+                return ResourceManager.GetString("PluginException_IncorrectPayload_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Credential plugin {0} failed to start..
         /// </summary>
         internal static string PluginException_NotStarted_Format {
@@ -111,6 +120,24 @@ namespace NuGet.Credentials {
         internal static string PluginException_Timeout_Format {
             get {
                 return ResourceManager.GetString("PluginException_Timeout_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not create credential response object because the response was invalid..
+        /// </summary>
+        internal static string ProviderException_InvalidCredentialResponse {
+            get {
+                return ResourceManager.GetString("ProviderException_InvalidCredentialResponse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to One of the credential providers gave an invalid response.
+        /// </summary>
+        internal static string ProviderException_MalformedResponse {
+            get {
+                return ResourceManager.GetString("ProviderException_MalformedResponse", resourceCulture);
             }
         }
     }

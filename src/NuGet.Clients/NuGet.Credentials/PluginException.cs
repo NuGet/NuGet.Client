@@ -62,5 +62,16 @@ namespace NuGet.Credentials
             return new PluginException(string.Format(Resources.PluginException_Abort_Format, path, message));
         }
 
+        public static PluginException CreatePayloadExceptionMessage(
+            string path,
+            PluginCredentialResponseExitCode status,
+            string payload)
+        {
+            return new PluginException(string.Format(
+                Resources.PluginException_IncorrectPayload_Format,
+                path,
+                status,
+                payload));
+        }
     }
 }

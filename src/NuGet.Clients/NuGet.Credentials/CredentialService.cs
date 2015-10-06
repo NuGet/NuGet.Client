@@ -16,37 +16,33 @@ namespace NuGet.Credentials
     /// </summary>
     public class CredentialService : ICredentialService
     {
-        private static IEnumerable<ICredentialProvider> _defaultProviders
-            = new List<ICredentialProvider>();
-
-        private IEnumerable<ICredentialProvider> _providerList = null;
-
         private readonly ConcurrentDictionary<string, bool> _retryCache
             = new ConcurrentDictionary<string, bool>();
-        private readonly ConcurrentDictionary<string, ICredentials> _providerCredentialCache
-            = new ConcurrentDictionary<string, ICredentials>();
+        private readonly ConcurrentDictionary<string, CredentialResponse> _providerCredentialCache
+            = new ConcurrentDictionary<string, CredentialResponse>();
 
         private readonly bool _nonInteractive;
-        private readonly bool _useCache;
+
         /// <summary>
         /// This semaphore ensures only one provider active per process, in order
         /// to prevent multiple concurrent interactive login dialogues.
         /// Unnamed semaphores are local to the current process.
         /// </summary>
-        private readonly Semaphore _providerSemaphore = new Semaphore(1, 1);
+        private static readonly Semaphore ProviderSemaphore = new Semaphore(1, 1);
 
         private Action<string> ErrorDelegate { get; }
 
         /// <summary>
         /// Constructor
         /// </summary>
+        /// <param name="providers">Enumeration of credential providers.</param>
         /// <param name="errorDelegate">Used to write error messages to the user</param>
         /// <param name="nonInteractive">If true, the nonInteractive flag will be passed to providers.
         /// NonInteractive requests must not promt the user for credentials.</param>
-        /// <param name="useCache">If true, maintain a cache of credentials per provider. This is set
-        /// to true by the Visual Studio Extension, which initiates requests in parallel
-        /// in multi-project builds, and for which we do not want multiple credential prompts.</param>
-        public CredentialService(Action<string> errorDelegate, bool nonInteractive, bool useCache)
+        public CredentialService(
+            IEnumerable<ICredentialProvider> providers,
+            Action<string> errorDelegate,
+            bool nonInteractive)
         {
             if (errorDelegate == null)
             {
@@ -55,31 +51,13 @@ namespace NuGet.Credentials
 
             ErrorDelegate = errorDelegate;
             _nonInteractive = nonInteractive;
-            _useCache = useCache;
-        }
-
-        /// <summary>
-        /// New CredentialService objects will be populated with these default
-        /// configured providers.
-        /// </summary>
-        public static IEnumerable<ICredentialProvider> DefaultProviders
-        {
-            set
-            {
-                _defaultProviders = value;
-            }
-            internal get { return _defaultProviders;}
+            Providers = providers ?? new List<ICredentialProvider>();
         }
 
         /// <summary>
         /// Gets the currently configured providers.
-        /// Internal set is provided for use by unit tests.
         /// </summary>
-        public IEnumerable<ICredentialProvider> Providers
-        {
-            get { return _providerList ?? _defaultProviders;}
-            internal set { _providerList =  value; }
-        } 
+        public IEnumerable<ICredentialProvider> Providers { get; } = null;
 
         /// <summary>
         /// Provides credentials for http requests.
@@ -99,7 +77,7 @@ namespace NuGet.Credentials
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            ICredentials response = null;
+            ICredentials creds = null;
 
             foreach (var provider in Providers)
             {
@@ -116,44 +94,58 @@ namespace NuGet.Credentials
                     // providers are not writing shared resources.
                     // Since this service is called only when cached credentials are not available to the caller,
                     // such an optimization is likely not necessary.
-                    _providerSemaphore.WaitOne();
+                    ProviderSemaphore.WaitOne();
 
+                    CredentialResponse response;
                     if (!TryFromCredentialCache(uri, isProxy, isRetry, provider, out response))
                     {
                         response = await provider.Get(uri, proxy, isProxyRequest: isProxy, isRetry: isRetry,
                             nonInteractive: _nonInteractive, cancellationToken: cancellationToken);
+
+                        // Check that the provider gave us a valid response.
+                        if (response == null || (response.Status != CredentialStatus.ProviderNotApplicable && 
+                                                 response.Status != CredentialStatus.Success))
+                        {
+                            throw new ProviderException(Resources.ProviderException_MalformedResponse);
+                        }
+
+
+                        AddToCredentialCache(uri, isProxy, provider, response);
                     }
 
-                    if (response != null)
+                    if (response.Status == CredentialStatus.Success)
                     {
-                        AddToCredentialCache(uri, isProxy, provider, response);
+                        if (response.Credentials == null)
+                        {
+                            // It is invalid to have a success without getting credentials.  that should
+                            // instead be a failure. (or Provider not applicable if the endpoint is not
+                            // one the provider works with).
+                            throw new ProviderException(Resources.ProviderException_MalformedResponse);
+                        }
+
                         _retryCache[retryKey] = true;
+                        creds = response.Credentials;
                         break;
                     }
                 }
                 finally
                 {
-                    _providerSemaphore.Release();
+                    ProviderSemaphore.Release();
                 }
             }
 
-            return response;
+            return creds;
         }
 
         private bool TryFromCredentialCache(Uri uri, bool isProxy, bool isRetry, ICredentialProvider provider,
-            out ICredentials credentials)
+            out CredentialResponse credentials)
         {
             credentials = null;
-
-            if (!_useCache)
-            {
-                return false;
-            }
 
             var key = CredentialCacheKey(uri, isProxy, provider);
             if (isRetry)
             {
-                ICredentials removed;
+                CredentialResponse removed;
                 _providerCredentialCache.TryRemove(key, out removed);
                 return false;
             }
@@ -162,13 +154,8 @@ namespace NuGet.Credentials
         }
 
         private void AddToCredentialCache(Uri uri, bool isProxy, ICredentialProvider provider,
-            ICredentials credentials)
+            CredentialResponse credentials)
         {
-            if (!_useCache || credentials == null)
-            {
-                return;
-            }
-
             _providerCredentialCache[CredentialCacheKey(uri, isProxy, provider)] = credentials;
         }
 

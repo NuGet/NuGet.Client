@@ -14,16 +14,15 @@ namespace NuGet.Credentials
 
         public string Password { get; set; }
 
-        /// <summary>
-        /// Setting this flag to true indicates that the credential provider is
-        /// the correct provider for the given Uri, but is unable to provide credentials.
-        /// Setting abort will result in the current WebRequest to fail and no further credential providers
-        /// will be queried.
-        /// </summary>
-        public bool Abort { get; set; }
-
-        public string AbortMessage { get; set; }
+        public string Message { get; set; }
 
         public bool IsValid => !String.IsNullOrWhiteSpace(Username) || !String.IsNullOrWhiteSpace(Password);
+    }
+
+    public enum PluginCredentialResponseExitCode
+    {
+        Success = 0,
+        ProviderNotApplicable = 1,
+        Failure = 2
     }
 }
