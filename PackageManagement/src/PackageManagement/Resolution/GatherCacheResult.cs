@@ -12,6 +12,7 @@ namespace NuGet.PackageManagement
     /// The result of a cache look up. HasEntry determines if the query has already been made. 
     /// If a result has zero packages HasEntry will be true, but Packages will be empty.
     /// If the query has not been done HasEntry will be false.
+    /// This class is for internal use or testing only.
     /// </summary>
     public class GatherCacheResult
     {

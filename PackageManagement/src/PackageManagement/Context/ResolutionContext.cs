@@ -62,6 +62,7 @@ namespace NuGet.PackageManagement
         /// Gathe cache containing cached packages that can be used across operations.
         /// Ex: Update-Package updates all packages across all projects, GatherCache stores
         /// the gathered packages and re-uses them across all sub operations.
+        /// This property is for internal use or testing only.
         /// </summary>
         public GatherCache GatherCache { get; }
     }

@@ -4015,7 +4015,9 @@ namespace NuGet.Test
             // Assert
             var gatherCache = resolutionContext.GatherCache;
             var gatherCacheResult = gatherCache.GetPackage(packageSource, packageIdentity, NuGetFramework.AnyFramework);
-            var packageInfo = gatherCacheResult.Packages.First();
+            Assert.Single(gatherCacheResult.Packages);
+            var packageInfo = gatherCacheResult.Packages.Single();
+            Assert.Single(packageInfo.Dependencies);
             var packageDependency = packageInfo.Dependencies.Single();
             Assert.Equal("b", packageDependency.Id);
             Assert.Equal(bVersionRange.ToString(), packageDependency.VersionRange.ToString());

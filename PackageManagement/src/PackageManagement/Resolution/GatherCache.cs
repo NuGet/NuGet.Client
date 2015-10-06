@@ -14,6 +14,7 @@ namespace NuGet.PackageManagement
 {
     /// <summary>
     /// GatherCache contains cached results from DependencyInfoResource providers
+    /// This class is for internal use or testing only.
     /// </summary>
     public class GatherCache
     {
