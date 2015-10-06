@@ -103,6 +103,6 @@
   </Target>
   <UsingTask AssemblyFile="..\..\..\packages\xunit.runner.msbuild.2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.runner.msbuild.dll" TaskName="Xunit.Runner.MSBuild.xunit" />
   <Target Name="RunTests" AfterTargets="Build" Condition=" '$(RunTests)' == 'true' ">
-	  <xunit Assemblies="bin\$(Configuration)\$(AssemblyName).dll" />
+	  <xunit Assemblies="bin\$(Configuration)\$(AssemblyName).dll" MaxParallelThreads="1" ParallelizeTestCollections="false" />
   </Target>
 </Project>
