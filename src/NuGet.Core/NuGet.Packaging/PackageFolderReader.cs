@@ -96,7 +96,8 @@ namespace NuGet.Packaging
         {
             var searchFolder = new DirectoryInfo(_root.FullName);
 
-            foreach (var file in searchFolder.GetFiles("*", SearchOption.AllDirectories))
+            foreach (var file in searchFolder.GetFiles("*", SearchOption.AllDirectories).
+                Where(p => !p.FullName.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase)))
             {
                 yield return GetRelativePath(_root, file);
             }
@@ -110,7 +111,8 @@ namespace NuGet.Packaging
 
             if (searchFolder.Exists)
             {
-                foreach (var file in searchFolder.GetFiles("*", SearchOption.AllDirectories))
+                foreach (var file in searchFolder.GetFiles("*", SearchOption.AllDirectories).
+                    Where(p => !p.FullName.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase)))
                 {
                     yield return GetRelativePath(_root, file);
                 }
