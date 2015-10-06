@@ -306,6 +306,13 @@ namespace NuGet.CommandLine.Test
             return nugetexe;
         }
 
+        public static string GetTestablePluginPath()
+        {
+            var targetDir = ConfigurationManager.AppSettings["TargetDir"] ?? Directory.GetCurrentDirectory();
+            var plugin = Path.Combine(targetDir, "NuGet.Test.TestExtensions.TestablePluginCredentialProvider.exe");
+            return plugin;
+        }
+
         public static bool IsSuccess(Tuple<int, string, string> result)
         {
             return result.Item1 == 0;
@@ -399,6 +406,27 @@ namespace NuGet.CommandLine.Test
             }
 
             Util.CreateFile(workingPath, "NuGet.Config", doc.ToString());
+        }
+
+        public static void CreateNuGetConfig(string workingPath, List<string> sources, List<string> pluginPaths)
+        {
+            CreateNuGetConfig(workingPath, sources);
+            var existingConfig = Path.Combine(workingPath, "NuGet.Config");
+
+            var doc = XDocument.Load(existingConfig);
+            var config = doc.Descendants(XName.Get("config")).FirstOrDefault();
+
+            foreach (var pluginPath in pluginPaths)
+            {
+                var key = "CredentialProvider.Plugin." + Path.GetFileNameWithoutExtension(pluginPath);
+                var pluginElement = new XElement(XName.Get("add"));
+                pluginElement.Add(new XAttribute(XName.Get("key"), key));
+                pluginElement.Add(new XAttribute(XName.Get("value"), pluginPath));
+
+                config.Add(pluginElement);
+            }
+
+            doc.Save(existingConfig);
         }
 
         /// <summary>

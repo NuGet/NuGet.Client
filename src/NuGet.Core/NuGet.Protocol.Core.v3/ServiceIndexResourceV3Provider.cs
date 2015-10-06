@@ -76,7 +76,7 @@ namespace NuGet.Protocol.Core.v3
                         credentials = null;
                         if (HttpHandlerResourceV3.PromptForCredentials != null)
                         {
-                            credentials = HttpHandlerResourceV3.PromptForCredentials(uri);
+                            credentials = await HttpHandlerResourceV3.PromptForCredentials(uri, token).ConfigureAwait(false);
                         }
 
                         if (credentials == null)
