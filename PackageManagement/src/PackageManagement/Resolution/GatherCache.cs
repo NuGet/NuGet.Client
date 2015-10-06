@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement
     /// <summary>
     /// GatherCache contains cached results from DependencyInfoResource providers
     /// </summary>
-    internal class GatherCache
+    public class GatherCache
     {
         // These are typically the primary targets or installed packages which perform the lookup on only a single version.
         private readonly ConcurrentDictionary<GatherSingleCacheKey, SourcePackageDependencyInfo> _singleVersion

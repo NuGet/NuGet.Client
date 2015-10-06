@@ -63,6 +63,6 @@ namespace NuGet.PackageManagement
         /// Ex: Update-Package updates all packages across all projects, GatherCache stores
         /// the gathered packages and re-uses them across all sub operations.
         /// </summary>
-        internal GatherCache GatherCache { get; }
+        public GatherCache GatherCache { get; }
     }
 }

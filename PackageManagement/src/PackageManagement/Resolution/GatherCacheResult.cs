@@ -13,7 +13,7 @@ namespace NuGet.PackageManagement
     /// If a result has zero packages HasEntry will be true, but Packages will be empty.
     /// If the query has not been done HasEntry will be false.
     /// </summary>
-    internal class GatherCacheResult
+    public class GatherCacheResult
     {
         public GatherCacheResult(bool hasEntry, IReadOnlyList<SourcePackageDependencyInfo> packages)
         {
