@@ -17,8 +17,13 @@ namespace NuGet
 
         private IConsole Console { get; set; }
 
-        public Task<ICredentials> Get(Uri uri, IWebProxy proxy, bool isProxy, bool isRetry,
-            bool nonInteractive, CancellationToken cancellationToken)
+        public Task<CredentialResponse> Get(
+            Uri uri,
+            IWebProxy proxy,
+            bool isProxy,
+            bool isRetry,
+            bool nonInteractive,
+            CancellationToken cancellationToken)
         {
             if (uri == null)
             {
@@ -44,7 +49,9 @@ namespace NuGet
                     SecurePassword = password
                 };
 
-                var task = Task.FromResult((ICredentials)credentials);
+                var cred = new CredentialResponse(credentials, CredentialStatus.Success);
+
+                var task = Task.FromResult(cred);
 
                 return task;
             }

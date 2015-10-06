@@ -7,28 +7,21 @@ namespace NuGet.CommandLine
 {
     public class SettingsCredentialProvider : ICredentialProvider
     {
-        private readonly ICredentialProvider _credentialProvider;
         private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
         private readonly Logging.ILogger _logger;
 
-        public SettingsCredentialProvider(ICredentialProvider credentialProvider, Configuration.IPackageSourceProvider packageSourceProvider)
-            : this(credentialProvider, packageSourceProvider, Logging.NullLogger.Instance)
+        public SettingsCredentialProvider(Configuration.IPackageSourceProvider packageSourceProvider)
+            : this(packageSourceProvider, Logging.NullLogger.Instance)
         {
         }
 
-        public SettingsCredentialProvider(ICredentialProvider credentialProvider, Configuration.IPackageSourceProvider packageSourceProvider, Logging.ILogger logger)
+        public SettingsCredentialProvider(Configuration.IPackageSourceProvider packageSourceProvider, Logging.ILogger logger)
         {
-            if (credentialProvider == null)
-            {
-                throw new ArgumentNullException(nameof(credentialProvider));
-            }
-
             if (packageSourceProvider == null)
             {
                 throw new ArgumentNullException(nameof(packageSourceProvider));
             }
 
-            _credentialProvider = credentialProvider;
             _packageSourceProvider = packageSourceProvider;
             _logger = logger;
         }
@@ -46,7 +39,7 @@ namespace NuGet.CommandLine
                         credentials.UserName));
                 return credentials;
             }
-            return _credentialProvider.GetCredentials(uri, proxy, credentialType, retrying);
+            return null;
         }
 
         private bool TryGetCredentials(Uri uri, out NetworkCredential configurationCredentials)

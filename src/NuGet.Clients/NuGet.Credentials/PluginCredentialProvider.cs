@@ -3,7 +3,9 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Threading;
@@ -50,15 +52,16 @@ namespace NuGet.Credentials
         /// <param name="nonInteractive">If true, the plugin must not prompt for credentials.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A credential object.  If </returns>
-        public Task<ICredentials> Get(Uri uri, IWebProxy proxy, bool isProxyRequest, bool isRetry,
+        public Task<CredentialResponse> Get(Uri uri, IWebProxy proxy, bool isProxyRequest, bool isRetry,
             bool nonInteractive, CancellationToken cancellationToken)
         {
-            if(isProxyRequest)
+            CredentialResponse taskResponse;
+            if (isProxyRequest)
             {
-                return Task.FromResult((ICredentials)null);
+                taskResponse = new CredentialResponse(CredentialStatus.ProviderNotApplicable);
+                return Task.FromResult(taskResponse);
             }
 
-            PluginCredentialResponse response = null;
             try
             {
                 var request = new PluginCredentialRequest
@@ -68,9 +71,20 @@ namespace NuGet.Credentials
                     NonInteractive = nonInteractive
                 };
 
-                response = Execute(request, cancellationToken);
+                var response = Execute(request, cancellationToken);
+
+                if (response.IsValid)
+                {
+                    var result = new NetworkCredential(response.Username, response.Password);
+
+                    taskResponse = new CredentialResponse(result, CredentialStatus.Success);
+                }
+                else
+                {
+                    taskResponse = new CredentialResponse(CredentialStatus.ProviderNotApplicable);
+                }
             }
-            catch(PluginException)
+            catch (PluginException)
             {
                 throw;
             }
@@ -79,42 +93,37 @@ namespace NuGet.Credentials
                 throw PluginException.Create(Path, e);
             }
 
-            if (response.Abort)
-            {
-                throw PluginException.CreateAbortMessage(Path, response.AbortMessage ?? string.Empty);
-            }
-
-            var result = response.IsValid ? new NetworkCredential(response.Username, response.Password) : null;
-            var task = Task.FromResult((ICredentials)result);
-
-            return task;
+            return Task.FromResult(taskResponse);
         }
 
         /// <summary>
         /// Path to plugin credential provider executable.
-        /// Internal for testability.
         /// </summary>
-        internal string Path { get; }
+        public string Path { get; }
 
         /// <summary>
         /// Seconds to wait for plugin credential service to respond.
-        /// Internal for testability.
         /// </summary>
-        internal int TimeoutSeconds { get; }
+        public int TimeoutSeconds { get; }
 
         public virtual PluginCredentialResponse Execute(PluginCredentialRequest request,
             CancellationToken cancellationToken)
-        { 
-            string requestString = string.Concat(JsonConvert.SerializeObject(request), Environment.NewLine);
+        {
+            var argumentString =
+                $"-uri {request.Uri}"
+                + (request.IsRetry ? " -isRetry" : string.Empty)
+                + (request.NonInteractive ? " -nonInteractive" : string.Empty);
 
             var startInfo = new ProcessStartInfo
             {
                 FileName = Path,
+                Arguments = argumentString,
                 WindowStyle = ProcessWindowStyle.Hidden,
                 UseShellExecute = false,
-                RedirectStandardInput = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8,
                 ErrorDialog = false
             };
 
@@ -124,28 +133,101 @@ namespace NuGet.Credentials
                 throw PluginException.CreateNotStartedMessage(Path);
             }
 
-            process.StandardInput.WriteLine(requestString);
-            process.StandardInput.Flush();
+            // Clear out std out and std error since it might have been set from a previous run
+            _stdOut.Clear();
+            _stdError.Clear();
 
-            cancellationToken.Register(() => process.Kill());
+            process.OutputDataReceived += ReadStdOut;
+            process.ErrorDataReceived += ReadStdError;
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
 
-            if (!process.WaitForExit(TimeoutSeconds * 1000))
+            using (cancellationToken.Register(()=>Kill(process)))
             {
-                throw PluginException.CreateTimeoutMessage(Path, TimeoutSeconds);
+                if (!process.WaitForExit(TimeoutSeconds*1000))
+                {
+                    Kill(process);
+                    throw PluginException.CreateTimeoutMessage(Path, TimeoutSeconds);
+                }
             }
 
-            if(process.ExitCode > 0)
+            process.CancelErrorRead();
+            process.CancelOutputRead();
+
+            var exitCode = process.ExitCode;
+
+            if (Enum.GetValues(typeof(PluginCredentialResponseExitCode)).Cast<int>().Contains(exitCode))
             {
-                throw PluginException.CreateWrappedExceptionMessage(
-                    Path,
-                    process.ExitCode,
-                    process.StandardOutput.ReadToEnd(),
-                    process.StandardError.ReadToEnd());
+                var status = (PluginCredentialResponseExitCode)exitCode;
+                var responseJson = _stdOut.ToString();
+
+                PluginCredentialResponse credentialResponse;
+
+                try
+                {
+                    credentialResponse = JsonConvert.DeserializeObject<PluginCredentialResponse>(responseJson);
+                }
+                catch (Exception)
+                {
+                    throw PluginException.CreatePayloadExceptionMessage(Path, status, responseJson);
+                }
+
+                switch (status)
+                {
+                    case PluginCredentialResponseExitCode.Success:
+                        if (!credentialResponse.IsValid)
+                        {
+                            throw PluginException.CreatePayloadExceptionMessage(Path, status, responseJson);
+                        }
+
+                        return credentialResponse;
+                    case PluginCredentialResponseExitCode.ProviderNotApplicable:
+                        credentialResponse.Username = null;
+                        credentialResponse.Password = null;
+
+                        return credentialResponse;
+                    case PluginCredentialResponseExitCode.Failure:
+                        throw PluginException.CreateAbortMessage(Path, credentialResponse.Message);
+                }
             }
 
-            var responseJson = process.StandardOutput.ReadToEnd();
+            throw PluginException.CreateWrappedExceptionMessage(
+                Path,
+                exitCode,
+                _stdOut.ToString(),
+                _stdError.ToString());
+        }
 
-            return JsonConvert.DeserializeObject<PluginCredentialResponse>(responseJson);
+        private static void Kill(Process p)
+        {
+            if (p.HasExited)
+            {
+                return;
+            }
+
+            try
+            {
+                p.Kill();
+            }
+            catch (InvalidOperationException)
+            {
+                // the process may have exited, 
+                // in this case ignore the exception
+            }
+        }
+
+        //std out and std error for the process we will be running
+        private readonly StringBuilder _stdOut = new StringBuilder();
+        private readonly StringBuilder _stdError = new StringBuilder();
+
+        void ReadStdOut(object sender, DataReceivedEventArgs e)
+        {
+            _stdOut.AppendLine(e.Data);
+        }
+
+        void ReadStdError(object sender, DataReceivedEventArgs e)
+        {
+            _stdError.AppendLine(e.Data);
         }
     }
 }

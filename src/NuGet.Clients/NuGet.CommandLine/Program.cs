@@ -14,8 +14,6 @@ namespace NuGet.CommandLine
 {
     public class Program
     {
-        private const string NuGetExtensionsKey = "NUGET_EXTENSIONS_PATH";
-        private static readonly string ExtensionsDirectoryRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NuGet", "Commands");
         private static readonly string ThisExecutableName = typeof(Program).Assembly.GetName().Name;
 
         [Import]
@@ -239,30 +237,8 @@ namespace NuGet.CommandLine
 
         private static void AddExtensionsToCatalog(AggregateCatalog catalog, IConsole console)
         {
-            IEnumerable<string> directories = new[] { ExtensionsDirectoryRoot };
-
-            var customExtensions = Environment.GetEnvironmentVariable(NuGetExtensionsKey);
-            if (!String.IsNullOrEmpty(customExtensions))
-            {
-                // Add all directories from the environment variable if available.
-                directories = directories.Concat(customExtensions.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries));
-            }
-
-            IEnumerable<string> files;
-            foreach (var directory in directories)
-            {
-                if (Directory.Exists(directory))
-                {
-                    files = Directory.EnumerateFiles(directory, "*.dll", SearchOption.AllDirectories);
-                    RegisterExtensions(catalog, files, console);
-                }
-            }
-
-            // Ideally we want to look for all files. However, using MEF to identify imports results in assemblies being loaded and locked by our App Domain
-            // which could be slow, might affect people's build systems and among other things breaks our build.
-            // Consequently, we'll use a convention - only binaries ending in the name Extensions would be loaded.
-            var nugetDirectory = Path.GetDirectoryName(typeof(Program).Assembly.Location);
-            files = Directory.EnumerateFiles(nugetDirectory, "*Extensions.dll");
+            var extensionLocator = new ExtensionLocator();
+            var files = extensionLocator.FindExtensions();
             RegisterExtensions(catalog, files, console);
         }
 

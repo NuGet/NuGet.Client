@@ -5,17 +5,10 @@ namespace NuGet.Credentials
 {
     public class CredentialsConstants
     {
-        public const string ExtensionsPathEnvar = "NUGET_EXTENSIONS_PATH";
+        public static readonly int ProviderTimeoutSecondsDefault = 300;
 
-        public const string PluginPrefixSetting = "CredentialProvider.Plugin.";
+        public static readonly string ProviderTimeoutSecondsEnvar = "NUGET_CREDENTIAL_PROVIDER_TIMEOUT_SECONDS";
 
-        public const int ProviderTimeoutSecondsDefault = 300;
-
-        public const string ProviderTimeoutSecondsEnvar = "NUGET_CREDENTIAL_PROVIDER_TIMEOUT_SECONDS";
-
-        public const string ProviderTimeoutSecondsSetting = "CredentialProvider.Timeout";
-        
-        public const string SettingsConfigSection = "config";
-
+        public static readonly string ProviderTimeoutSecondsSetting = "CredentialProvider.Timeout";
     }
 }

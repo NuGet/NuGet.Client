@@ -10,109 +10,79 @@ using NuGet.Configuration;
 namespace NuGet.Credentials
 {
     /// <summary>
-    /// Discovers configured plugin providers.
+    /// Discovers plugin providers.
     /// </summary>
     public class PluginCredentialProviderBuilder
     {
         private readonly Configuration.ISettings _settings;
         private readonly Configuration.IEnvironmentVariableReader _envarReader;
+        private readonly IExtensionLocator _extensionLocator;
 
-        public PluginCredentialProviderBuilder(Configuration.ISettings settings) : this(settings, new EnvironmentVariableWrapper())
+        public PluginCredentialProviderBuilder(IExtensionLocator extensionLocator, Configuration.ISettings settings) 
+            : this(extensionLocator, settings, new EnvironmentVariableWrapper())
         {
         }
 
-        public PluginCredentialProviderBuilder(Configuration.ISettings settings, Configuration.IEnvironmentVariableReader envarReader)
+        public PluginCredentialProviderBuilder(
+            IExtensionLocator extensionLocator,
+            Configuration.ISettings settings,
+            Configuration.IEnvironmentVariableReader envarReader)
         {
+            if (extensionLocator == null)
+            {
+                throw new ArgumentNullException(nameof(extensionLocator));
+            }
+
             if (settings == null)
             {
                 throw new ArgumentNullException(nameof(settings));
             }
+
             if (envarReader == null)
             {
                 throw new ArgumentNullException(nameof(envarReader));
             }
 
+            _extensionLocator = extensionLocator;
             _settings = settings;
             _envarReader = envarReader;
 
         }
 
         /// <summary>
-        /// Find all configured plugin providers.
-        /// Plugin providers are entered in settings files with a key prefixed
-        /// "CredentialProvider.Plugin." and with a value that is an absolute or
-        /// relative path to a plugin application.  Relative paths will be searched from
-        /// the following roots:  
-        /// 1. Current executing assembly directory
-        /// 2. %NUGET_EXTENSIONS_PATH%
+        /// Plugin providers are entered loaded the same way as other nuget extensions,
+        /// matching any extension named CredentialProvider.*.exe.
         /// </summary>
         /// <returns>An enumeration of plugin providers</returns>
         public IEnumerable<ICredentialProvider> BuildAll()
         {
-            var plugins = new List<ICredentialProvider>();
-            var resolvedPaths = GetResolvedPaths().ToList();
             var timeout = TimeoutSeconds;
+            var pluginPaths = _extensionLocator.FindCredentialProviders();
 
-            foreach (var path in resolvedPaths)
-            {
-                if(path.resolved == null)
-                {
-                    string configuredPath = path.path;
-                    string attemptedPaths = string.Join(", ", Probe(path.path));
-                    throw PluginException.CreatePathNotFoundMessage(configuredPath, attemptedPaths);
-                }
-
-                plugins.Add(new PluginCredentialProvider(path.resolved, timeout));
-            }
+            // Sort the plugin providers by filename within each directory
+            // so that we load them in a predictable order
+            // but still respect the precedence of directories loaded by
+            // ExtensionLocator
+            var plugins = pluginPaths
+                .GroupBy(Path.GetDirectoryName)
+                .SelectMany(g => g.OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase))
+                .Select(x => new PluginCredentialProvider(x, timeout));
 
             return plugins;
-        }
-
-        internal IEnumerable<dynamic> GetResolvedPaths()
-        {
-            return _settings.GetSettingValues(CredentialsConstants.SettingsConfigSection)
-                .Where(x => x.Key.StartsWith(CredentialsConstants.PluginPrefixSetting))
-                .Select(x => x.Value)
-                .Select(x => new { path = x, resolved = Locate(x) });
-        }
-
-        private string Locate(string path)
-        {
-            return Probe(path).FirstOrDefault(File.Exists);
-        }
-
-        private IEnumerable<string> Probe(string path)
-        {
-            if (Path.IsPathRooted(path))
-            {
-                yield return path;
-            }
-            else
-            {
-                yield return Path.Combine(
-                    Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
-                    path);
-            }
-
-            var extensionsPathEnvar = _envarReader.GetEnvironmentVariable(
-                CredentialsConstants.ExtensionsPathEnvar);
-            if (extensionsPathEnvar != null)
-            {
-                yield return Path.Combine(extensionsPathEnvar,path);
-            }
         }
 
         private int TimeoutSeconds
         {
             get
             {
-                int value;
                 var timeoutSetting = _settings.GetValue(
-                    CredentialsConstants.SettingsConfigSection,
+                    SettingsUtility.ConfigSection,
                     CredentialsConstants.ProviderTimeoutSecondsSetting);
+
                 var timeoutEnvar = _envarReader.GetEnvironmentVariable(
                     CredentialsConstants.ProviderTimeoutSecondsEnvar);
 
+                int value;
                 if (int.TryParse(timeoutSetting, out value)
                     || int.TryParse(timeoutEnvar, out value))
                 {

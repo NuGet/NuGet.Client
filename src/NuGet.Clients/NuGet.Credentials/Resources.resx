@@ -126,6 +126,9 @@
   <data name="PluginException_Exception_Format" xml:space="preserve">
     <value>Credential plugin {0} encountered exception {1}.</value>
   </data>
+  <data name="PluginException_IncorrectPayload_Format" xml:space="preserve">
+    <value>Credential plugin {0} returned {1} with an incorrect payload {2}.</value>
+  </data>
   <data name="PluginException_NotStarted_Format" xml:space="preserve">
     <value>Credential plugin {0} failed to start.</value>
   </data>
@@ -134,5 +137,11 @@
   </data>
   <data name="PluginException_Timeout_Format" xml:space="preserve">
     <value>Credential plugin {0} timed out after {1} milliseconds.</value>
+  </data>
+  <data name="ProviderException_InvalidCredentialResponse" xml:space="preserve">
+    <value>Could not create credential response object because the response was invalid.</value>
+  </data>
+  <data name="ProviderException_MalformedResponse" xml:space="preserve">
+    <value>One of the credential providers gave an invalid response</value>
   </data>
 </root>
