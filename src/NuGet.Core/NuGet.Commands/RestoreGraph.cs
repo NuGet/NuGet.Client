@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 using NuGet.Client;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
@@ -13,6 +14,7 @@ using NuGet.RuntimeModel;
 
 namespace NuGet.Commands
 {
+    [DebuggerDisplay("{Name}: {RuntimeIdentifier}, {Framework}")]
     public class RestoreTargetGraph
     {
         /// <summary>
