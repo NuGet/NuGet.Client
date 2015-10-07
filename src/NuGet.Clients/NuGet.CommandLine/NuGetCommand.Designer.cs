@@ -5918,6 +5918,57 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Clear the selected local resources or cache location(s)..
+        /// </summary>
+        internal static string LocalsCommandClearDescription {
+            get {
+                return ResourceManager.GetString("LocalsCommandClearDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clears or lists local NuGet resources such as http requests cache, packages cache or machine-wide global packages folder..
+        /// </summary>
+        internal static string LocalsCommandDescription {
+            get {
+                return ResourceManager.GetString("LocalsCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget locals all -clear
+        ///
+        ///nuget locals http-cache -clear
+        ///
+        ///nuget locals packages-cache -list
+        ///
+        ///nuget locals global-packages -list.
+        /// </summary>
+        internal static string LocalsCommandExamples {
+            get {
+                return ResourceManager.GetString("LocalsCommandExamples", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to List the selected local resources or cache location(s)..
+        /// </summary>
+        internal static string LocalsCommandListDescription {
+            get {
+                return ResourceManager.GetString("LocalsCommandListDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;all | http-cache | packages-cache | global-packages&gt; [-clear | -list].
+        /// </summary>
+        internal static string LocalsCommandSummary {
+            get {
+                return ResourceManager.GetString("LocalsCommandSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The NuGet configuration file. If not specified, file %AppData%\NuGet\NuGet.config is used as configuration file..
         /// </summary>
         internal static string Option_ConfigFile {

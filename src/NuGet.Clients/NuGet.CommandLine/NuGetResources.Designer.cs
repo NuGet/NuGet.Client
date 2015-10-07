@@ -5776,6 +5776,69 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cache cleared..
+        /// </summary>
+        public static string LocalsCommand_CacheCleared {
+            get {
+                return ResourceManager.GetString("LocalsCommand_CacheCleared", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cache clear failed: one or more errors occured..
+        /// </summary>
+        public static string LocalsCommand_CacheClearFailed {
+            get {
+                return ResourceManager.GetString("LocalsCommand_CacheClearFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clearing NuGet cache: {0}.
+        /// </summary>
+        public static string LocalsCommand_ClearingNuGetCache {
+            get {
+                return ResourceManager.GetString("LocalsCommand_ClearingNuGetCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clearing NuGet global packages cache: {0}.
+        /// </summary>
+        public static string LocalsCommand_ClearingNuGetGlobalPackagesCache {
+            get {
+                return ResourceManager.GetString("LocalsCommand_ClearingNuGetGlobalPackagesCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clearing NuGet HTTP cache: {0}.
+        /// </summary>
+        public static string LocalsCommand_ClearingNuGetHttpCache {
+            get {
+                return ResourceManager.GetString("LocalsCommand_ClearingNuGetHttpCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An invalid local resource name was provided. Please provide one of the following values: http-cache, packages-cache, global-packages, all..
+        /// </summary>
+        public static string LocalsCommand_InvalidLocalResourceName {
+            get {
+                return ResourceManager.GetString("LocalsCommand_InvalidLocalResourceName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The location of local resource &apos;{0}&apos; is undefined..
+        /// </summary>
+        public static string LocalsCommand_LocalResourcePathNotSet {
+            get {
+                return ResourceManager.GetString("LocalsCommand_LocalResourcePathNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Looking for installed packages in &apos;{0}&apos;..
         /// </summary>
         public static string LookingForInstalledPackages {
