@@ -14,6 +14,7 @@
     <FileAlignment>512</FileAlignment>
     <RestoreNuGetPackages>true</RestoreNuGetPackages>
     <PlatformTarget>$(Platform)</PlatformTarget>
+	<AssemblyOriginatorKeyFile>$(MS_PFX_PATH)</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
