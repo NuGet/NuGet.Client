@@ -14,7 +14,10 @@ namespace NuGet.Protocol.Core.Types
     /// </summary>
     public abstract class DownloadResource : INuGetResource
     {
-        public abstract Task<DownloadResourceResult> GetDownloadResourceResultAsync(PackageIdentity identity, ISettings settings, CancellationToken token);
+        public abstract Task<DownloadResourceResult> GetDownloadResourceResultAsync(
+            PackageIdentity identity,
+            ISettings settings,
+            CancellationToken token);
 
         public event EventHandler<PackageProgressEventArgs> Progress;
     }

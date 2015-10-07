@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Xml.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
@@ -122,10 +123,20 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
-        /// Reads all package node entries in the config
+        /// Reads all package node entries in the config.
+        /// If duplicate package ids exist an exception will be thrown.
         /// </summary>
-        /// <returns></returns>
         public IEnumerable<PackageReference> GetPackages()
+        {
+            return GetPackages(allowDuplicatePackageIds: false);
+        }
+
+        /// <summary>
+        /// Reads all package node entries in the config.
+        /// </summary>
+        /// <param name="allowDuplicatePackageIds">If True validation will be performed to ensure that 
+        /// only one entry exists for each unique package id.</param>
+        public IEnumerable<PackageReference> GetPackages(bool allowDuplicatePackageIds)
         {
             var packages = new List<PackageReference>();
 
@@ -191,18 +202,34 @@ namespace NuGet.Packaging
             }
 
             // check if there are duplicate entries
-            var packageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var duplicates = new List<string>();
-            foreach (var package in packages)
+            var duplicates = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            PackageIdentity lastIdentity = null;
+            var comparer = PackageIdentity.Comparer;
+
+            // Sort the list of packages and check for duplicates
+            foreach (var package in packages.OrderBy(p => p.PackageIdentity, comparer))
             {
-                if (packageIds.Contains(package.PackageIdentity.Id))
+                if (lastIdentity != null)
                 {
-                    duplicates.Add(package.PackageIdentity.Id);
+                    if (allowDuplicatePackageIds)
+                    {
+                        // Full compare
+                        if (comparer.Equals(package.PackageIdentity, lastIdentity))
+                        {
+                            duplicates.Add(lastIdentity.ToString());
+                        }
+                    }
+                    else if (string.Equals(
+                        package.PackageIdentity.Id, 
+                        lastIdentity.Id, 
+                        StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Id only compare
+                        duplicates.Add(lastIdentity.Id);
+                    }
                 }
-                else
-                {
-                    packageIds.Add(package.PackageIdentity.Id);
-                }
+
+                lastIdentity = package.PackageIdentity;
             }
 
             if (duplicates.Count > 0)

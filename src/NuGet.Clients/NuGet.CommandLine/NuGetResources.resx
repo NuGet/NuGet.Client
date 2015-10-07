@@ -277,7 +277,7 @@
     <value>Unable to find '{0}'. Make sure they are specified in packages.config.</value>
   </data>
   <data name="UnableToLocatePackagesFolder" xml:space="preserve">
-    <value>Unable to locate the packages folder. Try specifying it using the repositoryPath switch.</value>
+    <value>Unable to locate the packages folder. Verify all the packages are restored before running 'nuget.exe update'.</value>
   </data>
   <data name="UnableToLocateProjectFile" xml:space="preserve">
     <value>Unable to locate project file for '{0}'.</value>

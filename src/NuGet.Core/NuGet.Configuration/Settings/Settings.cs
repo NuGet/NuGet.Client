@@ -21,7 +21,7 @@ namespace NuGet.Configuration
         /// Default file name for a settings file is 'NuGet.config'
         /// Also, the machine level setting file at '%APPDATA%\NuGet' always uses this name
         /// </summary>
-        public const string DefaultSettingsFileName = "NuGet.config";
+        public static readonly string DefaultSettingsFileName = "NuGet.Config";
 
         private XDocument ConfigXDocument { get; set; }
         private string ConfigFileName { get; set; }
@@ -227,7 +227,7 @@ namespace NuGet.Configuration
                             var values = setting.GetSettingValues(ConfigurationContants.PackageSources, isPath: true);
                             foreach (var value in values)
                             {
-                                disabledSources.Add(new SettingValue(value.Key, "true", isMachineWide: true, priority: 0));
+                                disabledSources.Add(new SettingValue(value.Key, "true", origin: setting, isMachineWide: true, priority: 0));
                             }
                         }
                         appDataSettings.UpdateSections(ConfigurationContants.DisabledPackageSources, disabledSources);
@@ -810,7 +810,7 @@ namespace NuGet.Configuration
                 value = Path.Combine(Root, Path.Combine(configDirectory, value));
             }
 
-            var settingValue = new SettingValue(keyAttribute.Value, value, IsMachineWideSettings, _priority);
+            var settingValue = new SettingValue(keyAttribute.Value, value, origin: this, isMachineWide: IsMachineWideSettings, priority: _priority);
             foreach (var attribute in element.Attributes())
             {
                 // Add all attributes other than ConfigurationContants.KeyAttribute and ConfigurationContants.ValueAttribute to AdditionalValues

@@ -43,7 +43,6 @@ namespace NuGet.CommandLine
 
         private const string ContentItemType = "Content";
         private const string ProjectReferenceItemType = "ProjectReference";
-        private const string NuGetConfig = "nuget.config";
         private const string PackagesFolder = "packages";
         private const string TransformFileExtension = ".transform";
 
@@ -891,7 +890,7 @@ namespace NuGet.CommandLine
 
         private static string GetPackagesPath(string dir)
         {
-            string configPath = Path.Combine(dir, NuGetConfig);
+            string configPath = Path.Combine(dir, Configuration.Settings.DefaultSettingsFileName);
 
             try
             {

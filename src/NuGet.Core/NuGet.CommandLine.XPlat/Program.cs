@@ -119,7 +119,8 @@ namespace NuGet.CommandLine.XPlat
 
                             var request = new RestoreRequest(
                                 project,
-                                packageSources);
+                                packageSources,
+                                packagesDirectory: null);
 
                             if (packagesDirectory.HasValue())
                             {

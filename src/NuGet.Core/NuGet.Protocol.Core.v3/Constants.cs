@@ -19,18 +19,20 @@ namespace NuGet.Protocol.Core.v3
 
     public static class ServiceTypes
     {
-        public static readonly string VersionV2 = "/2.0.0";
-        public static readonly string TypeVersion = "/3.0.0-beta";
+        public static readonly string Version200 = "/2.0.0";
+        public static readonly string Version300beta = "/3.0.0-beta";
+        public static readonly string Version300 = "/3.0.0";
 
-        public static readonly string SearchQueryService = "SearchQueryService" + TypeVersion;
-        public static readonly string SearchAutocompleteService = "SearchAutocompleteService" + TypeVersion;
-        public static readonly string SearchGalleryQueryService = "SearchGalleryQueryService" + TypeVersion;
-        public static readonly string MetricsService = "MetricsService" + TypeVersion;
-        public static readonly string RegistrationsBaseUrl = "RegistrationsBaseUrl" + TypeVersion;
-        public static readonly string ReportAbuse = "ReportAbuseUriTemplate" + TypeVersion;
-        public static readonly string Stats = "Stats" + TypeVersion;
-        public static readonly string LegacyGallery = "LegacyGallery" + VersionV2;
-        public static readonly string PackagePublish = "PackagePublish" + VersionV2;
+        public static readonly string SearchQueryService = "SearchQueryService" + Version300beta;
+        public static readonly string SearchAutocompleteService = "SearchAutocompleteService" + Version300beta;
+        public static readonly string SearchGalleryQueryService = "SearchGalleryQueryService" + Version300beta;
+        public static readonly string MetricsService = "MetricsService" + Version300beta;
+        public static readonly string RegistrationsBaseUrl = "RegistrationsBaseUrl" + Version300beta;
+        public static readonly string ReportAbuse = "ReportAbuseUriTemplate" + Version300beta;
+        public static readonly string Stats = "Stats" + Version300beta;
+        public static readonly string LegacyGallery = "LegacyGallery" + Version200;
+        public static readonly string PackagePublish = "PackagePublish" + Version200;
+        public static readonly string PackageBaseAddress = "PackageBaseAddress" + Version300;
     }
 
     public static class Properties

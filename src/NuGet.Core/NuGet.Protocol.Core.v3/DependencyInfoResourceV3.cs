@@ -2,15 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
-using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -167,12 +164,22 @@ namespace NuGet.Protocol.Core.v3
         /// <summary>
         /// Retrieve dependency info from a registration blob
         /// </summary>
-        private IEnumerable<SourcePackageDependencyInfo> GetPackagesFromRegistration(RegistrationInfo registration, CancellationToken token)
+        private IEnumerable<SourcePackageDependencyInfo> GetPackagesFromRegistration(
+            RegistrationInfo registration,
+            CancellationToken token)
         {
             foreach (var pkgInfo in registration.Packages)
             {
                 var dependencies = pkgInfo.Dependencies.Select(dep => new PackageDependency(dep.Id, dep.Range));
-                yield return new SourcePackageDependencyInfo(registration.Id, pkgInfo.Version, dependencies, pkgInfo.Listed, _source);
+
+                yield return new SourcePackageDependencyInfo(
+                    registration.Id,
+                    pkgInfo.Version,
+                    dependencies,
+                    pkgInfo.Listed,
+                    _source,
+                    pkgInfo.PackageContent,
+                    packageHash: null);
             }
 
             yield break;

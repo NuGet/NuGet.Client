@@ -10,6 +10,444 @@ namespace NuGet.CommandLine.Test
     public class RestoreProjectJsonTest : IDisposable
     {
         [Fact]
+        public void RestoreProjectJson_RestoreProjectFileNotFound()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var guid = Guid.NewGuid();
+            var workingPath = Path.Combine(tempPath, guid.ToString());
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var nugetexe = Util.GetNuGetExePath();
+
+            _dirs.TryAdd(workingPath, false);
+
+            Util.CreateDirectory(workingPath);
+            Util.CreateDirectory(repositoryPath);
+            Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+            Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+            var projectFilePath = Path.Combine(workingPath, "test.fsproj");
+
+            string[] args = new string[] {
+                "restore",
+                projectFilePath,
+                "-Source",
+                repositoryPath,
+                "-solutionDir",
+                workingPath
+            };
+
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                workingPath,
+                string.Join(" ", args),
+                waitForExit: true);
+
+            var test1Lock = new FileInfo(Path.Combine(workingPath, "project.lock.json"));
+
+            // Assert
+            Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+            Assert.False(test1Lock.Exists);
+            Assert.Contains("input file does not exist", r.Item3, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public void RestoreProjectJson_RestoreProjectJsonFileNotFound()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var guid = Guid.NewGuid();
+            var workingPath = Path.Combine(tempPath, guid.ToString());
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var nugetexe = Util.GetNuGetExePath();
+
+            _dirs.TryAdd(workingPath, false);
+
+            Util.CreateDirectory(workingPath);
+            Util.CreateDirectory(repositoryPath);
+            Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+            Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+            var projectJsonPath = Path.Combine(workingPath, "project.json");
+
+            string[] args = new string[] {
+                "restore",
+                projectJsonPath,
+                "-Source",
+                repositoryPath,
+                "-solutionDir",
+                workingPath
+            };
+
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                workingPath,
+                string.Join(" ", args),
+                waitForExit: true);
+
+            var test1Lock = new FileInfo(Path.Combine(workingPath, "project.lock.json"));
+
+            // Assert
+            Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+            Assert.False(test1Lock.Exists);
+            Assert.Contains("input file does not exist", r.Item3, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public void RestoreProjectJson_RestoreXProj()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var guid = Guid.NewGuid();
+            var workingPath = Path.Combine(tempPath, guid.ToString());
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var projectDir1 = Path.Combine(workingPath, "test1");
+            var project1Path = Path.Combine(projectDir1, "test1.xproj");
+            var nugetexe = Util.GetNuGetExePath();
+
+            _dirs.TryAdd(workingPath, false);
+
+            Util.CreateDirectory(workingPath);
+            Util.CreateDirectory(repositoryPath);
+            Util.CreateDirectory(projectDir1);
+            Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+            Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+            Util.CreateFile(projectDir1, "project.json",
+                                            @"{
+                                            'dependencies': {
+                                            },
+                                            'frameworks': {
+                                                        'uap10.0': { }
+                                                    }
+                                            }");
+
+            Util.CreateFile(projectDir1, "test1.xproj",
+                                            @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
+                        xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+        <Target Name=""NuGet_GetProjectsReferencingProjectJson""></Target>
+        </Project>");
+
+            string[] args = new string[] {
+                "restore",
+                project1Path,
+                "-Source",
+                repositoryPath,
+                "-solutionDir",
+                workingPath
+            };
+
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                workingPath,
+                string.Join(" ", args),
+                waitForExit: true);
+
+            var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
+
+            // Assert
+            Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+            Assert.False(test1Lock.Exists);
+            Assert.Contains("error parsing solution file", r.Item3, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public void RestoreProjectJson_RestoreUnknownProj()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var guid = Guid.NewGuid();
+            var workingPath = Path.Combine(tempPath, guid.ToString());
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var projectDir1 = Path.Combine(workingPath, "test1");
+            var project1Path = Path.Combine(projectDir1, "test1.abcproj");
+            var nugetexe = Util.GetNuGetExePath();
+
+            _dirs.TryAdd(workingPath, false);
+
+            Util.CreateDirectory(workingPath);
+            Util.CreateDirectory(repositoryPath);
+            Util.CreateDirectory(projectDir1);
+            Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+            Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+            Util.CreateFile(projectDir1, "project.json",
+                                            @"{
+                                            'dependencies': {
+                                            },
+                                            'frameworks': {
+                                                        'uap10.0': { }
+                                                    }
+                                            }");
+
+            Util.CreateFile(projectDir1, "test1.abcproj",
+                                            @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
+                        xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+        <Target Name=""NuGet_GetProjectsReferencingProjectJson""></Target>
+        </Project>");
+
+            string[] args = new string[] {
+                "restore",
+                project1Path,
+                "-Source",
+                repositoryPath,
+                "-solutionDir",
+                workingPath
+            };
+
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                workingPath,
+                string.Join(" ", args),
+                waitForExit: true);
+
+            var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
+
+            // Assert
+            Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
+            Assert.False(test1Lock.Exists);
+            Assert.Contains("error parsing solution file", r.Item3, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [Fact]
+        public void RestoreProjectJson_RestoreFromSlnWithUnknownProjAndCsproj()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var guid = Guid.NewGuid();
+            var workingPath = Path.Combine(tempPath, guid.ToString());
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var projectDir1 = Path.Combine(workingPath, "test1");
+            var projectDir2 = Path.Combine(workingPath, "test2");
+            var nugetexe = Util.GetNuGetExePath();
+
+            _dirs.TryAdd(workingPath, false);
+
+            Util.CreateDirectory(workingPath);
+            Util.CreateDirectory(repositoryPath);
+            Util.CreateDirectory(projectDir1);
+            Util.CreateDirectory(projectDir2);
+            Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+            Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+            var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
+            var libA = Util.CreatePackageFile("lib/uap/a.dll", "a");
+            packageA.Files.Add(libA);
+
+            Util.CreateTestPackage(packageA, repositoryPath);
+
+            Util.CreateFile(projectDir1, "project.json",
+                                            @"{
+                                            'dependencies': {
+                                            'packageA': '1.1.0-beta-*'
+                                            },
+                                            'frameworks': {
+                                                        'uap10.0': { }
+                                                    }
+                                            }");
+
+            Util.CreateFile(projectDir1, "test1.csproj",
+                                            @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
+                        xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+        <Target Name=""NuGet_GetProjectsReferencingProjectJson""></Target>
+        </Project>");
+
+            Util.CreateFile(projectDir2, "project.json",
+                                @"{
+                                            'version': '1.0.0-*',
+                                            'dependencies': {
+                                            'packageA': '1.1.0-beta-*'
+                                            },
+                                            'frameworks': {
+                                                        'uap10.0': { }
+                                                    }
+                                            }");
+
+            Util.CreateFile(projectDir2, "test2.abcproj",
+                                            @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
+                        xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+        <Target Name=""NuGet_GetProjectsReferencingProjectJson""></Target>
+        </Project>");
+
+            var slnPath = Path.Combine(workingPath, "xyz.sln");
+
+            Util.CreateFile(workingPath, "xyz.sln",
+                       @"
+                        Microsoft Visual Studio Solution File, Format Version 12.00
+                        # Visual Studio 14
+                        VisualStudioVersion = 14.0.23107.0
+                        MinimumVisualStudioVersion = 10.0.40219.1
+                        Project(""{AAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test1"", ""test1\test1.csproj"", ""{AA6279C1-B5EE-4C6B-9FA3-A794CE195136}""
+                        EndProject
+                        Project(""{BBE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test2"", ""test2\test2.abcproj"", ""{BB6279C1-B5EE-4C6B-9FA3-A794CE195136}""
+                        EndProject
+                        Global
+                            GlobalSection(SolutionConfigurationPlatforms) = preSolution
+                                Debug|Any CPU = Debug|Any CPU
+                                Release|Any CPU = Release|Any CPU
+                            EndGlobalSection
+                            GlobalSection(ProjectConfigurationPlatforms) = postSolution
+                                {AA6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                                {AA6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                                {BB6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                                {BB6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                            EndGlobalSection
+                            GlobalSection(SolutionProperties) = preSolution
+                                HideSolutionNode = FALSE
+                            EndGlobalSection
+                        EndGlobal
+                        ");
+
+            string[] args = new string[] {
+                "restore",
+                "-Source",
+                repositoryPath,
+                "-solutionDir",
+                workingPath,
+                slnPath
+            };
+
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                workingPath,
+                string.Join(" ", args),
+                waitForExit: true);
+
+            var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
+            var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
+
+            // Assert
+            Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+            Assert.True(test1Lock.Exists);
+            Assert.True(test2Lock.Exists);
+        }
+
+        [Fact]
+        public void RestoreProjectJson_RestoreFromSlnWithXprojAndCsproj()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var guid = Guid.NewGuid();
+            var workingPath = Path.Combine(tempPath, guid.ToString());
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var projectDir1 = Path.Combine(workingPath, "test1");
+            var projectDir2 = Path.Combine(workingPath, "test2");
+            var nugetexe = Util.GetNuGetExePath();
+
+            _dirs.TryAdd(workingPath, false);
+
+            Util.CreateDirectory(workingPath);
+            Util.CreateDirectory(repositoryPath);
+            Util.CreateDirectory(projectDir1);
+            Util.CreateDirectory(projectDir2);
+            Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+            Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+            Util.CreateFile(projectDir1, "project.json",
+                                            @"{
+                                            'dependencies': {
+                                            },
+                                            'frameworks': {
+                                                        'uap10.0': { }
+                                                    }
+                                            }");
+
+            Util.CreateFile(projectDir1, "test1.csproj",
+                                            @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
+                        xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+        <Target Name=""NuGet_GetProjectsReferencingProjectJson""></Target>
+        </Project>");
+
+            Util.CreateFile(projectDir2, "project.json",
+                                @"{
+                                            'version': '1.0.0-*',
+                                            'dependencies': {
+                                            },
+                                            'frameworks': {
+                                                        'uap10.0': { }
+                                                    }
+                                            }");
+
+            Util.CreateFile(projectDir2, "test2.xproj",
+                                            @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
+                        xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+        <Target Name=""NuGet_GetProjectsReferencingProjectJson""></Target>
+        </Project>");
+
+            var slnPath = Path.Combine(workingPath, "xyz.sln");
+
+            Util.CreateFile(workingPath, "xyz.sln",
+                       @"
+                        Microsoft Visual Studio Solution File, Format Version 12.00
+                        # Visual Studio 14
+                        VisualStudioVersion = 14.0.23107.0
+                        MinimumVisualStudioVersion = 10.0.40219.1
+                        Project(""{AAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test1"", ""test1\test1.csproj"", ""{AA6279C1-B5EE-4C6B-9FA3-A794CE195136}""
+                        EndProject
+                        Project(""{BBE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test2"", ""test2\test2.xproj"", ""{BB6279C1-B5EE-4C6B-9FA3-A794CE195136}""
+                        EndProject
+                        Global
+                            GlobalSection(SolutionConfigurationPlatforms) = preSolution
+                                Debug|Any CPU = Debug|Any CPU
+                                Release|Any CPU = Release|Any CPU
+                            EndGlobalSection
+                            GlobalSection(ProjectConfigurationPlatforms) = postSolution
+                                {AA6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                                {AA6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                                {BB6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                                {BB6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                            EndGlobalSection
+                            GlobalSection(SolutionProperties) = preSolution
+                                HideSolutionNode = FALSE
+                            EndGlobalSection
+                        EndGlobal
+                        ");
+
+            string[] args = new string[] {
+                "restore",
+                "-Source",
+                repositoryPath,
+                "-solutionDir",
+                workingPath,
+                slnPath
+            };
+
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                workingPath,
+                string.Join(" ", args),
+                waitForExit: true);
+
+            var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
+            var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
+
+            // Assert
+            Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+            Assert.True(test1Lock.Exists);
+            Assert.False(test2Lock.Exists);
+        }
+
+        [Fact]
         public void RestoreProjectJson_FloatReleaseLabelHighestPrelease()
         {
             // Arrange
@@ -362,7 +800,7 @@ namespace NuGet.CommandLine.Test
             Assert.Equal("2.1.0", installedC.Version.ToNormalizedString());
         }
 
-        [Fact(Skip="https://github.com/NuGet/Home/issues/1330")]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/1330")]
         public void RestoreProjectJson_RestoreDowngradesFromStableToPrereleaseWhenNeeded()
         {
             // Arrange

@@ -43,19 +43,42 @@ namespace NuGet.Packaging
                     // If this is the first process trying to install the target nupkg, go ahead
                     // After this process successfully installs the package, all other processes
                     // waiting on this lock don't need to install it again.
-                    if (!File.Exists(targetNupkg))
+                    if (!File.Exists(hashPath))
                     {
-                        log.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Log_InstallingPackage, packageIdentity.Id, packageIdentity.Version));
+                        log.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                            Strings.Log_InstallingPackage,
+                            packageIdentity.Id,
+                            packageIdentity.Version));
 
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        // Do not stop the package extraction after this point
-                        // based on CancellationToken
+                        // We do not stop the package extraction after this point
+                        // based on CancellationToken, but things can still be stopped if the process is killed.
+                        if (Directory.Exists(targetPath))
+                        {
+                            // If we had a broken restore, clean out the files first
+                            var info = new DirectoryInfo(targetPath);
 
-                        Directory.CreateDirectory(targetPath);
+                            foreach (var file in info.GetFiles())
+                            {
+                                file.Delete();
+                            }
 
+                            foreach (var dir in info.GetDirectories())
+                            {
+                                dir.Delete(true);
+                            }
+                        }
+                        else
+                        {
+                            Directory.CreateDirectory(targetPath);
+                        }
+
+                        var targetTempNupkg = Path.Combine(targetPath, Path.GetRandomFileName());
+
+                        // Extract the nupkg
                         using (var nupkgStream = new FileStream(
-                            targetNupkg,
+                            targetTempNupkg,
                             FileMode.Create,
                             FileAccess.ReadWrite,
                             FileShare.ReadWrite | FileShare.Delete,
@@ -65,7 +88,10 @@ namespace NuGet.Packaging
                             await copyToAsync(nupkgStream);
                             nupkgStream.Seek(0, SeekOrigin.Begin);
 
-                            ExtractPackage(targetPath, nupkgStream);
+                            using (var archive = new ZipArchive(nupkgStream, ZipArchiveMode.Read))
+                            {
+                                ExtractFiles(archive, targetPath, NupkgFilter);
+                            }
                         }
 
                         if (fixNuspecIdCasing)
@@ -77,6 +103,15 @@ namespace NuGet.Packaging
                             FixNuSpecIdCasing(nuspecFile, targetNuspec, packageIdentity.Id);
                         }
 
+                        // Some packages accidentally include a nupkg with the same name as the package
+                        if (File.Exists(targetNupkg))
+                        {
+                            File.Delete(targetNupkg);
+                        }
+
+                        // Now rename the tmp file
+                        File.Move(targetTempNupkg, targetNupkg);
+
                         using (var nupkgStream = File.Open(targetNupkg, FileMode.Open, FileAccess.Read, FileShare.Read))
                         {
                             string packageHash;
@@ -85,8 +120,8 @@ namespace NuGet.Packaging
                                 packageHash = Convert.ToBase64String(sha512.ComputeHash(nupkgStream));
                             }
 
-                            // Note: PackageRepository relies on the hash file being written out as the final operation as part of a package install
-                            // to assume a package was fully installed.
+                            // Note: PackageRepository relies on the hash file being written out as the
+                            // final operation as part of a package install to assume a package was fully installed.
                             File.WriteAllText(hashPath, packageHash);
                         }
 
@@ -122,22 +157,6 @@ namespace NuGet.Packaging
 
                 File.Delete(tmpNuspecFile);
             }
-        }
-
-        private static void ExtractPackage(string targetPath, FileStream stream)
-        {
-            using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
-            {
-                ExtractNupkg(archive, targetPath);
-            }
-        }
-
-        private static void ExtractNupkg(ZipArchive archive, string targetPath)
-        {
-            ExtractFiles(
-                archive,
-                targetPath,
-                shouldInclude: NupkgFilter);
         }
 
         private static bool NupkgFilter(string fullName)

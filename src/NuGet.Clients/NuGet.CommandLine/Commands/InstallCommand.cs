@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -145,7 +144,11 @@ namespace NuGet.CommandLine
         {
             var sourceRepositoryProvider = GetSourceRepositoryProvider();
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, installPath);
-            var installedPackageReferences = GetInstalledPackageReferences(packagesConfigFilePath);
+
+            var installedPackageReferences = GetInstalledPackageReferences(
+                packagesConfigFilePath,
+                allowDuplicatePackageIds: true);
+
             var packageRestoreData = installedPackageReferences.Select(reference =>
                 new PackageRestoreData(
                     reference,
@@ -162,13 +165,9 @@ namespace NuGet.CommandLine
             return PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Console));
         }
 
-        private SourceRepositoryProvider GetSourceRepositoryProvider()
+        private CommandLineSourceRepositoryProvider GetSourceRepositoryProvider()
         {
-            var sourceRepositoryProvider = new SourceRepositoryProvider(SourceProvider,
-                Enumerable.Concat(
-                    Protocol.Core.v2.FactoryExtensionsV2.GetCoreV2(Repository.Provider),
-                    Protocol.Core.v3.FactoryExtensionsV2.GetCoreV3(Repository.Provider)));
-            return sourceRepositoryProvider;
+            return new CommandLineSourceRepositoryProvider(SourceProvider);
         }
 
         private async Task InstallPackage(
@@ -201,6 +200,7 @@ namespace NuGet.CommandLine
                 // Find the latest version using NuGetPackageManager
                 version = await NuGetPackageManager.GetLatestVersionAsync(
                     packageId,
+                    folderProject,
                     resolutionContext,
                     primaryRepositories,
                     CancellationToken.None);

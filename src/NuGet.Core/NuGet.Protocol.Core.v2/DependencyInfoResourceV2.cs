@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -64,7 +63,11 @@ namespace NuGet.Protocol.Core.v2
                 try
                 {
                     // Retrieve all packages
-                    var repoPackage = V2Client.FindPackage(package.Id, legacyVersion, allowPrereleaseVersions: true, allowUnlisted: true);
+                    var repoPackage = GetRepository().FindPackage(
+                        package.Id, 
+                        legacyVersion, 
+                        allowPrereleaseVersions: true, 
+                        allowUnlisted: true);
 
                     if (repoPackage != null)
                     {
@@ -111,7 +114,7 @@ namespace NuGet.Protocol.Core.v2
             try
             {
                 // Retrieve all packages
-                var repoPackages = V2Client.FindPackagesById(packageId);
+                var repoPackages = GetRepository().FindPackagesById(packageId);
 
                 // Convert from v2 to v3 types and enumerate the list to finish all server requests before returning
                 results = repoPackages.Select(p => CreateDependencyInfo(p, projectFramework)).ToList();
@@ -149,7 +152,48 @@ namespace NuGet.Protocol.Core.v2
                 }
             }
 
-            return new SourcePackageDependencyInfo(identity, deps, PackageExtensions.IsListed(packageVersion), _source);
+            SourcePackageDependencyInfo result = null;
+
+            var dataPackage = packageVersion as DataServicePackage;
+
+            if (dataPackage != null)
+            {
+                // Online package
+                result = new SourcePackageDependencyInfo(
+                    identity,
+                    deps,
+                    PackageExtensions.IsListed(packageVersion),
+                    _source,
+                    dataPackage.DownloadUrl,
+                    dataPackage.PackageHash);
+            }
+            else
+            {
+                // Offline package
+                result = new SourcePackageDependencyInfo(
+                    identity,
+                    deps,
+                    PackageExtensions.IsListed(packageVersion),
+                    _source,
+                    downloadUri: null,
+                    packageHash: null);
+            }
+
+            return result;
+        }
+
+        private IPackageRepository GetRepository()
+        {
+            var repository = V2Client as DataServicePackageRepository;
+
+            if (repository != null)
+            {
+                var sourceUri = new Uri(repository.Source);
+                repository = new DataServicePackageRepository(sourceUri);
+            }
+
+            // If the repository is not a DataServicePackageRepository just return the current one.
+            return repository ?? V2Client;
         }
 
         private static NuGetFramework GetFramework(PackageDependencySet dependencySet)
