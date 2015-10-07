@@ -7,7 +7,8 @@ param (
 	[switch]$PublicRelease,
 	[switch]$SkipILMerge,
 	[switch]$DelaySign,
-    [string]$PFXPath
+    [string]$CorePFXPath,
+    [string]$ClientsPFXPath
 )
 
 ###Functions###
@@ -247,11 +248,17 @@ if($CleanCache)
 # enable delay signed build
 if ($DelaySign)
     {
-        if (Test-Path $PFXPath)
+        if (Test-Path $CorePFXPath)
         {
-            $env:DNX_BUILD_KEY_FILE=$PFXPath
+            Write-Host "Setting NuGet.Core solution to delay sign using $CorePFXPath"
+            $env:DNX_BUILD_KEY_FILE=$CorePFXPath
             $env:DNX_BUILD_DELAY_SIGN=$true
-            $env:NUGET_PFX_PATH= $PFXPath
+        }
+
+        if (Test-Path $ClientsPFXPath)
+        {
+            Write-Host "Setting NuGet.Clients solution to delay sign using $ClientsPFXPath"
+            $env:NUGET_PFX_PATH= $ClientsPFXPath
         }
     }
 
