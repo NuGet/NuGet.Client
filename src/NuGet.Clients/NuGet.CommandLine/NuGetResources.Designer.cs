@@ -565,6 +565,51 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cache cleared..
+        /// </summary>
+        public static string ClearCacheCommand_CacheCleared {
+            get {
+                return ResourceManager.GetString("ClearCacheCommand_CacheCleared", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clearing NuGet cache.
+        /// </summary>
+        public static string ClearCacheCommand_ClearingNuGetCache {
+            get {
+                return ResourceManager.GetString("ClearCacheCommand_ClearingNuGetCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clearing NuGet global packages cache.
+        /// </summary>
+        public static string ClearCacheCommand_ClearingNuGetGlobalPackagesCache {
+            get {
+                return ResourceManager.GetString("ClearCacheCommand_ClearingNuGetGlobalPackagesCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clearing NuGet HTTP cache.
+        /// </summary>
+        public static string ClearCacheCommand_ClearingNuGetHttpCache {
+            get {
+                return ResourceManager.GetString("ClearCacheCommand_ClearingNuGetHttpCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to clear cache directory.
+        /// </summary>
+        public static string ClearCacheCommand_UnableToClearCacheDir {
+            get {
+                return ResourceManager.GetString("ClearCacheCommand_UnableToClearCacheDir", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to WARNING: {0}.
         /// </summary>
         public static string CommandLine_Warning {

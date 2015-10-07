@@ -6067,4 +6067,19 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="Error_MSBuildNotInstalled" xml:space="preserve">
     <value>MSBuild is not installed.</value>
   </data>
+  <data name="ClearCacheCommand_CacheCleared" xml:space="preserve">
+    <value>Cache cleared.</value>
+  </data>
+  <data name="ClearCacheCommand_ClearingNuGetCache" xml:space="preserve">
+    <value>Clearing NuGet cache</value>
+  </data>
+  <data name="ClearCacheCommand_ClearingNuGetGlobalPackagesCache" xml:space="preserve">
+    <value>Clearing NuGet global packages cache</value>
+  </data>
+  <data name="ClearCacheCommand_ClearingNuGetHttpCache" xml:space="preserve">
+    <value>Clearing NuGet HTTP cache</value>
+  </data>
+  <data name="ClearCacheCommand_UnableToClearCacheDir" xml:space="preserve">
+    <value>Unable to clear cache directory</value>
+  </data>
 </root>
