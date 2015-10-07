@@ -5282,4 +5282,27 @@ nuget add \\foo\packages \\bar\packages</value>
   <data name="ExpandDescription" xml:space="preserve">
     <value>If provided, a package added to offline feed is also expanded.</value>
   </data>
+  <data name="LocalsCommandDescription" xml:space="preserve">
+    <value>Clears or lists local NuGet resources such as http requests cache, packages cache or machine-wide global packages folder.</value>
+  </data>
+  <data name="LocalsCommandExamples" xml:space="preserve">
+    <value>nuget locals all -clear
+
+nuget locals http-cache -clear
+
+nuget locals packages-cache -list
+
+nuget locals global-packages -list</value>
+    <comment>Please don't localize this string</comment>
+  </data>
+  <data name="LocalsCommandSummary" xml:space="preserve">
+    <value>&lt;all | http-cache | packages-cache | global-packages&gt; [-clear | -list]</value>
+    <comment>Please don't localize this string</comment>
+  </data>
+  <data name="LocalsCommandClearDescription" xml:space="preserve">
+    <value>Clear the selected local resources or cache location(s).</value>
+  </data>
+  <data name="LocalsCommandListDescription" xml:space="preserve">
+    <value>List the selected local resources or cache location(s).</value>
+  </data>
 </root>

@@ -49,6 +49,7 @@
     <Compile Include="CommandManager.cs" />
     <Compile Include="CommandOutputLogger.cs" />
     <Compile Include="Commands\AddCommand.cs" />
+    <Compile Include="Commands\LocalsCommand.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\CommandAttribute.cs" />
     <Compile Include="Commands\ConfigCommand.cs" />
