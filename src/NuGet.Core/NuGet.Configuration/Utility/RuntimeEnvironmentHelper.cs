@@ -9,7 +9,8 @@ namespace NuGet.Configuration
 
         // Checking the OS environment variable is most complete way to check this on dnxcore currently.
         private static Lazy<bool> _isWindows = new Lazy<bool>(() => 
-            Environment.GetEnvironmentVariable("OS")?.Equals("WINDOWS_NT") ?? false);
+            Environment.GetEnvironmentVariable("OS")?
+            .Equals("WINDOWS_NT", StringComparison.OrdinalIgnoreCase) ?? false);
 
         public static bool IsWindows
         {
