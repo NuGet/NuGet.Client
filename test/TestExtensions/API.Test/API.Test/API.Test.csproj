@@ -35,10 +35,10 @@
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="NuGet.PackageManagement.VisualStudio">
-      <HintPath>..\..\..\artifacts\Release\NuGet.Clients\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.dll</HintPath>
+      <HintPath>..\..\..\..\artifacts\Release\NuGet.Clients\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.VisualStudio">
-      <HintPath>..\..\..\artifacts\Release\NuGet.Clients\VisualStudioAPI\NuGet.VisualStudio.dll</HintPath>
+      <HintPath>..\..\..\..\artifacts\Release\NuGet.Clients\VisualStudioAPI\NuGet.VisualStudio.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="System" />
