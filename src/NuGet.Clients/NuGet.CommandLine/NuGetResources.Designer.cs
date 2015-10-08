@@ -79,6 +79,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;-Source&apos; switch is not provided. nupkg gets added to the &apos;Source&apos; and is mandatory..
+        /// </summary>
+        public static string AddCommand_SourceNotProvided {
+            get {
+                return ResourceManager.GetString("AddCommand_SourceNotProvided", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Successfully added package &apos;{0}&apos; to feed &apos;{1}&apos;..
         /// </summary>
         public static string AddCommand_SuccessfullyAdded {

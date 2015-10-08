@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Configuration;
 
 namespace NuGet.CommandLine
 {
@@ -28,6 +27,13 @@ namespace NuGet.CommandLine
             }
 
             OfflineFeedUtility.ValidatePath(destination);
+
+            if (!Directory.Exists(destination))
+            {
+                throw new CommandLineException(
+                    LocalizedResourceManager.GetString(nameof(NuGetResources.InitCommand_FeedIsNotFound)),
+                    destination);
+            }
 
             var packagePaths = Directory.EnumerateFiles(source, "*.nupkg");
 

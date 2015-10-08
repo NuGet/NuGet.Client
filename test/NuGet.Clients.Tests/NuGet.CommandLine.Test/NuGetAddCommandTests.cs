@@ -77,15 +77,6 @@ namespace NuGet.CommandLine.Test
                     testInfo.RandomNupkgFilePath
                 };
 
-                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-<config>
-<add key=""offlineFeed"" value=""" + testInfo.SourceParamFolder + @""" />
-</config>
-</configuration>";
-
-                File.WriteAllText(Path.Combine(testInfo.WorkingPath, "nuget.config"), config);
-
                 // Act
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
@@ -94,8 +85,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Util.VerifyResultSuccess(result);
-                Util.VerifyPackageExists(testInfo.Package, testInfo.SourceParamFolder);
+                Util.VerifyResultFailure(result, NuGetResources.AddCommand_SourceNotProvided);
             }
         }
 

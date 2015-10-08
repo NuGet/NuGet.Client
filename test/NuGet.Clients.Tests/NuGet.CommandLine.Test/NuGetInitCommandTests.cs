@@ -103,15 +103,6 @@ namespace NuGet.CommandLine.Test
                     testInfo.SourceFeed
                 };
 
-                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-<config>
-<add key=""offlineFeed"" value=""" + testInfo.DestinationFeed + @""" />
-</config>
-</configuration>";
-
-                File.WriteAllText(Path.Combine(testInfo.WorkingPath, "nuget.config"), config);
-
                 // Act
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
@@ -120,8 +111,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Util.VerifyResultSuccess(result);
-                Util.VerifyPackagesExist(packages, testInfo.DestinationFeed);
+                Util.VerifyResultSuccess(result, "usage: NuGet init <srcFeedPath> <destFeedPath> [options]");
             }
         }
 
@@ -205,8 +195,9 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Util.VerifyResultSuccess(result);
-                Util.VerifyPackagesExist(packages, testInfo.DestinationFeed);
+                var expectedErrorMessage
+                    = string.Format(NuGetResources.InitCommand_FeedIsNotFound, testInfo.DestinationFeed);
+                Util.VerifyResultFailure(result, expectedErrorMessage);
             }
         }
 
@@ -468,7 +459,7 @@ namespace NuGet.CommandLine.Test
                 waitForExit: true);
 
             // Assert
-            Util.VerifyResultSuccess(result, "Adds all the packages from a given feed to the offline feed");
+            Util.VerifyResultSuccess(result, "usage: NuGet init <srcFeedPath> <destFeedPath> [options]");
         }
     }
 }

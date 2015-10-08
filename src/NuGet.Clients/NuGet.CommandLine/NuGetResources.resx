@@ -6102,4 +6102,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="InitCommand_FeedIsNotFound" xml:space="preserve">
     <value>Feed '{0}' is not found.</value>
   </data>
+  <data name="AddCommand_SourceNotProvided" xml:space="preserve">
+    <value>'-Source' switch is not provided. nupkg gets added to the 'Source' and is mandatory.</value>
+  </data>
 </root>

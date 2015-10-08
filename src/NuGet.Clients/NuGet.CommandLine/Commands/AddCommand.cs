@@ -1,14 +1,11 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Configuration;
-using NuGet.Packaging;
 
 namespace NuGet.CommandLine
 {
     [Command(typeof(NuGetCommand), "add", "AddCommandDescription;DefaultConfigDescription",
-        MinArgs = 2, MaxArgs = 2, UsageDescriptionResourceName = "AddCommandUsageDescription",
+        MinArgs = 1, MaxArgs = 2, UsageDescriptionResourceName = "AddCommandUsageDescription",
         UsageSummaryResourceName = "AddCommandUsageSummary", UsageExampleResourceName = "AddCommandUsageExamples")]
     public class AddCommand : Command
     {
@@ -21,6 +18,12 @@ namespace NuGet.CommandLine
             // Because, this command has MinArgs set to 1.
             var packagePath = Arguments[0];
             OfflineFeedUtility.ValidatePath(packagePath);
+
+            if (string.IsNullOrEmpty(Source))
+            {
+                throw new CommandLineException(
+                    LocalizedResourceManager.GetString(nameof(NuGetResources.AddCommand_SourceNotProvided)));
+            }
 
             if (!File.Exists(packagePath))
             {

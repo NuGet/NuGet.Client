@@ -61,7 +61,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Adds a given package to the offline feed or the specified source if it is a file source. http sources are not supported..
+        ///   Looks up a localized string similar to Adds a given package to the specified source if it is a file source. http sources are not supported..
         /// </summary>
         internal static string AddCommandDescription {
             get {
@@ -79,7 +79,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specify the path to the package to be added to the offline feed which should be a file source..
+        ///   Looks up a localized string similar to Specify the path to the package to be added to the specified file source..
         /// </summary>
         internal static string AddCommandUsageDescription {
             get {

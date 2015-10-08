@@ -5246,10 +5246,10 @@ nuget update -Self</value>
     <value>Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild.</value>
   </data>
   <data name="AddCommandDescription" xml:space="preserve">
-    <value>Adds a given package to the offline feed or the specified source if it is a file source. http sources are not supported.</value>
+    <value>Adds a given package to the specified source if it is a file source. http sources are not supported.</value>
   </data>
   <data name="AddCommandUsageDescription" xml:space="preserve">
-    <value>Specify the path to the package to be added to the offline feed which should be a file source.</value>
+    <value>Specify the path to the package to be added to the specified file source.</value>
   </data>
   <data name="AddCommandUsageExamples" xml:space="preserve">
     <value>nuget add foo.nupkg  -Source c:\bar\
