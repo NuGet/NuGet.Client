@@ -3975,6 +3975,55 @@ namespace NuGet.Test
                 randomPackagesConfigFolderPath);
         }
 
+        [Fact]
+        public async Task TestPacManGetLatestVersion_GatherCache()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
+            var bVersionRange = VersionRange.Parse("[0.5.0, 2.0.0)");
+            var packages = new List<SourcePackageDependencyInfo>
+            {
+                new SourcePackageDependencyInfo(
+                    packageIdentity.Id,
+                    packageIdentity.Version,
+                    new[]
+                    {
+                        new Packaging.Core.PackageDependency("b", bVersionRange)
+                    },
+                    listed: true,
+                    source: null),
+            };
+
+            var resourceProviders = new List<Lazy<INuGetResourceProvider>>();
+            resourceProviders.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages)));
+            resourceProviders.Add(new Lazy<INuGetResourceProvider>(() => new TestMetadataProvider(packages)));
+
+            var packageSource = new Configuration.PackageSource("http://a");
+            var packageSourceProvider = new TestPackageSourceProvider(new[] { packageSource });
+
+            var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider, resourceProviders);
+            var resolutionContext = new ResolutionContext();
+
+            // Act
+            var latestVersion = await NuGetPackageManager.GetLatestVersionAsync(
+                "a",
+                NuGetFramework.AnyFramework,
+                resolutionContext,
+                sourceRepositoryProvider.GetRepositories().First(),
+                CancellationToken.None);
+
+            // Assert
+            var gatherCache = resolutionContext.GatherCache;
+            var gatherCacheResult = gatherCache.GetPackage(packageSource, packageIdentity, NuGetFramework.AnyFramework);
+            Assert.Single(gatherCacheResult.Packages);
+            var packageInfo = gatherCacheResult.Packages.Single();
+            Assert.Single(packageInfo.Dependencies);
+            var packageDependency = packageInfo.Dependencies.Single();
+            Assert.Equal("b", packageDependency.Id);
+            Assert.Equal(bVersionRange.ToString(), packageDependency.VersionRange.ToString());
+            Assert.True(packageDependency.VersionRange.IncludePrerelease);
+        }
+
         private class TestDownloadResourceProvider : ResourceProvider
         {
             public TestDownloadResourceProvider()

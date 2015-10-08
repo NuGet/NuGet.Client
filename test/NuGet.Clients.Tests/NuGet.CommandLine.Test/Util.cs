@@ -26,7 +26,7 @@ namespace NuGet.CommandLine.Test
             string dependencyPackageId,
             string dependencyPackageVersion)
         {
-            var group = new PackageDependencyGroup(NuGetFramework.AnyFramework, 
+            var group = new PackageDependencyGroup(NuGetFramework.AnyFramework,
                 new List<Packaging.Core.PackageDependency>()
             {
                 new Packaging.Core.PackageDependency(dependencyPackageId, VersionRange.Parse(dependencyPackageVersion))
@@ -58,8 +58,8 @@ namespace NuGet.CommandLine.Test
             foreach (var framework in frameworks)
             {
                 var libPath = string.Format(
-                    CultureInfo.InvariantCulture, 
-                    "lib/{0}/file.dll", 
+                    CultureInfo.InvariantCulture,
+                    "lib/{0}/file.dll",
                     framework.GetShortFolderName());
 
                 packageBuilder.Files.Add(CreatePackageFile(libPath));
@@ -70,9 +70,9 @@ namespace NuGet.CommandLine.Test
             foreach (var group in dependencies)
             {
                 var set = new PackageDependencySet(
-                    null, 
-                    group.Packages.Select(package => 
-                        new PackageDependency(package.Id, 
+                    null,
+                    group.Packages.Select(package =>
+                        new PackageDependency(package.Id,
                             VersionUtility.ParseVersionSpec(package.VersionRange.ToNormalizedString()))));
 
                 packageBuilder.DependencySets.Add(set);
@@ -96,7 +96,12 @@ namespace NuGet.CommandLine.Test
         /// <param name="version">The version of the created package.</param>
         /// <param name="path">The directory where the package is created.</param>
         /// <returns>The full path of the created package file.</returns>
-        public static string CreateTestPackage(string packageId, string version, string path, Uri licenseUrl = null)
+        public static string CreateTestPackage(
+            string packageId,
+            string version,
+            string path,
+            Uri licenseUrl = null,
+            params string[] contentFiles)
         {
             var packageBuilder = new PackageBuilder
             {
@@ -113,7 +118,20 @@ namespace NuGet.CommandLine.Test
                 packageBuilder.LicenseUrl = licenseUrl;
             }
 
-            packageBuilder.Files.Add(CreatePackageFile(@"content\test1.txt"));
+            if (contentFiles == null || contentFiles.Length == 0)
+            {
+                packageBuilder.Files.Add(CreatePackageFile(@"content\test1.txt"));
+            }
+            else
+            {
+                foreach (var contentFile in contentFiles)
+                {
+                    var packageFilePath = Path.Combine("content", contentFile);
+                    var packageFile = CreatePackageFile(packageFilePath);
+                    packageBuilder.Files.Add(packageFile);
+                }
+            }
+
             packageBuilder.Authors.Add("test author");
 
             var packageFileName = string.Format("{0}.{1}.nupkg", packageId, version);
@@ -485,6 +503,50 @@ namespace NuGet.CommandLine.Test
             catalogEntry.Add(new JProperty("tags", new JArray()));
 
             return regBlob;
+        }
+
+        public static string CreateProjFileContent(
+            string projectName = "proj1",
+            string targetFrameworkVersion = "v4.5",
+            string[] references = null,
+            string[] contentFiles = null)
+        {
+            XNamespace msbuild = "http://schemas.microsoft.com/developer/msbuild/2003";
+
+            var project = new XElement(msbuild + "Project",
+                new XAttribute("ToolsVersion", "4.0"), new XAttribute("DefaultTargets", "Build"));
+
+            project.Add(new XElement(msbuild + "PropertyGroup",
+                  new XElement(msbuild + "OutputType", "Library"),
+                  new XElement(msbuild + "OutputPath", "out"),
+                  new XElement(msbuild + "TargetFrameworkVersion", targetFrameworkVersion)));
+
+            if (references != null && references.Any())
+            {
+                project.Add(new XElement(msbuild + "ItemGroup",
+                        references.Select(r => new XElement(msbuild + "Reference", new XAttribute("Include", r)))));
+            }
+
+            if (contentFiles != null && contentFiles.Any())
+            {
+                project.Add(new XElement(msbuild + "ItemGroup",
+                        contentFiles.Select(c => new XElement(msbuild + "Content", new XAttribute("Include", c)))));
+            }
+
+            project.Add(new XElement(msbuild + "Import",
+                new XAttribute("Project", @"$(MSBuildToolsPath)\Microsoft.CSharp.targets")));
+
+            return project.ToString();
+        }
+
+        public static string CreateSolutionFileContent()
+        {
+            return @"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"",
+""proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
+EndProject";
         }
     }
 }

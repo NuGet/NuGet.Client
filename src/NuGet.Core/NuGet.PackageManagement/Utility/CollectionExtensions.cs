@@ -2,7 +2,7 @@
 
 namespace NuGet.PackageManagement
 {
-    public static class CollectionExtensions
+    internal static class CollectionExtensions
     {
         /// <summary>
         /// Return the enumerable as a List of T, copying if required. Optimized for common case where it is an List of T 

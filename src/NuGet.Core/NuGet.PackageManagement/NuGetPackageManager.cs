@@ -1950,6 +1950,11 @@ namespace NuGet.PackageManagement
             // resolution context for the gather to use during the next step.
             // Using the metadata resource will result in multiple calls to the same url during an install.
             var packages = await dependencyInfoResource.ResolvePackages(packageId, framework, token);
+            packages = packages.Select(package =>
+            {
+                package.SetIncludePrereleaseForDependencies();
+                return package;
+            });
 
             Debug.Assert(resolutionContext.GatherCache != null);
 

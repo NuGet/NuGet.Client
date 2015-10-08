@@ -23,6 +23,19 @@ namespace NuGet.Configuration
         /// </summary>
         public static readonly string DefaultSettingsFileName = "NuGet.Config";
 
+        /// <summary>
+        /// NuGet config names with casing ordered by precedence.
+        /// </summary>
+        public static readonly string[] OrderedSettingsFileNames = 
+            RuntimeEnvironmentHelper.IsWindows ? 
+            new[] { DefaultSettingsFileName } :
+            new[]
+            {
+                "nuget.config", // preferred style
+                "NuGet.config", // Alternative
+                DefaultSettingsFileName  // NuGet v2 style
+            };
+
         private XDocument ConfigXDocument { get; set; }
         private string ConfigFileName { get; set; }
         private bool IsMachineWideSettings { get; set; }
@@ -900,12 +913,34 @@ namespace NuGet.Configuration
             // otherwise we'd end up creating them.
             foreach (var dir in GetSettingsFilePaths(root))
             {
-                var fileName = Path.Combine(dir, DefaultSettingsFileName);
-                if (FileSystemUtility.DoesFileExistIn(root, fileName))
+                var fileName = GetSettingsFileNameFromDir(dir);
+                if (fileName != null)
                 {
                     yield return fileName;
                 }
             }
+
+            yield break;
+        }
+
+        /// <summary>
+        /// Checks for each possible casing of nuget.config in the directory. The first match is
+        /// returned. If there are no nuget.config files null is returned.
+        /// </summary>
+        /// <remarks>For windows <see cref="OrderedSettingsFileNames"/> contains a single casing since
+        /// the file system is case insensitive.</remarks>
+        private static string GetSettingsFileNameFromDir(string directory)
+        {
+            foreach (var nugetConfigCasing in OrderedSettingsFileNames)
+            {
+                var file = Path.Combine(directory, nugetConfigCasing);
+                if (File.Exists(file))
+                {
+                    return file;
+                }
+            }
+
+            return null;
         }
 
         private static IEnumerable<string> GetSettingsFilePaths(string root)
@@ -915,6 +950,8 @@ namespace NuGet.Configuration
                 yield return root;
                 root = Path.GetDirectoryName(root);
             }
+
+            yield break;
         }
 
         private void Save()
