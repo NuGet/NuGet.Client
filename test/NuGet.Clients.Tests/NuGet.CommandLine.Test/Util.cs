@@ -5,19 +5,22 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Runtime.Versioning;
 using System.Text;
 using System.Xml.Linq;
 using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
     public static class Util
     {
+        private static readonly string NupkgFileFormat = "{0}.{1}.nupkg";
+
         public static string CreateTestPackage(
             string packageId,
             string version,
@@ -547,6 +550,90 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"",
 ""proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
 EndProject";
+        }
+
+        public static void VerifyResultSuccess(Tuple<int, string, string> result, string expectedOutputMessage = null)
+        {
+            Assert.True(
+                result.Item1 == 0,
+                "nuget.exe DID NOT SUCCEED: Ouput is " + result.Item2 + ". Error is " + result.Item3);
+
+            if (!string.IsNullOrEmpty(expectedOutputMessage))
+            {
+                Assert.True(
+                    result.Item2.Contains(expectedOutputMessage),
+                    "Expected output is " + expectedOutputMessage + ". Actual output is " + result.Item2);
+            }
+        }
+
+        public static void VerifyResultFailure(Tuple<int, string, string> result, string expectedErrorMessage)
+        {
+            Assert.True(
+                result.Item1 != 0,
+                "nuget.exe DID NOT FAIL: Ouput is " + result.Item2 + ". Error is " + result.Item3);
+
+            Assert.True(
+                result.Item3.Contains(expectedErrorMessage),
+                "Expected error is " + expectedErrorMessage + ". Actual error is " + result.Item3);
+        }
+
+        public static void VerifyPackageExists(
+            PackageIdentity packageIdentity,
+            string packagesDirectory)
+        {
+            string normalizedId = packageIdentity.Id.ToLowerInvariant();
+            string normalizedVersion = packageIdentity.Version.ToNormalizedString();
+
+            var packageIdDirectory = Path.Combine(packagesDirectory, normalizedId);
+            Assert.True(Directory.Exists(packageIdDirectory));
+
+            var packageVersionDirectory = Path.Combine(packageIdDirectory, normalizedVersion);
+            Assert.True(Directory.Exists(packageVersionDirectory));
+
+            var nupkgFileName = GetNupkgFileName(normalizedId, normalizedVersion);
+
+            var nupkgFilePath = Path.Combine(packageVersionDirectory, nupkgFileName);
+            Assert.True(File.Exists(nupkgFilePath));
+
+            var nupkgSHAFilePath = Path.Combine(packageVersionDirectory, nupkgFileName + ".sha512");
+            Assert.True(File.Exists(nupkgSHAFilePath));
+
+            var nuspecFilePath = Path.Combine(packageVersionDirectory, normalizedId + ".nuspec");
+            Assert.True(File.Exists(nuspecFilePath));
+        }
+
+        public static void VerifyPackageDoesNotExist(
+            PackageIdentity packageIdentity,
+            string packagesDirectory)
+        {
+            string normalizedId = packageIdentity.Id.ToLowerInvariant();
+            var packageIdDirectory = Path.Combine(packagesDirectory, normalizedId);
+            Assert.False(Directory.Exists(packageIdDirectory));
+        }
+
+        public static void VerifyPackagesExist(
+            IList<PackageIdentity> packageIdentity,
+            string packagesDirectory)
+        {
+            foreach(var package in packageIdentity)
+            {
+                VerifyPackageExists(package, packagesDirectory);
+            }
+        }
+
+        public static void VerifyPackagesDoNotExist(
+            IList<PackageIdentity> packageIdentity,
+            string packagesDirectory)
+        {
+            foreach (var package in packageIdentity)
+            {
+                VerifyPackageDoesNotExist(package, packagesDirectory);
+            }
+        }
+
+        private static string GetNupkgFileName(string normalizedId, string normalizedVersion)
+        {
+            return string.Format(NupkgFileFormat, normalizedId, normalizedVersion);
         }
     }
 }
