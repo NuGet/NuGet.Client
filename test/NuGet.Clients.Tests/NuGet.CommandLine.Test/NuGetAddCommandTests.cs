@@ -438,5 +438,22 @@ namespace NuGet.CommandLine.Test
                 Util.VerifyPackageDoesNotExist(testInfo.Package, testInfo.SourceParamFolder);
             }
         }
+
+        [Theory]
+        [InlineData("add")]
+        [InlineData("add -?")]
+        [InlineData("add nupkgPath -Source srcFolder extraArg")]
+        public void AddCommand_Success_InvalidArguments_HelpMessage(string args)
+        {
+            // Arrange & Act
+            var result = CommandRunner.Run(
+                Util.GetNuGetExePath(),
+                Directory.GetCurrentDirectory(),
+                args,
+                waitForExit: true);
+
+            // Assert
+            Util.VerifyResultSuccess(result, "usage: NuGet add <packagePath> -Source <fileSourceFolder> [options]");
+        }
     }
 }

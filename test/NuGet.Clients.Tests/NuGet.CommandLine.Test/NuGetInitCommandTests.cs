@@ -90,32 +90,6 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void InitCommand_Success_NoDestinationFeed()
-        {
-            // Arrange
-            using (var testInfo = new TestInfo())
-            {
-                var packages = testInfo.AddPackagesToSource();
-
-                var args = new string[]
-                {
-                    "init",
-                    testInfo.SourceFeed
-                };
-
-                // Act
-                var result = CommandRunner.Run(
-                    testInfo.NuGetExePath,
-                    testInfo.WorkingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
-
-                // Assert
-                Util.VerifyResultSuccess(result, "usage: NuGet init <srcFeedPath> <destFeedPath> [options]");
-            }
-        }
-
-        [Fact]
         public void InitCommand_Success_DestinationProvided()
         {
             // Arrange
@@ -442,20 +416,18 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
-        public void InitCommand_Success_NoArguments()
+        [Theory]
+        [InlineData("init")]
+        [InlineData("init -?")]
+        [InlineData("init srcFolder")]
+        [InlineData("init srcFolder destFolder extraArg")]
+        public void InitCommand_Success_InvalidArguments_HelpMessage(string args)
         {
-            // Arrange
-            var args = new string[]
-            {
-                "init",
-            };
-
-            // Act
+            // Arrange & Act
             var result = CommandRunner.Run(
                 Util.GetNuGetExePath(),
                 Directory.GetCurrentDirectory(),
-                string.Join(" ", args),
+                args,
                 waitForExit: true);
 
             // Assert
