@@ -31,12 +31,7 @@ namespace NuGet.CommandLine
 
             OfflineFeedUtility.ValidatePath(destination);
 
-            if (!Directory.Exists(destination))
-            {
-                throw new CommandLineException(
-                    LocalizedResourceManager.GetString(nameof(NuGetResources.InitCommand_FeedIsNotFound)),
-                    destination);
-            }
+            // If the Destination Feed Folder does not exist, it will be created.
 
             var packagePaths = Directory.EnumerateFiles(source, "*.nupkg");
 

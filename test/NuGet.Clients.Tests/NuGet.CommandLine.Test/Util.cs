@@ -631,7 +631,7 @@ EndProject";
             }
         }
 
-        private static string GetNupkgFileName(string normalizedId, string normalizedVersion)
+        public static string GetNupkgFileName(string normalizedId, string normalizedVersion)
         {
             return string.Format(NupkgFileFormat, normalizedId, normalizedVersion);
         }

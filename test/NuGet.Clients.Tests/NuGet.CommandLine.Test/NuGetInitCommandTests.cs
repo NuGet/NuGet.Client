@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Test.Utility;
@@ -15,7 +12,7 @@ namespace NuGet.CommandLine.Test
     public class NuGetInitCommandTests
     {
         /// TEST CASES
-        /// 1. Destination Feed is not provided. SUCCESS.
+        /// 1. No Destination Feed, or No arguments or '-?' or extra args. SUCCESS with help or usage message.
         /// 2. Destination Feed is provided. SUCCESS.
         /// 3. Destination Feed is provided and is relative. SUCCESS.
         /// 4. Destination Feed does not exist. SUCCESS with messages.
@@ -29,7 +26,6 @@ namespace NuGet.CommandLine.Test
         /// 12. Destination Feed is a http source. FAIL
         /// 13. Source Feed is an invalid input. FAIL
         /// 14. Destination Feed is an invalid input. FAIL
-        /// 15. No arguments provide. SUCCESS with help message
 
         private class TestInfo : IDisposable
         {
@@ -87,6 +83,25 @@ namespace NuGet.CommandLine.Test
             {
                 TestFilesystemUtility.DeleteRandomTestFolders(WorkingPath, SourceFeed, DestinationFeed);
             }
+        }
+
+
+        [Theory]
+        [InlineData("init")]
+        [InlineData("init -?")]
+        [InlineData("init srcFolder")]
+        [InlineData("init srcFolder destFolder extraArg")]
+        public void InitCommand_Success_InvalidArguments_HelpMessage(string args)
+        {
+            // Arrange & Act
+            var result = CommandRunner.Run(
+                Util.GetNuGetExePath(),
+                Directory.GetCurrentDirectory(),
+                args,
+                waitForExit: true);
+
+            // Assert
+            Util.VerifyResultSuccess(result, "usage: NuGet init <srcFeedPath> <destFeedPath> [options]");
         }
 
         [Fact]
@@ -169,9 +184,115 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                var expectedErrorMessage
-                    = string.Format(NuGetResources.InitCommand_FeedIsNotFound, testInfo.DestinationFeed);
-                Util.VerifyResultFailure(result, expectedErrorMessage);
+                Util.VerifyResultSuccess(result);
+                Util.VerifyPackagesExist(packages, testInfo.DestinationFeed);
+            }
+        }
+
+        [Fact]
+        public void InitCommand_Success_DestinationAlreadyContainsPackages()
+        {
+            // Arrange
+            using (var testInfo = new TestInfo())
+            {
+                var packages = testInfo.AddPackagesToSource();
+
+                var args = new string[]
+                {
+                    "init",
+                    testInfo.SourceFeed,
+                    testInfo.DestinationFeed
+                };
+
+                // Act
+                var result = CommandRunner.Run(
+                    testInfo.NuGetExePath,
+                    testInfo.WorkingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Util.VerifyPackagesExist(packages, testInfo.DestinationFeed);
+
+                // Main Act
+                result = CommandRunner.Run(
+                    testInfo.NuGetExePath,
+                    testInfo.WorkingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Main Assert
+                Util.VerifyResultSuccess(result);
+                var output = result.Item2;
+                foreach(var p in packages)
+                {
+                    output.Contains(string.Format(
+                    NuGetResources.AddCommand_PackageAlreadyExists,
+                    p.ToString(),
+                    testInfo.DestinationFeed));
+                }
+            }
+        }
+
+        [Fact]
+        public void InitCommand_Success_DestinationAlreadyContainsInvalidPackages()
+        {
+            // Arrange
+            using (var testInfo = new TestInfo())
+            {
+                var packages = testInfo.AddPackagesToSource();
+
+                var args = new string[]
+                {
+                    "init",
+                    testInfo.SourceFeed,
+                    testInfo.DestinationFeed
+                };
+
+                // Act
+                var result = CommandRunner.Run(
+                    testInfo.NuGetExePath,
+                    testInfo.WorkingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Util.VerifyPackagesExist(packages, testInfo.DestinationFeed);
+
+                var firstPackage = packages.First();
+                var packageId = firstPackage.Id.ToLowerInvariant();
+                var packageIdDirectory = Path.Combine(testInfo.DestinationFeed, packageId);
+                Assert.True(Directory.Exists(packageIdDirectory));
+
+                var packageVersion = firstPackage.Version.ToNormalizedString();
+                var packageVersionDirectory = Path.Combine(packageIdDirectory, packageVersion);
+                Assert.True(Directory.Exists(packageVersionDirectory));
+
+                var nupkgFileName = Util.GetNupkgFileName(packageId, packageVersion);
+                var nupkgFilePath = Path.Combine(packageVersionDirectory, nupkgFileName);
+                File.Delete(nupkgFilePath);
+
+                // Main Act
+                result = CommandRunner.Run(
+                    testInfo.NuGetExePath,
+                    testInfo.WorkingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Main Assert
+                Util.VerifyResultSuccess(result, string.Format(
+                    NuGetResources.AddCommand_ExistingPackageInvalid,
+                    firstPackage.ToString(),
+                    testInfo.DestinationFeed));
+
+                var output = result.Item2;
+                foreach (var p in packages.Skip(1))
+                {
+                    output.Contains(string.Format(
+                    NuGetResources.AddCommand_PackageAlreadyExists,
+                    p.ToString(),
+                    testInfo.DestinationFeed));
+                }
             }
         }
 
@@ -414,24 +535,6 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Util.VerifyResultFailure(result, "Illegal characters in path");
             }
-        }
-
-        [Theory]
-        [InlineData("init")]
-        [InlineData("init -?")]
-        [InlineData("init srcFolder")]
-        [InlineData("init srcFolder destFolder extraArg")]
-        public void InitCommand_Success_InvalidArguments_HelpMessage(string args)
-        {
-            // Arrange & Act
-            var result = CommandRunner.Run(
-                Util.GetNuGetExePath(),
-                Directory.GetCurrentDirectory(),
-                args,
-                waitForExit: true);
-
-            // Assert
-            Util.VerifyResultSuccess(result, "usage: NuGet init <srcFeedPath> <destFeedPath> [options]");
         }
     }
 }

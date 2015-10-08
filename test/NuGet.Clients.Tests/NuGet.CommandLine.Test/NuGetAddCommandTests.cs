@@ -64,7 +64,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void AddCommand_Success_NoSourceSpecified()
+        public void AddCommand_Fail_NoSourceSpecified()
         {
             // Arrange
             using (var testInfo = new TestInfo())
