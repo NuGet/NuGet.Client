@@ -11,8 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Common;
-using NuGet.Logging;
-using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging
 {
@@ -22,13 +20,24 @@ namespace NuGet.Packaging
 
         public static async Task InstallFromSourceAsync(
             Func<Stream, Task> copyToAsync,
-            PackageIdentity packageIdentity,
-            string packagesDirectory,
-            ILogger log,
-            bool fixNuspecIdCasing,
+            VersionFolderPathContext versionFolderPathContext,
             CancellationToken token)
         {
-            var packagePathResolver = new VersionFolderPathResolver(packagesDirectory);
+            if (copyToAsync == null)
+            {
+                throw new ArgumentNullException(nameof(copyToAsync));
+            }
+
+            if (versionFolderPathContext == null)
+            {
+                throw new ArgumentNullException(nameof(versionFolderPathContext));
+            }
+
+            var packagePathResolver = new VersionFolderPathResolver(
+                versionFolderPathContext.PackagesDirectory, versionFolderPathContext.NormalizeFileNames);
+
+            var packageIdentity = versionFolderPathContext.Package;
+            var logger = versionFolderPathContext.Logger;
 
             var targetPath = packagePathResolver.GetInstallPath(packageIdentity.Id, packageIdentity.Version);
             var targetNuspec = packagePathResolver.GetManifestFilePath(packageIdentity.Id, packageIdentity.Version);
@@ -45,7 +54,8 @@ namespace NuGet.Packaging
                     // waiting on this lock don't need to install it again.
                     if (!File.Exists(hashPath))
                     {
-                        log.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                        logger.LogInformation(string.Format(
+                            CultureInfo.CurrentCulture,
                             Strings.Log_InstallingPackage,
                             packageIdentity.Id,
                             packageIdentity.Version));
@@ -90,13 +100,21 @@ namespace NuGet.Packaging
 
                             using (var archive = new ZipArchive(nupkgStream, ZipArchiveMode.Read))
                             {
-                                ExtractFiles(archive, targetPath, NupkgFilter);
+                                if (versionFolderPathContext.ExtractNuspecOnly)
+                                {
+                                    ExtractNuspec(archive, targetNupkg, targetNuspec);
+                                }
+                                else
+                                {
+                                    ExtractFiles(archive, targetPath, NupkgFilter);
+                                }
                             }
                         }
 
-                        if (fixNuspecIdCasing)
+                        if (versionFolderPathContext.FixNuspecIdCasing)
                         {
-                            // DNU REFACTORING TODO: delete the hacky FixNuSpecIdCasing() and uncomment logic below after we
+                            // DNU REFACTORING TODO: delete the hacky FixNuSpecIdCasing()
+                            // and uncomment logic below after we
                             // have implementation of NuSpecFormatter.Read()
                             // Fixup the casing of the nuspec on disk to match what we expect
                             var nuspecFile = Directory.EnumerateFiles(targetPath, "*" + ManifestExtension).Single();
@@ -130,12 +148,36 @@ namespace NuGet.Packaging
                             File.Move(tempHashPath, hashPath);
                         }
 
-                        log.LogVerbose($"Completed installation of {packageIdentity.Id} {packageIdentity.Version}");
+                        logger.LogVerbose($"Completed installation of {packageIdentity.Id} {packageIdentity.Version}");
                     }
 
                     return 0;
                 },
                 token: token);
+        }
+
+        private static void ExtractNuspec(ZipArchive archive, string targetNuspec)
+        {
+            var nuspecEntry = archive.Entries
+                .FirstOrDefault(p => p.FullName.EndsWith(ManifestExtension, StringComparison.OrdinalIgnoreCase));
+
+            if (nuspecEntry == null)
+            {
+                throw new FileNotFoundException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.MissingNuspec,
+                    targetNuspec));
+            }
+
+            // Nuspec found, extract and leave the rest
+            using (var entryStream = nuspecEntry.Open())
+            {
+                using (var targetStream
+                    = new FileStream(targetNuspec, FileMode.Create, FileAccess.Write, FileShare.None))
+                {
+                    entryStream.CopyTo(targetStream);
+                }
+            }
         }
 
         // DNU REFACTORING TODO: delete this temporary workaround after we have NuSpecFormatter.Read()
@@ -148,8 +190,10 @@ namespace NuGet.Packaging
             {
                 var xDoc = XDocument.Parse(File.ReadAllText(nuspecFile),
                     LoadOptions.PreserveWhitespace);
-                var metadataNode = xDoc.Root.Elements().Where(e => StringComparer.Ordinal.Equals(e.Name.LocalName, "metadata")).First();
-                var node = metadataNode.Elements(XName.Get("id", metadataNode.GetDefaultNamespace().NamespaceName)).First();
+                var metadataNode = xDoc.Root.Elements()
+                    .Where(e => StringComparer.Ordinal.Equals(e.Name.LocalName, "metadata")).First();
+                var node = metadataNode.Elements(XName.Get("id", metadataNode.GetDefaultNamespace().NamespaceName))
+                    .First();
                 node.Value = correctedId;
 
                 var tmpNuspecFile = nuspecFile + ".tmp";
@@ -232,7 +276,8 @@ namespace NuGet.Packaging
 
                     using (var entryStream = entry.Open())
                     {
-                        using (var targetStream = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None))
+                        using (var targetStream
+                            = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None))
                         {
                             entryStream.CopyTo(targetStream);
                         }
