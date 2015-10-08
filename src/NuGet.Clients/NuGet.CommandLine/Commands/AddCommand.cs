@@ -12,6 +12,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "AddCommandSourceDescription", AltName = "src")]
         public string Source { get; set; }
 
+        [Option(typeof(NuGetCommand), "ExpandDescription")]
+        public bool Expand { get; set; }
+
         public override async Task ExecuteCommandAsync()
         {
             // Arguments[0] will not be null at this point.
@@ -42,7 +45,8 @@ namespace NuGet.CommandLine
                 Console, // IConsole is an ILogger
                 throwIfSourcePackageIsInvalid: true,
                 throwIfPackageExistsAndInvalid: true,
-                throwIfPackageExists: false);
+                throwIfPackageExists: false,
+                expand: Expand);
 
             await OfflineFeedUtility.AddPackageToSource(offlineFeedAddContext, CancellationToken.None);
         }

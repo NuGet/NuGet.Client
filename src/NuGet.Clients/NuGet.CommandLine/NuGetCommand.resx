@@ -5279,4 +5279,7 @@ nuget add \\foo\packages \\bar\packages</value>
   <data name="InitCommandUsageSummary" xml:space="preserve">
     <value>&lt;srcFeedPath&gt; &lt;destFeedPath&gt; [options]</value>
   </data>
+  <data name="ExpandDescription" xml:space="preserve">
+    <value>If provided, a package added to offline feed is also expanded.</value>
+  </data>
 </root>

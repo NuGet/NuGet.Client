@@ -11,6 +11,9 @@ namespace NuGet.CommandLine
     UsageSummaryResourceName = "InitCommandUsageSummary", UsageExampleResourceName = "InitCommandUsageExamples")]
     public class InitCommand : Command
     {
+        [Option(typeof(NuGetCommand), "ExpandDescription")]
+        public bool Expand { get; set; }
+
         public override async Task ExecuteCommandAsync()
         {
             // Arguments[0] or Arguments[1] will not be null at this point.
@@ -47,7 +50,8 @@ namespace NuGet.CommandLine
                         Console, // IConsole is an ILogger
                         throwIfSourcePackageIsInvalid: false,
                         throwIfPackageExistsAndInvalid: false,
-                        throwIfPackageExists: false);
+                        throwIfPackageExists: false,
+                        expand: Expand);
 
                     await OfflineFeedUtility.AddPackageToSource(offlineFeedAddContext, CancellationToken.None);
                 }

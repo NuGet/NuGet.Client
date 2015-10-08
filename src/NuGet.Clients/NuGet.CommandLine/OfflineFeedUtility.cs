@@ -153,7 +153,7 @@ namespace NuGet.CommandLine
                             source,
                             logger,
                             fixNuspecIdCasing: false,
-                            extractNuspecOnly: true,
+                            extractNuspecOnly: !offlineFeedAddContext.Expand,
                             normalizeFileNames: true);
 
                         await NuGetPackageUtils.InstallFromSourceAsync(

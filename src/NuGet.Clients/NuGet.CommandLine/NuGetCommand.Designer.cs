@@ -2310,6 +2310,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to If provided, a package added to offline feed is also expanded..
+        /// </summary>
+        internal static string ExpandDescription {
+            get {
+                return ResourceManager.GetString("ExpandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Print detailed help for all available commands..
         /// </summary>
         internal static string HelpCommandAll {
