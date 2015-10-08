@@ -330,6 +330,31 @@ function Test-PackageRestore-AllSourcesAreUsed {
     }
 }
 
+# Test unneeded file are not created during restore
+function Test-PackageRestore-NoContent_TypesXml {
+    param($context)
+
+    # Arrange
+    $p1 = New-ClassLibrary	
+    $p1 | Install-Package jquery -version 2.1.4
+    
+    # delete the packages folder
+    $packagesDir = Get-PackagesDir
+    RemoveDirectory $packagesDir
+    Assert-False (Test-Path $packagesDir)
+
+    # Act
+    Build-Solution
+
+    # Assert
+	$thisPackageDir = Join-Path $packagesDir ("jQuery" + "." + "2.1.4")
+	$Content_xmlPath = Join-Path $thisPackageDir "[Content_Types].xml" 
+    Assert-True (Test-Path $packagesDir)
+	Assert-True (Test-Path $thisPackageDir)
+    Assert-Package $p1 jquery
+	Assert-False (Test-Path $Content_xmlPath)  
+}
+
 # Create a test package 
 function CreateTestPackage {
     param(
