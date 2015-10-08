@@ -8,7 +8,7 @@ using NuGet.Packaging;
 namespace NuGet.CommandLine
 {
     [Command(typeof(NuGetCommand), "add", "AddCommandDescription;DefaultConfigDescription",
-        MinArgs = 1, MaxArgs = 2, UsageDescriptionResourceName = "AddCommandUsageDescription",
+        MinArgs = 2, MaxArgs = 2, UsageDescriptionResourceName = "AddCommandUsageDescription",
         UsageSummaryResourceName = "AddCommandUsageSummary", UsageExampleResourceName = "AddCommandUsageExamples")]
     public class AddCommand : Command
     {
@@ -29,7 +29,6 @@ namespace NuGet.CommandLine
                     packagePath);
             }
 
-            Source = OfflineFeedUtility.GetEffectiveSourceFeedFolder(Source, Settings);
             OfflineFeedUtility.ValidatePath(Source);
 
             // If the Source Feed Folder does not exist, it will be created.

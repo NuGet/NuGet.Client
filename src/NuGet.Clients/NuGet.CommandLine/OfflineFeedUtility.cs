@@ -69,16 +69,6 @@ namespace NuGet.CommandLine
             return false;
         }
 
-        public static string GetEffectiveSourceFeedFolder(string source, Configuration.ISettings settings)
-        {
-            if (string.IsNullOrEmpty(source))
-            {
-                return SettingsUtility.GetOfflineFeed(settings);
-            }
-
-            return source;
-        }
-
         public static void ValidatePath(string path)
         {
             Uri pathUri;

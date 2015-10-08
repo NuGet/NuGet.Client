@@ -5249,38 +5249,34 @@ nuget update -Self</value>
     <value>Adds a given package to the offline feed or the specified source if it is a file source. http sources are not supported.</value>
   </data>
   <data name="AddCommandUsageDescription" xml:space="preserve">
-    <value>Specify the path to the package to be added to the offline feed. Optionally, you can specify the source if it is a file source.</value>
+    <value>Specify the path to the package to be added to the offline feed which should be a file source.</value>
   </data>
   <data name="AddCommandUsageExamples" xml:space="preserve">
-    <value>nuget add foo.nupkg
-
-nuget add foo.nupkg  -Source c:\bar\
+    <value>nuget add foo.nupkg  -Source c:\bar\
 
 nuget add foo.nupkg -Source \\bar\packages\</value>
   </data>
   <data name="AddCommandUsageSummary" xml:space="preserve">
-    <value>&lt;packagePath&gt; [-Source &lt;fileSourceFolder&gt;] [options]</value>
+    <value>&lt;packagePath&gt; -Source &lt;fileSourceFolder&gt; [options]</value>
   </data>
   <data name="AddCommandSourceDescription" xml:space="preserve">
-    <value>Specifies the fileSourceFolder. If not specified, the offline feed will be used; as configured or the default one: "%USERPROFILE%\.nuget\offlinefeed". Cannot be an http source.</value>
+    <value>Specifies the fileSourceFolder to which the nupkg will be added. http sources are not supported.</value>
   </data>
   <data name="InitCommandDescription" xml:space="preserve">
-    <value>Adds all the packages from a given feed to the offline feed or the specified destination feed if it is a file source feed. http feeds are not supported.</value>
+    <value>Adds all the packages from a given feed to the specified destination feed if it is a file source feed. http feeds are not supported.</value>
   </data>
   <data name="InitCommandSourceDescription" xml:space="preserve">
-    <value>Specifies the fileSourceFolder. If not specified, the offline feed will be used; as configured or the default one: "%USERPROFILE%\.nuget\offlinefeed". Cannot be an http source.</value>
+    <value>Specifies the fileSourceFolder. Cannot be an http source.</value>
   </data>
   <data name="InitCommandUsageDescription" xml:space="preserve">
-    <value>Specify the path to the feed to be added to the offline feed. Optionally, you can given an explicit destination feed</value>
+    <value>Specify the path to the feed to be added to the specified destination feed</value>
   </data>
   <data name="InitCommandUsageExamples" xml:space="preserve">
-    <value>nuget init c:\foo
-
-nuget init c:\foo c:\bar
+    <value>nuget init c:\foo c:\bar
 
 nuget add \\foo\packages \\bar\packages</value>
   </data>
   <data name="InitCommandUsageSummary" xml:space="preserve">
-    <value>&lt;srcFeedPath&gt; [&lt;destFeedPath&gt;] [options]</value>
+    <value>&lt;srcFeedPath&gt; &lt;destFeedPath&gt; [options]</value>
   </data>
 </root>

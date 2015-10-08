@@ -61,6 +61,53 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Adds a given package to the offline feed or the specified source if it is a file source. http sources are not supported..
+        /// </summary>
+        internal static string AddCommandDescription {
+            get {
+                return ResourceManager.GetString("AddCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies the fileSourceFolder to which the nupkg will be added. http sources are not supported..
+        /// </summary>
+        internal static string AddCommandSourceDescription {
+            get {
+                return ResourceManager.GetString("AddCommandSourceDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specify the path to the package to be added to the offline feed which should be a file source..
+        /// </summary>
+        internal static string AddCommandUsageDescription {
+            get {
+                return ResourceManager.GetString("AddCommandUsageDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget add foo.nupkg  -Source c:\bar\
+        ///
+        ///nuget add foo.nupkg -Source \\bar\packages\.
+        /// </summary>
+        internal static string AddCommandUsageExamples {
+            get {
+                return ResourceManager.GetString("AddCommandUsageExamples", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;packagePath&gt; -Source &lt;fileSourceFolder&gt; [options].
+        /// </summary>
+        internal static string AddCommandUsageSummary {
+            get {
+                return ResourceManager.GetString("AddCommandUsageSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The API key for the server..
         /// </summary>
         internal static string CommandApiKey {
@@ -3099,6 +3146,53 @@ namespace NuGet.CommandLine {
         internal static string HelpCommandUsageSummary_trk {
             get {
                 return ResourceManager.GetString("HelpCommandUsageSummary_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Adds all the packages from a given feed to the specified destination feed if it is a file source feed. http feeds are not supported..
+        /// </summary>
+        internal static string InitCommandDescription {
+            get {
+                return ResourceManager.GetString("InitCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies the fileSourceFolder. Cannot be an http source..
+        /// </summary>
+        internal static string InitCommandSourceDescription {
+            get {
+                return ResourceManager.GetString("InitCommandSourceDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specify the path to the feed to be added to the specified destination feed.
+        /// </summary>
+        internal static string InitCommandUsageDescription {
+            get {
+                return ResourceManager.GetString("InitCommandUsageDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget init c:\foo c:\bar
+        ///
+        ///nuget add \\foo\packages \\bar\packages.
+        /// </summary>
+        internal static string InitCommandUsageExamples {
+            get {
+                return ResourceManager.GetString("InitCommandUsageExamples", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;srcFeedPath&gt; &lt;destFeedPath&gt; [options].
+        /// </summary>
+        internal static string InitCommandUsageSummary {
+            get {
+                return ResourceManager.GetString("InitCommandUsageSummary", resourceCulture);
             }
         }
         
