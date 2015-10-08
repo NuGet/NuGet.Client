@@ -502,5 +502,32 @@ namespace NuGet.Test.Utility
 
             return result;
         }
+
+        public static Stream GetTestPackageWithContentXmlFile()
+        {
+            var stream = new MemoryStream();
+
+            using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                zip.AddEntry("lib/a.dll", new byte[] { 0 });
+                zip.AddEntry("[Content_Types].xml", new byte[] { 0 });
+                zip.AddEntry("content/[Content_Types].xml", new byte[] { 0 });
+
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                            <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
+                              <metadata>
+                                <id>packageA</id>
+                                <version>2.0.3</version>
+                                <authors>Author1, author2</authors>
+                                <description>Sample description</description>
+                                <language>en-US</language>
+                                <projectUrl>http://www.nuget.org/</projectUrl>
+                                <licenseUrl>http://www.nuget.org/license</licenseUrl>
+                              </metadata>
+                            </package>", Encoding.UTF8);
+            }
+
+            return stream;
+        }
     }
 }

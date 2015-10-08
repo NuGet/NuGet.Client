@@ -16,7 +16,7 @@ namespace NuGet.Packaging
 {
     public static class PackageHelper
     {
-        private static readonly string[] ExcludePaths = new[] { "_rels", "package" };
+        private static readonly string[] ExcludePaths = new[] { "_rels", "package", "[Content_Types].xml" };
         private static readonly string[] ExcludeExtension = new[] { ".nupkg.sha512" };
 
         public static bool IsManifest(string path)
