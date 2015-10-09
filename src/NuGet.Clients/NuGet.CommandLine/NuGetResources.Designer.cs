@@ -574,7 +574,25 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Clearing NuGet cache.
+        ///   Looks up a localized string similar to Cache clear failed: one or more errors occured..
+        /// </summary>
+        public static string ClearCacheCommand_CacheClearFailed {
+            get {
+                return ResourceManager.GetString("ClearCacheCommand_CacheClearFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cache partially cleared..
+        /// </summary>
+        public static string ClearCacheCommand_CachePartiallyCleared {
+            get {
+                return ResourceManager.GetString("ClearCacheCommand_CachePartiallyCleared", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clearing NuGet cache: {0}.
         /// </summary>
         public static string ClearCacheCommand_ClearingNuGetCache {
             get {
@@ -583,7 +601,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Clearing NuGet global packages cache.
+        ///   Looks up a localized string similar to Clearing NuGet global packages cache: {0}.
         /// </summary>
         public static string ClearCacheCommand_ClearingNuGetGlobalPackagesCache {
             get {
@@ -592,7 +610,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Clearing NuGet HTTP cache.
+        ///   Looks up a localized string similar to Clearing NuGet HTTP cache: {0}.
         /// </summary>
         public static string ClearCacheCommand_ClearingNuGetHttpCache {
             get {
@@ -601,11 +619,11 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to clear cache directory.
+        ///   Looks up a localized string similar to Failed to delete {0}.
         /// </summary>
-        public static string ClearCacheCommand_UnableToClearCacheDir {
+        public static string ClearCacheCommand_FailedToDeletePath {
             get {
-                return ResourceManager.GetString("ClearCacheCommand_UnableToClearCacheDir", resourceCulture);
+                return ResourceManager.GetString("ClearCacheCommand_FailedToDeletePath", resourceCulture);
             }
         }
         

@@ -61,7 +61,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Also clear the NuGet global packages cache..
+        ///   Looks up a localized string similar to Additionally clear the system-wide, global NuGet packages folder..
         /// </summary>
         internal static string ClearCacheCommandClearGlobalPackagesDescription {
             get {
@@ -70,7 +70,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Clears your local NuGet cache..
+        ///   Looks up a localized string similar to Clears your local NuGet packages and HTTP requests cache. Optionally clears your machine global packages folder..
         /// </summary>
         internal static string ClearCacheCommandDescription {
             get {

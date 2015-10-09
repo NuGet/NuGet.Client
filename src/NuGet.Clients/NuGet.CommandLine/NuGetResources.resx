@@ -6071,15 +6071,21 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
     <value>Cache cleared.</value>
   </data>
   <data name="ClearCacheCommand_ClearingNuGetCache" xml:space="preserve">
-    <value>Clearing NuGet cache</value>
+    <value>Clearing NuGet cache: {0}</value>
   </data>
   <data name="ClearCacheCommand_ClearingNuGetGlobalPackagesCache" xml:space="preserve">
-    <value>Clearing NuGet global packages cache</value>
+    <value>Clearing NuGet global packages cache: {0}</value>
   </data>
   <data name="ClearCacheCommand_ClearingNuGetHttpCache" xml:space="preserve">
-    <value>Clearing NuGet HTTP cache</value>
+    <value>Clearing NuGet HTTP cache: {0}</value>
   </data>
-  <data name="ClearCacheCommand_UnableToClearCacheDir" xml:space="preserve">
-    <value>Unable to clear cache directory</value>
+  <data name="ClearCacheCommand_CacheClearFailed" xml:space="preserve">
+    <value>Cache clear failed: one or more errors occured.</value>
+  </data>
+  <data name="ClearCacheCommand_CachePartiallyCleared" xml:space="preserve">
+    <value>Cache partially cleared.</value>
+  </data>
+  <data name="ClearCacheCommand_FailedToDeletePath" xml:space="preserve">
+    <value>Failed to delete {0}</value>
   </data>
 </root>
