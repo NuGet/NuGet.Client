@@ -88,10 +88,6 @@
       <Project>{957c4e99-3644-47dd-8f9a-ae36f41ebe4a}</Project>
       <Name>NuGet.CommandLine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\ProjectManagement\ProjectManagement.csproj">
-      <Project>{fcd39e83-d8de-4401-ab12-d824ac2fe07b}</Project>
-      <Name>ProjectManagement</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MockServerResource.resx">
