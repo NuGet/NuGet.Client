@@ -1,10 +1,10 @@
 param (
     [ValidateSet("debug", "release")][string]$Configuration="debug",
+    [ValidateSet("Release", "beta", "rc", "local")][string]$ReleaseLabel="local",
+    [string]$BuildNumber,
     [switch]$SkipTests,
     [switch]$SkipRestore,
-    [switch]$Fast,
 	[switch]$CleanCache,
-	[switch]$PublicRelease,
 	[switch]$SkipILMerge,
 	[switch]$DelaySign,
     [string]$MSPFXPath,
@@ -75,8 +75,14 @@ function CleanCache()
 ## Building XProj projects
 function BuildXproj()
 {
-    ## For local build using the following format
-    $env:DNX_BUILD_VERSION="beta-$timestamp"
+    ## Setting the DNX build version
+    if($ReleaseLabel -ne "Release")
+    {
+        $env:DNX_BUILD_VERSION="$ReleaseLabel-$BuildNumber"
+    }
+    
+    # Setting the DNX AssemblyFileVersion
+    $env:DNX_ASSEMBLY_FILE_VERSION=$BuildNumber
 
     if ($SkipRestore -eq $False)
     {
@@ -153,7 +159,7 @@ function BuildCSproj()
     & $nugetExe restore -msbuildVersion 14 .\NuGet.Clients.sln
 
     # Build the solution
-    & $msbuildExe .\NuGet.Clients.sln "/p:Configuration=$Configuration;PublicRelease=$PublicRelease;RunTests=!$SkipTests"
+    & $msbuildExe .\NuGet.Clients.sln "/p:Configuration=$Configuration;ReleaseLabel=$ReleaseLabel;BuildNumber=$BuildNumber;RunTests=!$SkipTests"
 
     if ($LASTEXITCODE -ne 0)
     {
@@ -194,7 +200,6 @@ $ILMerge = Join-Path $executingScriptDirectory "packages\ILMerge.2.14.1208\tools
 $dnvmLoc = Join-Path $env:USERPROFILE ".dnx\bin\dnvm.cmd"
 $nupkgsDir = Join-Path $executingScriptDirectory "nupkgs"
 $artifacts = Join-Path $executingScriptDirectory "artifacts"
-$timestamp = [DateTime]::UtcNow.ToString("yyMMddHHmmss");
 $startTime = [DateTime]::UtcNow
 
 Write-Host "Build started at " $startTime
@@ -247,23 +252,31 @@ if($CleanCache)
 
 # enable delay signed build
 if ($DelaySign)
+{
+    if (Test-Path $MSPFXPath)
     {
-        if (Test-Path $MSPFXPath)
-        {
-            Write-Host "Setting NuGet.Core solution to delay sign using $MSPFXPath"
-            $env:DNX_BUILD_KEY_FILE=$MSPFXPath
-            $env:DNX_BUILD_DELAY_SIGN=$true
-        }
-
-        if (Test-Path $NuGetPFXPath)
-        {
-            Write-Host "Setting NuGet.Clients solution to delay sign using $NuGetPFXPath"
-            $env:NUGET_PFX_PATH= $NuGetPFXPath
-
-            Write-Host "Using the Microsoft Key for NuGet Command line $MSPFXPath"
-            $env:MS_PFX_PATH=$MSPFXPath
-        }
+        Write-Host "Setting NuGet.Core solution to delay sign using $MSPFXPath"
+        $env:DNX_BUILD_KEY_FILE=$MSPFXPath
+        $env:DNX_BUILD_DELAY_SIGN=$true
     }
+
+    if (Test-Path $NuGetPFXPath)
+    {
+        Write-Host "Setting NuGet.Clients solution to delay sign using $NuGetPFXPath"
+        $env:NUGET_PFX_PATH= $NuGetPFXPath
+
+        Write-Host "Using the Microsoft Key for NuGet Command line $MSPFXPath"
+        $env:MS_PFX_PATH=$MSPFXPath
+    }
+}
+
+$SemanticVersionDate = "2015-10-8"
+
+if(!$BuildNumber)
+{
+    $R
+    $BuildNumber = ([Math]::DivRem(([System.DateTime]::Now.Subtract([System.DateTime]::Parse($SemanticVersionDate)).TotalMinutes), 5, [ref]$R)).ToString('F0')
+}
 
 ## Building all XProj projects
 BuildXproj

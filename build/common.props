@@ -1,5 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<!--Build output setting-->
+	<PropertyGroup>	
+		<EnlistmentRoot>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), 'build.ps1'))</EnlistmentRoot>        
+		<EnlistmentRootSrc>$(EnlistmentRoot)\src</EnlistmentRootSrc>
+		
+		<BinRoot>$(EnlistmentRoot)\artifacts</BinRoot>
+		<BinRoot>$([System.IO.Path]::GetFullPath( $(BinRoot) ))</BinRoot>
+				
+		<RelativeOutputPathBase>$(MSBuildProjectDirectory.Substring($(EnlistmentRootSrc.Length)))</RelativeOutputPathBase>
+		
+		<BaseIntermediateOutputPath>$(EnlistmentRoot)\artifacts\obj</BaseIntermediateOutputPath>
+		<BaseIntermediateOutputPath>$([System.IO.Path]::GetFullPath( $(BaseIntermediateOutputPath) ))</BaseIntermediateOutputPath>
+
+		<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+		
+		<OutputPath>$(BinRoot)\$(Configuration)\$(RelativeOutputPathBase)</OutputPath>
+		<OutputPath>$([System.IO.Path]::GetFullPath( $(OutputPath) ))\</OutputPath>
+
+		<AppxPackageDir>$(OutputPath)</AppxPackageDir>
+
+		<IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)\$(RelativeOutputPathBase)</IntermediateOutputPath>
+		<IntermediateOutputPath>$([System.IO.Path]::GetFullPath( $(IntermediateOutputPath) ))\</IntermediateOutputPath>
+		
+		<SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(EnlistmentRoot)\</SolutionDir>
+	</PropertyGroup>
 	
 	<!--Semantic Version-->
 	<PropertyGroup>
@@ -10,16 +36,7 @@
 		<SemanticVersionMajor>3</SemanticVersionMajor>
 		<SemanticVersionMinor>3</SemanticVersionMinor>
 		<SemanticVersionPatch>0</SemanticVersionPatch>		
-		<!-- 
-		Date when Semantic Version was changed. 
-		Update for every public release.
-		-->
-		<SemanticVersionDate>2015-9-14</SemanticVersionDate>
-		<!-- 
-		Pre-release version is used to distinguish internally built NuGet packages.
-		Pre-release version = Minutes since semantic version was set, divided by 5 (to make it fit in a UInt16).
-		-->
-		<PreReleaseVersion>$([MSBuild]::Divide($([System.DateTime]::Now.Subtract($([System.DateTime]::Parse($(SemanticVersionDate)))).TotalMinutes), 5).ToString('F0'))</PreReleaseVersion>
+		<PreReleaseVersion>0</PreReleaseVersion>
 	</PropertyGroup>
 	
 	<!--Setting the Pre-release/Build meta-data from CI if Version is set-->
@@ -28,73 +45,42 @@
 	</PropertyGroup>
 	
 	<!--Setting the product information for Beta builds-->
+	<PropertyGroup Condition="'$(ReleaseLabel)' != 'Release'">
+		<PreReleaseInformationVersion>-$(ReleaseLabel)-$(PreReleaseVersion)</PreReleaseInformationVersion>
+	</PropertyGroup>
+	
+	<!-- Generate AssemblyFileVersion and AssemblyVersion attributes. -->
 	<PropertyGroup>
-		<PreReleaseInformationVersion>-beta-$(PreReleaseVersion)</PreReleaseInformationVersion>
+	<!-- Turn on dynamic assembly attribute generation -->
+	<AssemblyAttributesPath>$(IntermediateOutputPath)AssemblyInfo.g.cs</AssemblyAttributesPath>
+	<GenerateAdditionalSources>true</GenerateAdditionalSources>
 	</PropertyGroup>
-	
-	<!--Build output setting-->
-	<PropertyGroup>	
-		<EnlistmentRoot>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), 'build.ps1'))</EnlistmentRoot>        
-		<EnlistmentRootSrc>$(EnlistmentRoot)\src</EnlistmentRootSrc>
-        
-		<BinRoot>$(EnlistmentRoot)\artifacts</BinRoot>
-        <BinRoot>$([System.IO.Path]::GetFullPath( $(BinRoot) ))</BinRoot>
-                
-        <RelativeOutputPathBase>$(MSBuildProjectDirectory.Substring($(EnlistmentRootSrc.Length)))</RelativeOutputPathBase>
-        
-        <BaseIntermediateOutputPath>$(EnlistmentRoot)\artifacts\obj</BaseIntermediateOutputPath>
-        <BaseIntermediateOutputPath>$([System.IO.Path]::GetFullPath( $(BaseIntermediateOutputPath) ))</BaseIntermediateOutputPath>
-
-        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-        
-        <OutputPath>$(BinRoot)\$(Configuration)\$(RelativeOutputPathBase)</OutputPath>
-        <OutputPath>$([System.IO.Path]::GetFullPath( $(OutputPath) ))\</OutputPath>
-
-        <AppxPackageDir>$(OutputPath)</AppxPackageDir>
-
-        <IntermediateOutputPath>$(BaseIntermediateOutputPath)\$(Configuration)\$(RelativeOutputPathBase)</IntermediateOutputPath>
-        <IntermediateOutputPath>$([System.IO.Path]::GetFullPath( $(IntermediateOutputPath) ))\</IntermediateOutputPath>
-        
-        <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(EnlistmentRoot)\</SolutionDir>
-	</PropertyGroup>
-	
-	<!--Not using the build number for FileVersion on release build-->
-	<PropertyGroup Condition="'$(PublicRelease)' == 'true'">
-		<PreReleaseInformationVersion></PreReleaseInformationVersion>
-	</PropertyGroup>
-
-  <!-- Generate AssemblyFileVersion and AssemblyVersion attributes. -->
-  <PropertyGroup>
-    <!-- Turn on dynamic assembly attribute generation -->
-    <AssemblyAttributesPath>$(IntermediateOutputPath)AssemblyInfo.g.cs</AssemblyAttributesPath>
-    <GenerateAdditionalSources>true</GenerateAdditionalSources>
-  </PropertyGroup>
   
-  <ItemGroup>
-    <!-- 
-      AssemblyVersion and AssemblyFileVersion attributes are generated automatically for every build.
-      NuGet package version is derived from AssemblyFileVersion.
-    -->
-    <AssemblyAttributes Include="AssemblyVersion">
-      <_Parameter1>$(SemanticVersionMajor).$(SemanticVersionMinor).$(SemanticVersionPatch).$(PreReleaseVersion)</_Parameter1>
-    </AssemblyAttributes>
-    <AssemblyAttributes Include="AssemblyFileVersion">
-      <_Parameter1>$(SemanticVersionMajor).$(SemanticVersionMinor).$(SemanticVersionPatch).$(PreReleaseVersion)</_Parameter1>
-    </AssemblyAttributes>
-	<AssemblyAttributes Include="AssemblyInformationalVersion">
-      <_Parameter1>$(SemanticVersionMajor).$(SemanticVersionMinor).$(SemanticVersionPatch)$(PreReleaseInformationVersion)</_Parameter1>
-    </AssemblyAttributes>
-    <AssemblyAttributes Include="AssemblyCompany">
-      <_Parameter1>.NET Foundation</_Parameter1>
-    </AssemblyAttributes>
-    <AssemblyAttributes Include="AssemblyProduct">
-      <_Parameter1>NuGet</_Parameter1>
-    </AssemblyAttributes>
-    <AssemblyAttributes Include="AssemblyCopyright">
-      <_Parameter1>.NET Foundation. All rights reserved.</_Parameter1>
-    </AssemblyAttributes>
-    <AssemblyAttributes Include="System.Resources.NeutralResourcesLanguage">
-      <_Parameter1>en-US</_Parameter1>
-    </AssemblyAttributes>
-  </ItemGroup>
+	<ItemGroup>
+		<!-- 
+		  AssemblyVersion and AssemblyFileVersion attributes are generated automatically for every build.
+		  NuGet package version is derived from AssemblyFileVersion.
+		-->
+		<AssemblyAttributes Include="AssemblyVersion">
+		  <_Parameter1>$(SemanticVersionMajor).$(SemanticVersionMinor).$(SemanticVersionPatch).$(PreReleaseVersion)</_Parameter1>
+		</AssemblyAttributes>
+		<AssemblyAttributes Include="AssemblyFileVersion">
+		  <_Parameter1>$(SemanticVersionMajor).$(SemanticVersionMinor).$(SemanticVersionPatch).$(PreReleaseVersion)</_Parameter1>
+		</AssemblyAttributes>
+		<AssemblyAttributes Include="AssemblyInformationalVersion">
+		  <_Parameter1>$(SemanticVersionMajor).$(SemanticVersionMinor).$(SemanticVersionPatch)$(PreReleaseInformationVersion)</_Parameter1>
+		</AssemblyAttributes>
+		<AssemblyAttributes Include="AssemblyCompany">
+		  <_Parameter1>.NET Foundation</_Parameter1>
+		</AssemblyAttributes>
+		<AssemblyAttributes Include="AssemblyProduct">
+		  <_Parameter1>NuGet</_Parameter1>
+		</AssemblyAttributes>
+		<AssemblyAttributes Include="AssemblyCopyright">
+		  <_Parameter1>© .NET Foundation. All rights reserved.</_Parameter1>
+		</AssemblyAttributes>
+		<AssemblyAttributes Include="System.Resources.NeutralResourcesLanguage">
+		  <_Parameter1>en-US</_Parameter1>
+		</AssemblyAttributes>
+	</ItemGroup> 
 </Project>
