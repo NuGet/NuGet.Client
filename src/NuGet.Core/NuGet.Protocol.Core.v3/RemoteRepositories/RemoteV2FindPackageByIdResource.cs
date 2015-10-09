@@ -20,7 +20,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
     public class RemoteV2FindPackageByIdResource : FindPackageByIdResource
     {
         private static readonly XName _xnameEntry = XName.Get("entry", "http://www.w3.org/2005/Atom");
-        private static readonly XName _xnameTitle = XName.Get("title", "http://www.w3.org/2005/Atom");
         private static readonly XName _xnameContent = XName.Get("content", "http://www.w3.org/2005/Atom");
         private static readonly XName _xnameLink = XName.Get("link", "http://www.w3.org/2005/Atom");
         private static readonly XName _xnameProperties = XName.Get("properties", "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata");
@@ -212,7 +211,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         {
             var properties = element.Element(_xnameProperties);
             var idElement = properties.Element(_xnameId);
-            var titleElement = element.Element(_xnameTitle);
 
             var publishElement = properties.Element(_xnamePublish);
             if (publishElement != null)
@@ -226,14 +224,12 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             }
 
             return new PackageInfo
-                {
-                    // If 'Id' element exist, use its value as accurate package Id
-                    // Otherwise, use the value of 'title' if it exist
-                    // Use the given Id as final fallback if all elements above don't exist
-                    Id = idElement?.Value ?? titleElement?.Value ?? id,
-                    Version = NuGetVersion.Parse(properties.Element(_xnameVersion).Value),
-                    ContentUri = element.Element(_xnameContent).Attribute("src").Value,
-                };
+            {
+                // Use the given Id as final fallback if all elements above don't exist
+                Id = idElement?.Value ?? id,
+                Version = NuGetVersion.Parse(properties.Element(_xnameVersion).Value),
+                ContentUri = element.Element(_xnameContent).Attribute("src").Value,
+            };
         }
 
         private async Task<Stream> OpenNupkgStreamAsync(PackageInfo package, CancellationToken cancellationToken)
