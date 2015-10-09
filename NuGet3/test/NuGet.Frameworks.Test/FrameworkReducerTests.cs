@@ -390,7 +390,7 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public void FrameworkReducer_GetNearestPackgesBasedWithPCL()
+        public void FrameworkReducer_GetNearestPackagesBasedWithPCL()
         {
             // Arrange
             var project = NuGetFramework.Parse("net46");
@@ -411,7 +411,7 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public void FrameworkReducer_GetNearestPackgesBasedWithFullFramework()
+        public void FrameworkReducer_GetNearestPackagesBasedWithFullFramework()
         {
             // Arrange
             var project = NuGetFramework.Parse("uap10.0");
