@@ -67,7 +67,7 @@ namespace NuGet.CommandLine.Commands
 
             if (commandResult != 0)
             {
-                throw new Exception(LocalizedResourceManager.GetString(nameof(NuGetResources.ClearCacheCommand_CacheClearFailed)));
+                throw new CommandLineException(LocalizedResourceManager.GetString(nameof(NuGetResources.ClearCacheCommand_CacheClearFailed)));
             }
 
             return Task.FromResult(commandResult);
