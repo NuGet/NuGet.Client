@@ -24,11 +24,11 @@ if (-not (Test-Path $generatePackagesExePath))
     $generatePackagesExePath = Join-Path $toolsPath NuGet\GenerateTestPackages\bin\Debug\GenerateTestPackages.exe
 }
 
-$nugetExePath = Join-Path $currentPath "NuGet-Signed.exe"
+$nugetExePath = Join-Path $currentPath "NuGet.exe"
 
 if (!(Test-Path $nugetExePath)) 
 {
-    $nugetExePath = "$nugetRoot\test\EndToEnd\NuGet-Signed.exe"
+    $nugetExePath = "$nugetRoot\test\EndToEnd\NuGet.exe"
 }
 
 $msbuildPath = Join-Path $env:windir Microsoft.NET\Framework\v4.0.30319\msbuild
