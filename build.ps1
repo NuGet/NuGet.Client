@@ -274,7 +274,7 @@ $SemanticVersionDate = "2015-10-8"
 
 if(!$BuildNumber)
 {
-    $R
+    $R = ""
     $BuildNumber = ([Math]::DivRem(([System.DateTime]::Now.Subtract([System.DateTime]::Parse($SemanticVersionDate)).TotalMinutes), 5, [ref]$R)).ToString('F0')
 }
 
