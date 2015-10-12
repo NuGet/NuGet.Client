@@ -189,4 +189,7 @@
   <data name="SolutionIsNotSaved" xml:space="preserve">
     <value>Solution is not saved. Please save your solution before managing NuGet packages.</value>
   </data>
+  <data name="Error_WhileLoadingConfigForBindingRedirects" xml:space="preserve">
+    <value>Failed to load '{0}', while updating binding redirects. {1}</value>
+  </data>
 </root>

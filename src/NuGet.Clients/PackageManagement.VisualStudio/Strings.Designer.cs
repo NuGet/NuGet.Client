@@ -142,6 +142,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to load &apos;{0}&apos;, while updating binding redirects. {1}.
+        /// </summary>
+        public static string Error_WhileLoadingConfigForBindingRedirects {
+            get {
+                return ResourceManager.GetString("Error_WhileLoadingConfigForBindingRedirects", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to add reference to &apos;{0}&apos;. Please make sure that it is in the Global Assembly Cache..
         /// </summary>
         public static string FailedToAddGacReference {
