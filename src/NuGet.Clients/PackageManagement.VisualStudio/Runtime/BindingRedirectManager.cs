@@ -198,7 +198,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 memoryStream.Seek(0, SeekOrigin.Begin);
 
                 // MSBuildNuGetProjectSystem.AddFile() can't handle full path if the app.config
-                // file does not exist in the project yet. This happens when NuGet first creates 
+                // file does not exist in the project yet. This happens when NuGet first creates
                 // app.config in the project directory. In this case, only the file name is passed.
                 var path = configFileFullPath;
                 var defaultConfigFile = Path.Combine(
@@ -225,11 +225,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // We're going to need to know which element is associated with what binding for removal
             var assemblyElementPairs = from dependentAssemblyElement in assemblyBindingElements
-                select new
-                    {
-                        Binding = AssemblyBinding.Parse(dependentAssemblyElement),
-                        Element = dependentAssemblyElement
-                    };
+                                       select new
+                                       {
+                                           Binding = AssemblyBinding.Parse(dependentAssemblyElement),
+                                           Element = dependentAssemblyElement
+                                       };
 
             // Return a mapping from binding to element
             return assemblyElementPairs.ToLookup(p => p.Binding, p => p.Element);
@@ -243,11 +243,22 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private XDocument GetConfiguration(string configFileFullPath)
         {
-            return ProjectManagement.XmlUtility.GetOrCreateDocument(
-                "configuration",
-                Path.GetDirectoryName(configFileFullPath),
-                Path.GetFileName(configFileFullPath),
-                MSBuildNuGetProjectSystem.NuGetProjectContext);
+            try
+            {
+                return ProjectManagement.XmlUtility.GetOrCreateDocument(
+                    "configuration",
+                    Path.GetDirectoryName(configFileFullPath),
+                    Path.GetFileName(configFileFullPath),
+                    MSBuildNuGetProjectSystem.NuGetProjectContext);
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = string.Format(Strings.Error_WhileLoadingConfigForBindingRedirects,
+                                          configFileFullPath,
+                                          ex.Message);
+
+                throw new InvalidOperationException(errorMessage, ex);
+            }
         }
 
         private static void UpdateBindingRedirectElement(
