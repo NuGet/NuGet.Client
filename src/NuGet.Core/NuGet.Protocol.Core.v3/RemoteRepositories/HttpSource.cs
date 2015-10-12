@@ -66,6 +66,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     {
                         handlerResource.ClientHandler.Credentials = credentials;
                     }
+                    else
+                    {
+                        handlerResource.ClientHandler.UseDefaultCredentials = true;
+                    }
 
                     var request = new HttpRequestMessage(HttpMethod.Get, uri);
                     STSAuthHelper.PrepareSTSRequest(_baseUri, CredentialStore.Instance, request);
