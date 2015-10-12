@@ -52,6 +52,10 @@ namespace NuGet.Protocol.Core.v3
                 {
                     messageHandlerResource.ClientHandler.Credentials = credentials;
                 }
+                else
+                {
+                    messageHandlerResource.ClientHandler.UseDefaultCredentials = true;
+                }
 
                 using (var client = new DataClient(messageHandlerResource))
                 {
