@@ -77,7 +77,7 @@ namespace NuGet.ProjectManagement
             IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers)
         {
             var packageTargetFramework = frameworkSpecificGroup.TargetFramework;
-            
+
             var packageItemListAsArchiveEntryNames = frameworkSpecificGroup.Items.ToList();
             packageItemListAsArchiveEntryNames.Sort(new PackageItemComparer());
             try
@@ -154,9 +154,9 @@ namespace NuGet.ProjectManagement
 
             // Get all directories that this package may have added
             var directories = from grouping in directoryLookup
-                from directory in FileSystemUtility.GetDirectories(grouping.Key, altDirectorySeparator: false)
-                orderby directory.Length descending
-                select directory;
+                              from directory in FileSystemUtility.GetDirectories(grouping.Key, altDirectorySeparator: false)
+                              orderby directory.Length descending
+                              select directory;
 
             // Remove files from every directory
             foreach (var directory in directories)
@@ -329,6 +329,7 @@ namespace NuGet.ProjectManagement
                 msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_DirectoryNotEmpty, path);
                 return;
             }
+
             msBuildNuGetProjectSystem.DeleteDirectory(path, recursive);
 
             // Workaround for update-package TFS issue. If we're bound to TFS, do not try and delete directories.
@@ -339,7 +340,10 @@ namespace NuGet.ProjectManagement
                 return;
             }
 
-            try
+            // For potential project systems that do not remove items from disk, we delete the folder directly
+            // There is no actual scenario where we know this is broken without the code below, but since the
+            // code was always there, we are leaving it behind for now.
+            if (!Directory.Exists(fullPath))
             {
                 Directory.Delete(fullPath, recursive);
 
@@ -349,12 +353,8 @@ namespace NuGet.ProjectManagement
                 {
                     Thread.Sleep(100);
                 }
-                msBuildNuGetProjectSystem.RemoveFile(path);
 
                 msBuildNuGetProjectSystem.NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFolder, fullPath);
-            }
-            catch (DirectoryNotFoundException)
-            {
             }
         }
 
@@ -508,6 +508,33 @@ namespace NuGet.ProjectManagement
                 writeToStream(memoryStream);
                 memoryStream.Seek(0, SeekOrigin.Begin);
                 msBuildNuGetProjectSystem.AddFile(path, memoryStream);
+            }
+        }
+
+        private class PackageItemComparer : IComparer<string>
+        {
+            public int Compare(string x, string y)
+            {
+                // BUG 636: We sort files so that they are added in the correct order
+                // e.g aspx before aspx.cs
+
+                if (x.Equals(y, StringComparison.OrdinalIgnoreCase))
+                {
+                    return 0;
+                }
+
+                // Add files that are prefixes of other files first
+                if (x.StartsWith(y, StringComparison.OrdinalIgnoreCase))
+                {
+                    return -1;
+                }
+
+                if (y.StartsWith(x, StringComparison.OrdinalIgnoreCase))
+                {
+                    return 1;
+                }
+
+                return string.Compare(y, x, StringComparison.OrdinalIgnoreCase);
             }
         }
     }
