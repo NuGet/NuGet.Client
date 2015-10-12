@@ -61,6 +61,42 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Additionally clear the system-wide, global NuGet packages folder..
+        /// </summary>
+        internal static string ClearCacheCommandClearGlobalPackagesDescription {
+            get {
+                return ResourceManager.GetString("ClearCacheCommandClearGlobalPackagesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clears your local NuGet packages and HTTP requests cache. Optionally clears your machine global packages folder..
+        /// </summary>
+        internal static string ClearCacheCommandDescription {
+            get {
+                return ResourceManager.GetString("ClearCacheCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget clearcache.
+        /// </summary>
+        internal static string ClearCacheCommandExamples {
+            get {
+                return ResourceManager.GetString("ClearCacheCommandExamples", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;-clearGlobalPackages&gt;.
+        /// </summary>
+        internal static string ClearCacheCommandSummary {
+            get {
+                return ResourceManager.GetString("ClearCacheCommandSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The API key for the server..
         /// </summary>
         internal static string CommandApiKey {

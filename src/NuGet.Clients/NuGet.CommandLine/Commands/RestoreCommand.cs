@@ -256,7 +256,7 @@ namespace NuGet.CommandLine
             CheckRequireConsent();
 
             // Run the restore
-            var command = new Commands.RestoreCommand(Console, request);
+            var command = new NuGet.Commands.RestoreCommand(Console, request);
             var result = await command.ExecuteAsync();
             result.Commit(Console);
 

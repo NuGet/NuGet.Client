@@ -47,6 +47,7 @@
     <Compile Include="CommandLineParser.cs" />
     <Compile Include="CommandManager.cs" />
     <Compile Include="CommandOutputLogger.cs" />
+    <Compile Include="Commands\ClearCacheCommand.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\CommandAttribute.cs" />
     <Compile Include="Commands\ConfigCommand.cs" />

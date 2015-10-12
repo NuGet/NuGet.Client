@@ -565,6 +565,69 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cache cleared..
+        /// </summary>
+        public static string ClearCacheCommand_CacheCleared {
+            get {
+                return ResourceManager.GetString("ClearCacheCommand_CacheCleared", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cache clear failed: one or more errors occured..
+        /// </summary>
+        public static string ClearCacheCommand_CacheClearFailed {
+            get {
+                return ResourceManager.GetString("ClearCacheCommand_CacheClearFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cache partially cleared..
+        /// </summary>
+        public static string ClearCacheCommand_CachePartiallyCleared {
+            get {
+                return ResourceManager.GetString("ClearCacheCommand_CachePartiallyCleared", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clearing NuGet cache: {0}.
+        /// </summary>
+        public static string ClearCacheCommand_ClearingNuGetCache {
+            get {
+                return ResourceManager.GetString("ClearCacheCommand_ClearingNuGetCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clearing NuGet global packages cache: {0}.
+        /// </summary>
+        public static string ClearCacheCommand_ClearingNuGetGlobalPackagesCache {
+            get {
+                return ResourceManager.GetString("ClearCacheCommand_ClearingNuGetGlobalPackagesCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clearing NuGet HTTP cache: {0}.
+        /// </summary>
+        public static string ClearCacheCommand_ClearingNuGetHttpCache {
+            get {
+                return ResourceManager.GetString("ClearCacheCommand_ClearingNuGetHttpCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to delete {0}.
+        /// </summary>
+        public static string ClearCacheCommand_FailedToDeletePath {
+            get {
+                return ResourceManager.GetString("ClearCacheCommand_FailedToDeletePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to WARNING: {0}.
         /// </summary>
         public static string CommandLine_Warning {

@@ -5245,4 +5245,18 @@ nuget update -Self</value>
   <data name="CommandMSBuildVersion" xml:space="preserve">
     <value>Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild.</value>
   </data>
+  <data name="ClearCacheCommandDescription" xml:space="preserve">
+    <value>Clears your local NuGet packages and HTTP requests cache. Optionally clears your machine global packages folder.</value>
+  </data>
+  <data name="ClearCacheCommandExamples" xml:space="preserve">
+    <value>nuget clearcache</value>
+    <comment>Please don't localize this string</comment>
+  </data>
+  <data name="ClearCacheCommandSummary" xml:space="preserve">
+    <value>&lt;-clearGlobalPackages&gt;</value>
+    <comment>Please don't localize this string</comment>
+  </data>
+  <data name="ClearCacheCommandClearGlobalPackagesDescription" xml:space="preserve">
+    <value>Additionally clear the system-wide, global NuGet packages folder.</value>
+  </data>
 </root>
