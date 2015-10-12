@@ -11,8 +11,8 @@
     <ProjectGuid>{1E243B39-7C61-4525-A664-3DC8589707AC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NuGet.CommandLine.Test</RootNamespace>
-    <AssemblyName>NuGet.CommandLine.Test</AssemblyName>
+    <RootNamespace>PackageManagerProvider.Test</RootNamespace>
+    <AssemblyName>PackageManagerProvider.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
