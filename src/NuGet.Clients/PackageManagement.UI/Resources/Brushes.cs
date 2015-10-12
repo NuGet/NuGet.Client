@@ -76,6 +76,7 @@ namespace NuGet.PackageManagement.UI
                 // when the keys are used in an xaml file.
                 ContentBrushKey = SystemColors.WindowBrush;
                 BackgroundBrushKey = SystemColors.WindowBrush;
+                ContentSelectedBrushKey = SystemColors.ActiveCaptionBrushKey;
             }
             else
             {
