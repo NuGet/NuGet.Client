@@ -311,7 +311,17 @@ namespace NuGet.PackageManagement {
                 return ResourceManager.GetString("ParameterCannotBeZeroOrNegative", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Resolution was successful but resulted in no action.
+        /// </summary>
+        internal static string ResolutionSuccessfulNoAction
+        {
+            get {
+                return ResourceManager.GetString("ResolutionSuccessfulNoAction", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Resolved actions to install package &apos;{0}&apos;.
         /// </summary>

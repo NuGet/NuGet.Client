@@ -268,7 +268,7 @@ namespace NuGet.PackageManagement
         {
             return PreviewUpdatePackagesAsync(
                 packageId: null,
-                packageIdentity: null,
+                packageIdentities: new List<PackageIdentity>(),
                 nuGetProject: nuGetProject,
                 resolutionContext: resolutionContext,
                 nuGetProjectContext: nuGetProjectContext,
@@ -288,7 +288,7 @@ namespace NuGet.PackageManagement
         {
             return PreviewUpdatePackagesAsync(
                 packageId: packageId,
-                packageIdentity: null,
+                packageIdentities: new List<PackageIdentity>(),
                 nuGetProject: nuGetProject,
                 resolutionContext: resolutionContext,
                 nuGetProjectContext: nuGetProjectContext,
@@ -308,7 +308,27 @@ namespace NuGet.PackageManagement
         {
             return PreviewUpdatePackagesAsync(
                 packageId: null,
-                packageIdentity: packageIdentity,
+                packageIdentities: new List<PackageIdentity> { packageIdentity },
+                nuGetProject: nuGetProject,
+                resolutionContext: resolutionContext,
+                nuGetProjectContext: nuGetProjectContext,
+                primarySources: primarySources,
+                secondarySources: secondarySources,
+                token: token);
+        }
+
+        public Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(
+            List<PackageIdentity> packageIdentities,
+            NuGetProject nuGetProject,
+            ResolutionContext resolutionContext,
+            INuGetProjectContext nuGetProjectContext,
+            IEnumerable<SourceRepository> primarySources,
+            IEnumerable<SourceRepository> secondarySources,
+            CancellationToken token)
+        {
+            return PreviewUpdatePackagesAsync(
+                packageId: null,
+                packageIdentities: packageIdentities,
                 nuGetProject: nuGetProject,
                 resolutionContext: resolutionContext,
                 nuGetProjectContext: nuGetProjectContext,
@@ -319,7 +339,7 @@ namespace NuGet.PackageManagement
 
         private async Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(
                 string packageId,
-                PackageIdentity packageIdentity,
+                List<PackageIdentity> packageIdentities,
                 NuGetProject nuGetProject,
                 ResolutionContext resolutionContext,
                 INuGetProjectContext nuGetProjectContext,
@@ -352,123 +372,186 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(secondarySources));
             }
 
-            var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
-            var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
-
-            // DNX and BuildIntegrated projects are handled here
             if (nuGetProject is INuGetIntegratedProject)
             {
-                var actions = new List<NuGetProjectAction>();
+                // project.json based projects are handled here
+                return await PreviewUpdatePackagesForBuildIntegratedAsync(
+                    packageId,
+                    packageIdentities,
+                    nuGetProject,
+                    resolutionContext,
+                    nuGetProjectContext,
+                    primarySources,
+                    secondarySources,
+                    token);
+            }
+            else
+            {
+                // otherwise classic style packages.config style projects are handled here
+                return await PreviewUpdatePackagesForClassicAsync(
+                    packageId,
+                    packageIdentities,
+                    nuGetProject,
+                    resolutionContext,
+                    nuGetProjectContext,
+                    primarySources,
+                    secondarySources,
+                    token);
+            }
+        }
 
-                if (packageIdentity == null && packageId == null)
+        /// <summary>
+        /// Update Package logic specific to build integrated style NuGet projects
+        /// </summary>
+        private async Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesForBuildIntegratedAsync(
+                string packageId,
+                List<PackageIdentity> packageIdentities,
+                NuGetProject nuGetProject,
+                ResolutionContext resolutionContext,
+                INuGetProjectContext nuGetProjectContext,
+                IEnumerable<SourceRepository> primarySources,
+                IEnumerable<SourceRepository> secondarySources,
+                CancellationToken token)
+        {
+            var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
+
+            var actions = new List<NuGetProjectAction>();
+
+            if (packageIdentities.Count == 0 && packageId == null)
+            {
+                // Update-Package  all
+
+                //TODO: need to consider whether Update ALL simply does nothing for Build Integrated projects
+
+                var lowLevelActions = new List<NuGetProjectAction>();
+
+                foreach (var installedPackage in projectInstalledPackageReferences)
                 {
-                    // Update-Package  all
+                    NuGetVersion latestVersion = await GetLatestVersionAsync(
+                        installedPackage.PackageIdentity.Id,
+                        nuGetProject,
+                        resolutionContext,
+                        primarySources,
+                        token);
 
-                    var lowLevelActions = new List<NuGetProjectAction>();
-
-                    foreach (var installedPackage in projectInstalledPackageReferences)
+                    if (latestVersion != null && latestVersion > installedPackage.PackageIdentity.Version)
                     {
-                        NuGetVersion latestVersion = await GetLatestVersionAsync(
-                            installedPackage.PackageIdentity.Id,
-                            nuGetProject,
-                            resolutionContext,
-                            primarySources,
-                            token);
+                        lowLevelActions.Add(NuGetProjectAction.CreateUninstallProjectAction(installedPackage.PackageIdentity));
+                        lowLevelActions.Add(NuGetProjectAction.CreateInstallProjectAction(
+                            new PackageIdentity(installedPackage.PackageIdentity.Id, latestVersion),
+                            primarySources.FirstOrDefault()));
+                    }
+                }
 
-                        if (latestVersion != null && latestVersion > installedPackage.PackageIdentity.Version)
-                        {
-                            lowLevelActions.Add(NuGetProjectAction.CreateUninstallProjectAction(installedPackage.PackageIdentity));
-                            lowLevelActions.Add(NuGetProjectAction.CreateInstallProjectAction(
-                                new PackageIdentity(installedPackage.PackageIdentity.Id, latestVersion),
-                                primarySources.FirstOrDefault()));
-                        }
+                // If the update operation is a no-op there will be no project actions.
+                if (lowLevelActions.Any())
+                {
+                    var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
+
+                    if (buildIntegratedProject != null)
+                    {
+                        // Create a build integrated action
+                        var buildIntegratedAction =
+                            await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, lowLevelActions, nuGetProjectContext, token);
+
+                        actions.Add(buildIntegratedAction);
+                    }
+                    else
+                    {
+                        // Use the low level actions for projectK
+                        actions = lowLevelActions;
+                    }
+                }
+            }
+            else
+            {
+                // either we have a packageId or a list of specific PackageIdentities to work with
+
+                // first lets normalize this input so we are just dealing with a list 
+
+                if (packageIdentities.Count == 0)
+                {
+                    NuGetVersion latestVersion = await GetLatestVersionAsync(
+                        packageId,
+                        nuGetProject,
+                        resolutionContext,
+                        primarySources,
+                        token);
+
+                    if (latestVersion == null)
+                    {
+                        throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownPackage, packageId));
                     }
 
-                    // If the update operation is a no-op there will be no project actions.
-                    if (lowLevelActions.Any())
+                    var installedPackageReference = projectInstalledPackageReferences
+                        .Where(pr => StringComparer.OrdinalIgnoreCase.Equals(pr.PackageIdentity.Id, packageId))
+                        .FirstOrDefault();
+
+                    if (installedPackageReference.PackageIdentity.Version > latestVersion)
                     {
-                        var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
-
-                        if (buildIntegratedProject != null)
-                        {
-                            // Create a build integrated action
-                            var buildIntegratedAction =
-                                await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, lowLevelActions, nuGetProjectContext, token);
-
-                            actions.Add(buildIntegratedAction);
-                        }
-                        else
-                        {
-                            // Use the low level actions for projectK
-                            actions = lowLevelActions;
-                        }
+                        throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.NewerVersionAlreadyReferenced, packageId));
                     }
+
+                    packageIdentities.Add(new PackageIdentity(packageId, latestVersion));
+                }
+
+                // process the list of PackageIdentities
+
+                var lowLevelActions = new List<NuGetProjectAction>();
+
+                foreach (var packageIdentity in packageIdentities)
+                {
+                    var installed = projectInstalledPackageReferences
+                        .Where(pr => StringComparer.OrdinalIgnoreCase.Equals(pr.PackageIdentity.Id, packageIdentity.Id))
+                        .FirstOrDefault();
+
+                    //  if the package is not currently installed ignore it
+
+                    if (installed != null)
+                    {
+                        lowLevelActions.Add(NuGetProjectAction.CreateUninstallProjectAction(installed.PackageIdentity));
+                        lowLevelActions.Add(NuGetProjectAction.CreateInstallProjectAction(packageIdentity, primarySources.FirstOrDefault()));
+                    }
+                }
+
+                var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
+
+                if (buildIntegratedProject != null)
+                {
+                    // Create a build integrated action
+                    var buildIntegratedAction = await PreviewBuildIntegratedProjectActionsAsync(
+                        buildIntegratedProject,
+                        lowLevelActions,
+                        nuGetProjectContext,
+                        token);
+
+                    actions.Add(buildIntegratedAction);
                 }
                 else
                 {
-                    // Find the id from either the package identity or the packageId directly.
-                    var installedPackageId = packageIdentity?.Id ?? packageId;
-
-                    var installedPackageReference = projectInstalledPackageReferences
-                            .Where(pr => StringComparer.OrdinalIgnoreCase.Equals(pr.PackageIdentity.Id, installedPackageId))
-                            .FirstOrDefault();
-
-                    // Start with the given package identity if one was passed in
-                    var updateToIdentity = packageIdentity;
-
-                    // If the version was not passed in, find the highest version
-                    if (updateToIdentity == null || !updateToIdentity.HasVersion)
-                    {
-                        // Step-1 : Get latest version for packageId
-                        NuGetVersion latestVersion = await GetLatestVersionAsync(
-                            packageId,
-                            nuGetProject,
-                            resolutionContext, 
-                            primarySources, 
-                            token);
-
-                        if (latestVersion == null)
-                        {
-                            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownPackage, packageId));
-                        }
-
-                        if (installedPackageReference.PackageIdentity.Version > latestVersion)
-                        {
-                            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.NewerVersionAlreadyReferenced, updateToIdentity));
-                        }
-
-                        updateToIdentity = new PackageIdentity(packageId, latestVersion);
-                    }
-
-                    // No-op if this is not an actual update, or if the latest version from the source is less than the currently installed version
-                    if (installedPackageReference != null && !(installedPackageReference.PackageIdentity.Equals(updateToIdentity)))
-                    {
-                        var action = NuGetProjectAction.CreateInstallProjectAction(updateToIdentity, primarySources.FirstOrDefault());
-
-                        var lowLevelActions = new List<NuGetProjectAction>();
-                        lowLevelActions.Add(NuGetProjectAction.CreateUninstallProjectAction(installedPackageReference.PackageIdentity));
-                        lowLevelActions.Add(NuGetProjectAction.CreateInstallProjectAction(updateToIdentity, primarySources.FirstOrDefault()));
-
-                        var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
-
-                        if (buildIntegratedProject != null)
-                        {
-                            // Create a build integrated action
-                            var buildIntegratedAction =
-                            await PreviewBuildIntegratedProjectActionsAsync(buildIntegratedProject, lowLevelActions, nuGetProjectContext, token);
-
-                            actions.Add(buildIntegratedAction);
-                        }
-                        else
-                        {
-                            // Use the low level actions for projectK
-                            actions = lowLevelActions;
-                        }
-                    }
+                    // Use the low level actions for projectK
+                    actions.AddRange(lowLevelActions);
                 }
-
-                return actions;
             }
+
+            return actions;
+        }
+ 
+        /// <summary>
+        /// Update Package logic specific to classic style NuGet projects
+        /// </summary>
+        private async Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesForClassicAsync(
+                string packageId,
+                List<PackageIdentity> packageIdentities,
+                NuGetProject nuGetProject,
+                ResolutionContext resolutionContext,
+                INuGetProjectContext nuGetProjectContext,
+                IEnumerable<SourceRepository> primarySources,
+                IEnumerable<SourceRepository> secondarySources,
+                CancellationToken token)
+        {
+            var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
+            var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
 
             var preferredVersions = new Dictionary<string, PackageIdentity>(StringComparer.OrdinalIgnoreCase);
 
@@ -481,14 +564,17 @@ namespace NuGet.PackageManagement
             var primaryTargetIds = Enumerable.Empty<string>();
             var primaryTargets = Enumerable.Empty<PackageIdentity>();
 
-            // We have been given the exact PackageIdentity (id and version) to update to e.g. from PMC update-package -Id <id> -Version <version>
-            if (packageIdentity != null)
+            // We have been given the exact PackageIdentities (id and version) to update to e.g. from PMC update-package -Id <id> -Version <version>
+            if (packageIdentities.Count > 0)
             {
-                primaryTargets = new[] { packageIdentity };
-                primaryTargetIds = new[] { packageIdentity.Id };
+                primaryTargets = packageIdentities;
+                primaryTargetIds = packageIdentities.Select(p => p.Id);
 
-                // If we have been given an explicit PackageIdentity to install then we will naturally prefer that
-                preferredVersions[packageIdentity.Id] = packageIdentity;
+                // If we have been given explicit PackageIdentities to install then we will naturally prefer that
+                foreach (var packageIdentity in packageIdentities)
+                {
+                    preferredVersions[packageIdentity.Id] = packageIdentity;
+                }
             }
             // We have just been given the package id, in which case we will look for the highest version and attempt to move to that
             else if (packageId != null)
@@ -542,7 +628,7 @@ namespace NuGet.PackageManagement
                 }
 
                 // Unless the packageIdentity was explicitly asked for we should remove any potential downgrades
-                var allowDowngrades = packageIdentity != null;
+                var allowDowngrades = packageIdentities.Count > 0;
 
                 var gatherContext = new GatherContext()
                 {
@@ -566,7 +652,7 @@ namespace NuGet.PackageManagement
 
                 // Update-Package ALL packages scenarios must always include the packages in the current project
                 // Scenarios include: (1) a package havign been deleted from a feed (2) a source being removed from nuget config (3) an explicitly specified source 
-                if (packageId == null && packageIdentity == null)
+                if (packageId == null && packageIdentities.Count == 0)
                 {
                     // BUG #1181 VS2015 : Updating from one feed fails for packages from different feed.
 
@@ -584,10 +670,10 @@ namespace NuGet.PackageManagement
 
                 if (!resolutionContext.IncludePrerelease)
                 {
-                    prunedAvailablePackages = PrunePackageTree.PrunePreleaseForStableTargets(
+                    prunedAvailablePackages = PrunePackageTree.PrunePrereleaseExceptAllowed(
                         prunedAvailablePackages,
-                        targets: Enumerable.Empty<PackageIdentity>(),
-                        packagesToInstall: Enumerable.Empty<PackageIdentity>());
+                        oldListOfInstalledPackages,
+                        isUpdateAll: (packageId == null && packageIdentities.Count == 0));
                 }
 
                 // Remove packages that do not meet the constraints specified in the UpdateConstrainst
@@ -641,6 +727,11 @@ namespace NuGet.PackageManagement
                 var installedPackagesInDependencyOrder = await GetInstalledPackagesInDependencyOrder(nuGetProject, token);
 
                 nuGetProjectActions = GetProjectActionsForUpdate(newListOfInstalledPackages, installedPackagesInDependencyOrder, prunedAvailablePackages, nuGetProjectContext, force);
+
+                if (nuGetProjectActions.Count == 0)
+                {
+                    nuGetProjectContext.Log(NuGet.ProjectManagement.MessageLevel.Info, Strings.ResolutionSuccessfulNoAction);
+                }
             }
             catch (InvalidOperationException)
             {

@@ -16,6 +16,29 @@ namespace NuGet.PackageManagement
     public static class PrunePackageTree
     {
         /// <summary>
+        /// Remove some of the prerelease packages in update scenarios
+        /// </summary>
+        public static IEnumerable<SourcePackageDependencyInfo> PrunePrereleaseExceptAllowed(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<PackageIdentity> installedPackages, bool isUpdateAll)
+        {
+            var allowedPackageIdentity = new HashSet<PackageIdentity>(installedPackages.Where(p => p.HasVersion && p.Version.IsPrerelease), PackageIdentityComparer.Default);
+
+            if (isUpdateAll)
+            {
+                // If this is an Update All scenario then we will allow package that are already prerelease to pick any other prerelease alternatievs
+
+                var allowedPackageId = new HashSet<string>(allowedPackageIdentity.Select(p => p.Id), StringComparer.OrdinalIgnoreCase);
+
+                return packages.Where(p => !(p.HasVersion && p.Version.IsPrerelease) || allowedPackageId.Contains(p.Id));
+            }
+            else
+            {
+                // Else a specific package is being updated and we will simply allow existing packages to remain as they are
+
+                return packages.Where(p => !(p.HasVersion && p.Version.IsPrerelease) || allowedPackageIdentity.Contains(p));
+            }
+        }
+
+        /// <summary>
         /// Remove all prerelease packages for stable targets
         /// </summary>
         public static IEnumerable<SourcePackageDependencyInfo> PrunePreleaseForStableTargets(IEnumerable<SourcePackageDependencyInfo> packages, IEnumerable<PackageIdentity> targets, IEnumerable<PackageIdentity> packagesToInstall)
