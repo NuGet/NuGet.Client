@@ -1023,7 +1023,7 @@ function Test-UpdatePackageFailsIfNewVersionLessThanInstalledPrereleaseVersion {
     # Act
     $p | Install-Package -Source $context.RepositoryRoot -Id PreReleaseTestPackage -Version 1.0.1-a -Prerelease
     Assert-Package $p 'PreReleaseTestPackage' 1.0.1-a
-    Assert-Throws { $p | Update-Package -Source $context.RepositoryRoot -Id PreReleaseTestPackage } "Already referencing a newer version of 'PreReleaseTestPackage'.."
+    $p | Update-Package -Source $context.RepositoryRoot -Id PreReleaseTestPackage
 
     # Assert
     Assert-Package $p PreReleaseTestPackage 1.0.1-a
