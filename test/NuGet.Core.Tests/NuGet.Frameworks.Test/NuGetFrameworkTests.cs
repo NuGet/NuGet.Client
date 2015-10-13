@@ -29,6 +29,8 @@ namespace NuGet.Test
         [InlineData("Agnostic", "agnostic")]
         [InlineData("portable-win8+net45+monoandroid+monotouch+xamarin.ios+xamarin.watchos", "portable-net45+win8")]
         [InlineData("portable-monoandroid+xamarin.ios+xamarin.watchos+monotouch+win8+net45", "portable-net45+win8")]
+        [InlineData("portable-win8+net45+monoandroid+monotouch+xamarin.ios+xamarin.tvos", "portable-net45+win8")]
+        [InlineData("portable-monoandroid+xamarin.ios+xamarin.tvos+monotouch+win8+net45", "portable-net45+win8")]
         public void NuGetFramework_ShortName(string input, string expected)
         {
             var fw = NuGetFramework.Parse(input);
@@ -54,6 +56,8 @@ namespace NuGet.Test
         [InlineData("Agnostic", "agnostic")]
         [InlineData("portable-net45+win8", "portable-net45+win8+monoandroid+monotouch+xamarin.ios+xamarin.watchos")]
         [InlineData("portable-net45+win8", "portable-net45+win8+xamarin.ios+xamarin.watchos")]
+        [InlineData("portable-net45+win8", "portable-net45+win8+monoandroid+monotouch+xamarin.ios+xamarin.tvos")]
+        [InlineData("portable-net45+win8", "portable-net45+win8+xamarin.ios+xamarin.tvos")]
         public void NuGetFramework_Equality(string a, string b)
         {
             var fw1 = NuGetFramework.Parse(a);
