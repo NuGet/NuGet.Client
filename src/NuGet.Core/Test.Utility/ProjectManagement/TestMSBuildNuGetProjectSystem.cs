@@ -174,9 +174,21 @@ namespace Test.Utility
             return Task.FromResult(0);
         }
 
-        public void BeginProcessing(IEnumerable<string> files)
+        public void BeginProcessing()
         {
-            FilesInProcessing = new HashSet<string>(files);
+        }
+
+        public void RegisterProcessedFiles(IEnumerable<string> files)
+        {
+            if (FilesInProcessing == null)
+            {
+                FilesInProcessing = new HashSet<string>(files);
+            }
+
+            foreach (var file in files)
+            {
+                FilesInProcessing.Add(file);
+            }
         }
 
         public void EndProcessing()

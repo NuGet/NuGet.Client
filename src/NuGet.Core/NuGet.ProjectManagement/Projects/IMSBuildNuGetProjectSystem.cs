@@ -45,7 +45,12 @@ namespace NuGet.ProjectManagement
         bool IsSupportedFile(string path);
         void AddBindingRedirects();
         Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, NuGetProject nuGetProject, bool throwOnFailure);
-        void BeginProcessing(IEnumerable<string> files);
+        void BeginProcessing();
+        /// <summary>
+        /// This method can be called multiple times during a batch operation in between a single BeginProcessing/EndProcessing calls.
+        /// </summary>
+        /// <param name="files">a list of files being changed.</param>
+        void RegisterProcessedFiles(IEnumerable<string> files);
         void EndProcessing();
 
         void DeleteDirectory(string path, bool recursive);

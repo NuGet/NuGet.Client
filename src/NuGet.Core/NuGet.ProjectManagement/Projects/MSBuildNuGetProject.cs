@@ -131,7 +131,7 @@ namespace NuGet.ProjectManagement
         private static bool IsBindingRedirectsDisabled(INuGetProjectContext nuGetProjectContext)
         {
             var msBuildNuGetProjectContext = nuGetProjectContext as IMSBuildNuGetProjectContext;
-            return msBuildNuGetProjectContext!= null && msBuildNuGetProjectContext.BindingRedirectsDisabled;
+            return msBuildNuGetProjectContext != null && msBuildNuGetProjectContext.BindingRedirectsDisabled;
         }
 
         private static bool IsSkipAssemblyReferences(INuGetProjectContext nuGetProjectContext)
@@ -178,7 +178,7 @@ namespace NuGet.ProjectManagement
                 return false;
             }
 
-            // Step-2: Create PackageReader using the PackageStream and obtain the various item groups            
+            // Step-2: Create PackageReader using the PackageStream and obtain the various item groups
             downloadResourceResult.PackageStream.Seek(0, SeekOrigin.Begin);
             var packageReader = downloadResourceResult.PackageReader;
             if (packageReader == null)
@@ -279,7 +279,7 @@ namespace NuGet.ProjectManagement
             }
             PackageEventsProvider.Instance.NotifyInstalling(packageEventArgs);
 
-            // Step-6: Install package to FolderNuGetProject     
+            // Step-6: Install package to FolderNuGetProject
             await FolderNuGetProject.InstallPackageAsync(packageIdentity, downloadResourceResult, nuGetProjectContext, token);
 
             // Step-7: Raise PackageInstalled event
@@ -466,6 +466,7 @@ namespace NuGet.ProjectManagement
                 {
                     var packagesPaths = (await GetInstalledPackagesAsync(token))
                         .Select(pr => FolderNuGetProject.GetInstalledPackageFilePath(pr.PackageIdentity));
+
                     MSBuildNuGetProjectSystemUtility.DeleteFiles(MSBuildNuGetProjectSystem,
                         zipArchive,
                         packagesPaths,
