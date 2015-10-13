@@ -112,6 +112,8 @@ namespace NuGet.Packaging
                         // Now rename the tmp file
                         File.Move(targetTempNupkg, targetNupkg);
 
+                        var tempHashPath = Path.Combine(hashPath, Path.GetRandomFileName());
+
                         using (var nupkgStream = File.Open(targetNupkg, FileMode.Open, FileAccess.Read, FileShare.Read))
                         {
                             string packageHash;
@@ -122,7 +124,10 @@ namespace NuGet.Packaging
 
                             // Note: PackageRepository relies on the hash file being written out as the
                             // final operation as part of a package install to assume a package was fully installed.
-                            File.WriteAllText(hashPath, packageHash);
+                            File.WriteAllText(tempHashPath, packageHash);
+
+                            // Rename the tmp hash file
+                            File.Move(tempHashPath, hashPath);
                         }
 
                         log.LogVerbose($"Completed installation of {packageIdentity.Id} {packageIdentity.Version}");
