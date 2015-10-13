@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Frameworks;
@@ -10,6 +11,75 @@ namespace NuGet.Test
 {
     public class FrameworkReducerTests
     {
+        [Theory]
+        // Generation fall-through patterns of uap10.0: 
+        // 1. lib/uap10, 
+        // 2. then lib/win81, 
+        // 3. then lib/wpa81, 
+        // 4. then lib/dotnet5.3, 
+        // 5. then portable-win81+*, etc
+        [InlineData("uap10.0", "uap10.0,win81,wpa81,dotnet5.4,portable-win81+net45", "uap10.0")]
+        [InlineData("uap10.0", "win81,wpa81,dotnet5.4,portable-win81+net45", "win81")]
+        [InlineData("uap10.0", "wpa81,dotnet5.4,portable-win81+net45", "wpa81")]
+        [InlineData("uap10.0", "dotnet5.4,portable-win81+net45", "dotnet5.4")]
+        [InlineData("uap10.0", "portable-win81+net45", "portable-win81+net45")]
+        [InlineData("uap10.0", "dotnet5.5,dotnet5.4,portable-win81+net45", "dotnet5.4")]
+        [InlineData("uap10.0", "dotnet5.4,dotnet,portable-win81+net45", "dotnet5.4")]
+        [InlineData("uap10.0", "dotnet,portable-win81+net45", "dotnet")]
+        [InlineData("uap10.0", "wpa81,dotnet5.3,portable-win81+net45", "wpa81")]
+        [InlineData("uap10.0", "dotnet5.2,portable-win81+net45", "dotnet5.2")]
+        [InlineData("uap10.0", "wpa81,dotnet5.2,portable-win81+net45", "wpa81")]
+        [InlineData("uap10.0", "dotnet5.2,portable-win81+net45", "dotnet5.2")]
+        // Take the most specific PCL profile
+        [InlineData("uap10.0", "dotnet6.0,portable-win81+net45", "portable-win81+net45")]
+        [InlineData("uap10.0", "dotnet6.0,portable-win81+net45+sl5,portable-win81+net45", "portable-win81+net45")]
+        [InlineData("uap10.0", "dotnet6.0,portable-win81+net45+sl5,portable-uap11.0", "portable-win81+net45+sl5")]
+        // Same TFM wins
+        [InlineData("net461", "net462,net461,net46,net45,net4,net2,dotnet6.0,dotnet5.5,dotnet5.4,dotnet5.3,dotnet,portable-net45+win8,portable-net45+win8+wpa81", "net461")]
+        [InlineData("net461", "net46,net45,net4,net2,dotnet6.0,dotnet5.5,dotnet5.4,dotnet5.3,dotnet,portable-net45+win8,portable-net45+win8+wpa81", "net46")]
+        [InlineData("net461", "net45,net4,net2,dotnet6.0,dotnet5.5,dotnet5.4,dotnet5.3,dotnet,portable-net45+win8,portable-net45+win8+wpa81", "net45")]
+        [InlineData("net461", "net4,net2,dotnet6.0,dotnet5.5,dotnet5.4,dotnet5.3,dotnet,portable-net45+win8,portable-net45+win8+wpa81", "net4")]
+        [InlineData("net461", "net2,dotnet6.0,dotnet5.5,dotnet5.4,dotnet5.3,dotnet,portable-net45+win8,portable-net45+win8+wpa81", "net2")]
+        // Use a compatible TFM if there are no framework matches
+        [InlineData("net461", "dotnet6.0,dotnet5.5,dotnet5.4,dotnet5.3,dotnet,portable-net45+win8,portable-net45+win8+wpa81", "dotnet5.5")]
+        [InlineData("net461", "dotnet5.4,dotnet,portable-net45+win8,portable-net45+win8+wpa81", "dotnet5.4")]
+        [InlineData("net461", "dotnet5.4.9,dotnet,portable-net45+win8,portable-net45+win8+wpa81", "dotnet5.4.9")]
+        [InlineData("net461", "dotnet,portable-net45+win8,portable-net45+win8+wpa81", "dotnet")]
+        [InlineData("net461", "portable-net45+win8,portable-net45+win8+wpa81", "portable-net45+win8")]
+        [InlineData("net461", "portable-net45+win8+wpa81,native", "portable-net45+win8+wpa81")]
+        [InlineData("net7", "dotnet6.0,dotnet5.5,dotnet5.4,portable-net45+win8", "dotnet5.5")]
+        // Additional tests
+        [InlineData("dotnet5.5", "dotnet6.0,dotnet5.4,portable-net45+win8", "dotnet5.4")]
+        [InlineData("dotnet7", "dotnet6.0,dotnet5.4,portable-net45+win8", "dotnet6.0")]
+        [InlineData("dnxcore50", "dotnet6.0,dotnet5.5,portable-net45+win8", "dotnet5.5")]
+        [InlineData("dotnet", "dotnet5.1,native,uap10.1", null)]
+        [InlineData("uap10.0", "uap10.1,dotnet5.5,dotnet5.4.0.1,dotnet6.0,dnxcore50,native", null)]
+        [InlineData("dotnet", "", null)]
+        [InlineData("dotnet5.4", "", null)]
+        [InlineData("uap10.0", "", null)]
+        [InlineData("net461", "", null)]
+        public void FrameworkReducer_GetNearestWithGenerations(
+            string projectFramework,
+            string packageFrameworks,
+            string expected)
+        {
+            // Arrange
+            var project = NuGetFramework.Parse(projectFramework);
+
+            var frameworks = packageFrameworks.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => NuGetFramework.Parse(s)).ToList();
+
+            var expectedFramework = expected == null ? null : NuGetFramework.Parse(expected);
+
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            // Act
+            var nearest = reducer.GetNearest(project, frameworks);
+
+            // Assert
+            Assert.Equal(expectedFramework, nearest);
+        }
+
         [Theory]
         [InlineData("uap10.0", "portable-aspnetcore5+net45+win8+wp8+wpa81")]
         [InlineData("netcore50", "portable-aspnetcore5+net45+win8+wp8+wpa81")]
@@ -317,6 +387,48 @@ namespace NuGet.Test
 
             Assert.Equal(fw2, upwards);
             Assert.Equal(fw2, downwards);
+        }
+
+        [Fact]
+        public void FrameworkReducer_GetNearestPackagesBasedWithPCL()
+        {
+            // Arrange
+            var project = NuGetFramework.Parse("net46");
+
+            var packageFrameworks = new List<NuGetFramework>()
+                {
+                    NuGetFramework.Parse("portable-net45+win8"),
+                    NuGetFramework.Parse("dotnet"),
+                };
+
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            // Act
+            var nearest = reducer.GetNearest(project, packageFrameworks);
+
+            // Assert
+            Assert.Equal(packageFrameworks[1], nearest);
+        }
+
+        [Fact]
+        public void FrameworkReducer_GetNearestPackagesBasedWithFullFramework()
+        {
+            // Arrange
+            var project = NuGetFramework.Parse("uap10.0");
+
+            var packageFrameworks = new List<NuGetFramework>()
+                {
+                    NuGetFramework.Parse("win8"),
+                    NuGetFramework.Parse("dotnet5.3"),
+                };
+
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            // Act
+            var nearest = reducer.GetNearest(project, packageFrameworks);
+
+            // Assert
+            Assert.Equal(packageFrameworks[0], nearest);
         }
 
         [Fact]

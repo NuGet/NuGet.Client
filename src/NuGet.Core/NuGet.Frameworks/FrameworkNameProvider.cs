@@ -140,7 +140,7 @@ namespace NuGet.Frameworks
             return false;
         }
 
-        public string GetVersionString(Version version)
+        public string GetVersionString(string framework, Version version)
         {
             var sb = new StringBuilder();
 
@@ -155,6 +155,20 @@ namespace NuGet.Frameworks
 
                 // if any parts of the version are over 9 we need to use decimals
                 var useDecimals = versionParts.Any(x => x > 9);
+
+                // Always use decimals and 2+ digits for dotnet if the version is > 0.0
+                if (versionParts.Count > 0 && string.Equals(
+                    framework,
+                    FrameworkConstants.FrameworkIdentifiers.NetPlatform,
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    useDecimals = true;
+
+                    if (versionParts.Count == 1)
+                    {
+                        versionParts.Push(0);
+                    }
+                }
 
                 // remove all trailing zeros
                 while (versionParts.Count > 0

@@ -193,7 +193,14 @@ namespace NuGet.Test
         [InlineData("uap10.0", "UAP,Version=v10.0")]
         [InlineData("dotnet", ".NETPlatform,Version=v0.0")]
         [InlineData("dotnet", ".NETPlatform,Version=v5.0")]
-        [InlineData("dotnet1", ".NETPlatform,Version=v1.0")]
+        [InlineData("dotnet1.0", ".NETPlatform,Version=v1.0")]
+        [InlineData("dotnet5.1", ".NETPlatform,Version=v5.1")]
+        [InlineData("dotnet5.2", ".NETPlatform,Version=v5.2")]
+        [InlineData("dotnet5.3", ".NETPlatform,Version=v5.3")]
+        [InlineData("dotnet5.4", ".NETPlatform,Version=v5.4")]
+        [InlineData("dotnet5.5", ".NETPlatform,Version=v5.5")]
+        [InlineData("dotnet6.0", ".NETPlatform,Version=v6.0")]
+        [InlineData("dotnet6.0", ".NETPlatform,Version=v6")]
         public void NuGetFramework_ParseToShortName(string expected, string fullName)
         {
             // Arrange
@@ -221,6 +228,11 @@ namespace NuGet.Test
         [InlineData("dotnet5", ".NETPlatform,Version=v5.0")]
         [InlineData("dotnet50", ".NETPlatform,Version=v5.0")]
         [InlineData("dotnet10", ".NETPlatform,Version=v1.0")]
+        [InlineData("dotnet5.1", ".NETPlatform,Version=v5.1")]
+        [InlineData("dotnet5.2", ".NETPlatform,Version=v5.2")]
+        [InlineData("dotnet5.3", ".NETPlatform,Version=v5.3")]
+        [InlineData("dotnet5.4", ".NETPlatform,Version=v5.4")]
+        [InlineData("dotnet5.5", ".NETPlatform,Version=v5.5")]
         public void NuGetFramework_Basic(string folderName, string fullName)
         {
             string output = NuGetFramework.Parse(folderName).DotNetFrameworkName;

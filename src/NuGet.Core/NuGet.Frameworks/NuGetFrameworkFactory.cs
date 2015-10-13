@@ -100,7 +100,14 @@ namespace NuGet.Frameworks
 
                 if (!String.IsNullOrEmpty(versionPart))
                 {
-                    Version.TryParse(versionPart.Split('=')[1].TrimStart('v'), out version);
+                    var versionString = versionPart.Split('=')[1].TrimStart('v');
+
+                    if (versionString.IndexOf('.') < 0)
+                    {
+                        versionString += ".0";
+                    }
+
+                    Version.TryParse(versionString, out version);
                 }
 
                 if (!String.IsNullOrEmpty(profilePart))

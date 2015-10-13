@@ -36,7 +36,7 @@ namespace NuGet.Frameworks
         /// <summary>
         /// Returns a shortened version. If all digits are single digits no dots will be used.
         /// </summary>
-        string GetVersionString(Version version);
+        string GetVersionString(string framework, Version version);
 
         /// <summary>
         /// Looks up the portable profile number based on the framework list.
