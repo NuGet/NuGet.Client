@@ -55,6 +55,7 @@ namespace NuGet.Frameworks
             public const string XamarinPlayStation3 = "Xamarin.PlayStation3";
             public const string XamarinPlayStation4 = "Xamarin.PlayStation4";
             public const string XamarinPlayStationVita = "Xamarin.PlayStationVita";
+            public const string XamarinWatchOS = "Xamarin.WatchOS";
             public const string XamarinXbox360 = "Xamarin.Xbox360";
             public const string XamarinXboxOne = "Xamarin.XboxOne";
             public const string UAP = "UAP";
