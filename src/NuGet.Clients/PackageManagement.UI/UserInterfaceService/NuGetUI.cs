@@ -84,7 +84,9 @@ namespace NuGet.PackageManagement.UI
         {
             var result = false;
 
-            UIDispatcher.Invoke(() =>
+            if (actions.Any())
+            {
+                UIDispatcher.Invoke(() =>
                 {
                     var w = new PreviewWindow(_context);
                     w.DataContext = new PreviewWindowModel(actions);
@@ -98,6 +100,11 @@ namespace NuGet.PackageManagement.UI
 
                     result = w.ShowModal() == true;
                 });
+            }
+            else
+            {
+                return true;
+            }
 
             return result;
         }
