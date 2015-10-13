@@ -165,7 +165,7 @@ namespace NuGet.Frameworks
                 // add the version if it is non-empty
                 if (!AllFrameworkVersions)
                 {
-                    sb.Append(mappings.GetVersionString(framework.Version));
+                    sb.Append(mappings.GetVersionString(framework.Framework, framework.Version));
                 }
 
                 if (IsPCL)
@@ -258,6 +258,21 @@ namespace NuGet.Frameworks
         public bool IsPCL
         {
             get { return StringComparer.OrdinalIgnoreCase.Equals(Framework, FrameworkConstants.FrameworkIdentifiers.Portable) && Version.Major < 5; }
+        }
+
+        /// <summary>
+        /// True if the framework is packages based.
+        /// Ex: dotnet, dnxcore
+        /// </summary>
+        public bool IsPackageBased
+        {
+            get
+            {
+                return FrameworkConstants.FrameworkIdentifiers.NetPlatform
+                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
+                    || FrameworkConstants.FrameworkIdentifiers.DnxCore
+                    .Equals(Framework, StringComparison.OrdinalIgnoreCase);
+            }
         }
 
         /// <summary>
