@@ -177,3 +177,7 @@ $RECYCLE.BIN/
 # =========================
 
 artifacts
+
+# include the test packages
+!test/EndToEnd/Packages/**/*
+!test/EndToEnd/ProjectTemplates/**/*.pfx

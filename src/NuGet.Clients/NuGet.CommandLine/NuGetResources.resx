@@ -2133,7 +2133,7 @@ To prevent NuGet from downloading packages during build, open the Visual Studio 
     <value>server symbolů</value>
   </data>
   <data name="DefaultSymbolServer_deu" xml:space="preserve">
-    <value>der Symbolserver</value>
+    <value>Symbolserver</value>
   </data>
   <data name="DefaultSymbolServer_esp" xml:space="preserve">
     <value>servidor de símbolos</value>
@@ -2172,7 +2172,7 @@ To prevent NuGet from downloading packages during build, open the Visual Studio 
     <value>galerie NuGet</value>
   </data>
   <data name="LiveFeed_deu" xml:space="preserve">
-    <value>der NuGet-Katalog</value>
+    <value>NuGet-Katalog</value>
   </data>
   <data name="LiveFeed_esp" xml:space="preserve">
     <value>la galería NuGet</value>
