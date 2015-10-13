@@ -18,6 +18,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private string _version;
         private string _installPath;
         private IList<IPackageAssemblyReference> _assemblyReferences;
+        private IEnumerable<IScriptPackageFile> _files;
 
         public ScriptPackage(string id, string version, string installPath)
         {
@@ -49,6 +50,18 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public IEnumerable<IScriptPackageFile> GetFiles()
+        {
+
+            if (_files == null)
+            {
+                _files = GetFilesCore();
+            }
+
+            return _files;
+
+        }
+
         private IEnumerable<IPackageAssemblyReference> GetAssemblyReferencesCore()
         {
             var result = new List<PackageAssemblyReference>();
@@ -69,6 +82,60 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return result;
+        }
+
+        private List<ScriptPackageFile> GetFilesCore()
+        {
+            var result = new List<ScriptPackageFile>();
+            var reader = GetPackageReader(_installPath);
+
+            if (reader != null)
+            {
+                result.AddRange(GetPackageFiles(reader.GetLibItems()));
+                result.AddRange(GetPackageFiles(reader.GetToolItems()));
+                result.AddRange(GetPackageFiles(reader.GetContentItems()));
+                result.AddRange(GetPackageFiles(reader.GetBuildItems()));
+                result.AddRange(reader.GetFiles().Where(path => IsUnknownPath(path)).Select(p => new ScriptPackageFile(p, NuGetFramework.AnyFramework)));
+
+            }
+
+            return result;
+        }
+
+        private PackageReader GetPackageReader(string installPath)
+        {
+            if (Directory.Exists(_installPath))
+            {
+                var nupkg = new DirectoryInfo(_installPath).EnumerateFiles("*.nupkg").FirstOrDefault();
+                if (nupkg != null)
+                {
+                    return new PackageReader(nupkg.OpenRead());
+                }
+            }
+
+            return null;
+        }
+
+        private IEnumerable<ScriptPackageFile> GetPackageFiles(IEnumerable<FrameworkSpecificGroup> frameworkGroups)
+        {
+            var result = new List<ScriptPackageFile>();
+
+            foreach (var group in frameworkGroups)
+            {
+                var framework = group.TargetFramework;
+                result.AddRange(group.Items.Select(item => new ScriptPackageFile(item, framework)));
+            }
+
+            return result;
+        }
+
+        private bool IsUnknownPath(string path)
+        {
+            return PackageHelper.IsPackageFile(path)
+                   && !path.StartsWith("lib", StringComparison.OrdinalIgnoreCase)
+                   && !path.StartsWith("tools", StringComparison.OrdinalIgnoreCase)
+                   && !path.StartsWith("content", StringComparison.OrdinalIgnoreCase)
+                   && !path.StartsWith("build", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
