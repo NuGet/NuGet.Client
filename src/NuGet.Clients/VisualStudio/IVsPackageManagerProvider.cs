@@ -10,7 +10,7 @@ namespace NuGet.VisualStudio
     /// </summary>
     [ComImport]
     [Guid("BCED5BF2-40FC-4D9F-BF0A-43CD4E9FF65F")]
-    public interface IPackageManagerProvider
+    public interface IVsPackageManagerProvider
     {
         /// <summary>
         /// Localized display package manager name.
@@ -23,7 +23,7 @@ namespace NuGet.VisualStudio
         string PackageManagerId { get; }
 
         /// <summary>
-        /// Display description for package manager when user hover over the manager name on UI.
+        /// The tool tip description for the package
         /// </summary>
         string Description { get; }
 

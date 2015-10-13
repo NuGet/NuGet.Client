@@ -7,10 +7,10 @@ using NuGet.VisualStudio;
 
 namespace NuGet.CommandLine.Test
 {
-    [Export(typeof(IPackageManagerProvider))]
+    [Export(typeof(IVsPackageManagerProvider))]
     [Order(Before = "test-version1")]
     [Name("test-version0")]
-    public class PackageManagerProviderTest0 : IPackageManagerProvider
+    public class PackageManagerProviderTest0 : IVsPackageManagerProvider
     {
         public string PackageManagerName { get; }
 
@@ -40,10 +40,10 @@ namespace NuGet.CommandLine.Test
         }
     }
 
-    [Export(typeof(IPackageManagerProvider))]
+    [Export(typeof(IVsPackageManagerProvider))]
     [Order(Before = "test-version2", After = "test-version0")]
     [Name("test-version1")]
-    public class PackageManagerProviderTest1 : IPackageManagerProvider
+    public class PackageManagerProviderTest1 : IVsPackageManagerProvider
     {
         public string PackageManagerName { get; }
 
@@ -73,10 +73,10 @@ namespace NuGet.CommandLine.Test
         }
     }
 
-    [Export(typeof(IPackageManagerProvider))]
+    [Export(typeof(IVsPackageManagerProvider))]
     [Order(After = "test-version1")]
     [Name("test-version2")]
-    public class PackageManagerProviderTest2 : IPackageManagerProvider
+    public class PackageManagerProviderTest2 : IVsPackageManagerProvider
     {
         public string PackageManagerName { get; }
 
@@ -106,10 +106,10 @@ namespace NuGet.CommandLine.Test
         }
     }
 
-    [Export(typeof(IPackageManagerProvider))]
+    [Export(typeof(IVsPackageManagerProvider))]
     [Order(Before = "test-version0")]
     [Name("test-version0Update")]
-    public class PackageManagerProviderTest0Update : IPackageManagerProvider
+    public class PackageManagerProviderTest0Update : IVsPackageManagerProvider
     {
         public string PackageManagerName { get; }
 

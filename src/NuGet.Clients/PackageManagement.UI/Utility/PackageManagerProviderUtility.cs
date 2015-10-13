@@ -8,14 +8,14 @@ namespace NuGet.PackageManagement.UI
 {
     public static class PackageManagerProviderUtility
     {
-        public static List<IPackageManagerProvider> Sort(IEnumerable<Lazy<IPackageManagerProvider, IOrderable>> packageManagerProviders, int max)
+        public static List<IVsPackageManagerProvider> Sort(IEnumerable<Lazy<IVsPackageManagerProvider, IOrderable>> packageManagerProviders, int max)
         {
-            var sortedProviders = new List<IPackageManagerProvider>();
+            var sortedProviders = new List<IVsPackageManagerProvider>();
             var uniqueId = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var provider in Orderer.Order(packageManagerProviders))
             {
-                if (sortedProviders.Count() < max && !uniqueId.Contains(provider.Value.PackageManagerId))
+                if (sortedProviders.Count < max && !uniqueId.Contains(provider.Value.PackageManagerId))
                 {
                     uniqueId.Add(provider.Value.PackageManagerId);
                     sortedProviders.Add(provider.Value);
