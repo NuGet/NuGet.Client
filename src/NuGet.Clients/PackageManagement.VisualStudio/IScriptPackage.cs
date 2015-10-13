@@ -12,5 +12,7 @@ namespace NuGet.PackageManagement.VisualStudio
         string Version { get; }
 
         IEnumerable<IPackageAssemblyReference> AssemblyReferences { get; }
+
+        IEnumerable<IScriptPackageFile> GetFiles();
     }
 }
