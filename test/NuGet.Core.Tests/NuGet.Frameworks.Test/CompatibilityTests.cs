@@ -268,6 +268,7 @@ namespace NuGet.Test
         [InlineData("xamarinpsfour")]
         [InlineData("xamarinpsvita")]
         [InlineData("xamarinxboxthreesixty")]
+        [InlineData("xamarinwatchos")]
         [InlineData("xamarinxboxone")]
         [InlineData("sl6")]
         public void Compatibility_ProjectCanInstallDotNetLibraries(string framework)
