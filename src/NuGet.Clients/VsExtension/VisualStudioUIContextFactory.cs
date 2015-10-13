@@ -24,7 +24,7 @@ namespace NuGetVSExtension
         private readonly IOptionsPageActivator _optionsPage;
         private readonly ISettings _settings;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
-        private readonly List<IPackageManagerProvider> _packageManagerProviders;
+        private readonly List<IVsPackageManagerProvider> _packageManagerProviders;
         // only pick up at most three integrated package managers
         private const int MaxPackageManager = 3;
 
@@ -35,7 +35,7 @@ namespace NuGetVSExtension
             [Import] IPackageRestoreManager packageRestoreManager,
             [Import] IOptionsPageActivator optionsPage,
             [Import] IDeleteOnRestartManager deleteOnRestartManager,
-            [ImportMany] IEnumerable<Lazy<IPackageManagerProvider, IOrderable>> packageManagerProviders)
+            [ImportMany] IEnumerable<Lazy<IVsPackageManagerProvider, IOrderable>> packageManagerProviders)
         {
             _repositoryProvider = repositoryProvider;
             _solutionManager = solutionManager;

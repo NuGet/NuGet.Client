@@ -12,8 +12,8 @@ namespace NuGet.CommandLine.Test
 {
     public class PackageManagerProviderTest
     {
-        [ImportMany(typeof(IPackageManagerProvider))]
-        public IEnumerable<Lazy<IPackageManagerProvider, IOrderable>> PackageManagerProviders { get; set; }
+        [ImportMany(typeof(IVsPackageManagerProvider))]
+        public IEnumerable<Lazy<IVsPackageManagerProvider, IOrderable>> PackageManagerProviders { get; set; }
 
         public PackageManagerProviderTest()
         {

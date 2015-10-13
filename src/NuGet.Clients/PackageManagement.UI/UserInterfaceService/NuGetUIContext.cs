@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement.UI
     public abstract class NuGetUIContextBase : INuGetUIContext
     {
         private readonly NuGetProject[] _projects;
-        private readonly IEnumerable<IPackageManagerProvider> _packageManagerProviders;
+        private readonly IEnumerable<IVsPackageManagerProvider> _packageManagerProviders;
 
         protected NuGetUIContextBase(
             ISourceRepositoryProvider sourceProvider,
@@ -25,7 +25,7 @@ namespace NuGet.PackageManagement.UI
             IPackageRestoreManager packageRestoreManager,
             IOptionsPageActivator optionsPageActivator,
             IEnumerable<NuGetProject> projects,
-            IEnumerable<IPackageManagerProvider> packageManagerProviders)
+            IEnumerable<IVsPackageManagerProvider> packageManagerProviders)
         {
             SourceProvider = sourceProvider;
             SolutionManager = solutionManager;
@@ -63,7 +63,7 @@ namespace NuGet.PackageManagement.UI
 
         public abstract void ApplyShowPreviewSetting(bool show);
 
-        public IEnumerable<IPackageManagerProvider> PackageManagerProviders
+        public IEnumerable<IVsPackageManagerProvider> PackageManagerProviders
         {
             get { return _packageManagerProviders; }
         }

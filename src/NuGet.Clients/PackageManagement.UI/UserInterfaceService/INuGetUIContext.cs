@@ -39,6 +39,6 @@ namespace NuGet.PackageManagement.UI
         /// <param name="show">The value of the setting.</param>
         void ApplyShowPreviewSetting(bool show);
 
-        IEnumerable<IPackageManagerProvider> PackageManagerProviders { get; }
+        IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; }
     }
 }

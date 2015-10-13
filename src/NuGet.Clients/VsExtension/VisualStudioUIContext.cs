@@ -26,7 +26,7 @@ namespace NuGetVSExtension
             IPackageRestoreManager packageRestoreManager,
             IOptionsPageActivator optionsPageActivator,
             IEnumerable<NuGetProject> projects,
-            IEnumerable<IPackageManagerProvider> packageManagerProviders)
+            IEnumerable<IVsPackageManagerProvider> packageManagerProviders)
             :
                 base(sourceProvider, solutionManager, packageManager, uiActionEngine, packageRestoreManager, optionsPageActivator, projects, packageManagerProviders)
         {
