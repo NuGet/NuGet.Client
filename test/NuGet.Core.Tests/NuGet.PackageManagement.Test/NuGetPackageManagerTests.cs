@@ -825,7 +825,10 @@ namespace NuGet.Test
             var projectA = testSolutionManager.AddNewMSBuildProject();
             var packageIdentity0 = PackageWithDependents[0];
 
-            var latestVersion = await NuGetPackageManager.GetLatestVersionAsync(packageIdentity0.Id, resolutionContext,
+            var latestVersion = await NuGetPackageManager.GetLatestVersionAsync(
+                packageIdentity0.Id,
+                projectA,
+                resolutionContext,
                 sourceRepositoryProvider.GetRepositories().First(), token);
 
             var packageLatest = new PackageIdentity(packageIdentity0.Id, latestVersion);
@@ -879,7 +882,10 @@ namespace NuGet.Test
             var packageIdentity0 = PackageWithDependents[0];
             var dependentPackage = PackageWithDependents[2];
 
-            var latestVersion = await NuGetPackageManager.GetLatestVersionAsync(packageIdentity0.Id, resolutionContext,
+            var latestVersion = await NuGetPackageManager.GetLatestVersionAsync(
+                packageIdentity0.Id,
+                projectA,
+                resolutionContext,
                 sourceRepositoryProvider.GetRepositories().First(), token);
 
             var packageLatest = new PackageIdentity(packageIdentity0.Id, latestVersion);
@@ -991,7 +997,10 @@ namespace NuGet.Test
             var packageIdentity0 = PackageWithDependents[0];
             var dependentPackage = PackageWithDependents[2];
 
-            var latestVersion = await NuGetPackageManager.GetLatestVersionAsync(packageIdentity0.Id, resolutionContext,
+            var latestVersion = await NuGetPackageManager.GetLatestVersionAsync(
+                packageIdentity0.Id,
+                projectA,
+                resolutionContext,
                 sourceRepositoryProvider.GetRepositories().First(), token);
 
             var packageLatest = new PackageIdentity(packageIdentity0.Id, latestVersion);
@@ -1217,7 +1226,10 @@ namespace NuGet.Test
             var packageIdentity2 = PackageWithDependents[2];
             var packageIdentity3 = PackageWithDependents[3];
 
-            var latestVersion = await NuGetPackageManager.GetLatestVersionAsync(packageIdentity0.Id, resolutionContext,
+            var latestVersion = await NuGetPackageManager.GetLatestVersionAsync(
+                packageIdentity0.Id,
+                projectA,
+                resolutionContext,
                 sourceRepositoryProvider.GetRepositories().First(), token);
 
             var packageLatest = new PackageIdentity(packageIdentity0.Id, latestVersion);
@@ -2082,7 +2094,10 @@ namespace NuGet.Test
             var packageIdentity0 = PackageWithDependents[0]; // jQuery.1.4.4
 
             var resolutionContext = new ResolutionContext();
-            var latestVersion = await NuGetPackageManager.GetLatestVersionAsync(packageIdentity0.Id, new ResolutionContext(),
+            var latestVersion = await NuGetPackageManager.GetLatestVersionAsync(
+                packageIdentity0.Id,
+                msBuildNuGetProject,
+                new ResolutionContext(),
                 sourceRepositoryProvider.GetRepositories().First(), token);
 
             var packageLatest = new PackageIdentity(packageIdentity0.Id, latestVersion);
@@ -2629,7 +2644,13 @@ namespace NuGet.Test
             var newtonsoftJsonPackageId = "newtonsoft.json";
 
             // Act
-            var latestNewtonsoftPrereleaseVersion = await NuGetPackageManager.GetLatestVersionAsync(newtonsoftJsonPackageId, resolutionContext, primarySourceRepository, CancellationToken.None);
+            var latestNewtonsoftPrereleaseVersion = await NuGetPackageManager.GetLatestVersionAsync(
+                newtonsoftJsonPackageId,
+                msBuildNuGetProject,
+                resolutionContext,
+                primarySourceRepository,
+                CancellationToken.None);
+
             var newtonsoftJsonPackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, latestNewtonsoftPrereleaseVersion);
 
             var nuGetProjectActions = (await nuGetPackageManager.PreviewInstallPackageAsync(msBuildNuGetProject, dotnetrdfPackageIdentity, resolutionContext,
@@ -2671,7 +2692,13 @@ namespace NuGet.Test
             var newtonsoftJsonPackageId = "newtonsoft.json";
 
             // Act
-            var latestNewtonsoftPrereleaseVersion = await NuGetPackageManager.GetLatestVersionAsync(newtonsoftJsonPackageId, resolutionContext, primarySourceRepository, CancellationToken.None);
+            var latestNewtonsoftPrereleaseVersion = await NuGetPackageManager.GetLatestVersionAsync(
+                newtonsoftJsonPackageId,
+                msBuildNuGetProject,
+                resolutionContext,
+                primarySourceRepository, 
+                CancellationToken.None);
+
             var newtonsoftJsonLatestPrereleasePackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, latestNewtonsoftPrereleaseVersion);
 
             await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, webgreasePackageIdentity, resolutionContext,
@@ -3773,7 +3800,7 @@ namespace NuGet.Test
                 testSettings,
                 testSolutionManager,
                 deleteOnRestartManager);
-            var packagesFolderPath = 
+            var packagesFolderPath =
                 PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
             var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
@@ -3789,11 +3816,11 @@ namespace NuGet.Test
 
             var projectTargetFramework = NuGetFramework.Parse("net45");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
-                projectTargetFramework, 
+                projectTargetFramework,
                 new TestNuGetProjectContext());
 
             var msBuildNuGetProject = new MSBuildNuGetProject(
-                msBuildNuGetProjectSystem, 
+                msBuildNuGetProjectSystem,
                 packagesFolderPath,
                 randomPackagesConfigFolderPath);
 
@@ -3802,8 +3829,8 @@ namespace NuGet.Test
 
             // Act
             await nuGetPackageManager.RestorePackageAsync(
-                packageOld, 
-                new TestNuGetProjectContext(), 
+                packageOld,
+                new TestNuGetProjectContext(),
                 sourceRepositoryProvider.GetRepositories(),
                 token);
 
@@ -3844,7 +3871,7 @@ namespace NuGet.Test
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(
-                testSolutionManager.SolutionDirectory, 
+                testSolutionManager.SolutionDirectory,
                 randomPackagesConfigFolderPath);
         }
 
@@ -3946,6 +3973,55 @@ namespace NuGet.Test
             TestFilesystemUtility.DeleteRandomTestFolders(
                 testSolutionManager.SolutionDirectory,
                 randomPackagesConfigFolderPath);
+        }
+
+        [Fact]
+        public async Task TestPacManGetLatestVersion_GatherCache()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
+            var bVersionRange = VersionRange.Parse("[0.5.0, 2.0.0)");
+            var packages = new List<SourcePackageDependencyInfo>
+            {
+                new SourcePackageDependencyInfo(
+                    packageIdentity.Id,
+                    packageIdentity.Version,
+                    new[]
+                    {
+                        new Packaging.Core.PackageDependency("b", bVersionRange)
+                    },
+                    listed: true,
+                    source: null),
+            };
+
+            var resourceProviders = new List<Lazy<INuGetResourceProvider>>();
+            resourceProviders.Add(new Lazy<INuGetResourceProvider>(() => new TestDependencyInfoProvider(packages)));
+            resourceProviders.Add(new Lazy<INuGetResourceProvider>(() => new TestMetadataProvider(packages)));
+
+            var packageSource = new Configuration.PackageSource("http://a");
+            var packageSourceProvider = new TestPackageSourceProvider(new[] { packageSource });
+
+            var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider, resourceProviders);
+            var resolutionContext = new ResolutionContext();
+
+            // Act
+            var latestVersion = await NuGetPackageManager.GetLatestVersionAsync(
+                "a",
+                NuGetFramework.AnyFramework,
+                resolutionContext,
+                sourceRepositoryProvider.GetRepositories().First(),
+                CancellationToken.None);
+
+            // Assert
+            var gatherCache = resolutionContext.GatherCache;
+            var gatherCacheResult = gatherCache.GetPackage(packageSource, packageIdentity, NuGetFramework.AnyFramework);
+            Assert.Single(gatherCacheResult.Packages);
+            var packageInfo = gatherCacheResult.Packages.Single();
+            Assert.Single(packageInfo.Dependencies);
+            var packageDependency = packageInfo.Dependencies.Single();
+            Assert.Equal("b", packageDependency.Id);
+            Assert.Equal(bVersionRange.ToString(), packageDependency.VersionRange.ToString());
+            Assert.True(packageDependency.VersionRange.IncludePrerelease);
         }
 
         private class TestDownloadResourceProvider : ResourceProvider

@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
@@ -24,6 +23,7 @@ namespace NuGet.Protocol.Core.v3
     {
         private static readonly TimeSpan _defaultCacheDuration = TimeSpan.FromMinutes(40);
         protected readonly ConcurrentDictionary<string, ServiceIndexCacheInfo> _cache;
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
 
         /// <summary>
         /// Maximum amount of time to store index.json
@@ -91,6 +91,7 @@ namespace NuGet.Protocol.Core.v3
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             ServiceIndexResourceV3 index = null;
+            ServiceIndexCacheInfo cacheInfo = null;
             var url = source.PackageSource.Source;
 
             // the file type can easily rule out if we need to request the url
@@ -101,53 +102,75 @@ namespace NuGet.Protocol.Core.v3
                 var utcNow = DateTime.UtcNow;
                 var entryValidCutoff = utcNow.Subtract(MaxCacheDuration);
 
-                ServiceIndexCacheInfo cacheInfo;
                 // check the cache before downloading the file
                 if (!_cache.TryGetValue(url, out cacheInfo) ||
                     entryValidCutoff > cacheInfo.CachedTime)
                 {
-                    var json = await GetIndexJson(source, token);
-
-                    // Use SemVer instead of NuGetVersion, the service index should always be
-                    // in strict SemVer format                    
-                    JToken versionToken;
-                    if (json.TryGetValue("version", out versionToken) &&
-                        versionToken.Type == JTokenType.String)
+                    // Track if the semaphore needs to be released
+                    var release = false;
+                    try
                     {
-                        SemanticVersion version;
-                        if (SemanticVersion.TryParse((string)versionToken, out version) &&
-                            version.Major == 3)
+                        await _semaphore.WaitAsync(token);
+                        release = true;
+
+                        token.ThrowIfCancellationRequested();
+
+                        // check the cache again, another thread may have finished this one waited for the lock
+                        if (!_cache.TryGetValue(url, out cacheInfo) ||
+                            entryValidCutoff > cacheInfo.CachedTime)
                         {
-                            index = new ServiceIndexResourceV3(json, utcNow);
-                        }
-                        else
-                        {
-                            string errorMessage = string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.Protocol_UnsupportedVersion,
-                                (string)versionToken);
-                            throw new NuGetProtocolException(errorMessage);
+                            var json = await GetIndexJson(source, token);
+
+                            // Use SemVer instead of NuGetVersion, the service index should always be
+                            // in strict SemVer format
+                            JToken versionToken;
+                            if (json.TryGetValue("version", out versionToken) &&
+                                versionToken.Type == JTokenType.String)
+                            {
+                                SemanticVersion version;
+                                if (SemanticVersion.TryParse((string)versionToken, out version) &&
+                                    version.Major == 3)
+                                {
+                                    index = new ServiceIndexResourceV3(json, utcNow);
+                                }
+                                else
+                                {
+                                    string errorMessage = string.Format(
+                                        CultureInfo.CurrentCulture,
+                                        Strings.Protocol_UnsupportedVersion,
+                                        (string)versionToken);
+                                    throw new NuGetProtocolException(errorMessage);
+                                }
+                            }
+                            else
+                            {
+                                throw new NuGetProtocolException(Strings.Protocol_MissingVersion);
+                            }
+
+                            // cache the value even if it is null to avoid checking it again later
+                            var cacheEntry = new ServiceIndexCacheInfo
+                            {
+                                CachedTime = utcNow,
+                                Index = index
+                            };
+
+                            // If the cache entry has expired it will already exist
+                            _cache.AddOrUpdate(url, cacheEntry, (key, value) => cacheEntry);
                         }
                     }
-                    else
+                    finally
                     {
-                        throw new NuGetProtocolException(Strings.Protocol_MissingVersion);
+                        if (release)
+                        {
+                            _semaphore.Release();
+                        }
                     }
                 }
-                else
-                {
-                    index = cacheInfo.Index;
-                }
+            }
 
-                // cache the value even if it is null to avoid checking it again later
-                var cacheEntry = new ServiceIndexCacheInfo
-                {
-                    CachedTime = utcNow,
-                    Index = index
-                };
-
-                // If the cache entry has expired it will already exist
-                _cache.AddOrUpdate(url, cacheEntry, (key, value) => cacheEntry);
+            if (index == null && cacheInfo != null)
+            {
+                index = cacheInfo.Index;
             }
 
             return new Tuple<bool, INuGetResource>(index != null, index);

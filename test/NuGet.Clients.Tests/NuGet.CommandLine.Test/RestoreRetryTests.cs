@@ -492,7 +492,7 @@ namespace NuGet.CommandLine.Test
                             MockServer.SetResponseContent(response, indexJson.ToString());
                         });
                     }
-                    else if (path == "/packages/testPackage1.1.1.0.nupkg")
+                    else if (path == "/flat/testpackage1/1.1.0/testpackage1.1.1.0.nupkg")
                     {
                         return new Action<HttpListenerResponse>(response =>
                         {

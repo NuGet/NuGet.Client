@@ -11,17 +11,29 @@ namespace NuGet.Test.Utility
 {
     public static class TestPackages
     {
+        public class TestPackageInfo
+        {
+            public string Id { get; set; }
+            public string Version { get; set; }
+            public FileInfo File { get; set; }
+        }
+
         public static ZipArchive GetZip(FileInfo file)
         {
             return new ZipArchive(file.OpenRead());
         }
 
-        public static FileInfo GetNearestReferenceFilteringPackage()
+        public static TestPackageInfo GetNearestReferenceFilteringPackage()
         {
             var file = Path.GetTempFileName() + ".nupkg";
-            var result = new FileInfo(file);
+            var result = new TestPackageInfo()
+            {
+                Id = "RefPackage",
+                Version = "1.0.0",
+                File = new FileInfo(file),
+            };
 
-            using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
+            using (var zip = new ZipArchive(File.Create(result.File.FullName), ZipArchiveMode.Create))
             {
                 zip.AddEntry("lib/net40/one.dll", new byte[] { 0 });
                 zip.AddEntry("lib/net40/three.dll", new byte[] { 0 });
@@ -33,14 +45,65 @@ namespace NuGet.Test.Utility
                 zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                                       <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                                          <metadata>
-                                        <id>RefPackage</id>
-                                            <version>1.0.0</version>
+                                        <id>" + result.Id + @"RefPackage</id>
+                                            <version>" + result.Version + @"</version>
                                             <title />
                                            <references>
                                                <group targetFramework=""net"">
                                                    <reference file=""one.dll"" />
                                                    <reference file=""three.dll"" />
-                                               </group>    
+                                               </group>
+                                                <group targetFramework=""silverlight40"">
+                                                    <reference file=""a.dll"" />
+                                               </group>
+                                        </references>
+                                    </metadata>
+                                    <files>
+                                        <file src=""lib\net40\one.dll"" target=""lib\net40\one.dll"" />
+                                        <file src=""lib\net40\three.dll"" target=""lib\net40\three.dll"" />
+                                        <file src=""lib\net40\two.dll"" target=""lib\net40\two.dll"" />
+
+                                        <file src=""lib\sl40\a.dll"" target=""lib\sl40\a.dll"" />
+                                        <file src=""lib\sl40\b.dll"" target=""lib\sl40\b.dll"" />
+                                   </files>
+                                </package>", Encoding.UTF8);
+            }
+
+            return result;
+        }
+
+
+        public static TestPackageInfo GetPackageWithNupkgCopy()
+        {
+            var file = Path.GetTempFileName() + ".nupkg";
+            var result = new TestPackageInfo()
+            {
+                Id = "RefPackage",
+                Version = "1.0.0",
+                File = new FileInfo(file),
+            };
+
+            using (var zip = new ZipArchive(File.Create(result.File.FullName), ZipArchiveMode.Create))
+            {
+                zip.AddEntry(result.Id + "." + result.Version + ".nupkg", new byte[] { 0 });
+                zip.AddEntry("lib/net40/one.dll", new byte[] { 0 });
+                zip.AddEntry("lib/net40/three.dll", new byte[] { 0 });
+                zip.AddEntry("lib/net40/two.dll", new byte[] { 0 });
+
+                zip.AddEntry("lib/sl40/a.dll", new byte[] { 0 });
+                zip.AddEntry("lib/sl40/b.dll", new byte[] { 0 });
+
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                                      <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
+                                         <metadata>
+                                        <id>" + result.Id + @"RefPackage</id>
+                                            <version>" + result.Version + @"</version>
+                                            <title />
+                                           <references>
+                                               <group targetFramework=""net"">
+                                                   <reference file=""one.dll"" />
+                                                   <reference file=""three.dll"" />
+                                               </group>
                                                 <group targetFramework=""silverlight40"">
                                                     <reference file=""a.dll"" />
                                                </group>
@@ -112,7 +175,7 @@ namespace NuGet.Test.Utility
                                 <language>en-US</language>
                                 <projectUrl>http://www.nuget.org/</projectUrl>
                                 <licenseUrl>http://www.nuget.org/license</licenseUrl>
-                                <dependencies> 
+                                <dependencies>
                                    <group>
                                       <dependency id=""RouteMagic"" version=""1.1.0"" />
                                    </group>
@@ -154,7 +217,7 @@ namespace NuGet.Test.Utility
                                 <language>en-US</language>
                                 <projectUrl>http://www.nuget.org/</projectUrl>
                                 <licenseUrl>http://www.nuget.org/license</licenseUrl>
-                                <dependencies> 
+                                <dependencies>
                                    <group>
                                       <dependency id=""RouteMagic"" version=""1.1.0"" />
                                    </group>
@@ -195,7 +258,7 @@ namespace NuGet.Test.Utility
                                 <language>en-US</language>
                                 <projectUrl>http://www.nuget.org/</projectUrl>
                                 <licenseUrl>http://www.nuget.org/license</licenseUrl>
-                                <dependencies> 
+                                <dependencies>
                                    <group>
                                       <dependency id=""RouteMagic"" version=""1.1.0"" />
                                    </group>
@@ -236,7 +299,7 @@ namespace NuGet.Test.Utility
                                 <language>en-US</language>
                                 <projectUrl>http://www.nuget.org/</projectUrl>
                                 <licenseUrl>http://www.nuget.org/license</licenseUrl>
-                                <dependencies> 
+                                <dependencies>
                                    <group>
                                       <dependency id=""RouteMagic"" version=""1.1.0"" />
                                    </group>
@@ -276,7 +339,7 @@ namespace NuGet.Test.Utility
                                 <language>en-US</language>
                                 <projectUrl>http://www.nuget.org/</projectUrl>
                                 <licenseUrl>http://www.nuget.org/license</licenseUrl>
-                                <dependencies> 
+                                <dependencies>
                                    <group>
                                       <dependency id=""RouteMagic"" version=""1.1.0"" />
                                    </group>
@@ -287,10 +350,10 @@ namespace NuGet.Test.Utility
                                    <group targetFramework=""sl30"">
                                    </group>
                                 </dependencies>
-                                <references> 
-                                  <group targetFramework=""net45""> 
+                                <references>
+                                  <group targetFramework=""net45"">
                                       <reference file=""test45.dll"" />
-                                  </group> 
+                                  </group>
                                   <group>
                                     <reference file=""test.dll"" />
                                   </group>
@@ -330,7 +393,7 @@ namespace NuGet.Test.Utility
                                 <language>en-US</language>
                                 <projectUrl>http://www.nuget.org/</projectUrl>
                                 <licenseUrl>http://www.nuget.org/license</licenseUrl>
-                                <dependencies> 
+                                <dependencies>
                                    <group>
                                       <dependency id=""RouteMagic"" version=""1.1.0"" />
                                    </group>
@@ -341,7 +404,7 @@ namespace NuGet.Test.Utility
                                    <group targetFramework=""sl30"">
                                    </group>
                                 </dependencies>
-                                <references> 
+                                <references>
                                   <reference file=""test.dll"" />
                                 </references>
                                 <frameworkAssemblies>

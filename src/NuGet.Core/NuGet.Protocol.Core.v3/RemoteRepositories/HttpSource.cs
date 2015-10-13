@@ -69,50 +69,57 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
                     var request = new HttpRequestMessage(HttpMethod.Get, uri);
                     STSAuthHelper.PrepareSTSRequest(_baseUri, CredentialStore.Instance, request);
-                    var response = await client.SendAsync(request, cancellationToken);
-                    if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
+
+                    // Read the response headers before reading the entire stream to avoid timeouts from large packages.
+                    using (var response = await client.SendAsync(
+                        request,
+                        HttpCompletionOption.ResponseHeadersRead,
+                        cancellationToken))
                     {
-                        Logger.LogInformation(string.Format(CultureInfo.InvariantCulture,
+                        if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
+                        {
+                            Logger.LogInformation(string.Format(CultureInfo.InvariantCulture,
+                                "  {1} {0} {2}ms", uri, response.StatusCode.ToString(), sw.ElapsedMilliseconds.ToString()));
+                            return new HttpSourceResult();
+                        }
+
+                        if (response.StatusCode == HttpStatusCode.Unauthorized)
+                        {
+                            if (STSAuthHelper.TryRetrieveSTSToken(_baseUri, CredentialStore.Instance, response))
+                            {
+                                continue;
+                            }
+
+                            if (HttpHandlerResourceV3.PromptForCredentials != null)
+                            {
+                                credentials = HttpHandlerResourceV3.PromptForCredentials(_baseUri);
+                            }
+
+                            if (credentials == null)
+                            {
+                                response.EnsureSuccessStatusCode();
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+
+                        retry = false;
+                        response.EnsureSuccessStatusCode();
+
+                        if (HttpHandlerResourceV3.CredentialsSuccessfullyUsed != null && credentials != null)
+                        {
+                            HttpHandlerResourceV3.CredentialsSuccessfullyUsed(_baseUri, credentials);
+                        }
+
+                        await CreateCacheFile(result, response, cacheAgeLimit, cancellationToken);
+
+                        Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture,
                             "  {1} {0} {2}ms", uri, response.StatusCode.ToString(), sw.ElapsedMilliseconds.ToString()));
-                        return new HttpSourceResult();
+
+                        return result;
                     }
-
-                    if (response.StatusCode == HttpStatusCode.Unauthorized)
-                    {
-                        if (STSAuthHelper.TryRetrieveSTSToken(_baseUri, CredentialStore.Instance, response))
-                        {
-                            continue;
-                        }
-
-                        if (HttpHandlerResourceV3.PromptForCredentials != null)
-                        {
-                            credentials = HttpHandlerResourceV3.PromptForCredentials(_baseUri);
-                        }
-
-                        if (credentials == null)
-                        {
-                            response.EnsureSuccessStatusCode();
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                    }
-
-                    retry = false;
-                    response.EnsureSuccessStatusCode();
-
-                    if (HttpHandlerResourceV3.CredentialsSuccessfullyUsed != null && credentials != null)
-                    {
-                        HttpHandlerResourceV3.CredentialsSuccessfullyUsed(_baseUri, credentials);
-                    }
-
-                    await CreateCacheFile(result, response, cacheAgeLimit, cancellationToken);
-
-                    Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture,
-                        "  {1} {0} {2}ms", uri, response.StatusCode.ToString(), sw.ElapsedMilliseconds.ToString()));
-
-                    return result;
                 }
             }
 

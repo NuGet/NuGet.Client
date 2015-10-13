@@ -35,6 +35,7 @@ namespace NuGet.PackageManagement
             IncludePrerelease = includePrelease;
             IncludeUnlisted = includeUnlisted;
             VersionConstraints = versionConstraints;
+            GatherCache = new GatherCache();
         }
 
         /// <summary>
@@ -61,7 +62,8 @@ namespace NuGet.PackageManagement
         /// Gathe cache containing cached packages that can be used across operations.
         /// Ex: Update-Package updates all packages across all projects, GatherCache stores
         /// the gathered packages and re-uses them across all sub operations.
+        /// This property is for internal use or testing only.
         /// </summary>
-        internal GatherCache GatherCache { get; }
+        public GatherCache GatherCache { get; }
     }
 }

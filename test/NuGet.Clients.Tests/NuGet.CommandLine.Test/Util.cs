@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Runtime.Versioning;
 using System.Text;
+using System.Xml.Linq;
 using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
@@ -25,7 +26,7 @@ namespace NuGet.CommandLine.Test
             string dependencyPackageId,
             string dependencyPackageVersion)
         {
-            var group = new PackageDependencyGroup(NuGetFramework.AnyFramework, 
+            var group = new PackageDependencyGroup(NuGetFramework.AnyFramework,
                 new List<Packaging.Core.PackageDependency>()
             {
                 new Packaging.Core.PackageDependency(dependencyPackageId, VersionRange.Parse(dependencyPackageVersion))
@@ -57,8 +58,8 @@ namespace NuGet.CommandLine.Test
             foreach (var framework in frameworks)
             {
                 var libPath = string.Format(
-                    CultureInfo.InvariantCulture, 
-                    "lib/{0}/file.dll", 
+                    CultureInfo.InvariantCulture,
+                    "lib/{0}/file.dll",
                     framework.GetShortFolderName());
 
                 packageBuilder.Files.Add(CreatePackageFile(libPath));
@@ -69,9 +70,9 @@ namespace NuGet.CommandLine.Test
             foreach (var group in dependencies)
             {
                 var set = new PackageDependencySet(
-                    null, 
-                    group.Packages.Select(package => 
-                        new PackageDependency(package.Id, 
+                    null,
+                    group.Packages.Select(package =>
+                        new PackageDependency(package.Id,
                             VersionUtility.ParseVersionSpec(package.VersionRange.ToNormalizedString()))));
 
                 packageBuilder.DependencySets.Add(set);
@@ -95,7 +96,12 @@ namespace NuGet.CommandLine.Test
         /// <param name="version">The version of the created package.</param>
         /// <param name="path">The directory where the package is created.</param>
         /// <returns>The full path of the created package file.</returns>
-        public static string CreateTestPackage(string packageId, string version, string path, Uri licenseUrl = null)
+        public static string CreateTestPackage(
+            string packageId,
+            string version,
+            string path,
+            Uri licenseUrl = null,
+            params string[] contentFiles)
         {
             var packageBuilder = new PackageBuilder
             {
@@ -112,7 +118,20 @@ namespace NuGet.CommandLine.Test
                 packageBuilder.LicenseUrl = licenseUrl;
             }
 
-            packageBuilder.Files.Add(CreatePackageFile(@"content\test1.txt"));
+            if (contentFiles == null || contentFiles.Length == 0)
+            {
+                packageBuilder.Files.Add(CreatePackageFile(@"content\test1.txt"));
+            }
+            else
+            {
+                foreach (var contentFile in contentFiles)
+                {
+                    var packageFilePath = Path.Combine("content", contentFile);
+                    var packageFile = CreatePackageFile(packageFilePath);
+                    packageBuilder.Files.Add(packageFile);
+                }
+            }
+
             packageBuilder.Authors.Add("test author");
 
             var packageFileName = string.Format("{0}.{1}.nupkg", packageId, version);
@@ -342,13 +361,192 @@ namespace NuGet.CommandLine.Test
 
         public static void CreateConfigForGlobalPackagesFolder(string workingDirectory)
         {
-            Util.CreateFile(workingDirectory, "nuget.config",
-                        @"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <configuration>
-                          <config>
-                            <add key=""globalPackagesFolder"" value=""globalPackages"" />
-                          </config>
-                        </configuration>");
+            CreateNuGetConfig(workingDirectory, new List<string>());
+        }
+
+        public static void CreateNuGetConfig(string workingPath, List<string> sources)
+        {
+            var doc = new XDocument();
+            var configuration = new XElement(XName.Get("configuration"));
+            doc.Add(configuration);
+
+            var config = new XElement(XName.Get("config"));
+            configuration.Add(config);
+
+            var globalFolder = new XElement(XName.Get("add"));
+            globalFolder.Add(new XAttribute(XName.Get("key"), "globalPackagesFolder"));
+            globalFolder.Add(new XAttribute(XName.Get("value"), Path.Combine(workingPath, "globalPackages")));
+            config.Add(globalFolder);
+
+            var solutionDir = new XElement(XName.Get("add"));
+            solutionDir.Add(new XAttribute(XName.Get("key"), "repositoryPath"));
+            solutionDir.Add(new XAttribute(XName.Get("value"), Path.Combine(workingPath, "packages")));
+            config.Add(solutionDir);
+
+            var packageSources = new XElement(XName.Get("packageSources"));
+            configuration.Add(packageSources);
+            packageSources.Add(new XElement(XName.Get("clear")));
+
+            foreach (var source in sources)
+            {
+                var sourceEntry = new XElement(XName.Get("add"));
+                sourceEntry.Add(new XAttribute(XName.Get("key"), source));
+                sourceEntry.Add(new XAttribute(XName.Get("value"), source));
+                packageSources.Add(sourceEntry);
+            }
+
+            Util.CreateFile(workingPath, "NuGet.Config", doc.ToString());
+        }
+
+        /// <summary>
+        /// Create a simple package with a lib folder. This package should install everywhere.
+        /// The package will be removed from the machine cache upon creation
+        /// </summary>
+        public static ZipPackage CreatePackage(string repositoryPath, string id, string version)
+        {
+            var package = Util.CreateTestPackageBuilder(id, version);
+            var libFile = Util.CreatePackageFile("lib/uap/a.dll", "a");
+            package.Files.Add(libFile);
+
+            libFile = Util.CreatePackageFile("lib/net45/a.dll", "a");
+            package.Files.Add(libFile);
+
+            libFile = Util.CreatePackageFile("lib/native/a.dll", "a");
+            package.Files.Add(libFile);
+
+            libFile = Util.CreatePackageFile("lib/win/a.dll", "a");
+            package.Files.Add(libFile);
+
+            libFile = Util.CreatePackageFile("lib/net20/a.dll", "a");
+            package.Files.Add(libFile);
+
+            var path = Util.CreateTestPackage(package, repositoryPath);
+
+            ZipPackage zipPackage = new ZipPackage(path);
+
+            MachineCache.Default.RemovePackage(zipPackage);
+
+            return zipPackage;
+        }
+
+        /// <summary>
+        /// Create a registration blob for a single package
+        /// </summary>
+        public static JObject CreateSinglePackageRegistrationBlob(MockServer server, string id, string version)
+        {
+            var indexUrl = string.Format(CultureInfo.InvariantCulture,
+                                    "{0}reg/{1}/index.json", server.Uri, id);
+
+            JObject regBlob = new JObject();
+            regBlob.Add(new JProperty("@id", indexUrl));
+            var typeArray = new JArray();
+            regBlob.Add(new JProperty("@type", typeArray));
+            typeArray.Add("catalog: CatalogRoot");
+            typeArray.Add("PackageRegistration");
+            typeArray.Add("catalog: Permalink");
+
+            regBlob.Add(new JProperty("commitId", Guid.NewGuid()));
+            regBlob.Add(new JProperty("commitTimeStamp", "2015-06-22T22:30:00.1487642Z"));
+            regBlob.Add(new JProperty("count", "1"));
+
+            var pages = new JArray();
+            regBlob.Add(new JProperty("items", pages));
+
+            var page = new JObject();
+            pages.Add(page);
+
+            page.Add(new JProperty("@id", indexUrl + "#page/0.0.0/9.0.0"));
+            page.Add(new JProperty("@type", indexUrl + "catalog:CatalogPage"));
+            page.Add(new JProperty("commitId", Guid.NewGuid()));
+            page.Add(new JProperty("commitTimeStamp", "2015-06-22T22:30:00.1487642Z"));
+            page.Add(new JProperty("count", "1"));
+            page.Add(new JProperty("parent", indexUrl));
+            page.Add(new JProperty("lower", "0.0.0"));
+            page.Add(new JProperty("upper", "9.0.0"));
+
+            var items = new JArray();
+            page.Add(new JProperty("items", items));
+
+            var item = new JObject();
+            items.Add(item);
+
+            item.Add(new JProperty("@id",
+                    string.Format("{0}reg/{1}/{2}.json", server.Uri, id, version)));
+
+            item.Add(new JProperty("@type", "Package"));
+            item.Add(new JProperty("commitId", Guid.NewGuid()));
+            item.Add(new JProperty("commitTimeStamp", "2015-06-22T22:30:00.1487642Z"));
+
+            var catalogEntry = new JObject();
+            item.Add(new JProperty("catalogEntry", catalogEntry));
+            item.Add(new JProperty("packageContent", $"{server.Uri}packages/{id}.{version}.nupkg"));
+            item.Add(new JProperty("registration", indexUrl));
+
+            catalogEntry.Add(new JProperty("@id",
+                string.Format("{0}catalog/{1}/{2}.json", server.Uri, id, version)));
+
+            catalogEntry.Add(new JProperty("@type", "PackageDetails"));
+            catalogEntry.Add(new JProperty("authors", "test"));
+            catalogEntry.Add(new JProperty("description", "test"));
+            catalogEntry.Add(new JProperty("iconUrl", ""));
+            catalogEntry.Add(new JProperty("id", id));
+            catalogEntry.Add(new JProperty("language", "en-us"));
+            catalogEntry.Add(new JProperty("licenseUrl", ""));
+            catalogEntry.Add(new JProperty("listed", true));
+            catalogEntry.Add(new JProperty("minClientVersion", ""));
+            catalogEntry.Add(new JProperty("projectUrl", ""));
+            catalogEntry.Add(new JProperty("published", "2015-06-22T22:30:00.1487642Z"));
+            catalogEntry.Add(new JProperty("requireLicenseAcceptance", false));
+            catalogEntry.Add(new JProperty("summary", ""));
+            catalogEntry.Add(new JProperty("title", ""));
+            catalogEntry.Add(new JProperty("version", version));
+            catalogEntry.Add(new JProperty("tags", new JArray()));
+
+            return regBlob;
+        }
+
+        public static string CreateProjFileContent(
+            string projectName = "proj1",
+            string targetFrameworkVersion = "v4.5",
+            string[] references = null,
+            string[] contentFiles = null)
+        {
+            XNamespace msbuild = "http://schemas.microsoft.com/developer/msbuild/2003";
+
+            var project = new XElement(msbuild + "Project",
+                new XAttribute("ToolsVersion", "4.0"), new XAttribute("DefaultTargets", "Build"));
+
+            project.Add(new XElement(msbuild + "PropertyGroup",
+                  new XElement(msbuild + "OutputType", "Library"),
+                  new XElement(msbuild + "OutputPath", "out"),
+                  new XElement(msbuild + "TargetFrameworkVersion", targetFrameworkVersion)));
+
+            if (references != null && references.Any())
+            {
+                project.Add(new XElement(msbuild + "ItemGroup",
+                        references.Select(r => new XElement(msbuild + "Reference", new XAttribute("Include", r)))));
+            }
+
+            if (contentFiles != null && contentFiles.Any())
+            {
+                project.Add(new XElement(msbuild + "ItemGroup",
+                        contentFiles.Select(c => new XElement(msbuild + "Content", new XAttribute("Include", c)))));
+            }
+
+            project.Add(new XElement(msbuild + "Import",
+                new XAttribute("Project", @"$(MSBuildToolsPath)\Microsoft.CSharp.targets")));
+
+            return project.ToString();
+        }
+
+        public static string CreateSolutionFileContent()
+        {
+            return @"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"",
+""proj1.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
+EndProject";
         }
     }
 }

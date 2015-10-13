@@ -202,7 +202,8 @@ namespace NuGet.Packaging.Test
             // Copy of the InstallPackageRespectReferencesAccordingToDifferentFrameworks functional test
 
             // Arrange
-            var path = TestPackages.GetNearestReferenceFilteringPackage();
+            var zipInfo = TestPackages.GetNearestReferenceFilteringPackage();
+            var path = zipInfo.File;
             _paths.Add(path.FullName);
             var zip = TestPackages.GetZip(path);
             var reader = new PackageReader(zip);

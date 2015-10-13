@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Configuration;
 using NuGet.ContentModel;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
@@ -868,12 +867,13 @@ namespace NuGet.Commands
                 token: token);
         }
 
-        private IRemoteDependencyProvider CreateProviderFromSource(PackageSource source, SourceCacheContext cacheContext)
+        private IRemoteDependencyProvider CreateProviderFromSource(
+            SourceRepository repository,
+            SourceCacheContext cacheContext)
         {
-            _log.LogVerbose(Strings.FormatLog_UsingSource(source.Source));
+            _log.LogVerbose(Strings.FormatLog_UsingSource(repository.PackageSource.Source));
 
-            var nugetRepository = Repository.Factory.GetCoreV3(source.Source);
-            return new SourceRepositoryDependencyProvider(nugetRepository, _log, cacheContext);
+            return new SourceRepositoryDependencyProvider(repository, _log, cacheContext);
         }
     }
 }

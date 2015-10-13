@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -73,10 +72,7 @@ namespace NuGet.CommandLine
         {
             var packageSource = new Configuration.PackageSource(source);
 
-            var sourceRepositoryProvider = new SourceRepositoryProvider(SourceProvider,
-                Enumerable.Concat(
-                    Protocol.Core.v2.FactoryExtensionsV2.GetCoreV2(Repository.Provider),
-                    Protocol.Core.v3.FactoryExtensionsV2.GetCoreV3(Repository.Provider)));
+            var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
 
             var sourceRepository = sourceRepositoryProvider.CreateRepository(packageSource);
             var pushCommandResource = await sourceRepository.GetResourceAsync<PushCommandResource>();

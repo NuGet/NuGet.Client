@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Commands;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
 {
@@ -27,14 +28,14 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Sources used for package restore.
         /// </summary>
-        public IReadOnlyList<string> Sources { get; }
+        public IReadOnlyList<SourceRepository> Sources { get; }
 
         public BuildIntegratedProjectAction(PackageIdentity packageIdentity,
             NuGetProjectActionType nuGetProjectActionType,
             LockFile originalLockFile,
             JObject updatedProjectJson,
             RestoreResult restoreResult,
-            IReadOnlyList<string> sources)
+            IReadOnlyList<SourceRepository> sources)
             : base(packageIdentity, nuGetProjectActionType)
         {
             if (packageIdentity == null)

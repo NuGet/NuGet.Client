@@ -62,7 +62,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MockServerResource.resx</DependentUpon>
     </Compile>
+    <Compile Include="MSBuildProjectSystemTests.cs" />
     <Compile Include="MSBuildUtilityTest.cs" />
+    <Compile Include="NetworkCallCountTest.cs" />
     <Compile Include="NuGetConfigCommandTest.cs" />
     <Compile Include="NuGetDeleteCommandTest.cs" />
     <Compile Include="NuGetHelpCommandTest.cs" />
@@ -71,6 +73,7 @@
     <Compile Include="NuGetPackCommandTest.cs" />
     <Compile Include="NuGetPushCommandTest.cs" />
     <Compile Include="NuGetRestoreCommandTest.cs" />
+    <Compile Include="NuGetUpdateCommandTests.cs" />
     <Compile Include="PortReserver.cs" />
     <Compile Include="RestoreProjectJsonTest.cs" />
     <Compile Include="NuGetSourcesCommandTest.cs" />

@@ -355,11 +355,11 @@ namespace NuGet.PackageManagement
             {
                 if (request.Package.HasVersion)
                 {
-                    cacheResult = _cache.GetPackage(packageSource, request.Package);
+                    cacheResult = _cache.GetPackage(packageSource, request.Package, _context.TargetFramework);
                 }
                 else
                 {
-                    cacheResult = _cache.GetPackages(packageSource, request.Package.Id);
+                    cacheResult = _cache.GetPackages(packageSource, request.Package.Id, _context.TargetFramework);
                 }
             }
 
@@ -392,11 +392,19 @@ namespace NuGet.PackageManagement
                         {
                             if (request.Package.HasVersion)
                             {
-                                _cache.AddPackageFromSingleVersionLookup(packageSource, request.Package, packages.FirstOrDefault());
+                                _cache.AddPackageFromSingleVersionLookup(
+                                    packageSource, 
+                                    request.Package,
+                                    _context.TargetFramework,
+                                    packages.FirstOrDefault());
                             }
                             else
                             {
-                                _cache.AddAllPackagesForId(packageSource, request.Package.Id, packages);
+                                _cache.AddAllPackagesForId(
+                                    packageSource,
+                                    request.Package.Id,
+                                    _context.TargetFramework,
+                                    packages);
                             }
                         }
                     }

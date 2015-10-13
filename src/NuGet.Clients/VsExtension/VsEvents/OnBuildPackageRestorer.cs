@@ -321,8 +321,7 @@ namespace NuGetVSExtension
                     }
                 }
 
-                var enabledSources = SourceRepositoryProvider.GetRepositories()
-                    .Select(repo => repo.PackageSource.Source);
+                var enabledSources = SourceRepositoryProvider.GetRepositories();
 
                 // No-op all project closures are up to date and all packages exist on disk.
                 if (await IsRestoreRequired(buildEnabledProjects, forceRestore))
@@ -451,7 +450,7 @@ namespace NuGetVSExtension
         private async Task BuildIntegratedProjectRestoreAsync(
             BuildIntegratedNuGetProject project,
             string solutionDirectory,
-            IEnumerable<string> enabledSources,
+            IEnumerable<SourceRepository> enabledSources,
             CancellationToken token)
         {
             // Go off the UI thread to perform I/O operations

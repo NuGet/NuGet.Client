@@ -219,7 +219,8 @@ namespace NuGet.Common
 
         public void RemoveFile(string path)
         {
-            FileSystemUtility.DeleteFile(path, NuGetProjectContext);
+            var fullPath = Path.Combine(ProjectFullPath, path);
+            FileSystemUtility.DeleteFile(fullPath, NuGetProjectContext);
         }
 
         public void RemoveImport(string targetFullPath)
@@ -271,6 +272,11 @@ namespace NuGet.Common
         public void SetNuGetProjectContext(INuGetProjectContext nuGetProjectContext)
         {
             NuGetProjectContext = nuGetProjectContext;
+        }
+
+        public void Save()
+        {
+            Project.Save();
         }
 
         private IEnumerable<dynamic> GetItems(string itemType, string name)

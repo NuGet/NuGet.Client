@@ -148,7 +148,13 @@ namespace NuGet.Configuration
             }
 
 #if !DNXCORE50
+            // On Kudu this might return null
             var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+            if (string.IsNullOrEmpty(userProfile))
+            {
+                userProfile = Environment.GetEnvironmentVariable("UserProfile");
+            }
 #else
             var userProfile = Environment.GetEnvironmentVariable("UserProfile");
 #endif

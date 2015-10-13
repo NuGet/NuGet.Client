@@ -5,6 +5,7 @@ using System.ComponentModel.Composition.Hosting;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Net;
 using NuGet.Common;
 
 namespace NuGet.CommandLine
@@ -53,6 +54,17 @@ namespace NuGet.CommandLine
             {
                 args = args.Where(arg => !String.Equals(arg, "-utf8", StringComparison.OrdinalIgnoreCase)).ToArray();
                 SetConsoleOutputEncoding(System.Text.Encoding.UTF8);
+            }
+
+            // Increase the maximum number of connections per server.
+            if (!EnvironmentUtility.IsMonoRuntime)
+            {
+                ServicePointManager.DefaultConnectionLimit = 64;
+            }
+            else
+            {
+                // Keep mono limited to a single download to avoid issues.
+                ServicePointManager.DefaultConnectionLimit = 1;
             }
 
             var console = new Common.Console();
@@ -118,6 +130,12 @@ namespace NuGet.CommandLine
                 else if (unwrappedEx is System.Reflection.TargetInvocationException)
                 {
                     message = getErrorMessage(unwrappedEx.InnerException);
+                }
+                else if (unwrappedEx is ExitCodeException)
+                {
+                    // Return the exit code without writing out the exception type
+                    var exitCodeEx = unwrappedEx as ExitCodeException;
+                    return exitCodeEx.ExitCode;
                 }
                 else
                 {

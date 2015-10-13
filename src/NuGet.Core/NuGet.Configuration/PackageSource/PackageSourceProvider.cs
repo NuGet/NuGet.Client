@@ -13,7 +13,6 @@ namespace NuGet.Configuration
     public class PackageSourceProvider : IPackageSourceProvider
     {
         private const int MaxSupportedProtocolVersion = 3;
-        private static Lazy<bool> _isMono = new Lazy<bool>(() => Type.GetType("Mono.Runtime") != null);
 
         private ISettings Settings { get; set; }
         private readonly IEnumerable<PackageSource> _providerDefaultPrimarySources;
@@ -84,7 +83,7 @@ namespace NuGet.Configuration
         {
 #if !DNXCORE50
             // Global default NuGet source doesn't make sense on Mono
-            if (_isMono.Value)
+            if (RuntimeEnvironmentHelper.IsMono)
             {
                 return Enumerable.Empty<PackageSource>();
             }
@@ -191,15 +190,17 @@ namespace NuGet.Configuration
             var v3Setting = new SettingValue(
                 NuGetConstants.FeedName,
                 NuGetConstants.V3FeedUrl,
+                origin: settings,
                 isMachineWide: false,
                 priority: 1);
             v3Setting.AdditionalData[ConfigurationContants.ProtocolVersionAttribute] = "3";
 
             var v2Setting = new SettingValue(
-               NuGetConstants.FeedName,
-               NuGetConstants.V2FeedUrl,
-               isMachineWide: false,
-               priority: 1);
+                NuGetConstants.FeedName,
+                NuGetConstants.V2FeedUrl,
+                origin: settings,
+                isMachineWide: false,
+                priority: 1);
 
             if (settingToMigrate.Length == 0)
             {
@@ -248,6 +249,7 @@ namespace NuGet.Configuration
             }
 
             packageSource.ProtocolVersion = ReadProtocolVersion(setting);
+            packageSource.Origin = setting.Origin;
 
             return packageSource;
         }
@@ -550,7 +552,8 @@ namespace NuGet.Configuration
                     // This is a new source, add it to the Setting with the lowest priority.
                     // if there is a clear tag in one config file, new source will be cleared
                     // we should set new source priority to lowest existingSetting priority
-                    var settingValue = new SettingValue(source.Name, source.Source, isMachineWide: false, priority: minPriority);
+                    // NOTE: origin can be null here because it isn't ever used when saving.
+                    var settingValue = new SettingValue(source.Name, source.Source, origin: null, isMachineWide: false, priority: minPriority);
 
                     if (source.ProtocolVersion != PackageSource.DefaultProtocolVersion)
                     {
@@ -573,14 +576,14 @@ namespace NuGet.Configuration
                 if (!source.IsEnabled)
                 {
                     // Add an entry to the disabledPackageSource in the file that contains
-                    sourcesToDisable.Add(new SettingValue(source.Name, "true", isMachineWide: false, priority: settingPriority));
+                    sourcesToDisable.Add(new SettingValue(source.Name, "true", origin: null, isMachineWide: false, priority: settingPriority));
                 }
             }
 
             // add entries to the disabledPackageSource for machine wide setting
             foreach (var source in sources.Where(s => s.IsMachineWide && !s.IsEnabled))
             {
-                sourcesToDisable.Add(new SettingValue(source.Name, "true", isMachineWide: true, priority: 0));
+                sourcesToDisable.Add(new SettingValue(source.Name, "true", origin: null, isMachineWide: true, priority: 0));
             }
 
             // Write the updates to the nearest settings file.

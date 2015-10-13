@@ -8,21 +8,35 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3;
 
 namespace NuGet.Commands
 {
     public class RestoreRequest
     {
-        public static readonly int DefaultDegreeOfConcurrency = 8;
-
-        public RestoreRequest(PackageSpec project, IEnumerable<PackageSource> sources)
-            : this(project, sources, packagesDirectory: null)
-        { }
+        public static readonly int DefaultDegreeOfConcurrency = 16;
 
         public RestoreRequest(PackageSpec project, IEnumerable<PackageSource> sources, string packagesDirectory)
+            : this(
+                  project,
+                  sources.Select(source => Repository.Factory.GetCoreV3(source.Source)),
+                  packagesDirectory)
         {
+        }
+
+        public RestoreRequest(PackageSpec project, IEnumerable<SourceRepository> sources, string packagesDirectory)
+        {
+            if (project == null)
+            {
+                throw new ArgumentNullException(nameof(project));
+            }
+
+            if (sources == null)
+            {
+                throw new ArgumentNullException(nameof(sources));
+            }
+
             Project = project;
-            Sources = sources.ToList().AsReadOnly();
 
             ExternalProjects = new List<ExternalProjectReference>();
             CompatibilityProfiles = new HashSet<FrameworkRuntimePair>();
@@ -30,6 +44,8 @@ namespace NuGet.Commands
             PackagesDirectory = packagesDirectory;
 
             CacheContext = new SourceCacheContext();
+
+            Sources = sources.ToList();
         }
 
         /// <summary>
@@ -40,7 +56,7 @@ namespace NuGet.Commands
         /// <summary>
         /// The complete list of sources to retrieve packages from (excluding caches)
         /// </summary>
-        public IReadOnlyList<PackageSource> Sources { get; }
+        public IReadOnlyList<SourceRepository> Sources { get; }
 
         /// <summary>
         /// The directory in which to install packages

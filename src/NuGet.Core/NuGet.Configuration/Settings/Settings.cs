@@ -21,7 +21,20 @@ namespace NuGet.Configuration
         /// Default file name for a settings file is 'NuGet.config'
         /// Also, the machine level setting file at '%APPDATA%\NuGet' always uses this name
         /// </summary>
-        public const string DefaultSettingsFileName = "NuGet.config";
+        public static readonly string DefaultSettingsFileName = "NuGet.Config";
+
+        /// <summary>
+        /// NuGet config names with casing ordered by precedence.
+        /// </summary>
+        public static readonly string[] OrderedSettingsFileNames = 
+            RuntimeEnvironmentHelper.IsWindows ? 
+            new[] { DefaultSettingsFileName } :
+            new[]
+            {
+                "nuget.config", // preferred style
+                "NuGet.config", // Alternative
+                DefaultSettingsFileName  // NuGet v2 style
+            };
 
         private XDocument ConfigXDocument { get; set; }
         private string ConfigFileName { get; set; }
@@ -227,7 +240,7 @@ namespace NuGet.Configuration
                             var values = setting.GetSettingValues(ConfigurationContants.PackageSources, isPath: true);
                             foreach (var value in values)
                             {
-                                disabledSources.Add(new SettingValue(value.Key, "true", isMachineWide: true, priority: 0));
+                                disabledSources.Add(new SettingValue(value.Key, "true", origin: setting, isMachineWide: true, priority: 0));
                             }
                         }
                         appDataSettings.UpdateSections(ConfigurationContants.DisabledPackageSources, disabledSources);
@@ -810,7 +823,7 @@ namespace NuGet.Configuration
                 value = Path.Combine(Root, Path.Combine(configDirectory, value));
             }
 
-            var settingValue = new SettingValue(keyAttribute.Value, value, IsMachineWideSettings, _priority);
+            var settingValue = new SettingValue(keyAttribute.Value, value, origin: this, isMachineWide: IsMachineWideSettings, priority: _priority);
             foreach (var attribute in element.Attributes())
             {
                 // Add all attributes other than ConfigurationContants.KeyAttribute and ConfigurationContants.ValueAttribute to AdditionalValues
@@ -900,12 +913,34 @@ namespace NuGet.Configuration
             // otherwise we'd end up creating them.
             foreach (var dir in GetSettingsFilePaths(root))
             {
-                var fileName = Path.Combine(dir, DefaultSettingsFileName);
-                if (FileSystemUtility.DoesFileExistIn(root, fileName))
+                var fileName = GetSettingsFileNameFromDir(dir);
+                if (fileName != null)
                 {
                     yield return fileName;
                 }
             }
+
+            yield break;
+        }
+
+        /// <summary>
+        /// Checks for each possible casing of nuget.config in the directory. The first match is
+        /// returned. If there are no nuget.config files null is returned.
+        /// </summary>
+        /// <remarks>For windows <see cref="OrderedSettingsFileNames"/> contains a single casing since
+        /// the file system is case insensitive.</remarks>
+        private static string GetSettingsFileNameFromDir(string directory)
+        {
+            foreach (var nugetConfigCasing in OrderedSettingsFileNames)
+            {
+                var file = Path.Combine(directory, nugetConfigCasing);
+                if (File.Exists(file))
+                {
+                    return file;
+                }
+            }
+
+            return null;
         }
 
         private static IEnumerable<string> GetSettingsFilePaths(string root)
@@ -915,6 +950,8 @@ namespace NuGet.Configuration
                 yield return root;
                 root = Path.GetDirectoryName(root);
             }
+
+            yield break;
         }
 
         private void Save()
