@@ -624,12 +624,12 @@ namespace NuGet.Resolver.Test
             var packageD2 = CreatePackage("D", "2.0");
             sourceRepository.Add(packageD2);
 
-            // Arange to trigger update of B to 1.1
-            var targets = installed.Concat(new ResolverPackage[] {packageB11});
-
             // Act
-            var resolver = new PackageResolver(DependencyBehavior.Lowest);
-            var solution = resolver.Resolve(targets, sourceRepository, project, CancellationToken.None).ToArray();
+            var resolver = new PackageResolver();
+            var packageResolverContext
+                = CreatePackageResolverContext(DependencyBehavior.Lowest, installed, sourceRepository);
+
+            var solution = resolver.Resolve(packageResolverContext, CancellationToken.None).ToArray();
             var packages = solution.ToDictionary(p => p.Id);
 
             // Assert
