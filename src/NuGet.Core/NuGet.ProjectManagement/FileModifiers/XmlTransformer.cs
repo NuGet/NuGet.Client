@@ -32,12 +32,18 @@ namespace NuGet.ProjectManagement
             MSBuildNuGetProjectSystemUtility.AddFile(msBuildNuGetProjectSystem, targetPath, transformDocument.Save);
         }
 
-        public void RevertFile(Func<Stream> fileStreamFactory, string targetPath, IEnumerable<InternalZipFileInfo> matchingFiles, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
+        public void RevertFile(Func<Stream> fileStreamFactory,
+            string targetPath,
+            IEnumerable<InternalZipFileInfo> matchingFiles,
+            IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
         {
             // Get the xml snippet
             var xmlFragment = GetXml(fileStreamFactory, msBuildNuGetProjectSystem);
 
-            var document = XmlUtility.GetOrCreateDocument(xmlFragment.Name, msBuildNuGetProjectSystem.ProjectFullPath, targetPath, msBuildNuGetProjectSystem.NuGetProjectContext);
+            var document = XmlUtility.GetOrCreateDocument(xmlFragment.Name,
+                msBuildNuGetProjectSystem.ProjectFullPath,
+                targetPath,
+                msBuildNuGetProjectSystem.NuGetProjectContext);
 
             // Merge the other xml elements into one element within this xml hierarchy (matching the config file path)
             var mergedFragments = matchingFiles.Select(f => GetXml(f, msBuildNuGetProjectSystem))

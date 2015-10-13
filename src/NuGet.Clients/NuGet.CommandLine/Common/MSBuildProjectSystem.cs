@@ -17,8 +17,8 @@ namespace NuGet.Common
         private readonly string _projectDirectory;
 
         public MSBuildProjectSystem(
-            string msbuildDirectory, 
-            string projectFullPath, 
+            string msbuildDirectory,
+            string projectFullPath,
             INuGetProjectContext projectContext)
         {
             LoadAssemblies(msbuildDirectory);
@@ -135,19 +135,24 @@ namespace NuGet.Common
                 new[] { new KeyValuePair<string, string>("HintPath", relativePath) });
         }
 
-        public void BeginProcessing(IEnumerable<string> files)
+        public void BeginProcessing()
         {
-            // No-op
+            // No-op outside of visual studio, this is implemented in other project systems, like vsmsbuild & website.
+        }
+
+        public void RegisterProcessedFiles(IEnumerable<string> files)
+        {
+            // No-op outside of visual studio, this is implemented in other project systems, like vsmsbuild & website.
+        }
+
+        public void EndProcessing()
+        {
+            // No-op outside of visual studio, this is implemented in other project systems, like vsmsbuild & website.
         }
 
         public void DeleteDirectory(string path, bool recursive)
         {
             FileSystemUtility.DeleteDirectory(path, recursive, NuGetProjectContext);
-        }
-
-        public void EndProcessing()
-        {
-            // No-op
         }
 
         public Task ExecuteScriptAsync(PackageIdentity identity, string packageInstallPath, string scriptRelativePath, NuGetProject nuGetProject, bool throwOnFailure)

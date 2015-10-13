@@ -746,9 +746,14 @@ namespace NuGet.PackageManagement.VisualStudio
             return Task.FromResult(false);
         }
 
-        public virtual void BeginProcessing(IEnumerable<string> files)
+        public virtual void BeginProcessing()
         {
             ProjectBuildSystem?.StartBatchEdit();
+        }
+
+        public virtual void RegisterProcessedFiles(IEnumerable<string> files)
+        {
+            // No-op, this is implemented in other project systems, like website.
         }
 
         public virtual void EndProcessing()

@@ -71,7 +71,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     // Remove the reference via DTE.
                     RemoveDTEReference(name);
 
-                    // For GACed binaries, VS would not clear the refresh files for us since it assumes the reference exists in web.config. 
+                    // For GACed binaries, VS would not clear the refresh files for us since it assumes the reference exists in web.config.
                     // We'll clean up any remaining .refresh files.
                     var refreshFilePath = Path.Combine("bin", Path.GetFileName(name) + ".refresh");
                     var refreshFileFullPath = FileSystemUtility.GetFullPath(ProjectFullPath, refreshFilePath);
@@ -117,7 +117,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 if (reference != null
                     && reference.ReferenceKind == AssemblyReferenceType.AssemblyReferenceConfig)
                 {
-                    // Bug 2319: Strong named assembly references are specified via config and may be specified in the root web.config. Attempting to remove these 
+                    // Bug 2319: Strong named assembly references are specified via config and may be specified in the root web.config. Attempting to remove these
                     // references always throws and there isn't an easy way to identify this. Instead, we'll attempt to lower the level of the message so it doesn't
                     // appear as readily.
 
@@ -193,9 +193,13 @@ namespace NuGet.PackageManagement.VisualStudio
             return base.GetDirectories(path);
         }
 
-        public override void BeginProcessing(IEnumerable<string> files)
+        public override void BeginProcessing()
         {
-            // Need NOT be on the UI thread
+        }
+
+        public override void RegisterProcessedFiles(IEnumerable<string> files)
+        {
+            // Need NOT be on the UI thread (but not thread safe)
 
             var orderedFiles = files.OrderBy(path => path)
                 .ToList();
@@ -209,8 +213,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         continue;
                     }
 
-                    if (path1.StartsWith(path2, StringComparison.OrdinalIgnoreCase)
-                        &&
+                    if (path1.StartsWith(path2, StringComparison.OrdinalIgnoreCase) &&
                         IsSourceFile(path1))
                     {
                         _excludedCodeFiles.Add(path1);
