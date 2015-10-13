@@ -78,6 +78,7 @@ namespace NuGet.Frameworks
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.XamarinPlayStation3, "xamarinpsthree"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.XamarinPlayStation4, "xamarinpsfour"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.XamarinPlayStationVita, "xamarinpsvita"),
+                            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.XamarinWatchOS, "xamarinwatchos"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.XamarinXbox360, "xamarinxboxthreesixty"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.XamarinXboxOne, "xamarinxboxone"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Dnx, "dnx"),
@@ -378,6 +379,7 @@ namespace NuGet.Frameworks
                            CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.XamarinPlayStation3),
                            CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.XamarinPlayStation4),
                            CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.XamarinPlayStationVita),
+                           CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.XamarinWatchOS),
                            CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.XamarinXbox360),
                            CreateDotNetMappingForAllVersions(FrameworkConstants.FrameworkIdentifiers.XamarinXboxOne),
                         };
