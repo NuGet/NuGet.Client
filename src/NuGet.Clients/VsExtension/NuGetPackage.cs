@@ -7,7 +7,6 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
@@ -327,7 +326,7 @@ namespace NuGetVSExtension
 
             ProjectRetargetingHandler = new ProjectRetargetingHandler(_dte, SolutionManager, this);
             ProjectUpgradeHandler = new ProjectUpgradeHandler(this, SolutionManager);
-            
+
             LoadNuGetSettings();
         }
 
@@ -640,6 +639,13 @@ namespace NuGetVSExtension
             }
 
             var nugetProject = solutionManager.GetNuGetProject(EnvDTEProjectUtility.GetCustomUniqueName(project));
+
+            // If we failed to generate a cache entry in the solution manager something went wrong.
+            if (nugetProject == null)
+            {
+                throw new InvalidOperationException(
+                    string.Format(Resources.ProjectHasAnInvalidNuGetConfiguration, project.Name));
+            }
 
             // load packages.config. This makes sure that an exception will get thrown if there
             // are problems with packages.config, such as duplicate packages. When an exception
