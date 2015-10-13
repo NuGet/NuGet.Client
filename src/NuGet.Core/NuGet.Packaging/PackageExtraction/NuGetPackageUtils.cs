@@ -112,7 +112,7 @@ namespace NuGet.Packaging
                         // Now rename the tmp file
                         File.Move(targetTempNupkg, targetNupkg);
 
-                        var tempHashPath = Path.Combine(hashPath, Path.GetRandomFileName());
+                        var tempHashPath = Path.Combine(targetPath, Path.GetRandomFileName());
 
                         using (var nupkgStream = File.Open(targetNupkg, FileMode.Open, FileAccess.Read, FileShare.Read))
                         {
