@@ -142,8 +142,8 @@ function BuildXproj()
         }
     }
 
-    ## Coping nupkgs
-    Write-Host "Coping the packages to" $artifactsPackages
+    ## Copying nupkgs
+    Write-Host "Copying the packages to" $artifactsPackages
     Get-ChildItem $artifacts\*.nupkg -Recurse | % { Move-Item $_ $nupkgsDir }
 }
 
@@ -166,7 +166,7 @@ function BuildCSproj()
         throw "NuGet.Clients.sln Build failed "
     }
 
-    Write-Host "Coping the Vsix to $artifacts"
+    Write-Host "Copying the Vsix to $artifacts"
     $visxLocation = Join-Path $artifacts "$Configuration\NuGet.Clients\VsExtension"
     Copy-Item $visxLocation\NuGet.Tools.vsix $artifacts
 }

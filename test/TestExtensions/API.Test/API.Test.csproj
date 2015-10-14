@@ -34,13 +34,6 @@
     <Reference Include="envdte, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
-    <Reference Include="NuGet.PackageManagement.VisualStudio">
-      <HintPath>..\..\..\..\artifacts\Release\NuGet.Clients\PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.dll</HintPath>
-    </Reference>
-    <Reference Include="NuGet.VisualStudio">
-      <HintPath>..\..\..\..\artifacts\Release\NuGet.Clients\VisualStudioAPI\NuGet.VisualStudio.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -53,6 +46,19 @@
   <ItemGroup>
     <Compile Include="InternalAPITestHook.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj">
+      <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
+      <Name>PackageManagement.VisualStudio</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\VisualStudio\VisualStudio.csproj">
+      <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
+      <Name>VisualStudio</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
