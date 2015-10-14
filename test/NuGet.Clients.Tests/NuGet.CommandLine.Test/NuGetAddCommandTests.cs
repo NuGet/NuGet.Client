@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -454,6 +455,37 @@ namespace NuGet.CommandLine.Test
 
             // Assert
             Util.VerifyResultSuccess(result, "usage: NuGet add <packagePath> -Source <fileSourceFolder> [options]");
+        }
+
+        [Fact]
+        public void AddCommand_Success_ExpandSwitch()
+        {
+            // Arrange
+            using (var testInfo = new TestInfo())
+            {
+                testInfo.Init();
+
+                var args = new string[]
+                {
+                    "add",
+                    testInfo.RandomNupkgFilePath,
+                    "-Source",
+                    testInfo.SourceParamFolder,
+                    "-Expand"
+                };
+
+                // Act
+                var result = CommandRunner.Run(
+                    testInfo.NuGetExePath,
+                    testInfo.WorkingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Util.VerifyResultSuccess(result);
+                var listOfPackages = new List<PackageIdentity>() { testInfo.Package };
+                Util.VerifyExpandedLegacyTestPackagesExist(listOfPackages, testInfo.SourceParamFolder);
+            }
         }
     }
 }

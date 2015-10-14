@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Test.Utility;
@@ -28,6 +29,7 @@ namespace NuGet.CommandLine.Test
         /// 14. Destination Feed is an invalid input. FAIL
         /// 15. Source Feed is v2-based folder (packages are at the package id directory under the root). SUCCESS
         /// 16. Source Feed is v3-based folder (packages are at the package version directory under the root). SUCCESS
+        /// 17. For -Expand switch, Packages are expanded at the destination feed. SUCCESS
 
         private class TestInfo : IDisposable
         {
@@ -630,6 +632,35 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Util.VerifyResultSuccess(result);
                 Util.VerifyPackagesExist(packagesAtVersionDirectory, testInfo.DestinationFeed);
+            }
+        }
+
+        [Fact]
+        public void InitCommand_Success_ExpandSwitch()
+        {
+            // Arrange
+            using (var testInfo = new TestInfo())
+            {
+                var packages = testInfo.AddPackagesToSource();
+
+                var args = new string[]
+                {
+                    "init",
+                    testInfo.SourceFeed,
+                    testInfo.DestinationFeed,
+                    "-Expand"
+                };
+
+                // Act
+                var result = CommandRunner.Run(
+                    testInfo.NuGetExePath,
+                    testInfo.WorkingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Util.VerifyResultSuccess(result);
+                Util.VerifyExpandedLegacyTestPackagesExist(packages, testInfo.DestinationFeed);
             }
         }
     }

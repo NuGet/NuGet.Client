@@ -612,22 +612,52 @@ EndProject";
         }
 
         public static void VerifyPackagesExist(
-            IList<PackageIdentity> packageIdentity,
+            IList<PackageIdentity> packages,
             string packagesDirectory)
         {
-            foreach(var package in packageIdentity)
+            foreach(var package in packages)
             {
                 VerifyPackageExists(package, packagesDirectory);
             }
         }
 
         public static void VerifyPackagesDoNotExist(
-            IList<PackageIdentity> packageIdentity,
+            IList<PackageIdentity> packages,
             string packagesDirectory)
         {
-            foreach (var package in packageIdentity)
+            foreach (var package in packages)
             {
                 VerifyPackageDoesNotExist(package, packagesDirectory);
+            }
+        }
+
+        /// <summary>
+        /// To verify packages created using TestPackages.GetLegacyTestPackage
+        /// </summary>
+        public static void VerifyExpandedLegacyTestPackagesExist(
+            IList<PackageIdentity> packages,
+            string packagesDirectory)
+        {
+            var versionFolderPathResolver
+                = new VersionFolderPathResolver(packagesDirectory, normalizePackageId: true);
+
+            var packageFiles = new[]
+            {
+                    "lib/test.dll",
+                    "lib/net40/test40.dll",
+                    "lib/net40/test40b.dll",
+                    "lib/net45/test45.dll",
+                };
+
+            foreach (var package in packages)
+            {
+                Util.VerifyPackageExists(package, packagesDirectory);
+                var packageRoot = versionFolderPathResolver.GetInstallPath(package.Id, package.Version);
+                foreach (var packageFile in packageFiles)
+                {
+                    var filePath = Path.Combine(packageRoot, packageFile);
+                    Assert.True(File.Exists(filePath), $"For {package}, {filePath} does not exist.");
+                }
             }
         }
 
