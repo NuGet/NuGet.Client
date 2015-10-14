@@ -34,8 +34,7 @@ namespace NuGet.CommandLine.Commands
             }
 
             // Clear NuGet v3 HTTP cache
-            var localAppDataFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var httpCacheFolderPath = Path.Combine(localAppDataFolderPath, "NuGet", "v3-cache");
+            var httpCacheFolderPath = SettingsUtility.GetHttpCacheFolder(Settings);
             if (!string.IsNullOrEmpty(httpCacheFolderPath))
             {
                 Console.WriteLine(

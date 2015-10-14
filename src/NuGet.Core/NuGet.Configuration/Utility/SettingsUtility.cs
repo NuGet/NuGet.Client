@@ -156,5 +156,20 @@ namespace NuGet.Configuration
 
             return path;
         }
+
+        public static string GetHttpCacheFolder(ISettings settings)
+        {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+#if !DNXCORE50
+            var localAppDataFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+#else
+            var localAppDataFolderPath = Environment.GetEnvironmentVariable("LocalAppData");
+#endif
+            var path = Path.Combine(localAppDataFolderPath, "NuGet", "v3-cache");
+            return path;
+        }
     }
 }
