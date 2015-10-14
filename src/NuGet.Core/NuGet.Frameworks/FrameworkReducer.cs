@@ -118,6 +118,18 @@ namespace NuGet.Frameworks
                     }
                 }
 
+                // Packages based framework reduce 
+                if (reduced.Count() > 1
+                    && reduced.Any(f => f.IsPackageBased)
+                    && reduced.Any(f => !f.IsPackageBased))
+                {
+                    // If we have a packages based and non-packages based mix, throw out the packages based frameworks.
+                    // This situation is unlikely but it could happen with framework mappings that do not provide
+                    // a relationship between the frameworks and the compatible packages based frameworks.
+                    // Ex: net46, dotnet -> net46
+                    reduced = reduced.Where(f => !f.IsPackageBased);
+                }
+
                 // Profile reduce
                 if (reduced.Count() > 1
                     && !reduced.Any(f => f.IsPCL))

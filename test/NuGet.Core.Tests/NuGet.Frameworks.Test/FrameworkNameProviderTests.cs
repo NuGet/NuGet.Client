@@ -103,7 +103,7 @@ namespace NuGet.Test
             Version version = null;
             provider.TryGetVersion(versionString, out version);
 
-            string actual = provider.GetVersionString(version);
+            string actual = provider.GetVersionString("Windows", version);
 
             Assert.Equal(expected, actual);
         }
