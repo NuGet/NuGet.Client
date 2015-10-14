@@ -332,6 +332,7 @@ namespace NuGet.ProjectManagement
             PerformSafeAction(() => DeleteDirectory(projectSystem, path), projectSystem.NuGetProjectContext);
         }
 
+        // Deletes an empty folder from disk and the project
         private static void DeleteDirectory(IMSBuildNuGetProjectSystem projectSystem, string path)
         {
             var fullPath = Path.Combine(projectSystem.ProjectFullPath, path);
@@ -341,7 +342,7 @@ namespace NuGet.ProjectManagement
             }
 
             // Only delete this folder if it is empty and we didn't specify that we want to recurse
-            if (GetFiles(projectSystem, path, "*.*", recursive).Any() || GetDirectories(projectSystem, path).Any())
+            if (GetFiles(projectSystem, path, "*.*", recursive: false).Any() || GetDirectories(projectSystem, path).Any())
             {
                 projectSystem.NuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_DirectoryNotEmpty, path);
                 return;
