@@ -21,7 +21,7 @@ namespace NuGet.CommandLine.Commands
 
         public override Task ExecuteCommandAsync()
         {
-            int commandResult = 0;
+            var withoutErrors = true;
 
             // Clear the NuGet machine cache
             if (!string.IsNullOrEmpty(MachineCache.Default?.Source))
@@ -30,7 +30,7 @@ namespace NuGet.CommandLine.Commands
                     LocalizedResourceManager.GetString(nameof(NuGetResources.ClearCacheCommand_ClearingNuGetCache)),
                     MachineCache.Default.Source);
 
-                commandResult = ClearCacheDirectory(MachineCache.Default.Source);
+                withoutErrors = ClearCacheDirectory(MachineCache.Default.Source);
             }
 
             // Clear NuGet v3 HTTP cache
@@ -42,11 +42,7 @@ namespace NuGet.CommandLine.Commands
                     LocalizedResourceManager.GetString(nameof(NuGetResources.ClearCacheCommand_ClearingNuGetHttpCache)),
                     httpCacheFolderPath);
 
-                var result = ClearCacheDirectory(httpCacheFolderPath);
-                if (commandResult == 0)
-                {
-                    commandResult = result;
-                }
+                withoutErrors &= ClearCacheDirectory(httpCacheFolderPath);
             }
 
             if (ClearGlobalPackages)
@@ -58,22 +54,18 @@ namespace NuGet.CommandLine.Commands
                     LocalizedResourceManager.GetString(nameof(NuGetResources.ClearCacheCommand_ClearingNuGetGlobalPackagesCache)),
                     globalPackagesFolderPath);
 
-                var result = ClearCacheDirectory(globalPackagesFolderPath);
-                if (commandResult == 0)
-                {
-                    commandResult = result;
-                }
+                withoutErrors &= ClearCacheDirectory(globalPackagesFolderPath);
             }
 
-            if (commandResult != 0)
+            if (!withoutErrors)
             {
                 throw new CommandLineException(LocalizedResourceManager.GetString(nameof(NuGetResources.ClearCacheCommand_CacheClearFailed)));
             }
 
-            return Task.FromResult(commandResult);
+            return Task.FromResult(0);
         }
 
-        private int ClearCacheDirectory(string folderPath)
+        private bool ClearCacheDirectory(string folderPath)
         {
             // Calling DeleteRecursive rather than Directory.Delete(..., recursive: true)
             // due to an infrequent exception which can be thrown from that API
@@ -91,12 +83,12 @@ namespace NuGet.CommandLine.Commands
                         LocalizedResourceManager.GetString(nameof(NuGetResources.ClearCacheCommand_FailedToDeletePath)),
                         failedDelete);
                 }
-                return 1;
+                return false;
             }
             else
             {
                 Console.WriteLine(LocalizedResourceManager.GetString(nameof(NuGetResources.ClearCacheCommand_CacheCleared)));
-                return 0;
+                return true;
             }
         }
 
