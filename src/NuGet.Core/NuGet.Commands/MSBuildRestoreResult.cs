@@ -117,7 +117,7 @@ namespace NuGet.Commands
                 string macroValue = Environment.GetEnvironmentVariable(macroName);
                 if (path.StartsWith(macroValue, StringComparison.OrdinalIgnoreCase))
                 {
-                    path = $"$({macroName})\\{path.Substring(macroValue.Length)}";
+                    path = $"$({macroName})" + $"{path.Substring(macroValue.Length)}";
                 }
 
                 break;
