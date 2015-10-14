@@ -1355,8 +1355,15 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            FileSystemUtility.MakeWritable(project.FullName);
-            project.Save();
+            try
+            {
+                FileSystemUtility.MakeWritable(project.FullName);
+                project.Save();
+            }
+            catch (Exception ex)
+            {
+                ExceptionHelper.WriteToActivityLog(ex);
+            }
         }
 
         #endregion

@@ -540,7 +540,6 @@ function Assert-ProjectImport {
         [string]$importFile
     )
 
-    $project.Save()
     $doc = [xml](Get-Content $project.FullName)
 
     if (!$doc.Project.Import)
