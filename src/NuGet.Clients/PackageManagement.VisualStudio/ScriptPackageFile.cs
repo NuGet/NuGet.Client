@@ -1,18 +1,28 @@
-﻿using System.Runtime.Versioning;
+﻿using System;
+using System.Runtime.Versioning;
 using NuGet.Frameworks;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     public class ScriptPackageFile : IScriptPackageFile
     {
-        private readonly NuGetFramework _targetFramework;
-
         public ScriptPackageFile(string path, NuGetFramework targetFramework)
         {
+            if (path == null)
+            {
+                throw new ArgumentNullException("ScriptPackageFilePath");
+            }
+
+            if (targetFramework == null)
+            {
+                throw new ArgumentNullException("ScriptPackageFileTargetFramework");
+            }
+
             Path = path.Replace(System.IO.Path.AltDirectorySeparatorChar, System.IO.Path.DirectorySeparatorChar);
-            _targetFramework = targetFramework;
+            TargetFramework = new FrameworkName(targetFramework.DotNetFrameworkName); ;
         }
 
+        // Path is a public API used by init.ps1/install.ps users.
         public string Path
         {
             get;
@@ -21,10 +31,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public FrameworkName TargetFramework
         {
-            get
-            {
-                return new FrameworkName(_targetFramework.DotNetFrameworkName);
-            }
+            get;
         }
     }
 }
