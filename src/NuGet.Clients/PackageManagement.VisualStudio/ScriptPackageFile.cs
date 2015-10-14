@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.Versioning;
 using NuGet.Frameworks;
+using Utility = System.IO;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -18,7 +19,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException("ScriptPackageFileTargetFramework");
             }
 
-            Path = path.Replace(System.IO.Path.AltDirectorySeparatorChar, System.IO.Path.DirectorySeparatorChar);
+            Path = path.Replace(Utility.Path.AltDirectorySeparatorChar, Utility.Path.DirectorySeparatorChar);
             TargetFramework = new FrameworkName(targetFramework.DotNetFrameworkName); ;
         }
 
