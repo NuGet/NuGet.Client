@@ -5246,7 +5246,7 @@ nuget update -Self</value>
     <value>Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild.</value>
   </data>
   <data name="AddCommandDescription" xml:space="preserve">
-    <value>Adds a given package to the specified source if it is a file source. http sources are not supported.</value>
+    <value>Adds the given package to a hierarchical source. http sources are not supported. For more info, goto https://docs.nuget.org/consume/command-line-reference#add-command.</value>
   </data>
   <data name="AddCommandUsageDescription" xml:space="preserve">
     <value>Specify the path to the package to be added to the specified file source.</value>
@@ -5263,7 +5263,7 @@ nuget add foo.nupkg -Source \\bar\packages\</value>
     <value>Specifies the fileSourceFolder to which the nupkg will be added. http sources are not supported.</value>
   </data>
   <data name="InitCommandDescription" xml:space="preserve">
-    <value>Adds all the packages from a given feed to the specified destination feed if it is a file source feed. http feeds are not supported.</value>
+    <value>Adds all the packages from the &lt;srcFeed&gt; to the hierarchical &lt;destFeed&gt;. http feeds are not supported. For more info, goto https://docs.nuget.org/consume/command-line-reference#init-command.</value>
   </data>
   <data name="InitCommandSourceDescription" xml:space="preserve">
     <value>Specifies the fileSourceFolder. Cannot be an http source.</value>

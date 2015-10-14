@@ -61,7 +61,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Adds a given package to the specified source if it is a file source. http sources are not supported..
+        ///   Looks up a localized string similar to Adds the given package to a hierarchical source. http sources are not supported. For more info, goto https://docs.nuget.org/consume/command-line-reference#add-command..
         /// </summary>
         internal static string AddCommandDescription {
             get {
@@ -3159,7 +3159,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Adds all the packages from a given feed to the specified destination feed if it is a file source feed. http feeds are not supported..
+        ///   Looks up a localized string similar to Adds all the packages from the &lt;srcFeed&gt; to the hierarchical &lt;destFeed&gt;. http feeds are not supported. For more info, goto https://docs.nuget.org/consume/command-line-reference#init-command..
         /// </summary>
         internal static string InitCommandDescription {
             get {

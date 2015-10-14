@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.CommandLine
 {
-    [Command(typeof(NuGetCommand), "init", "InitCommandDescription;DefaultConfigDescription",
+    [Command(typeof(NuGetCommand), "init", "InitCommandDescription",
     MinArgs = 2, MaxArgs = 2, UsageDescriptionResourceName = "InitCommandUsageDescription",
     UsageSummaryResourceName = "InitCommandUsageSummary", UsageExampleResourceName = "InitCommandUsageExamples")]
     public class InitCommand : Command

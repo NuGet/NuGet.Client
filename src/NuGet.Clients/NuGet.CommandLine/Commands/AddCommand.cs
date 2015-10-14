@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.CommandLine
 {
-    [Command(typeof(NuGetCommand), "add", "AddCommandDescription;DefaultConfigDescription",
+    [Command(typeof(NuGetCommand), "add", "AddCommandDescription",
         MinArgs = 1, MaxArgs = 1, UsageDescriptionResourceName = "AddCommandUsageDescription",
         UsageSummaryResourceName = "AddCommandUsageSummary", UsageExampleResourceName = "AddCommandUsageExamples")]
     public class AddCommand : Command
