@@ -10,21 +10,21 @@ using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    public class PackageExtractorTests : IDisposable
+    public class PackageExtractorTests
     {
         [Fact]
         void PackageExtractor_withContentXmlFile()
         {
             // Arrange
             var packageStream = TestPackages.GetTestPackageWithContentXmlFile();
-            var root = GetTempDir();
+            var root = TestFileSystemUtility.CreateRandomTestFolder();
             var packageReader = new PackageReader(packageStream);
-            var packagePath = Path.Combine(root.FullName, "packageA.2.0.3");
+            var packagePath = Path.Combine(root, "packageA.2.0.3");
             
             // Act
             var files = PackageExtractor.ExtractPackageAsync(packageReader, 
                                                              packageStream, 
-                                                             new PackagePathResolver(root.FullName), 
+                                                             new PackagePathResolver(root), 
                                                              null, 
                                                              PackageSaveModes.Nupkg, 
                                                              CancellationToken.None).Result;
@@ -32,40 +32,9 @@ namespace NuGet.Packaging.Test
             Assert.False(files.Contains(Path.Combine(packagePath + "[Content_Types].xml")));
             var test = Path.Combine(packagePath, "content/[Content_Types].xml");
             Assert.True(files.Contains(Path.Combine(packagePath,"content/[Content_Types].xml")));
-        }
 
-        private DirectoryInfo GetTempDir()
-        {
-            var workingDir = new DirectoryInfo(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + "/"));
-            workingDir.Create();
-            _path.Add(workingDir.FullName);
-
-            return workingDir;
-        }
-
-        private ConcurrentBag<string> _path = new ConcurrentBag<string>();
-
-        public void Dispose()
-        {
-            foreach (var path in _path)
-            {
-                try
-                {
-                    if (File.Exists(path))
-                    {
-                        File.Delete(path);
-                    }
-
-                    if (Directory.Exists(path))
-                    {
-                        Directory.Delete(path, true);
-                    }
-                }
-                catch
-                {
-
-                }
-            }
-        }
+            // Clean
+            TestFileSystemUtility.DeleteRandomTestFolders(root);
+        }   
     }
 }
