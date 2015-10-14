@@ -70,7 +70,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     result.AddRange(reader.GetFiles()
                         .Where(path => IsUnknownPath(path))
                         .Select(p => new ScriptPackageFile(p, NuGetFramework.AnyFramework)));
-
                 }
 
                 return result;
