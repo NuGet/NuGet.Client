@@ -54,7 +54,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public IEnumerable<IScriptPackageFile> GetFiles()
         {
-
             if (_files == null)
             {
                 var result = new List<ScriptPackageFile>();
@@ -78,7 +77,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return _files;
-
         }
 
         private IEnumerable<IPackageAssemblyReference> GetAssemblyReferencesCore()
