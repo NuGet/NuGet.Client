@@ -26,6 +26,8 @@ namespace NuGet.CommandLine.Test
         /// 12. Destination Feed is a http source. FAIL
         /// 13. Source Feed is an invalid input. FAIL
         /// 14. Destination Feed is an invalid input. FAIL
+        /// 15. Source Feed is v2-based folder (packages are at the package id directory under the root). SUCCESS
+        /// 16. Source Feed is v3-based folder (packages are at the package version directory under the root). SUCCESS
 
         private class TestInfo : IDisposable
         {
@@ -58,22 +60,58 @@ namespace NuGet.CommandLine.Test
                 }
             }
 
-            public IList<PackageIdentity> AddPackagesToSource()
-            {
-                var args = new string[]
+            public static readonly List<PackageIdentity> PackagesSet0 = new List<PackageIdentity>()
                 {
-                    "A", "1.0.0",
-                    "A", "2.0.0",
-                    "B", "1.0.0-BETA"
+                    new PackageIdentity("A", new NuGetVersion("1.0.0")),
+                    new PackageIdentity("A", new NuGetVersion("2.0.0")),
+                    new PackageIdentity("B", new NuGetVersion("1.0.0-BETA")),
                 };
 
-                var packages = new List<PackageIdentity>();
-                for (int i = 0; i < args.Length; i += 2)
+            public static readonly List<PackageIdentity> PackagesSet1 = new List<PackageIdentity>()
                 {
-                    var package = new PackageIdentity(args[i], new NuGetVersion(args[i + 1]));
-                    TestPackages.GetLegacyTestPackage(SourceFeed, package.Id, package.Version.ToString());
+                    new PackageIdentity("C", new NuGetVersion("1.0.0")),
+                    new PackageIdentity("C", new NuGetVersion("2.0.0")),
+                    new PackageIdentity("D", new NuGetVersion("1.0.0-RC")),
+                };
 
-                    packages.Add(package);
+            public static readonly List<PackageIdentity> PackagesSet2 = new List<PackageIdentity>()
+                {
+                    new PackageIdentity("E", new NuGetVersion("1.0.0")),
+                    new PackageIdentity("E", new NuGetVersion("2.0.0")),
+                    new PackageIdentity("F", new NuGetVersion("1.0.0-ALPHA")),
+                };
+
+            public IList<PackageIdentity> AddPackagesToSource()
+            {
+                return AddPackagesToSource(PackagesSet0, 0);
+            }
+
+            /// <summary>
+            /// TEST method: Adds packages to the test source.
+            /// </summary>
+            /// <param name="packages">List of packages to be added</param>
+            /// <param name="packageLevel">0 if nupkg is at {root}\, 1 if nupkg is at directory {root}\{packageId}\
+            /// and 2 if nupkg is at directory {root}\{packageId}\{packageVersion}\. </param>
+            /// <returns></returns>
+            public IList<PackageIdentity> AddPackagesToSource(
+                List<PackageIdentity> packages,
+                int packageLevel)
+            {
+                foreach(var package in packages)
+                {
+                    var packageDirectory = SourceFeed;
+                    if (packageLevel == 2)
+                    {
+                        packageDirectory = Path.Combine(SourceFeed, package.Id, package.Version.ToString());
+                        Directory.CreateDirectory(packageDirectory);
+                    }
+                    else if (packageLevel == 1)
+                    {
+                        packageDirectory = Path.Combine(SourceFeed, package.Id);
+                        Directory.CreateDirectory(packageDirectory);
+                    }
+
+                    TestPackages.GetLegacyTestPackage(packageDirectory, package.Id, package.Version.ToString());
                 }
 
                 return packages;
@@ -534,6 +572,64 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Util.VerifyResultFailure(result, "Illegal characters in path");
+            }
+        }
+
+        [Fact]
+        public void InitCommand_Success_V2Style_DestinationProvided()
+        {
+            // Arrange
+            using (var testInfo = new TestInfo())
+            {
+                var packagesAtRoot = testInfo.AddPackagesToSource(TestInfo.PackagesSet0, 0);
+                var packagesAtIdDirectory = testInfo.AddPackagesToSource(TestInfo.PackagesSet1, 1);
+
+                var args = new string[]
+                {
+                    "init",
+                    testInfo.SourceFeed,
+                    testInfo.DestinationFeed
+                };
+
+                // Act
+                var result = CommandRunner.Run(
+                    testInfo.NuGetExePath,
+                    testInfo.WorkingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Util.VerifyResultSuccess(result);
+                Util.VerifyPackagesExist(packagesAtRoot, testInfo.DestinationFeed);
+                Util.VerifyPackagesExist(packagesAtIdDirectory, testInfo.DestinationFeed);
+            }
+        }
+
+        [Fact]
+        public void InitCommand_Success_V3Style_DestinationProvided()
+        {
+            // Arrange
+            using (var testInfo = new TestInfo())
+            {
+                var packagesAtVersionDirectory = testInfo.AddPackagesToSource(TestInfo.PackagesSet2, 2);
+
+                var args = new string[]
+                {
+                    "init",
+                    testInfo.SourceFeed,
+                    testInfo.DestinationFeed
+                };
+
+                // Act
+                var result = CommandRunner.Run(
+                    testInfo.NuGetExePath,
+                    testInfo.WorkingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Util.VerifyResultSuccess(result);
+                Util.VerifyPackagesExist(packagesAtVersionDirectory, testInfo.DestinationFeed);
             }
         }
     }
