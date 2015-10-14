@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,6 +36,38 @@ namespace NuGet.Packaging.Test
 
             // Clean
             TestFileSystemUtility.DeleteRandomTestFolders(root);
-        }   
+        }
+
+        [Fact]
+        void PackageExtractor_duplicateNupkg()
+        {
+            var packageNupkg = TestPackages.GetLegacyTestPackage();
+            var root = TestFileSystemUtility.CreateRandomTestFolder();
+            var zip = new ZipArchive(packageNupkg.OpenRead());
+            PackageReader zipReader = new PackageReader(zip);
+
+            var folder = Path.Combine(packageNupkg.Directory.FullName, Guid.NewGuid().ToString());
+
+            using (var zipFile = new ZipArchive(File.OpenRead(packageNupkg.FullName)))
+            {
+                zipFile.ExtractAll(folder);
+
+                var folderReader = new PackageFolderReader(folder);
+                System.Diagnostics.Debugger.Launch();
+                // Act
+                var files = PackageExtractor.ExtractPackageAsync(folderReader,
+                                                                 File.OpenRead(packageNupkg.FullName),
+                                                                 new PackagePathResolver(root),
+                                                                 null,
+                                                                 PackageSaveModes.Nupkg,
+                                                                 CancellationToken.None).Result;
+
+                // Assert
+                Assert.Equal(1, files.Where(p => p.EndsWith(".nupkg")).Count());
+
+                // Clean
+                TestFileSystemUtility.DeleteRandomTestFolders(root, folder);
+            }
+        }  
     }
 }
