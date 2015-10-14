@@ -145,13 +145,13 @@ namespace NuGet.ProjectManagement
             FrameworkSpecificGroup frameworkSpecificGroup,
             IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers)
         {
+            var packageTargetFramework = frameworkSpecificGroup.TargetFramework;
+            IPackageFileTransformer transformer;
+
             try
             {
                 projectSystem.BeginProcessing();
 
-                var packageTargetFramework = frameworkSpecificGroup.TargetFramework;
-
-                IPackageFileTransformer transformer;
 
                 var directoryLookup = frameworkSpecificGroup.Items.ToLookup(
                     p => Path.GetDirectoryName(ResolveTargetPath(projectSystem,
@@ -347,7 +347,6 @@ namespace NuGet.ProjectManagement
                 projectSystem.NuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_DirectoryNotEmpty, path);
                 return;
             }
-
             projectSystem.RegisterProcessedFiles(new[] { path });
 
             projectSystem.DeleteDirectory(path, recursive: false);
@@ -360,7 +359,10 @@ namespace NuGet.ProjectManagement
                 return;
             }
 
-            try
+            // For potential project systems that do not remove items from disk, we delete the folder directly
+            // There is no actual scenario where we know this is broken without the code below, but since the
+            // code was always there, we are leaving it behind for now.
+            if (!Directory.Exists(fullPath))
             {
                 Directory.Delete(fullPath, recursive: false);
 
@@ -370,13 +372,10 @@ namespace NuGet.ProjectManagement
                 {
                     Thread.Sleep(100);
                 }
+
                 projectSystem.RegisterProcessedFiles(new[] { path });
-                projectSystem.RemoveFile(path);
 
                 projectSystem.NuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_RemovedFolder, fullPath);
-            }
-            catch (DirectoryNotFoundException)
-            {
             }
         }
 
@@ -530,6 +529,33 @@ namespace NuGet.ProjectManagement
                 writeToStream(memoryStream);
                 memoryStream.Seek(0, SeekOrigin.Begin);
                 msBuildNuGetProjectSystem.AddFile(path, memoryStream);
+            }
+        }
+
+        private class PackageItemComparer : IComparer<string>
+        {
+            public int Compare(string x, string y)
+            {
+                // BUG 636: We sort files so that they are added in the correct order
+                // e.g aspx before aspx.cs
+
+                if (x.Equals(y, StringComparison.OrdinalIgnoreCase))
+                {
+                    return 0;
+                }
+
+                // Add files that are prefixes of other files first
+                if (x.StartsWith(y, StringComparison.OrdinalIgnoreCase))
+                {
+                    return -1;
+                }
+
+                if (y.StartsWith(x, StringComparison.OrdinalIgnoreCase))
+                {
+                    return 1;
+                }
+
+                return string.Compare(y, x, StringComparison.OrdinalIgnoreCase);
             }
         }
     }
