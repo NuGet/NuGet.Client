@@ -522,7 +522,7 @@ namespace NuGet.PackageManagement.UI
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
 
-            List<SearchResultPackageMetadata> packages = new List<SearchResultPackageMetadata>();
+            List<PackageItemListViewModel> packages = new List<PackageItemListViewModel>();
 
             var results = await SearchAsync(startIndex, cancellationToken);
 
@@ -533,11 +533,9 @@ namespace NuGet.PackageManagement.UI
                 cancellationToken.ThrowIfCancellationRequested();
                 resultCount++;
 
-                var searchResultPackage = new SearchResultPackageMetadata();
+                var searchResultPackage = new PackageItemListViewModel();
                 searchResultPackage.Id = package.Identity.Id;
                 searchResultPackage.Version = package.Identity.Version;
-                searchResultPackage.IsSolution = _isSolution;
-                searchResultPackage.IsUpdateTab = _option.Filter == Filter.UpdatesAvailable;
                 searchResultPackage.IconUrl = package.IconUrl;
                 searchResultPackage.Author = package.Author;
                 searchResultPackage.DownloadCount = package.DownloadCount;
@@ -614,7 +612,7 @@ namespace NuGet.PackageManagement.UI
 
         // Load info in the background
         private async Task<BackgroundLoaderResult> BackgroundLoad(
-            SearchResultPackageMetadata package, Lazy<Task<IEnumerable<VersionInfo>>> versions)
+            PackageItemListViewModel package, Lazy<Task<IEnumerable<VersionInfo>>> versions)
         {
             if (_installedPackageIds.Contains(package.Id))
             {
@@ -641,14 +639,16 @@ namespace NuGet.PackageManagement.UI
 
                 return new BackgroundLoaderResult()
                 {
-                    InstalledVersion = lowestInstalled.Version,
+                    LatestVersion = null,
+                    InstalledVersion = lowestInstalled.Version,                    
                     Status = PackageStatus.Installed
                 };
             }
 
             return new BackgroundLoaderResult()
             {
-                LatestVersion = package.Version,
+                LatestVersion = null,
+                InstalledVersion = null,
                 Status = PackageStatus.NotInstalled
             };
         }

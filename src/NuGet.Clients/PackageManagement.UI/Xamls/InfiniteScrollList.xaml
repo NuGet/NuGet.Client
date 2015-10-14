@@ -133,6 +133,9 @@
             Property="Background"
             TargetName="Bd"
             Value="{DynamicResource {x:Static resx:Brushes.ContentMouseOverBrushKey}}" />
+          <Setter
+            Property="TextBlock.Foreground"
+            Value="{DynamicResource {x:Static resx:Brushes.ContentMouseOverTextBrushKey}}" />
         </MultiTrigger>
         <MultiTrigger>
           <MultiTrigger.Conditions>
@@ -147,6 +150,9 @@
             Property="Background"
             TargetName="Bd"
             Value="{DynamicResource {x:Static resx:Brushes.ContentInactiveSelectedBrushKey}}" />
+          <Setter
+            Property="TextBlock.Foreground"
+            Value="{DynamicResource {x:Static resx:Brushes.ContentInactiveSelectedTextBrushKey}}" />
         </MultiTrigger>
         <MultiTrigger>
           <MultiTrigger.Conditions>
@@ -278,8 +284,8 @@
           Grid.Column="0"
           Margin="24, 8"
           VerticalAlignment="Center"
-          Checked="_selectAllPackages_Checked"
-          Unchecked="_selectAllPackages_Unchecked"
+          Checked="SelectAllPackagesCheckBox_Checked"
+          Unchecked="SelectAllPackagesCheckBox_Unchecked"
           Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
           Content="{x:Static resx:Resources.Checkbox_SelectAllPackages}" />
         <Button

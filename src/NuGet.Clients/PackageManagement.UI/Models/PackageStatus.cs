@@ -7,7 +7,7 @@ namespace NuGet.PackageManagement.UI
     {
         NotInstalled,
 
-        // the latest version is installed
+        // the latest applicable version is installed.
         Installed,
         
         UpdateAvailable

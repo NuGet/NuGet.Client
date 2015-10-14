@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.UI
         private int _startIndex;
 
         private const string LogEntrySource = "NuGet Package Manager";
-        
+
         // The count of packages that are selected
         private int _selectedCount;
 
@@ -66,6 +66,11 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        public bool IsSolution
+        {
+            get; set;
+        }
+
         public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
 
         // Load items using the specified loader
@@ -74,9 +79,18 @@ namespace NuGet.PackageManagement.UI
             _loader = loader;
             _loadingStatusIndicator.LoadingMessage = _loader.LoadingMessage;
 
-            var selectedItem = _list.SelectedItem as SearchResultPackageMetadata;
+            var selectedItem = _list.SelectedItem as PackageItemListViewModel;
 
+            foreach (var item in Items)
+            {
+                var package = item as PackageItemListViewModel;
+                if (package != null)
+                {
+                    package.PropertyChanged -= Package_PropertyChanged;
+                }
+            }
             Items.Clear();
+
             Items.Add(_loadingStatusIndicator);
             _startIndex = 0;
             _selectedCount = 0;
@@ -89,7 +103,7 @@ namespace NuGet.PackageManagement.UI
                 // select the the previously selected item if it still exists.
                 foreach (var item in _list.Items)
                 {
-                    var package = item as SearchResultPackageMetadata;
+                    var package = item as PackageItemListViewModel;
                     if (package == null)
                     {
                         continue;
@@ -216,7 +230,7 @@ namespace NuGet.PackageManagement.UI
 
         private void Package_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            var package = sender as SearchResultPackageMetadata;
+            var package = sender as PackageItemListViewModel;
             if (e.PropertyName == nameof(package.Selected))
             {
                 if (package.Selected)
@@ -250,7 +264,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     packageCount = Items.Count;
                 }
-            }            
+            }
 
             if (_selectedCount == 0)
             {
@@ -339,11 +353,14 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(() => { return LoadAsync(); });
         }
 
-        private void _selectAllPackages_Checked(object sender, RoutedEventArgs e)
+        private void SelectAllPackagesCheckBox_Checked(object sender, RoutedEventArgs e)
         {
             foreach (var item in _list.Items)
             {
-                var package = item as SearchResultPackageMetadata;
+                var package = item as PackageItemListViewModel;
+
+                // note that item could be the loading indicator, thus we need to check
+                // for null here.
                 if (package != null)
                 {
                     package.Selected = true;
@@ -351,11 +368,11 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void _selectAllPackages_Unchecked(object sender, RoutedEventArgs e)
+        private void SelectAllPackagesCheckBox_Unchecked(object sender, RoutedEventArgs e)
         {
             foreach (var item in _list.Items)
             {
-                var package = item as SearchResultPackageMetadata;
+                var package = item as PackageItemListViewModel;
                 if (package != null)
                 {
                     package.Selected = false;
@@ -368,7 +385,7 @@ namespace NuGet.PackageManagement.UI
         {
             foreach (var item in _list.Items)
             {
-                var package = item as SearchResultPackageMetadata;
+                var package = item as PackageItemListViewModel;
                 if (package != null && package.Selected)
                 {
                     return true;

@@ -306,10 +306,10 @@
   <data name="Version_LatestStable" xml:space="preserve">
     <value>Latest stable</value>
   </data>
-  <data name="Tooltip_PackageInstalled" xml:space="preserve">
+  <data name="ToolTip_PackageInstalled" xml:space="preserve">
     <value>Latest stable version is installed</value>
   </data>
-  <data name="Tooltip_UpdateAvailable" xml:space="preserve">
+  <data name="ToolTip_UpdateAvailable" xml:space="preserve">
     <value>Update available</value>
   </data>
   <data name="Label_UpdatedPackages" xml:space="preserve">
@@ -447,14 +447,14 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="Text_Downloads" xml:space="preserve">
     <value>{0} downloads</value>
   </data>
-  <data name="Tooltip_InstallButton" xml:space="preserve">
-    <value>Click to install the package</value>
+  <data name="ToolTip_InstallButton" xml:space="preserve">
+    <value>Install this package.</value>
   </data>
-  <data name="Tooltip_UninstallButton" xml:space="preserve">
-    <value>Click to uninstall the package</value>
+  <data name="ToolTip_UninstallButton" xml:space="preserve">
+    <value>Uninstall this package.</value>
   </data>
-  <data name="Tooltip_UpdateButton" xml:space="preserve">
-    <value>Click to update the package</value>
+  <data name="ToolTip_UpdateButton" xml:space="preserve">
+    <value>Update this package to version {0}.</value>
   </data>
   <data name="Button_Update" xml:space="preserve">
     <value>Update</value>

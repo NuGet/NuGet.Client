@@ -972,11 +972,11 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Click to install the package.
+        ///   Looks up a localized string similar to Install this package..
         /// </summary>
-        public static string Tooltip_InstallButton {
+        public static string ToolTip_InstallButton {
             get {
-                return ResourceManager.GetString("Tooltip_InstallButton", resourceCulture);
+                return ResourceManager.GetString("ToolTip_InstallButton", resourceCulture);
             }
         }
         
@@ -1001,36 +1001,36 @@ namespace NuGet.PackageManagement.UI {
         /// <summary>
         ///   Looks up a localized string similar to Latest stable version is installed.
         /// </summary>
-        public static string Tooltip_PackageInstalled {
+        public static string ToolTip_PackageInstalled {
             get {
-                return ResourceManager.GetString("Tooltip_PackageInstalled", resourceCulture);
+                return ResourceManager.GetString("ToolTip_PackageInstalled", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Click to uninstall the package.
+        ///   Looks up a localized string similar to Uninstall this package..
         /// </summary>
-        public static string Tooltip_UninstallButton {
+        public static string ToolTip_UninstallButton {
             get {
-                return ResourceManager.GetString("Tooltip_UninstallButton", resourceCulture);
+                return ResourceManager.GetString("ToolTip_UninstallButton", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Update available.
         /// </summary>
-        public static string Tooltip_UpdateAvailable {
+        public static string ToolTip_UpdateAvailable {
             get {
-                return ResourceManager.GetString("Tooltip_UpdateAvailable", resourceCulture);
+                return ResourceManager.GetString("ToolTip_UpdateAvailable", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Click to update the package.
+        ///   Looks up a localized string similar to Update this package to version {0}..
         /// </summary>
-        public static string Tooltip_UpdateButton {
+        public static string ToolTip_UpdateButton {
             get {
-                return ResourceManager.GetString("Tooltip_UpdateButton", resourceCulture);
+                return ResourceManager.GetString("ToolTip_UpdateButton", resourceCulture);
             }
         }
         

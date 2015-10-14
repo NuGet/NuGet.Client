@@ -86,7 +86,6 @@ namespace NuGet.PackageManagement.UI
         }
 
         private int _count;
-
         public int Count
         {
             get

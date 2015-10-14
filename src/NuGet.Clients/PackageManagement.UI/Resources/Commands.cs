@@ -9,10 +9,10 @@ namespace NuGet.PackageManagement.UI
     {
         public static readonly RoutedCommand FocusOnSearchBox = new RoutedCommand();
 
-        // The parameter of this command is SearchResultPackageMetadata
+        // The parameter of this command is PackageItemListViewModel
         public static readonly RoutedCommand UninstallPackageCommand = new RoutedCommand();
 
-        // The parameter of this command is SearchResultPackageMetadata
+        // The parameter of this command is PackageItemListViewModel
         public static readonly RoutedCommand InstallPackageCommand = new RoutedCommand();
     }
 }

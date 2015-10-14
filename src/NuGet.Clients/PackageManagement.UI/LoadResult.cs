@@ -7,7 +7,7 @@ namespace NuGet.PackageManagement.UI
 {
     public class LoadResult
     {
-        public IReadOnlyList<SearchResultPackageMetadata> Items { get; set; }
+        public IReadOnlyList<PackageItemListViewModel> Items { get; set; }
 
         public bool HasMoreItems { get; set; }
 

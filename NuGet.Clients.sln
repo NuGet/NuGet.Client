@@ -72,6 +72,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.CommandLine.Test", "test\NuGet.Clients.Tests\NuGet.CommandLine.Test\NuGet.CommandLine.Test.csproj", "{33294BB8-5144-4363-B02C-332F6D94C1C1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.UI.Test", "test\NuGet.Clients.Tests\PackageManagement.UI.Test\PackageManagement.UI.Test.csproj", "{6157BF46-D371-4126-A7F1-ED6E23F77ACD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Coverage|Any CPU = Coverage|Any CPU
@@ -251,6 +253,16 @@ Global
 		{33294BB8-5144-4363-B02C-332F6D94C1C1}.Mono Release|Any CPU.Build.0 = Release|Any CPU
 		{33294BB8-5144-4363-B02C-332F6D94C1C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{33294BB8-5144-4363-B02C-332F6D94C1C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6157BF46-D371-4126-A7F1-ED6E23F77ACD}.Coverage|Any CPU.ActiveCfg = Release|Any CPU
+		{6157BF46-D371-4126-A7F1-ED6E23F77ACD}.Coverage|Any CPU.Build.0 = Release|Any CPU
+		{6157BF46-D371-4126-A7F1-ED6E23F77ACD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6157BF46-D371-4126-A7F1-ED6E23F77ACD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6157BF46-D371-4126-A7F1-ED6E23F77ACD}.Mono Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6157BF46-D371-4126-A7F1-ED6E23F77ACD}.Mono Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6157BF46-D371-4126-A7F1-ED6E23F77ACD}.Mono Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6157BF46-D371-4126-A7F1-ED6E23F77ACD}.Mono Release|Any CPU.Build.0 = Release|Any CPU
+		{6157BF46-D371-4126-A7F1-ED6E23F77ACD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6157BF46-D371-4126-A7F1-ED6E23F77ACD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -261,5 +273,6 @@ Global
 		{83AEE32C-FFCC-43A6-898B-D7DF81774C25} = {72887A16-F39B-4B21-9B76-33AE5004DE0B}
 		{25E91311-400E-47A6-A844-733D604E662A} = {3EF356B5-E2D3-45E3-B515-99F4611ACBDA}
 		{33294BB8-5144-4363-B02C-332F6D94C1C1} = {25E91311-400E-47A6-A844-733D604E662A}
+		{6157BF46-D371-4126-A7F1-ED6E23F77ACD} = {25E91311-400E-47A6-A844-733D604E662A}
 	EndGlobalSection
 EndGlobal

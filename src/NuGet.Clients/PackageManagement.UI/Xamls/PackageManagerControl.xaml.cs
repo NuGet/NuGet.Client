@@ -96,6 +96,7 @@ namespace NuGet.PackageManagement.UI
 
             // UI is initialized. Start the first search
             _packageList.CheckBoxesEnabled = _topPanel.Filter == Filter.UpdatesAvailable;
+            _packageList.IsSolution = this.Model.IsSolution;
             SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
             RefreshAvailableUpdatesCount();
 
@@ -555,7 +556,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         private async Task UpdateDetailPaneAsync()
         {
-            var selectedPackage = _packageList.SelectedItem as SearchResultPackageMetadata;
+            var selectedPackage = _packageList.SelectedItem as PackageItemListViewModel;
             if (selectedPackage == null)
             {
                 _packageDetail.Visibility = Visibility.Hidden;
@@ -639,7 +640,7 @@ namespace NuGet.PackageManagement.UI
                 // existing items in the package list
                 foreach (var item in _packageList.Items)
                 {
-                    var package = item as SearchResultPackageMetadata;
+                    var package = item as PackageItemListViewModel;
                     if (package == null)
                     {
                         continue;
@@ -893,8 +894,8 @@ namespace NuGet.PackageManagement.UI
 
         private void ExecuteUninstallPackageCommand(object sender, ExecutedRoutedEventArgs e)
         {
-            var package = e.Parameter as SearchResultPackageMetadata;
-            if (package == null || package.IsSolution || package.InstalledVersion == null)
+            var package = e.Parameter as PackageItemListViewModel;
+            if (package == null || Model.IsSolution || package.InstalledVersion == null)
             {
                 return;
             }
@@ -920,8 +921,8 @@ namespace NuGet.PackageManagement.UI
 
         private void ExecuteInstallPackageCommand(object sender, ExecutedRoutedEventArgs e)
         {
-            var package = e.Parameter as SearchResultPackageMetadata;
-            if (package == null || package.IsSolution)
+            var package = e.Parameter as PackageItemListViewModel;
+            if (package == null || Model.IsSolution)
             {
                 return;
             }

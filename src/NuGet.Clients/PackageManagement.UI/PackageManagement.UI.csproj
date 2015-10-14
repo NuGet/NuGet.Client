@@ -8,7 +8,7 @@
     <RestoreNuGetPackages>true</RestoreNuGetPackages>
     <PackagesDir>$(UserProfile)\.nuget\packages</PackagesDir>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">14.0</VisualStudioVersion>
-	<AssemblyOriginatorKeyFile>$(MS_PFX_PATH)</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>$(MS_PFX_PATH)</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(VisualStudioVersion)' == '14.0'">
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
@@ -87,6 +87,7 @@
     </Compile>
     <Compile Include="Common\TriggerEventMethod.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="Converters\AuthorAndDownloadCountToStringConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\DownloadCountToVisibilityConverter.cs" />
     <Compile Include="Converters\EnumerableToVisibilityConverter.cs" />
@@ -94,6 +95,7 @@
     <Compile Include="Converters\IconUrlToVisibilityConverter.cs" />
     <Compile Include="Converters\NuGetFrameworkToStringConverter.cs" />
     <Compile Include="Converters\NuGetFrameworkToVisibilityConverter.cs" />
+    <Compile Include="Converters\StringFormatConverter.cs" />
     <Compile Include="Converters\StyleKeyConverter.cs" />
     <Compile Include="Converters\SummaryToFontStyleConverter.cs" />
     <Compile Include="Converters\SummaryToStringConverter.cs" />
@@ -108,6 +110,8 @@
     <Compile Include="LoadingStatus.cs" />
     <Compile Include="LoadingStatusIndicator.cs" />
     <Compile Include="LoadResult.cs" />
+    <Compile Include="Models\BackgroundLoaderResult.cs" />
+    <Compile Include="Models\PackageItemListViewModel.cs" />
     <Compile Include="Models\PackageStatus.cs" />
     <Compile Include="Models\SearchResult.cs" />
     <Compile Include="PackageInstallationInfo.cs" />
@@ -133,7 +137,6 @@
     <Compile Include="PreviewWindowModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Models\PackageDependencySetMetadata.cs" />
-    <Compile Include="Models\SearchResultPackageMetadata.cs" />
     <Compile Include="Resources\Brushes.cs" />
     <Compile Include="Resources\IUIBrushes.cs" />
     <Compile Include="Resources\Commands.cs" />

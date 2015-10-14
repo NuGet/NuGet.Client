@@ -79,6 +79,7 @@ namespace NuGet.PackageManagement.UI
         {
             get { return VsBrushes.ToolWindowButtonDownBorderKey; }
         }
+
         public static object IndicatorFillBrushKey
         {
             get
@@ -99,6 +100,8 @@ namespace NuGet.PackageManagement.UI
                 // are not null othewise the xaml parser will throw exception
                 // when the keys are used in an xaml file.
                 ContentBrushKey = SystemColors.WindowBrush;
+                ContentMouseOverTextBrushKey = SystemColors.ControlTextBrush;
+                ContentInactiveSelectedTextBrushKey = SystemColors.ControlTextBrush;
                 BackgroundBrushKey = SystemColors.WindowBrush;
                 ContentSelectedBrushKey = SystemColors.ActiveCaptionBrushKey;
             }
@@ -111,8 +114,14 @@ namespace NuGet.PackageManagement.UI
                 var prop = colorResources.GetProperty("ContentMouseOverBrushKey");
                 ContentMouseOverBrushKey = prop.GetValue(null);
 
+                prop = colorResources.GetProperty("ContentMouseOverTextBrushKey");
+                ContentMouseOverTextBrushKey = prop.GetValue(null);
+
                 prop = colorResources.GetProperty("ContentInactiveSelectedBrushKey");
                 ContentInactiveSelectedBrushKey = prop.GetValue(null);
+
+                prop = colorResources.GetProperty("ContentInactiveSelectedTextBrushKey");
+                ContentInactiveSelectedTextBrushKey = prop.GetValue(null);
 
                 prop = colorResources.GetProperty("ContentSelectedBrushKey");
                 ContentSelectedBrushKey = prop.GetValue(null);
@@ -130,7 +139,12 @@ namespace NuGet.PackageManagement.UI
 
         public static object ContentMouseOverBrushKey { get; private set; }
 
+        public static object ContentMouseOverTextBrushKey { get; private set; }
+
         public static object ContentInactiveSelectedBrushKey { get; private set; }
+
+        public static object ContentInactiveSelectedTextBrushKey { get; private set; }
+
 
         public static object ContentSelectedBrushKey { get; private set; }
 

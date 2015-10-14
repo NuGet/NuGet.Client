@@ -24,7 +24,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         public async override Task SetCurrentPackage(
-            SearchResultPackageMetadata searchResultPackage,
+            PackageItemListViewModel searchResultPackage,
             Filter filter)
         {
             await base.SetCurrentPackage(searchResultPackage, filter);

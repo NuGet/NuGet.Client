@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.UI
         protected List<NuGetVersion> _allPackageVersions;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
-        protected SearchResultPackageMetadata _searchResultPackage;
+        protected PackageItemListViewModel _searchResultPackage;
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
         protected Filter _filter;
 
@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.UI
         /// <param name="searchResultPackage">The package to be displayed.</param>
         /// <param name="filter">The current filter. This will used to select the default action.</param>
         public async virtual Task SetCurrentPackage(
-            SearchResultPackageMetadata searchResultPackage,
+            PackageItemListViewModel searchResultPackage,
             Filter filter)
         {
             _searchResultPackage = searchResultPackage;
