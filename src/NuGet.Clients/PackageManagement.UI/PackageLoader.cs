@@ -32,6 +32,9 @@ namespace NuGet.PackageManagement.UI
 
         private readonly PackageLoaderOption _option;
 
+        // Indicates whether the loader is created by solution package manager.
+        private readonly bool _isSolution;
+
         private readonly string _searchText;
 
         private readonly string LogEntrySource = "NuGet Package Manager";
@@ -40,12 +43,14 @@ namespace NuGet.PackageManagement.UI
         private List<UISearchMetadata> _packagesWithUpdates;
 
         public PackageLoader(PackageLoaderOption option,
+            bool isSolution,
             NuGetPackageManager packageManager,
             IEnumerable<NuGetProject> projects,
             SourceRepository sourceRepository,
             string searchText)
         {
             _sourceRepository = sourceRepository;
+            _isSolution = isSolution;
             _packageManager = packageManager;
             _projects = projects.ToArray();
             _option = option;
@@ -293,6 +298,7 @@ namespace NuGet.PackageManagement.UI
 
             string summary = string.Empty;
             string title = identity.Id;
+            string author = string.Empty;
             if (packageMetadata != null)
             {
                 summary = packageMetadata.Summary;
@@ -304,6 +310,8 @@ namespace NuGet.PackageManagement.UI
                 {
                     title = packageMetadata.Title;
                 }
+
+                author = string.Join(", ", packageMetadata.Authors);
             }
 
             var versions = new List<VersionInfo>
@@ -315,7 +323,9 @@ namespace NuGet.PackageManagement.UI
                 identity,
                 title: title,
                 summary: summary,
-                iconUrl: packageMetadata == null ? null : packageMetadata.IconUrl,
+                author: author,
+                downloadCount: packageMetadata?.DownloadCount,
+                iconUrl: packageMetadata?.IconUrl,
                 versions: ToLazyTask(versions),
                 latestPackageMetadata: null);
         }
@@ -334,6 +344,7 @@ namespace NuGet.PackageManagement.UI
 
             string summary = string.Empty;
             string title = identity.Id;
+            string author = string.Empty;
             if (packageMetadata != null)
             {
                 summary = packageMetadata.Summary;
@@ -345,6 +356,8 @@ namespace NuGet.PackageManagement.UI
                 {
                     title = packageMetadata.Title;
                 }
+
+                author = string.Join(", ", packageMetadata.Authors);
             }
 
             var versions = uiPackageMetadatas.OrderByDescending(m => m.Identity.Version)
@@ -353,7 +366,9 @@ namespace NuGet.PackageManagement.UI
                 identity,
                 title: title,
                 summary: summary,
-                iconUrl: packageMetadata == null ? null : packageMetadata.IconUrl,
+                author: author,
+                downloadCount: packageMetadata?.DownloadCount,
+                iconUrl: packageMetadata?.IconUrl,
                 versions: ToLazyTask(versions),
                 latestPackageMetadata: packageMetadata);
         }
@@ -484,7 +499,16 @@ namespace NuGet.PackageManagement.UI
 
                         var title = string.IsNullOrEmpty(highest.Title) ? highest.Identity.Id : highest.Title;
 
-                        _packagesWithUpdates.Add(new UISearchMetadata(highest.Identity, title, summary, highest.IconUrl, lazyVersions, highest));
+                        var searchMetadata = new UISearchMetadata(
+                            highest.Identity,
+                            title,
+                            summary,
+                            string.Join(", ", highest.Authors),
+                            highest.DownloadCount,
+                            highest.IconUrl,
+                            lazyVersions,
+                            highest);
+                        _packagesWithUpdates.Add(searchMetadata);
                     }
                 }
             }
@@ -509,10 +533,27 @@ namespace NuGet.PackageManagement.UI
                 cancellationToken.ThrowIfCancellationRequested();
                 resultCount++;
 
-                var searchResultPackage = new SearchResultPackageMetadata(_sourceRepository);
+                var searchResultPackage = new SearchResultPackageMetadata();
                 searchResultPackage.Id = package.Identity.Id;
                 searchResultPackage.Version = package.Identity.Version;
+                searchResultPackage.IsSolution = _isSolution;
+                searchResultPackage.IsUpdateTab = _option.Filter == Filter.UpdatesAvailable;
                 searchResultPackage.IconUrl = package.IconUrl;
+                searchResultPackage.Author = package.Author;
+                searchResultPackage.DownloadCount = package.DownloadCount;
+
+                if (!_isSolution && _installedPackageIds.Contains(searchResultPackage.Id))
+                {
+                    var installedVersions = _installedPackages.Where(
+                        p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, searchResultPackage.Id))
+                        .Select(p => p.Version)
+                        .ToList();
+
+                    if (installedVersions.Count == 1)
+                    {
+                        searchResultPackage.InstalledVersion = installedVersions[0];
+                    }
+                }
 
                 var versionList = new Lazy<Task<IEnumerable<VersionInfo>>>(async () =>
                 {
@@ -532,16 +573,16 @@ namespace NuGet.PackageManagement.UI
 
                 searchResultPackage.Versions = versionList;
 
-                searchResultPackage.StatusProvider = new Lazy<Task<PackageStatus>>(
-                    () => CalculatePackageStatus(searchResultPackage.Id, versionList));
+                searchResultPackage.BackgroundLoader = new Lazy<Task<BackgroundLoaderResult>>(
+                    () => BackgroundLoad(searchResultPackage, versionList));
 
                 // filter out prerelease version when needed.
                 if (searchResultPackage.Version.IsPrerelease &&
                     !_option.IncludePrerelease)
                 {
-                    var status = await searchResultPackage.StatusProvider.Value;
+                    var value = await searchResultPackage.BackgroundLoader.Value;
 
-                    if (status == PackageStatus.NotInstalled)
+                    if (value.Status == PackageStatus.NotInstalled)
                     {
                         continue;
                     }
@@ -549,9 +590,9 @@ namespace NuGet.PackageManagement.UI
 
                 if (_option.Filter == Filter.UpdatesAvailable)
                 {
-                    var status = await searchResultPackage.StatusProvider.Value;
+                    var value = await searchResultPackage.BackgroundLoader.Value;
 
-                    if (status != PackageStatus.UpdateAvailable)
+                    if (value.Status != PackageStatus.UpdateAvailable)
                     {
                         continue;
                     }
@@ -571,10 +612,11 @@ namespace NuGet.PackageManagement.UI
             };
         }
 
-        // Returns the package status for the searchPackageResult
-        private async Task<PackageStatus> CalculatePackageStatus(string id, Lazy<Task<IEnumerable<VersionInfo>>> versions)
+        // Load info in the background
+        private async Task<BackgroundLoaderResult> BackgroundLoad(
+            SearchResultPackageMetadata package, Lazy<Task<IEnumerable<VersionInfo>>> versions)
         {
-            if (_installedPackageIds.Contains(id))
+            if (_installedPackageIds.Contains(package.Id))
             {
                 var versionsUnwrapped = await versions.Value;
 
@@ -583,19 +625,32 @@ namespace NuGet.PackageManagement.UI
                                                 .Max();
 
                 var lowestInstalled = _installedPackages
-                    .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, id))
+                    .Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Id, package.Id))
                     .OrderBy(p => p.Version, VersionComparer.Default)
                     .First();
 
                 if (VersionComparer.VersionRelease.Compare(lowestInstalled.Version, highestAvailableVersion) < 0)
                 {
-                    return PackageStatus.UpdateAvailable;
+                    return new BackgroundLoaderResult()
+                    {
+                        LatestVersion = highestAvailableVersion,
+                        InstalledVersion = lowestInstalled.Version,
+                        Status = PackageStatus.UpdateAvailable
+                    };
                 }
 
-                return PackageStatus.Installed;
+                return new BackgroundLoaderResult()
+                {
+                    InstalledVersion = lowestInstalled.Version,
+                    Status = PackageStatus.Installed
+                };
             }
 
-            return PackageStatus.NotInstalled;
+            return new BackgroundLoaderResult()
+            {
+                LatestVersion = package.Version,
+                Status = PackageStatus.NotInstalled
+            };
         }
 
         public async Task InitializeAsync()

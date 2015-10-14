@@ -16,6 +16,8 @@ namespace NuGet.Protocol.VisualStudio
         public UISearchMetadata(PackageIdentity identity,
                                 string title,
                                 string summary,
+                                string author,
+                                int? downloadCount,
                                 Uri iconUrl,
                                 Lazy<Task<IEnumerable<VersionInfo>>> versions,
                                 UIPackageMetadata latestPackageMetadata)
@@ -25,6 +27,8 @@ namespace NuGet.Protocol.VisualStudio
             Summary = summary;
             IconUrl = iconUrl;
             Versions = versions;
+            Author = author;
+            DownloadCount = downloadCount;
             LatestPackageMetadata = latestPackageMetadata;
         }
 
@@ -39,5 +43,9 @@ namespace NuGet.Protocol.VisualStudio
         public UIPackageMetadata LatestPackageMetadata { get; }
 
         public string Title { get; }
+
+        public string Author { get; }
+
+        public int? DownloadCount { get; }
     }
 }

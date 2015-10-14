@@ -55,6 +55,30 @@ namespace NuGet.PackageManagement.UI
             get { return VsBrushes.WindowTextKey; }
         }
 
+        public static object ToolWindowButtonHoverActiveKey
+        {
+            get { return VsBrushes.ToolWindowButtonHoverActiveKey; }
+        }
+
+        public static object ToolWindowButtonHoverActiveBorderKey
+        {
+            get { return VsBrushes.ToolWindowButtonHoverActiveBorderKey; }
+        }
+
+        public static object ToolWindowBorderKey
+        {
+            get { return VsBrushes.ToolWindowBorderKey; }
+        }
+
+        public static object ToolWindowButtonDownKey
+        {
+            get { return VsBrushes.ToolWindowButtonDownKey; }
+        }
+
+        public static object ToolWindowButtonDownBorderKey
+        {
+            get { return VsBrushes.ToolWindowButtonDownBorderKey; }
+        }
         public static object IndicatorFillBrushKey
         {
             get

@@ -98,6 +98,7 @@
     <Compile Include="Converters\StyleKeyConverter.cs" />
     <Compile Include="Converters\SummaryToFontStyleConverter.cs" />
     <Compile Include="Converters\SummaryToStringConverter.cs" />
+    <Compile Include="Converters\VersionToStringConverter.cs" />
     <Compile Include="DependencyBehaviorItem.cs" />
     <Compile Include="DetailControlModel.cs" />
     <Compile Include="FileConflictActionOptionItem.cs" />
@@ -156,6 +157,9 @@
     <Compile Include="Xamls\ActionsAndVersions.xaml.cs">
       <DependentUpon>ActionsAndVersions.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Xamls\UninstallButton.xaml.cs">
+      <DependentUpon>UninstallButton.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Xamls\FileConflictDialog.xaml.cs">
       <DependentUpon>FileConflictDialog.xaml</DependentUpon>
     </Compile>
@@ -169,6 +173,9 @@
       <DependentUpon>InfiniteScrollList.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\NullToVisibilityConverter.cs" />
+    <Compile Include="Xamls\InstallIButton.xaml.cs">
+      <DependentUpon>InstallIButton.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Xamls\OptionsControl.xaml.cs">
       <DependentUpon>OptionsControl.xaml</DependentUpon>
     </Compile>
@@ -194,7 +201,6 @@
     <Compile Include="Xamls\LicenseAcceptanceWindow.xaml.cs">
       <DependentUpon>LicenseAcceptanceWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Converters\VersionToVersionForDisplayConverter.cs" />
     <Compile Include="Xamls\ProjectList.xaml.cs">
       <DependentUpon>ProjectList.xaml</DependentUpon>
     </Compile>
@@ -203,6 +209,9 @@
     </Compile>
     <Compile Include="Xamls\Resources.xaml.cs">
       <DependentUpon>Resources.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\UpdateButton.xaml.cs">
+      <DependentUpon>UpdateButton.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -222,6 +231,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Xamls\UninstallButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Xamls\FileConflictDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -237,6 +250,10 @@
     <Page Include="Xamls\InfiniteScrollList.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Xamls\InstallIButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Xamls\OptionsControl.xaml">
       <SubType>Designer</SubType>
@@ -279,6 +296,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Xamls\UpdateAvailableIndicator.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\UpdateButton.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

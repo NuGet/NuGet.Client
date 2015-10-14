@@ -441,4 +441,31 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="RequestRestartToCompleteUninstallSinglePackage" xml:space="preserve">
     <value>The package at '{0}' failed to uninstall. Restart Visual Studio to finish the process.</value>
   </data>
+  <data name="Text_ByAuthor" xml:space="preserve">
+    <value>by {0}</value>
+  </data>
+  <data name="Text_Downloads" xml:space="preserve">
+    <value>{0} downloads</value>
+  </data>
+  <data name="Tooltip_InstallButton" xml:space="preserve">
+    <value>Click to install the package</value>
+  </data>
+  <data name="Tooltip_UninstallButton" xml:space="preserve">
+    <value>Click to uninstall the package</value>
+  </data>
+  <data name="Tooltip_UpdateButton" xml:space="preserve">
+    <value>Click to update the package</value>
+  </data>
+  <data name="Button_Update" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="Checkbox_SelectAllPackages" xml:space="preserve">
+    <value>Select all packages</value>
+  </data>
+  <data name="ToolTip_InstalledVersion" xml:space="preserve">
+    <value>Installed version: {0}</value>
+  </data>
+  <data name="ToolTip_LatestVersion" xml:space="preserve">
+    <value>Latest version: {0}</value>
+  </data>
 </root>

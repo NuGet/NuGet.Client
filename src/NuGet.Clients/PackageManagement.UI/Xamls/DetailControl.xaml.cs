@@ -72,43 +72,20 @@ namespace NuGet.PackageManagement.UI
 
         private void ActionButtonClicked(object sender, RoutedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            var action = GetUserAction();
+            Control.ExecuteAction(
+                action,
+                nugetUi =>
                 {
-                    var action = GetUserAction();
-                    Control.IsEnabled = false;
-                    NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationBegin);
-                    try
-                    {
-                        var nugetUi = Control.Model.UIController as NuGetUI;
-                        if (nugetUi != null)
-                        {
-                            var model = (DetailControlModel)DataContext;
+                    var model = (DetailControlModel)DataContext;
 
-                            // Set the properties by reading the current options on the UI
-                            nugetUi.FileConflictAction = model.Options.SelectedFileConflictAction.Action;
-                            nugetUi.DependencyBehavior = model.Options.SelectedDependencyBehavior.Behavior;
-                            nugetUi.RemoveDependencies = model.Options.RemoveDependencies;
-                            nugetUi.ForceRemove = model.Options.ForceRemove;
-                            nugetUi.Projects = model.SelectedProjects;
-                            nugetUi.DisplayPreviewWindow = model.Options.ShowPreviewWindow;
-                        }
-
-                        var restoreSucceded = await Control.RestoreBar.UIRestorePackagesAsync(CancellationToken.None);
-                        if (restoreSucceded)
-                        {
-                            await Task.Run(() =>
-                                Control.Model.Context.UIActionEngine.PerformActionAsync(
-                                    Control.Model.UIController,
-                                    action,
-                                    this,
-                                    CancellationToken.None));
-                        }
-                    }
-                    finally
-                    {
-                        NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationEnd);
-                        Control.IsEnabled = true;
-                    }
+                    // Set the properties by reading the current options on the UI
+                    nugetUi.FileConflictAction = model.Options.SelectedFileConflictAction.Action;
+                    nugetUi.DependencyBehavior = model.Options.SelectedDependencyBehavior.Behavior;
+                    nugetUi.RemoveDependencies = model.Options.RemoveDependencies;
+                    nugetUi.ForceRemove = model.Options.ForceRemove;
+                    nugetUi.Projects = model.SelectedProjects;
+                    nugetUi.DisplayPreviewWindow = model.Options.ShowPreviewWindow;
                 });
         }
 

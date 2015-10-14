@@ -16,7 +16,6 @@ namespace NuGet.PackageManagement.UI
             string additionalInfo)
             : this(GetRange(version), additionalInfo)
         {
-
         }
 
         public VersionForDisplay(
@@ -32,8 +31,8 @@ namespace NuGet.PackageManagement.UI
             if (range.HasLowerAndUpperBounds && range.MinVersion == range.MaxVersion)
             {
                 _toString = string.IsNullOrEmpty(_additionalInfo) ?
-                    Version.ToNormalizedString() :
-                    _additionalInfo + " " + Version.ToNormalizedString();
+                    "v" + Version.ToNormalizedString() :
+                    _additionalInfo + " v" + Version.ToNormalizedString();
             }
             else
             {
