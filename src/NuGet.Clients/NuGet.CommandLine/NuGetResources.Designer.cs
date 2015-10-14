@@ -4237,7 +4237,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Feed &apos;{0}&apos; is not found..
+        ///   Looks up a localized string similar to Provided feed folder &apos;{0}&apos; is not found..
         /// </summary>
         public static string InitCommand_FeedIsNotFound {
             get {
@@ -6442,7 +6442,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; is not found..
+        ///   Looks up a localized string similar to Provided Nupkg file &apos;{0}&apos; is not found..
         /// </summary>
         public static string NupkgPath_NotFound {
             get {

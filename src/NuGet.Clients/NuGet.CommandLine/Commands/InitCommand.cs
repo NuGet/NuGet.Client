@@ -21,18 +21,14 @@ namespace NuGet.CommandLine
             // Because, this command has MinArgs set to 2.
             var source = Arguments[0];
             var destination = Arguments[1];
-            OfflineFeedUtility.ValidatePath(source);
 
-            if (!Directory.Exists(source))
-            {
-                throw new CommandLineException(
-                    LocalizedResourceManager.GetString(nameof(NuGetResources.InitCommand_FeedIsNotFound)),
-                    source);
-            }
-
-            OfflineFeedUtility.ValidatePath(destination);
+            OfflineFeedUtility.ThrowIfInvalidOrNotFound(
+                source,
+                isDirectory: true,
+                nameOfNotFoundErrorResource: nameof(NuGetResources.InitCommand_FeedIsNotFound));
 
             // If the Destination Feed Folder does not exist, it will be created.
+            OfflineFeedUtility.ThrowIfInvalid(destination);
 
             var packagePaths = GetPackageFilePaths(source, "*" + ProjectManagement.Constants.PackageExtension);
 

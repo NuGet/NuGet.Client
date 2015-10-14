@@ -547,7 +547,8 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Util.VerifyResultFailure(result, "Illegal characters in path");
+                var expectedMessage = string.Format(NuGetResources.Path_Invalid, invalidPath);
+                Util.VerifyResultFailure(result, expectedMessage);
             }
         }
 
@@ -573,7 +574,8 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Util.VerifyResultFailure(result, "Illegal characters in path");
+                var expectedMessage = string.Format(NuGetResources.Path_Invalid, invalidPath);
+                Util.VerifyResultFailure(result, expectedMessage);
             }
         }
 

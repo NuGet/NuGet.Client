@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.CommandLine
@@ -20,7 +19,6 @@ namespace NuGet.CommandLine
             // Arguments[0] will not be null at this point.
             // Because, this command has MinArgs set to 1.
             var packagePath = Arguments[0];
-            OfflineFeedUtility.ValidatePath(packagePath);
 
             if (string.IsNullOrEmpty(Source))
             {
@@ -28,16 +26,13 @@ namespace NuGet.CommandLine
                     LocalizedResourceManager.GetString(nameof(NuGetResources.AddCommand_SourceNotProvided)));
             }
 
-            if (!File.Exists(packagePath))
-            {
-                throw new CommandLineException(
-                    LocalizedResourceManager.GetString(nameof(NuGetResources.NupkgPath_NotFound)),
-                    packagePath);
-            }
-
-            OfflineFeedUtility.ValidatePath(Source);
+            OfflineFeedUtility.ThrowIfInvalidOrNotFound(
+                packagePath,
+                isDirectory: false,
+                nameOfNotFoundErrorResource: nameof(NuGetResources.NupkgPath_NotFound));
 
             // If the Source Feed Folder does not exist, it will be created.
+            OfflineFeedUtility.ThrowIfInvalid(Source);
 
             var offlineFeedAddContext = new OfflineFeedAddContext(
                 packagePath,
