@@ -219,13 +219,14 @@ namespace NuGet.Commands
                                           localRepository,
                                           remoteWalker,
                                           context,
+                                          allGraphs,
                                           writeToLockFile: true,
                                           token: token);
 
-            var success = result.Item1;
-            var runtimes = result.Item3;
+            var success = result.Success;
+            var runtimes = result.RuntimeGraph;
 
-            allGraphs.AddRange(result.Item2);
+            allGraphs.AddRange(result.RestoreTargetGraph);
 
             _success = success;
 
@@ -255,29 +256,31 @@ namespace NuGet.Commands
             // Walk additional runtime graphs for supports checks
             if (_success && _request.CompatibilityProfiles.Any())
             {
-                var compatibiliyResult = await TryRestore(projectRange,
+                var compatibilityResult = await TryRestore(projectRange,
                                                           _request.CompatibilityProfiles,
                                                           allInstalledPackages,
                                                           localRepository,
                                                           remoteWalker,
                                                           context,
+                                                          allGraphs,
                                                           writeToLockFile: false,
                                                           token: token);
 
-                _success = compatibiliyResult.Item1;
+                _success = compatibilityResult.Success;
 
-                allGraphs.AddRange(compatibiliyResult.Item2);
+                allGraphs.AddRange(compatibilityResult.RestoreTargetGraph);
             }
 
             return allGraphs;
         }
 
-        private async Task<Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph>> TryRestore(LibraryRange projectRange,
+        private async Task<RestorePrivateResult> TryRestore(LibraryRange projectRange,
             IEnumerable<FrameworkRuntimePair> frameworkRuntimePairs,
             HashSet<LibraryIdentity> allInstalledPackages,
             NuGetv3LocalRepository localRepository,
             RemoteDependencyWalker remoteWalker,
             RemoteWalkContext context,
+            IList<RestoreTargetGraph> existingGraphs,
             bool writeToLockFile,
             CancellationToken token)
         {
@@ -288,14 +291,18 @@ namespace NuGet.Commands
 
             foreach (var pair in runtimesByFramework)
             {
-                _log.LogVerbose(Strings.FormatLog_RestoringPackages(pair.Key.DotNetFrameworkName));
+                // Remove duplicate pairs
+                if (existingGraphs.Any(g => string.IsNullOrEmpty(g.RuntimeIdentifier) && g.Framework == pair.Key))
+                {
+                    _log.LogVerbose(Strings.FormatLog_RestoringPackages(pair.Key.DotNetFrameworkName));
 
-                frameworkTasks.Add(WalkDependenciesAsync(projectRange,
-                    pair.Key,
-                    remoteWalker,
-                    context,
-                    writeToLockFile: writeToLockFile,
-                    token: token));
+                    frameworkTasks.Add(WalkDependenciesAsync(projectRange,
+                        pair.Key,
+                        remoteWalker,
+                        context,
+                        writeToLockFile: writeToLockFile,
+                        token: token));
+                }
             }
 
             var frameworkGraphs = await Task.WhenAll(frameworkTasks);
@@ -304,7 +311,12 @@ namespace NuGet.Commands
 
             if (!ResolutionSucceeded(frameworkGraphs))
             {
-                return Tuple.Create(false, graphs, allRuntimes);
+                return new RestorePrivateResult()
+                {
+                    Success = false,
+                    RestoreTargetGraph = graphs,
+                    RuntimeGraph = allRuntimes,
+                };
             }
 
             await InstallPackagesAsync(graphs,
@@ -320,22 +332,27 @@ namespace NuGet.Commands
                 var runtimeTasks = new List<Task<RestoreTargetGraph[]>>();
                 foreach (var graph in graphs)
                 {
-                    // Get the runtime graph for this specific tfm graph
-                    var runtimeGraph = GetRuntimeGraph(graph, localRepository);
-                    var runtimeIds = runtimesByFramework[graph.Framework];
+                    // Remove duplicate pairs
+                    if (existingGraphs.Any(g => string.Equals(g.RuntimeIdentifier, graph.RuntimeIdentifier, StringComparison.Ordinal) &&
+                                                g.Framework == graph.Framework))
+                    {
+                        // Get the runtime graph for this specific tfm graph
+                        var runtimeGraph = GetRuntimeGraph(graph, localRepository);
+                        var runtimeIds = runtimesByFramework[graph.Framework];
 
-                    // Merge all runtimes for the output
-                    allRuntimes = RuntimeGraph.Merge(allRuntimes, runtimeGraph);
+                        // Merge all runtimes for the output
+                        allRuntimes = RuntimeGraph.Merge(allRuntimes, runtimeGraph);
 
-                    runtimeTasks.Add(WalkRuntimeDependenciesAsync(projectRange,
-                        graph,
-                        runtimeIds.Where(rid => !string.IsNullOrEmpty(rid)),
-                        remoteWalker,
-                        context,
-                        localRepository,
-                        runtimeGraph,
-                        writeToLockFile: writeToLockFile,
-                        token: token));
+                        runtimeTasks.Add(WalkRuntimeDependenciesAsync(projectRange,
+                            graph,
+                            runtimeIds.Where(rid => !string.IsNullOrEmpty(rid)),
+                            remoteWalker,
+                            context,
+                            localRepository,
+                            runtimeGraph,
+                            writeToLockFile: writeToLockFile,
+                            token: token));
+                    }
                 }
 
                 foreach (var runtimeSpecificGraph in (await Task.WhenAll(runtimeTasks)).SelectMany(g => g))
@@ -347,7 +364,12 @@ namespace NuGet.Commands
 
                 if (!ResolutionSucceeded(runtimeGraphs))
                 {
-                    return Tuple.Create(false, graphs, allRuntimes);
+                    return new RestorePrivateResult()
+                    {
+                        Success = false,
+                        RestoreTargetGraph = graphs,
+                        RuntimeGraph = allRuntimes,
+                    };
                 }
 
                 // Install runtime-specific packages
@@ -358,7 +380,12 @@ namespace NuGet.Commands
                     token);
             }
 
-            return Tuple.Create(true, graphs, allRuntimes);
+            return new RestorePrivateResult()
+            {
+                Success = true,
+                RestoreTargetGraph = graphs,
+                RuntimeGraph = allRuntimes,
+            };
         }
 
         private bool ResolutionSucceeded(IEnumerable<RestoreTargetGraph> graphs)
@@ -370,6 +397,7 @@ namespace NuGet.Commands
                 {
                     success = false;
                     _log.LogError(Strings.FormatLog_FailedToResolveConflicts(graph.Name));
+
                     foreach (var conflict in graph.Conflicts)
                     {
                         _log.LogError(Strings.FormatLog_ResolverConflict(
@@ -377,9 +405,11 @@ namespace NuGet.Commands
                             string.Join(", ", conflict.Requests)));
                     }
                 }
+
                 if (graph.Unresolved.Any())
                 {
                     success = false;
+
                     foreach (var unresolved in graph.Unresolved)
                     {
                         _log.LogError(Strings.FormatLog_UnresolvedDependency(unresolved.Name,
@@ -404,8 +434,10 @@ namespace NuGet.Commands
                 return new MSBuildRestoreResult(project.Name, project.BaseDirectory);
             }
 
-            var graph = targetGraphs
-                .Single(g => g.Framework.Equals(projectFrameworks[0]) && string.IsNullOrEmpty(g.RuntimeIdentifier));
+            var graphs = targetGraphs
+                .Where(g => g.Framework.Equals(projectFrameworks[0]) && string.IsNullOrEmpty(g.RuntimeIdentifier));
+
+            var graph = graphs.Single();
 
             var pathResolver = new VersionFolderPathResolver(repository.RepositoryRoot);
 
@@ -456,7 +488,11 @@ namespace NuGet.Commands
                 }
             }
 
-            return new MSBuildRestoreResult(project.Name, project.BaseDirectory, repository.RepositoryRoot, props, targets);
+            return new MSBuildRestoreResult(project.Name,
+                                            project.BaseDirectory,
+                                            repository.RepositoryRoot,
+                                            props,
+                                            targets);
         }
 
         private LockFile CreateLockFile(
@@ -874,6 +910,13 @@ namespace NuGet.Commands
             _log.LogVerbose(Strings.FormatLog_UsingSource(repository.PackageSource.Source));
 
             return new SourceRepositoryDependencyProvider(repository, _log, cacheContext);
+        }
+
+        private class RestorePrivateResult
+        {
+            public bool Success { get; set; }
+            public List<RestoreTargetGraph> RestoreTargetGraph { get; set; }
+            public RuntimeGraph RuntimeGraph { get; set; }
         }
     }
 }
