@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Text;
 using NuGet.Common;
 
 namespace NuGet.CommandLine
@@ -262,13 +263,27 @@ namespace NuGet.CommandLine
         {
             foreach (var item in enumerateFiles)
             {
+                AssemblyCatalog assemblyCatalog = null;
                 try
                 {
-                    var assemblyCatalog = new SafeAssemblyCatalog(item, console);
+                    assemblyCatalog = new AssemblyCatalog(item);
+
+                    // get the parts - throw if something went wrong
+                    var parts = assemblyCatalog.Parts;
+
+                    // load all the types - throw if assembly cannot load (missing dependencies is a good example)
+                    var assembly = Assembly.LoadFile(item);
+                    assembly.GetTypes();
+
                     catalog.Catalogs.Add(assemblyCatalog);
                 }
                 catch (BadImageFormatException ex)
                 {
+                    if (assemblyCatalog != null)
+                    {
+                        assemblyCatalog.Dispose();
+                    }
+
                     // Ignore if the dll wasn't a valid assembly
                     console.WriteWarning(ex.Message);
                 }
@@ -276,12 +291,46 @@ namespace NuGet.CommandLine
                 {
                     // Ignore if we couldn't load the assembly.
 
+                    if (assemblyCatalog != null)
+                    {
+                        assemblyCatalog.Dispose();
+                    }
+
                     var message =
                         String.Format(LocalizedResourceManager.GetString(nameof(NuGetResources.FailedToLoadExtension)),
                                       item);
 
                     console.WriteWarning(message);
                     console.WriteWarning(ex.Message);
+                }
+                catch (ReflectionTypeLoadException rex)
+                {
+                    // ignore if the assembly is missing dependencies
+
+                    var resource =
+                        LocalizedResourceManager.GetString(nameof(NuGetResources.FailedToLoadExtensionDuringMefComposition));
+
+                    var perAssemblyError = string.Empty;
+
+                    if (rex?.LoaderExceptions.Length > 0)
+                    {
+                        var builder = new StringBuilder();
+
+                        builder.AppendLine(string.Empty);
+
+                        var errors = rex.LoaderExceptions.Select(e => e.Message).Distinct(StringComparer.Ordinal);
+
+                        foreach (var error in errors)
+                        {
+                            builder.AppendLine(error);
+                        }
+
+                        perAssemblyError = builder.ToString();
+                    }
+
+                    var warning = string.Format(resource, item, perAssemblyError);
+
+                    console.WriteWarning(warning);
                 }
             }
         }
