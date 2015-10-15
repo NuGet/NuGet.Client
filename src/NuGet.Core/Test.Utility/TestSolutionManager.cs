@@ -28,7 +28,7 @@ namespace Test.Utility
             NuGetProjectContext = new TestNuGetProjectContext();
         }
 
-        public NuGetProject AddNewMSBuildProject(string projectName = null, NuGetFramework projectTargetFramework = null, string packagesConfigName = null)
+        public MSBuildNuGetProject AddNewMSBuildProject(string projectName = null, NuGetFramework projectTargetFramework = null, string packagesConfigName = null)
         {
             if (GetNuGetProject(projectName) != null)
             {
@@ -43,9 +43,9 @@ namespace Test.Utility
             projectTargetFramework = projectTargetFramework ?? NuGetFramework.Parse("net45");
             var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext(),
                 projectFullPath, projectName);
-            NuGetProject nuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolder, projectFullPath);
-            NuGetProjects.Add(nuGetProject);
-            return nuGetProject;
+            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolder, projectFullPath);
+            NuGetProjects.Add(msBuildNuGetProject);
+            return msBuildNuGetProject;
         }
 
         public NuGetProject AddBuildIntegratedProject(string projectName = null, NuGetFramework projectTargetFramework = null)
