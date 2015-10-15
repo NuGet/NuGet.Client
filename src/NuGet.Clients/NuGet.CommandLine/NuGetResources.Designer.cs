@@ -1735,7 +1735,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to der Symbolserver.
+        ///   Looks up a localized string similar to Symbolserver.
         /// </summary>
         public static string DefaultSymbolServer_deu {
             get {
@@ -3540,6 +3540,24 @@ namespace NuGet.CommandLine {
         public static string FailedToBuildProject_trk {
             get {
                 return ResourceManager.GetString("FailedToBuildProject_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load {0}, if this extension was downloaded from the internet please make sure it got unblocked (right click, properties, unblock)..
+        /// </summary>
+        public static string FailedToLoadExtension {
+            get {
+                return ResourceManager.GetString("FailedToLoadExtension", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to load {0}{1}.
+        /// </summary>
+        public static string FailedToLoadExtensionDuringMefComposition {
+            get {
+                return ResourceManager.GetString("FailedToLoadExtensionDuringMefComposition", resourceCulture);
             }
         }
         
@@ -5614,7 +5632,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to der NuGet-Katalog.
+        ///   Looks up a localized string similar to NuGet-Katalog.
         /// </summary>
         public static string LiveFeed_deu {
             get {

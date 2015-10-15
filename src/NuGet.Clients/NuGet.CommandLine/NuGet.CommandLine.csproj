@@ -14,7 +14,7 @@
     <FileAlignment>512</FileAlignment>
     <RestoreNuGetPackages>true</RestoreNuGetPackages>
     <PlatformTarget>$(Platform)</PlatformTarget>
-	<AssemblyOriginatorKeyFile>$(MS_PFX_PATH)</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>$(MS_PFX_PATH)</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -118,6 +118,7 @@
     <Compile Include="Rules\MisplacedTransformFileRule.cs" />
     <Compile Include="Rules\MissingSummaryRule.cs" />
     <Compile Include="Rules\WinRTNameIsObsoleteRule.cs" />
+    <Compile Include="SafeAssemblyCatalog.cs" />
     <Compile Include="SettingsCredentialProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsToLegacySettings.cs" />
