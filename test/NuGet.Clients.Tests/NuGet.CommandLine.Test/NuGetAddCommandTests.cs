@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -64,7 +65,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void AddCommand_Success_NoSourceSpecified()
+        public void AddCommand_Fail_NoSourceSpecified()
         {
             // Arrange
             using (var testInfo = new TestInfo())
@@ -77,15 +78,6 @@ namespace NuGet.CommandLine.Test
                     testInfo.RandomNupkgFilePath
                 };
 
-                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-<config>
-<add key=""offlineFeed"" value=""" + testInfo.SourceParamFolder + @""" />
-</config>
-</configuration>";
-
-                File.WriteAllText(Path.Combine(testInfo.WorkingPath, "nuget.config"), config);
-
                 // Act
                 var result = CommandRunner.Run(
                     testInfo.NuGetExePath,
@@ -94,8 +86,7 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
-                Util.VerifyResultSuccess(result);
-                Util.VerifyPackageExists(testInfo.Package, testInfo.SourceParamFolder);
+                Util.VerifyResultFailure(result, NuGetResources.AddCommand_SourceNotProvided);
             }
         }
 
@@ -446,6 +437,54 @@ namespace NuGet.CommandLine.Test
                 Util.VerifyResultFailure(result, expectedErrorMessage);
 
                 Util.VerifyPackageDoesNotExist(testInfo.Package, testInfo.SourceParamFolder);
+            }
+        }
+
+        [Theory]
+        [InlineData("add")]
+        [InlineData("add -?")]
+        [InlineData("add nupkgPath -Source srcFolder extraArg")]
+        public void AddCommand_Success_InvalidArguments_HelpMessage(string args)
+        {
+            // Arrange & Act
+            var result = CommandRunner.Run(
+                Util.GetNuGetExePath(),
+                Directory.GetCurrentDirectory(),
+                args,
+                waitForExit: true);
+
+            // Assert
+            Util.VerifyResultSuccess(result, "usage: NuGet add <packagePath> -Source <fileSourceFolder> [options]");
+        }
+
+        [Fact]
+        public void AddCommand_Success_ExpandSwitch()
+        {
+            // Arrange
+            using (var testInfo = new TestInfo())
+            {
+                testInfo.Init();
+
+                var args = new string[]
+                {
+                    "add",
+                    testInfo.RandomNupkgFilePath,
+                    "-Source",
+                    testInfo.SourceParamFolder,
+                    "-Expand"
+                };
+
+                // Act
+                var result = CommandRunner.Run(
+                    testInfo.NuGetExePath,
+                    testInfo.WorkingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Util.VerifyResultSuccess(result);
+                var listOfPackages = new List<PackageIdentity>() { testInfo.Package };
+                Util.VerifyExpandedLegacyTestPackagesExist(listOfPackages, testInfo.SourceParamFolder);
             }
         }
     }

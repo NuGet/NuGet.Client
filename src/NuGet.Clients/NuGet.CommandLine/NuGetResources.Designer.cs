@@ -61,6 +61,42 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; already exists at feed &apos;{1}&apos; and is invalid..
+        /// </summary>
+        public static string AddCommand_ExistingPackageInvalid {
+            get {
+                return ResourceManager.GetString("AddCommand_ExistingPackageInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package &apos;{0}&apos; already exists at feed &apos;{1}&apos;..
+        /// </summary>
+        public static string AddCommand_PackageAlreadyExists {
+            get {
+                return ResourceManager.GetString("AddCommand_PackageAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;-Source&apos; switch is not provided. nupkg gets added to the &apos;Source&apos; and is mandatory..
+        /// </summary>
+        public static string AddCommand_SourceNotProvided {
+            get {
+                return ResourceManager.GetString("AddCommand_SourceNotProvided", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Successfully added package &apos;{0}&apos; to feed &apos;{1}&apos;..
+        /// </summary>
+        public static string AddCommand_SuccessfullyAdded {
+            get {
+                return ResourceManager.GetString("AddCommand_SuccessfullyAdded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Add file &apos;{0}&apos; to package as &apos;{1}&apos;.
         /// </summary>
         public static string AddFileToPackage {
@@ -4192,6 +4228,24 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Feed &apos;{0}&apos; contains no packages..
+        /// </summary>
+        public static string InitCommand_FeedContainsNoPackages {
+            get {
+                return ResourceManager.GetString("InitCommand_FeedContainsNoPackages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Provided feed folder &apos;{0}&apos; is not found..
+        /// </summary>
+        public static string InitCommand_FeedIsNotFound {
+            get {
+                return ResourceManager.GetString("InitCommand_FeedIsNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; contains invalid package references. .
         /// </summary>
         public static string InstallCommandInvalidPackageReference {
@@ -6375,6 +6429,24 @@ namespace NuGet.CommandLine {
         public static string NoProjectsFound_trk {
             get {
                 return ResourceManager.GetString("NoProjectsFound_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid nupkg file..
+        /// </summary>
+        public static string NupkgPath_InvalidNupkg {
+            get {
+                return ResourceManager.GetString("NupkgPath_InvalidNupkg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Provided Nupkg file &apos;{0}&apos; is not found..
+        /// </summary>
+        public static string NupkgPath_NotFound {
+            get {
+                return ResourceManager.GetString("NupkgPath_NotFound", resourceCulture);
             }
         }
         
@@ -8773,6 +8845,24 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid path..
+        /// </summary>
+        public static string Path_Invalid {
+            get {
+                return ResourceManager.GetString("Path_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; should be a local path or a UNC share path..
+        /// </summary>
+        public static string Path_Invalid_NotFileNotUnc {
+            get {
+                return ResourceManager.GetString("Path_Invalid_NotFileNotUnc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This version of nuget.exe does not support pushing packages to package source &apos;{0}&apos;..
         /// </summary>
         public static string PushCommand_PushNotSupported {
@@ -10951,6 +11041,15 @@ namespace NuGet.CommandLine {
         public static string SettingsCredentials_UsingSavedCredentials {
             get {
                 return ResourceManager.GetString("SettingsCredentials_UsingSavedCredentials", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Source &apos;{0}&apos; is not found..
+        /// </summary>
+        public static string Source_NotFound {
+            get {
+                return ResourceManager.GetString("Source_NotFound", resourceCulture);
             }
         }
         

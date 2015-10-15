@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 
@@ -69,20 +68,18 @@ namespace NuGet.CommandLine
             return false;
         }
 
-        public static string GetEffectiveSourceFeedFolder(string source, Configuration.ISettings settings)
-        {
-            if (string.IsNullOrEmpty(source))
-            {
-                return SettingsUtility.GetOfflineFeed(settings);
-            }
-
-            return source;
-        }
-
-        public static void ValidatePath(string path)
+        public static void ThrowIfInvalid(string path)
         {
             Uri pathUri;
             if (!Uri.TryCreate(path, UriKind.RelativeOrAbsolute, out pathUri))
+            {
+                throw new CommandLineException(
+                    LocalizedResourceManager.GetString(nameof(NuGetResources.Path_Invalid)),
+                    path);
+            }
+
+            var invalidPathChars = Path.GetInvalidPathChars();
+            if (invalidPathChars.Any(p => path.Contains(p)))
             {
                 throw new CommandLineException(
                     LocalizedResourceManager.GetString(nameof(NuGetResources.Path_Invalid)),
@@ -99,6 +96,27 @@ namespace NuGet.CommandLine
             {
                 throw new CommandLineException(
                     LocalizedResourceManager.GetString(nameof(NuGetResources.Path_Invalid_NotFileNotUnc)),
+                    path);
+            }
+        }
+
+        public static void ThrowIfInvalidOrNotFound(
+            string path,
+            bool isDirectory,
+            string nameOfNotFoundErrorResource)
+        {
+            if (nameOfNotFoundErrorResource == null)
+            {
+                throw new ArgumentNullException(nameof(nameOfNotFoundErrorResource));
+            }
+
+            ThrowIfInvalid(path);
+
+            if ((isDirectory && !Directory.Exists(path)) ||
+                (!isDirectory && !File.Exists(path)))
+            {
+                throw new CommandLineException(
+                    LocalizedResourceManager.GetString(nameOfNotFoundErrorResource),
                     path);
             }
         }
@@ -163,7 +181,7 @@ namespace NuGet.CommandLine
                             source,
                             logger,
                             fixNuspecIdCasing: false,
-                            extractNuspecOnly: true,
+                            extractNuspecOnly: !offlineFeedAddContext.Expand,
                             normalizeFileNames: true);
 
                         await NuGetPackageUtils.InstallFromSourceAsync(

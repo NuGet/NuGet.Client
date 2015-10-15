@@ -6072,6 +6072,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   </data>
   <data name="FailedToLoadExtensionDuringMefComposition" xml:space="preserve">
     <value>Failed to load {0}{1}</value>
+  </data>
   <data name="Path_Invalid" xml:space="preserve">
     <value>'{0}' is not a valid path.</value>
   </data>
@@ -6079,7 +6080,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
     <value>'{0}' is not a valid nupkg file.</value>
   </data>
   <data name="NupkgPath_NotFound" xml:space="preserve">
-    <value>'{0}' is not found.</value>
+    <value>Provided Nupkg file '{0}' is not found.</value>
   </data>
   <data name="Path_Invalid_NotFileNotUnc" xml:space="preserve">
     <value>'{0}' should be a local path or a UNC share path.</value>
@@ -6100,6 +6101,9 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
     <value>Feed '{0}' contains no packages.</value>
   </data>
   <data name="InitCommand_FeedIsNotFound" xml:space="preserve">
-    <value>Feed '{0}' is not found.</value>
+    <value>Provided feed folder '{0}' is not found.</value>
+  </data>
+  <data name="AddCommand_SourceNotProvided" xml:space="preserve">
+    <value>'-Source' switch is not provided. nupkg gets added to the 'Source' and is mandatory.</value>
   </data>
 </root>

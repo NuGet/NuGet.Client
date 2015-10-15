@@ -11,6 +11,7 @@ namespace NuGet.CommandLine
         public bool ThrowIfSourcePackageIsInvalid { get; }
         public bool ThrowIfPackageExistsAndInvalid { get; }
         public bool ThrowIfPackageExists { get; }
+        public bool Expand { get; }
 
         public OfflineFeedAddContext(
             string packagePath,
@@ -18,7 +19,8 @@ namespace NuGet.CommandLine
             Logging.ILogger logger,
             bool throwIfSourcePackageIsInvalid,
             bool throwIfPackageExistsAndInvalid,
-            bool throwIfPackageExists)
+            bool throwIfPackageExists,
+            bool expand)
         {
             if (string.IsNullOrEmpty(packagePath))
             {
@@ -40,7 +42,8 @@ namespace NuGet.CommandLine
             Logger = logger;
             ThrowIfSourcePackageIsInvalid = throwIfSourcePackageIsInvalid;
             ThrowIfPackageExists = throwIfPackageExists;
-            ThrowIfPackageExistsAndInvalid = throwIfPackageExistsAndInvalid;            
+            ThrowIfPackageExistsAndInvalid = throwIfPackageExistsAndInvalid;
+            Expand = expand;
         }
     }
 }

@@ -65,15 +65,18 @@
     <Compile Include="MSBuildProjectSystemTests.cs" />
     <Compile Include="MSBuildUtilityTest.cs" />
     <Compile Include="NetworkCallCountTest.cs" />
+    <Compile Include="NuGetAddCommandTests.cs" />
     <Compile Include="NuGetConfigCommandTest.cs" />
     <Compile Include="NuGetDeleteCommandTest.cs" />
     <Compile Include="NuGetHelpCommandTest.cs" />
+    <Compile Include="NuGetInitCommandTests.cs" />
     <Compile Include="NuGetInstallCommandTest.cs" />
     <Compile Include="NuGetListCommandTest.cs" />
     <Compile Include="NuGetPackCommandTest.cs" />
     <Compile Include="NuGetPushCommandTest.cs" />
     <Compile Include="NuGetRestoreCommandTest.cs" />
     <Compile Include="NuGetUpdateCommandTests.cs" />
+    <Compile Include="OffineFeedUtilityTests.cs" />
     <Compile Include="PortReserver.cs" />
     <Compile Include="RestoreProjectJsonTest.cs" />
     <Compile Include="NuGetSourcesCommandTest.cs" />
@@ -106,6 +109,6 @@
   </Target>
   <UsingTask AssemblyFile="..\..\..\packages\xunit.runner.msbuild.2.0.0\build\portable-net45+win+wpa81+wp80+monotouch+monoandroid+Xamarin.iOS\xunit.runner.msbuild.dll" TaskName="Xunit.Runner.MSBuild.xunit" />
   <Target Name="RunTests" AfterTargets="Build" Condition=" '$(RunTests)' == 'true' ">
-	  <xunit Assemblies="bin\$(Configuration)\$(AssemblyName).dll" MaxParallelThreads="1" ParallelizeTestCollections="false" />
+    <xunit Assemblies="bin\$(Configuration)\$(AssemblyName).dll" MaxParallelThreads="1" ParallelizeTestCollections="false" />
   </Target>
 </Project>
