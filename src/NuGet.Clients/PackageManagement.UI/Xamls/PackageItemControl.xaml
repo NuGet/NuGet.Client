@@ -28,8 +28,6 @@
         x:Key="SummaryToFontStyleConverter" />
       <ui:SummaryToStringConverter
         x:Key="SummaryToStringConverter" />
-      <ui:VersionToStringConverter
-        x:Key="VersionToStringConverter" />
       <ui:AuthorAndDownloadCountToStringConverter
         x:Key="AuthorAndDownloadCountToStringConverter" />
       <ui:StringFormatConverter
@@ -80,10 +78,10 @@
           <Setter.Value>
             <ControlTemplate TargetType="{x:Type UserControl}">
               <Border
-                BorderThickness="0,0,0,1"
+                BorderThickness="0,0,0,0"
                 BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
                 Background="Transparent"
-                Padding="0,16,0,15">
+                Padding="0,8,0,0">
                 <Grid
                   Margin="24,0,7,0">
                   <Grid.ColumnDefinitions>
@@ -229,7 +227,7 @@
                       <ColumnDefinition Width="auto" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- row 0 -->
+                    <!-- row 0: -->
                     <Grid
                       Grid.Row="0"
                       Grid.Column="0"
@@ -265,6 +263,25 @@
                       </TextBlock>
                     </Grid>
 
+                    <!-- version to install. It occupies the same position as the installed version -->
+                    <TextBlock
+                      x:Name="_versionToInstall"
+                      Grid.Row="0"
+                      Grid.Column="0"
+                      Width="95"
+                      Margin="2,0,0,0"
+                      VerticalAlignment="Center"
+                      TextAlignment="Right"
+                      Visibility="Hidden"
+                      Text="{Binding LatestVersion, Converter={StaticResource VersionToStringConverter}}">
+                      <TextBlock.ToolTip>
+                        <MultiBinding Converter="{StaticResource StringFormatConverter}">
+                          <Binding Source="{x:Static resx:Resources.ToolTip_LatestVersion}" />
+                          <Binding Path="LatestVersion" Converter="{StaticResource VersionToStringConverter}" />
+                        </MultiBinding>
+                      </TextBlock.ToolTip>
+                    </TextBlock>
+
                     <!-- uninstall button -->
                     <Button
                       x:Name="_uninstallButton"
@@ -280,16 +297,38 @@
                         Height="16" />
                     </Button>
 
-                    <!-- row 1 -->
-                    <!-- latest version -->
+                    <!-- install button. It occupies the same position of the install button -->
+                    <Button
+                      x:Name="_installButton"
+                      Grid.Row="0"
+                      Grid.Column="1"
+                      Style="{StaticResource buttonStyle}"
+                      Click="InstallButtonClicked"
+                      Margin="5,0,0,0"
+                      Visibility="Hidden">
+                      <Button.ToolTip>
+                        <MultiBinding Converter="{StaticResource StringFormatConverter}">
+                          <Binding Source="{x:Static resx:Resources.ToolTip_InstallButton}" />
+                          <Binding Path="Id" />
+                          <Binding Path="LatestVersion" Converter="{StaticResource VersionToStringConverter}" />
+                        </MultiBinding>
+                      </Button.ToolTip>
+                      <ui:InstallButton
+                        Width="16"
+                        Height="16" />
+                    </Button>
+
+                    <!-- row 1: latest version and the update button-->
+                    <!-- version to update to -->
                     <TextBlock
+                      x:Name="_versionToUpdateTo"
                       Grid.Row="1"
                       Grid.Column="0"
                       Width="95"
                       Margin="2,5,0,0"
                       VerticalAlignment="Center"
                       TextAlignment="Right"
-                      Visibility="{Binding LatestVersion, Converter={StaticResource NullToVisibilityConverter}}"
+                      Visibility="Hidden"
                       Text="{Binding LatestVersion, Converter={StaticResource VersionToStringConverter}}">
                       <TextBlock.ToolTip>
                         <MultiBinding Converter="{StaticResource StringFormatConverter}">
@@ -299,22 +338,7 @@
                       </TextBlock.ToolTip>
                     </TextBlock>
 
-                    <!-- install button -->
-                    <Button
-                      x:Name="_installButton"
-                      Grid.Row="1"
-                      Grid.Column="1"
-                      Style="{StaticResource buttonStyle}"
-                      Click="InstallButtonClicked"
-                      Margin="5,5,0,0"
-                      Visibility="Hidden"
-                      ToolTip="{x:Static resx:Resources.ToolTip_InstallButton}">
-                      <ui:InstallButton
-                        Width="16"
-                        Height="16" />
-                    </Button>
-
-                    <!-- update button. It occupies the exact same position of the install button -->
+                    <!-- update button -->
                     <Button
                       x:Name="_updateButton"
                       Grid.Row="1"
@@ -326,6 +350,7 @@
                       <Button.ToolTip>
                         <MultiBinding Converter="{StaticResource StringFormatConverter}">
                           <Binding Source="{x:Static resx:Resources.ToolTip_UpdateButton}" />
+                          <Binding Path="Id" />
                           <Binding Path="LatestVersion" Converter="{StaticResource VersionToStringConverter}" />
                         </MultiBinding>
                       </Button.ToolTip>
@@ -357,6 +382,50 @@
                       Value="False" />
                   </MultiDataTrigger.Conditions>
                   <Setter TargetName="_installButton" Property="Visibility" Value="Visible" />
+                </MultiDataTrigger>
+
+                <!-- The install button is collapsed when IsSolution is true -->
+                <DataTrigger
+                  Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type ui:InfiniteScrollList}}}"
+                  Value="True">
+                  <Setter TargetName="_installButton" Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+
+                <!-- version to install is visible when
+                     * Status is NotInstalled
+                     * Or IsSolution is true
+                -->
+                <DataTrigger
+                  Binding="{Binding Status}"
+                  Value="NotInstalled">
+                  <Setter
+                    TargetName="_versionToInstall"
+                    Property="Visibility" Value="Visible" />
+                </DataTrigger>
+                <DataTrigger
+                  Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type ui:InfiniteScrollList}}}"
+                  Value="True">
+                  <Setter
+                    TargetName="_versionToInstall"
+                    Property="Visibility" Value="Visible" />
+                </DataTrigger>
+
+                <!-- version to update to is visible when
+                     * Status is UpdateAvailable;
+                     * IsSolution is false
+                -->
+                <MultiDataTrigger>
+                  <MultiDataTrigger.Conditions>
+                    <Condition
+                      Binding="{Binding Status}"
+                      Value="UpdateAvailable" />
+                    <Condition
+                      Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type ui:InfiniteScrollList}}}"
+                      Value="False" />
+                  </MultiDataTrigger.Conditions>
+                  <Setter
+                    TargetName="_versionToUpdateTo"
+                    Property="Visibility" Value="Visible" />
                 </MultiDataTrigger>
 
                 <!-- The uninstall button is visible when
@@ -393,6 +462,13 @@
                   </MultiDataTrigger.Conditions>
                   <Setter TargetName="_uninstallButton" Property="Visibility" Value="Visible" />
                 </MultiDataTrigger>
+                
+                <!-- The uninstall button is collapsed when IsSolution is true -->
+                <DataTrigger
+                  Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type ui:InfiniteScrollList}}}"
+                  Value="True">
+                  <Setter TargetName="_uninstallButton" Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
 
                 <!-- The update button is visible when
                      * IsSolution is false;
@@ -414,6 +490,13 @@
                   <Setter TargetName="_updateButton" Property="Visibility" Value="Visible" />
                 </MultiDataTrigger>
 
+                <!-- The update button is collapsed when IsSolution is true -->
+                <DataTrigger
+                  Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type ui:InfiniteScrollList}}}"
+                  Value="True">
+                  <Setter TargetName="_updateButton" Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+                
                 <!-- The installed version indicator becomes invisible when
                    * IsSolution is true; or
                    * InstalledVersion is null;

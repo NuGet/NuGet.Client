@@ -58,7 +58,14 @@ namespace NuGet.PackageManagement.UI
             }
             set
             {
-                _checkBoxesEnabled = value;                
+                _checkBoxesEnabled = value;
+
+                if (!_checkBoxesEnabled)
+                {
+                    // the current tab is not "updates", so the container
+                    // should become invisible.
+                    _updateButtonContainer.Visibility = Visibility.Collapsed;
+                }
             }
         }
 
@@ -270,11 +277,11 @@ namespace NuGet.PackageManagement.UI
             }
 
             // update the container's visibility
-            _updateButtonContainer.Visibility = 
+            _updateButtonContainer.Visibility =
                 packageCount > 0 ?
                 Visibility.Visible :
                 Visibility.Collapsed;
-            
+
             if (_selectedCount == 0)
             {
                 _selectAllPackages.IsChecked = false;

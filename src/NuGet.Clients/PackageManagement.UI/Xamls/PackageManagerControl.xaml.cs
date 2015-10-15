@@ -561,12 +561,13 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                _packageDetail.Visibility = Visibility.Visible;
+                _packageDetail.Visibility = Visibility.Visible;                
+                _packageDetail.DataContext = _detailModel;
+
                 await _detailModel.SetCurrentPackage(
                     selectedPackage,
                     _topPanel.Filter);
 
-                _packageDetail.DataContext = _detailModel;
                 _packageDetail.ScrollToHome();
 
                 var uiMetadataResource = await ActiveSource.GetResourceAsync<UIMetadataResource>();

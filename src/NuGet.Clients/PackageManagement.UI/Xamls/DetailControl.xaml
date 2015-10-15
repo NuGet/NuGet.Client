@@ -63,53 +63,36 @@
           FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font155PercentSizeConverter}}" />
       </StackPanel>
 
-      <!-- Action and Versions -->
-      <Tools:ActionsAndVersions
+      <!-- project action when in project package manager -->
+      <Tools:ProjectView
         Grid.Row="1"
-        Margin="0,8" />
+        Margin="0, 8"
+        InstallButtonClicked="ProjectInstallButtonClicked"
+        UninstallButtonClicked="ProjectUninstallButtonClicked"
+        Visibility="{Binding Path=IsSolution, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" />
 
-      <!-- Project list -->
-      <Tools:ProjectList
-        x:Name="_projectList"
-        Grid.Row="2"
+      <!-- solutin view when in solution package manager -->
+      <Tools:SolutionView
+        AutomationProperties.AutomationId="SolutionView"
+        x:Name="_solutionView"
+        Grid.Row="1"
         Margin="0,12,0,8"
+        InstallButtonClicked="SolutionInstallButtonClicked"
+        UninstallButtonClicked="SolutionUninstallButtonClicked"
         Visibility="{Binding Path=IsSolution,Converter={StaticResource BooleanToVisibilityConverter}}" />
-
-      <!-- Installed Version  -->
-      <StackPanel
-        Grid.Row="2"
-        Margin="0,12,0,8"
-        Visibility="{Binding Path=InstalledVersion,Converter={StaticResource NullToVisibilityConverter}}">
-        <TextBlock
-          Text="{Binding Path=InstalledVersion}" />
-      </StackPanel>
-
-      <Border
-        Grid.Row="3"
-        BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
-        BorderThickness="0,0,0,1">
-        <Button
-          Margin="0,8,0,16"
-          MinWidth="100"
-          MinHeight="24"
-          HorizontalAlignment="Left"
-          IsEnabled="{Binding Path=ActionEnabled}"
-          Content="{Binding Path=SelectedAction}"
-          Click="ActionButtonClicked" />
-      </Border>
 
       <!-- options -->
       <Border
-        Grid.Row="4"
+        Grid.Row="2"
         BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
-        BorderThickness="0,0,0,1">
+        BorderThickness="0,1,0,1">
         <Tools:OptionsControl
           Margin="0,12,0,16"
           DataContext="{Binding}" />
       </Border>
 
       <Tools:PackageMetadataControl
-        Grid.Row="5"
+        Grid.Row="3"
         Margin="0,12,0,0"
         DataContext="{Binding PackageMetadata}" />
     </Grid>

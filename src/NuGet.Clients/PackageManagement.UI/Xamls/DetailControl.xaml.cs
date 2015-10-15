@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -19,7 +21,6 @@ namespace NuGet.PackageManagement.UI
         public DetailControl()
         {
             InitializeComponent();
-            _projectList.MaxHeight = _self.FontSize * 15;
             DataContextChanged += PackageSolutionDetailControl_DataContextChanged;
         }
 
@@ -51,28 +52,56 @@ namespace NuGet.PackageManagement.UI
             _root.ScrollToHome();
         }
 
-        public UserAction GetUserAction()
-        {
-            var model = (DetailControlModel)DataContext;
-            var action = model.SelectedAction == UI.Resources.Action_Uninstall ?
-                NuGetProjectActionType.Uninstall :
-                NuGetProjectActionType.Install;
-
-            return new UserAction(
-                action,
-                model.Id,
-                model.SelectedVersion?.Version);
-        }
-
         public void Refresh()
         {
             var model = DataContext as DetailControlModel;
             model?.Refresh();
         }
 
-        private void ActionButtonClicked(object sender, RoutedEventArgs e)
+        private void ProjectInstallButtonClicked(object sender, EventArgs e)
         {
-            var action = GetUserAction();
+            var model = (DetailControlModel)DataContext;
+            var userAction = new UserAction(
+                NuGetProjectActionType.Install,
+                model.Id,
+                model.SelectedVersion.Version);
+            ExecuteUserAction(userAction);
+        }
+
+        private void ProjectUninstallButtonClicked(object sender, EventArgs e)
+        {
+            var model = (PackageDetailControlModel)DataContext;
+            var userAction = new UserAction(
+                NuGetProjectActionType.Uninstall,
+                model.Id,
+                model.InstalledVersion);
+            ExecuteUserAction(userAction);
+        }
+
+
+        private void SolutionInstallButtonClicked(object sender, EventArgs e)
+        {
+            var model = (PackageSolutionDetailControlModel)DataContext;            
+            var userAction = new UserAction(
+                NuGetProjectActionType.Install,
+                model.Id,
+                model.SelectedVersion.Version);
+            ExecuteUserAction(userAction);
+        }
+
+        private void SolutionUninstallButtonClicked(object sender, EventArgs e)
+        {
+            var model = (PackageSolutionDetailControlModel)DataContext;
+
+            var userAction = new UserAction(
+                NuGetProjectActionType.Uninstall,
+                model.Id,
+                null);
+            ExecuteUserAction(userAction);
+        }        
+
+        private void ExecuteUserAction(UserAction action)
+        {
             Control.ExecuteAction(
                 () =>
                 {
@@ -91,7 +120,7 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.DependencyBehavior = model.Options.SelectedDependencyBehavior.Behavior;
                     nugetUi.RemoveDependencies = model.Options.RemoveDependencies;
                     nugetUi.ForceRemove = model.Options.ForceRemove;
-                    nugetUi.Projects = model.SelectedProjects;
+                    nugetUi.Projects = model.GetSelectedProjects(action);
                     nugetUi.DisplayPreviewWindow = model.Options.ShowPreviewWindow;
                 });
         }

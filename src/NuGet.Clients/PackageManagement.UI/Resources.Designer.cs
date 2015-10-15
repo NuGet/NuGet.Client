@@ -88,29 +88,11 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Uninstall.
-        /// </summary>
-        public static string Action_Uninstall {
-            get {
-                return ResourceManager.GetString("Action_Uninstall", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Update.
         /// </summary>
         public static string Action_Update {
             get {
                 return ResourceManager.GetString("Action_Update", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Upgrade.
-        /// </summary>
-        public static string Action_Upgrade {
-            get {
-                return ResourceManager.GetString("Action_Upgrade", resourceCulture);
             }
         }
         
@@ -160,6 +142,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Install.
+        /// </summary>
+        public static string Button_Install {
+            get {
+                return ResourceManager.GetString("Button_Install", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No.
         /// </summary>
         public static string Button_No {
@@ -201,6 +192,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Button_Retry {
             get {
                 return ResourceManager.GetString("Button_Retry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstall.
+        /// </summary>
+        public static string Button_Uninstall {
+            get {
+                return ResourceManager.GetString("Button_Uninstall", resourceCulture);
             }
         }
         
@@ -282,6 +282,24 @@ namespace NuGet.PackageManagement.UI {
         public static string Checkbox_ShowPreviewWindow {
             get {
                 return ResourceManager.GetString("Checkbox_ShowPreviewWindow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Project.
+        /// </summary>
+        public static string ColumnHeader_Project {
+            get {
+                return ResourceManager.GetString("ColumnHeader_Project", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Version.
+        /// </summary>
+        public static string ColumnHeader_Version {
+            get {
+                return ResourceManager.GetString("ColumnHeader_Version", resourceCulture);
             }
         }
         
@@ -385,6 +403,24 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Install and Update Options.
+        /// </summary>
+        public static string GroupBoxHeader_InstallOptions {
+            get {
+                return ResourceManager.GetString("GroupBoxHeader_InstallOptions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstall Options.
+        /// </summary>
+        public static string GroupBoxHeader_UninstallOptions {
+            get {
+                return ResourceManager.GetString("GroupBoxHeader_UninstallOptions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Ignore for now.
         /// </summary>
         public static string IgnoreUpgrade {
@@ -484,15 +520,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Options.
-        /// </summary>
-        public static string Label_InstallationOptions {
-            get {
-                return ResourceManager.GetString("Label_InstallationOptions", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Installed.
         /// </summary>
         public static string Label_Installed {
@@ -502,11 +529,29 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Installed:.
+        /// </summary>
+        public static string Label_InstalledColon {
+            get {
+                return ResourceManager.GetString("Label_InstalledColon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Installing:.
         /// </summary>
         public static string Label_InstalledPackages {
             get {
                 return ResourceManager.GetString("Label_InstalledPackages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Version(s) - {0}.
+        /// </summary>
+        public static string Label_InstalledVersionsCount {
+            get {
+                return ResourceManager.GetString("Label_InstalledVersionsCount", resourceCulture);
             }
         }
         
@@ -534,6 +579,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Label_NuGetWindowCaption {
             get {
                 return ResourceManager.GetString("Label_NuGetWindowCaption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Options.
+        /// </summary>
+        public static string Label_Options {
+            get {
+                return ResourceManager.GetString("Label_Options", resourceCulture);
             }
         }
         
@@ -691,11 +745,20 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Learn about Options.
+        ///   Looks up a localized string similar to Learn about Install Options.
         /// </summary>
-        public static string Link_LearnAboutOptions {
+        public static string Link_LearnAboutInstallOptions {
             get {
-                return ResourceManager.GetString("Link_LearnAboutOptions", resourceCulture);
+                return ResourceManager.GetString("Link_LearnAboutInstallOptions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Learn about Uninstall Options.
+        /// </summary>
+        public static string Link_LearnAboutUninstallOptions {
+            get {
+                return ResourceManager.GetString("Link_LearnAboutUninstallOptions", resourceCulture);
             }
         }
         
@@ -909,6 +972,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to multiple versions installed.
+        /// </summary>
+        public static string Text_MultipleVersionsInstalled {
+            get {
+                return ResourceManager.GetString("Text_MultipleVersionsInstalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No dependencies.
         /// </summary>
         public static string Text_NoDependencies {
@@ -932,6 +1004,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Text_NotAvailableInSource {
             get {
                 return ResourceManager.GetString("Text_NotAvailableInSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to not installed.
+        /// </summary>
+        public static string Text_NotInstalled {
+            get {
+                return ResourceManager.GetString("Text_NotInstalled", resourceCulture);
             }
         }
         
@@ -1008,7 +1089,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Install this package..
+        ///   Looks up a localized string similar to Install {0} version {1}..
         /// </summary>
         public static string ToolTip_InstallButton {
             get {
@@ -1062,7 +1143,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Update this package to version {0}..
+        ///   Looks up a localized string similar to Update {0} to version {1}..
         /// </summary>
         public static string ToolTip_UpdateButton {
             get {

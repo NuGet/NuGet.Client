@@ -36,6 +36,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly NuGetAndEnvDTEProjectCache _nuGetAndEnvDTEProjectCache = new NuGetAndEnvDTEProjectCache();
 
         private bool _initialized;
+
         //add solutionOpenedRasied to make sure ProjectRename and ProjectAdded event happen after solutionOpened event
         private bool _solutionOpenedRaised;
 
@@ -63,12 +64,17 @@ namespace NuGet.PackageManagement.VisualStudio
         public string DefaultNuGetProjectName { get; set; }
 
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;
+
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectRemoved;
+
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectRenamed;
 
         public event EventHandler SolutionClosed;
+
         public event EventHandler SolutionClosing;
+
         public event EventHandler SolutionOpened;
+
         public event EventHandler SolutionOpening;
 
         public VSSolutionManager()
@@ -705,6 +711,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return VSConstants.S_OK;
         }
 
-        #endregion
+        #endregion IVsSelectionEvents implementation
     }
 }
