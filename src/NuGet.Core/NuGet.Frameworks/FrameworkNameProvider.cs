@@ -142,65 +142,64 @@ namespace NuGet.Frameworks
 
         public string GetVersionString(string framework, Version version)
         {
-            var sb = new StringBuilder();
+            var versionString = string.Empty;
 
-            if (version != null)
+            if (version != null 
+                && (version.Major > 0 
+                    || version.Minor > 0
+                    || version.Build > 0
+                    || version.Revision > 0))
             {
-                var versionParts = new Stack<int>();
+                var versionParts = new Stack<int>(4);
 
                 versionParts.Push(version.Major > 0 ? version.Major : 0);
                 versionParts.Push(version.Minor > 0 ? version.Minor : 0);
                 versionParts.Push(version.Build > 0 ? version.Build : 0);
                 versionParts.Push(version.Revision > 0 ? version.Revision : 0);
 
-                // if any parts of the version are over 9 we need to use decimals
-                var useDecimals = versionParts.Any(x => x > 9);
+                // By default require the version to have 2 digits, for legacy frameworks 1 is allowed
+                var minPartCount = _singleDigitVersionFrameworks.Contains(framework) ? 1 : 2;
 
-                // Always use decimals and 2+ digits for dotnet if the version is > 0.0
-                if (versionParts.Count > 0 && string.Equals(
-                    framework,
-                    FrameworkConstants.FrameworkIdentifiers.NetPlatform,
-                    StringComparison.OrdinalIgnoreCase))
-                {
-                    useDecimals = true;
-
-                    if (versionParts.Count == 1)
-                    {
-                        versionParts.Push(0);
-                    }
-                }
-
-                // remove all trailing zeros
-                while (versionParts.Count > 0
-                       && versionParts.Peek() <= 0)
+                // remove all trailing zeros beyond the minor version
+                while ((versionParts.Count > minPartCount
+                       && versionParts.Peek() <= 0))
                 {
                     versionParts.Pop();
                 }
 
-                // write the version string out backwards
-                while (versionParts.Count > 0)
+                // Always use decimals and 2+ digits for dotnet if the version is > 0.0
+                // if any parts of the version are over 9 we need to use decimals
+                if (string.Equals(
+                        framework,
+                        FrameworkConstants.FrameworkIdentifiers.NetPlatform,
+                        StringComparison.OrdinalIgnoreCase)
+                    || versionParts.Any(x => x > 9))
                 {
-                    // avoid adding a decimal if this is the first digit, but if we are down 
-                    // to only 2 numbers left we have to add a decimal otherwise 10.0 becomes 1.0
-                    // during the parse
-                    if (useDecimals)
+                    // An additional zero is needed for decimals
+                    if (versionParts.Count < 2)
                     {
-                        if (sb.Length > 0)
-                        {
-                            sb.Insert(0, ".");
-                        }
-                        else if (versionParts.Count == 1)
-                        {
-                            sb.Append(".0");
-                        }
+                        versionParts.Push(0);
                     }
 
-                    sb.Insert(0, versionParts.Pop());
+                    versionString = string.Join(".", versionParts.Reverse());
+                }
+                else
+                {
+                    versionString = string.Join(string.Empty, versionParts.Reverse());
                 }
             }
 
-            return sb.ToString();
+            return versionString;
         }
+
+        // Legacy frameworks that are allowed to have a single digit for the version number
+        private static readonly HashSet<string> _singleDigitVersionFrameworks = new HashSet<string>(
+            new string[] {
+                FrameworkConstants.FrameworkIdentifiers.Windows,
+                FrameworkConstants.FrameworkIdentifiers.WindowsPhone,
+                FrameworkConstants.FrameworkIdentifiers.Silverlight
+            },
+            StringComparer.OrdinalIgnoreCase);
 
         public bool TryGetPortableProfile(IEnumerable<NuGetFramework> supportedFrameworks, out int profileNumber)
         {
