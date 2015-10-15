@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using NuGet.Common;
 
 namespace NuGet.CommandLine
@@ -14,6 +15,7 @@ namespace NuGet.CommandLine
     {
         private const string NuGetExtensionsKey = "NUGET_EXTENSIONS_PATH";
         private static readonly string ExtensionsDirectoryRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NuGet", "Commands");
+        private static readonly string ThisExecutableName = typeof(Program).Assembly.GetName().Name;
 
         [Import]
         public HelpCommand HelpCommand { get; set; }
@@ -44,7 +46,6 @@ namespace NuGet.CommandLine
 
         public static int MainCore(string workingDirectory, string[] args)
         {
-
             // This is to avoid applying weak event pattern usage, which breaks under Mono or restricted environments, e.g. Windows Azure Web Sites.
             EnvironmentUtility.SetRunningFromCommandLine();
 
@@ -77,7 +78,7 @@ namespace NuGet.CommandLine
                 // Remove NuGet.exe.old
                 RemoveOldFile(fileSystem);
 
-                // Import Dependencies  
+                // Import Dependencies
                 var p = new Program();
                 p.Initialize(fileSystem, console);
 
@@ -125,9 +126,10 @@ namespace NuGet.CommandLine
                 if (unwrappedEx == exception)
                 {
                     // If the AggregateException contains more than one InnerException, it cannot be unwrapped. In which case, simply print out individual error messages
-                    message = String.Join(Environment.NewLine, exception.InnerExceptions.Select(getErrorMessage).Distinct(StringComparer.CurrentCulture));
+                    message = String.Join(Environment.NewLine, exception.InnerExceptions.Select(getErrorMessage)
+                                                                        .Distinct(StringComparer.CurrentCulture));
                 }
-                else if (unwrappedEx is System.Reflection.TargetInvocationException)
+                else if (unwrappedEx is TargetInvocationException)
                 {
                     message = getErrorMessage(unwrappedEx.InnerException);
                 }
@@ -171,20 +173,43 @@ namespace NuGet.CommandLine
 
         private void Initialize(IFileSystem fileSystem, IConsole console)
         {
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+
             using (var catalog = new AggregateCatalog(new AssemblyCatalog(GetType().Assembly)))
             {
                 if (!IgnoreExtensions)
                 {
                     AddExtensionsToCatalog(catalog, console);
                 }
-                using (var container = new CompositionContainer(catalog))
+
+                try
                 {
-                    container.ComposeExportedValue<IConsole>(console);
-                    container.ComposeExportedValue<IPackageRepositoryFactory>(new NuGet.Common.CommandLineRepositoryFactory(console));
-                    container.ComposeExportedValue<IFileSystem>(fileSystem);
-                    container.ComposeParts(this);
+                    using (var container = new CompositionContainer(catalog))
+                    {
+                        container.ComposeExportedValue(console);
+                        container.ComposeExportedValue<IPackageRepositoryFactory>(new CommandLineRepositoryFactory(console));
+                        container.ComposeExportedValue(fileSystem);
+                        container.ComposeParts(this);
+                    }
+                }
+                catch (ReflectionTypeLoadException ex) when (ex?.LoaderExceptions.Length > 0)
+                {
+                    throw new AggregateException(ex.LoaderExceptions);
                 }
             }
+        }
+
+        // This method acts as a binding redirect
+        private Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            var name = new AssemblyName(args.Name);
+
+            if (string.Equals(name.Name, ThisExecutableName, StringComparison.OrdinalIgnoreCase))
+            {
+                return typeof(Program).Assembly;
+            }
+
+            return null;
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want to block the exe from usage if anything failed")]
@@ -239,7 +264,8 @@ namespace NuGet.CommandLine
             {
                 try
                 {
-                    catalog.Catalogs.Add(new AssemblyCatalog(item));
+                    var assemblyCatalog = new SafeAssemblyCatalog(item, console);
+                    catalog.Catalogs.Add(assemblyCatalog);
                 }
                 catch (BadImageFormatException ex)
                 {
@@ -249,6 +275,12 @@ namespace NuGet.CommandLine
                 catch (FileLoadException ex)
                 {
                     // Ignore if we couldn't load the assembly.
+
+                    var message =
+                        String.Format(LocalizedResourceManager.GetString(nameof(NuGetResources.FailedToLoadExtension)),
+                                      item);
+
+                    console.WriteWarning(message);
                     console.WriteWarning(ex.Message);
                 }
             }
@@ -260,7 +292,7 @@ namespace NuGet.CommandLine
             string globalSwitch = Environment.GetEnvironmentVariable("NUGET_EXE_NO_PROMPT");
 
             // When running from inside VS, no input is available to our executable locking up VS.
-            // VS sets up a couple of environment variables one of which is named VisualStudioVersion. 
+            // VS sets up a couple of environment variables one of which is named VisualStudioVersion.
             // Every time this is setup, we will just fail.
             // TODO: Remove this in next iteration. This is meant for short-term backwards compat.
             string vsSwitch = Environment.GetEnvironmentVariable("VisualStudioVersion");

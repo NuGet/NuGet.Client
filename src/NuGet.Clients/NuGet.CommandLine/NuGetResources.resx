@@ -6067,4 +6067,10 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="Error_MSBuildNotInstalled" xml:space="preserve">
     <value>MSBuild is not installed.</value>
   </data>
+  <data name="FailedToLoadExtension" xml:space="preserve">
+    <value>Failed to load {0}, if this extension was downloaded from the internet please make sure it got unblocked (right click, properties, unblock).</value>
+  </data>
+  <data name="FailedToLoadExtensionDuringMefComposition" xml:space="preserve">
+    <value>Failed to load {0}{1}</value>
+  </data>
 </root>
