@@ -67,7 +67,7 @@ namespace NuGet.CommandLine.Commands
         private bool ClearCacheDirectory(string folderPath)
         {
             // Calling DeleteRecursive rather than Directory.Delete(..., recursive: true)
-            // due to an infrequent exception which can be thrown from that API
+            // due to an infrequent exception which can be thrown from that API (e.g. when files are read-only).
             var failedDeletes = new List<string>();
             DeleteRecursive(folderPath, failedDeletes);
 
