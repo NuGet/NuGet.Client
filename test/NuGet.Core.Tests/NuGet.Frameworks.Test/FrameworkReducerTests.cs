@@ -81,15 +81,15 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [InlineData("uap10.0", "portable-aspnetcore5+net45+win8+wp8+wpa81")]
-        [InlineData("netcore50", "portable-aspnetcore5+net45+win8+wp8+wpa81")]
+        [InlineData("uap10.0", "portable-aspnetcore50+net45+win8+wp8+wpa81")]
+        [InlineData("netcore50", "portable-aspnetcore50+net45+win8+wp8+wpa81")]
         [InlineData("dnx452", "net45")]
-        [InlineData("dnxcore50", "portable-aspnetcore5+net45+win8+wp8+wpa81")]
-        [InlineData("net20", "net2")]
+        [InlineData("dnxcore50", "portable-aspnetcore50+net45+win8+wp8+wpa81")]
+        [InlineData("net20", "net20")]
         [InlineData("net451", "net45")]
-        [InlineData("sl5", "portable-net4+sl5+win8+wp8+wpa81")]
-        [InlineData("wp81", "portable-aspnetcore5+net45+win8+wp8+wpa81")]
-        [InlineData("win81", "portable-aspnetcore5+net45+win8+wp8+wpa81")]
+        [InlineData("sl5", "portable-net40+sl5+win8+wp8+wpa81")]
+        [InlineData("wp81", "portable-aspnetcore50+net45+win8+wp8+wpa81")]
+        [InlineData("win81", "portable-aspnetcore50+net45+win8+wp8+wpa81")]
         public void FrameworkReducer_JsonNetGetNearestLibGroup(string projectFramework, string expectedFramework)
         {
             // Arrange
@@ -234,12 +234,12 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [InlineData("dnx452", "aspnet5")]
-        [InlineData("dnx451", "aspnet5")]
-        [InlineData("dnx45", "aspnet5")]
-        [InlineData("net45", "net4")]
-        [InlineData("dnxcore5", "aspnetcore5")]
-        [InlineData("win8", "portable-net4+sl5+win8+wp8")]
+        [InlineData("dnx452", "aspnet50")]
+        [InlineData("dnx451", "aspnet50")]
+        [InlineData("dnx45", "aspnet50")]
+        [InlineData("net45", "net40")]
+        [InlineData("dnxcore5", "aspnetcore50")]
+        [InlineData("win8", "portable-net40+sl5+win8+wp8")]
         [InlineData("MonoAndroid40", "monoandroid")]
         [InlineData("win81", "win81")]
         [InlineData("wpa81", "wpa81")]
@@ -931,7 +931,7 @@ namespace NuGet.Test
 
             var result = reducer.GetNearest(projectFramework, frameworks);
 
-            Assert.Equal("net4", result.GetShortFolderName());
+            Assert.Equal("net40", result.GetShortFolderName());
         }
 
         [Theory]

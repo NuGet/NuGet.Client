@@ -124,7 +124,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("1", packages.Count().ToString());
             Assert.Equal("packageA", packages[0].PackageIdentity.Id);
             Assert.Equal("3.0.1", packages[0].PackageIdentity.Version.ToNormalizedString());
-            Assert.Equal("dnxcore5", packages[0].TargetFramework.GetShortFolderName());
+            Assert.Equal("dnxcore50", packages[0].TargetFramework.GetShortFolderName());
 
             // Verify allowedVersions attribute is kept after package update.
             Assert.Equal("[0.5.0, )", packages[0].AllowedVersions.ToNormalizedString());
@@ -173,7 +173,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("1", packages.Count().ToString());
             Assert.Equal("packageA", packages[0].PackageIdentity.Id);
             Assert.Equal("3.0.1", packages[0].PackageIdentity.Version.ToNormalizedString());
-            Assert.Equal("dnxcore5", packages[0].TargetFramework.GetShortFolderName());
+            Assert.Equal("dnxcore50", packages[0].TargetFramework.GetShortFolderName());
 
             // Verify allowedVersions attribute is kept after package update.
             Assert.Equal("[0.5.0, )", packages[0].AllowedVersions.ToNormalizedString());
