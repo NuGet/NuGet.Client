@@ -39,15 +39,15 @@ namespace NuGet.Test
 
         [Theory]
         [InlineData("45", "net45")]
-        [InlineData("40", "net4")]
+        [InlineData("40", "net40")]
         [InlineData("35", "net35")]
-        [InlineData("20", "net2")]
+        [InlineData("20", "net20")]
         [InlineData("4.5", "net45")]
-        [InlineData("4", "net4")]
-        [InlineData("4.0", "net4")]
+        [InlineData("4", "net40")]
+        [InlineData("4.0", "net40")]
         [InlineData("3.5", "net35")]
-        [InlineData("2", "net2")]
-        [InlineData("2.0", "net2")]
+        [InlineData("2", "net20")]
+        [InlineData("2.0", "net20")]
         public void NuGetFramework_Numeric(string input, string expected)
         {
             string actual = NuGetFramework.Parse(input).GetShortFolderName();
@@ -182,11 +182,11 @@ namespace NuGet.Test
 
         [Theory]
         [InlineData("net45", ".NETFramework,Version=v4.5")]
-        [InlineData("net2", ".NETFramework,Version=v2.0")]
-        [InlineData("net4", ".NETFramework,Version=v4.0")]
+        [InlineData("net20", ".NETFramework,Version=v2.0")]
+        [InlineData("net40", ".NETFramework,Version=v4.0")]
         [InlineData("net35", ".NETFramework,Version=v3.5")]
-        [InlineData("net4", ".NETFramework,Version=v4.0")]
-        [InlineData("net4-client", ".NETFramework,Version=v4.0,Profile=Client")]
+        [InlineData("net40", ".NETFramework,Version=v4.0")]
+        [InlineData("net40-client", ".NETFramework,Version=v4.0,Profile=Client")]
         [InlineData("net", ".NETFramework,Version=v0.0")]
         [InlineData("net10.1.2.3", ".NETFramework,Version=v10.1.2.3")]
         [InlineData("net45-cf", ".NETFramework,Version=v4.5,Profile=CompactFramework")]
@@ -258,7 +258,7 @@ namespace NuGet.Test
         {
             var fw = NuGetFramework.Parse("portable-net40%2Bsl5%2Bwp80%2Bwin8%2Bwpa81");
 
-            Assert.Equal("portable-net4+sl5+win8+wp8+wpa81", fw.GetShortFolderName());
+            Assert.Equal("portable-net40+sl5+win8+wp8+wpa81", fw.GetShortFolderName());
         }
 
         [Theory]

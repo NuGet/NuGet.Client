@@ -105,7 +105,7 @@ namespace ProjectManagement.Test
             var frameworks = JsonConfigUtility.GetFrameworks(json);
 
             // Assert
-            Assert.Equal("netcore5", frameworks.Single().GetShortFolderName());
+            Assert.Equal("netcore50", frameworks.Single().GetShortFolderName());
         }
 
         [Fact]
