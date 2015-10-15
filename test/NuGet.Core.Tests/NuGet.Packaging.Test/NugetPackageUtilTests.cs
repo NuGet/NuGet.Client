@@ -27,16 +27,20 @@ namespace Commands.Test
 
             var token = CancellationToken.None;
             var logger = NullLogger.Instance;
+            var versionFolderPathContext = new VersionFolderPathContext(
+                identity,
+                packagesDir,
+                logger,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: false,
+                normalizeFileNames: false);
 
             // Act
             using (var stream = package.File.OpenRead())
             {
                 await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
-                                                               identity,
-                                                               packagesDir,
-                                                               logger,
-                                                               fixNuspecIdCasing: false,
-                                                               token: token);
+                                                               versionFolderPathContext,
+                                                               token);
             }
 
             // Assert
@@ -64,16 +68,20 @@ namespace Commands.Test
 
             var token = CancellationToken.None;
             var logger = NullLogger.Instance;
+            var versionFolderPathContext = new VersionFolderPathContext(
+                identity,
+                packagesDir,
+                logger,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: false,
+                normalizeFileNames: false);
 
             // Act
             using (var stream = package.File.OpenRead())
             {
                 await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
-                                                               identity,
-                                                               packagesDir,
-                                                               logger,
-                                                               fixNuspecIdCasing: false,
-                                                               token: token);
+                                                               versionFolderPathContext,
+                                                               token);
             }
 
             // Assert
@@ -103,6 +111,13 @@ namespace Commands.Test
 
             var token = CancellationToken.None;
             var logger = NullLogger.Instance;
+            var versionFolderPathContext = new VersionFolderPathContext(
+                identity,
+                packagesDir,
+                logger,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: false,
+                normalizeFileNames: false);
 
             var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
 
@@ -119,11 +134,8 @@ namespace Commands.Test
             using (var stream = package.File.OpenRead())
             {
                 await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
-                                                               identity,
-                                                               packagesDir,
-                                                               logger,
-                                                               fixNuspecIdCasing: false,
-                                                               token: token);
+                                                               versionFolderPathContext,
+                                                               token);
             }
 
             // Assert
@@ -150,6 +162,13 @@ namespace Commands.Test
 
             var token = CancellationToken.None;
             var logger = NullLogger.Instance;
+            var versionFolderPathContext = new VersionFolderPathContext(
+                identity,
+                packagesDir,
+                logger,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: false,
+                normalizeFileNames: false);
 
             var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
 
@@ -168,11 +187,8 @@ namespace Commands.Test
             using (var stream = package.File.OpenRead())
             {
                 await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
-                                                               identity,
-                                                               packagesDir,
-                                                               logger,
-                                                               fixNuspecIdCasing: false,
-                                                               token: token);
+                                                               versionFolderPathContext,
+                                                               token);
             }
 
             // Assert
@@ -201,6 +217,13 @@ namespace Commands.Test
 
             var token = CancellationToken.None;
             var logger = NullLogger.Instance;
+            var versionFolderPathContext = new VersionFolderPathContext(
+                identity,
+                packagesDir,
+                logger,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: false,
+                normalizeFileNames: false);
 
             var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
             Assert.False(Directory.Exists(packageDir), packageDir + " exist");
@@ -211,11 +234,8 @@ namespace Commands.Test
                 await Assert.ThrowsAnyAsync<CorruptionException>(async () =>
                     await NuGetPackageUtils.InstallFromSourceAsync(
                        async (d) => await new CorruptStreamWrapper(stream).CopyToAsync(d),
-                       identity,
-                       packagesDir,
-                       logger,
-                       fixNuspecIdCasing: false,
-                       token: token));
+                       versionFolderPathContext,
+                       token));
             }
 
             Assert.True(Directory.Exists(packageDir), packageDir + " does not exist");
@@ -225,11 +245,8 @@ namespace Commands.Test
             using (var stream = package.File.OpenRead())
             {
                 await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
-                                                               identity,
-                                                               packagesDir,
-                                                               logger,
-                                                               fixNuspecIdCasing: false,
-                                                               token: token);
+                                                               versionFolderPathContext,
+                                                               token);
             }
 
             // Assert
@@ -256,6 +273,13 @@ namespace Commands.Test
 
             var token = CancellationToken.None;
             var logger = NullLogger.Instance;
+            var versionFolderPathContext = new VersionFolderPathContext(
+                identity,
+                packagesDir,
+                logger,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: false,
+                normalizeFileNames: false);
 
             var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
             Assert.False(Directory.Exists(packageDir), packageDir + " exist");
@@ -270,11 +294,8 @@ namespace Commands.Test
                 await Assert.ThrowsAnyAsync<IOException>(async () =>
                     await NuGetPackageUtils.InstallFromSourceAsync(
                        async (d) => await fileLocker.CopyToAsync(d),
-                       identity,
-                       packagesDir,
-                       logger,
-                       fixNuspecIdCasing: false,
-                       token: token));
+                       versionFolderPathContext,
+                       token));
 
                 fileLocker.Release();
             }
@@ -289,11 +310,8 @@ namespace Commands.Test
             using (var stream = package.File.OpenRead())
             {
                 await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
-                                                               identity,
-                                                               packagesDir,
-                                                               logger,
-                                                               fixNuspecIdCasing: false,
-                                                               token: token);
+                                                               versionFolderPathContext,
+                                                               token);
             }
 
             // Assert
@@ -309,6 +327,139 @@ namespace Commands.Test
 
             // Make sure the actual file from the zip was extracted
             Assert.Equal(new byte[] { 0 }, File.ReadAllBytes(filePathToLock));
+        }
+
+        [Fact]
+        public async Task Test_ExtractPackage()
+        {
+            // Arrange
+            var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
+            var packageFileInfo = TestPackages.GetLegacyTestPackage();
+            var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder();
+            var versionFolderPathContext = new VersionFolderPathContext(
+                package,
+                packagesDirectory,
+                NullLogger.Instance,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: false,
+                normalizeFileNames: false);
+
+            try
+            {
+                // Act
+                using (var packageFileStream = packageFileInfo.OpenRead())
+                {
+                    await NuGetPackageUtils.InstallFromSourceAsync(
+                        stream => packageFileStream.CopyToAsync(stream),
+                        versionFolderPathContext,
+                        CancellationToken.None);
+                }
+
+                // Assert
+                var packageIdDirectory = Path.Combine(packagesDirectory, package.Id);
+                var packageVersionDirectory = Path.Combine(packageIdDirectory, package.Version.ToNormalizedString());
+                Assert.True(Directory.Exists(packageIdDirectory));
+                Assert.True(Directory.Exists(packageVersionDirectory));
+                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg")));
+                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.nuspec")));
+                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg.sha512")));
+
+                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, @"lib", "test.dll")));
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
+        }
+
+        [Fact]
+        public async Task Test_ExtractNuspecOnly()
+        {
+            // Arrange
+            var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
+            var packageFileInfo = TestPackages.GetLegacyTestPackage();
+            var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder();
+            var versionFolderPathContext = new VersionFolderPathContext(
+                package,
+                packagesDirectory,
+                NullLogger.Instance,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: true,
+                normalizeFileNames: false);
+
+            try
+            {
+                // Act
+                using (var packageFileStream = packageFileInfo.OpenRead())
+                {
+                    await NuGetPackageUtils.InstallFromSourceAsync(
+                        stream => packageFileStream.CopyToAsync(stream),
+                        versionFolderPathContext,
+                        CancellationToken.None);
+                }
+
+                // Assert
+                var packageIdDirectory = Path.Combine(packagesDirectory, package.Id);
+                var packageVersionDirectory = Path.Combine(packageIdDirectory, package.Version.ToNormalizedString());
+                Assert.True(Directory.Exists(packageIdDirectory));
+                Assert.True(Directory.Exists(packageVersionDirectory));
+                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg")));
+                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.nuspec")));
+                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg.sha512")));
+
+                Assert.False(File.Exists(Path.Combine(packageVersionDirectory, @"lib", "test.dll")));
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
+        }
+
+        [Fact]
+        public async Task Test_ExtractNuspecOnly_NormalizeFileNames()
+        {
+            // Arrange
+            var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
+            var packageFileInfo = TestPackages.GetLegacyTestPackage();
+            var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder();
+            var versionFolderPathContext = new VersionFolderPathContext(
+                package,
+                packagesDirectory,
+                NullLogger.Instance,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: true,
+                normalizeFileNames: true);
+
+            try
+            {
+                // Act
+                using (var packageFileStream = packageFileInfo.OpenRead())
+                {
+                    await NuGetPackageUtils.InstallFromSourceAsync(
+                        stream => packageFileStream.CopyToAsync(stream),
+                        versionFolderPathContext,
+                        CancellationToken.None);
+                }
+
+                // Assert
+                var packageIdDirectory = Path.Combine(packagesDirectory, package.Id.ToLowerInvariant());
+                var packageVersionDirectory = Path.Combine(packageIdDirectory, package.Version.ToNormalizedString());
+                Assert.True(Directory.Exists(packageIdDirectory));
+                Assert.True(Directory.Exists(packageVersionDirectory));
+                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg")));
+                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.nuspec")));
+                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg.sha512")));
+
+                Assert.False(File.Exists(Path.Combine(packageVersionDirectory, @"lib", "test.dll")));
+
+                // The following check ensures that the file name is normalized
+                var nuspecFile = Directory.EnumerateFiles(packageVersionDirectory, "*.nuspec").FirstOrDefault();
+                Assert.True(nuspecFile.EndsWith("packagea.nuspec", StringComparison.Ordinal));
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
         }
 
         private class StreamWrapperBase : Stream

@@ -102,7 +102,7 @@ namespace NuGet.Packaging
                             {
                                 if (versionFolderPathContext.ExtractNuspecOnly)
                                 {
-                                    ExtractNuspec(archive, targetNupkg, targetNuspec);
+                                    ExtractNuspec(archive, targetNuspec);
                                 }
                                 else
                                 {
