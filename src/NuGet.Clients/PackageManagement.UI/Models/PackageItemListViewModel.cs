@@ -55,8 +55,8 @@ namespace NuGet.PackageManagement.UI
             }
         }        
 
-        // The latest version of the package in the current source if
-        // installed version is not the latest.
+        // The version that can be installed or updated to. It is null
+        // if the installed version is already the latest.
         private NuGetVersion _latestVersion;
         public NuGetVersion LatestVersion
         {

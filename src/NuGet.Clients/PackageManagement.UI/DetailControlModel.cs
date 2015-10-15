@@ -45,7 +45,10 @@ namespace NuGet.PackageManagement.UI
             _options.ShowClassicOptions = nugetProjects.Any(project => !(project is BuildIntegratedNuGetProject));
         }
 
-        public abstract IEnumerable<NuGetProject> SelectedProjects { get; }
+        /// <summary>
+        /// Returns the list of projects that are selected for the given action
+        /// </summary>
+        public abstract IEnumerable<NuGetProject> GetSelectedProjects(UserAction action);
 
         /// <summary>
         /// Sets the package to be displayed in the detail control.
@@ -64,7 +67,8 @@ namespace NuGet.PackageManagement.UI
             var versions = await searchResultPackage.Versions.Value;
 
             _allPackageVersions = versions.Select(v => v.Version).ToList();
-            CreateActions();
+
+            CreateVersions();
             OnCurrentPackageChanged();
         }
 
@@ -146,95 +150,8 @@ namespace NuGet.PackageManagement.UI
             return results;
         }
 
-        public virtual void Refresh()
-        {
-            CreateActions();
-        }
-
-        /// <summary>
-        /// Whether or not the package can be installed
-        /// </summary>
-        protected abstract bool CanInstall();
-
-        /// <summary>
-        /// Whether or not the package can be updated to a new version (combined upgrade/downgrade scenario)
-        /// </summary>
-        protected abstract bool CanUpdate();
-
-        /// <summary>
-        /// Whether or not the package can be upgraded to a newer version
-        /// </summary>
-        protected abstract bool CanUpgrade();
-
-        /// <summary>
-        /// Whether or not the package can be uninstalled
-        /// </summary>
-        protected abstract bool CanUninstall();
-
-        /// <summary>
-        /// Whether or not the package can be downgraded to an older version
-        /// </summary>
-        protected abstract bool CanDowngrade();
-
-        /// <summary>
-        /// Whether or not the package can be consolidated onto a version used elsewhere
-        /// </summary>
-        protected abstract bool CanConsolidate();
-
-        // Create the _actions list
-        protected void CreateActions()
-        {
-            Actions = new List<string>();
-
-            if (CanInstall())
-            {
-                Actions.Add(Resources.Action_Install);
-            }
-
-            if (CanUpgrade())
-            {
-                Actions.Add(Resources.Action_Upgrade);
-            }
-
-            if (CanUninstall())
-            {
-                Actions.Add(Resources.Action_Uninstall);
-            }
-
-            if (CanDowngrade())
-            {
-                Actions.Add(Resources.Action_Downgrade);
-            }
-
-            var canUpdate = CanUpdate();
-            if (canUpdate)
-            {
-                Actions.Add(Resources.Action_Update);
-            }
-
-            if (CanConsolidate())
-            {
-                Actions.Add(Resources.Action_Consolidate);
-            }
-
-            if (Actions.Count > 0)
-            {
-                if (_filter == Filter.UpdatesAvailable && canUpdate)
-                {
-                    SelectedAction = Resources.Action_Update;
-                }
-                else
-                {
-                    SelectedAction = Actions[0];
-                }
-            }
-            else
-            {
-                SelectedActionIsInstall = false;
-            }
-
-            OnPropertyChanged(nameof(Actions));
-        }
+        // Called after package install/uninstall.
+        public abstract void Refresh();
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -247,16 +164,14 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public List<string> Actions { get; private set; }
-
         public string Id
         {
-            get { return _searchResultPackage.Id; }
+            get { return _searchResultPackage?.Id; }
         }
 
         public Uri IconUrl
         {
-            get { return _searchResultPackage.IconUrl; }
+            get { return _searchResultPackage?.IconUrl; }
         }
 
         private DetailedPackageMetadata _packageMetadata;
@@ -274,68 +189,12 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private string _selectedAction;
-
-        public string SelectedAction
-        {
-            get { return _selectedAction; }
-            set
-            {
-                _selectedAction = value;
-                SelectedActionIsInstall = (SelectedAction != Resources.Action_Uninstall);
-                CreateVersions();
-                OnPropertyChanged(nameof(SelectedAction));
-            }
-        }
-
-        protected abstract void CreateVersions();
-
-        // indicates whether the selected action is install or uninstall.
-        private bool _selectedActionIsInstall;
-
-        /// <summary>
-        /// This is used by the UI to decide whether the install options or uninstall options are displayed.
-        /// </summary>
-        public bool SelectedActionIsInstall
-        {
-            get { return _selectedActionIsInstall; }
-            set
-            {
-                if (_selectedActionIsInstall != value)
-                {
-                    _selectedActionIsInstall = value;
-                    OnPropertyChanged(nameof(SelectedActionIsInstall));
-                    OnPropertyChanged(nameof(ShowUninstallOptions));
-                    OnPropertyChanged(nameof(ShowInstallOptions));
-                }
-            }
-        }
-
-        /// <summary>
-        /// True if the uninstall options shold be shown.
-        /// </summary>
-        public bool ShowUninstallOptions
-        {
-            get
-            {
-                return !SelectedActionIsInstall && _options.ShowClassicOptions;
-            }
-        }
-
-        /// <summary>
-        /// True if the install options shold be shown.
-        /// </summary>
-        public bool ShowInstallOptions
-        {
-            get
-            {
-                return SelectedActionIsInstall && _options.ShowClassicOptions;
-            }
-        }
-
+        protected abstract void CreateVersions();        
+        
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
         protected List<VersionForDisplay> _versions;
 
+        // The list of versions that can be installed
         public List<VersionForDisplay> Versions
         {
             get { return _versions; }
@@ -362,10 +221,15 @@ namespace NuGet.PackageManagement.UI
                     {
                         PackageMetadata = null;
                     }
+
                     OnSelectedVersionChanged();
                     OnPropertyChanged(nameof(SelectedVersion));
                 }
             }
+        }
+
+        protected virtual void OnSelectedVersionChanged()
+        {
         }
 
         // Calculate the version to select among _versions and select it
@@ -377,18 +241,10 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            VersionForDisplay versionToSelect = null;
-            if (SelectedAction == Resources.Action_Install)
-            {
-                versionToSelect = _versions
-                    .Where(v => v != null && v.Version.Equals(_searchResultPackage.Version))
-                    .FirstOrDefault();
-                if (versionToSelect == null)
-                {
-                    versionToSelect = _versions[0];
-                }
-            }
-            else
+            VersionForDisplay versionToSelect = _versions
+                .Where(v => v != null && v.Version.Equals(_searchResultPackage.Version))
+                .FirstOrDefault();
+            if (versionToSelect == null)
             {
                 versionToSelect = _versions[0];
             }
@@ -442,8 +298,6 @@ namespace NuGet.PackageManagement.UI
                 PackageMetadata = p;
             }
         }
-
-        protected abstract void OnSelectedVersionChanged();
 
         public abstract bool IsSolution { get; }
 

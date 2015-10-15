@@ -50,6 +50,7 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Diagnostics.Tracing" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Dynamic.Runtime" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net.Http" />
@@ -61,6 +62,7 @@
     <Reference Include="System.Threading" />
     <Reference Include="System.Threading.Tasks" />
     <Reference Include="System.Threading.Tasks.Parallel" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -95,6 +97,9 @@
     <Compile Include="Converters\EnumerableToVisibilityConverter.cs" />
     <Compile Include="Converters\FontSizeConverter.cs" />
     <Compile Include="Converters\IconUrlToVisibilityConverter.cs" />
+    <Compile Include="Converters\InstalledVersionsCountConverter.cs" />
+    <Compile Include="Converters\InstalledVersionsToTextConverter.cs" />
+    <Compile Include="Converters\InverseNullToVisibilityConverter.cs" />
     <Compile Include="Converters\NuGetFrameworkToStringConverter.cs" />
     <Compile Include="Converters\NuGetFrameworkToVisibilityConverter.cs" />
     <Compile Include="Converters\StringFormatConverter.cs" />
@@ -165,6 +170,15 @@
     <Compile Include="Xamls\PackageManagerProvidersLabel.xaml.cs">
       <DependentUpon>PackageManagerProvidersLabel.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Xamls\ProjectView.xaml.cs">
+      <DependentUpon>ProjectView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\SolutionView.xaml.cs">
+      <DependentUpon>SolutionView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\SortableColumnHeader.xaml.cs">
+      <DependentUpon>SortableColumnHeader.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Xamls\UninstallButton.xaml.cs">
       <DependentUpon>UninstallButton.xaml</DependentUpon>
     </Compile>
@@ -209,9 +223,6 @@
     <Compile Include="Xamls\LicenseAcceptanceWindow.xaml.cs">
       <DependentUpon>LicenseAcceptanceWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Xamls\ProjectList.xaml.cs">
-      <DependentUpon>ProjectList.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Xamls\UpdateAvailableIndicator.xaml.cs">
       <DependentUpon>UpdateAvailableIndicator.xaml</DependentUpon>
     </Compile>
@@ -240,6 +251,18 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Xamls\PackageManagerProvidersLabel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\ProjectView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\SolutionView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\SortableColumnHeader.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -294,10 +317,6 @@
     <Page Include="Xamls\PreviewWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Xamls\ProjectList.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Xamls\Resources.xaml">
       <Generator>MSBuild:Compile</Generator>

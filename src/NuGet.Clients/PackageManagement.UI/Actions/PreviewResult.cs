@@ -9,16 +9,15 @@ namespace NuGet.PackageManagement.UI
 {
     public class PreviewResult
     {
-        // TODO: hook this up to PM
-        public IEnumerable<PackageIdentity> Deleted { get; private set; }
+        public IEnumerable<PackageIdentity> Deleted { get; }
 
-        public IEnumerable<PackageIdentity> Added { get; private set; }
+        public IEnumerable<PackageIdentity> Added { get; }
 
-        public IEnumerable<UpdatePreviewResult> Updated { get; private set; }
+        public IEnumerable<UpdatePreviewResult> Updated { get; }
 
-        public string Name { get; private set; }
+        public string Name { get; }
 
-        public NuGetProject Target { get; private set; }
+        public NuGetProject Target { get; }
 
         public PreviewResult(
             NuGetProject target,
@@ -27,7 +26,7 @@ namespace NuGet.PackageManagement.UI
             IEnumerable<UpdatePreviewResult> updated)
         {
             string s = null;
-            if (target.TryGetMetadata(NuGetProjectMetadataKeys.Name, out s))
+            if (target.TryGetMetadata(NuGetProjectMetadataKeys.UniqueName, out s))
             {
                 Name = s;
             }

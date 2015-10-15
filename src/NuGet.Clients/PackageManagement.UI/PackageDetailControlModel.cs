@@ -46,20 +46,7 @@ namespace NuGet.PackageManagement.UI
 
             if (dependency != null)
             {
-                if (dependency.VersionRange.MinVersion == dependency.VersionRange.MaxVersion)
-                {
-                    InstalledVersion = string.Format(
-                        CultureInfo.CurrentCulture,
-                        Resources.Text_InstalledVersion,
-                        dependency.VersionRange.MinVersion);
-                }
-                else
-                {
-                    InstalledVersion = string.Format(
-                        CultureInfo.CurrentCulture,
-                        Resources.Text_InstalledVersion,
-                        dependency.VersionRange.ToNormalizedString());
-                }
+                InstalledVersion = dependency.VersionRange.MinVersion;
             }
             else
             {
@@ -69,50 +56,14 @@ namespace NuGet.PackageManagement.UI
 
         public override void Refresh()
         {
-            base.Refresh();
             UpdateInstalledVersion();
+            CreateVersions();
         }
 
         private static bool HasId(string id, IEnumerable<PackageIdentity> packages)
         {
             return packages.Any(p =>
                 StringComparer.OrdinalIgnoreCase.Equals(p.Id, id));
-        }
-
-        protected override bool CanUpgrade()
-        {
-            return InstalledPackages.Any(i =>
-                StringComparer.OrdinalIgnoreCase.Equals(i.Id, Id) &&
-                i.Version < _allPackageVersions.Max());
-        }
-
-        protected override bool CanInstall()
-        {
-            return !HasId(Id, InstalledPackages);
-        }
-
-        protected override bool CanUninstall()
-        {
-            return HasId(Id, InstalledPackages);
-        }
-
-        protected override bool CanDowngrade()
-        {
-            return InstalledPackages.Any(i =>
-                StringComparer.OrdinalIgnoreCase.Equals(i.Id, Id) &&
-                i.Version > _allPackageVersions.Min());
-        }
-
-        protected override bool CanUpdate()
-        {
-            // For project-level management, we don't allow the ambiguous "update"
-            // and instead offer either an Upgrade or a Downgrade
-            return false;
-        }
-
-        protected override bool CanConsolidate()
-        {
-            return false;
         }
 
         protected override void CreateVersions()
@@ -130,60 +81,33 @@ namespace NuGet.PackageManagement.UI
             var latestPrerelease = allVersions.FirstOrDefault(v => v.IsPrerelease);
             var latestStableVersion = allVersions.FirstOrDefault(v => !v.IsPrerelease);
 
-            if (SelectedAction == Resources.Action_Uninstall)
+            // Add lastest prerelease if neeeded
+            if (latestPrerelease != null
+                && (latestStableVersion == null || latestPrerelease > latestStableVersion) &&
+                !latestPrerelease.Equals(installedVersion))
             {
-                _versions.Add(new VersionForDisplay(installedDependency.VersionRange, string.Empty));
+                _versions.Add(new VersionForDisplay(latestPrerelease, Resources.Version_LatestPrerelease));
             }
-            else if (SelectedAction == Resources.Action_Install)
+
+            // Add latest stable if needed
+            if (latestStableVersion != null && 
+                !latestStableVersion.Equals(installedVersion))
             {
-                if (latestPrerelease != null
-                    && (latestStableVersion == null || latestPrerelease > latestStableVersion))
-                {
-                    _versions.Add(new VersionForDisplay(latestPrerelease, Resources.Version_LatestPrerelease));
-                }
+                _versions.Add(new VersionForDisplay(latestStableVersion, Resources.Version_LatestStable));
+            }
 
-                if (latestStableVersion != null)
-                {
-                    _versions.Add(new VersionForDisplay(latestStableVersion, Resources.Version_LatestStable));
-                }
+            // add a separator
+            if (_versions.Count > 0)
+            {
+                _versions.Add(null);
+            }
 
-                // add a separator
-                if (_versions.Count > 0)
-                {
-                    _versions.Add(null);
-                }
-
-                foreach (var version in allVersions)
+            foreach (var version in allVersions)
+            {
+                if (!version.Equals(installedVersion))
                 {
                     _versions.Add(new VersionForDisplay(version, string.Empty));
                 }
-            }
-            else if (SelectedAction == Resources.Action_Upgrade)
-            {
-                if (latestStableVersion != null
-                    && latestStableVersion != installedVersion)
-                {
-                    _versions.Add(new VersionForDisplay(latestStableVersion, Resources.Version_LatestStable));
-
-                    // add a separator
-                    _versions.Add(null);
-                }
-
-                foreach (var version in allVersions.Where(v => v > installedVersion))
-                {
-                    _versions.Add(new VersionForDisplay(version, string.Empty));
-                }
-            }
-            else if (SelectedAction == Resources.Action_Downgrade)
-            {
-                foreach (var version in allVersions.Where(v => v < installedVersion))
-                {
-                    _versions.Add(new VersionForDisplay(version, string.Empty));
-                }
-            }
-            else
-            {
-                Debug.Fail("Unexpected Action: " + SelectedAction);
             }
 
             SelectVersion();
@@ -191,14 +115,9 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged(nameof(Versions));
         }
 
-        protected override void OnSelectedVersionChanged()
-        {
-            // no-op
-        }
+        private NuGetVersion _installedVersion;
 
-        private string _installedVersion;
-
-        public string InstalledVersion
+        public NuGetVersion InstalledVersion
         {
             get { return _installedVersion; }
             private set
@@ -208,9 +127,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public override IEnumerable<NuGetProject> SelectedProjects
+        public override IEnumerable<NuGetProject> GetSelectedProjects(UserAction action)
         {
-            get { return _nugetProjects; }
+            return _nugetProjects;
         }
     }
 }

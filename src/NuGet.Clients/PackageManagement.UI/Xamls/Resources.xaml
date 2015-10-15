@@ -22,6 +22,8 @@
     x:Key="NuGetFrameworkToVisibilityConverter" />
   <Tools:NullToVisibilityConverter
     x:Key="NullToVisibilityConverter" />
+  <Tools:InverseNullToVisibilityConverter
+    x:Key="InverseNullToVisibilityConverter" />
   <Tools:EnumerableToVisibilityConverter
     Inverted="true"
     x:Key="EmptyEnumerableToVisibilityConverter" />
@@ -40,6 +42,8 @@
   <Tools:FontSizeConverter
     Scale="155"
     x:Key="Font155PercentSizeConverter" />
+  <Tools:VersionToStringConverter
+    x:Key="VersionToStringConverter" />
 
   <DataTemplate
     DataType="{x:Type Tools:PackageDependencyMetadata}">

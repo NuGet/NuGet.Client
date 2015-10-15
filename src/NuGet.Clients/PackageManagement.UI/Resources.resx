@@ -123,7 +123,7 @@
   <data name="Action_Install" xml:space="preserve">
     <value>Install</value>
   </data>
-  <data name="Action_Uninstall" xml:space="preserve">
+  <data name="Button_Uninstall" xml:space="preserve">
     <value>Uninstall</value>
   </data>
   <data name="DependencyBehavior_Highest" xml:space="preserve">
@@ -174,7 +174,7 @@
   <data name="Label_Filter" xml:space="preserve">
     <value>Filter:</value>
   </data>
-  <data name="Label_InstallationOptions" xml:space="preserve">
+  <data name="Label_Options" xml:space="preserve">
     <value>Options</value>
   </data>
   <data name="Label_LegalDisclaimer" xml:space="preserve">
@@ -405,8 +405,8 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="Text_ShowAll" xml:space="preserve">
     <value>Show all</value>
   </data>
-  <data name="Link_LearnAboutOptions" xml:space="preserve">
-    <value>Learn about Options</value>
+  <data name="Link_LearnAboutInstallOptions" xml:space="preserve">
+    <value>Learn about Install Options</value>
   </data>
   <data name="Label_ReportAbuse" xml:space="preserve">
     <value>Report Abuse:</value>
@@ -416,9 +416,6 @@ Packages installed into Website projects will not be restored during build. Cons
   </data>
   <data name="Action_Downgrade" xml:space="preserve">
     <value>Downgrade</value>
-  </data>
-  <data name="Action_Upgrade" xml:space="preserve">
-    <value>Upgrade</value>
   </data>
   <data name="Action_Update" xml:space="preserve">
     <value>Update</value>
@@ -448,13 +445,13 @@ Packages installed into Website projects will not be restored during build. Cons
     <value>{0} downloads</value>
   </data>
   <data name="ToolTip_InstallButton" xml:space="preserve">
-    <value>Install this package.</value>
+    <value>Install {0} version {1}.</value>
   </data>
   <data name="ToolTip_UninstallButton" xml:space="preserve">
     <value>Uninstall this package.</value>
   </data>
   <data name="ToolTip_UpdateButton" xml:space="preserve">
-    <value>Update this package to version {0}.</value>
+    <value>Update {0} to version {1}.</value>
   </data>
   <data name="Button_Update" xml:space="preserve">
     <value>Update</value>
@@ -481,5 +478,37 @@ Packages installed into Website projects will not be restored during build. Cons
   </data>
   <data name="Label_SolutionPackageManager" xml:space="preserve">
     <value>Manage Packages for Solution</value>
+  </data>
+  <data name="Label_InstalledColon" xml:space="preserve">
+    <value>Installed:</value>
+  </data>
+  <data name="Button_Install" xml:space="preserve">
+    <value>Install</value>
+  </data>
+  <data name="Link_LearnAboutUninstallOptions" xml:space="preserve">
+    <value>Learn about Uninstall Options</value>
+  </data>
+  <data name="Label_InstalledVersionsCount" xml:space="preserve">
+    <value>Version(s) - {0}</value>
+  </data>
+  <data name="GroupBoxHeader_InstallOptions" xml:space="preserve">
+    <value>Install and Update Options</value>
+  </data>
+  <data name="GroupBoxHeader_UninstallOptions" xml:space="preserve">
+    <value>Uninstall Options</value>
+  </data>
+  <data name="ColumnHeader_Project" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="ColumnHeader_Version" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="Text_MultipleVersionsInstalled" xml:space="preserve">
+    <value>multiple versions installed</value>
+    <comment>In the solution package manager, if the select package has multiple versions installed, then this message is shown.</comment>
+  </data>
+  <data name="Text_NotInstalled" xml:space="preserve">
+    <value>not installed</value>
+    <comment>In the solution package manager, if the select package is not installed, then this message is shown.</comment>
   </data>
 </root>

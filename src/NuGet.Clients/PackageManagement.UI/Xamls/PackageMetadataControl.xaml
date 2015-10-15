@@ -17,8 +17,6 @@
         <ResourceDictionary
           Source="Resources.xaml" />
       </ResourceDictionary.MergedDictionaries>
-      <Tools:VersionToStringConverter
-        x:Key="VersionToStringConverter" />
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid>

@@ -420,17 +420,19 @@ namespace NuGet.PackageManagement.UI
                 var uninstalled = new Dictionary<string, PackageIdentity>(StringComparer.OrdinalIgnoreCase);
                 var packageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-                foreach (var actionTuple in actions)
+                foreach (var action in actions.Select(a => a.Action))
                 {
-                    packageIds.Add(actionTuple.Action.PackageIdentity.Id);
+                    var package = action.PackageIdentity;
+                    packageIds.Add(package.Id);
 
-                    if (actionTuple.Action.NuGetProjectActionType == NuGetProjectActionType.Install)
+                    // Create new identities without the dependency graph
+                    if (action.NuGetProjectActionType == NuGetProjectActionType.Install)
                     {
-                        installed[actionTuple.Action.PackageIdentity.Id] = actionTuple.Action.PackageIdentity;
+                        installed[package.Id] = new PackageIdentity(package.Id, package.Version);
                     }
                     else
                     {
-                        uninstalled[actionTuple.Action.PackageIdentity.Id] = actionTuple.Action.PackageIdentity;
+                        uninstalled[package.Id] = new PackageIdentity(package.Id, package.Version);
                     }
                 }
 

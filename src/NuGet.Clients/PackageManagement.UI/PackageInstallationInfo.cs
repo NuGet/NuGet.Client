@@ -19,65 +19,60 @@ namespace NuGet.PackageManagement.UI
     {
         private NuGetVersion _version;
 
-        public NuGetVersion Version
+        public NuGetVersion InstalledVersion
         {
             get { return _version; }
             set
             {
                 _version = value;
-                UpdateDisplayText();
+                OnPropertyChanged(nameof(InstalledVersion));
             }
         }
 
         public event EventHandler SelectedChanged;
 
-        private bool _selected;
+        private bool _isSelected;
 
-        public bool Selected
+        public bool IsSelected
         {
-            get { return _selected; }
+            get { return _isSelected; }
             set
             {
-                if (_selected != value)
+                if (_isSelected != value)
                 {
-                    _selected = value;
+                    _isSelected = value;
                     if (SelectedChanged != null)
                     {
                         SelectedChanged(this, EventArgs.Empty);
                     }
-                    OnPropertyChanged("Selected");
+                    OnPropertyChanged(nameof(IsSelected));
                 }
             }
         }
 
-        private bool _enabled;
+        public NuGetProject NuGetProject { get; }        
 
-        public bool Enabled
-        {
-            get { return _enabled; }
-            set
-            {
-                if (_enabled != value)
-                {
-                    _enabled = value;
-                    OnPropertyChanged("Enabled");
-                }
-            }
-        }
-
-        public NuGetProject NuGetProject { get; }
-
-        private readonly string _name;
-
-        public PackageInstallationInfo(NuGetProject project, NuGetVersion version, bool enabled)
+        public PackageInstallationInfo(
+            NuGetProject project)
         {
             NuGetProject = project;
-            _name = NuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.Name);
-            _selected = enabled;
-            Version = version;
-            Enabled = enabled;
+            _projectName = NuGetProject.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
+            _isSelected = false;
+        }
 
-            UpdateDisplayText();
+        private string _projectName;
+
+        public string ProjectName
+        {
+            get
+            {
+                return _projectName;
+            }
+            set
+            {
+                _projectName = value;
+                OnPropertyChanged(nameof(ProjectName));
+            }
         }
 
         private AlternativePackageManagerProviders _providers;
@@ -95,50 +90,21 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private string _displayText;
-
-        // the text to be displayed in UI
-        public string DisplayText
-        {
-            get { return _displayText; }
-            set
-            {
-                if (_displayText != value)
-                {
-                    _displayText = value;
-                    OnPropertyChanged("DisplayText");
-                }
-            }
-        }
-
-        private void UpdateDisplayText()
-        {
-            if (Version == null)
-            {
-                DisplayText = _name;
-            }
-            else
-            {
-                DisplayText = string.Format(CultureInfo.CurrentCulture, "{0} ({1})", _name,
-                    Version.ToNormalizedString());
-            }
-        }
-
         public int CompareTo(PackageInstallationInfo other)
         {
-            return string.Compare(_name, other._name, StringComparison.OrdinalIgnoreCase);
+            return string.Compare(_projectName, other._projectName, StringComparison.OrdinalIgnoreCase);
         }
 
         public override bool Equals(object obj)
         {
             var other = obj as PackageInstallationInfo;
 
-            return other != null && string.Equals(_name, other._name, StringComparison.OrdinalIgnoreCase);
+            return other != null && string.Equals(_projectName, other._projectName, StringComparison.OrdinalIgnoreCase);
         }
 
         public override int GetHashCode()
         {
-            return StringComparer.OrdinalIgnoreCase.GetHashCode(_name);
+            return StringComparer.OrdinalIgnoreCase.GetHashCode(_projectName);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -20,20 +20,16 @@
       <RowDefinition Height="auto" />
       <RowDefinition Height="auto" />
     </Grid.RowDefinitions>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition />
-      <ColumnDefinition />
-    </Grid.ColumnDefinitions>
     <Button
       Grid.Row="0"
-      Grid.Column="0"
       Click="ButtonClicked">
       <Button.Template>
         <ControlTemplate TargetType="{x:Type Button}">
           <ContentPresenter />
         </ControlTemplate>
       </Button.Template>
-      <TextBlock
+      <StackPanel Orientation="Horizontal">
+        <TextBlock
         x:Name="_labelText"
         Padding="0"
         Margin="0"
@@ -41,33 +37,31 @@
         MouseLeave="_labelText_MouseLeave"
         FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}"
         Foreground="{DynamicResource {x:Static local:Brushes.UIText}}" />
-    </Button>
 
-    <!-- the texblock that displays the count -->
-    <Border
-      x:Name="_textBlockCountContainer"
-      Grid.Row="0"
-      Grid.Column="1"
-      CornerRadius="2"
-      Margin="3,0"
-      Padding="3,0"
-      Visibility="Collapsed"
-      HorizontalAlignment="Center"
-      VerticalAlignment="Center"
-      Background="{DynamicResource {x:Static local:Brushes.ContentSelectedBrushKey}}">
-      <TextBlock
-        x:Name="_textBlockCount"
-        Foreground="White"
-        HorizontalAlignment="Right"
-        VerticalAlignment="Top">
-      </TextBlock>
-    </Border>
+        <!-- the texblock that displays the count -->
+        <Border
+          x:Name="_textBlockCountContainer"
+          CornerRadius="2"
+          Margin="3,0"
+          Padding="3,0"
+          Visibility="Collapsed"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center"
+          Background="{DynamicResource {x:Static local:Brushes.ContentSelectedBrushKey}}">
+          <TextBlock
+            x:Name="_textBlockCount"
+            Foreground="White"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top">
+          </TextBlock>
+        </Border>
+      </StackPanel>
+    </Button>
 
     <!-- the line under the text to indicate that this label is selected -->
     <Rectangle
       x:Name="_underline"
       Grid.Row="1"
-      Grid.Column="0"
       Margin="0"
       Height="3"
       Fill="{DynamicResource {x:Static local:Brushes.ContentSelectedBrushKey}}"

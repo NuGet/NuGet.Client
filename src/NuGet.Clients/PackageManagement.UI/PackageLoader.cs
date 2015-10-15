@@ -659,9 +659,11 @@ namespace NuGet.PackageManagement.UI
                 };
             }
 
+            // the package is not installed. In this case, the latest version is the version
+            // of the search result.
             return new BackgroundLoaderResult()
             {
-                LatestVersion = null,
+                LatestVersion = package.Version,
                 InstalledVersion = null,
                 Status = PackageStatus.NotInstalled
             };

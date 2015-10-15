@@ -75,10 +75,12 @@
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition
+              Width="6*"
               MinWidth="300" />
             <ColumnDefinition
               Width="auto" />
             <ColumnDefinition
+              Width="4*"
               MinWidth="300" />
           </Grid.ColumnDefinitions>
 
