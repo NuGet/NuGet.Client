@@ -104,6 +104,7 @@ namespace NuGet.CommandLine.Commands
                 var fullFilePath = Path.Combine(deletePath, deleteFilePath);
                 try
                 {
+                    EnsureWritable(fullFilePath);
                     File.Delete(fullFilePath);
                 }
                 catch
@@ -112,8 +113,9 @@ namespace NuGet.CommandLine.Commands
                 }
             }
 
-            foreach (var deleteFolderPath in Directory.EnumerateDirectories(deletePath).Select(Path.GetFileName))
+            foreach (var deleteFolder in Directory.EnumerateDirectories(deletePath))
             {
+                var deleteFolderPath = Path.GetFileName(deleteFolder);
                 var fullDirectoryPath = Path.Combine(deletePath, deleteFolderPath);
                 DeleteRecursive(fullDirectoryPath, failedDeletes);
 
@@ -125,6 +127,16 @@ namespace NuGet.CommandLine.Commands
                 {
                     failedDeletes.Add(fullDirectoryPath);
                 }
+            }
+        }
+
+        public static void EnsureWritable(string filePath)
+        {
+            var attributes = File.GetAttributes(filePath);
+            if (attributes.HasFlag(FileAttributes.ReadOnly))
+            {
+                attributes &= ~FileAttributes.ReadOnly;
+                File.SetAttributes(filePath, attributes);
             }
         }
     }
