@@ -112,7 +112,7 @@
     <Compile Include="LoadingStatusIndicator.cs" />
     <Compile Include="LoadResult.cs" />
     <Compile Include="Models\BackgroundLoaderResult.cs" />
-    <Compile Include="Models\OtherPackageManagerProviders.cs" />
+    <Compile Include="Models\AlternativePackageManagerProviders.cs" />
     <Compile Include="Models\PackageItemListViewModel.cs" />
     <Compile Include="Models\PackageStatus.cs" />
     <Compile Include="Models\SearchResult.cs" />

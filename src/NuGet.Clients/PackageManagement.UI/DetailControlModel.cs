@@ -30,6 +30,7 @@ namespace NuGet.PackageManagement.UI
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
         protected PackageItemListViewModel _searchResultPackage;
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
         protected Filter _filter;
 
@@ -61,7 +62,7 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged("IconUrl");
 
             var versions = await searchResultPackage.Versions.Value;
-                        
+
             _allPackageVersions = versions.Select(v => v.Version).ToList();
             CreateActions();
             OnCurrentPackageChanged();

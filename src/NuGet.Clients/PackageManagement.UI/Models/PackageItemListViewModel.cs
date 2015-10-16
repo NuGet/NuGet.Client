@@ -192,8 +192,8 @@ namespace NuGet.PackageManagement.UI
 
         private bool _providersLoaderStarted;
 
-        private OtherPackageManagerProviders _providers;
-        public OtherPackageManagerProviders Providers
+        private AlternativePackageManagerProviders _providers;
+        public AlternativePackageManagerProviders Providers
         {
             get
             {
@@ -221,8 +221,8 @@ namespace NuGet.PackageManagement.UI
         }
 
 
-        private Lazy<Task<OtherPackageManagerProviders>> _providersLoader;
-        internal Lazy<Task<OtherPackageManagerProviders>> ProvidersLoader
+        private Lazy<Task<AlternativePackageManagerProviders>> _providersLoader;
+        internal Lazy<Task<AlternativePackageManagerProviders>> ProvidersLoader
         {
             get
             {

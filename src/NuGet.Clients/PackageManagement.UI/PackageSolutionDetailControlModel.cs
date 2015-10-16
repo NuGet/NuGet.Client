@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 
@@ -29,7 +27,7 @@ namespace NuGet.PackageManagement.UI
         // list of projects to be displayed in the UI. This list is created
         // from _allProjects based on the selected version and the status
         // of the "Show All" checkbox.
-        public List<PackageInstallationInfo> Projects { get; private set; }      
+        public List<PackageInstallationInfo> Projects { get; private set; }
 
         private bool _actionEnabled;
 
@@ -220,24 +218,23 @@ namespace NuGet.PackageManagement.UI
             return installedVersions.Count() >= 2;
         }
 
-        protected override void OnCurrentPackageChanged()
+        protected override async void OnCurrentPackageChanged()
         {
             if (_searchResultPackage == null)
             {
                 return;
             }
 
-            _allProjects.ForEach(p =>
+            foreach (var p in _allProjects)
             {
                 if (_packageManagerProviders.Any())
                 {
-                    p.ProvidersLoader = new Lazy<Task<OtherPackageManagerProviders>>(
-                        () => OtherPackageManagerProviders.LoadProvidersInBackground(
-                            _packageManagerProviders,
-                            Id, 
-                            p.NuGetProject));
+                    p.Providers = await AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(
+                        _packageManagerProviders,
+                        Id,
+                        p.NuGetProject);
                 }
-            });
+            }
         }
 
         private void RefreshProjectList()

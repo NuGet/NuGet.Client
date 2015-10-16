@@ -581,8 +581,8 @@ namespace NuGet.PackageManagement.UI
 
                 if (!_isSolution && _packageManagerProviders.Any())
                 {
-                    searchResultPackage.ProvidersLoader = new Lazy<Task<OtherPackageManagerProviders>>(
-                        () => OtherPackageManagerProviders.LoadProvidersInBackground(
+                    searchResultPackage.ProvidersLoader = new Lazy<Task<AlternativePackageManagerProviders>>(
+                        () => AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(
                             _packageManagerProviders,
                             searchResultPackage.Id, 
                             _projects[0]));
