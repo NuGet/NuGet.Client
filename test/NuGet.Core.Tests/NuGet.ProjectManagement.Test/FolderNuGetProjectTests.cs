@@ -19,7 +19,7 @@ namespace ProjectManagement.Test
 {
     public class FolderNuGetProjectTests
     {
-        [Fact(Skip = "Disable because breaking the signed build")]
+        [Fact]
         public async Task TestFolderNuGetProjectInstall()
         {
             // Arrange
@@ -72,7 +72,7 @@ namespace ProjectManagement.Test
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
         }
 
-        [Fact(Skip = "Disable because breaking the signed build")]
+        [Fact]
         public async Task TestFolderNuGetProjectGetInstalledPackageFilePath()
         {
             // Arrange
@@ -114,7 +114,7 @@ namespace ProjectManagement.Test
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestSourcePath, randomTestDestinationPath);
         }
 
-        [Fact(Skip = "Disable because breaking the signed build")]
+        [Fact]
         public async Task TestFolderNuGetProjectGetInstalledPackageDirectoryPath()
         {
             // Arrange
@@ -156,7 +156,7 @@ namespace ProjectManagement.Test
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestSourcePath, randomTestDestinationPath);
         }
 
-        [Fact(Skip = "Disable because breaking the signed build")]
+        [Fact]
         public async Task TestFolderNuGetProjectPackageExists()
         {
             // Arrange
@@ -196,7 +196,7 @@ namespace ProjectManagement.Test
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestSourcePath, randomTestDestinationPath);
         }
 
-        [Fact(Skip = "Disable because breaking the signed build")]
+        [Fact]
         public async Task TestFolderNuGetProjectDeletePackage()
         {
             // Arrange
@@ -244,7 +244,7 @@ namespace ProjectManagement.Test
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestSourcePath, randomTestDestinationPath);
         }
 
-        [Fact(Skip = "Disable because breaking the signed build")]
+        [Fact]
         public async Task TestFolderNuGetProjectInstall_SourceControlEnabled()
         {
             // Arrange
@@ -301,7 +301,7 @@ namespace ProjectManagement.Test
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestSourcePath, randomTestDestinationPath);
         }
 
-        [Fact(Skip = "Disable because breaking the signed build")]
+        [Fact]
         public async Task TestFolderNuGetProjectInstall_SourceControlDisabled()
         {
             // Arrange

@@ -248,7 +248,7 @@ namespace ProjectManagement.Test
             Assert.Equal(lockFilePath, result);
         }
 
-        [Fact(Skip = "Disable because breaking the signed build")]
+        [Fact]
         public async Task TestBuildIntegratedNuGetProjectInstallPackage()
         {
             // Arrange
@@ -286,7 +286,7 @@ namespace ProjectManagement.Test
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomProjectFolderPath);
         }
 
-        [Fact(Skip = "Disable because breaking the signed build")]
+        [Fact]
         public async Task TestBuildIntegratedNuGetProjectUninstallPackage()
         {
             // Arrange
@@ -330,7 +330,7 @@ namespace ProjectManagement.Test
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomProjectFolderPath);
         }
 
-        [Fact(Skip = "Disable because breaking the signed build")]
+        [Fact]
         public async Task TestBuildIntegratedNuGetProjectUninstallAllPackages()
         {
             // Arrange

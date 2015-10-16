@@ -15,7 +15,7 @@ namespace NuGet.Packaging.Test
 {
     public class PackageReaderTests : IDisposable
     {
-        [Fact(Skip = "Disable because breaking the signed build")]
+        [Fact]
         public void PackageReader_NuspecCountOne()
         {
             // Arrange
@@ -37,7 +37,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal(5, nuspec.ReadAllBytes().Count());
         }
 
-        [Fact(Skip = "Disable because breaking the signed build")]
+        [Fact]
         public void PackageReader_NuspecCountNested()
         {
             // Arrange
@@ -175,7 +175,7 @@ namespace NuGet.Packaging.Test
             Assert.True(threwPackagingException);
         }
 
-        [Fact(Skip = "Disable because breaking the signed build")]
+        [Fact]
         public void PackageReader_NuspecCountEscapingInName()
         {
             // Arrange

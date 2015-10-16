@@ -116,6 +116,17 @@ function BuildXproj()
 
     if ($SkipTests -eq $False)
     {
+        # Test assemblies should not be signed
+        if (Test-Path Env:\DNX_BUILD_KEY_FILE)
+        {
+            Remove-Item Env:\DNX_BUILD_KEY_FILE
+        }
+
+        if (Test-Path Env:\DNX_BUILD_DELAY_SIGN)
+        {
+            Remove-Item Env:\DNX_BUILD_DELAY_SIGN
+        }
+
         foreach ($file in (Get-ChildItem "test\NuGet.Core.Tests" -rec))
         {
             RestoreXProj($file)
