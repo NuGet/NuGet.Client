@@ -13,6 +13,11 @@ using NuGet.Configuration;
 
 namespace NuGet.CommandLine
 {
+    using Microsoft.Build.Evaluation;
+    using Microsoft.Build.Execution;
+
+    using Console = System.Console;
+
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
     public class ProjectFactory : MSBuildUser, IPropertyProvider
     {
@@ -43,6 +48,7 @@ namespace NuGet.CommandLine
 
         private const string ContentItemType = "Content";
         private const string ProjectReferenceItemType = "ProjectReference";
+        private const string ReferenceOutputAssembly = "ReferenceOutputAssembly";
         private const string PackagesFolder = "packages";
         private const string TransformFileExtension = ".transform";
 
@@ -506,6 +512,11 @@ namespace NuGet.CommandLine
             action(this);
             foreach (var item in _project.GetItems(ProjectReferenceItemType))
             {
+                if (ShouldExcludeItem(item))
+                {
+                    continue;
+                }
+
                 string fullPath = item.GetMetadataValue("FullPath");
                 if (!string.IsNullOrEmpty(fullPath) &&
                     !NuspecFileExists(fullPath) &&
@@ -529,6 +540,33 @@ namespace NuGet.CommandLine
                     referencedProject.RecursivelyApply(action, alreadyAppliedProjects);
                 }
             }
+        }
+
+        /// <summary>
+        /// Should the project item be excluded based on the Reference output assembly metadata
+        /// </summary>
+        /// <param name="item">Dynamic item which is a project item</param>
+        /// <returns>true, if the item should be excluded. false, otherwise.</returns>
+        private static bool ShouldExcludeItem(dynamic item)
+        {
+            if (item == null)
+            {
+                return true;
+            }
+
+            if (item.HasMetadata(ReferenceOutputAssembly))
+            {
+                bool result;
+                if (bool.TryParse(item.GetMetadataValue("ReferenceOutputAssembly"), out result))
+                {
+                    if (!result)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -562,6 +600,11 @@ namespace NuGet.CommandLine
 
                     foreach (var projectReference in project.GetItems(ProjectReferenceItemType))
                     {
+                        if (ShouldExcludeItem(projectReference))
+                        {
+                            continue;
+                        }
+
                         string fullPath = projectReference.GetMetadataValue("FullPath");
                         if (string.IsNullOrEmpty(fullPath) ||
                             processedProjects.Contains(fullPath))
