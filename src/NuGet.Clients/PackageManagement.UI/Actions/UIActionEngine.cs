@@ -87,6 +87,17 @@ namespace NuGet.PackageManagement.UI
                     uiService.RefreshPackageStatus();
                 }
             }
+            catch (System.Net.Http.HttpRequestException ex)
+            {
+                if (ex.InnerException != null)
+                {
+                    uiService.ShowError(ex.InnerException);
+                }
+                else
+                {
+                    uiService.ShowError(ex);
+                }
+            }
             catch (Exception ex)
             {
                 uiService.ShowError(ex);

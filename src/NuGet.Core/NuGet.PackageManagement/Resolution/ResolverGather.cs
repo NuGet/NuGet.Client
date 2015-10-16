@@ -70,7 +70,6 @@ namespace NuGet.PackageManagement
             CancellationToken token)
         {
             var engine = new ResolverGather(context);
-
             return await engine.GatherAsync(token);
         }
 
@@ -161,7 +160,7 @@ namespace NuGet.PackageManagement
                     var closureIds = GetClosure(currentResults, installedInfo, _idsSearched);
 
                     // Find all ids in the closure that have not been gathered
-                   var missingIds = closureIds.Except(_idsSearched, StringComparer.OrdinalIgnoreCase);
+                    var missingIds = closureIds.Except(_idsSearched, StringComparer.OrdinalIgnoreCase);
 
                     // Gather packages for all missing ids
                     foreach (var missingId in missingIds)
@@ -186,12 +185,23 @@ namespace NuGet.PackageManagement
                 combinedResults.UnionWith(result.Packages);
             }
 
+            List<String> allPrimarySourcesList = new List<string>();
+            foreach (var src in _primaryResources)
+            {
+                allPrimarySourcesList.Add(src.Source.PackageSource.Source);
+            }
+
+            var allPrimarySources = String.Join(",", allPrimarySourcesList);
+
             // Throw if a primary target was not found
+            // The primary package may be missing if there are network issues and the sources were unreachable
             foreach (var targetId in allPrimaryTargets)
             {
                 if (!combinedResults.Any(package => string.Equals(package.Id, targetId, StringComparison.OrdinalIgnoreCase)))
                 {
-                    throw new InvalidOperationException(string.Format(Strings.PackageNotFound, targetId));
+                    string message = String.Format(Strings.PackageNotFoundInPrimarySources, targetId, allPrimarySources);
+                    _context.ProjectContext.Log(ProjectManagement.MessageLevel.Error, message);
+                    throw new InvalidOperationException(message);
                 }
             }
 
@@ -379,6 +389,7 @@ namespace NuGet.PackageManagement
                         linkedTokenSource.CancelAfter(RequestTimeout);
 
                         // Gather packages from source if it was not in the cache
+
                         packages = await GatherPackageFromSourceAsync(
                             request.Package.Id,
                             request.Package.Version,
@@ -407,12 +418,25 @@ namespace NuGet.PackageManagement
                                     packages);
                             }
                         }
+
                     }
                 }
-                catch (OperationCanceledException)
+                catch (TaskCanceledException ex)
                 {
-                    // Ignore timeouts
+                    if (!ex.CancellationToken.IsCancellationRequested)
+                    {
+                        string message = String.Format(Strings.UnableToGatherPackageFromSource, request.Package.Id, request.Source.Source.PackageSource.Source);
+                        _context.ProjectContext.Log(ProjectManagement.MessageLevel.Error, message);
+                        throw new InvalidOperationException(message);
+                    }
                 }
+                catch (Exception ex) when (ex is System.Net.Http.HttpRequestException || ex is OperationCanceledException || ex is TaskCanceledException)
+                {
+                    string message = String.Format(Strings.UnableToGatherPackageFromSource, request.Package.Id, request.Source.Source.PackageSource.Source);
+                    _context.ProjectContext.Log(ProjectManagement.MessageLevel.Error, message);
+                    throw new InvalidOperationException(message);
+                }
+
             }
 
             return new GatherResult(request, packages);
@@ -502,69 +526,84 @@ namespace NuGet.PackageManagement
 
         private async Task InitializeResourcesAsync(CancellationToken token)
         {
-            // get the dependency info resources for each repo
-            // primary and all may share the same resources
-            var getResourceTasks = new List<Task>();
-
-            var allSources = new List<SourceRepository>();
-
-            allSources.AddRange(_context.PrimarySources);
-            allSources.Add(_context.PackagesFolderSource);
-            allSources.AddRange(_context.AllSources);
-
-            var depResources = new Dictionary<SourceRepository, Task<DependencyInfoResource>>();
-            foreach (var source in allSources)
+            var currentSource = string.Empty;
+            try
             {
-                if (!depResources.ContainsKey(source))
+                // get the dependency info resources for each repo
+                // primary and all may share the same resources
+                var getResourceTasks = new List<Task>();
+
+                var allSources = new List<SourceRepository>();
+
+                allSources.AddRange(_context.PrimarySources);
+                allSources.Add(_context.PackagesFolderSource);
+                allSources.AddRange(_context.AllSources);
+
+                var depResources = new Dictionary<SourceRepository, Task<DependencyInfoResource>>();
+                foreach (var source in allSources)
                 {
-                    var task = Task.Run(async () => await source.GetResourceAsync<DependencyInfoResource>(token));
-
-                    depResources.Add(source, task);
-
-                    // Limit the number of tasks to MaxThreads by awaiting each time we hit the limit
-                    while (getResourceTasks.Count >= MaxDegreeOfParallelism)
+                    if (!depResources.ContainsKey(source))
                     {
-                        var finishedTask = await Task.WhenAny(getResourceTasks);
+                        var task = Task.Run(async () => await source.GetResourceAsync<DependencyInfoResource>(token));
 
-                        getResourceTasks.Remove(finishedTask);
+                        depResources.Add(source, task);
+
+                        // Limit the number of tasks to MaxThreads by awaiting each time we hit the limit
+                        while (getResourceTasks.Count >= MaxDegreeOfParallelism)
+                        {
+                            var finishedTask = await Task.WhenAny(getResourceTasks);
+
+                            getResourceTasks.Remove(finishedTask);
+                        }
                     }
                 }
-            }
 
-            var uniquePrimarySources = new HashSet<Configuration.PackageSource>();
+                var uniquePrimarySources = new HashSet<Configuration.PackageSource>();
 
-            // a resource may be null, if it is exclude this source from the gather
-            foreach (var source in _context.PrimarySources)
-            {
-                if (uniquePrimarySources.Add(source.PackageSource))
+                // a resource may be null, if it is exclude this source from the gather
+                foreach (var source in _context.PrimarySources)
                 {
-                    var resource = await depResources[source];
-
-                    if (source != null && !_primaryResources.Any(sourceResource => sourceResource.Source.PackageSource.Equals(source)))
+                    if (uniquePrimarySources.Add(source.PackageSource))
                     {
-                        _primaryResources.Add(new SourceResource(source, resource));
+                        var resource = await depResources[source];
+
+                        if (source != null && !_primaryResources.Any(sourceResource => sourceResource.Source.PackageSource.Equals(source)))
+                        {
+                            _primaryResources.Add(new SourceResource(source, resource));
+                        }
                     }
                 }
-            }
 
-            // All sources - for fallback
-            var uniqueAllSources = new HashSet<Configuration.PackageSource>();
+                // All sources - for fallback
+                var uniqueAllSources = new HashSet<Configuration.PackageSource>();
 
-            foreach (var source in allSources)
-            {
-                if (uniqueAllSources.Add(source.PackageSource))
+                foreach (var source in allSources)
                 {
-                    var resource = await depResources[source];
-
-                    if (source != null && !_allResources.Any(sourceResource => sourceResource.Source.PackageSource.Equals(source)))
+                    if (uniqueAllSources.Add(source.PackageSource))
                     {
-                        _allResources.Add(new SourceResource(source, resource));
+                        //var resource = await depResources[source];
+                        var resource = depResources[source];
+
+                        if (source != null && !_allResources.Any(sourceResource => sourceResource.Source.PackageSource.Equals(source)))
+                        {
+                            currentSource = source.PackageSource.Source;
+                            _allResources.Add(new SourceResource(source, resource.Result));
+                        }
                     }
                 }
+
+
+                // Installed packages resource
+                _packagesFolderResource = await _context.PackagesFolderSource.GetResourceAsync<DependencyInfoResource>(token);
+            }
+            catch (Exception ex) when (ex is System.Net.Http.HttpRequestException || ex is OperationCanceledException ||
+                                       ex is InvalidOperationException || ex is TaskCanceledException || ex is AggregateException)
+            {
+                string message = String.Format(Strings.ExceptionWhenTryingToAddSource, ex.GetType().ToString(), currentSource);
+                _context.ProjectContext.Log(ProjectManagement.MessageLevel.Warning, message);
+                throw new InvalidOperationException(message);
             }
 
-            // Installed packages resource
-            _packagesFolderResource = await _context.PackagesFolderSource.GetResourceAsync<DependencyInfoResource>(token);
         }
 
         /// <summary>

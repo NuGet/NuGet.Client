@@ -492,5 +492,38 @@ namespace NuGet.PackageManagement {
                 return ResourceManager.GetString("Warning_RollingBack", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string for ExceptionWhenTryingToAddSource
+        /// </summary>
+        internal static string ExceptionWhenTryingToAddSource
+        {
+            get
+            {
+                return ResourceManager.GetString("ExceptionWhenTryingToAddSource", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string for UnableToGatherPackageFromSource
+        /// </summary>
+        internal static string UnableToGatherPackageFromSource
+        {
+            get
+            {
+                return ResourceManager.GetString("UnableToGatherPackageFromSource", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string for PackageNotFoundInPrimarySources
+        /// </summary>
+        internal static string PackageNotFoundInPrimarySources
+        {
+            get
+            {
+                return ResourceManager.GetString("PackageNotFoundInPrimarySources", resourceCulture);
+            }
+        }
     }
 }
