@@ -26,13 +26,22 @@ namespace NuGet.Protocol.Core.v3
             }
 
             var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
-            var defaultPackagePathResolver = new VersionFolderPathResolver(globalPackagesFolder);
+            var defaultPackagePathResolver = new VersionFolderPathResolver(
+                globalPackagesFolder,
+                normalizePackageId: false);
+
             var hashPath = defaultPackagePathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
 
             if (File.Exists(hashPath))
             {
-                var installPath = defaultPackagePathResolver.GetInstallPath(packageIdentity.Id, packageIdentity.Version);
-                var nupkgPath = defaultPackagePathResolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version);
+                var installPath = defaultPackagePathResolver.GetInstallPath(
+                    packageIdentity.Id,
+                    packageIdentity.Version);
+
+                var nupkgPath = defaultPackagePathResolver.GetPackageFilePath(
+                    packageIdentity.Id,
+                    packageIdentity.Version);
+
                 Stream stream = null;
                 PackageReaderBase packageReader = null;
                 try
@@ -82,14 +91,21 @@ namespace NuGet.Protocol.Core.v3
 
             var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(settings);
 
-            // The following call adds it to the global packages folder. Addition is performed using ConcurrentUtils, such that,
+            // The following call adds it to the global packages folder.
+            // Addition is performed using ConcurrentUtils, such that,
             // multiple processes may add at the same time
-            await NuGetPackageUtils.InstallFromSourceAsync(
-                stream => packageStream.CopyToAsync(stream),
+
+            var versionFolderPathContext = new VersionFolderPathContext(
                 packageIdentity,
                 globalPackagesFolder,
                 NullLogger.Instance,
                 fixNuspecIdCasing: false,
+                extractNuspecOnly: false,
+                normalizeFileNames: false);
+
+            await NuGetPackageUtils.InstallFromSourceAsync(
+                stream => packageStream.CopyToAsync(stream),
+                versionFolderPathContext,
                 token: token);
 
             var package = GetPackage(packageIdentity, settings);

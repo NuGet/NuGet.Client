@@ -48,6 +48,7 @@
     <Compile Include="CommandLineSourceRepositoryProvider.cs" />
     <Compile Include="CommandManager.cs" />
     <Compile Include="CommandOutputLogger.cs" />
+    <Compile Include="Commands\AddCommand.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\CommandAttribute.cs" />
     <Compile Include="Commands\ConfigCommand.cs" />
@@ -56,6 +57,7 @@
     <Compile Include="Commands\HelpCommand.cs" />
     <Compile Include="Commands\HelpCommandMarkdownTemplate.cs" />
     <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="Commands\InitCommand.cs" />
     <Compile Include="Commands\InstallCommand.cs" />
     <Compile Include="Commands\ListCommand.cs" />
     <Compile Include="Commands\OptionAttribute.cs" />
@@ -107,6 +109,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>NuGetResources.resx</DependentUpon>
     </Compile>
+    <Compile Include="OfflineFeedAddContext.cs" />
+    <Compile Include="OfflineFeedUtility.cs" />
     <Compile Include="PackageServer.cs" />
     <Compile Include="PackageSourceBuilder.cs" />
     <Compile Include="Program.cs" />

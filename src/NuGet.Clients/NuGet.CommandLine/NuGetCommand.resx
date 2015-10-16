@@ -5245,4 +5245,41 @@ nuget update -Self</value>
   <data name="CommandMSBuildVersion" xml:space="preserve">
     <value>Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild.</value>
   </data>
+  <data name="AddCommandDescription" xml:space="preserve">
+    <value>Adds the given package to a hierarchical source. http sources are not supported. For more info, goto https://docs.nuget.org/consume/command-line-reference#add-command.</value>
+  </data>
+  <data name="AddCommandUsageDescription" xml:space="preserve">
+    <value>Specify the path to the package to be added to the specified file source.</value>
+  </data>
+  <data name="AddCommandUsageExamples" xml:space="preserve">
+    <value>nuget add foo.nupkg  -Source c:\bar\
+
+nuget add foo.nupkg -Source \\bar\packages\</value>
+  </data>
+  <data name="AddCommandUsageSummary" xml:space="preserve">
+    <value>&lt;packagePath&gt; -Source &lt;fileSourceFolder&gt; [options]</value>
+  </data>
+  <data name="AddCommandSourceDescription" xml:space="preserve">
+    <value>Specifies the fileSourceFolder to which the nupkg will be added. http sources are not supported.</value>
+  </data>
+  <data name="InitCommandDescription" xml:space="preserve">
+    <value>Adds all the packages from the &lt;srcFeed&gt; to the hierarchical &lt;destFeed&gt;. http feeds are not supported. For more info, goto https://docs.nuget.org/consume/command-line-reference#init-command.</value>
+  </data>
+  <data name="InitCommandSourceDescription" xml:space="preserve">
+    <value>Specifies the fileSourceFolder. Cannot be an http source.</value>
+  </data>
+  <data name="InitCommandUsageDescription" xml:space="preserve">
+    <value>Specify the path to the feed to be added to the specified destination feed</value>
+  </data>
+  <data name="InitCommandUsageExamples" xml:space="preserve">
+    <value>nuget init c:\foo c:\bar
+
+nuget add \\foo\packages \\bar\packages</value>
+  </data>
+  <data name="InitCommandUsageSummary" xml:space="preserve">
+    <value>&lt;srcFeedPath&gt; &lt;destFeedPath&gt; [options]</value>
+  </data>
+  <data name="ExpandDescription" xml:space="preserve">
+    <value>If provided, a package added to offline feed is also expanded.</value>
+  </data>
 </root>
