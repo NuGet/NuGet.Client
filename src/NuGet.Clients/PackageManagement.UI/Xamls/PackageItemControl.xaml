@@ -153,8 +153,7 @@
                     MinHeight="48">
                     <Grid.RowDefinitions>
                       <RowDefinition Height="Auto" />
-                      <RowDefinition Height="4" />
-                      <RowDefinition Height="32" MaxHeight="32" />
+                      <RowDefinition Height="36" MaxHeight="36" />
                     </Grid.RowDefinitions>
                     <StackPanel
                       Grid.Row="0"
@@ -167,7 +166,6 @@
                         AutomationProperties.AutomationId="id"
                         VerticalAlignment="Top"
                         Text="{Binding Id}" />
-
                       <!-- author and download count -->
                       <TextBlock
                         TextTrimming="CharacterEllipsis"
@@ -183,12 +181,26 @@
                       </TextBlock>
                     </StackPanel>
 
-                    <TextBlock
-                      Grid.Row="2"
-                      Text="{Binding Summary, Converter={StaticResource SummaryToStringConverter}}"
-                      FontStyle="{Binding Summary, Converter={StaticResource SummaryToFontStyleConverter}}"
-                      TextTrimming="CharacterEllipsis"
-                      TextWrapping="Wrap" />
+                    <Grid
+                      Grid.Row="2">
+                      <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="4" />
+                        <RowDefinition Height="*" />
+                      </Grid.RowDefinitions>
+                      <!-- providers -->
+                      <ui:PackageManagerProvidersLabel
+                        Grid.Row="0"
+                        DataContext="{Binding Providers}" />
+
+                      <!-- Summary -->
+                      <TextBlock
+                        Grid.Row="2"
+                        Text="{Binding Summary, Converter={StaticResource SummaryToStringConverter}}"
+                        FontStyle="{Binding Summary, Converter={StaticResource SummaryToFontStyleConverter}}"
+                        TextTrimming="CharacterEllipsis"
+                        TextWrapping="Wrap" />
+                    </Grid>
 
                     <Grid.ToolTip>
                       <TextBlock

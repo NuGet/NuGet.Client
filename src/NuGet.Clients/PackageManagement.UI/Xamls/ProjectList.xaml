@@ -3,6 +3,7 @@
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:local="clr-namespace:NuGet.PackageManagement.UI"
   xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   mc:Ignorable="d"
@@ -71,13 +72,20 @@
           IsTabStop="False">
           <ItemsControl.ItemTemplate>
             <DataTemplate>
-              <CheckBox
-                Content="{Binding Path=DisplayText}"
-                Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
-                Margin="6,4,0,2"
-                VerticalContentAlignment="Center"
-                IsChecked="{Binding Path=Selected}"
-                IsEnabled="{Binding Path=Enabled}" />
+              <StackPanel Orientation="Horizontal">
+                <CheckBox
+                  Content="{Binding Path=DisplayText}"
+                  VerticalAlignment="Center"
+                  Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
+                  Margin="6,4,0,2"
+                  VerticalContentAlignment="Center"
+                  IsChecked="{Binding Path=Selected}"
+                  IsEnabled="{Binding Path=Enabled}" />
+                <local:PackageManagerProvidersLabel
+                  VerticalAlignment="Center"
+                  Margin="4,0,0,0"
+                  DataContext="{Binding Providers}" />
+              </StackPanel>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>

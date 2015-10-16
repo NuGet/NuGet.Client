@@ -13,6 +13,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
 using Mvs = Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.UI
@@ -42,10 +43,13 @@ namespace NuGet.PackageManagement.UI
         // The list of packages that have updates available
         private List<UISearchMetadata> _packagesWithUpdates;
 
+        private IEnumerable<IVsPackageManagerProvider> _packageManagerProviders;
+
         public PackageLoader(PackageLoaderOption option,
             bool isSolution,
             NuGetPackageManager packageManager,
             IEnumerable<NuGetProject> projects,
+            IEnumerable<IVsPackageManagerProvider> providers,
             SourceRepository sourceRepository,
             string searchText)
         {
@@ -53,6 +57,7 @@ namespace NuGet.PackageManagement.UI
             _isSolution = isSolution;
             _packageManager = packageManager;
             _projects = projects.ToArray();
+            _packageManagerProviders = providers;
             _option = option;
             _searchText = searchText;
 
@@ -574,6 +579,15 @@ namespace NuGet.PackageManagement.UI
                 searchResultPackage.BackgroundLoader = new Lazy<Task<BackgroundLoaderResult>>(
                     () => BackgroundLoad(searchResultPackage, versionList));
 
+                if (!_isSolution && _packageManagerProviders.Any())
+                {
+                    searchResultPackage.ProvidersLoader = new Lazy<Task<AlternativePackageManagerProviders>>(
+                        () => AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(
+                            _packageManagerProviders,
+                            searchResultPackage.Id, 
+                            _projects[0]));
+                }
+
                 // filter out prerelease version when needed.
                 if (searchResultPackage.Version.IsPrerelease &&
                     !_option.IncludePrerelease)
@@ -640,7 +654,7 @@ namespace NuGet.PackageManagement.UI
                 return new BackgroundLoaderResult()
                 {
                     LatestVersion = null,
-                    InstalledVersion = lowestInstalled.Version,                    
+                    InstalledVersion = lowestInstalled.Version,
                     Status = PackageStatus.Installed
                 };
             }

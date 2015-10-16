@@ -64,7 +64,8 @@ namespace NuGet.PackageManagement.UI
             {
                 _detailModel = new PackageSolutionDetailControlModel(
                     Model.Context.SolutionManager,
-                    Model.Context.Projects);
+                    Model.Context.Projects,
+                    Model.Context.PackageManagerProviders);
             }
 
             InitializeComponent();
@@ -516,6 +517,7 @@ namespace NuGet.PackageManagement.UI
                         Model.IsSolution,
                         Model.Context.PackageManager,
                         Model.Context.Projects,
+                        Model.Context.PackageManagerProviders,
                         ActiveSource,
                         searchText);
                     await loader.InitializeAsync();
@@ -533,6 +535,7 @@ namespace NuGet.PackageManagement.UI
                     Model.IsSolution,
                     Model.Context.PackageManager,
                     Model.Context.Projects,
+                    Model.Context.PackageManagerProviders,
                     ActiveSource,
                     String.Empty);
                 await updatesLoader.InitializeAsync();

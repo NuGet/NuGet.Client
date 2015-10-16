@@ -4,13 +4,14 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
+using System.Threading.Tasks;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
 {
     // This class is used to represent one of the following facts about a package:
-    // - A version of the package is installed. In this case, property Version is not null. 
+    // - A version of the package is installed. In this case, property Version is not null.
     //   Property IsSolution indicates if the package is installed in the solution or in a project.
     // - The package is not installed in a project/solution. In this case, property Version is null.
     public class PackageInstallationInfo : IComparable<PackageInstallationInfo>,
@@ -77,6 +78,21 @@ namespace NuGet.PackageManagement.UI
             Enabled = enabled;
 
             UpdateDisplayText();
+        }
+
+        private AlternativePackageManagerProviders _providers;
+        public AlternativePackageManagerProviders Providers
+        {
+            get
+            {
+                return _providers;
+            }
+
+            set
+            {
+                _providers = value;
+                OnPropertyChanged(nameof(Providers));
+            }
         }
 
         private string _displayText;
