@@ -849,28 +849,34 @@ namespace NuGet.PackageManagement
         private static HashSet<string> GetDependenciesForReinstall(PackageIdentity packageIdentity, IEnumerable<PackageIdentity> newListOfInstalledPackages, IEnumerable<SourcePackageDependencyInfo> available)
         {
             var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            CollectDependencies(result, packageIdentity.Id, newListOfInstalledPackages, available);
+            CollectDependencies(result, packageIdentity.Id, newListOfInstalledPackages, available, 0);
             return result;
         }
 
         /// <summary>
         /// A walk through the dependencies to collect the additional package identities that are involved in the current set of packages to be installed
         /// </summary>
-        private static void CollectDependencies(HashSet<string> result, string id, IEnumerable<PackageIdentity> packages, IEnumerable<SourcePackageDependencyInfo> available)
+        private static void CollectDependencies(HashSet<string> result, string id, IEnumerable<PackageIdentity> packages, IEnumerable<SourcePackageDependencyInfo> available, int depth)
         {
             result.Add(id);
 
             // we want the exact PackageIdentity for this id
-            PackageIdentity packageIdentity = packages.First(p => p.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+            var packageIdentity = packages.First(p => p.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
 
-            // now look up the depdnencies of this exact package identity
-            var sourceDepInfo = available
-                .Where(p => PackageComparer.Equals(p, packageIdentity))
-                .SingleOrDefault();
+            // now look up the dependencies of this exact package identity
+            var sourceDepInfo = available.SingleOrDefault(p => PackageComparer.Equals(p, packageIdentity));
 
-            foreach (var dependency in sourceDepInfo.Dependencies)
+            // the package should always be found in the available packages - but better to check
+            if (sourceDepInfo != null)
             {
-                CollectDependencies(result, dependency.Id, packages, available);
+                foreach (var dependency in sourceDepInfo.Dependencies)
+                {
+                    // check we don't fall into an infinite loop caused by bad dependency data in the packages 
+                    if (depth < packages.Count())
+                    {
+                        CollectDependencies(result, dependency.Id, packages, available, depth + 1);
+                    }
+                }
             }
         }
 
