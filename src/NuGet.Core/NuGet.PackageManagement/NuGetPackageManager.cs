@@ -879,8 +879,7 @@ namespace NuGet.PackageManagement
                         AllSources = effectiveSources.ToList(),
                         PackagesFolderSource = PackagesFolderSourceRepository,
                         ResolutionContext = resolutionContext,
-                        AllowDowngrades = downgradeAllowed,
-                        ProjectContext = nuGetProjectContext
+                        AllowDowngrades = downgradeAllowed
                     };
 
                     var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherAsync(gatherContext, token);
