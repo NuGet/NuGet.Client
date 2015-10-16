@@ -1519,8 +1519,8 @@ namespace NuGet.Test
 
             Assert.NotNull(exception);
             Assert.True(exception is InvalidOperationException);
-            Assert.Equal("Package 'DoesNotExist' is not found", exception.Message);
-
+            Assert.Contains("Package 'DoesNotExist' is not found", exception.Message);
+            
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory);
         }
