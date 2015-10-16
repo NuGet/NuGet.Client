@@ -199,6 +199,8 @@ namespace Test.Utility
         public void DeleteDirectory(string path, bool recursive)
         {
             // no-op
+            var fullPath = Path.Combine(ProjectFullPath, path);
+            Directory.Delete(fullPath, recursive: false);
         }
 
         public IEnumerable<string> GetFiles(string path, string filter, bool recursive)
