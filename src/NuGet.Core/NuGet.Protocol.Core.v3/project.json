@@ -21,7 +21,7 @@
     "NuGet.Logging": "3.3.0-*",
     "NuGet.Packaging": "3.3.0-*",
     "NuGet.Protocol.Core.Types": "3.3.0-*",
-    "Newtonsoft.Json": "6.0.6"
+    "Newtonsoft.Json": "6.0.4"
   },
   "frameworks": {
     "net45": {

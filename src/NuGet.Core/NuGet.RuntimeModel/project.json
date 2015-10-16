@@ -4,7 +4,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Newtonsoft.Json": "6.0.6",
+    "Newtonsoft.Json": "6.0.4",
     "NuGet.Common": {
       "type": "build",
       "version": "3.3.0-*"
