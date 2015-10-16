@@ -646,6 +646,24 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Incompatible: Use {0} instead.
+        /// </summary>
+        public static string Label_UseInstead {
+            get {
+                return ResourceManager.GetString("Label_UseInstead", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to [Incompatible: Use {0} instead].
+        /// </summary>
+        public static string Label_UseInsteadInSolutionPackageManager {
+            get {
+                return ResourceManager.GetString("Label_UseInsteadInSolutionPackageManager", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Version:.
         /// </summary>
         public static string Label_Version {
