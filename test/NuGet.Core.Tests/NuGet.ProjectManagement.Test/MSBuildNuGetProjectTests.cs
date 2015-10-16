@@ -398,7 +398,7 @@ namespace ProjectManagement.Test
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomProjectFolderPath);
         }
 
-        [Fact(Skip = "Broken after enabling")]
+        [Fact]
         public async Task TestMSBuildNuGetProjectUninstallContentFiles()
         {
             // Arrange
@@ -1368,7 +1368,7 @@ namespace ProjectManagement.Test
             TestFilesystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
         }
 
-        [Fact(Skip = "Broken after enabling")]
+        [Fact]
         public async Task TestMSBuildNuGetProjectInstallUninstallEscapedCharactersFiles()
         {
             // Arrange
