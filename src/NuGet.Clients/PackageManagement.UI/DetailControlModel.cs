@@ -61,9 +61,14 @@ namespace NuGet.PackageManagement.UI
             OnPropertyChanged("IconUrl");
 
             var versions = await searchResultPackage.Versions.Value;
-
+                        
             _allPackageVersions = versions.Select(v => v.Version).ToList();
             CreateActions();
+            OnCurrentPackageChanged();
+        }
+
+        protected virtual void OnCurrentPackageChanged()
+        {
         }
 
         /// <summary>

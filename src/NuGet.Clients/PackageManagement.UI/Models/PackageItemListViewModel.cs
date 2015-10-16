@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
+using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -185,6 +186,58 @@ namespace NuGet.PackageManagement.UI
                 {
                     OnPropertyChanged(nameof(Status));
                 }
+            }
+        }
+
+
+        private bool _providersLoaderStarted;
+
+        private OtherPackageManagerProviders _providers;
+        public OtherPackageManagerProviders Providers
+        {
+            get
+            {
+                if (!_providersLoaderStarted && ProvidersLoader != null)
+                {
+                    _providersLoaderStarted = true;
+                    Task.Run(async () =>
+                    {
+                        var result = await ProvidersLoader.Value;
+                        
+                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                        Providers = result;
+                    });
+                }
+
+                return _providers;
+            }
+
+            private set
+            {
+                _providers = value;
+                OnPropertyChanged(nameof(Providers));
+            }
+        }
+
+
+        private Lazy<Task<OtherPackageManagerProviders>> _providersLoader;
+        internal Lazy<Task<OtherPackageManagerProviders>> ProvidersLoader
+        {
+            get
+            {
+                return _providersLoader;
+            }
+
+            set
+            {
+                if (_providersLoader != value)
+                {
+                    _providersLoaderStarted = false;
+                }
+
+                _providersLoader = value;
+                OnPropertyChanged(nameof(Providers));
             }
         }
 

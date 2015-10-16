@@ -112,6 +112,7 @@
     <Compile Include="LoadingStatusIndicator.cs" />
     <Compile Include="LoadResult.cs" />
     <Compile Include="Models\BackgroundLoaderResult.cs" />
+    <Compile Include="Models\OtherPackageManagerProviders.cs" />
     <Compile Include="Models\PackageItemListViewModel.cs" />
     <Compile Include="Models\PackageStatus.cs" />
     <Compile Include="Models\SearchResult.cs" />
@@ -159,6 +160,9 @@
     <Compile Include="VsDialogWindow.cs" />
     <Compile Include="Xamls\ActionsAndVersions.xaml.cs">
       <DependentUpon>ActionsAndVersions.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\PackageManagerProvidersLabel.xaml.cs">
+      <DependentUpon>PackageManagerProvidersLabel.xaml</DependentUpon>
     </Compile>
     <Compile Include="Xamls\UninstallButton.xaml.cs">
       <DependentUpon>UninstallButton.xaml</DependentUpon>
@@ -231,6 +235,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Xamls\ActionsAndVersions.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\PackageManagerProvidersLabel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

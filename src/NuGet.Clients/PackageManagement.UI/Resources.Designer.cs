@@ -421,6 +421,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to [Consider using {0} instead].
+        /// </summary>
+        public static string Label_ConsiderUsing {
+            get {
+                return ResourceManager.GetString("Label_ConsiderUsing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Date published:.
         /// </summary>
         public static string Label_DatePublished {
