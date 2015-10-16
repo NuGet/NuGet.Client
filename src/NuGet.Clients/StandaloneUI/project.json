@@ -1,7 +1,7 @@
 ﻿{
   "dependencies": {
     "Microsoft.Web.Xdt": "2.1.1",
-    "Newtonsoft.Json": "6.0.6",
+    "Newtonsoft.Json": "6.0.4",
     "NuGet.Protocol.VisualStudio": "3.3.0-*",
     "NuGet.ProjectManagement": "3.3.0-*",
     "NuGet.PackageManagement": "3.3.0-*",
