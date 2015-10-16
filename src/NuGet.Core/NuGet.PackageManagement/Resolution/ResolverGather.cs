@@ -200,7 +200,7 @@ namespace NuGet.PackageManagement
                 if (!combinedResults.Any(package => string.Equals(package.Id, targetId, StringComparison.OrdinalIgnoreCase)))
                 {
                     string message = String.Format(Strings.PackageNotFoundInPrimarySources, targetId, allPrimarySources);
-                    _context.ProjectContext.Log(ProjectManagement.MessageLevel.Error, message);
+                    //_context.ProjectContext.Log(ProjectManagement.MessageLevel.Error, message);
                     throw new InvalidOperationException(message);
                 }
             }
@@ -426,14 +426,14 @@ namespace NuGet.PackageManagement
                     if (!ex.CancellationToken.IsCancellationRequested)
                     {
                         string message = String.Format(Strings.UnableToGatherPackageFromSource, request.Package.Id, request.Source.Source.PackageSource.Source);
-                        _context.ProjectContext.Log(ProjectManagement.MessageLevel.Error, message);
+                        //_context.ProjectContext.Log(ProjectManagement.MessageLevel.Error, message);
                         throw new InvalidOperationException(message);
                     }
                 }
                 catch (Exception ex) when (ex is System.Net.Http.HttpRequestException || ex is OperationCanceledException || ex is TaskCanceledException)
                 {
                     string message = String.Format(Strings.UnableToGatherPackageFromSource, request.Package.Id, request.Source.Source.PackageSource.Source);
-                    _context.ProjectContext.Log(ProjectManagement.MessageLevel.Error, message);
+                    //_context.ProjectContext.Log(ProjectManagement.MessageLevel.Error, message);
                     throw new InvalidOperationException(message);
                 }
 
@@ -600,7 +600,7 @@ namespace NuGet.PackageManagement
                                        ex is InvalidOperationException || ex is TaskCanceledException || ex is AggregateException)
             {
                 string message = String.Format(Strings.ExceptionWhenTryingToAddSource, ex.GetType().ToString(), currentSource);
-                _context.ProjectContext.Log(ProjectManagement.MessageLevel.Warning, message);
+                //_context.ProjectContext.Log(ProjectManagement.MessageLevel.Warning, message);
                 throw new InvalidOperationException(message);
             }
 
