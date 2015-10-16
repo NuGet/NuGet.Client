@@ -579,10 +579,17 @@ namespace NuGet.PackageManagement
             // We have just been given the package id, in which case we will look for the highest version and attempt to move to that
             else if (packageId != null)
             {
-                primaryTargetIds = new[] { packageId };
+                if (PrunePackageTree.IsExactVersion(resolutionContext.VersionConstraints))
+                {
+                    primaryTargets = new[] { preferredVersions[packageId] };
+                }
+                else
+                {
+                    primaryTargetIds = new[] { packageId };
 
-                // If we have been given just a package Id we certainly don't want the one installed - pruning will be significant
-                preferredVersions.Remove(packageId);
+                    // If we have been given just a package Id we certainly don't want the one installed - pruning will be significant
+                    preferredVersions.Remove(packageId);
+                }
             }
             // We are apply update logic to the complete project - attempting to resolver all updates together
             else
@@ -726,7 +733,7 @@ namespace NuGet.PackageManagement
 
                 var installedPackagesInDependencyOrder = await GetInstalledPackagesInDependencyOrder(nuGetProject, token);
 
-                nuGetProjectActions = GetProjectActionsForUpdate(newListOfInstalledPackages, installedPackagesInDependencyOrder, prunedAvailablePackages, nuGetProjectContext, force);
+                nuGetProjectActions = GetProjectActionsForUpdate(newListOfInstalledPackages, installedPackagesInDependencyOrder, prunedAvailablePackages, nuGetProjectContext, force, primaryTargets.FirstOrDefault());
 
                 if (nuGetProjectActions.Count == 0)
                 {
@@ -785,7 +792,8 @@ namespace NuGet.PackageManagement
             IEnumerable<PackageIdentity> oldListOfInstalledPackages,
             IEnumerable<SourcePackageDependencyInfo> availablePackageDependencyInfoWithSourceSet,
             INuGetProjectContext nuGetProjectContext,
-            bool forceReinstall)
+            bool forceReinstall,
+            PackageIdentity primaryTarget)
         {
             // Step-3 : Get the list of nuGetProjectActions to perform, install/uninstall on the nugetproject
             // based on newPackages obtained in Step-2 and project.GetInstalledPackages
@@ -795,6 +803,15 @@ namespace NuGet.PackageManagement
             // we are reinstalling everything so we just take the ordering directly from the Resolver
             var newPackagesToUninstall = oldListOfInstalledPackages;
             var newPackagesToInstall = newListOfInstalledPackages;
+
+            // we are doing a reinstall of a specific package - we will also want to generate Project Actions for the dependencies
+            if (forceReinstall && primaryTarget != null)
+            {
+                var packageIdsToReinstall = GetDependenciesForReinstall(primaryTarget, newListOfInstalledPackages, availablePackageDependencyInfoWithSourceSet);
+
+                newPackagesToUninstall = oldListOfInstalledPackages.Where(p => packageIdsToReinstall.Contains(p.Id));
+                newPackagesToInstall = newListOfInstalledPackages.Where(p => packageIdsToReinstall.Contains(p.Id));
+            }
 
             if (!forceReinstall)
             {
@@ -824,6 +841,43 @@ namespace NuGet.PackageManagement
             }
 
             return nuGetProjectActions;
+        }
+
+        /// <summary>
+        /// Filter down the reinstall list to just the ones we need to reinstall (i.e. the dependencies)
+        /// </summary>
+        private static HashSet<string> GetDependenciesForReinstall(PackageIdentity packageIdentity, IEnumerable<PackageIdentity> newListOfInstalledPackages, IEnumerable<SourcePackageDependencyInfo> available)
+        {
+            var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            CollectDependencies(result, packageIdentity.Id, newListOfInstalledPackages, available, 0);
+            return result;
+        }
+
+        /// <summary>
+        /// A walk through the dependencies to collect the additional package identities that are involved in the current set of packages to be installed
+        /// </summary>
+        private static void CollectDependencies(HashSet<string> result, string id, IEnumerable<PackageIdentity> packages, IEnumerable<SourcePackageDependencyInfo> available, int depth)
+        {
+            result.Add(id);
+
+            // we want the exact PackageIdentity for this id
+            var packageIdentity = packages.First(p => p.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
+
+            // now look up the dependencies of this exact package identity
+            var sourceDepInfo = available.SingleOrDefault(p => PackageComparer.Equals(p, packageIdentity));
+
+            // the package should always be found in the available packages - but better to check
+            if (sourceDepInfo != null)
+            {
+                foreach (var dependency in sourceDepInfo.Dependencies)
+                {
+                    // check we don't fall into an infinite loop caused by bad dependency data in the packages 
+                    if (depth < packages.Count())
+                    {
+                        CollectDependencies(result, dependency.Id, packages, available, depth + 1);
+                    }
+                }
+            }
         }
 
         /// <summary>
