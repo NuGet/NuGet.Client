@@ -80,24 +80,47 @@ namespace NuGet.CommandLine
                                     restoreInputs,
                                     globalPackagesFolder);
 
-                var v3RestoreTasks = new List<Task<bool>>();
-                foreach (var file in restoreInputs.V3RestoreFiles)
+
+                if (DisableParallelProcessing)
                 {
-                    if (DisableParallelProcessing)
+                    foreach (var file in restoreInputs.V3RestoreFiles)
                     {
                         var v3RestoreResult = await PerformNuGetV3RestoreAsync(packagesDir, file);
                         success &= v3RestoreResult;
                     }
-                    else
-                    {
-                        v3RestoreTasks.Add(PerformNuGetV3RestoreAsync(packagesDir, file));
-                    }
                 }
-
-                if (v3RestoreTasks.Count > 0)
+                else
                 {
-                    var results = await Task.WhenAll(v3RestoreTasks);
-                    success &= results.All(r => r);
+                    // Throttle the tasks so no more than 16 run at a time, so memory doesn't accumulate.
+                    // This should make large project (over 100 project.json files) allocate reasonable
+                    // amounts of memory.
+
+                    var tasks = new List<Task<bool>>();
+                    int restoreCount = restoreInputs.V3RestoreFiles.Count;
+
+                    int currentFileIndex = 0;
+
+                    do
+                    {
+                        Debug.Assert(tasks.Count < 16);
+
+                        // Fill with 16 tasks upfront, then add one by one as they get completed.
+                        int newTasks = 16 - tasks.Count;
+
+                        for (int i = 0; currentFileIndex < restoreCount && i < newTasks; i++, currentFileIndex++)
+                        {
+                            var file = restoreInputs.V3RestoreFiles[currentFileIndex];
+                            var newTask = PerformNuGetV3RestoreAsync(packagesDir, file);
+
+                            tasks.Add(newTask);
+                        }
+
+                        var task = await Task.WhenAny(tasks);
+
+                        success &= task.Result;
+                        tasks.Remove(task);
+                    }
+                    while (tasks.Count > 0);
                 }
             }
 
@@ -179,7 +202,7 @@ namespace NuGet.CommandLine
                 // For known project types that support the msbuild p2p reference task find all project references.
                 if (MsBuildUtility.IsMsBuildBasedProject(inputPath))
                 {
-                    // Restore a .csproj or other msbuild project file using the 
+                    // Restore a .csproj or other msbuild project file using the
                     // file name without the extension as the Id
                     externalProjects = MsBuildUtility.GetProjectReferences(_msbuildDirectory, inputPath);
                 }
@@ -204,11 +227,11 @@ namespace NuGet.CommandLine
 
                 Console.LogVerbose($"Using packages directory: {packagesDir}");
 
-            // Convert package sources to repositories
-            var sourceProvider = GetSourceRepositoryProvider();
-            var repositories = GetPackageSources(Settings).Select(source => sourceProvider.CreateRepository(source));
+                // Convert package sources to repositories
+                var sourceProvider = GetSourceRepositoryProvider();
+                var repositories = GetPackageSources(Settings).Select(source => sourceProvider.CreateRepository(source));
 
-            // Create a restore request
+                // Create a restore request
                 var request = new RestoreRequest(
                     packageSpec,
                    repositories,
@@ -541,10 +564,10 @@ namespace NuGet.CommandLine
         }
 
         /// <summary>
-        /// Gets the solution file, in full path format. If <paramref name="solutionFileOrDirectory"/> is a file, 
+        /// Gets the solution file, in full path format. If <paramref name="solutionFileOrDirectory"/> is a file,
         /// that file is returned. Otherwise, searches for a *.sln file in
-        /// directory <paramref name="solutionFileOrDirectory"/>. If exactly one sln file is found, 
-        /// that file is returned. If multiple sln files are found, an exception is thrown. 
+        /// directory <paramref name="solutionFileOrDirectory"/>. If exactly one sln file is found,
+        /// that file is returned. If multiple sln files are found, an exception is thrown.
         /// If no sln files are found, returns null.
         /// </summary>
         /// <param name="solutionFileOrDirectory">The solution file or directory to search for solution files.</param>
