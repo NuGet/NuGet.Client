@@ -2846,11 +2846,12 @@ namespace NuGet.Test
             Assert.Equal(0, msBuildNuGetProjectSystem.References.Count);
 
             // Act
-            await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageId, new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: false, versionConstraints: VersionConstraints.None),
+            await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageId, new ResolutionContext(DependencyBehavior.Lowest, includePrelease: false, includeUnlisted: false, versionConstraints: VersionConstraints.None),
                 testNuGetProjectContext, primarySourceRepository, null, token);
 
             // Check that the packages.config file does not exist
             Assert.True(File.Exists(packagesConfigPath));
+
             // Check that there are no packages returned by PackagesConfigProject
             packagesInPackagesConfig = (await msBuildNuGetProject.PackagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
             Assert.Equal(1, packagesInPackagesConfig.Count);
@@ -3020,7 +3021,7 @@ namespace NuGet.Test
                 newtonsoftJsonPackageId,
                 msBuildNuGetProject,
                 resolutionContext,
-                primarySourceRepository, 
+                primarySourceRepository,
                 CancellationToken.None);
 
             var newtonsoftJsonLatestPrereleasePackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, latestNewtonsoftPrereleaseVersion);
