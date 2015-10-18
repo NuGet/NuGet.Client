@@ -4,11 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Newtonsoft.Json;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
+using NuGet.VisualStudio;
 
 namespace StandaloneUI
 {
@@ -27,8 +29,14 @@ namespace StandaloneUI
             IOptionsPageActivator optionsPageActivator,
             IEnumerable<NuGetProject> projects)
             :
-                base(sourceProvider, solutionManager, packageManager, uiActionEngine,
-                    packageRestoreManager, optionsPageActivator, projects, packageManagerProviders: null)
+                base(sourceProvider,
+                    solutionManager,
+                    packageManager,
+                    uiActionEngine,
+                    packageRestoreManager,
+                    optionsPageActivator,
+                    projects,
+                    packageManagerProviders: Enumerable.Empty<IVsPackageManagerProvider>())
         {
             _settingsFile = settingsFile;
             LoadSettings();
@@ -37,6 +45,12 @@ namespace StandaloneUI
         private void LoadSettings()
         {
             _settings = new Dictionary<string, UserSettings>();
+
+            if (!File.Exists(_settingsFile))
+            {
+                return;
+            }
+
             try
             {
                 using (var reader = new StreamReader(_settingsFile))

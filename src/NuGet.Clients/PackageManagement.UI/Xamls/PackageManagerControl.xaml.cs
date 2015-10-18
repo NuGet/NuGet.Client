@@ -511,7 +511,7 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                 {
-                    var option = new PackageLoaderOption(_topPanel.Filter, IncludePrerelease);                    
+                    var option = new PackageLoaderOption(_topPanel.Filter, IncludePrerelease);
                     var loader = new PackageLoader(
                         option,
                         Model.IsSolution,
@@ -709,7 +709,7 @@ namespace NuGet.PackageManagement.UI
                     result = new BackgroundLoaderResult()
                     {
                         LatestVersion = latestStableVersion,
-                        InstalledVersion = minimumInstalledPackage.PackageIdentity.Version,                        
+                        InstalledVersion = minimumInstalledPackage.PackageIdentity.Version,
                         Status = PackageStatus.UpdateAvailable
                     };
                 }
@@ -752,7 +752,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             RegistrySettingUtility.SetBooleanSetting(
-                Constants.IncludePrereleaseRegistryName, 
+                Constants.IncludePrereleaseRegistryName,
                 _topPanel.CheckboxPrerelease.IsChecked == true);
             SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
             RefreshAvailableUpdatesCount();
