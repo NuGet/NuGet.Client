@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
@@ -12,15 +13,9 @@ namespace NuGet.Packaging
     /// <summary>
     /// Represents a package element in the packages.config file
     /// </summary>
+    [DebuggerDisplay("{PackageIdentity} {TargetFramework}")]
     public class PackageReference
     {
-        private readonly PackageIdentity _identity;
-        private readonly VersionRange _allowedVersions;
-        private readonly NuGetFramework _targetFramework;
-        private readonly bool _developmentDependency;
-        private readonly bool _requireReinstallation;
-        private readonly bool _userInstalled;
-
         /// <summary>
         /// Creates a new packages config entry
         /// </summary>
@@ -40,7 +35,11 @@ namespace NuGet.Packaging
         /// <summary>
         /// Creates a new packages config entry
         /// </summary>
-        public PackageReference(PackageIdentity identity, NuGetFramework targetFramework, bool userInstalled, bool developmentDependency, bool requireReinstallation)
+        public PackageReference(PackageIdentity identity,
+            NuGetFramework targetFramework,
+            bool userInstalled,
+            bool developmentDependency,
+            bool requireReinstallation)
             : this(identity, targetFramework, userInstalled, developmentDependency, requireReinstallation, null)
         {
         }
@@ -56,71 +55,53 @@ namespace NuGet.Packaging
         /// <param name="allowedVersions">Restrict package versions to the allowedVersions range</param>
         public PackageReference(PackageIdentity identity, NuGetFramework targetFramework, bool userInstalled, bool developmentDependency, bool requireReinstallation, VersionRange allowedVersions)
         {
-            _identity = identity;
-            _allowedVersions = allowedVersions;
-            _targetFramework = targetFramework;
-            _developmentDependency = developmentDependency;
-            _userInstalled = userInstalled;
-            _requireReinstallation = requireReinstallation;
+            PackageIdentity = identity;
+            AllowedVersions = allowedVersions;
+            TargetFramework = targetFramework;
+            IsDevelopmentDependency = developmentDependency;
+            IsUserInstalled = userInstalled;
+            RequireReinstallation = requireReinstallation;
         }
 
         /// <summary>
         /// Id and Version of the package
         /// </summary>
-        public PackageIdentity PackageIdentity
-        {
-            get { return _identity; }
-        }
+        public PackageIdentity PackageIdentity { get; }
 
         /// <summary>
         /// The allowed range of versions that this package can be upgraded/downgraded to.
         /// </summary>
         /// <remarks>This is null if unbounded</remarks>
-        public VersionRange AllowedVersions
-        {
-            get { return _allowedVersions; }
-        }
+        public VersionRange AllowedVersions { get; }
 
         /// <summary>
         /// True if allowedVersions exists.
         /// </summary>
         public bool HasAllowedVersions
         {
-            get { return _allowedVersions != null; }
+            get { return AllowedVersions != null; }
         }
 
         /// <summary>
         /// Installed target framework version of the package.
         /// </summary>
-        public NuGetFramework TargetFramework
-        {
-            get { return _targetFramework; }
-        }
+        public NuGetFramework TargetFramework { get; }
 
         /// <summary>
         /// Development dependency
         /// </summary>
-        public bool IsDevelopmentDependency
-        {
-            get { return _developmentDependency; }
-        }
+        public bool IsDevelopmentDependency { get; }
 
         /// <summary>
         /// True if the user installed or updated this package directly.
         /// False if this package was installed as a dependency by another package.
         /// </summary>
-        public bool IsUserInstalled
-        {
-            get { return _userInstalled; }
-        }
+        public bool IsUserInstalled { get; }
 
         /// <summary>
         /// Require reinstallation
         /// </summary>
-        public bool RequireReinstallation
-        {
-            get { return _requireReinstallation; }
-        }
+        public bool RequireReinstallation { get; }
 
         /// <summary>
         /// Displays the identity and target framework of the reference.

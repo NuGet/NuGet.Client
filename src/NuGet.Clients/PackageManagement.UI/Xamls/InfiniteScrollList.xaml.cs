@@ -145,13 +145,13 @@ namespace NuGet.PackageManagement.UI
             {
                 // run Loader.LoadItems in background thread. Otherwise if the
                 // source if V2, the UI can get blocked.
-                var r = await Task.Run(async () => await _loader.LoadItemsAsync(_startIndex, token));
+                var loadResult = await Task.Run(async () => await _loader.LoadItemsAsync(_startIndex, token));
 
                 // multiple loads may occur at the same time
                 if (!token.IsCancellationRequested
                     && currentLoader == _loader)
                 {
-                    UpdatePackageList(r);
+                    UpdatePackageList(loadResult);
 
                     // select the first item if none was selected before
                     if (_list.SelectedIndex == -1 &&
