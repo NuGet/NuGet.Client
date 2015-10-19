@@ -186,7 +186,6 @@ namespace NuGet.CommandLine
 
             var sourceRepositoryProvider = GetSourceRepositoryProvider();
             var packageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, installPath);
-
             var primaryRepositories = GetPackageSources(Settings).Select(sourceRepositoryProvider.CreateRepository);
 
             var resolutionContext = new ResolutionContext(

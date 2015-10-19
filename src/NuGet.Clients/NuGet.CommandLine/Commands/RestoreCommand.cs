@@ -384,9 +384,7 @@ namespace NuGet.CommandLine
                                 ? packageRestoreInputs.DirectoryOfSolutionFile
                                 : packageRestoreInputs.PackageReferenceFiles[0] },
                     isMissing: true));
-            var packageSources = GetPackageSources(Settings);
-
-            var repositories = packageSources
+            var repositories = GetPackageSources(Settings)
                 .Select(sourceRepositoryProvider.CreateRepository)
                 .ToArray();
 
