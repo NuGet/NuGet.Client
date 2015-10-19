@@ -398,7 +398,7 @@ namespace NuGet.Configuration.Test
     <add key='https://www.myget.org/F/somecompanyfeed-unstable/api/v2/package' value='removed' />
     <add key='https://www.myget.org/F/somecompanyfeed/api/v2/package' value='removed' />
     <add key='https://www.myget.org/F/somecompanyfeed-unstable/api/v2/' value='removed' />
-    <add key='http://nuget.gw.symbolsource.org/Public/NuGet' value='removed' />
+    <add key='https://nuget.smbsrc.net/' value='removed' />
   </apikeys>
   <packageRestore>
     <add key='enabled' value='True' />
