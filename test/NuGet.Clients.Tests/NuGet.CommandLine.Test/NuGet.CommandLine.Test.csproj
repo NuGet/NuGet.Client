@@ -83,6 +83,7 @@
     <Compile Include="PackageCreator.cs" />
     <Compile Include="ProjectFactoryTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ExtensionsTests.cs" />
     <Compile Include="RestoreRetryTests.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>
@@ -90,6 +91,10 @@
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.CommandLine\NuGet.CommandLine.csproj">
       <Project>{957c4e99-3644-47dd-8f9a-ae36f41ebe4a}</Project>
       <Name>NuGet.CommandLine</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\SampleCommandLineExtensions\SampleCommandLineExtensions.csproj">
+      <Project>{f2f53b1a-b973-4932-80cb-5eda38f9d74c}</Project>
+      <Name>SampleCommandLineExtensions</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

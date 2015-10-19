@@ -257,6 +257,13 @@ namespace NuGet.CommandLine
                     RegisterExtensions(catalog, files, console);
                 }
             }
+
+            // Ideally we want to look for all files. However, using MEF to identify imports results in assemblies being loaded and locked by our App Domain
+            // which could be slow, might affect people's build systems and among other things breaks our build.
+            // Consequently, we'll use a convention - only binaries ending in the name Extensions would be loaded.
+            var nugetDirectory = Path.GetDirectoryName(typeof(Program).Assembly.Location);
+            files = Directory.EnumerateFiles(nugetDirectory, "*Extensions.dll");
+            RegisterExtensions(catalog, files, console);
         }
 
         private static void RegisterExtensions(AggregateCatalog catalog, IEnumerable<string> enumerateFiles, IConsole console)
