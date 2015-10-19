@@ -494,7 +494,7 @@ namespace NuGet.Configuration
             foreach (var value in valuesToWrite)
             {
                 var element = new XElement("add");
-                SetElementValues(element, value.Key, value.Value, value.AdditionalData);
+                SetElementValues(element, value.Key, value.OriginalValue, value.AdditionalData);
                 XElementUtility.AddIndented(sectionElement, element);
             }
 
@@ -816,14 +816,21 @@ namespace NuGet.Configuration
             }
 
             var value = valueAttribute.Value;
+            var originalValue = valueAttribute.Value;
             Uri uri;
+
             if (isPath && Uri.TryCreate(value, UriKind.Relative, out uri))
             {
                 var configDirectory = Path.GetDirectoryName(ConfigFilePath);
                 value = Path.Combine(Root, Path.Combine(configDirectory, value));
             }
 
-            var settingValue = new SettingValue(keyAttribute.Value, value, origin: this, isMachineWide: IsMachineWideSettings, priority: _priority);
+            var settingValue = new SettingValue(keyAttribute.Value, 
+                                                value, 
+                                                origin: this, 
+                                                isMachineWide: IsMachineWideSettings,
+                                                originalValue: originalValue,
+                                                priority: _priority);
             foreach (var attribute in element.Attributes())
             {
                 // Add all attributes other than ConfigurationContants.KeyAttribute and ConfigurationContants.ValueAttribute to AdditionalValues

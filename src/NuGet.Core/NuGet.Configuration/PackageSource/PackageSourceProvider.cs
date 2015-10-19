@@ -479,8 +479,14 @@ namespace NuGet.Configuration
                     if (ReadProtocolVersion(existingSetting) == source.ProtocolVersion)
                     {
                         // Update the source value of all settings with the same protocol version.
-                        existingSetting.Value = source.Source;
                         foundSettingWithSourcePriority = true;
+
+                        // if the existing source changed, update the setting value
+                        if (!existingSetting.Value.Equals(source.Source))
+                        {
+                            existingSetting.Value = source.Source;
+                            existingSetting.OriginalValue = source.Source;
+                        }
                     }
                     sourceSettings.Add(existingSetting);
                 }

@@ -12,19 +12,48 @@ namespace NuGet.Configuration
     /// </summary>
     public class SettingValue
     {
-        public SettingValue(string key, string value, bool isMachineWide, int priority = 0)
-            : this(key, value, origin: null, isMachineWide: isMachineWide, priority: priority)
+        public SettingValue(string key, 
+                            string value, 
+                            bool isMachineWide, 
+                            int priority = 0)
+            : this(key, 
+                  value, 
+                  origin: null, 
+                  isMachineWide: isMachineWide,
+                  originalValue: value,
+                  priority: priority)
         { }
 
-        public SettingValue(string key, string value, ISettings origin, bool isMachineWide, int priority = 0)
+        public SettingValue(string key,
+                            string value,
+                            ISettings origin,
+                            bool isMachineWide,
+                            int priority = 0) 
+            : this(key,
+                   value,
+                   origin: origin,
+                   isMachineWide : isMachineWide,
+                   originalValue : value,
+                   priority: priority)
+        { }
+
+        public SettingValue(string key, 
+                            string value, 
+                            ISettings origin, 
+                            bool isMachineWide,
+                            string originalValue,
+                            int priority = 0)
         {
             Key = key;
             Value = value;
             Origin = origin;
             IsMachineWide = isMachineWide;
             Priority = priority;
+            OriginalValue = originalValue;
             AdditionalData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
+
+        
 
         /// <summary>
         /// Represents the key of the setting
@@ -35,6 +64,11 @@ namespace NuGet.Configuration
         /// Represents the value of the setting
         /// </summary>
         public string Value { get; set; }
+
+        /// <summary>
+        /// original value of the source as in NuGet.Config
+        /// </summary>
+        public string OriginalValue { get; set; }
 
         /// <summary>
         /// IsMachineWide tells if the setting is machine-wide or not
