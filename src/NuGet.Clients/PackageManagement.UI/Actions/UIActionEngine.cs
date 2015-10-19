@@ -38,28 +38,142 @@ namespace NuGet.PackageManagement.UI
         /// <remarks>This needs to be called from a background thread. It may hang on the UI thread.</remarks>
         public async Task PerformActionAsync(INuGetUI uiService, UserAction userAction, DependencyObject windowOwner, CancellationToken token)
         {
+            await PerformActionImplAsync(
+                uiService,
+                () =>
+                {
+                    var projects = uiService.Projects;
+
+                    // TODO: should stable packages allow prerelease dependencies if include prerelease was checked?
+                    // Allow prerelease packages only if the target is prerelease
+                    var includePrelease = userAction.PackageIdentity.Version.IsPrerelease || userAction.Action == NuGetProjectActionType.Uninstall;
+                    var includeUnlisted = userAction.Action == NuGetProjectActionType.Uninstall;
+
+                    var resolutionContext = new ResolutionContext(uiService.DependencyBehavior, includePrelease, includeUnlisted, VersionConstraints.None);
+
+                    return GetActionsAsync(
+                        uiService,
+                        projects,
+                        userAction,
+                        uiService.RemoveDependencies,
+                        uiService.ForceRemove,
+                        resolutionContext,
+                        projectContext: uiService.ProgressWindow,
+                        token: token);
+                },
+                (actions) =>
+                {
+                    return ExecuteActionsAsync(actions, uiService.ProgressWindow, userAction, token);
+                },
+                windowOwner,
+                token);
+        }
+
+        /// <summary>
+        /// Perform the multi-package update action.
+        /// </summary>       
+        /// <remarks>This needs to be called from a background thread. It may hang on the UI thread.</remarks>
+        public async Task PerformUpdateAsync(
+            INuGetUI uiService,
+            List<PackageIdentity> packagesToUpdate,
+            DependencyObject windowOwner,
+            CancellationToken token)
+        {
+            await PerformActionImplAsync(
+                uiService,
+                () =>
+                {
+                    return ResolveActionsForUpdate(
+                        uiService,
+                        packagesToUpdate,
+                        token);
+                },
+                async (actions) =>
+                {
+                    foreach (var projectActions in actions.GroupBy(action => action.Item1))
+                    {
+                        await _packageManager.ExecuteNuGetProjectActionsAsync(
+                           projectActions.Key,
+                           projectActions.Select(action => action.Item2),
+                           uiService.ProgressWindow,
+                           token);
+                    }
+                },
+                windowOwner,
+                token);
+        }
+
+        /// <summary>
+        /// Calculates the list of actions needed to perform packages updates.
+        /// </summary>
+        /// <param name="uiService">ui service.</param>
+        /// <param name="packagesToUpdate">The list of packages to update.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns>The list of actions.</returns>
+        private async Task<IReadOnlyList<Tuple<NuGetProject, NuGetProjectAction>>> ResolveActionsForUpdate(
+            INuGetUI uiService,
+            List<PackageIdentity> packagesToUpdate,
+            CancellationToken token)
+        {
+            var resolvedActions = new List<Tuple<NuGetProject, NuGetProjectAction>>();
+
+            foreach (var project in uiService.Projects)
+            {
+                var installedPackages = await project.GetInstalledPackagesAsync(token);
+                HashSet<string> packageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var p in installedPackages)
+                {
+                    packageIds.Add(p.PackageIdentity.Id);
+                }
+                var packagesToUpdateInProject = packagesToUpdate.Where(
+                    package => packageIds.Contains(package.Id)).ToList();
+
+                if (packagesToUpdateInProject.Any())
+                {
+                    var includePrerelease = packagesToUpdateInProject.Where(
+                        package => package.Version.IsPrerelease).Any();
+
+                    var resolutionContext = new ResolutionContext(
+                        uiService.DependencyBehavior,
+                        includePrelease: includePrerelease,
+                        includeUnlisted: false,
+                        versionConstraints: VersionConstraints.None);
+                    var sources = new SourceRepository[] { uiService.ActiveSource };
+                    var actions = await _packageManager.PreviewUpdatePackagesAsync(
+                        packagesToUpdateInProject,
+                        project,
+                        resolutionContext,
+                        uiService.ProgressWindow,
+                        sources,
+                        sources,
+                        token);
+                    resolvedActions.AddRange(actions.Select(action => Tuple.Create(project, action))
+                        .ToList());
+                }
+            }
+
+            return resolvedActions;
+        }
+
+        /// <summary>
+        /// The internal implementation to perform user action.
+        /// </summary>
+        /// <param name="resolveActionsTask">A function that returns a task that resolves the user 
+        /// action into project actions.</param>
+        /// <param name="executeActionsTask">A function that returns a task that executes 
+        /// the project actions.</param>
+        private async Task PerformActionImplAsync(
+            INuGetUI uiService,
+            Func<Task<IReadOnlyList<Tuple<NuGetProject, NuGetProjectAction>>>> resolveActionsTask,
+            Func<IReadOnlyList<Tuple<NuGetProject, NuGetProjectAction>>, Task> executeActionsTask,
+            DependencyObject windowOwner,
+            CancellationToken token)
+        {
             try
             {
                 uiService.ShowProgressDialog(windowOwner);
 
-                var projects = uiService.Projects;
-
-                // TODO: should stable packages allow prerelease dependencies if include prerelease was checked?
-                // Allow prerelease packages only if the target is prerelease
-                var includePrelease = userAction.PackageIdentity.Version.IsPrerelease || userAction.Action == NuGetProjectActionType.Uninstall;
-                var includeUnlisted = userAction.Action == NuGetProjectActionType.Uninstall;
-
-                var resolutionContext = new ResolutionContext(uiService.DependencyBehavior, includePrelease, includeUnlisted, VersionConstraints.None);
-
-                var actions = await GetActionsAsync(
-                    uiService,
-                    projects,
-                    userAction,
-                    uiService.RemoveDependencies,
-                    uiService.ForceRemove,
-                    resolutionContext,
-                    projectContext: uiService.ProgressWindow,
-                    token: token);
+                var actions = await resolveActionsTask();
                 var results = GetPreviewResults(actions);
 
                 // preview window
@@ -81,7 +195,7 @@ namespace NuGet.PackageManagement.UI
                 if (!token.IsCancellationRequested)
                 {
                     // execute the actions
-                    await ExecuteActionsAsync(actions, uiService.ProgressWindow, userAction, token);
+                    await executeActionsTask(actions);
 
                     // update
                     uiService.RefreshPackageStatus();
@@ -263,7 +377,7 @@ namespace NuGet.PackageManagement.UI
 
             var expandedActions = new List<Tuple<NuGetProject, NuGetProjectAction>>();
 
-            // BuildIntegratedProjectActions contain all project actions rolled up into a single action, 
+            // BuildIntegratedProjectActions contain all project actions rolled up into a single action,
             // to display these we need to expand them into the low level actions.
             foreach (var action in projectActions)
             {

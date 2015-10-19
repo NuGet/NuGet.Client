@@ -74,7 +74,14 @@ namespace NuGet.PackageManagement.UI
         {
             var action = GetUserAction();
             Control.ExecuteAction(
-                action,
+                () =>
+                {
+                    return Control.Model.Context.UIActionEngine.PerformActionAsync(
+                        Control.Model.UIController,
+                        action,
+                        this,
+                        CancellationToken.None);
+                },
                 nugetUi =>
                 {
                     var model = (DetailControlModel)DataContext;

@@ -14,6 +14,7 @@ using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Configuration;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
@@ -862,7 +863,14 @@ namespace NuGet.PackageManagement.UI
             RegistrySettingUtility.SetBooleanSetting(Constants.SuppressUIDisclaimerRegistryName, true);
         }
 
-        public void ExecuteAction(UserAction action, Action<NuGetUI> setOptions)
+        /// <summary>
+        /// This method is called after user clicks a button to execute an action, e.g. install a package.
+        /// </summary>
+        /// <param name="performAction">A function that returns the task that is performing the action 
+        /// thru UIActionEngine.</param>
+        /// <param name="setOptions">A method that is called to set the action options, 
+        /// such as dependency behavior.</param>
+        public void ExecuteAction(Func<Task> performAction, Action<NuGetUI> setOptions)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
@@ -879,12 +887,10 @@ namespace NuGet.PackageManagement.UI
                     var restoreSucceded = await RestoreBar.UIRestorePackagesAsync(CancellationToken.None);
                     if (restoreSucceded)
                     {
-                        await Task.Run(() =>
-                            Model.Context.UIActionEngine.PerformActionAsync(
-                                Model.UIController,
-                                action,
-                                this,
-                                CancellationToken.None));
+                        // Note that the task returned by performAction() will call something like 
+                        // UIActionEngine.PerformActionAsync(), which has to be called from a background thread.
+                        // Thus, we need to use Task.Run() here.
+                        await Task.Run(() => performAction());
                     }
                 }
                 finally
@@ -905,7 +911,14 @@ namespace NuGet.PackageManagement.UI
 
             var action = new UserAction(NuGetProjectActionType.Uninstall, package.Id, package.InstalledVersion);
             ExecuteAction(
-                action,
+                () =>
+                {
+                    return Model.Context.UIActionEngine.PerformActionAsync(
+                        Model.UIController,
+                        action,
+                        this,
+                        CancellationToken.None);
+                },
                 nugetUi =>
                 {
                     SetOptions(nugetUi, _detailModel.Options);
@@ -933,7 +946,14 @@ namespace NuGet.PackageManagement.UI
             var versionToInstall = package.LatestVersion ?? package.Version;
             var action = new UserAction(NuGetProjectActionType.Install, package.Id, versionToInstall);
             ExecuteAction(
-                action,
+                () =>
+                {
+                    return Model.Context.UIActionEngine.PerformActionAsync(
+                        Model.UIController,
+                        action,
+                        this,
+                        CancellationToken.None);
+                },
                 nugetUi =>
                 {
                     SetOptions(nugetUi, _detailModel.Options);
@@ -943,6 +963,35 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageList_UpdateButtonClicked(object sender, EventArgs e)
         {
+            var packagesToUpdate = new List<PackageIdentity>();
+            foreach (var item in _packageList.Items)
+            {
+                var package = item as PackageItemListViewModel;
+                if (package?.Selected == true)
+                {
+                    packagesToUpdate.Add(new PackageIdentity(package.Id, package.Version));
+                }
+            }
+
+            if (packagesToUpdate.Count == 0)
+            {
+                return;
+            }
+
+            ExecuteAction(
+                ()=>
+                {
+                    return Model.Context.UIActionEngine.PerformUpdateAsync(
+                        Model.UIController,
+                        packagesToUpdate,
+                        this,
+                        CancellationToken.None);
+                },
+                nugetUi =>
+                {
+                    SetOptions(nugetUi, _detailModel.Options);
+                    nugetUi.Projects = Model.Context.Projects;
+                });
         }
     }
 }

@@ -246,7 +246,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        // Update the status of the _selectAllPackages check box.
+        // Update the status of the _selectAllPackages check box and the Update button.
         private void UpdateCheckBoxStatus()
         {
             int packageCount;
@@ -269,14 +269,17 @@ namespace NuGet.PackageManagement.UI
             if (_selectedCount == 0)
             {
                 _selectAllPackages.IsChecked = false;
+                _updateButton.IsEnabled = false;
             }
             else if (_selectedCount < packageCount)
             {
                 _selectAllPackages.IsChecked = null;
+                _updateButton.IsEnabled = true;
             }
             else
             {
                 _selectAllPackages.IsChecked = true;
+                _updateButton.IsEnabled = true;
             }
         }
 
