@@ -165,4 +165,10 @@
   <data name="InvalidNuspecEntry" xml:space="preserve">
     <value>The nuspec contains an invalid entry '{0}' in package '{1}' .</value>
   </data>
+  <data name="FailToWritePackagesConfig" xml:space="preserve">
+    <value>Fail to write packages.config as XML file while accessing {0}: {1}</value>
+  </data>
+  <data name="PackagesNodeNotExist" xml:space="preserve">
+    <value>Packages node does not exists in packages.config at {0}.</value>
+  </data>
 </root>

@@ -2,20 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using NuGet.Packaging.Core;
 
-namespace NuGet.Packaging.Core
+namespace NuGet.Packaging
 {
-    /// <summary>
-    /// Generic packaging exception.
-    /// </summary>
-    public class PackagingException : Exception
+    public class PackagesConfigWriterException : PackagingException
     {
-        public PackagingException(string message)
+        public PackagesConfigWriterException(string message)
             : base(message)
         {
         }
 
-        public PackagingException(string message, Exception innerException)
+        public PackagesConfigWriterException(string message, Exception innerException)
             : base(message, innerException)
         {
         }

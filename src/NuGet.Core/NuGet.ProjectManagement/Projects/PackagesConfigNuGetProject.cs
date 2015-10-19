@@ -86,34 +86,51 @@ namespace NuGet.ProjectManagement
             var newPackageReference = new PackageReference(packageIdentity, TargetFramework, userInstalled: true, developmentDependency: isDevelopmentDependency, requireReinstallation: false);
             var installedPackagesList = GetInstalledPackagesList();
 
-            // Packages.config exist at full path
-            if (installedPackagesList.Any())
+            try
             {
-                var packageReferenceWithSameId = installedPackagesList.FirstOrDefault(
-                    p => p.PackageIdentity.Id.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase));
-
-                if (packageReferenceWithSameId != null)
+                // Packages.config exist at full path
+                if (installedPackagesList.Any())
                 {
-                    if (packageReferenceWithSameId.PackageIdentity.Equals(packageIdentity))
-                    {
-                        nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageAlreadyExistsInPackagesConfig, packageIdentity, Path.GetFileName(FullPath));
-                        return Task.FromResult(false);
-                    }
+                    var packageReferenceWithSameId = installedPackagesList.FirstOrDefault(
+                        p => p.PackageIdentity.Id.Equals(packageIdentity.Id, StringComparison.OrdinalIgnoreCase));
 
-                    // Higher version of an installed package is being installed. Remove old and add new
-                    using (var stream = FileSystemUtility.GetFileStream(FullPath))
+                    if (packageReferenceWithSameId != null)
                     {
-                        var writer = new PackagesConfigWriter(stream, createNew: false);
-                        writer.UpdatePackageEntry(packageReferenceWithSameId, newPackageReference);
-                        writer.Close();
+                        if (packageReferenceWithSameId.PackageIdentity.Equals(packageIdentity))
+                        {
+                            nuGetProjectContext.Log(MessageLevel.Warning, Strings.PackageAlreadyExistsInPackagesConfig, packageIdentity, Path.GetFileName(FullPath));
+                            return Task.FromResult(false);
+                        }
+
+                        // Higher version of an installed package is being installed. Remove old and add new
+                        using (var writer = new PackagesConfigWriter(FullPath, createNew: false))
+                        {
+                            writer.UpdatePackageEntry(packageReferenceWithSameId, newPackageReference);
+                        }
+                    }
+                    else
+                    {
+                        using (var writer = new PackagesConfigWriter(FullPath, createNew: false))
+                        {
+
+                            if (nuGetProjectContext.OriginalPackagesConfig == null)
+                            {
+                                // Write a new entry
+                                writer.AddPackageEntry(newPackageReference);
+                            }
+                            else
+                            {
+                                // Update the entry based on the original entry if it exists
+                                writer.UpdateOrAddPackageEntry(nuGetProjectContext.OriginalPackagesConfig, newPackageReference);
+                            }
+                        }
                     }
                 }
+                // Create new packages.config file and add the package entry
                 else
                 {
-                    using (var stream = FileSystemUtility.GetFileStream(FullPath))
+                    using (var writer = new PackagesConfigWriter(FullPath, createNew: true))
                     {
-                        var writer = new PackagesConfigWriter(stream, createNew: false);
-
                         if (nuGetProjectContext.OriginalPackagesConfig == null)
                         {
                             // Write a new entry
@@ -124,31 +141,16 @@ namespace NuGet.ProjectManagement
                             // Update the entry based on the original entry if it exists
                             writer.UpdateOrAddPackageEntry(nuGetProjectContext.OriginalPackagesConfig, newPackageReference);
                         }
-
-                        writer.Close();
                     }
                 }
             }
-            // Create new packages.config file and add the package entry
-            else
+            catch (PackagesConfigWriterException ex)
             {
-                using (var stream = FileSystemUtility.CreateFile(FullPath, nuGetProjectContext))
-                {
-                    var writer = new PackagesConfigWriter(stream, createNew: true);
-
-                    if (nuGetProjectContext.OriginalPackagesConfig == null)
-                    {
-                        // Write a new entry
-                        writer.AddPackageEntry(newPackageReference);
-                    }
-                    else
-                    {
-                        // Update the entry based on the original entry if it exists
-                        writer.UpdateOrAddPackageEntry(nuGetProjectContext.OriginalPackagesConfig, newPackageReference);
-                    }
-
-                    writer.Close();
-                }
+                throw new InvalidOperationException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.ErrorWritingPackagesConfig,
+                    FullPath,
+                    ex.Message));
             }
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToPackagesConfig, packageIdentity, Path.GetFileName(FullPath));
@@ -176,24 +178,33 @@ namespace NuGet.ProjectManagement
                 return Task.FromResult(false);
             }
 
-            if (installedPackagesList.Any())
+            try
             {
-                // Matching packageReference is found and is the only entry
-                // Then just delete the packages.config file
-                if (installedPackagesList.Count == 1)
+                if (installedPackagesList.Any())
                 {
-                    FileSystemUtility.DeleteFile(FullPath, nuGetProjectContext);
-                }
-                else
-                {
-                    // Remove the package reference from packages.config file
-                    using (var stream = FileSystemUtility.GetFileStream(FullPath))
+                    // Matching packageReference is found and is the only entry
+                    // Then just delete the packages.config file 
+                    if (installedPackagesList.Count == 1)
                     {
-                        var writer = new PackagesConfigWriter(stream, createNew: false);
-                        writer.RemovePackageEntry(packageReference);
-                        writer.Close();
+                        FileSystemUtility.DeleteFile(FullPath, nuGetProjectContext);
+                    }
+                    else
+                    {
+                        // Remove the package reference from packages.config file
+                        using (var writer = new PackagesConfigWriter(FullPath, createNew: false))
+                        {
+                            writer.RemovePackageEntry(packageReference);
+                        }
                     }
                 }
+            }
+            catch (PackagesConfigWriterException ex)
+            {
+                throw new InvalidOperationException(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.ErrorWritingPackagesConfig,
+                    FullPath,
+                    ex.Message));
             }
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.RemovedPackageFromPackagesConfig, packageIdentity, Path.GetFileName(FullPath));

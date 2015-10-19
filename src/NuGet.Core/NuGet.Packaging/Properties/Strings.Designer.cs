@@ -115,11 +115,19 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
-        /// Fail to load packages.config as XML file. Please check it. 
+        /// Fail to write packages.config as XML file while accessing {0}: {1} 
         /// </summary>
-        internal static string FormatFailToLoadPackagesConfig()
+        internal static string FailToWritePackagesConfig
         {
-            return GetString("FailToLoadPackagesConfig");
+            get { return GetString("FailToWritePackagesConfig"); }
+        }
+
+        /// <summary>
+        /// Fail to write packages.config as XML file while accessing {0}: {1} 
+        /// </summary>
+        internal static string FormatFailToWritePackagesConfig(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("FailToWritePackagesConfig"), p0, p1);
         }
 
         /// <summary>
@@ -184,6 +192,22 @@ namespace NuGet.Packaging
         internal static string FormatPackageEntryNotExist(object p0, object p1)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("PackageEntryNotExist"), p0, p1);
+        }
+
+        /// <summary>
+        /// Packages node does not exists in packages.config at {0}.
+        /// </summary>
+        internal static string PackagesNodeNotExist
+        {
+            get { return GetString("PackagesNodeNotExist"); }
+        }
+
+        /// <summary>
+        /// Packages node does not exists in packages.config at {0}.
+        /// </summary>
+        internal static string FormatPackagesNodeNotExist(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("PackagesNodeNotExist"), p0);
         }
 
         /// <summary>

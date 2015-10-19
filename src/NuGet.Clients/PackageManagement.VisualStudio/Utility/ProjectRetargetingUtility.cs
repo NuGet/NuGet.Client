@@ -207,14 +207,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     try
                     {
-                        using (var stream = FileSystemUtility.GetFileStream(packagesConfigFullPath))
+                        using (var writer = new PackagesConfigWriter(packagesConfigFullPath, createNew: false))
                         {
-                            var writer = new PackagesConfigWriter(stream, createNew: false);
                             foreach (var entry in packageReferencesToUpdateReinstall)
                             {
                                 writer.UpdatePackageEntry(entry.Key, entry.Value);
                             }
-                            writer.Close();
                         }
                     }
                     catch (Exception ex)

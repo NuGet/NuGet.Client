@@ -7,6 +7,7 @@ using System.Linq;
 using System.Xml.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 
@@ -203,7 +204,7 @@ namespace NuGet.Packaging.Test
                 var packageReferenceC = new PackageReference(packageIdentityC, NuGetFramework.Parse("net45"));
 
                 // Assert
-                Assert.Throws<PackagingException>(() => writer.UpdatePackageEntry(packageReferenceB, packageReferenceC));
+                Assert.Throws<PackagesConfigWriterException>(() => writer.UpdatePackageEntry(packageReferenceB, packageReferenceC));
             }
         }
 
@@ -251,7 +252,7 @@ namespace NuGet.Packaging.Test
                 writer.AddPackageEntry("packageB", NuGetVersion.Parse("2.0.0"), NuGetFramework.Parse("portable-net45+win8"));
 
                 // Assert
-                Assert.Throws<PackagingException>(() => writer.RemovePackageEntry("packageA", NuGetVersion.Parse("2.0.1"), NuGetFramework.Parse("net4")));
+                Assert.Throws<PackagesConfigWriterException>(() => writer.RemovePackageEntry("packageA", NuGetVersion.Parse("2.0.1"), NuGetFramework.Parse("net4")));
             }
         }
 
@@ -267,7 +268,7 @@ namespace NuGet.Packaging.Test
                 writer.AddPackageEntry("packageA", NuGetVersion.Parse("1.0.1"), NuGetFramework.Parse("net45"));
 
                 // Assert
-                Assert.Throws<PackagingException>(() => writer.AddPackageEntry("packageA", NuGetVersion.Parse("2.0.1"), NuGetFramework.Parse("net4")));
+                Assert.Throws<PackagesConfigWriterException>(() => writer.AddPackageEntry("packageA", NuGetVersion.Parse("2.0.1"), NuGetFramework.Parse("net4")));
             }
         }
 
@@ -297,8 +298,7 @@ namespace NuGet.Packaging.Test
         public void PackagesConfigWriter_OpenExistingFile()
         {
             // Arrange
-            var folderPath = Path.GetTempPath() + Convert.ToString(DateTime.Now.Ticks % 2000);
-            Directory.CreateDirectory(folderPath);
+            var folderPath = TestFileSystemUtility.CreateRandomTestFolder();
             var filePath = Path.Combine(folderPath, "packages.config");
 
             using (var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
@@ -343,6 +343,86 @@ namespace NuGet.Packaging.Test
 
             var packageNode = xml.Descendants(PackagesConfig.PackageNodeName).FirstOrDefault();
             Assert.Equal(packageNode.ToString(), "<package id=\"packageA\" version=\"1.0.1\" targetFramework=\"net45\" userInstalled=\"true\" protocolVersion=\"V2\" />");
+        }
+
+        [Fact]
+        public void PackagesConfigWriter_ThrowOnMalformedPackagesConfigXml()
+        {
+            // Arrange
+            var folderPath = TestFileSystemUtility.CreateRandomTestFolder();
+            var filePath = Path.Combine(folderPath, "packages.config");
+
+            using (var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
+            {
+                using (var fileWriter = new StreamWriter(fileStream))
+                {
+                    string content = @"<?xml version=""1.0"" encoding=""utf-8""?>";
+
+                    fileWriter.Write(content);
+                }
+            }
+
+            Assert.Throws<PackagesConfigWriterException>(() => new PackagesConfigWriter(filePath, false));
+        }
+
+        [Fact]
+        public void PackagesConfigWriter_ThrowOnMissingPackagesNode()
+        {
+            // Arrange
+            var folderPath = TestFileSystemUtility.CreateRandomTestFolder();
+            var filePath = Path.Combine(folderPath, "packages.config");
+
+            using (var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
+            {
+                using (var fileWriter = new StreamWriter(fileStream))
+                {
+                    string content = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration> ";
+
+                    fileWriter.Write(content);
+                }
+            }
+
+            using (PackagesConfigWriter writer = new PackagesConfigWriter(filePath, false))
+            {
+                // Assert
+                Assert.Throws<PackagesConfigWriterException>(() => writer.AddPackageEntry("packageA", NuGetVersion.Parse("2.0.1"), NuGetFramework.Parse("net4")));
+            }
+        }
+
+        [Fact]
+        public void PackagesConfigWriter_NoOldPackagesConfigFileLeftOnDisk()
+        {
+            // Arrange
+            var folderPath = TestFileSystemUtility.CreateRandomTestFolder();
+            var directoryInfo = Directory.CreateDirectory(folderPath);
+            var filePath = Path.Combine(folderPath, "packages.config");
+
+            using (var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
+            {
+                using (var fileWriter = new StreamWriter(fileStream))
+                {
+                    string content = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<packages>
+        <package id = ""packageA"" version = ""1.0.0"" targetFramework = ""win81"" userInstalled = ""true"" protocolVersion = ""V2"" />
+</packages>";
+
+                    fileWriter.Write(content);
+                }
+            }
+
+            using (PackagesConfigWriter writer = new PackagesConfigWriter(filePath, false))
+            {
+                // Act
+                writer.AddPackageEntry("packageB", NuGetVersion.Parse("2.0.1"), NuGetFramework.Parse("net4"));
+            }
+
+            // Assert
+            var packagesConfigFiles = directoryInfo.GetFiles().
+                Where(p => p.Name.ToLowerInvariant().Contains("packages.config"));
+
+            Assert.Equal(1, packagesConfigFiles.Count());
         }
     }
 }

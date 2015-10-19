@@ -189,6 +189,9 @@
   <data name="ErrorLoadingPackagesConfig" xml:space="preserve">
     <value>An error occurred while reading file '{0}': {1}</value>
   </data>
+  <data name="ErrorWritingPackagesConfig" xml:space="preserve">
+    <value>An error occurred while writing file '{0}': {1}</value>
+  </data>
   <data name="FileConflictMessage" xml:space="preserve">
     <value>File '{0}' already exists in project '{1}'. Do you want to overwrite it?</value>
   </data>
