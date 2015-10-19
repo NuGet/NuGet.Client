@@ -33,7 +33,7 @@ namespace NuGet.Common
             var sources = sourceProvider.LoadPackageSources().Where(s => s.IsEnabled);
             var result = ResolveSource(sources, source);
             CommandLineUtility.ValidateSource(result.Source);
-            return source;
+            return result.Source;
         }
     }
 }
