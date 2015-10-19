@@ -170,6 +170,9 @@ namespace NuGet.CommandLine.Test
 
         public static void SetResponseContent(HttpListenerResponse response, byte[] content)
         {
+            // The client should not cache data between mock server calls
+            response.AddHeader("Cache-Control", "no-cache, no-store");
+
             response.ContentLength64 = content.Length;
             response.OutputStream.Write(content, 0, content.Length);
         }
