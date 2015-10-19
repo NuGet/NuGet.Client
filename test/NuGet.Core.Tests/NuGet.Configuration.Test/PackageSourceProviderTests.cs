@@ -659,6 +659,94 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void SavePackageSourcesWithRelativePath()
+        {
+            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var configContents =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""nuget.org"" value=""https://nuget.org"" />
+        <add key=""test.org"" value=""Packages"" /> 
+    </packageSources>
+</configuration>
+";
+                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), configContents);
+
+                var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
+                
+                var settings = Settings.LoadDefaultSettings(rootPath,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadAppDataSettings: false);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+                var packageSourceList = packageSourceProvider.LoadPackageSources().ToList();
+                
+                // Act
+                packageSourceProvider.SavePackageSources(packageSourceList);
+
+                // Assert
+                Assert.Equal(
+                       @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""nuget.org"" value=""https://nuget.org"" />
+        <add key=""test.org"" value=""Packages"" />
+    </packageSources>
+</configuration>
+".Replace("\r\n", "\n"),
+                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
+        public void SavePackageSourcesWithRelativePathAndAddNewSource()
+        {
+            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var configContents =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""nuget.org"" value=""https://nuget.org"" />
+        <add key=""test.org"" value=""Packages"" /> 
+    </packageSources>
+</configuration>
+";
+                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), configContents);
+
+                var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
+
+                var settings = Settings.LoadDefaultSettings(rootPath,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadAppDataSettings: false);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+                var packageSourceList = packageSourceProvider.LoadPackageSources().ToList();
+
+                // Act
+                packageSourceList.Add(new PackageSource("https://test3.net", "test3"));
+                packageSourceProvider.SavePackageSources(packageSourceList);
+
+                // Assert
+                Assert.Equal(
+                       @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""nuget.org"" value=""https://nuget.org"" />
+        <add key=""test.org"" value=""Packages"" />
+        <add key=""test3"" value=""https://test3.net"" />
+    </packageSources>
+</configuration>
+".Replace("\r\n", "\n"),
+                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
         public void SavePackageSourcesWithOneClear()
         {
             using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())

@@ -12,17 +12,36 @@ namespace NuGet.Configuration
     /// </summary>
     public class SettingValue
     {
-        public SettingValue(string key, string value, bool isMachineWide, int priority = 0)
-            : this(key, value, origin: null, isMachineWide: isMachineWide, priority: priority)
+        public SettingValue(string key, 
+                            string value, 
+                            bool isMachineWide, 
+                            int priority = 0, 
+                            bool isRelativePath = false, 
+                            string originValue = null)
+            : this(key, 
+                  value, 
+                  origin: null, 
+                  isMachineWide: isMachineWide, 
+                  priority: priority, 
+                  isRelativePath : isRelativePath, 
+                  originValue: originValue)
         { }
 
-        public SettingValue(string key, string value, ISettings origin, bool isMachineWide, int priority = 0)
+        public SettingValue(string key, 
+                            string value, 
+                            ISettings origin, 
+                            bool isMachineWide, 
+                            int priority = 0, 
+                            bool isRelativePath = false, 
+                            string originValue = null)
         {
             Key = key;
             Value = value;
             Origin = origin;
             IsMachineWide = isMachineWide;
             Priority = priority;
+            IsRelativePath = isRelativePath;
+            OriginValue = originValue;
             AdditionalData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
@@ -86,5 +105,14 @@ namespace NuGet.Configuration
         {
             return Tuple.Create(Key, Value, IsMachineWide).GetHashCode();
         }
+       /// <summary>
+       /// relative path source value in NuGet.Config
+       /// </summary>
+        public string OriginValue { get; }
+
+        /// <summary>
+        /// return true when this settingvalue is a relative path package source
+        /// </summary>
+        public bool IsRelativePath { get; }
     }
 }
