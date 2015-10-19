@@ -170,68 +170,6 @@ namespace NuGet.Configuration
             return loadedPackageSources;
         }
 
-        public static void AddDefaultSourcesToRootNuGetConfig()
-        {
-            // Load the root settings (%AppData% one)
-            var settings = Configuration.Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
-            AddDefaultSourcesToRootNuGetConfigCore(settings);
-        }
-
-        /// <summary>
-        /// For internal use only
-        /// </summary>
-        public static void AddDefaultSourcesToRootNuGetConfigCore(ISettings settings)
-        {
-            var sourceSettings = settings.GetSettingValues(ConfigurationContants.PackageSources).ToList();
-
-            var settingToMigrate = sourceSettings
-                    .Where(f => f.Key.Equals(NuGetConstants.FeedName, StringComparison.OrdinalIgnoreCase))
-                    .ToArray();
-            var v3Setting = new SettingValue(
-                NuGetConstants.FeedName,
-                NuGetConstants.V3FeedUrl,
-                origin: settings,
-                isMachineWide: false,
-                priority: 1);
-            v3Setting.AdditionalData[ConfigurationContants.ProtocolVersionAttribute] = "3";
-
-            var v2Setting = new SettingValue(
-                NuGetConstants.FeedName,
-                NuGetConstants.V2FeedUrl,
-                origin: settings,
-                isMachineWide: false,
-                priority: 1);
-
-            if (settingToMigrate.Length == 0)
-            {
-                // Potentially empty \ non-existent NuGet.config. Add both v2 and v3 sources
-                sourceSettings.Add(v3Setting);
-                sourceSettings.Add(v2Setting);
-            }
-            else if (settingToMigrate.Any(setting => ReadProtocolVersion(setting) == 3))
-            {
-                // Source already exists for the newest protocol version. Do nothing.
-                return;
-            }
-            else
-            {
-                Debug.Assert(settingToMigrate.Length > 0 && settingToMigrate.Any(setting => ReadProtocolVersion(setting) == 2));
-                var index = sourceSettings.IndexOf(settingToMigrate[0]);
-                // Add the v3 source prior to v2. This would allow older clients that don't understand protocolVersion
-                // to continue picking up the v2 source.
-                sourceSettings.Insert(index, v3Setting);
-            }
-
-            try
-            {
-                settings.UpdateSections(ConfigurationContants.PackageSources, sourceSettings);
-            }
-            catch
-            {
-                // Don't throw if migration fails
-            }
-        }
-
         private PackageSource ReadPackageSource(SettingValue setting, bool isEnabled)
         {
             var name = setting.Key;
