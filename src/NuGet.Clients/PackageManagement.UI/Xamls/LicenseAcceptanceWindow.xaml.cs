@@ -3,6 +3,7 @@
 
 using System.Windows;
 using System.Windows.Documents;
+using System.Windows.Input;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -39,6 +40,19 @@ namespace NuGet.PackageManagement.UI
         private void OnAcceptButtonClick(object sender, RoutedEventArgs e)
         {
             DialogResult = true;
+        }
+
+        private void OnButtonKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Y)
+            {
+                DialogResult = true;
+            }
+
+            else if (e.Key == Key.N)
+            {
+                DialogResult = false;
+            }
         }
     }
 }
