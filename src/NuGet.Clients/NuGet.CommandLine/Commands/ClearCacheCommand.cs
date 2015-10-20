@@ -103,6 +103,20 @@ namespace NuGet.CommandLine.Commands
 
             try
             {
+                SafeDeleteDirectoryTree(folderPath);
+            }
+            catch
+            {
+                // Report any other exception, or the above exceptions after a failed retry attempt. 
+                // the Directory.Delete method may not be able to delete it.
+                failedDeletes.Add(folderPath);
+            }
+        }
+
+        private static void SafeDeleteDirectoryTree(string folderPath)
+        {
+            try
+            {
                 // Deletes the specified directory and any subdirectories and files in the directory.
                 // When deleting a directory that contains a reparse point, such as a symbolic link or a mount point:
                 // * If the reparse point is a directory, such as a mount point, 
@@ -129,12 +143,6 @@ namespace NuGet.CommandLine.Commands
                 // Try once more. 
                 // This may just be caused by another process not timely releasing the file handle.
                 Directory.Delete(folderPath, recursive: true);
-            }
-            catch
-            {
-                // Report any other exception, or the above exceptions after a failed retry attempt. 
-                // the Directory.Delete method may not be able to delete it.
-                failedDeletes.Add(folderPath);
             }
         }
 
