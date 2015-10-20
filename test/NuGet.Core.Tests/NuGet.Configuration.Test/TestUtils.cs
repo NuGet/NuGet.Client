@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace NuGet.Configuration.Test
 {
@@ -20,19 +21,35 @@ namespace NuGet.Configuration.Test
             return new TestDirectory(path);
         }
 
-        public static void DeleteRandomTestFolders(params string[] randomTestPaths)
+        public static void DeleteRandomTestFolders(params string[] testPaths)
         {
-            foreach (var randomTestPath in randomTestPaths)
+            foreach (var testPath in testPaths)
             {
-                DeleteRandomTestFolder(randomTestPath);
+                DeleteRandomTestFolder(testPath);
             }
         }
 
-        private static void DeleteRandomTestFolder(string randomTestPath)
+        private static void DeleteRandomTestFolder(string testPath)
         {
-            if (Directory.Exists(randomTestPath))
+            try
             {
-                Directory.Delete(randomTestPath, recursive: true);
+                try
+                {
+                    if (Directory.Exists(testPath))
+                    {
+                        Directory.Delete(testPath, recursive: true);
+                    }
+                }
+                catch (IOException)
+                {
+                    Thread.Sleep(100);
+                    Directory.Delete(testPath, recursive: true);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Ignore failed deletes, and don't fail the tests.
+                Console.WriteLine($"Failed to delete: {testPath} because {ex.ToString()}");
             }
         }
 
