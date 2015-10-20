@@ -68,11 +68,11 @@ namespace NuGet.PackageManagement.UI
             UIUtility.LaunchExternalLink(url);
         }
 
-        public void LaunchNuGetOptionsDialog()
+        public void LaunchNuGetOptionsDialog(OptionsPage optionsPageToOpen)
         {
             if (_context?.OptionsPageActivator != null)
             {
-                UIDispatcher.Invoke(() => { _context.OptionsPageActivator.ActivatePage(OptionsPage.General, null); });
+                UIDispatcher.Invoke(() => { _context.OptionsPageActivator.ActivatePage(optionsPageToOpen, null); });
             }
             else
             {

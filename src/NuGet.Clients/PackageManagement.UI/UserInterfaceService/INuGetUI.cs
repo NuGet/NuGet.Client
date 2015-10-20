@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement.UI
 
         void LaunchExternalLink(Uri url);
 
-        void LaunchNuGetOptionsDialog();
+        void LaunchNuGetOptionsDialog(OptionsPage optionsPageToOpen);
 
         /// <summary>
         /// Displays the preview window with options to accept or cancel

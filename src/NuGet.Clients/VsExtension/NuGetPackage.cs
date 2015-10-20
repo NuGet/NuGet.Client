@@ -884,10 +884,7 @@ namespace NuGetVSExtension
             var windowPane = new PackageManagerWindowPane(control);
             var guidEditorType = Guid.Empty;
             var guidCommandUI = Guid.Empty;
-            var caption = string.Format(
-                CultureInfo.CurrentCulture,
-                Resx.Label_NuGetWindowCaption,
-                solutionName);
+            var caption = Resx.Label_SolutionNuGetWindowCaption;
             var documentName = _dte.Solution.FullName;
 
             IntPtr ppunkDocView = IntPtr.Zero;

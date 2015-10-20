@@ -415,14 +415,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (Model.IsSolution)
             {
-                var name = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Resx.Resources.Label_Solution,
-                    Model.SolutionName);
-                _label.Text = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Resx.Resources.Label_PackageManager,
-                    name);
+                _label.Text = Resx.Resources.Label_SolutionPackageManager;
             }
             else
             {
@@ -547,7 +540,7 @@ namespace NuGet.PackageManagement.UI
 
         private void SettingsButtonClicked(object sender, EventArgs e)
         {
-            Model.UIController.LaunchNuGetOptionsDialog();
+            Model.UIController.LaunchNuGetOptionsDialog(OptionsPage.PackageSources);
         }
 
         private void PackageList_SelectionChanged(object sender, SelectionChangedEventArgs e)
