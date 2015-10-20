@@ -58,7 +58,8 @@ namespace NuGet.CommandLine.Commands
 
             if (!withoutErrors)
             {
-                throw new CommandLineException(LocalizedResourceManager.GetString(nameof(NuGetResources.ClearCacheCommand_CacheClearFailed)));
+                throw new CommandLineException(
+                    LocalizedResourceManager.GetString(nameof(NuGetResources.ClearCacheCommand_CacheClearFailed)));
             }
 
             return Task.FromResult(0);
@@ -66,10 +67,8 @@ namespace NuGet.CommandLine.Commands
 
         private bool ClearCacheDirectory(string folderPath)
         {
-            // Calling DeleteRecursive rather than Directory.Delete(..., recursive: true)
-            // due to an infrequent exception which can be thrown from that API (e.g. when files are read-only).
             var failedDeletes = new List<string>();
-            DeleteRecursive(folderPath, failedDeletes);
+            DeleteDirectoryTree(folderPath, failedDeletes);
 
             if (failedDeletes.Any())
             {
@@ -91,52 +90,84 @@ namespace NuGet.CommandLine.Commands
             }
         }
 
-        private static void DeleteRecursive(string deletePath, List<string> failedDeletes)
+        private static void DeleteDirectoryTree(string folderPath, List<string> failedDeletes)
         {
-            if (!Directory.Exists(deletePath))
+            if (!Directory.Exists(folderPath))
             {
                 return;
             }
 
-            foreach (var deleteFile in Directory.EnumerateFiles(deletePath))
+            // When files or folders are readonly, the Directory.Delete method may not be able to delete it.
+            // In addition, Directory.Delete(..., recursive: true) does NOT delete any files in the directory tree.
+            DeleteFilesInDirectoryTree(folderPath, failedDeletes);
+
+            try
             {
-                var deleteFilePath = Path.GetFileName(deleteFile);
-                var fullFilePath = Path.Combine(deletePath, deleteFilePath);
-                try
-                {
-                    EnsureWritable(fullFilePath);
-                    File.Delete(fullFilePath);
-                }
-                catch
-                {
-                    failedDeletes.Add(fullFilePath);
-                }
+                // Deletes the specified directory and any subdirectories and files in the directory.
+                // When deleting a directory that contains a reparse point, such as a symbolic link or a mount point:
+                // * If the reparse point is a directory, such as a mount point, 
+                //   it is unmounted and the mount point is deleted. 
+                //   This method does not recurse through the reparse point. 
+                // * If the reparse point is a symbolic link to a file, 
+                //   the reparse point is deleted and not the target of the symbolic link.
+                // If the recursive parameter is true, the user must have write permission 
+                // for the current directory as well as for all subdirectories.
+                Directory.Delete(folderPath, recursive: true);
             }
-
-            foreach (var deleteFolder in Directory.EnumerateDirectories(deletePath))
+            catch (DirectoryNotFoundException)
             {
-                var deleteFolderPath = Path.GetFileName(deleteFolder);
-                var fullDirectoryPath = Path.Combine(deletePath, deleteFolderPath);
-                DeleteRecursive(fullDirectoryPath, failedDeletes);
-
-                try
-                {
-                    Directory.Delete(fullDirectoryPath, recursive: true);
-                }
-                catch
-                {
-                    failedDeletes.Add(fullDirectoryPath);
-                }
+                // Should not happen, but it is a non-issue.
+            }
+            catch (IOException)
+            {
+                // Try once more.
+                // The directory may be in use by another process and cause an IOException.
+                Directory.Delete(folderPath, recursive: true);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Try once more. 
+                // This may just be caused by another process not timely releasing the file handle.
+                Directory.Delete(folderPath, recursive: true);
+            }
+            catch
+            {
+                // Report any other exception, or the above exceptions after a failed retry attempt. 
+                // the Directory.Delete method may not be able to delete it.
+                failedDeletes.Add(folderPath);
             }
         }
 
-        public static void EnsureWritable(string filePath)
+        private static void DeleteFilesInDirectoryTree(string folderPath, List<string> failedDeletes)
         {
-            var attributes = File.GetAttributes(filePath);
-            if (attributes.HasFlag(FileAttributes.ReadOnly))
+            // Using the default SearchOption.TopDirectoryOnly, as SearchOption.AllDirectories would also
+            // include reparse points such as mounted drives and symbolic links in the search.
+            foreach (var subFolderPath in Directory.EnumerateDirectories(folderPath))
             {
-                attributes &= ~FileAttributes.ReadOnly;
-                File.SetAttributes(filePath, attributes);
+                var directoryInfo = new DirectoryInfo(subFolderPath);
+                if (!directoryInfo.Attributes.HasFlag(FileAttributes.ReparsePoint))
+                {
+                    DeleteFilesInDirectoryTree(subFolderPath, failedDeletes);
+                }
+            }
+
+            foreach (var file in Directory.EnumerateFiles(folderPath))
+            {
+                var filePath = Path.Combine(folderPath, Path.GetFileName(file));
+                try
+                {
+                    var attributes = File.GetAttributes(filePath);
+                    if (attributes.HasFlag(FileAttributes.ReadOnly))
+                    {
+                        attributes &= ~FileAttributes.ReadOnly;
+                        File.SetAttributes(filePath, attributes);
+                    }
+                    File.Delete(filePath);
+                }
+                catch
+                {
+                    failedDeletes.Add(filePath);
+                }
             }
         }
     }
