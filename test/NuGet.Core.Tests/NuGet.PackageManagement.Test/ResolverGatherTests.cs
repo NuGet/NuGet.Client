@@ -59,7 +59,7 @@ namespace NuGet.Test
             var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
 
             // Act and Assert
-            await Assert.ThrowsAsync(typeof(OperationCanceledException), async () =>
+            await Assert.ThrowsAsync(typeof(InvalidOperationException), async () =>
             {
                 await ResolverGather.GatherAsync(context, cts.Token);
             });
@@ -272,7 +272,7 @@ namespace NuGet.Test
 
             // Assert
             // If this fails there will be a null ref or argument exception
-            Assert.Equal("Package 'a' is not found", result.Message);
+            Assert.Contains("Package 'a' is not found", result.Message);
         }
 
         [Fact]
