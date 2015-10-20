@@ -1158,12 +1158,12 @@ namespace NuGet.Test
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomProjectFolderPath);
         }
 
-        [Fact(Skip = "Disable test because it breaks the signed build")]
+        [Fact(Skip = "Tracked by github issue: https://github.com/NuGet/Home/issues/1612")]
         public async Task TestPacManBuildIntegratedInstallPackageWithInitPS1()
         {
             // Arrange
             var packageIdentity = new PackageIdentity("nuget.core", NuGetVersion.Parse("2.8.3"));
-            var dependencyIdentity = new PackageIdentity("Microsoft.Web.Xdt", NuGetVersion.Parse("2.1.1"));
+            var dependencyIdentity = new PackageIdentity("Microsoft.Web.Xdt", NuGetVersion.Parse("2.1.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSolutionManager = new TestSolutionManager();
             var testSettings = new Configuration.NullSettings();

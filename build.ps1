@@ -127,6 +127,29 @@ function BuildXproj()
             Remove-Item Env:\DNX_BUILD_DELAY_SIGN
         }
 
+        foreach ($file in (Get-ChildItem "test\Common" -rec))
+        {
+            RestoreXProj($file)
+        }
+
+        foreach ($file in (Get-ChildItem "test\Common" -rec))
+        {
+            $ext = [System.IO.Path]::GetExtension($file.FullName)
+
+            if ($ext -eq ".xproj")
+            {
+                $testDir = [System.IO.Path]::GetDirectoryName($file.FullName)
+                $outDir = Join-Path $artifacts $file.BaseName
+
+                & dnu pack "$($testDir)" --configuration $Configuration --out $outDir
+
+                if ($LASTEXITCODE -ne 0)
+                {
+                    throw "Build failed $testDir"
+                }
+            }
+        }
+
         foreach ($file in (Get-ChildItem "test\NuGet.Core.Tests" -rec))
         {
             RestoreXProj($file)
@@ -138,16 +161,16 @@ function BuildXproj()
 
             if ($ext -eq ".xproj")
             {
-                $srcDir = [System.IO.Path]::GetDirectoryName($file.FullName)
-                Write-Host "Running tests in $srcDir"
+                $testDir = [System.IO.Path]::GetDirectoryName($file.FullName)
+                Write-Host "Running tests in $testDir"
 
-                pushd $srcDir
+                pushd $testDir
                 & dnx test
                 popd
 
                 if ($LASTEXITCODE -ne 0)
                 {
-                    throw "Tests failed $srcDir"
+                    throw "Tests failed $testDir"
                 }
              }
         }

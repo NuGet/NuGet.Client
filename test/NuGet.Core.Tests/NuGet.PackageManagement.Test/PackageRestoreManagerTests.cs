@@ -29,7 +29,7 @@ namespace NuGet.Test
                 new PackageIdentity("jQuery.UI.Combined", new NuGetVersion("1.11.2"))
             };
 
-        [Fact(Skip = "Disable test because it breaks the signed build")]
+        [Fact]
         public async Task TestGetMissingPackagesForSolution()
         {
             // Arrange
@@ -160,7 +160,7 @@ namespace NuGet.Test
             Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
         }
 
-        [Fact(Skip = "Failing the signed build, disable to unblock the build")]
+        [Fact]
         public async Task TestCheckForMissingPackages()
         {
             // Arrange
@@ -267,7 +267,7 @@ namespace NuGet.Test
         /// Install 1 test package which cannot be restored into projectB and projectC
         /// Another one that cannot be restored into projectA and projectC
         /// </summary>
-        [Fact(Skip = "Disable test because it breaks the signed build")]
+        [Fact]
         public async Task Test_PackageRestoreFailure_WithRaisedEvents()
         {
             // Arrange
