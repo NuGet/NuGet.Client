@@ -16,6 +16,7 @@
   mc:Ignorable="d"
   ShowInTaskbar="False"
   WindowStartupLocation="CenterOwner"
+  KeyDown="OnButtonKeyDown"
   Title="{x:Static resx:Resources.WindowTitle_LicenseAcceptance}"
   d:DesignHeight="300"
   d:DesignWidth="300">
