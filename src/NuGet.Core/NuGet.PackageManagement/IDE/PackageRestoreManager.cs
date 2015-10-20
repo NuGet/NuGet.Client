@@ -5,11 +5,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
@@ -19,10 +17,6 @@ namespace NuGet.PackageManagement
 {
     public class PackageRestoreManager : IPackageRestoreManager
     {
-        private const string NuGetSolutionSettingsFolder = ".nuget";
-        private static readonly string NuGetExeFile = Path.Combine(NuGetSolutionSettingsFolder, "NuGet.exe");
-        private static readonly string NuGetTargetsFile = Path.Combine(NuGetSolutionSettingsFolder, "NuGet.targets");
-
         private ISourceRepositoryProvider SourceRepositoryProvider { get; }
         private ISolutionManager SolutionManager { get; }
         private Configuration.ISettings Settings { get; }
@@ -54,33 +48,6 @@ namespace NuGet.PackageManagement
             SourceRepositoryProvider = sourceRepositoryProvider;
             Settings = settings;
             SolutionManager = solutionManager;
-        }
-
-        [Obsolete("Enabling and querying legacy package restore is not supported in VS 2015 RTM.")]
-        public bool IsCurrentSolutionEnabledForRestore
-        {
-            get
-            {
-                if (!SolutionManager.IsSolutionOpen)
-                {
-                    return false;
-                }
-
-                var solutionDirectory = SolutionManager.SolutionDirectory;
-                if (string.IsNullOrEmpty(solutionDirectory))
-                {
-                    return false;
-                }
-
-                return FileSystemUtility.FileExists(solutionDirectory, NuGetExeFile) &&
-                       FileSystemUtility.FileExists(solutionDirectory, NuGetTargetsFile);
-            }
-        }
-
-        [Obsolete("Enabling and querying legacy package restore is not supported in VS 2015 RTM.")]
-        public void EnableCurrentSolutionForRestore(bool fromActivation)
-        {
-            // See comment on Obsolete attribute. This method no-ops
         }
 
         public virtual async Task RaisePackagesMissingEventForSolutionAsync(string solutionDirectory, CancellationToken token)
