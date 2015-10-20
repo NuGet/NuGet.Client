@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using System.IO.Compression;
@@ -139,15 +138,15 @@ namespace NuGet.PackageManagement
                 throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.DownloadResourceNotFound, sourceRepository.PackageSource.Source));
             }
 
-            var downloadResourceResult 
+            var downloadResourceResult
                 = await downloadResource.GetDownloadResourceResultAsync(packageIdentity, settings, token);
 
             if (downloadResourceResult == null)
             {
                 throw new InvalidOperationException(string.Format(
-                    CultureInfo.CurrentCulture, 
-                    Strings.DownloadStreamNotAvailable, 
-                    packageIdentity, 
+                    CultureInfo.CurrentCulture,
+                    Strings.DownloadStreamNotAvailable,
+                    packageIdentity,
                     sourceRepository.PackageSource.Source));
             }
 

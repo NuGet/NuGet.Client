@@ -147,9 +147,9 @@ namespace NuGet.PackageManagement
             // Step-1 : Get latest version for packageId
             var latestVersion = await GetLatestVersionAsync(
                 packageId,
-                nuGetProject, 
-                resolutionContext, 
-                primarySources, 
+                nuGetProject,
+                resolutionContext,
+                primarySources,
                 token);
 
             if (latestVersion == null)
@@ -467,7 +467,7 @@ namespace NuGet.PackageManagement
             {
                 // either we have a packageId or a list of specific PackageIdentities to work with
 
-                // first lets normalize this input so we are just dealing with a list 
+                // first lets normalize this input so we are just dealing with a list
 
                 if (packageIdentities.Count == 0)
                 {
@@ -536,7 +536,7 @@ namespace NuGet.PackageManagement
 
             return actions;
         }
- 
+
         /// <summary>
         /// Update Package logic specific to classic style NuGet projects
         /// </summary>
@@ -658,7 +658,7 @@ namespace NuGet.PackageManagement
                 }
 
                 // Update-Package ALL packages scenarios must always include the packages in the current project
-                // Scenarios include: (1) a package havign been deleted from a feed (2) a source being removed from nuget config (3) an explicitly specified source 
+                // Scenarios include: (1) a package havign been deleted from a feed (2) a source being removed from nuget config (3) an explicitly specified source
                 if (packageId == null && packageIdentities.Count == 0)
                 {
                     // BUG #1181 VS2015 : Updating from one feed fails for packages from different feed.
@@ -871,7 +871,7 @@ namespace NuGet.PackageManagement
             {
                 foreach (var dependency in sourceDepInfo.Dependencies)
                 {
-                    // check we don't fall into an infinite loop caused by bad dependency data in the packages 
+                    // check we don't fall into an infinite loop caused by bad dependency data in the packages
                     if (depth < packages.Count())
                     {
                         CollectDependencies(result, dependency.Id, packages, available, depth + 1);
@@ -1410,7 +1410,7 @@ namespace NuGet.PackageManagement
                 var msbuildProject = nuGetProject as MSBuildNuGetProject;
                 if (msbuildProject != null)
                 {
-                    nuGetProjectContext.OriginalPackagesConfig = 
+                    nuGetProjectContext.OriginalPackagesConfig =
                         msbuildProject.PackagesConfigNuGetProject?.GetPackagesConfig();
                 }
 
@@ -1435,7 +1435,11 @@ namespace NuGet.PackageManagement
                         }
                         else
                         {
-                            using (var downloadPackageResult = await PackageDownloader.GetDownloadResourceResultAsync(nuGetProjectAction.SourceRepository, nuGetProjectAction.PackageIdentity, Settings, token))
+                            using (var downloadPackageResult = await
+                                    PackageDownloader.GetDownloadResourceResultAsync(nuGetProjectAction.SourceRepository,
+                                    nuGetProjectAction.PackageIdentity,
+                                    Settings,
+                                    token))
                             {
                                 // use the version exactly as specified in the nuspec file
                                 var packageIdentity = downloadPackageResult.PackageReader.GetIdentity();
@@ -1446,7 +1450,7 @@ namespace NuGet.PackageManagement
 
                         if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Install)
                         {
-                            var identityString = String.Format(CultureInfo.InvariantCulture, "{0} {1}",
+                            var identityString = string.Format(CultureInfo.InvariantCulture, "{0} {1}",
                                 nuGetProjectAction.PackageIdentity.Id,
                                 nuGetProjectAction.PackageIdentity.Version.ToNormalizedString());
 
@@ -1670,9 +1674,9 @@ namespace NuGet.PackageManagement
             else if (nuGetProjectActions.Any())
             {
                 projectAction = await PreviewBuildIntegratedProjectActionsAsync(
-                    buildIntegratedProject, 
-                    nuGetProjectActions, 
-                    nuGetProjectContext, 
+                    buildIntegratedProject,
+                    nuGetProjectActions,
+                    nuGetProjectContext,
                     token);
             }
             else
@@ -1724,7 +1728,7 @@ namespace NuGet.PackageManagement
                     }
                     else
                     {
-                        // uninstall 
+                        // uninstall
                         nuGetProjectContext.Log(
                             ProjectManagement.MessageLevel.Info,
                             Strings.SuccessfullyUninstalled,
@@ -2011,13 +2015,13 @@ namespace NuGet.PackageManagement
             string packageId,
             NuGetFramework framework,
             ResolutionContext resolutionContext,
-            SourceRepository primarySourceRepository, 
+            SourceRepository primarySourceRepository,
             CancellationToken token)
         {
             return GetLatestVersionAsync(
-                packageId, 
-                framework, 
-                resolutionContext, 
+                packageId,
+                framework,
+                resolutionContext,
                 new List<SourceRepository> { primarySourceRepository },
                 token);
         }
@@ -2091,7 +2095,7 @@ namespace NuGet.PackageManagement
         {
             var dependencyInfoResource = await source.GetResourceAsync<DependencyInfoResource>();
 
-            // Resolve the package for the project framework and cache the results in the 
+            // Resolve the package for the project framework and cache the results in the
             // resolution context for the gather to use during the next step.
             // Using the metadata resource will result in multiple calls to the same url during an install.
             var packages = await dependencyInfoResource.ResolvePackages(packageId, framework, token);

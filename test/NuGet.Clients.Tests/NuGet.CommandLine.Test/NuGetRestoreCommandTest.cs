@@ -154,7 +154,7 @@ namespace NuGet.CommandLine.Test
                     workingPath,
                     string.Join(" ", args),
                     waitForExit: true);
-                Environment.SetEnvironmentVariable("PATH", path);                
+                Environment.SetEnvironmentVariable("PATH", path);
 
                 // Assert
                 Assert.Equal(0, r.Item1);
@@ -204,7 +204,7 @@ Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj2"", ""proj2\proj2.c
 EndProject");
 
                 Util.CreateFile(proj1Directory, "proj1.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -221,7 +221,7 @@ EndProject");
 </packages>");
 
                 Util.CreateFile(proj2Directory, "proj2.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -237,7 +237,7 @@ EndProject");
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
-                // Act 
+                // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
@@ -361,7 +361,7 @@ Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj2"", ""proj2\proj2.c
 EndProject");
 
                 Util.CreateFile(proj1Directory, "proj1.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -378,7 +378,7 @@ EndProject");
 </packages>");
 
                 Util.CreateFile(proj2Directory, "proj2.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -394,7 +394,7 @@ EndProject");
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
-                // Act 
+                // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
@@ -449,7 +449,7 @@ Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj2"", ""proj2\proj2.c
 EndProject");
 
                 Util.CreateFile(proj1Directory, "proj1.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -466,7 +466,7 @@ EndProject");
 </packages>");
 
                 Util.CreateFile(proj2Directory, "proj2.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -482,7 +482,7 @@ EndProject");
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
-                // Act 
+                // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
@@ -534,7 +534,7 @@ EndProject");
                 // The project contains an import statement to import an non-existing file.
                 // Thus, this project cannot be loaded successfully.
                 Util.CreateFile(proj1Directory, "proj1.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -549,7 +549,7 @@ EndProject");
 </packages>");
                 string[] args = new string[] { "restore", "-Source", repositoryPath };
 
-                // Act 
+                // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
@@ -623,7 +623,7 @@ EndProject");
             }
         }
 
-        // Tests that when package restore is enabled and -RequireConsent is specified, 
+        // Tests that when package restore is enabled and -RequireConsent is specified,
         // the opt out message is displayed.
         // TODO: renable the test once this is implemented
         // [Theory]
@@ -668,7 +668,7 @@ EndProject");
 </configuration>");
 
                 Util.CreateFile(proj1Directory, "proj1.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -685,7 +685,7 @@ EndProject");
 </packages>");
 
                 Util.CreateFile(proj2Directory, "proj2.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -701,7 +701,7 @@ EndProject");
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
-                // Act 
+                // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
@@ -727,7 +727,7 @@ EndProject");
             }
         }
 
-        // Tests that when package restore is enabled and -RequireConsent is not specified, 
+        // Tests that when package restore is enabled and -RequireConsent is not specified,
         // the opt out message is not displayed.
         [Fact]
         public void RestoreCommand_NoOptOutMessage()
@@ -769,7 +769,7 @@ EndProject");
 </configuration>");
 
                 Util.CreateFile(proj1Directory, "proj1.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -786,7 +786,7 @@ EndProject");
 </packages>");
 
                 Util.CreateFile(proj2Directory, "proj2.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -802,7 +802,7 @@ EndProject");
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
-                // Act 
+                // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
@@ -864,7 +864,7 @@ Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj2"", ""proj2\proj2.c
 EndProject");
 
                 Util.CreateFile(proj1Directory, "proj1.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -881,7 +881,7 @@ EndProject");
 </packages>");
 
                 Util.CreateFile(proj2Directory, "proj2.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -897,7 +897,7 @@ EndProject");
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
-                // Act 
+                // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     tempPath,
@@ -960,7 +960,7 @@ Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj2"", ""proj2\proj2.c
 EndProject");
 
                 Util.CreateFile(proj1Directory, "proj1.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -977,7 +977,7 @@ EndProject");
 </packages>");
 
                 Util.CreateFile(proj2Directory, "proj2.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -993,7 +993,7 @@ EndProject");
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
-                // Act 
+                // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     tempPath,
@@ -1040,7 +1040,7 @@ EndProject");
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
 
                 Util.CreateFile(proj1Directory, "proj1.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -1057,7 +1057,7 @@ EndProject");
 </packages>");
 
                 Util.CreateFile(proj2Directory, "proj2.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -1073,7 +1073,7 @@ EndProject");
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
-                // Act 
+                // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     tempPath,
@@ -1095,7 +1095,7 @@ EndProject");
             }
         }
 
-        // Tests that package restore loads the correct config file when -ConfigFile 
+        // Tests that package restore loads the correct config file when -ConfigFile
         // is specified.
         [Fact]
         public void RestoreCommand_ConfigFile()
@@ -1132,7 +1132,7 @@ EndProject");
 </configuration>", repositoryPath));
 
                 Util.CreateFile(proj1Directory, "proj1.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -1148,7 +1148,7 @@ EndProject");
   <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
 </packages>");
 
-                // Act 
+                // Act
                 // the package source listed in my.config will be used.
                 var r = CommandRunner.Run(
                     nugetexe,
@@ -1170,7 +1170,7 @@ EndProject");
 
         // Tests that when -PackageSaveMode is set to nuspec, the nuspec files, instead of
         // nupkg files, are saved.
-        [Fact(Skip="PackageSaveMode is not implemented yet")]
+        [Fact(Skip = "PackageSaveMode is not implemented yet")]
         public void RestoreCommand_PackageSaveModeNuspec()
         {
             // Arrange
@@ -1202,7 +1202,7 @@ Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj2"", ""proj2\proj2.c
 EndProject");
 
                 Util.CreateFile(proj1Directory, "proj1.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -1219,7 +1219,7 @@ EndProject");
 </packages>");
 
                 Util.CreateFile(proj2Directory, "proj2.csproj",
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -1235,7 +1235,7 @@ EndProject");
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
-                // Act 
+                // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
@@ -1565,7 +1565,7 @@ EndProject";
             }
         }
 
-        // return code should be 1 when restore failed 
+        // return code should be 1 when restore failed
         [Fact]
         public void RestoreCommand_FromPackagesConfigFileFailed()
         {
@@ -1986,7 +1986,7 @@ EndProject";
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
-                Assert.True(File.Exists(Path.Combine(randomSolutionFolder, 
+                Assert.True(File.Exists(Path.Combine(randomSolutionFolder,
                     @"packages\packageA.1.0.0\packageA.1.0.0.nupkg")));
 
                 Assert.True(File.Exists(Path.Combine(randomSolutionFolder,

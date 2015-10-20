@@ -46,11 +46,11 @@ namespace NuGet.Protocol.Core.v2
                     var sourcePackage = identity as SourcePackageDependencyInfo;
                     var repository = V2Client as DataServicePackageRepository;
 
-                    if (repository != null 
+                    if (repository != null
                         && sourcePackage?.PackageHash != null
                         && sourcePackage?.DownloadUri != null)
                     {
-                        // If this is a SourcePackageDependencyInfo object with everything populated 
+                        // If this is a SourcePackageDependencyInfo object with everything populated
                         // and it is from an online source, use the machine cache and download it using the
                         // given url.
                         return DownloadFromUrl(sourcePackage, repository, token);
@@ -128,8 +128,8 @@ namespace NuGet.Protocol.Core.v2
         }
 
         private static DownloadResourceResult DownloadFromIdentity(
-            PackageIdentity identity, 
-            IPackageRepository repository, 
+            PackageIdentity identity,
+            IPackageRepository repository,
             CancellationToken token)
         {
             var version = SemanticVersion.Parse(identity.Version.ToString());
@@ -142,42 +142,52 @@ namespace NuGet.Protocol.Core.v2
                 dataServiceRepo = new DataServicePackageRepository(sourceUri);
 
                 var package = dataServiceRepo.FindPackage(identity.Id, version);
-                token.ThrowIfCancellationRequested();
-
-                // For online sources get the url and retrieve it with cancel support
                 var dataServicePackage = package as DataServicePackage;
-                var url = dataServicePackage.DownloadUrl;
 
-                var downloadedPackage = DownloadToMachineCache(
-                    MachineCache.Default,
-                    identity,
-                    dataServiceRepo,
-                    url,
-                    token);
+                Debug.Assert(package == null || dataServicePackage != null,
+                    "Package type returned is unpexpected: " + package.GetType().ToString());
 
-                if (downloadedPackage != null)
+                if (dataServicePackage != null)
                 {
-                    return new DownloadResourceResult(downloadedPackage.GetStream());
+                    token.ThrowIfCancellationRequested();
+
+                    // For online sources get the url and retrieve it with cancel support
+                    var url = dataServicePackage.DownloadUrl;
+
+                    var downloadedPackage = DownloadToMachineCache(
+                        MachineCache.Default,
+                        identity,
+                        dataServiceRepo,
+                        url,
+                        token);
+
+                    if (downloadedPackage != null)
+                    {
+                        return new DownloadResourceResult(downloadedPackage.GetStream());
+                    }
                 }
             }
             else
             {
                 var package = repository.FindPackage(identity.Id, version);
 
-                // Use a folder reader for unzipped repos
-                if (repository is UnzippedPackageRepository)
+                if (package != null)
                 {
-                    var packagePath = Path.Combine(repository.Source, identity.Id + "." + version);
-                    var directoryInfo = new DirectoryInfo(packagePath);
-                    if (directoryInfo.Exists)
+                    // Use a folder reader for unzipped repos
+                    if (repository is UnzippedPackageRepository)
                     {
-                        return new DownloadResourceResult(
-                            package.GetStream(),
-                            new PackageFolderReader(directoryInfo));
+                        var packagePath = Path.Combine(repository.Source, identity.Id + "." + version);
+                        var directoryInfo = new DirectoryInfo(packagePath);
+                        if (directoryInfo.Exists)
+                        {
+                            return new DownloadResourceResult(
+                                package.GetStream(),
+                                new PackageFolderReader(directoryInfo));
+                        }
                     }
-                }
 
-                return new DownloadResourceResult(package.GetStream());
+                    return new DownloadResourceResult(package.GetStream());
+                }
             }
 
             return null;
@@ -228,11 +238,11 @@ namespace NuGet.Protocol.Core.v2
                 }
                 catch (OperationCanceledException)
                 {
-                    // The task was canceled. To avoid writing a partial file to the machine cache 
+                    // The task was canceled. To avoid writing a partial file to the machine cache
                     // we need to clear out the current tmp file stream so that it will be ignored.
                     stream.SetLength(0);
 
-                    // If the machine cache is using the physical file system we can find the 
+                    // If the machine cache is using the physical file system we can find the
                     // path of temp file and clean it up. Otherwise NuGet.Core will just leave the temp file.
                     tmpFileStream = stream as FileStream;
                     if (tmpFileStream != null)

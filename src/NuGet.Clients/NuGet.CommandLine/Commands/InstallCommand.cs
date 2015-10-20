@@ -77,7 +77,7 @@ namespace NuGet.CommandLine
                 Prerelease = true;
 
                 // display opt-out message if needed
-                if (Console != null && RequireConsent && 
+                if (Console != null && RequireConsent &&
                     new PackageRestoreConsent(new SettingsToLegacySettings(Settings)).IsGranted)
                 {
                     string message = String.Format(
@@ -102,7 +102,9 @@ namespace NuGet.CommandLine
             // If the SolutionDir is specified, use the .nuget directory under it to determine the solution-level settings
             if (!String.IsNullOrEmpty(SolutionDirectory))
             {
-                var solutionSettingsFile = Path.Combine(SolutionDirectory.TrimEnd(Path.DirectorySeparatorChar), NuGetConstants.NuGetSolutionSettingsFolder);
+                var path = Path.Combine(SolutionDirectory.TrimEnd(Path.DirectorySeparatorChar), NuGetConstants.NuGetSolutionSettingsFolder);
+
+                var solutionSettingsFile = Path.GetFullPath(path);
 
                 Settings = Configuration.Settings.LoadDefaultSettings(
                     solutionSettingsFile,
@@ -122,11 +124,11 @@ namespace NuGet.CommandLine
                 // Use the OutputDirectory if specified.
                 return OutputDirectory;
             }
-            
+
             string installPath = SettingsUtility.GetRepositoryPath(Settings);
             if (!String.IsNullOrEmpty(installPath))
             {
-                // If a value is specified in config, use that. 
+                // If a value is specified in config, use that.
                 return installPath;
             }
 
@@ -155,8 +157,8 @@ namespace NuGet.CommandLine
                     new[] { packagesConfigFilePath },
                     isMissing: true));
             var packageRestoreContext = new PackageRestoreContext(
-                nuGetPackageManager, 
-                packageRestoreData, 
+                nuGetPackageManager,
+                packageRestoreData,
                 CancellationToken.None,
                 packageRestoredEvent: null,
                 packageRestoreFailedEvent: null,
@@ -181,7 +183,7 @@ namespace NuGet.CommandLine
             }
 
             var folderProject = new FolderNuGetProject(
-                installPath, 
+                installPath,
                 new Packaging.PackagePathResolver(installPath, !ExcludeVersion));
 
             var sourceRepositoryProvider = GetSourceRepositoryProvider();

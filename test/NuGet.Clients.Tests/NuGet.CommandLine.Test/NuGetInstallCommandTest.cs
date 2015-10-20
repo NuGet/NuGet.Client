@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
-using Newtonsoft.Json.Linq;
 using Test.Utility;
 using Xunit;
 
@@ -11,6 +10,178 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetInstallCommandTest
     {
+        [Fact]
+        public void InstallCommand_FromPackagesConfigFile()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var currentFolderName = Guid.NewGuid().ToString();
+            var workingPath = Path.Combine(tempPath, currentFolderName);
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var nugetexe = Util.GetNuGetExePath();
+
+            try
+            {
+                Util.CreateDirectory(workingPath);
+                Util.CreateDirectory(repositoryPath);
+                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
+                Util.CreateFile(workingPath, "packages.config",
+@"<packages>
+  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
+</packages>");
+
+                string[] args = new string[]
+                {
+                    "install",
+                    "-OutputDirectory",
+                    "outputDir",
+                    "-Source",
+                    repositoryPath
+                };
+
+                // Act
+                var path = Environment.GetEnvironmentVariable("PATH");
+                Environment.SetEnvironmentVariable("PATH", null);
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+                Environment.SetEnvironmentVariable("PATH", path);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                var packageFileA = Path.Combine(workingPath, @"outputDir\packageA.1.1.0\packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, @"outputDir\packageB.2.2.0\packageB.2.2.0.nupkg");
+                Assert.True(File.Exists(packageFileA));
+                Assert.True(File.Exists(packageFileB));
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(currentDirectory);
+                Util.DeleteDirectory(workingPath);
+            }
+        }
+
+        [Fact]
+        public void InstallCommand_FromPackagesConfigFile_SpecifyingSolutionDir()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var currentFolderName = Guid.NewGuid().ToString();
+            var workingPath = Path.Combine(tempPath, currentFolderName);
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var nugetexe = Util.GetNuGetExePath();
+
+            try
+            {
+                Util.CreateDirectory(workingPath);
+                Util.CreateDirectory(repositoryPath);
+                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
+                Util.CreateFile(workingPath, "packages.config",
+@"<packages>
+  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
+</packages>");
+
+                string[] args = new string[]
+                {
+                    "install",
+                    "-SolutionDir",
+                    $"\"{workingPath}\"",
+                    "-OutputDirectory",
+                    "outputDir",
+                    "-Source",
+                    repositoryPath
+                };
+
+                // Act
+                var path = Environment.GetEnvironmentVariable("PATH");
+                Environment.SetEnvironmentVariable("PATH", null);
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+                Environment.SetEnvironmentVariable("PATH", path);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                var packageFileA = Path.Combine(workingPath, @"outputDir\packageA.1.1.0\packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, @"outputDir\packageB.2.2.0\packageB.2.2.0.nupkg");
+                Assert.True(File.Exists(packageFileA));
+                Assert.True(File.Exists(packageFileB));
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(currentDirectory);
+                Util.DeleteDirectory(workingPath);
+            }
+        }
+
+        [Fact]
+        public void InstallCommand_FromPackagesConfigFile_SpecifyingRelativeSolutionDir()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var currentFolderName = Guid.NewGuid().ToString();
+            var relativeFolderPath = $"..\\{currentFolderName}";
+            var workingPath = Path.Combine(tempPath, currentFolderName);
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var nugetexe = Util.GetNuGetExePath();
+
+            try
+            {
+                Util.CreateDirectory(workingPath);
+                Util.CreateDirectory(repositoryPath);
+                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
+                Util.CreateFile(workingPath, "packages.config",
+@"<packages>
+  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
+</packages>");
+
+                string[] args = new string[]
+                {
+                    "install",
+                    "-SolutionDir",
+                    relativeFolderPath,
+                    "-OutputDirectory",
+                    "outputDir",
+                    "-Source",
+                    repositoryPath };
+
+                // Act
+                var path = Environment.GetEnvironmentVariable("PATH");
+                Environment.SetEnvironmentVariable("PATH", null);
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+                Environment.SetEnvironmentVariable("PATH", path);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                var packageFileA = Path.Combine(workingPath, @"outputDir\packageA.1.1.0\packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, @"outputDir\packageB.2.2.0\packageB.2.2.0.nupkg");
+                Assert.True(File.Exists(packageFileA));
+                Assert.True(File.Exists(packageFileB));
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(currentDirectory);
+                Util.DeleteDirectory(workingPath);
+            }
+        }
+
         [Fact(Skip = "PackageSaveMode is not supported yet")]
         public void InstallCommand_PackageSaveModeNuspec()
         {
@@ -894,7 +1065,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        // Tests that when credential is saved in the config file, it will be passed 
+        // Tests that when credential is saved in the config file, it will be passed
         // correctly to both the index.json endpoint and registration endpoint, even
         // though one uri does not start with the other uri.
         [Fact]
@@ -906,7 +1077,7 @@ namespace NuGet.CommandLine.Test
 
             try
             {
-                // Server setup                
+                // Server setup
                 using (var serverV3 = new MockServer())
                 {
                     var registrationEndPoint = serverV3.Uri + "w";
