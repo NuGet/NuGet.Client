@@ -610,6 +610,24 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to NuGet - Solution.
+        /// </summary>
+        public static string Label_SolutionNuGetWindowCaption {
+            get {
+                return ResourceManager.GetString("Label_SolutionNuGetWindowCaption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manage Packages for Solution.
+        /// </summary>
+        public static string Label_SolutionPackageManager {
+            get {
+                return ResourceManager.GetString("Label_SolutionPackageManager", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Tags:.
         /// </summary>
         public static string Label_Tags {

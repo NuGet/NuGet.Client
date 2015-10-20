@@ -58,11 +58,7 @@ namespace NuGet.PackageManagement.UI
             }
             set
             {
-                _checkBoxesEnabled = value;
-                _updateButtonContainer.Visibility =
-                    _checkBoxesEnabled ?
-                    Visibility.Visible :
-                    Visibility.Collapsed;
+                _checkBoxesEnabled = value;                
             }
         }
 
@@ -249,6 +245,13 @@ namespace NuGet.PackageManagement.UI
         // Update the status of the _selectAllPackages check box and the Update button.
         private void UpdateCheckBoxStatus()
         {
+            if (!CheckBoxesEnabled)
+            {
+                // the current tab is not "updates"
+                _updateButtonContainer.Visibility = Visibility.Collapsed;
+                return;
+            }
+
             int packageCount;
             if (Items.Count == 0)
             {
@@ -266,6 +269,12 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
+            // update the container's visibility
+            _updateButtonContainer.Visibility = 
+                packageCount > 0 ?
+                Visibility.Visible :
+                Visibility.Collapsed;
+            
             if (_selectedCount == 0)
             {
                 _selectAllPackages.IsChecked = false;
