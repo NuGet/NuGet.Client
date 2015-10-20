@@ -220,7 +220,7 @@ Write-Host
 if ((Test-Path $nugetExe) -eq $False)
 {
     Write-Host "Downloading nuget.exe"
-    wget https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile $nugetExe
+    wget https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe -OutFile $nugetExe
 }
 
 # Restoring tools required for build
