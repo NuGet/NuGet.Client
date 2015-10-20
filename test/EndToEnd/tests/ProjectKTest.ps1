@@ -24,7 +24,7 @@ function Test-ProjectKUninstallPackage {
 }
 
 # Basic update
-function Test-ProjectKUpdatePackage {
+function ProjectKUpdatePackage {
     # Arrange
     $project = New-DNXConsoleApp
     Install-Package log4net -ProjectName $project.Name -version 2.0.1
@@ -52,7 +52,7 @@ function Test-ProjectKInstallMultiplePackages {
 }
 
 # Uninstall multiple packages
-function Test-ProjectKUninstallMultiplePackages {
+function ProjectKUninstallMultiplePackages {
     # Arrange
     $project = New-DNXClassLibrary
 
@@ -96,7 +96,7 @@ function Test-ProjectKUpdateAllPackages {
 }
 
 # No package update available. Latest version already installed.
-function Test-ProjectKUpdatePackageNoUpdateAvailable {
+function ProjectKUpdatePackageNoUpdateAvailable {
     # Arrange
     $project = New-DNXConsoleApp 
 

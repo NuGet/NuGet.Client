@@ -1039,7 +1039,7 @@ namespace NuGet.Commands.Test
             const string project = @"
 {
     ""dependencies"": {
-        ""System.Runtime.WindowsRuntime"": ""4.0.0-beta-*"",
+        ""System.Runtime.WindowsRuntime"": ""4.0.11-beta-*"",
         ""Microsoft.NETCore.Targets"": ""1.0.0-beta-*""
     },
     ""frameworks"": {
@@ -1054,8 +1054,7 @@ namespace NuGet.Commands.Test
             // Arrange
             var sources = new List<PackageSource>();
 
-            // TODO(anurse): We should be mocking this out or using a stable source...
-            sources.Add(new PackageSource("https://www.myget.org/F/dotnet-core/api/v2/"));
+            sources.Add(new PackageSource("https://nuget.org/api/v2/"));
 
             var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
             var projectDir = TestFileSystemUtility.CreateRandomTestFolder();
@@ -1229,8 +1228,7 @@ namespace NuGet.Commands.Test
             // Arrange
             var sources = new List<PackageSource>();
 
-            // TODO(anurse): We should be mocking this out or using a stable source...
-            sources.Add(new PackageSource("https://www.myget.org/F/dotnet-core/api/v2/"));
+            sources.Add(new PackageSource("https://nuget.org/api/v2/"));
 
             var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
             var projectDir = TestFileSystemUtility.CreateRandomTestFolder();
