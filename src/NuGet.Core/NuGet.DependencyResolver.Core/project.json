@@ -1,5 +1,8 @@
 ﻿{
   "version": "3.3.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
   "dependencies": {
     "NuGet.LibraryModel": "3.3.0-*",
     "NuGet.Frameworks": "3.3.0-*",

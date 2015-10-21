@@ -7,6 +7,9 @@
   "copyright": "Copyright .NET Foundation. All rights reserved.",
   "projectUrl": "https://github.com/NuGet/NuGet.Packaging/",
   "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Packaging/master/LICENSE",
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
   "dependencies": {
     "NuGet.Versioning": "3.3.0-*",
     "NuGet.Common": {

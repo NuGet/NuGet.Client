@@ -1,5 +1,8 @@
 ﻿{
   "version": "1.0.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
   "dependencies": {
     "NuGet.Protocol.Core.Types": "3.3.0-*"
   },

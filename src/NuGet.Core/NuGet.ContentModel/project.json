@@ -1,5 +1,8 @@
 ﻿{
   "version": "3.3.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
   "dependencies": {
     "NuGet.Common": {
       "type": "build",

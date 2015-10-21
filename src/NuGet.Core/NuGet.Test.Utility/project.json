@@ -1,5 +1,8 @@
 ﻿{
   "version": "3.3.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
   "dependencies": {
     "xunit": "2.1.0-rc1-build3168"
   },

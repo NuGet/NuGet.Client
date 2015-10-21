@@ -1,6 +1,9 @@
 ﻿{
   "version": "3.3.0-*",
   "description": "Complete commands common to command-line and GUI NuGet clients",
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
   "dependencies": {
     "NuGet.Client": "3.3.0-*",
     "NuGet.ContentModel": "3.3.0-*",
