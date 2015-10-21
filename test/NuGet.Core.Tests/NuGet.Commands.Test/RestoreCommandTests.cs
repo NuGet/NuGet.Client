@@ -575,6 +575,10 @@ namespace NuGet.Commands.Test
             var previousLockFile = result.LockFile;
             request.ExistingLockFile = result.LockFile;
 
+            // Act 2 
+            // Read the file from disk to verify the reader
+            var fromDisk = lockFileFormat.Read(lockFilePath);
+
             // wait half a second to make sure the time difference can be picked up
             await Task.Delay(500);
 
@@ -590,9 +594,11 @@ namespace NuGet.Commands.Test
 
             // Verify the files are equal
             Assert.True(previousLockFile.Equals(result.LockFile));
+            Assert.True(fromDisk.Equals(result.LockFile));
 
             // Verify the hash codes are the same
             Assert.Equal(previousLockFile.GetHashCode(), result.LockFile.GetHashCode());
+            Assert.Equal(fromDisk.GetHashCode(), result.LockFile.GetHashCode());
         }
 
         [Fact]
