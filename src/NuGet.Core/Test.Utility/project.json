@@ -5,8 +5,8 @@
     "NuGet.ProjectManagement": "3.3.0-*",
     "NuGet.Protocol.VisualStudio": "3.3.0-*",
     "Microsoft.VisualStudio.ProjectSystem.Interop": "",
-    "DotNetZip": "1.9.3",
-    "xunit": "2.1.0-rc1-build3168"
+    "xunit": "2.1.0-rc1-build3168",
+    "NuGet.Test.Utility": "3.3.0-*"
   },
   "frameworks": {
     "net45": {

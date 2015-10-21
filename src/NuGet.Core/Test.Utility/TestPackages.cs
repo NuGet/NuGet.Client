@@ -3,8 +3,10 @@
 
 using System;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Text;
-using Ionic.Zip;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 
 namespace Test.Utility
@@ -33,7 +35,9 @@ namespace Test.Utility
             <dependency id='{0}' version='{1}' />
         </dependencies>";
 
-        public static FileInfo GetLegacyTestPackage(string path, string packageId = "packageA", string packageVersion = "2.0.3")
+        public static FileInfo GetLegacyTestPackage(string path,
+            string packageId = "packageA",
+            string packageVersion = "2.0.3")
         {
             return GeneratePackage(path, packageId, packageVersion,
                 new[]
@@ -45,7 +49,9 @@ namespace Test.Utility
                 });
         }
 
-        public static FileInfo GetNet45TestPackage(string path, string packageId = "packageA", string packageVersion = "2.0.3")
+        public static FileInfo GetNet45TestPackage(string path,
+            string packageId = "packageA",
+            string packageVersion = "2.0.3")
         {
             return GeneratePackage(path, packageId, packageVersion,
                 new[]
@@ -55,7 +61,9 @@ namespace Test.Utility
                 });
         }
 
-        public static FileInfo GetEmptyNet45TestPackage(string path, string packageId = "packageA", string packageVersion = "2.0.3")
+        public static FileInfo GetEmptyNet45TestPackage(string path,
+            string packageId = "packageA",
+            string packageVersion = "2.0.3")
         {
             return GeneratePackage(path, packageId, packageVersion,
                 new[]
@@ -79,7 +87,7 @@ namespace Test.Utility
         public static FileInfo GetLegacyContentPackage(string path, string packageId, string packageVersion)
         {
             return GeneratePackage(path, packageId, packageVersion,
-                new []
+                new[]
                 {
                     "Content/",
                     "Content/Scripts/",
@@ -100,7 +108,9 @@ namespace Test.Utility
                 });
         }
 
-        public static FileInfo GetContentPackageWithTargetFramework(string path, string packageId, string packageVersion)
+        public static FileInfo GetContentPackageWithTargetFramework(string path,
+            string packageId,
+            string packageVersion)
         {
             return GeneratePackage(path, packageId, packageVersion,
                 new[]
@@ -114,17 +124,28 @@ namespace Test.Utility
                 });
         }
 
-        public static FileInfo GetPackageWithWebConfigTransform(string path, string packageId, string packageVersion, string webConfigTransformContent)
+        public static FileInfo GetPackageWithWebConfigTransform(string path,
+            string packageId,
+            string packageVersion,
+            string webConfigTransformContent)
         {
-            ZipFile zipFile;
-            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
-
-            zipFile.AddEntry("Content/", new byte[] { 0 });
-            zipFile.AddEntry("Content/web.config.transform", webConfigTransformContent);
-            SetSimpleNuspec(zipFile, packageId, packageVersion);
-            zipFile.Save();
-
-            return fileInfo;
+            return GeneratePackage(
+                path,
+                packageId,
+                packageVersion,
+                new[]
+                {
+                    "Content/",
+                    "Content/web.config.transform",
+                },
+                new[]
+                {
+                    string.Empty,
+                    webConfigTransformContent
+                },
+                frameworkAssemblies: false,
+                minClientVersion: null,
+                dependencies: false);
         }
 
         public static FileInfo GetPackageWithBuildFiles(string path, string packageId, string packageVersion)
@@ -136,15 +157,18 @@ namespace Test.Utility
                 });
         }
 
-        public static FileInfo GetPackageWithFrameworkReference(string path, string packageId = "packageA", string packageVersion = "2.0.3")
+        public static FileInfo GetPackageWithFrameworkReference(string path,
+            string packageId = "packageA",
+            string packageVersion = "2.0.3")
         {
-            ZipFile zipFile;
-            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
-
-            SetSimpleNuspec(zipFile, packageId, packageVersion, frameworkAssemblies: true);
-            zipFile.Save();
-
-            return fileInfo;
+            return GeneratePackage(
+                path,
+                packageId,
+                packageVersion,
+                new string[] { },
+                frameworkAssemblies: true,
+                minClientVersion: null,
+                dependencies: false);
         }
 
         public static FileInfo GetPackageWithPowershellScripts(string path, string packageId, string packageVersion)
@@ -174,60 +198,128 @@ namespace Test.Utility
 
         public static FileInfo GetEmptyPackageWithDependencies(string path, string packageId, string packageVersion)
         {
-            ZipFile zipFile;
-            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
-
-            SetSimpleNuspec(zipFile, packageId, packageVersion, false, null, true);
-            zipFile.Save();
-
-            return fileInfo;
+            return GeneratePackage(
+                path,
+                packageId,
+                packageVersion,
+                new string[] { },
+                frameworkAssemblies: false,
+                minClientVersion: null,
+                dependencies: true);
         }
 
-        public static FileInfo GetPackageWithMinClientVersion(string path, string packageId, string packageVersion, SemanticVersion minClientVersion)
+        public static FileInfo GetPackageWithMinClientVersion(string path,
+            string packageId,
+            string packageVersion,
+            SemanticVersion minClientVersion)
         {
-            ZipFile zipFile;
-            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
-
-            SetSimpleNuspec(zipFile, packageId, packageVersion, false, minClientVersion);
-            zipFile.Save();
-
-            return fileInfo;
+            return GeneratePackage(
+                path,
+                packageId,
+                packageVersion,
+                new string[] { },
+                frameworkAssemblies: false,
+                minClientVersion: minClientVersion,
+                dependencies: false);
         }
 
-        private static FileInfo GeneratePackage(string path, string packageId, string packageVersion, string[] zipEntries)
+        private static FileInfo GeneratePackage(
+            string path,
+            string packageId,
+            string packageVersion,
+            string[] zipEntries)
         {
-            ZipFile zipFile;
-            var fileInfo = GetFileInfo(path, packageId, packageVersion, out zipFile);
+            return GeneratePackage(
+                path,
+                packageId,
+                packageVersion,
+                zipEntries,
+                frameworkAssemblies: false,
+                minClientVersion: null,
+                dependencies: false);
+        }
 
-            foreach (var relativeFilePath in zipEntries)
+        private static FileInfo GeneratePackage(
+            string path,
+            string packageId,
+            string packageVersion,
+            string[] zipEntries,
+            bool frameworkAssemblies,
+            SemanticVersion minClientVersion,
+            bool dependencies)
+        {
+            var zipContents = Enumerable.Repeat(string.Empty, zipEntries.Length).ToArray();
+            return GeneratePackage(
+                path,
+                packageId,
+                packageVersion,
+                zipEntries,
+                zipContents,
+                frameworkAssemblies,
+                minClientVersion,
+                dependencies);
+        }
+
+        private static FileInfo GeneratePackage(
+            string path,
+            string packageId,
+            string packageVersion,
+            string[] zipEntries,
+            string[] zipContents,
+            bool frameworkAssemblies,
+            SemanticVersion minClientVersion,
+            bool dependencies)
+        {
+            if (zipEntries == null || zipContents == null || zipEntries.Length != zipContents.Length)
             {
-                zipFile.AddEntry(relativeFilePath, new byte[] { 0 });
+                throw new Exception("TEST Exception: zipEntries and zipContents should be non-null and" +
+                    "zipEntries.Length should be equal to zipContents.Length");
+            }
+            var fileInfo = GetFileInfo(path, packageId, packageVersion);
+
+            using (var zip = new ZipArchive(File.Create(fileInfo.FullName), ZipArchiveMode.Create))
+            {
+                for (int i = 0; i < zipEntries.Length; i++)
+                {
+                    zip.AddEntry(zipEntries[i], zipContents[i], Encoding.UTF8);
+                }
+
+                SetSimpleNuspec(zip, packageId, packageVersion, frameworkAssemblies, minClientVersion, dependencies);
             }
 
-            SetSimpleNuspec(zipFile, packageId, packageVersion);
-            zipFile.Save();
-
             return fileInfo;
         }
 
-        private static FileInfo GetFileInfo(string path, string packageId, string packageVersion, out ZipFile zipFile)
+        private static FileInfo GetFileInfo(string path, string packageId, string packageVersion)
         {
             var file = Path.Combine(path, Guid.NewGuid() + ".nupkg");
             var fileInfo = new FileInfo(file);
 
-            zipFile = new ZipFile(fileInfo.FullName);
-
             return fileInfo;
         }
 
-        public static void SetSimpleNuspec(ZipFile zipFile, string packageId, string packageVersion, bool frameworkAssemblies = false, SemanticVersion minClientVersion = null, bool dependencies = false)
+        public static void SetSimpleNuspec(ZipArchive zip,
+            string packageId,
+            string packageVersion,
+            bool frameworkAssemblies,
+            SemanticVersion minClientVersion,
+            bool dependencies)
         {
-            zipFile.AddEntry(packageId + ".nuspec", GetSimpleNuspecString(packageId, packageVersion, frameworkAssemblies, minClientVersion, dependencies), Encoding.UTF8);
+            zip.AddEntry(packageId + ".nuspec", GetSimpleNuspecString(packageId,
+                packageVersion,
+                frameworkAssemblies,
+                minClientVersion,
+                dependencies),
+                Encoding.UTF8);
         }
 
         private static readonly string MinClientVersionStringFormat = "minClientVersion=\"{0}\"";
 
-        private static string GetSimpleNuspecString(string packageId, string packageVersion, bool frameworkAssemblies, SemanticVersion minClientVersion, bool dependencies)
+        private static string GetSimpleNuspecString(string packageId,
+            string packageVersion,
+            bool frameworkAssemblies,
+            SemanticVersion minClientVersion,
+            bool dependencies)
         {
             var frameworkAssemblyReferences = frameworkAssemblies ?
                 string.Format(FrameworkAssembliesStringFormat, "System.Xml", "net45") : string.Empty;
