@@ -161,4 +161,27 @@ function Test-ProjectKUninstallNonExistentPackage {
     Assert-Throws { Uninstall-Package Antlr -ProjectName $project.Name } $expectedMessage
 }
 
+# This test covers the scenario of installing a package that supports only non-dnxcore frameworks
+# It should be installed the correct dependency group, not global dependencies.
+function Test-ProjectKInstallNonDNXCorePackage {
+    # Arrange
+    $project = New-DNXClassLibrary
 
+    # Act
+	Install-Package Moq -version 4.2.1510.2205
+	Build-Solution
+
+	# Assert
+	# Verify Moq is not added to global dependencies group, i.e. outer "dependencies": { ... }
+    Assert-ProjectJsonDependencyNotFound $project Moq
+
+	# Verify Moq is only added under frameworks/dnx451
+	Assert-ProjectJsonDependencyWithinTargetFramework $project Moq 4.2.1510.2205
+
+	# "frameworks": {
+    # "dnx451": {
+    #  "dependencies": {
+    #    "Moq": "4.2.1510.2205"
+    #  }
+    # },
+}

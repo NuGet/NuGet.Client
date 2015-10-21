@@ -937,6 +937,113 @@ function Test-BindingRedirectProjectsThatReferenceDifferentVersionsOfSameAssembl
     Assert-BindingRedirect $b app.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
 }
 
+# Tests the case when Skip is specified in nuget.config under bindingRedirects section
+function Test-InstallPackageSkipsBindingRedirectWhenSetOnConfig
+{
+	param(
+        $context
+    )
+
+    # Arrange
+	Check-NuGetConfig
+
+	$componentModel = Get-VSComponentModel
+	$setting = $componentModel.GetService([NuGet.Configuration.ISettings])
+
+	$a = New-WebSite
+
+	try
+	{
+		# Act
+		$setting.SetValue('bindingRedirects', 'skip', 'true')
+
+		$a | Install-Package E -Source $context.RepositoryPath
+		$a | Update-Package F -Safe -Source $context.RepositoryPath
+
+		# Assert
+		Assert-Package $a E; 
+		Assert-NoBindingRedirect $a web.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
+    }
+    finally {
+	    $setting.DeleteSection('bindingRedirects')
+    }    
+}
+
+# Tests the case when Skip is specified in nuget.config under bindingRedirects section
+function Test-InstallPackageThrowWithLockedConfigFileIfSuccessRequired
+{
+	param(
+        $context
+    )
+
+    # Arrange
+	Check-NuGetConfig
+
+	$componentModel = Get-VSComponentModel
+	$setting = $componentModel.GetService([NuGet.Configuration.ISettings])
+
+	$a = New-WebSite
+	$webConfigPath = (Get-ProjectItemPath $a web.config)
+
+	try
+	{
+		# Act
+		$setting.SetValue('bindingRedirects', 'successRequired', 'true')
+
+		$a | Install-Package E -Source $context.RepositoryPath
+		$stream = [System.IO.File]::Open($webconfigPath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::None)
+		$stream.Lock(0, 10)
+
+		# Assert
+		$expectedErrorMessage = "Failed to load '$webConfigPath', while updating binding redirects. The process cannot access the file '$webConfigPath' because it is being used by another process."
+		Assert-Throws { $a | Update-Package F -Safe -Source $context.RepositoryPath } $expectedErrorMessage
+	}
+	finally
+	{
+	    $setting.DeleteSection('bindingRedirects')
+    } 
+}
+
+# Tests the case when Skip is specified in nuget.config under bindingRedirects section
+function Test-InstallPackageSucceedsWithLockedFileAndSkipsBindingRedirectSet
+{
+	param(
+        $context
+    )
+
+    # Arrange
+	Check-NuGetConfig
+
+	$componentModel = Get-VSComponentModel
+	$setting = $componentModel.GetService([NuGet.Configuration.ISettings])
+
+	$a = New-WebSite
+	$webConfigPath = (Get-ProjectItemPath $a web.config)
+
+	try
+	{
+		# Act
+		$setting.SetValue('bindingRedirects', 'skip', 'True')
+		$setting.SetValue('bindingRedirects', 'successRequired', 'False')
+
+		$a | Install-Package E -Source $context.RepositoryPath
+		$stream = [System.IO.File]::Open($webconfigPath, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::None)
+		$stream.Lock(0, 10)
+
+		$a | Update-Package F -Safe -Source $context.RepositoryPath
+
+		# Assert
+		Assert-Package $a E; 
+		# Unlock and close the stream of Web.Config so that it can be examined.
+		$stream.Unlock(0, 10)
+		$stream.Close()
+		Assert-NoBindingRedirect $a web.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
+    }
+    finally {
+	    $setting.DeleteSection('bindingRedirects')
+    }    
+}
+
 function Test-InstallingPackageDoesNotOverwriteFileIfExistsOnDiskButNotInProject {
     param(
         $context
