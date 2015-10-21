@@ -8,7 +8,8 @@ param (
 	[switch]$SkipILMerge,
 	[switch]$DelaySign,
     [string]$MSPFXPath,
-    [string]$NuGetPFXPath
+    [string]$NuGetPFXPath,
+    [switch]$SkipXProj
 )
 
 ###Functions###
@@ -289,8 +290,11 @@ if(!$BuildNumber)
     $BuildNumber = ([Math]::DivRem(([System.DateTime]::Now.Subtract([System.DateTime]::Parse($SemanticVersionDate)).TotalMinutes), 5, [ref]$R)).ToString('F0')
 }
 
-## Building all XProj projects
-BuildXproj
+if(!$SkipXProj)
+{
+    ## Building all XProj projects
+    BuildXproj
+}
 
 ## Building the Tooling solution
 BuildCSproj
