@@ -10,14 +10,12 @@ namespace NuGet.ProjectModel
     public sealed class PackageSpecFormatException : Exception
     {
         public PackageSpecFormatException(string message)
-            :
-                base(message)
+            : base(message)
         {
         }
 
         public PackageSpecFormatException(string message, Exception innerException)
-            :
-                base(message, innerException)
+            : base(message, innerException)
         {
         }
 
@@ -37,32 +35,42 @@ namespace NuGet.ProjectModel
         {
             var lineInfo = (IJsonLineInfo)value;
 
-            return new PackageSpecFormatException(exception.Message, exception)
-                {
-                    Path = path
-                }
-                .WithLineInfo(lineInfo);
+            var message = Strings.FormatLog_ErrorReadingProjectJsonWithLocation(
+                path,
+                lineInfo.LineNumber,
+                lineInfo.LinePosition,
+                exception.Message);
+
+            var ex = new PackageSpecFormatException(message, exception)
+            {
+                Path = path
+            };
+
+            return ex.WithLineInfo(lineInfo);
         }
 
         public static PackageSpecFormatException Create(string message, JToken value, string path)
         {
             var lineInfo = (IJsonLineInfo)value;
 
-            return new PackageSpecFormatException(message)
-                {
-                    Path = path
-                }
-                .WithLineInfo(lineInfo);
+            var ex = new PackageSpecFormatException(message)
+            {
+                Path = path
+            };
+
+            return ex.WithLineInfo(lineInfo);
         }
 
         internal static PackageSpecFormatException Create(JsonReaderException exception, string path)
         {
-            return new PackageSpecFormatException(exception.Message, exception)
-                {
-                    Path = path,
-                    Column = exception.LinePosition,
-                    Line = exception.LineNumber
-                };
+            var message = Strings.FormatLog_ErrorReadingProjectJson(path, exception.Message);
+
+            return new PackageSpecFormatException(message, exception)
+            {
+                Path = path,
+                Column = exception.LinePosition,
+                Line = exception.LineNumber
+            };
         }
     }
 }

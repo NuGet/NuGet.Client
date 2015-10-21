@@ -27,7 +27,18 @@ namespace NuGet.ProjectModel
         {
             // Load the raw JSON into the package spec object
             var reader = new JsonTextReader(new StreamReader(stream));
-            var rawPackageSpec = JObject.Load(reader);
+
+            JObject rawPackageSpec;
+
+            try
+            {
+                rawPackageSpec = JObject.Load(reader);
+            }
+            catch (JsonReaderException ex)
+            {
+                throw PackageSpecFormatException.Create(ex, packageSpecPath);
+            }
+
             var packageSpec = new PackageSpec(rawPackageSpec);
 
             // Parse properties we know about
@@ -67,7 +78,21 @@ namespace NuGet.ProjectModel
             packageSpec.LicenseUrl = rawPackageSpec.GetValue<string>("licenseUrl");
             packageSpec.Copyright = rawPackageSpec.GetValue<string>("copyright");
             packageSpec.Language = rawPackageSpec.GetValue<string>("language");
-            packageSpec.RequireLicenseAcceptance = rawPackageSpec.GetValue<bool?>("requireLicenseAcceptance") ?? false;
+
+            var requireLicenseAcceptance = rawPackageSpec["requireLicenseAcceptance"];
+
+            if (requireLicenseAcceptance != null)
+            {
+                try
+                {
+                    packageSpec.RequireLicenseAcceptance = rawPackageSpec.GetValue<bool?>("requireLicenseAcceptance") ?? false;
+                }
+                catch (Exception ex)
+                {
+                    throw PackageSpecFormatException.Create(ex, requireLicenseAcceptance, packageSpecPath);
+                }
+            }
+
             packageSpec.Tags = tags == null ? new string[] { } : tags.ValueAsArray<string>();
 
             var scripts = rawPackageSpec["scripts"] as JObject;
@@ -146,7 +171,7 @@ namespace NuGet.ProjectModel
                             packageSpecPath);
                     }
 
-                    // Support 
+                    // Support
                     // "dependencies" : {
                     //    "Name" : "1.0"
                     // }

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -90,7 +91,7 @@ namespace NuGet.ProjectModel
                     var projectFilePath = Path.Combine(projectDirectory.FullName, PackageSpec.PackageSpecFileName);
 
                     // We INTENTIONALLY do not do an exists check here because it requires disk I/O
-                    // Instead, we'll do an exists check when we try to resolve 
+                    // Instead, we'll do an exists check when we try to resolve
 
                     // Check if we've already added this, just in case it was pre-loaded into the cache
                     if (!_projects.ContainsKey(projectDirectory.Name))
@@ -146,10 +147,29 @@ namespace NuGet.ProjectModel
 
                             if (File.Exists(FullPath))
                             {
-                                using (var stream = File.OpenRead(FullPath))
+                                FileStream stream = null;
+
+                                try
                                 {
-                                    // TODO: does this need more error handling?
+                                    try
+                                    {
+                                        stream = File.OpenRead(FullPath);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        var messsage = Strings.FormatLog_ErrorReadingProjectJson(FullPath, ex.Message);
+
+                                        throw new InvalidOperationException(messsage, ex);
+                                    }
+
                                     project = JsonPackageSpecReader.GetPackageSpec(stream, Name, FullPath);
+                                }
+                                finally
+                                {
+                                    if (stream != null)
+                                    {
+                                        stream.Dispose();
+                                    }
                                 }
                             }
 
@@ -158,7 +178,7 @@ namespace NuGet.ProjectModel
                 }
                 set
                 {
-                    lock(_lockObj)
+                    lock (_lockObj)
                     {
                         _initialized = true;
                         _packageSpec = value;
