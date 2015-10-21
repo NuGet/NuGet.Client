@@ -376,7 +376,7 @@ namespace NuGet.ProjectModel
 
         private static IList<string> ReadPathArray(JArray json, Func<JToken, string> readItem)
         {
-            return ReadArray(json, readItem).Select(f => GetPathWithDirectorySeparator(f)).ToList();
+            return ReadArray(json, readItem).Select(f => GetPathWithForwardSlashes(f)).ToList();
         }
 
         private static void WriteArray<TItem>(JToken json, string property, IEnumerable<TItem> items, Func<TItem, JToken> writeItem)
@@ -504,18 +504,6 @@ namespace NuGet.ProjectModel
         private static string GetPathWithBackSlashes(string path)
         {
             return path.Replace('/', '\\');
-        }
-
-        private static string GetPathWithDirectorySeparator(string path)
-        {
-            if (Path.DirectorySeparatorChar == '/')
-            {
-                return GetPathWithForwardSlashes(path);
-            }
-            else
-            {
-                return GetPathWithBackSlashes(path);
-            }
         }
     }
 }
