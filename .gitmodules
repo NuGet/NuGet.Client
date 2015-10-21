@@ -1,0 +1,6 @@
+[submodule "submodules/FileSystem"]
+	path = submodules/FileSystem
+	url = https://github.com/aspnet/FileSystem.git
+[submodule "submodules/Common"]
+	path = submodules/Common
+	url = https://github.com/aspnet/Common.git
