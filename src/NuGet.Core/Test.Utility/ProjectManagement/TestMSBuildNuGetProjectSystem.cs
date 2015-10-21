@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
@@ -200,6 +199,8 @@ namespace Test.Utility
         public void DeleteDirectory(string path, bool recursive)
         {
             // no-op
+            var fullPath = Path.Combine(ProjectFullPath, path);
+            Directory.Delete(fullPath, recursive: false);
         }
 
         public IEnumerable<string> GetFiles(string path, string filter, bool recursive)
