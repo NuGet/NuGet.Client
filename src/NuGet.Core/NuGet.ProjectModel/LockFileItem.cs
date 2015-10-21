@@ -54,7 +54,8 @@ namespace NuGet.ProjectModel
 
             foreach (var pair in Properties.OrderBy(pair => pair.Key))
             {
-                combiner.AddObject(pair);
+                combiner.AddObject(pair.Key);
+                combiner.AddObject(pair.Value);
             }
 
             return combiner.CombinedHash;

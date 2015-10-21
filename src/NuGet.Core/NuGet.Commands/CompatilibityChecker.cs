@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using NuGet.DependencyResolver;
 using NuGet.LibraryModel;
 using NuGet.Logging;
 using NuGet.Packaging;
@@ -138,6 +136,7 @@ namespace NuGet.Commands
                 compatibilityData.TargetLibrary.FrameworkAssemblies.Any() ||                        // Framework Assemblies, or
                 compatibilityData.TargetLibrary.CompileTimeAssemblies.Any() ||                      // Compile-time Assemblies, or
                 compatibilityData.TargetLibrary.RuntimeAssemblies.Any() ||                          // Runtime Assemblies, or
+                compatibilityData.TargetLibrary.ContentFiles.Any() ||                              // Shared content
                 !compatibilityData.Files.Any(p => p.StartsWith("ref/") || p.StartsWith("lib/"));    // No assemblies at all (for any TxM)
         }
 

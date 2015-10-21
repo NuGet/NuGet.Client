@@ -255,7 +255,7 @@ namespace NuGet.Commands
             // Walk additional runtime graphs for supports checks
             if (_success && _request.CompatibilityProfiles.Any())
             {
-                var compatibiliyResult = await TryRestore(projectRange,
+                var compatibilityResult = await TryRestore(projectRange,
                                                           _request.CompatibilityProfiles,
                                                           allInstalledPackages,
                                                           localRepository,
@@ -264,9 +264,9 @@ namespace NuGet.Commands
                                                           writeToLockFile: false,
                                                           token: token);
 
-                _success = compatibiliyResult.Item1;
+                _success = compatibilityResult.Item1;
 
-                allGraphs.AddRange(compatibiliyResult.Item2);
+                allGraphs.AddRange(compatibilityResult.Item2);
             }
 
             return allGraphs;

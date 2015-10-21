@@ -35,6 +35,7 @@ namespace NuGet.ProjectModel
         private const string RuntimeProperty = "runtime";
         private const string CompileProperty = "compile";
         private const string NativeProperty = "native";
+        private const string ContentFilesProperty = "contentFiles";
         private const string ResourceProperty = "resource";
         private const string TypeProperty = "type";
 
@@ -246,6 +247,7 @@ namespace NuGet.ProjectModel
             library.CompileTimeAssemblies = ReadObject(json[CompileProperty] as JObject, ReadFileItem);
             library.ResourceAssemblies = ReadObject(json[ResourceProperty] as JObject, ReadFileItem);
             library.NativeLibraries = ReadObject(json[NativeProperty] as JObject, ReadFileItem);
+            library.ContentFiles = ReadObject(json[ContentFilesProperty] as JObject, ReadFileItem);
 
             return library;
         }
@@ -294,6 +296,13 @@ namespace NuGet.ProjectModel
                 var ordered = library.NativeLibraries.OrderBy(assembly => assembly.Path);
 
                 json[NativeProperty] = WriteObject(ordered, WriteFileItem);
+            }
+
+            if (library.ContentFiles.Count > 0)
+            {
+                var ordered = library.ContentFiles.OrderBy(assembly => assembly.Path);
+
+                json[ContentFilesProperty] = WriteObject(ordered, WriteFileItem);
             }
 
             return new JProperty(library.Name + "/" + library.Version.ToNormalizedString(), json);
@@ -357,7 +366,21 @@ namespace NuGet.ProjectModel
         {
             return new JProperty(
                 item.Path,
-               new JObject(item.Properties.Select(x => new JProperty(x.Key, x.Value))));
+                new JObject(item.Properties.OrderBy(prop => prop.Key).Select(x =>
+                {
+                    if (Boolean.TrueString.Equals(x.Value, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return new JProperty(x.Key, true);
+                    }
+                    else if (Boolean.FalseString.Equals(x.Value, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return new JProperty(x.Key, false);
+                    }
+                    else
+                    {
+                        return new JProperty(x.Key, x.Value);
+                    }
+                })));
         }
 
         private static IList<TItem> ReadArray<TItem>(JArray json, Func<JToken, TItem> readItem)
@@ -376,7 +399,7 @@ namespace NuGet.ProjectModel
 
         private static IList<string> ReadPathArray(JArray json, Func<JToken, string> readItem)
         {
-            return ReadArray(json, readItem).Select(f => GetPathWithDirectorySeparator(f)).ToList();
+            return ReadArray(json, readItem).Select(f => GetPathWithForwardSlashes(f)).ToList();
         }
 
         private static void WriteArray<TItem>(JToken json, string property, IEnumerable<TItem> items, Func<TItem, JToken> writeItem)
@@ -504,18 +527,6 @@ namespace NuGet.ProjectModel
         private static string GetPathWithBackSlashes(string path)
         {
             return path.Replace('/', '\\');
-        }
-
-        private static string GetPathWithDirectorySeparator(string path)
-        {
-            if (Path.DirectorySeparatorChar == '/')
-            {
-                return GetPathWithForwardSlashes(path);
-            }
-            else
-            {
-                return GetPathWithBackSlashes(path);
-            }
         }
     }
 }

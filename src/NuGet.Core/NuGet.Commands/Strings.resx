@@ -207,4 +207,7 @@
   <data name="Log_VersionConflict" xml:space="preserve">
     <value>Version conflict detected for {0}.</value>
   </data>
+  <data name="Error_UnknownBuildAction" xml:space="preserve">
+    <value>Package '{0}' specifies an invalid build action '{1}' for file '{2}'.</value>
+  </data>
 </root>
