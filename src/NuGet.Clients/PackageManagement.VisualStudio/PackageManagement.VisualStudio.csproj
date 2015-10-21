@@ -93,6 +93,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BindingRedirectBehavior.cs" />
     <Compile Include="CommonResources.cs" />
     <Compile Include="IDE\NuGetAndEnvDTEProjectCache.cs" />
     <Compile Include="IDE\EnvDTEProjectName.cs" />
@@ -115,8 +116,6 @@
     <Compile Include="SourceControl\VSSourceControlManagerProvider.cs" />
     <Compile Include="OptionsPageActivator.cs" />
     <Compile Include="PackageRestoreConsent.cs" />
-    <Compile Include="ProductUpdate\IProductUpdateSettings.cs" />
-    <Compile Include="ProductUpdate\VsProductUpdateSettings.cs" />
     <Compile Include="ProjectSystems\CpsProjectSystem.cs" />
     <Compile Include="ProjectSystems\FSharpProjectSystem.cs" />
     <Compile Include="ProjectSystems\JsProjectSystem.cs" />

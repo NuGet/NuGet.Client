@@ -118,32 +118,32 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="checkForUpdate.AutoSize" type="System.Boolean, mscorlib">
+  <data name="skipBindingRedirects.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="checkForUpdate.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="skipBindingRedirects.Location" type="System.Drawing.Point, System.Drawing">
     <value>19, 36</value>
   </data>
-  <data name="checkForUpdate.Size" type="System.Drawing.Size, System.Drawing">
-    <value>177, 17</value>
+  <data name="skipBindingRedirects.Size" type="System.Drawing.Size, System.Drawing">
+    <value>169, 17</value>
   </data>
-  <data name="checkForUpdate.TabIndex" type="System.Int32, mscorlib">
+  <data name="skipBindingRedirects.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
   </data>
-  <data name="checkForUpdate.Text" xml:space="preserve">
-    <value>Automatically check for &amp;updates</value>
+  <data name="skipBindingRedirects.Text" xml:space="preserve">
+    <value>Skip applying &amp;binding redirects</value>
   </data>
-  <data name="&gt;&gt;checkForUpdate.Name" xml:space="preserve">
-    <value>checkForUpdate</value>
+  <data name="&gt;&gt;skipBindingRedirects.Name" xml:space="preserve">
+    <value>skipBindingRedirects</value>
   </data>
-  <data name="&gt;&gt;checkForUpdate.Type" xml:space="preserve">
+  <data name="&gt;&gt;skipBindingRedirects.Type" xml:space="preserve">
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;checkForUpdate.Parent" xml:space="preserve">
-    <value>updatePanel</value>
+  <data name="&gt;&gt;skipBindingRedirects.Parent" xml:space="preserve">
+    <value>bindingRedirectsPanel</value>
   </data>
-  <data name="&gt;&gt;checkForUpdate.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;skipBindingRedirects.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
@@ -172,7 +172,7 @@
     <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;UpdateHeaderDivider.Parent" xml:space="preserve">
-    <value>updatePanel</value>
+    <value>bindingRedirectsPanel</value>
   </data>
   <data name="&gt;&gt;UpdateHeaderDivider.ZOrder" xml:space="preserve">
     <value>2</value>
@@ -190,13 +190,13 @@
     <value>2, 0, 2, 0</value>
   </data>
   <data name="UpdateHeader.Size" type="System.Drawing.Size, System.Drawing">
-    <value>42, 13</value>
+    <value>90, 13</value>
   </data>
   <data name="UpdateHeader.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
   </data>
   <data name="UpdateHeader.Text" xml:space="preserve">
-    <value>Update</value>
+    <value>Binding Redirects</value>
   </data>
   <data name="&gt;&gt;UpdateHeader.Name" xml:space="preserve">
     <value>UpdateHeader</value>
@@ -205,30 +205,30 @@
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;UpdateHeader.Parent" xml:space="preserve">
-    <value>updatePanel</value>
+    <value>bindingRedirectsPanel</value>
   </data>
   <data name="&gt;&gt;UpdateHeader.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="updatePanel.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="bindingRedirectsPanel.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 107</value>
   </data>
-  <data name="updatePanel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>463, 93</value>
+  <data name="bindingRedirectsPanel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>463, 79</value>
   </data>
-  <data name="updatePanel.TabIndex" type="System.Int32, mscorlib">
+  <data name="bindingRedirectsPanel.TabIndex" type="System.Int32, mscorlib">
     <value>11</value>
   </data>
-  <data name="&gt;&gt;updatePanel.Name" xml:space="preserve">
-    <value>updatePanel</value>
+  <data name="&gt;&gt;bindingRedirectsPanel.Name" xml:space="preserve">
+    <value>bindingRedirectsPanel</value>
   </data>
-  <data name="&gt;&gt;updatePanel.Type" xml:space="preserve">
+  <data name="&gt;&gt;bindingRedirectsPanel.Type" xml:space="preserve">
     <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;updatePanel.Parent" xml:space="preserve">
+  <data name="&gt;&gt;bindingRedirectsPanel.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="&gt;&gt;updatePanel.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;bindingRedirectsPanel.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
   <data name="PackageRestoreHeader.AutoSize" type="System.Boolean, mscorlib">
@@ -351,9 +351,9 @@
   <data name="&gt;&gt;packageRestoreAutomaticCheckBox.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="$this.Localizable" type="System.Boolean, mscorlib">
+  <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
-  </data>
+  </metadata>
   <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
     <value>6, 13</value>
   </data>
