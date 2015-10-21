@@ -162,4 +162,7 @@
   <data name="MultipleNuspecFiles" xml:space="preserve">
     <value>Package contains multiple nuspec files.</value>
   </data>
+  <data name="InvalidNuspecEntry" xml:space="preserve">
+    <value>The nuspec contains an invalid entry '{0}' in package '{1}' .</value>
+  </data>
 </root>

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -30,6 +31,11 @@ namespace NuGet.Packaging
         private const string FrameworkAssembly = "frameworkAssembly";
         private const string AssemblyName = "assemblyName";
         private const string Language = "language";
+        private const string ContentFiles = "contentFiles";
+        private const string Files = "files";
+        private const string BuildAction = "buildAction";
+        private const string Flatten = "flatten";
+        private const string CopyToOutput = "copyToOutput";
         private readonly IFrameworkNameProvider _frameworkProvider;
 
         /// <summary>
@@ -248,6 +254,76 @@ namespace NuGet.Packaging
         {
             var node = MetadataNode.Elements(XName.Get(Language, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
             return node == null ? null : node.Value;
+        }
+
+        /// <summary>
+        /// Build action groups
+        /// </summary>
+        public IEnumerable<ContentFilesEntry> GetContentFiles()
+        {
+            var ns = MetadataNode.GetDefaultNamespace().NamespaceName;
+
+            foreach (var filesNode in MetadataNode
+                .Elements(XName.Get(ContentFiles, ns))
+                .Elements(XName.Get(Files, ns)))
+            {
+                var include = GetAttributeValue(filesNode, "include");
+
+                if (include == null)
+                {
+                    // Invalid include
+                    var message = Strings.FormatInvalidNuspecEntry(
+                        filesNode.ToString().Trim(),
+                        GetIdentity());
+
+                    throw new PackagingException(message);
+                }
+
+                var exclude = GetAttributeValue(filesNode, "exclude");
+
+                if (string.IsNullOrEmpty(exclude))
+                {
+                    exclude = null;
+                }
+
+                var buildAction = GetAttributeValue(filesNode, BuildAction);
+                var flatten = AttributeAsNullableBool(filesNode, Flatten);
+                var copyToOutput = AttributeAsNullableBool(filesNode, CopyToOutput);
+
+                yield return new ContentFilesEntry(include, exclude, buildAction, copyToOutput, flatten);
+            }
+
+            yield break;
+        }
+
+        private static bool? AttributeAsNullableBool(XElement element, string attributeName)
+        {
+            bool? result = null;
+
+            var attributeValue = GetAttributeValue(element, attributeName);
+
+            if (attributeValue != null)
+            {
+                if (Boolean.TrueString.Equals(attributeValue, StringComparison.OrdinalIgnoreCase))
+                {
+                    result = true;
+                }
+                else if (Boolean.FalseString.Equals(attributeValue, StringComparison.OrdinalIgnoreCase))
+                {
+                    result = false;
+                }
+                else
+                {
+                    var message = string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.InvalidNuspecEntry,
+                            element.ToString().Trim());
+
+                    throw new PackagingException(message);
+                }
+            }
+
+            return result;
         }
 
         private static string GetAttributeValue(XElement element, string attributeName)

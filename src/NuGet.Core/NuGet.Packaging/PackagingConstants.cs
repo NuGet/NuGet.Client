@@ -5,10 +5,12 @@ namespace NuGet.Packaging
 {
     public static class PackagingConstants
     {
-        public const string ContentFolder = "content";
-        public const string AnyFramework = "any";
-        public const string AgnosticFramework = "agnostic";
+        public static readonly string ContentFolder = "content";
+        public static readonly string AnyFramework = "any";
+        public static readonly string AgnosticFramework = "agnostic";
 
-        public const string TargetFrameworkPropertyKey = "targetframework";
+        public static readonly string TargetFrameworkPropertyKey = "targetframework";
+
+        public static readonly string ContentFilesDefaultBuildAction = "Compile";
     }
 }
