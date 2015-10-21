@@ -583,15 +583,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cache partially cleared..
-        /// </summary>
-        public static string ClearCacheCommand_CachePartiallyCleared {
-            get {
-                return ResourceManager.GetString("ClearCacheCommand_CachePartiallyCleared", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Clearing NuGet cache: {0}.
         /// </summary>
         public static string ClearCacheCommand_ClearingNuGetCache {
@@ -615,15 +606,6 @@ namespace NuGet.CommandLine {
         public static string ClearCacheCommand_ClearingNuGetHttpCache {
             get {
                 return ResourceManager.GetString("ClearCacheCommand_ClearingNuGetHttpCache", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Failed to delete {0}.
-        /// </summary>
-        public static string ClearCacheCommand_FailedToDeletePath {
-            get {
-                return ResourceManager.GetString("ClearCacheCommand_FailedToDeletePath", resourceCulture);
             }
         }
         

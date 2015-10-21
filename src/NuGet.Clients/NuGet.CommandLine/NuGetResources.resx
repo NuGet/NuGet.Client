@@ -6082,10 +6082,4 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="ClearCacheCommand_CacheClearFailed" xml:space="preserve">
     <value>Cache clear failed: one or more errors occured.</value>
   </data>
-  <data name="ClearCacheCommand_CachePartiallyCleared" xml:space="preserve">
-    <value>Cache partially cleared.</value>
-  </data>
-  <data name="ClearCacheCommand_FailedToDeletePath" xml:space="preserve">
-    <value>Failed to delete {0}</value>
-  </data>
 </root>
