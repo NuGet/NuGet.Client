@@ -15,35 +15,45 @@ namespace NuGet.Configuration
         public SettingValue(string key, 
                             string value, 
                             bool isMachineWide, 
-                            int priority = 0, 
-                            bool isRelativePath = false, 
-                            string originValue = null)
+                            int priority = 0)
             : this(key, 
                   value, 
                   origin: null, 
-                  isMachineWide: isMachineWide, 
-                  priority: priority, 
-                  isRelativePath : isRelativePath, 
-                  originValue: originValue)
+                  isMachineWide: isMachineWide,
+                  originalValue: value,
+                  priority: priority)
+        { }
+
+        public SettingValue(string key,
+                            string value,
+                            ISettings origin,
+                            bool isMachineWide,
+                            int priority = 0) 
+            : this(key,
+                   value,
+                   origin: origin,
+                   isMachineWide : isMachineWide,
+                   originalValue : value,
+                   priority: priority)
         { }
 
         public SettingValue(string key, 
                             string value, 
                             ISettings origin, 
-                            bool isMachineWide, 
-                            int priority = 0, 
-                            bool isRelativePath = false, 
-                            string originValue = null)
+                            bool isMachineWide,
+                            string originalValue,
+                            int priority = 0)
         {
             Key = key;
             Value = value;
             Origin = origin;
             IsMachineWide = isMachineWide;
             Priority = priority;
-            IsRelativePath = isRelativePath;
-            OriginValue = originValue;
+            OriginalValue = originalValue;
             AdditionalData = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
+
+        
 
         /// <summary>
         /// Represents the key of the setting
@@ -105,14 +115,10 @@ namespace NuGet.Configuration
         {
             return Tuple.Create(Key, Value, IsMachineWide).GetHashCode();
         }
+
        /// <summary>
        /// relative path source value in NuGet.Config
        /// </summary>
-        public string OriginValue { get; }
-
-        /// <summary>
-        /// return true when this settingvalue is a relative path package source
-        /// </summary>
-        public bool IsRelativePath { get; }
+        public string OriginalValue { get; set; }
     }
 }

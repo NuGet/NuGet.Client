@@ -494,14 +494,7 @@ namespace NuGet.Configuration
             foreach (var value in valuesToWrite)
             {
                 var element = new XElement("add");
-                if (value.IsRelativePath)
-                {
-                    SetElementValues(element, value.Key, value.OriginValue, value.AdditionalData);
-                }
-                else
-                {
-                    SetElementValues(element, value.Key, value.Value, value.AdditionalData);
-                }
+                SetElementValues(element, value.Key, value.OriginalValue, value.AdditionalData);
                 XElementUtility.AddIndented(sectionElement, element);
             }
 
@@ -823,25 +816,21 @@ namespace NuGet.Configuration
             }
 
             var value = valueAttribute.Value;
-            string originValue = null;
-            bool isRelative = false;
+            var originalValue = valueAttribute.Value;
             Uri uri;
 
             if (isPath && Uri.TryCreate(value, UriKind.Relative, out uri))
             {
                 var configDirectory = Path.GetDirectoryName(ConfigFilePath);
-                originValue = value;
-                isRelative = true;
                 value = Path.Combine(Root, Path.Combine(configDirectory, value));
             }
 
             var settingValue = new SettingValue(keyAttribute.Value, 
                                                 value, 
                                                 origin: this, 
-                                                isMachineWide: IsMachineWideSettings, 
-                                                priority: _priority, 
-                                                isRelativePath: isRelative, 
-                                                originValue: originValue);
+                                                isMachineWide: IsMachineWideSettings,
+                                                originalValue: originalValue,
+                                                priority: _priority);
             foreach (var attribute in element.Attributes())
             {
                 // Add all attributes other than ConfigurationContants.KeyAttribute and ConfigurationContants.ValueAttribute to AdditionalValues
