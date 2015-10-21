@@ -58,7 +58,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
 
-            // Try to get a factory for the project type guid            
+            // Try to get a factory for the project type guid
             foreach (var guid in guids)
             {
                 IMSBuildNuGetProjectSystemThunk factory;

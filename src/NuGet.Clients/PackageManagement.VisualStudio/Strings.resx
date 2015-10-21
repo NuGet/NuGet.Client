@@ -192,4 +192,7 @@
   <data name="Error_WhileLoadingConfigForBindingRedirects" xml:space="preserve">
     <value>Failed to load '{0}', while updating binding redirects. {1}</value>
   </data>
+  <data name="FailedToUpdateBindingRedirects" xml:space="preserve">
+    <value>Failed to update binding redirects for {0} : {1}</value>
+  </data>
 </root>

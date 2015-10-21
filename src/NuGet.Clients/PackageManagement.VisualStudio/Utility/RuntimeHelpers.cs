@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // Keep track of visited projects
                 if (EnvDTEProjectUtility.SupportsBindingRedirects(envDTEProject))
                 {
-                    // Get the dependentEnvDTEProjectsDictionary once here, so that, it is not called for every single project                    
+                    // Get the dependentEnvDTEProjectsDictionary once here, so that, it is not called for every single project
                     var dependentEnvDTEProjectsDictionary = await vsSolutionManager.GetDependentEnvDTEProjectsDictionaryAsync();
                     await AddBindingRedirectsAsync(vsSolutionManager, envDTEProject, domain,
                         frameworkMultiTargeting, dependentEnvDTEProjectsDictionary, nuGetProjectContext);
@@ -176,7 +176,7 @@ namespace NuGet.PackageManagement.VisualStudio
             AssemblyName executingAssemblyName = executingAssembly.GetName();
             if (HasStrongName(executingAssemblyName))
             {
-                // construct the Full Name of the assembly using the same version/culture/public key token 
+                // construct the Full Name of the assembly using the same version/culture/public key token
                 // of the executing assembly.
                 string assemblyFullName = String.Format(
                     CultureInfo.InvariantCulture,

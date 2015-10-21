@@ -178,6 +178,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to update binding redirects for {0} : {1}.
+        /// </summary>
+        public static string FailedToUpdateBindingRedirects {
+            get {
+                return ResourceManager.GetString("FailedToUpdateBindingRedirects", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Installing NuGet package {0}..
         /// </summary>
         public static string InstallingPackage {

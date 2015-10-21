@@ -10,7 +10,6 @@ namespace NuGet.Options
 {
     public partial class GeneralOptionControl : UserControl
     {
-        private readonly IProductUpdateSettings _productUpdateSettings;
         private readonly Configuration.ISettings _settings;
         private bool _initialized;
 
@@ -18,13 +17,8 @@ namespace NuGet.Options
         {
             InitializeComponent();
 
-            _productUpdateSettings = ServiceLocator.GetInstance<IProductUpdateSettings>();
-            Debug.Assert(_productUpdateSettings != null);
-
             _settings = ServiceLocator.GetInstance<Configuration.ISettings>();
             Debug.Assert(_settings != null);
-            // Starting from VS11, we don't need to check for updates anymore because VS will do it.
-            Controls.Remove(updatePanel);
         }
 
         internal void OnActivated()
@@ -33,10 +27,15 @@ namespace NuGet.Options
             {
                 try
                 {
+                    // not using the nuget.core version of PackageRestoreConsent
                     var packageRestoreConsent = new PackageManagement.VisualStudio.PackageRestoreConsent(_settings);
+
                     packageRestoreConsentCheckBox.Checked = packageRestoreConsent.IsGrantedInSettings;
                     packageRestoreAutomaticCheckBox.Checked = packageRestoreConsent.IsAutomatic;
                     packageRestoreAutomaticCheckBox.Enabled = packageRestoreConsentCheckBox.Checked;
+
+                    var bindingRedirects = new BindingRedirectBehavior(_settings);
+                    skipBindingRedirects.Checked = bindingRedirects.IsSkipped;
                 }
                 catch(InvalidOperationException)
                 {
@@ -46,7 +45,6 @@ namespace NuGet.Options
                 {
                     MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigUnauthorizedAccess, Resources.ErrorDialogBoxTitle);
                 }
-                checkForUpdate.Checked = _productUpdateSettings.ShouldCheckForUpdate;
             }
 
             _initialized = true;
@@ -54,13 +52,14 @@ namespace NuGet.Options
 
         internal bool OnApply()
         {
-            _productUpdateSettings.ShouldCheckForUpdate = checkForUpdate.Checked;
-
             try
             {
                 var packageRestoreConsent = new PackageManagement.VisualStudio.PackageRestoreConsent(_settings);
                 packageRestoreConsent.IsGrantedInSettings = packageRestoreConsentCheckBox.Checked;
                 packageRestoreConsent.IsAutomatic = packageRestoreAutomaticCheckBox.Checked;
+
+                var bindingRedirects = new BindingRedirectBehavior(_settings);
+                bindingRedirects.IsSkipped = skipBindingRedirects.Checked;
             }
             catch (InvalidOperationException)
             {
@@ -72,6 +71,7 @@ namespace NuGet.Options
                 MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigUnauthorizedAccess, Resources.ErrorDialogBoxTitle);
                 return false;
             }
+
             return true;
         }
 
