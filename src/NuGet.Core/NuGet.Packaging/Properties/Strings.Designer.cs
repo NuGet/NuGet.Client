@@ -250,6 +250,22 @@ namespace NuGet.Packaging
             return GetString("MultipleNuspecFiles");
         }
 
+        /// <summary>
+        /// The nuspec contains an invalid '{0}' entry.
+        /// </summary>
+        internal static string InvalidNuspecEntry
+        {
+            get { return GetString("InvalidNuspecEntry"); }
+        }
+
+        /// <summary>
+        /// The nuspec contains an invalid '{0}' entry.
+        /// </summary>
+        internal static string FormatInvalidNuspecEntry(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("InvalidNuspecEntry"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
