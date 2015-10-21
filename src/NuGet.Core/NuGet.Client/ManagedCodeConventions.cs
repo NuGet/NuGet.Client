@@ -16,6 +16,8 @@ namespace NuGet.Client
     /// </summary>
     public class ManagedCodeConventions
     {
+        private const string EmptyFolder = "_._";
+
         private static readonly ContentPropertyDefinition TfmProperty = new ContentPropertyDefinition(PropertyNames.TargetFrameworkMoniker,
             table: new Dictionary<string, object>()
                 {
@@ -29,13 +31,17 @@ namespace NuGet.Client
             parser: Locale_Parser);
 
         private static readonly ContentPropertyDefinition AnyProperty = new ContentPropertyDefinition(
-            PropertyNames.AnyValue, 
+            PropertyNames.AnyValue,
             parser: o => o); // Identity parser, all strings are valid for any
         private static readonly ContentPropertyDefinition AssemblyProperty = new ContentPropertyDefinition(PropertyNames.ManagedAssembly,
-            parser: o => o.Equals("_._", StringComparison.Ordinal) ? o : null, // Accept "_._" as a pseudo-assembly
+            parser: o => o.Equals(EmptyFolder, StringComparison.Ordinal) ? o : null, // Accept "_._" as a pseudo-assembly
             fileExtensions: new[] { ".dll", ".winmd" });
         private static readonly ContentPropertyDefinition MSBuildProperty = new ContentPropertyDefinition(PropertyNames.MSBuild, fileExtensions: new[] { ".targets", ".props" });
         private static readonly ContentPropertyDefinition SatelliteAssemblyProperty = new ContentPropertyDefinition(PropertyNames.SatelliteAssembly, fileExtensions: new[] { ".resources.dll" });
+
+        private static readonly ContentPropertyDefinition CodeLanguageProperty = new ContentPropertyDefinition(
+            PropertyNames.CodeLanguage,
+            parser: CodeLanguage_Parser);
 
         private RuntimeGraph _runtimeGraph;
 
@@ -54,6 +60,7 @@ namespace NuGet.Client
             props[LocaleProperty.Name] = LocaleProperty;
             props[MSBuildProperty.Name] = MSBuildProperty;
             props[SatelliteAssemblyProperty.Name] = SatelliteAssemblyProperty;
+            props[CodeLanguageProperty.Name] = CodeLanguageProperty;
 
             props[PropertyNames.RuntimeIdentifier] = new ContentPropertyDefinition(
                 PropertyNames.RuntimeIdentifier,
@@ -84,6 +91,12 @@ namespace NuGet.Client
                 }
                 return false;
             }
+        }
+
+        private static object CodeLanguage_Parser(string name)
+        {
+            // Code language values must be alpha numeric.
+            return name.All(c => char.IsLetterOrDigit(c)) ? name : null;
         }
 
         private static object Locale_Parser(string name)
@@ -249,6 +262,11 @@ namespace NuGet.Client
             /// </summary>
             public PatternSet MSBuildFiles { get; }
 
+            /// <summary>
+            /// Pattern used to identify content files
+            /// </summary>
+            public PatternSet ContentFiles { get; }
+
             internal ManagedCodePatterns(ManagedCodeConventions conventions)
             {
                 AnyTargettedFile = new PatternSet(
@@ -340,6 +358,17 @@ namespace NuGet.Client
                             { "tfm", NuGetFramework.AnyFramework }
                         })
                     });
+
+                ContentFiles = new PatternSet(
+                    conventions.Properties,
+                    groupPatterns: new PatternDefinition[]
+                    {
+                        "contentFiles/{codeLanguage}/{tfm}/{any?}"
+                    },
+                    pathPatterns: new PatternDefinition[]
+                    {
+                        "contentFiles/{codeLanguage}/{tfm}/{any?}"
+                    });
             }
         }
 
@@ -352,6 +381,7 @@ namespace NuGet.Client
             public static readonly string Locale = "locale";
             public static readonly string MSBuild = "msbuild";
             public static readonly string SatelliteAssembly = "satelliteAssembly";
+            public static readonly string CodeLanguage = "codeLanguage";
         }
     }
 }
