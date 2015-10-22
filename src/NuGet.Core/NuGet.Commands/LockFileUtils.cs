@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.Packaging;
@@ -24,11 +23,11 @@ namespace NuGet.Commands
         }
 
         public static LockFileTargetLibrary CreateLockFileTargetLibrary(
-            LockFileLibrary library, 
-            LocalPackageInfo package, 
-            RestoreTargetGraph targetGraph, 
-            VersionFolderPathResolver defaultPackagePathResolver, 
-            string correctedPackageName, 
+            LockFileLibrary library,
+            LocalPackageInfo package,
+            RestoreTargetGraph targetGraph,
+            VersionFolderPathResolver defaultPackagePathResolver,
+            string correctedPackageName,
             NuGetFramework targetFrameworkOverride)
         {
             var lockFileLib = new LockFileTargetLibrary();
@@ -166,6 +165,20 @@ namespace NuGet.Commands
             {
                 lockFileLib.NativeLibraries = nativeGroup.Items.Select(p => new LockFileItem(p.Path)).ToList();
             }
+
+            // content v2 items
+            var contentFileGroups = contentItems.FindItemGroups(targetGraph.Conventions.Patterns.ContentFiles);
+
+            // Multiple groups can match the same framework, find all of them
+            var contentFileGroupsForFramework = ContentFileUtils.GetContentGroupsForFramework(
+                lockFileLib,
+                framework,
+                contentFileGroups);
+
+            lockFileLib.ContentFiles = ContentFileUtils.GetContentFileGroup(
+                framework,
+                nuspec,
+                contentFileGroupsForFramework);
 
             // COMPAT: Support lib/contract so older packages can be consumed
             var contractPath = "lib/contract/" + package.Id + ".dll";

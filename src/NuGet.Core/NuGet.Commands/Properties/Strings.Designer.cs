@@ -482,6 +482,22 @@ namespace NuGet.Commands
             return string.Format(CultureInfo.CurrentCulture, GetString("Log_VersionConflict"), p0);
         }
 
+        /// <summary>
+        /// Package '{0}' specifies an invalid build action '{1}' for file '{2}'.
+        /// </summary>
+        internal static string Error_UnknownBuildAction
+        {
+            get { return GetString("Error_UnknownBuildAction"); }
+        }
+
+        /// <summary>
+        /// Package '{0}' specifies an invalid build action '{1}' for file '{2}'.
+        /// </summary>
+        internal static string FormatError_UnknownBuildAction(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Error_UnknownBuildAction"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -217,6 +217,12 @@ $startTime = [DateTime]::UtcNow
 Write-Host "Build started at " $startTime
 Write-Host
 
+if ((Test-Path -Path "submodules/FileSystem/src") -eq $False)
+{
+    Write-Host "Updating submodules"
+    & git submodule update --init
+}
+
 # Download NuGet.exe if missing
 if ((Test-Path $nugetExe) -eq $False)
 {
