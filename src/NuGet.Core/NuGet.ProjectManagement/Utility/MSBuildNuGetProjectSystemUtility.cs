@@ -57,10 +57,14 @@ namespace NuGet.ProjectManagement
 
         internal static bool IsValid(FrameworkSpecificGroup frameworkSpecificGroup)
         {
-            return (frameworkSpecificGroup != null
-                && (frameworkSpecificGroup.HasEmptyFolder
-                    || frameworkSpecificGroup.Items.Any()
-                    || !frameworkSpecificGroup.TargetFramework.Equals(NuGetFramework.AnyFramework)));
+            if (frameworkSpecificGroup != null)
+            {
+                return (frameworkSpecificGroup.HasEmptyFolder
+                     || frameworkSpecificGroup.Items.Any()
+                     || !frameworkSpecificGroup.TargetFramework.Equals(NuGetFramework.AnyFramework));
+            }
+
+            return false;
         }
 
         internal static void TryAddFile(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, Func<Stream> content)

@@ -59,10 +59,7 @@ namespace NuGet.Packaging
             get { return _items; }
         }
 
-        public bool HasEmptyFolder
-        {
-            get;
-        }
+        public bool HasEmptyFolder { get; }
 
         public bool Equals(FrameworkSpecificGroup other)
         {
