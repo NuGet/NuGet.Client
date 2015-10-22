@@ -133,7 +133,7 @@ namespace NuGet.PackageManagement.UI
             return RegistrySettingUtility.GetBooleanSetting(Constants.SuppressUIDisclaimerRegistryName);
         }
 
-        protected static DependencyBehavior GetDependencyBehaviorFromConfig(
+        protected static DependencyBehavior? GetDependencyBehaviorFromConfig(
             Configuration.ISettings nugetSettings)
         {
             var dependencySetting = nugetSettings.GetValue("config", "dependencyversion");
@@ -143,11 +143,11 @@ namespace NuGet.PackageManagement.UI
             {
                 return behavior;
             }
-            // Default to Lowest
-            return DependencyBehavior.Lowest;
+            
+            return null;
         }
 
-        private void SetSelectedDepencyBehavior(DependencyBehavior dependencyBehavior)
+        private void SetSelectedDepencyBehavior(DependencyBehavior? dependencyBehavior)
         {
             var selectedDependencyBehavior = _detailModel.Options.DependencyBehaviors
                 .FirstOrDefault(d => d.Behavior == dependencyBehavior);
@@ -166,24 +166,12 @@ namespace NuGet.PackageManagement.UI
             UserSettings settings,
             Configuration.ISettings nugetSettings)
         {
-            if (settings == null)
-            {
-                if (nugetSettings == null)
-                {
-                    return;
-                }
-
-                // set depency behavior to the value from nugetSettings
-                SetSelectedDepencyBehavior(GetDependencyBehaviorFromConfig(nugetSettings));
-                return;
-            }
-
             _detailModel.Options.ShowPreviewWindow = settings.ShowPreviewWindow;
             _detailModel.Options.RemoveDependencies = settings.RemoveDependencies;
             _detailModel.Options.ForceRemove = settings.ForceRemove;
             _topPanel.CheckboxPrerelease.IsChecked = settings.IncludePrerelease;
 
-            SetSelectedDepencyBehavior(settings.DependencyBehavior);
+            SetSelectedDepencyBehavior(GetDependencyBehaviorFromConfig(nugetSettings)?? settings.DependencyBehavior);
 
             var selectedFileConflictAction = _detailModel.Options.FileConflictActions.
                 FirstOrDefault(a => a.Action == settings.FileConflictAction);
