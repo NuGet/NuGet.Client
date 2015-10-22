@@ -687,6 +687,48 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public async Task RestoreCommand_InstallPackageWithReferenceDependencies()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+            var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+            var projectDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(packagesDir);
+            _testFolders.Add(projectDir);
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfigWithNet46.ToString(), "TestProject", specPath);
+
+            AddDependency(spec, "Moon.Owin.Localization", "1.3.1");
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.MaxDegreeOfConcurrency = 1;
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var lockFileFormat = new LockFileFormat();
+
+            // Act
+            var logger = new TestLogger();
+            var command = new RestoreCommand(logger, request);
+            var result = await command.ExecuteAsync();
+            var installed = result.GetAllInstalled();
+            var unresolved = result.GetAllUnresolved();
+            var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, "net46", null);
+            var jsonNetReference = runtimeAssemblies.SingleOrDefault(assembly => assembly.Path == "lib/net45/Newtonsoft.Json.dll");
+            var jsonNetPackage = installed.SingleOrDefault(package => package.Name == "Newtonsoft.Json");
+
+            // Assert
+            // There will be compatibility errors, but we don't care
+            Assert.Equal(23, installed.Count);
+            Assert.Equal(0, unresolved.Count);
+            Assert.Equal("7.0.1", jsonNetPackage.Version.ToNormalizedString());
+
+            Assert.Equal(22, runtimeAssemblies.Count);
+            Assert.NotNull(jsonNetReference);
+        }
+
+        [Fact]
         public async Task RestoreCommand_RestoreWithNoChanges()
         {
             // Arrange
@@ -1318,6 +1360,25 @@ namespace NuGet.Commands.Test
 
                 var frameworks = new JObject();
                 frameworks["netcore50"] = new JObject();
+
+                json["dependencies"] = new JObject();
+
+                json["frameworks"] = frameworks;
+
+                json.Add("runtimes", JObject.Parse("{ \"uap10-x86\": { }, \"uap10-x86-aot\": { } }"));
+
+                return json;
+            }
+        }
+
+        private static JObject BasicConfigWithNet46
+        {
+            get
+            {
+                var json = new JObject();
+
+                var frameworks = new JObject();
+                frameworks["net46"] = new JObject();
 
                 json["dependencies"] = new JObject();
 
