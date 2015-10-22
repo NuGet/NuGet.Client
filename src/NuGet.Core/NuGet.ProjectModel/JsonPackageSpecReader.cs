@@ -36,7 +36,7 @@ namespace NuGet.ProjectModel
             }
             catch (JsonReaderException ex)
             {
-                throw PackageSpecFormatException.Create(ex, packageSpecPath);
+                throw FileFormatException.Create(ex, packageSpecPath);
             }
 
             var packageSpec = new PackageSpec(rawPackageSpec);
@@ -65,7 +65,7 @@ namespace NuGet.ProjectModel
                 {
                     var lineInfo = (IJsonLineInfo)version;
 
-                    throw PackageSpecFormatException.Create(ex, version, packageSpec.FilePath);
+                    throw FileFormatException.Create(ex, version, packageSpec.FilePath);
                 }
             }
 
@@ -89,7 +89,7 @@ namespace NuGet.ProjectModel
                 }
                 catch (Exception ex)
                 {
-                    throw PackageSpecFormatException.Create(ex, requireLicenseAcceptance, packageSpecPath);
+                    throw FileFormatException.Create(ex, requireLicenseAcceptance, packageSpecPath);
                 }
             }
 
@@ -111,7 +111,7 @@ namespace NuGet.ProjectModel
                     }
                     else
                     {
-                        throw PackageSpecFormatException.Create(
+                        throw FileFormatException.Create(
                             string.Format("The value of a script in '{0}' can only be a string or an array of strings", PackageSpec.PackageSpecFileName),
                             value,
                             packageSpec.FilePath);
@@ -165,7 +165,7 @@ namespace NuGet.ProjectModel
                 {
                     if (string.IsNullOrEmpty(dependency.Key))
                     {
-                        throw PackageSpecFormatException.Create(
+                        throw FileFormatException.Create(
                             "Unable to resolve dependency ''.",
                             dependency.Value,
                             packageSpecPath);
@@ -215,7 +215,7 @@ namespace NuGet.ProjectModel
                         }
                         catch (Exception ex)
                         {
-                            throw PackageSpecFormatException.Create(
+                            throw FileFormatException.Create(
                                 ex,
                                 dependencyVersionToken,
                                 packageSpecPath);
@@ -285,7 +285,7 @@ namespace NuGet.ProjectModel
                     }
                     catch (Exception ex)
                     {
-                        throw PackageSpecFormatException.Create(ex, framework.Value, packageSpec.FilePath);
+                        throw FileFormatException.Create(ex, framework.Value, packageSpec.FilePath);
                     }
                 }
             }

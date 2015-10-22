@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace NuGet.ProjectModel
@@ -42,14 +44,23 @@ namespace NuGet.ProjectModel
 
             globalSettings = new GlobalSettings();
 
-            var json = File.ReadAllText(globalJsonPath);
-            var settings = JObject.Parse(json);
-            var projects = settings["projects"];
-            var dependencies = settings["dependencies"] as JObject;
+            try
+            {
+                var json = File.ReadAllText(globalJsonPath);
 
-            globalSettings.ProjectPaths = projects == null ? new string[] { } : projects.ValueAsArray<string>();
-            globalSettings.PackagesPath = settings.Value<string>("packages");
-            globalSettings.FilePath = globalJsonPath;
+                JObject settings = JObject.Parse(json);
+
+                var projects = settings["projects"];
+                var dependencies = settings["dependencies"] as JObject;
+
+                globalSettings.ProjectPaths = projects == null ? new string[] { } : projects.ValueAsArray<string>();
+                globalSettings.PackagesPath = settings.Value<string>("packages");
+                globalSettings.FilePath = globalJsonPath;
+            }
+            catch (Exception ex)
+            {
+                throw FileFormatException.Create(ex, globalJsonPath);
+            }
 
             return true;
         }
