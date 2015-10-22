@@ -185,6 +185,19 @@ namespace NuGet.ProjectManagement
             var compatibleToolItemsGroup =
                 MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(MSBuildNuGetProjectSystem.TargetFramework, toolItemGroups);
 
+            compatibleLibItemsGroup
+                = MSBuildNuGetProjectSystemUtility.Normalize(compatibleLibItemsGroup);
+            compatibleReferenceItemsGroup
+                = MSBuildNuGetProjectSystemUtility.Normalize(compatibleReferenceItemsGroup);
+            compatibleFrameworkReferencesGroup
+                = MSBuildNuGetProjectSystemUtility.Normalize(compatibleFrameworkReferencesGroup);
+            compatibleContentFilesGroup
+                = MSBuildNuGetProjectSystemUtility.Normalize(compatibleContentFilesGroup);
+            compatibleBuildFilesGroup
+                = MSBuildNuGetProjectSystemUtility.Normalize(compatibleBuildFilesGroup);
+            compatibleToolItemsGroup
+                = MSBuildNuGetProjectSystemUtility.Normalize(compatibleToolItemsGroup);
+
             hasCompatibleProjectLevelContent = MSBuildNuGetProjectSystemUtility.IsValid(compatibleLibItemsGroup) ||
                                                MSBuildNuGetProjectSystemUtility.IsValid(compatibleFrameworkReferencesGroup) ||
                                                MSBuildNuGetProjectSystemUtility.IsValid(compatibleContentFilesGroup) ||
@@ -400,6 +413,7 @@ namespace NuGet.ProjectManagement
                 var toolItemGroups = packageReader.GetToolItems();
                 var compatibleToolItemsGroup = MSBuildNuGetProjectSystemUtility
                     .GetMostCompatibleGroup(packageTargetFramework, toolItemGroups);
+                compatibleToolItemsGroup = MSBuildNuGetProjectSystemUtility.Normalize(compatibleToolItemsGroup);
 
                 if (MSBuildNuGetProjectSystemUtility.IsValid(compatibleToolItemsGroup))
                 {
@@ -429,6 +443,13 @@ namespace NuGet.ProjectManagement
 
                 var compatibleBuildFilesGroup =
                     MSBuildNuGetProjectSystemUtility.GetMostCompatibleGroup(packageTargetFramework, buildFileGroups);
+
+                compatibleReferenceItemsGroup
+                    = MSBuildNuGetProjectSystemUtility.Normalize(compatibleReferenceItemsGroup);
+                compatibleContentFilesGroup
+                    = MSBuildNuGetProjectSystemUtility.Normalize(compatibleContentFilesGroup);
+                compatibleBuildFilesGroup
+                    = MSBuildNuGetProjectSystemUtility.Normalize(compatibleBuildFilesGroup);
 
                 // Step-5: Remove package reference from packages.config
                 await PackagesConfigNuGetProject.UninstallPackageAsync(packageIdentity, nuGetProjectContext, token);
