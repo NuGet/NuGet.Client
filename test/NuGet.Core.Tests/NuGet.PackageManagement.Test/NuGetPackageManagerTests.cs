@@ -1117,6 +1117,87 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public async Task TestPacManPreviewUpdatePackageFollowingForceUninstall()
+        {
+            // Arrange
+
+            // Set up Package Source
+            var packages = new List<SourcePackageDependencyInfo>
+            {
+                new SourcePackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("a", new NuGetVersion(2, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("a", new NuGetVersion(3, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("a", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("b", new NuGetVersion(2, 0, 0), new[] { new Packaging.Core.PackageDependency("a", new VersionRange(new NuGetVersion(2, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("b", new NuGetVersion(3, 0, 0), new[] { new Packaging.Core.PackageDependency("a", new VersionRange(new NuGetVersion(2, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("c", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("c", new NuGetVersion(2, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("c", new NuGetVersion(3, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("d", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("e", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("d", new NuGetVersion(2, 0, 0), new[] { new Packaging.Core.PackageDependency("e", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("d", new NuGetVersion(3, 0, 0), new[] { new Packaging.Core.PackageDependency("e", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("d", new NuGetVersion(4, 0, 0), new[] { new Packaging.Core.PackageDependency("e", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("e", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("e", new NuGetVersion(2, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("f", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("f", new NuGetVersion(2, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("f", new NuGetVersion(3, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("f", new NuGetVersion(4, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+            };
+
+            var sourceRepositoryProvider = CreateSource(packages);
+
+            // Set up NuGetProject
+            var fwk45 = NuGetFramework.Parse("net45");
+
+            var installedPackages = new List<NuGet.Packaging.PackageReference>
+            {
+                new NuGet.Packaging.PackageReference(new PackageIdentity("a", new NuGetVersion(1, 0, 0)), fwk45, true),
+                new NuGet.Packaging.PackageReference(new PackageIdentity("b", new NuGetVersion(1, 0, 0)), fwk45, true),
+                new NuGet.Packaging.PackageReference(new PackageIdentity("c", new NuGetVersion(2, 0, 0)), fwk45, true),
+                new NuGet.Packaging.PackageReference(new PackageIdentity("d", new NuGetVersion(2, 0, 0)), fwk45, true),
+                // No package "e" even though "d" depends on it (the user must have done an uninstall-package with a -force option)
+            };
+
+            var nuGetProject = new TestNuGetProject(installedPackages);
+
+            // Create Package Manager
+
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                new Configuration.NullSettings(),
+                new TestSolutionManager(),
+                new TestDeleteOnRestartManager());
+
+            // Main Act
+
+            var targets = new List<PackageIdentity>
+            {
+                new PackageIdentity("b", new NuGetVersion(2, 0, 0)),
+                new PackageIdentity("c", new NuGetVersion(3, 0, 0)),
+            };
+
+            var result = await nuGetPackageManager.PreviewUpdatePackagesAsync(
+                targets,
+                nuGetProject,
+                new ResolutionContext(),
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories(),
+                sourceRepositoryProvider.GetRepositories(),
+                CancellationToken.None);
+
+            // Assert
+            var resulting = result.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
+
+            var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
+            Expected(expected, "a", new NuGetVersion(1, 0, 0), new NuGetVersion(2, 0, 0));
+            Expected(expected, "b", new NuGetVersion(1, 0, 0), new NuGetVersion(2, 0, 0));
+            Expected(expected, "c", new NuGetVersion(2, 0, 0), new NuGetVersion(3, 0, 0));
+
+            Assert.True(Compare(resulting, expected));
+        }
+
+        [Fact]
         public async Task TestPacManInstallPackageWhichUsesExistingDependency()
         {
             // Arrange
@@ -2320,6 +2401,81 @@ namespace NuGet.Test
             Expected(expected, "b", new NuGetVersion(1, 0, 0), new NuGetVersion(2, 0, 0));
             Expected(expected, "c", new NuGetVersion(2, 0, 0), new NuGetVersion(3, 0, 0));
             Expected(expected, "d", new NuGetVersion(2, 0, 0), new NuGetVersion(3, 0, 0));
+
+            Assert.True(Compare(resulting, expected));
+        }
+
+        [Fact]
+        public async Task TestPacManPreviewInstallPackageFollowingForceUninstall()
+        {
+            // Arrange
+
+            // Set up Package Source
+            var packages = new List<SourcePackageDependencyInfo>
+            {
+                new SourcePackageDependencyInfo("a", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("a", new NuGetVersion(2, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("a", new NuGetVersion(3, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("b", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("a", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("b", new NuGetVersion(2, 0, 0), new[] { new Packaging.Core.PackageDependency("a", new VersionRange(new NuGetVersion(2, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("b", new NuGetVersion(3, 0, 0), new[] { new Packaging.Core.PackageDependency("a", new VersionRange(new NuGetVersion(2, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("c", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("c", new NuGetVersion(2, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("c", new NuGetVersion(3, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("d", new NuGetVersion(1, 0, 0), new[] { new Packaging.Core.PackageDependency("e", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("d", new NuGetVersion(2, 0, 0), new[] { new Packaging.Core.PackageDependency("e", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("d", new NuGetVersion(3, 0, 0), new[] { new Packaging.Core.PackageDependency("e", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("d", new NuGetVersion(4, 0, 0), new[] { new Packaging.Core.PackageDependency("e", new VersionRange(new NuGetVersion(1, 0, 0))) }, true, null),
+                new SourcePackageDependencyInfo("e", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("e", new NuGetVersion(2, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("f", new NuGetVersion(1, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("f", new NuGetVersion(2, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("f", new NuGetVersion(3, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+                new SourcePackageDependencyInfo("f", new NuGetVersion(4, 0, 0), new Packaging.Core.PackageDependency[] { }, true, null),
+            };
+
+            var sourceRepositoryProvider = CreateSource(packages);
+
+            // Set up NuGetProject
+            var fwk45 = NuGetFramework.Parse("net45");
+
+            var installedPackages = new List<NuGet.Packaging.PackageReference>
+            {
+                new NuGet.Packaging.PackageReference(new PackageIdentity("a", new NuGetVersion(1, 0, 0)), fwk45, true),
+                new NuGet.Packaging.PackageReference(new PackageIdentity("b", new NuGetVersion(1, 0, 0)), fwk45, true),
+                new NuGet.Packaging.PackageReference(new PackageIdentity("c", new NuGetVersion(2, 0, 0)), fwk45, true),
+                new NuGet.Packaging.PackageReference(new PackageIdentity("d", new NuGetVersion(2, 0, 0)), fwk45, true),
+                // No package "e" even though "d" depends on it (the user must have done an uninstall-package with a -force option)
+            };
+
+            var nuGetProject = new TestNuGetProject(installedPackages);
+
+            // Create Package Manager
+
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                new Configuration.NullSettings(),
+                new TestSolutionManager(),
+                new TestDeleteOnRestartManager());
+
+            // Main Act
+
+            var target = new PackageIdentity("f", new NuGetVersion(3, 0, 0));
+
+            var result = await nuGetPackageManager.PreviewInstallPackageAsync(
+                nuGetProject,
+                target,
+                new ResolutionContext(),
+                new TestNuGetProjectContext(),
+                sourceRepositoryProvider.GetRepositories(),
+                sourceRepositoryProvider.GetRepositories(),
+                CancellationToken.None);
+
+            // Assert
+            var resulting = result.Select(a => Tuple.Create(a.PackageIdentity, a.NuGetProjectActionType)).ToArray();
+
+            var expected = new List<Tuple<PackageIdentity, NuGetProjectActionType>>();
+            Expected(expected, target.Id, target.Version);
 
             Assert.True(Compare(resulting, expected));
         }
@@ -4347,6 +4503,11 @@ namespace NuGet.Test
         private static void Expected(List<Tuple<PackageIdentity, NuGetProjectActionType>> expected, string id, NuGetVersion oldVersion, NuGetVersion newVersion)
         {
             expected.Add(Tuple.Create(new PackageIdentity(id, oldVersion), NuGetProjectActionType.Uninstall));
+            expected.Add(Tuple.Create(new PackageIdentity(id, newVersion), NuGetProjectActionType.Install));
+        }
+
+        private static void Expected(List<Tuple<PackageIdentity, NuGetProjectActionType>> expected, string id, NuGetVersion newVersion)
+        {
             expected.Add(Tuple.Create(new PackageIdentity(id, newVersion), NuGetProjectActionType.Install));
         }
 

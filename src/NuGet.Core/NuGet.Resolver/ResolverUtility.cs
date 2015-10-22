@@ -301,6 +301,10 @@ namespace NuGet.Resolver
                 }
             }
 
+            // add any unsorted nodes onto the end of the result
+            var sorted = new HashSet<string>(result.Select(n => n.Id), StringComparer.OrdinalIgnoreCase);
+            result.AddRange(nodes.Where(n => !sorted.Contains(n.Id)));
+
             return result;
         }
 
