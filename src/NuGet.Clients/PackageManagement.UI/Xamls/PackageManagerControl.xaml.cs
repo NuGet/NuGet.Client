@@ -134,18 +134,21 @@ namespace NuGet.PackageManagement.UI
             return RegistrySettingUtility.GetBooleanSetting(Constants.SuppressUIDisclaimerRegistryName);
         }
 
-        protected static DependencyBehavior GetDependencyBehaviorFromConfig(
+        protected static DependencyBehavior? GetDependencyBehaviorFromConfig(
             Configuration.ISettings nugetSettings)
         {
-            var dependencySetting = nugetSettings.GetValue("config", "dependencyversion");
-            DependencyBehavior behavior;
-            var success = Enum.TryParse(dependencySetting, true, out behavior);
-            if (success)
+            if (nugetSettings != null)
             {
-                return behavior;
+                var dependencySetting = nugetSettings.GetValue("config", "dependencyversion");
+                DependencyBehavior behavior;
+                var success = Enum.TryParse(dependencySetting, true, out behavior);
+                if (success)
+                {
+                    return behavior;
+                }
             }
-            // Default to Lowest
-            return DependencyBehavior.Lowest;
+
+            return null;
         }
 
         private void SetSelectedDepencyBehavior(DependencyBehavior dependencyBehavior)
@@ -167,15 +170,11 @@ namespace NuGet.PackageManagement.UI
             UserSettings settings,
             Configuration.ISettings nugetSettings)
         {
+            var dependencySetting = GetDependencyBehaviorFromConfig(nugetSettings);
             if (settings == null)
             {
-                if (nugetSettings == null)
-                {
-                    return;
-                }
-
                 // set depency behavior to the value from nugetSettings
-                SetSelectedDepencyBehavior(GetDependencyBehaviorFromConfig(nugetSettings));
+                SetSelectedDepencyBehavior(dependencySetting ?? DependencyBehavior.Lowest);
                 return;
             }
 
@@ -184,7 +183,7 @@ namespace NuGet.PackageManagement.UI
             _detailModel.Options.ForceRemove = settings.ForceRemove;
             _topPanel.CheckboxPrerelease.IsChecked = settings.IncludePrerelease;
 
-            SetSelectedDepencyBehavior(settings.DependencyBehavior);
+            SetSelectedDepencyBehavior(dependencySetting ?? settings.DependencyBehavior);
 
             var selectedFileConflictAction = _detailModel.Options.FileConflictActions.
                 FirstOrDefault(a => a.Action == settings.FileConflictAction);
