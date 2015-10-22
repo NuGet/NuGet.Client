@@ -14,7 +14,7 @@ namespace NuGet.Packaging
     /// </summary>
     public class FrameworkSpecificGroup : IEquatable<FrameworkSpecificGroup>, IFrameworkSpecific
     {
-        private const string EmptyFolder = "/_._";
+        public readonly static string EmptyFolder = "/_._";
         private readonly NuGetFramework _targetFramework;
         private readonly string[] _items;
 
@@ -37,6 +37,8 @@ namespace NuGet.Packaging
 
             _targetFramework = targetFramework;
 
+            HasEmptyFolder = items.Any(item => item.EndsWith(EmptyFolder, StringComparison.Ordinal));
+
             // Remove empty folder markers here
             _items = items.Where(item => !item.EndsWith(EmptyFolder, StringComparison.Ordinal)).ToArray();
         }
@@ -55,6 +57,11 @@ namespace NuGet.Packaging
         public IEnumerable<string> Items
         {
             get { return _items; }
+        }
+
+        public bool HasEmptyFolder
+        {
+            get;
         }
 
         public bool Equals(FrameworkSpecificGroup other)

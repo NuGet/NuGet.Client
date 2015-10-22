@@ -15,30 +15,52 @@ namespace NuGet.ProjectManagement
 {
     internal static class MSBuildNuGetProjectSystemUtility
     {
-        internal static FrameworkSpecificGroup GetMostCompatibleGroup(NuGetFramework projectTargetFramework, IEnumerable<FrameworkSpecificGroup> itemGroups,
-            bool altDirSeparator = false)
+        internal static FrameworkSpecificGroup GetMostCompatibleGroup(NuGetFramework projectTargetFramework,
+            IEnumerable<FrameworkSpecificGroup> itemGroups)
         {
             var reducer = new FrameworkReducer();
-            var mostCompatibleFramework = reducer.GetNearest(projectTargetFramework, itemGroups.Select(i => i.TargetFramework));
+            var mostCompatibleFramework
+                = reducer.GetNearest(projectTargetFramework, itemGroups.Select(i => i.TargetFramework));
             if (mostCompatibleFramework != null)
             {
-                var mostCompatibleGroup = itemGroups.FirstOrDefault(i => i.TargetFramework.Equals(mostCompatibleFramework));
+                var mostCompatibleGroup
+                    = itemGroups.FirstOrDefault(i => i.TargetFramework.Equals(mostCompatibleFramework));
+
                 if (IsValid(mostCompatibleGroup))
                 {
-                    mostCompatibleGroup = new FrameworkSpecificGroup(mostCompatibleGroup.TargetFramework,
-                        GetValidPackageItems(mostCompatibleGroup.Items).Select(item => altDirSeparator ? PathUtility.ReplaceDirSeparatorWithAltDirSeparator(item)
-                            : PathUtility.ReplaceAltDirSeparatorWithDirSeparator(item)));
+                    return mostCompatibleGroup;
                 }
-
-                return mostCompatibleGroup;
             }
+
             return null;
+        }
+
+        internal static FrameworkSpecificGroup Normalize(FrameworkSpecificGroup group)
+        {
+            if (group == null)
+            {
+                return null;
+            }
+
+            var items = group.Items.ToList();
+            if (group.HasEmptyFolder)
+            {
+                items.Add(FrameworkSpecificGroup.EmptyFolder);
+            }
+
+            var normalizedGroup = new FrameworkSpecificGroup(group.TargetFramework,
+                                    GetValidPackageItems(items)
+                                    .Select(item => PathUtility.ReplaceAltDirSeparatorWithDirSeparator(item)));
+
+            return normalizedGroup;
         }
 
         internal static bool IsValid(FrameworkSpecificGroup frameworkSpecificGroup)
         {
-            return (frameworkSpecificGroup != null && frameworkSpecificGroup.Items != null &&
-                    (frameworkSpecificGroup.Items.Any() || !frameworkSpecificGroup.TargetFramework.Equals(NuGetFramework.AnyFramework)));
+            return (frameworkSpecificGroup != null
+                && (frameworkSpecificGroup.HasEmptyFolder
+                    || frameworkSpecificGroup.Items.Any()
+                    || !frameworkSpecificGroup.TargetFramework.Equals(NuGetFramework.AnyFramework)));
         }
 
         internal static void TryAddFile(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, Func<Stream> content)
@@ -212,10 +234,14 @@ namespace NuGet.ProjectManagement
                                         var otherPackageZipReader = new PackageReader(otherPackageZipArchive);
 
                                         // use the project framework to find the group that would have been installed
-                                        var mostCompatibleContentFilesGroup = GetMostCompatibleGroup(projectFramework, otherPackageZipReader.GetContentItems(), altDirSeparator: true);
-                                        if (mostCompatibleContentFilesGroup != null
-                                            && IsValid(mostCompatibleContentFilesGroup))
+                                        var mostCompatibleContentFilesGroup = GetMostCompatibleGroup(
+                                            projectFramework,
+                                            otherPackageZipReader.GetContentItems());
+
+                                        if (IsValid(mostCompatibleContentFilesGroup))
                                         {
+                                            // Should not normalize content files group.
+                                            // It should be like a ZipFileEntry with a forward slash.
                                             foreach (var otherPackageItem in mostCompatibleContentFilesGroup.Items)
                                             {
                                                 if (GetEffectivePathForContentFile(packageTargetFramework, otherPackageItem)

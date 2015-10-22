@@ -72,6 +72,28 @@ namespace Test.Utility
                 });
         }
 
+        public static FileInfo GetNet45TestPackageWithDummyFile(string path,
+            string packageId = "packageA",
+            string packageVersion = "2.0.3")
+        {
+            return GeneratePackage(path, packageId, packageVersion,
+                new[]
+                {
+                    "lib/net45/_._"
+                });
+        }
+
+        public static FileInfo GetTestPackageWithDummyFile(string path,
+            string packageId = "packageA",
+            string packageVersion = "2.0.3")
+        {
+            return GeneratePackage(path, packageId, packageVersion,
+                new[]
+                {
+                    "lib/_._"
+                });
+        }
+
         public static FileInfo GetMixedPackage(string path, string baseName, string packageId, string packageVersion)
         {
             return GeneratePackage(path, packageId, packageVersion,
