@@ -368,6 +368,8 @@ namespace NuGet.PackageManagement.UI
             PackageIdentity package,
             CancellationToken token)
         {
+            var exceptionList = new List<InvalidOperationException>();
+
             foreach (var source in sources)
             {
                 var metadataResource = source.GetResource<UIMetadataResource>();
@@ -376,16 +378,28 @@ namespace NuGet.PackageManagement.UI
                     continue;
                 }
 
-                var r = await metadataResource.GetMetadata(
-                    package.Id,
-                    includePrerelease: true,
-                    includeUnlisted: true,
-                    token: token);
-                var packageMetadata = r.FirstOrDefault(p => p.Identity.Version == package.Version);
-                if (packageMetadata != null)
+                try
                 {
-                    return packageMetadata;
+                    var r = await metadataResource.GetMetadata(
+                        package.Id,
+                        includePrerelease: true,
+                        includeUnlisted: true,
+                        token: token);
+                    var packageMetadata = r.FirstOrDefault(p => p.Identity.Version == package.Version);
+                    if (packageMetadata != null)
+                    {
+                        return packageMetadata;
+                    }
                 }
+                catch(InvalidOperationException e)
+                {
+                    exceptionList.Add(e);
+                }
+            }
+
+            if (exceptionList.Count > 0)
+            {
+                throw new AggregateException(exceptionList);
             }
 
             return null;
