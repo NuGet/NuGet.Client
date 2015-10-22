@@ -1315,6 +1315,75 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public void RestoreProjectJson_GenerateTargetsForRootBuildFolderIgnoreSubFolders()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var guid = Guid.NewGuid();
+            var workingPath = Path.Combine(tempPath, guid.ToString());
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var nugetexe = Util.GetNuGetExePath();
+
+            _dirs.TryAdd(workingPath, false);
+
+            Util.CreateDirectory(workingPath);
+            Util.CreateDirectory(repositoryPath);
+            Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+            Util.CreateConfigForGlobalPackagesFolder(workingPath);
+            var packageA = Util.CreateTestPackageBuilder("packageA", "3.1.0");
+
+            var targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
+
+            var targetA = Util.CreatePackageFile("build/net45/packageA.targets", targetContent);
+            var targetARoot = Util.CreatePackageFile("build/packageA.targets", targetContent);
+
+            packageA.Files.Add(targetA);
+            packageA.Files.Add(targetARoot);
+
+            Util.CreateTestPackage(packageA, repositoryPath);
+
+            Util.CreateFile(workingPath, "project.json",
+                                            @"{
+                                            'dependencies': {
+                                            'packageA': '3.1.0',
+                                            },
+                                            'frameworks': {
+                                                        'uap10.0': { }
+                                                    }
+                                            }");
+
+            string[] args = new string[] {
+                "restore",
+                "-Source",
+                repositoryPath,
+                "-solutionDir",
+                workingPath,
+                "project.json"
+            };
+
+            var targetFilePath = Path.Combine(workingPath, $"{guid}.nuget.targets");
+
+            // Act
+            var r = CommandRunner.Run(
+                nugetexe,
+                workingPath,
+                string.Join(" ", args),
+                waitForExit: true);
+
+            // Assert
+            Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+            Assert.True(File.Exists(targetFilePath));
+
+            var targetsFile = File.OpenText(targetFilePath).ReadToEnd();
+            // Verify the target was added
+            Assert.True(targetsFile.IndexOf(@"build\packageA.targets") > -1);
+
+            // Verify sub directories were not used
+            Assert.True(targetsFile.IndexOf(@"build\net45\packageA.targets") < 0);
+        }
+
+        [Fact]
         public void RestoreProjectJson_GenerateTargetsPersistsWithMultipleRestores()
         {
             // Arrange
