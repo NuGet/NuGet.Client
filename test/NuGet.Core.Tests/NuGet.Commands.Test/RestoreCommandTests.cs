@@ -1159,7 +1159,7 @@ namespace NuGet.Commands.Test
             var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
 
             var lockFileFormat = new LockFileFormat();
-            var lockFile = lockFileFormat.Parse(lockFileContent);
+            var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory");
             Assert.True(lockFile.IsLocked); // Just to make sure no-one accidentally unlocks it :)
 
             var request = new RestoreRequest(spec, sources, packagesDir);
@@ -1245,7 +1245,7 @@ namespace NuGet.Commands.Test
             var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
 
             var lockFileFormat = new LockFileFormat();
-            var lockFile = lockFileFormat.Parse(lockFileContent);
+            var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory");
             Assert.True(lockFile.IsLocked); // Just to make sure no-one accidentally unlocks it :)
 
             var request = new RestoreRequest(spec, sources, packagesDir);

@@ -42,16 +42,16 @@ namespace NuGet.ProjectModel
         private const string RuntimeAssembliesProperty = "runtimeAssemblies";
         private const string CompileAssembliesProperty = "compileAssemblies";
 
-        public LockFile Parse(string lockFileContent)
+        public LockFile Parse(string lockFileContent, string path)
         {
-            return Parse(lockFileContent, NullLogger.Instance);
+            return Parse(lockFileContent, NullLogger.Instance, path);
         }
 
-        public LockFile Parse(string lockFileContent, ILogger log)
+        public LockFile Parse(string lockFileContent, ILogger log, string path)
         {
             using (var reader = new StringReader(lockFileContent))
             {
-                return Read(reader, log);
+                return Read(reader, log, path);
             }
         }
 
@@ -64,29 +64,29 @@ namespace NuGet.ProjectModel
         {
             using (var stream = File.OpenRead(filePath))
             {
-                return Read(stream, log);
+                return Read(stream, log, filePath);
             }
         }
 
-        public LockFile Read(Stream stream)
+        public LockFile Read(Stream stream, string path)
         {
-            return Read(stream, NullLogger.Instance);
+            return Read(stream, NullLogger.Instance, path);
         }
 
-        public LockFile Read(Stream stream, ILogger log)
+        public LockFile Read(Stream stream, ILogger log, string path)
         {
             using (var textReader = new StreamReader(stream))
             {
-                return Read(textReader, log);
+                return Read(textReader, log, path);
             }
         }
 
-        public LockFile Read(TextReader reader)
+        public LockFile Read(TextReader reader, string path)
         {
-            return Read(reader, NullLogger.Instance);
+            return Read(reader, NullLogger.Instance, path);
         }
 
-        public LockFile Read(TextReader reader, ILogger log)
+        public LockFile Read(TextReader reader, ILogger log, string path)
         {
             try
             {
@@ -105,7 +105,7 @@ namespace NuGet.ProjectModel
             }
             catch (Exception ex)
             {
-                log.LogError(Strings.FormatLog_ErrorReadingLockFile(ex.Message));
+                log.LogError(Strings.FormatLog_ErrorReadingLockFile(path, ex.Message));
 
                 // Ran into parsing errors, mark it as unlocked and out-of-date
                 return new LockFile

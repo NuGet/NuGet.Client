@@ -58,7 +58,7 @@ namespace NuGet.ProjectModel.Test
   }
 }";
             var lockFileFormat = new LockFileFormat();
-            var lockFile = lockFileFormat.Parse(lockFileContent);
+            var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory");
 
             Assert.True(lockFile.IsLocked);
             Assert.Equal(1, lockFile.Version);
@@ -141,7 +141,7 @@ namespace NuGet.ProjectModel.Test
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927")
             };
-            targetLib.Dependencies.Add(new NuGet.Packaging.Core.PackageDependency("Frob", 
+            targetLib.Dependencies.Add(new NuGet.Packaging.Core.PackageDependency("Frob",
                 new VersionRange(NuGetVersion.Parse("4.0.20"))));
             targetLib.CompileTimeAssemblies.Add(new LockFileItem("ref/dotnet/System.Runtime.dll"));
             target.Libraries.Add(targetLib);

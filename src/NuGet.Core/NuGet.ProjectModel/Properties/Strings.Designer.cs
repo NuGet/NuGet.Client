@@ -11,7 +11,7 @@ namespace NuGet.ProjectModel
             = new ResourceManager("NuGet.ProjectModel.Strings", typeof(Strings).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// Error loading lock file: {0}
+        /// Error loading lock file '{0}' : {1}
         /// </summary>
         internal static string Log_ErrorReadingLockFile
         {
@@ -19,15 +19,15 @@ namespace NuGet.ProjectModel
         }
 
         /// <summary>
-        /// Error loading lock file: {0}
+        /// Error loading lock file '{0}' : {1}
         /// </summary>
-        internal static string FormatLog_ErrorReadingLockFile(object p0)
+        internal static string FormatLog_ErrorReadingLockFile(object p0, object p1)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Log_ErrorReadingLockFile"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_ErrorReadingLockFile"), p0, p1);
         }
 
         /// <summary>
-        /// Error reading {0} : {1}
+        /// Error reading '{0}' : {1}
         /// </summary>
         internal static string Log_ErrorReadingProjectJson
         {
@@ -35,7 +35,7 @@ namespace NuGet.ProjectModel
         }
 
         /// <summary>
-        /// Error reading {0} : {1}
+        /// Error reading '{0}' : {1}
         /// </summary>
         internal static string FormatLog_ErrorReadingProjectJson(object p0, object p1)
         {
@@ -43,7 +43,7 @@ namespace NuGet.ProjectModel
         }
 
         /// <summary>
-        /// Error reading {0} at line {1} column {2} : {3}
+        /// Error reading '{0}' at line {1} column {2} : {3}
         /// </summary>
         internal static string Log_ErrorReadingProjectJsonWithLocation
         {
@@ -51,7 +51,7 @@ namespace NuGet.ProjectModel
         }
 
         /// <summary>
-        /// Error reading {0} at line {1} column {2} : {3}
+        /// Error reading '{0}' at line {1} column {2} : {3}
         /// </summary>
         internal static string FormatLog_ErrorReadingProjectJsonWithLocation(object p0, object p1, object p2, object p3)
         {
