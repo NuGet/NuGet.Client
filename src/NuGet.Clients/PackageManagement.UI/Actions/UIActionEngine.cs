@@ -36,7 +36,11 @@ namespace NuGet.PackageManagement.UI
         /// Perform a user action.
         /// </summary>
         /// <remarks>This needs to be called from a background thread. It may hang on the UI thread.</remarks>
-        public async Task PerformActionAsync(INuGetUI uiService, UserAction userAction, DependencyObject windowOwner, CancellationToken token)
+        public async Task PerformActionAsync(
+            INuGetUI uiService,
+            UserAction userAction,
+            DependencyObject windowOwner,
+            CancellationToken token)
         {
             await PerformActionImplAsync(
                 uiService,
@@ -44,12 +48,17 @@ namespace NuGet.PackageManagement.UI
                 {
                     var projects = uiService.Projects;
 
-                    // TODO: should stable packages allow prerelease dependencies if include prerelease was checked?
                     // Allow prerelease packages only if the target is prerelease
-                    var includePrelease = userAction.PackageIdentity.Version.IsPrerelease || userAction.Action == NuGetProjectActionType.Uninstall;
+                    var includePrelease =
+                        userAction.PackageIdentity.Version.IsPrerelease ||
+                        userAction.Action == NuGetProjectActionType.Uninstall;
                     var includeUnlisted = userAction.Action == NuGetProjectActionType.Uninstall;
 
-                    var resolutionContext = new ResolutionContext(uiService.DependencyBehavior, includePrelease, includeUnlisted, VersionConstraints.None);
+                    var resolutionContext = new ResolutionContext(
+                        uiService.DependencyBehavior,
+                        includePrelease,
+                        includeUnlisted,
+                        VersionConstraints.None);
 
                     return GetActionsAsync(
                         uiService,
@@ -71,7 +80,7 @@ namespace NuGet.PackageManagement.UI
 
         /// <summary>
         /// Perform the multi-package update action.
-        /// </summary>       
+        /// </summary>
         /// <remarks>This needs to be called from a background thread. It may hang on the UI thread.</remarks>
         public async Task PerformUpdateAsync(
             INuGetUI uiService,
@@ -90,11 +99,11 @@ namespace NuGet.PackageManagement.UI
                 },
                 async (actions) =>
                 {
-                    foreach (var projectActions in actions.GroupBy(action => action.Item1))
+                    foreach (var projectActions in actions.GroupBy(action => action.Project))
                     {
                         await _packageManager.ExecuteNuGetProjectActionsAsync(
                            projectActions.Key,
-                           projectActions.Select(action => action.Item2),
+                           projectActions.Select(action => action.Action),
                            uiService.ProgressWindow,
                            token);
                     }
@@ -110,12 +119,12 @@ namespace NuGet.PackageManagement.UI
         /// <param name="packagesToUpdate">The list of packages to update.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns>The list of actions.</returns>
-        private async Task<IReadOnlyList<Tuple<NuGetProject, NuGetProjectAction>>> ResolveActionsForUpdate(
+        private async Task<IReadOnlyList<ResolvedAction>> ResolveActionsForUpdate(
             INuGetUI uiService,
             List<PackageIdentity> packagesToUpdate,
             CancellationToken token)
         {
-            var resolvedActions = new List<Tuple<NuGetProject, NuGetProjectAction>>();
+            var resolvedActions = new List<ResolvedAction>();
 
             foreach (var project in uiService.Projects)
             {
@@ -125,6 +134,10 @@ namespace NuGet.PackageManagement.UI
                 {
                     packageIds.Add(p.PackageIdentity.Id);
                 }
+
+                // We need to filter out packages from packagesToUpdate that are not installed 
+                // in the current project. Otherwise, we'll incorrectly install a 
+                // package that is not installed before.
                 var packagesToUpdateInProject = packagesToUpdate.Where(
                     package => packageIds.Contains(package.Id)).ToList();
 
@@ -136,7 +149,7 @@ namespace NuGet.PackageManagement.UI
                     var resolutionContext = new ResolutionContext(
                         uiService.DependencyBehavior,
                         includePrelease: includePrerelease,
-                        includeUnlisted: false,
+                        includeUnlisted: true,
                         versionConstraints: VersionConstraints.None);
                     var sources = new SourceRepository[] { uiService.ActiveSource };
                     var actions = await _packageManager.PreviewUpdatePackagesAsync(
@@ -147,7 +160,7 @@ namespace NuGet.PackageManagement.UI
                         sources,
                         sources,
                         token);
-                    resolvedActions.AddRange(actions.Select(action => Tuple.Create(project, action))
+                    resolvedActions.AddRange(actions.Select(action => new ResolvedAction(project, action))
                         .ToList());
                 }
             }
@@ -158,14 +171,14 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// The internal implementation to perform user action.
         /// </summary>
-        /// <param name="resolveActionsTask">A function that returns a task that resolves the user 
+        /// <param name="resolveActionsAsync">A function that returns a task that resolves the user
         /// action into project actions.</param>
-        /// <param name="executeActionsTask">A function that returns a task that executes 
+        /// <param name="executeActionsAsync">A function that returns a task that executes
         /// the project actions.</param>
         private async Task PerformActionImplAsync(
             INuGetUI uiService,
-            Func<Task<IReadOnlyList<Tuple<NuGetProject, NuGetProjectAction>>>> resolveActionsTask,
-            Func<IReadOnlyList<Tuple<NuGetProject, NuGetProjectAction>>, Task> executeActionsTask,
+            Func<Task<IReadOnlyList<ResolvedAction>>> resolveActionsAsync,
+            Func<IReadOnlyList<ResolvedAction>, Task> executeActionsAsync,
             DependencyObject windowOwner,
             CancellationToken token)
         {
@@ -173,7 +186,7 @@ namespace NuGet.PackageManagement.UI
             {
                 uiService.ShowProgressDialog(windowOwner);
 
-                var actions = await resolveActionsTask();
+                var actions = await resolveActionsAsync();
                 var results = GetPreviewResults(actions);
 
                 // preview window
@@ -195,7 +208,7 @@ namespace NuGet.PackageManagement.UI
                 if (!token.IsCancellationRequested)
                 {
                     // execute the actions
-                    await executeActionsTask(actions);
+                    await executeActionsAsync(actions);
 
                     // update
                     uiService.RefreshPackageStatus();
@@ -259,13 +272,13 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Execute the installs/uninstalls
         /// </summary>
-        protected async Task ExecuteActionsAsync(IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> actions,
+        protected async Task ExecuteActionsAsync(IEnumerable<ResolvedAction> actions,
             NuGetUIProjectContext projectContext, UserAction userAction, CancellationToken token)
         {
             var processedDirectInstalls = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
-            foreach (var projectActions in actions.GroupBy(e => e.Item1))
+            foreach (var projectActions in actions.GroupBy(e => e.Project))
             {
-                var nuGetProjectActions = projectActions.Select(e => e.Item2);
+                var nuGetProjectActions = projectActions.Select(e => e.Action);
                 var directInstall = GetDirectInstall(nuGetProjectActions, userAction, projectContext.CommonOperations);
                 if (directInstall != null
                     && !processedDirectInstalls.Contains(directInstall))
@@ -312,7 +325,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Return the resolve package actions
         /// </summary>
-        protected async Task<IReadOnlyList<Tuple<NuGetProject, NuGetProjectAction>>> GetActionsAsync(
+        protected async Task<IReadOnlyList<ResolvedAction>> GetActionsAsync(
             INuGetUI uiService,
             IEnumerable<NuGetProject> targets,
             UserAction userAction,
@@ -322,7 +335,7 @@ namespace NuGet.PackageManagement.UI
             INuGetProjectContext projectContext,
             CancellationToken token)
         {
-            var results = new List<Tuple<NuGetProject, NuGetProjectAction>>();
+            var results = new List<ResolvedAction>();
 
             Debug.Assert(userAction.PackageId != null, "Package id can never be null in a User action");
             if (userAction.Action == NuGetProjectActionType.Install)
@@ -339,7 +352,7 @@ namespace NuGet.PackageManagement.UI
                         uiService.ActiveSource,
                         null,
                         token);
-                    results.AddRange(actions.Select(a => new Tuple<NuGetProject, NuGetProjectAction>(target, a)));
+                    results.AddRange(actions.Select(a => new ResolvedAction(target, a)));
                 }
             }
             else
@@ -361,7 +374,7 @@ namespace NuGet.PackageManagement.UI
                         actions = await _packageManager.PreviewUninstallPackageAsync(
                             target, userAction.PackageId, uninstallationContext, projectContext, token);
                     }
-                    results.AddRange(actions.Select(a => new Tuple<NuGetProject, NuGetProjectAction>(target, a)));
+                    results.AddRange(actions.Select(a => new ResolvedAction(target, a)));
                 }
             }
 
@@ -371,23 +384,23 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Convert NuGetProjectActions into PreviewResult types
         /// </summary>
-        protected static IReadOnlyList<PreviewResult> GetPreviewResults(IEnumerable<Tuple<NuGetProject, NuGetProjectAction>> projectActions)
+        protected static IReadOnlyList<PreviewResult> GetPreviewResults(IEnumerable<ResolvedAction> projectActions)
         {
             var results = new List<PreviewResult>();
 
-            var expandedActions = new List<Tuple<NuGetProject, NuGetProjectAction>>();
+            var expandedActions = new List<ResolvedAction>();
 
             // BuildIntegratedProjectActions contain all project actions rolled up into a single action,
             // to display these we need to expand them into the low level actions.
             foreach (var action in projectActions)
             {
-                var buildIntegratedAction = action.Item2 as BuildIntegratedProjectAction;
+                var buildIntegratedAction = action.Action as BuildIntegratedProjectAction;
 
                 if (buildIntegratedAction != null)
                 {
                     foreach (var buildAction in buildIntegratedAction.GetProjectActions())
                     {
-                        expandedActions.Add(new Tuple<NuGetProject, NuGetProjectAction>(action.Item1, buildAction));
+                        expandedActions.Add(new ResolvedAction(action.Project, buildAction));
                     }
                 }
                 else
@@ -398,7 +411,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             // Group actions by project
-            var actionsByProject = expandedActions.GroupBy(action => action.Item1);
+            var actionsByProject = expandedActions.GroupBy(action => action.Project);
 
             // Group actions by operation
             foreach (var actions in actionsByProject)
@@ -409,15 +422,15 @@ namespace NuGet.PackageManagement.UI
 
                 foreach (var actionTuple in actions)
                 {
-                    packageIds.Add(actionTuple.Item2.PackageIdentity.Id);
+                    packageIds.Add(actionTuple.Action.PackageIdentity.Id);
 
-                    if (actionTuple.Item2.NuGetProjectActionType == NuGetProjectActionType.Install)
+                    if (actionTuple.Action.NuGetProjectActionType == NuGetProjectActionType.Install)
                     {
-                        installed[actionTuple.Item2.PackageIdentity.Id] = actionTuple.Item2.PackageIdentity;
+                        installed[actionTuple.Action.PackageIdentity.Id] = actionTuple.Action.PackageIdentity;
                     }
                     else
                     {
-                        uninstalled[actionTuple.Item2.PackageIdentity.Id] = actionTuple.Item2.PackageIdentity;
+                        uninstalled[actionTuple.Action.PackageIdentity.Id] = actionTuple.Action.PackageIdentity;
                     }
                 }
 

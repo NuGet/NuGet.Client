@@ -70,6 +70,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actions\ResolvedAction.cs" />
     <Compile Include="Actions\UIActionEngine.cs" />
     <Compile Include="Actions\ProjectContext.cs" />
     <Compile Include="Actions\UpdatePreviewResult.cs" />

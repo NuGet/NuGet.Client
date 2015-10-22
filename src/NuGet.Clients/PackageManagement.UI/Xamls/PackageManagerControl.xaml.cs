@@ -912,20 +912,20 @@ namespace NuGet.PackageManagement.UI
                         this,
                         CancellationToken.None);
                 },
-                nugetUi =>
-                {
-                    SetOptions(nugetUi, _detailModel.Options);
-                    nugetUi.Projects = Model.Context.Projects;
-                });
+                nugetUi => SetOptions(nugetUi));
         }
-
-        private void SetOptions(NuGetUI nugetUi, Options options)
+        
+        private void SetOptions(NuGetUI nugetUi)
         {
+            var options = _detailModel.Options;
+
             nugetUi.FileConflictAction = options.SelectedFileConflictAction.Action;
             nugetUi.DependencyBehavior = options.SelectedDependencyBehavior.Behavior;
             nugetUi.RemoveDependencies = options.RemoveDependencies;
             nugetUi.ForceRemove = options.ForceRemove;
             nugetUi.DisplayPreviewWindow = options.ShowPreviewWindow;
+
+            nugetUi.Projects = Model.Context.Projects;
         }
 
         private void ExecuteInstallPackageCommand(object sender, ExecutedRoutedEventArgs e)
@@ -947,11 +947,7 @@ namespace NuGet.PackageManagement.UI
                         this,
                         CancellationToken.None);
                 },
-                nugetUi =>
-                {
-                    SetOptions(nugetUi, _detailModel.Options);
-                    nugetUi.Projects = Model.Context.Projects;
-                });
+                nugetUi => SetOptions(nugetUi));
         }
 
         private void PackageList_UpdateButtonClicked(object sender, EventArgs e)
@@ -980,11 +976,7 @@ namespace NuGet.PackageManagement.UI
                         this,
                         CancellationToken.None);
                 },
-                nugetUi =>
-                {
-                    SetOptions(nugetUi, _detailModel.Options);
-                    nugetUi.Projects = Model.Context.Projects;
-                });
+                nugetUi => SetOptions(nugetUi));
         }
     }
 }
