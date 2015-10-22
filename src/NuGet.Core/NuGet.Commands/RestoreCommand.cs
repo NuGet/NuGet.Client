@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Client;
 using NuGet.ContentModel;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
@@ -422,13 +423,20 @@ namespace NuGet.Commands
 
                 if (packageFiles != null)
                 {
-                    var criteria = graph.Conventions.Criteria.ForFramework(graph.Framework);
                     var contentItemCollection = new ContentItemCollection();
-
                     contentItemCollection.Load(packageFiles);
 
                     // Find MSBuild thingies
-                    var buildItems = contentItemCollection.FindBestItemGroup(criteria, graph.Conventions.Patterns.MSBuildFiles);
+                    var groups = contentItemCollection.FindItemGroups(graph.Conventions.Patterns.MSBuildFiles);
+
+                    // Find the nearest msbuild group, this can include the root level Any group.
+                    var buildItems = NuGetFrameworkUtility.GetNearest(
+                        groups,
+                        graph.Framework,
+                        group =>
+                            group.Properties[ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker]
+                                as NuGetFramework);
+
                     if (buildItems != null)
                     {
                         // We need to additionally filter to items that are named "{packageId}.targets" and "{packageId}.props"

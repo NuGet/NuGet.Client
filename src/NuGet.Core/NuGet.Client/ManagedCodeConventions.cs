@@ -326,10 +326,10 @@ namespace NuGet.Client
                     conventions.Properties,
                     groupPatterns: new PatternDefinition[]
                     {
-                        "build/{tfm}/{any?}",
-                        new PatternDefinition("build/{any?}", defaults: new Dictionary<string, object>
+                        "build/{tfm}/{msbuild?}",
+                        new PatternDefinition("build/{msbuild?}", defaults: new Dictionary<string, object>
                         {
-                            { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
+                            { "tfm", NuGetFramework.AnyFramework }
                         })
                     },
                     pathPatterns: new PatternDefinition[]
@@ -337,7 +337,7 @@ namespace NuGet.Client
                         "build/{tfm}/{msbuild}",
                         new PatternDefinition("build/{msbuild}", defaults: new Dictionary<string, object>
                         {
-                            { "tfm", new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Net, FrameworkConstants.EmptyVersion) }
+                            { "tfm", NuGetFramework.AnyFramework }
                         })
                     });
             }
