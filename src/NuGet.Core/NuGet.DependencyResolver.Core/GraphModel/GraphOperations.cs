@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using NuGet.Versioning;
+using NuGet.LibraryModel;
 
 namespace NuGet.DependencyResolver
 {
@@ -80,7 +81,10 @@ namespace NuGet.DependencyResolver
                     {
                         if (sideNode != node && sideNode.Key.Name == node.Key.Name)
                         {
-                            if (!RemoteDependencyWalker.IsGreaterThanOrEqualTo(sideNode.Key.VersionRange, node.Key.VersionRange))
+                            // Nodes that have no version range should be ignored as potential downgrades e.g. framework reference
+                            if (sideNode.Key.VersionRange != null &&
+                                node.Key.VersionRange != null &&
+                                !RemoteDependencyWalker.IsGreaterThanOrEqualTo(sideNode.Key.VersionRange, node.Key.VersionRange))
                             {
                                 workingDowngrades[node] = sideNode;
                             }
