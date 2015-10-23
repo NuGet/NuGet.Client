@@ -267,7 +267,25 @@ namespace NuGet.Commands
 
                 _success = compatibilityResult.Item1;
 
-                allGraphs.AddRange(compatibilityResult.Item2);
+                // TryRestore may contain graphs that are already in allGraphs if the
+                // supports section contains the same TxM as the project framework.
+                var currentGraphs = new HashSet<KeyValuePair<NuGetFramework, string>>(
+                    allGraphs.Select(graph => new KeyValuePair<NuGetFramework, string>(
+                        graph.Framework,
+                        graph.RuntimeIdentifier))
+                    );
+
+                foreach (var graph in compatibilityResult.Item2)
+                {
+                    var key = new KeyValuePair<NuGetFramework, string>(
+                        graph.Framework,
+                        graph.RuntimeIdentifier);
+
+                    if (currentGraphs.Add(key))
+                    {
+                        allGraphs.Add(graph);
+                    }
+                }
             }
 
             return allGraphs;
