@@ -120,5 +120,10 @@ namespace NuGet.Configuration
         {
             return Tuple.Create(Key, Value, IsMachineWide).GetHashCode();
         }
+
+       /// <summary>
+       /// relative path source value in NuGet.Config
+       /// </summary>
+        public string OriginalValue { get; set; }
     }
 }
