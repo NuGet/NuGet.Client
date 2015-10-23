@@ -44,12 +44,12 @@ namespace NuGet.PackageManagement.UI
 
         private void OnButtonKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Y)
+            if (e.Key == Key.A)
             {
                 DialogResult = true;
             }
 
-            else if (e.Key == Key.N)
+            else if (e.Key == Key.D)
             {
                 DialogResult = false;
             }
