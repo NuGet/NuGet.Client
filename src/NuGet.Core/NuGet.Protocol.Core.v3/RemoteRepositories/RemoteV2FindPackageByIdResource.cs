@@ -212,17 +212,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             var properties = element.Element(_xnameProperties);
             var idElement = properties.Element(_xnameId);
 
-            var publishElement = properties.Element(_xnamePublish);
-            if (publishElement != null)
-            {
-                DateTime publishDate;
-                if (DateTime.TryParse(publishElement.Value, out publishDate)
-                    && (publishDate == _unlistedPublishedTime))
-                {
-                    return null;
-                }
-            }
-
             return new PackageInfo
             {
                 // Use the given Id as final fallback if all elements above don't exist
