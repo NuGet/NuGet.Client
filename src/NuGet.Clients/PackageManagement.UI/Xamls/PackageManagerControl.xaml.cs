@@ -166,12 +166,18 @@ namespace NuGet.PackageManagement.UI
             UserSettings settings,
             Configuration.ISettings nugetSettings)
         {
+            if (settings == null || nugetSettings == null)
+            {
+                return;
+            }
+
             _detailModel.Options.ShowPreviewWindow = settings.ShowPreviewWindow;
             _detailModel.Options.RemoveDependencies = settings.RemoveDependencies;
             _detailModel.Options.ForceRemove = settings.ForceRemove;
             _topPanel.CheckboxPrerelease.IsChecked = settings.IncludePrerelease;
 
-            SetSelectedDepencyBehavior(GetDependencyBehaviorFromConfig(nugetSettings)?? settings.DependencyBehavior);
+            var dependencySetting = GetDependencyBehaviorFromConfig(nugetSettings) ?? settings.DependencyBehavior;
+            SetSelectedDepencyBehavior(dependencySetting);
 
             var selectedFileConflictAction = _detailModel.Options.FileConflictActions.
                 FirstOrDefault(a => a.Action == settings.FileConflictAction);
