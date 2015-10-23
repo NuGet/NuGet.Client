@@ -49,7 +49,7 @@ namespace NuGet.Commands.Test
             var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -102,7 +102,7 @@ namespace NuGet.Commands.Test
             var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -115,7 +115,7 @@ namespace NuGet.Commands.Test
 
             // Act
             request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
             request.ExistingLockFile = result.LockFile;
             command = new RestoreCommand(logger, request);
@@ -175,7 +175,7 @@ namespace NuGet.Commands.Test
 
             // create the request
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             var command = new RestoreCommand(logger, request);
 
             // Act
@@ -215,7 +215,7 @@ namespace NuGet.Commands.Test
             var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -265,7 +265,7 @@ namespace NuGet.Commands.Test
             var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -317,7 +317,7 @@ namespace NuGet.Commands.Test
             var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -361,7 +361,7 @@ namespace NuGet.Commands.Test
             AddDependency(spec, "json-ld.net", "1.0.4");
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -412,7 +412,7 @@ namespace NuGet.Commands.Test
             AddDependency(spec, "dotNetRDF", "1.0.8.3533");
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -446,7 +446,7 @@ namespace NuGet.Commands.Test
             AddDependency(spec, "NuGet.Versioning", "1.0.7");
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -463,7 +463,7 @@ namespace NuGet.Commands.Test
             await Task.Delay(500);
 
             request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var previousLockFile = result.LockFile;
@@ -503,7 +503,7 @@ namespace NuGet.Commands.Test
             AddDependency(spec, "NuGet.Versioning", "1.0.7");
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -518,7 +518,7 @@ namespace NuGet.Commands.Test
             var lastDate = File.GetLastWriteTime(lockFilePath);
 
             request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
             var previousLockFile = result.LockFile;
             request.ExistingLockFile = result.LockFile;
@@ -555,7 +555,7 @@ namespace NuGet.Commands.Test
             AddDependency(spec, "NuGet.Versioning", "1.0.7");
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -570,7 +570,7 @@ namespace NuGet.Commands.Test
             var lastDate = File.GetLastWriteTime(lockFilePath);
 
             request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
             var previousLockFile = result.LockFile;
             request.ExistingLockFile = result.LockFile;
@@ -618,7 +618,7 @@ namespace NuGet.Commands.Test
             AddDependency(spec, "NuGet.Versioning", "1.0.7");
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -661,7 +661,7 @@ namespace NuGet.Commands.Test
             AddDependency(spec, "WebGrease", "1.6.0");
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -703,7 +703,7 @@ namespace NuGet.Commands.Test
             AddDependency(spec, "Moon.Owin.Localization", "1.3.1");
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -745,7 +745,7 @@ namespace NuGet.Commands.Test
             AddDependency(spec, "NuGet.Versioning", "1.0.7");
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var logger = new TestLogger();
@@ -783,7 +783,7 @@ namespace NuGet.Commands.Test
             AddDependency(spec, "NuGet.Versioning", "1.0.7");
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             // Act
@@ -816,7 +816,7 @@ namespace NuGet.Commands.Test
             AddDependency(spec, "owin", "1.0");
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             // Act
@@ -846,7 +846,7 @@ namespace NuGet.Commands.Test
             AddDependency(spec, "Newtonsoft.Json", "7.0.0"); // 7.0.0 does not exist so we'll bump up to 7.0.1
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -883,7 +883,7 @@ namespace NuGet.Commands.Test
             AddDependency(spec, "Newtonsoft.Json", "7.0.1");
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -926,7 +926,7 @@ namespace NuGet.Commands.Test
             AddDependency(spec, "NuGet.Core", "2.8.3");
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -971,7 +971,7 @@ namespace NuGet.Commands.Test
             AddDependency(spec, "NotARealPackage.ThisShouldNotExists.DontCreateIt.Seriously.JustDontDoIt.Please", "2.8.3");
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -1019,7 +1019,7 @@ namespace NuGet.Commands.Test
             var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -1067,7 +1067,7 @@ namespace NuGet.Commands.Test
             var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -1113,7 +1113,7 @@ namespace NuGet.Commands.Test
             var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -1205,7 +1205,7 @@ namespace NuGet.Commands.Test
             Assert.True(lockFile.IsLocked); // Just to make sure no-one accidentally unlocks it :)
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.ExistingLockFile = lockFile;
 
             // Act
@@ -1291,7 +1291,7 @@ namespace NuGet.Commands.Test
             Assert.True(lockFile.IsLocked); // Just to make sure no-one accidentally unlocks it :)
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
+            
             request.ExistingLockFile = lockFile;
 
             // Act

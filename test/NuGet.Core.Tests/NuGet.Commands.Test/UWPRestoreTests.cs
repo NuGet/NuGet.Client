@@ -42,7 +42,6 @@ namespace NuGet.Commands.Test
             var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 1;
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -94,7 +93,6 @@ namespace NuGet.Commands.Test
             var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 2;
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -163,7 +161,6 @@ namespace NuGet.Commands.Test
             var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 2;
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
@@ -222,7 +219,6 @@ namespace NuGet.Commands.Test
             var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
             var request = new RestoreRequest(spec, sources, packagesDir);
-            request.MaxDegreeOfConcurrency = 2;
             request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
             var lockFileFormat = new LockFileFormat();
