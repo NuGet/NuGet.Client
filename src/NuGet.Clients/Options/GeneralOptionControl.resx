@@ -123,7 +123,7 @@
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="skipBindingRedirects.Location" type="System.Drawing.Point, System.Drawing">
-    <value>19, 36</value>
+    <value>19, 138</value>
   </data>
   <data name="skipBindingRedirects.Size" type="System.Drawing.Size, System.Drawing">
     <value>169, 17</value>
@@ -141,107 +141,26 @@
     <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;skipBindingRedirects.Parent" xml:space="preserve">
-    <value>bindingRedirectsPanel</value>
-  </data>
-  <data name="&gt;&gt;skipBindingRedirects.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="UpdateHeaderDivider.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="UpdateHeaderDivider.Location" type="System.Drawing.Point, System.Drawing">
-    <value>5, 18</value>
-  </data>
-  <data name="UpdateHeaderDivider.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
-  </data>
-  <data name="UpdateHeaderDivider.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
-  </data>
-  <data name="UpdateHeaderDivider.Size" type="System.Drawing.Size, System.Drawing">
-    <value>458, 2</value>
-  </data>
-  <data name="UpdateHeaderDivider.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
-  </data>
-  <data name="&gt;&gt;UpdateHeaderDivider.Name" xml:space="preserve">
-    <value>UpdateHeaderDivider</value>
-  </data>
-  <data name="&gt;&gt;UpdateHeaderDivider.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;UpdateHeaderDivider.Parent" xml:space="preserve">
-    <value>bindingRedirectsPanel</value>
-  </data>
-  <data name="&gt;&gt;UpdateHeaderDivider.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="UpdateHeader.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="UpdateHeader.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="UpdateHeader.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 11</value>
-  </data>
-  <data name="UpdateHeader.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 0, 2, 0</value>
-  </data>
-  <data name="UpdateHeader.Size" type="System.Drawing.Size, System.Drawing">
-    <value>90, 13</value>
-  </data>
-  <data name="UpdateHeader.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="UpdateHeader.Text" xml:space="preserve">
-    <value>Binding Redirects</value>
-  </data>
-  <data name="&gt;&gt;UpdateHeader.Name" xml:space="preserve">
-    <value>UpdateHeader</value>
-  </data>
-  <data name="&gt;&gt;UpdateHeader.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;UpdateHeader.Parent" xml:space="preserve">
-    <value>bindingRedirectsPanel</value>
-  </data>
-  <data name="&gt;&gt;UpdateHeader.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="bindingRedirectsPanel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 107</value>
-  </data>
-  <data name="bindingRedirectsPanel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>463, 79</value>
-  </data>
-  <data name="bindingRedirectsPanel.TabIndex" type="System.Int32, mscorlib">
-    <value>11</value>
-  </data>
-  <data name="&gt;&gt;bindingRedirectsPanel.Name" xml:space="preserve">
-    <value>bindingRedirectsPanel</value>
-  </data>
-  <data name="&gt;&gt;bindingRedirectsPanel.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;bindingRedirectsPanel.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="&gt;&gt;bindingRedirectsPanel.ZOrder" xml:space="preserve">
-    <value>4</value>
+  <data name="&gt;&gt;skipBindingRedirects.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
   <data name="PackageRestoreHeader.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <data name="PackageRestoreHeader.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 8.25pt, style=Bold</value>
+  </data>
   <data name="PackageRestoreHeader.Location" type="System.Drawing.Point, System.Drawing">
     <value>2, 12</value>
   </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="PackageRestoreHeader.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 0, 2, 0</value>
   </data>
   <data name="PackageRestoreHeader.Size" type="System.Drawing.Size, System.Drawing">
-    <value>90, 13</value>
+    <value>105, 13</value>
   </data>
   <data name="PackageRestoreHeader.TabIndex" type="System.Int32, mscorlib">
     <value>12</value>
@@ -259,43 +178,13 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;PackageRestoreHeader.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="groupBox1.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="groupBox1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>5, 34</value>
-  </data>
-  <data name="groupBox1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
-  </data>
-  <data name="groupBox1.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>2, 2, 2, 2</value>
-  </data>
-  <data name="groupBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>458, 2</value>
-  </data>
-  <data name="groupBox1.TabIndex" type="System.Int32, mscorlib">
-    <value>13</value>
-  </data>
-  <data name="&gt;&gt;groupBox1.Name" xml:space="preserve">
-    <value>groupBox1</value>
-  </data>
-  <data name="&gt;&gt;groupBox1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;groupBox1.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;groupBox1.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="packageRestoreConsentCheckBox.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="packageRestoreConsentCheckBox.Location" type="System.Drawing.Point, System.Drawing">
-    <value>19, 40</value>
+    <value>19, 37</value>
   </data>
   <data name="packageRestoreConsentCheckBox.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 2, 2, 2</value>
@@ -319,13 +208,13 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;packageRestoreConsentCheckBox.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="packageRestoreAutomaticCheckBox.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="packageRestoreAutomaticCheckBox.Location" type="System.Drawing.Point, System.Drawing">
-    <value>19, 59</value>
+    <value>19, 56</value>
   </data>
   <data name="packageRestoreAutomaticCheckBox.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>2, 2, 2, 2</value>
@@ -349,7 +238,43 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;packageRestoreAutomaticCheckBox.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
+  </data>
+  <data name="BindingRedirectsHeader.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="BindingRedirectsHeader.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 8.25pt, style=Bold</value>
+  </data>
+  <data name="BindingRedirectsHeader.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="BindingRedirectsHeader.Location" type="System.Drawing.Point, System.Drawing">
+    <value>2, 112</value>
+  </data>
+  <data name="BindingRedirectsHeader.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>2, 0, 2, 0</value>
+  </data>
+  <data name="BindingRedirectsHeader.Size" type="System.Drawing.Size, System.Drawing">
+    <value>107, 13</value>
+  </data>
+  <data name="BindingRedirectsHeader.TabIndex" type="System.Int32, mscorlib">
+    <value>16</value>
+  </data>
+  <data name="BindingRedirectsHeader.Text" xml:space="preserve">
+    <value>Binding Redirects</value>
+  </data>
+  <data name="&gt;&gt;BindingRedirectsHeader.Name" xml:space="preserve">
+    <value>BindingRedirectsHeader</value>
+  </data>
+  <data name="&gt;&gt;BindingRedirectsHeader.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;BindingRedirectsHeader.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;BindingRedirectsHeader.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>

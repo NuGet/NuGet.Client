@@ -30,14 +30,10 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GeneralOptionControl));
             this.skipBindingRedirects = new System.Windows.Forms.CheckBox();
-            this.UpdateHeaderDivider = new System.Windows.Forms.GroupBox();
-            this.UpdateHeader = new System.Windows.Forms.Label();
-            this.bindingRedirectsPanel = new System.Windows.Forms.Panel();
             this.PackageRestoreHeader = new System.Windows.Forms.Label();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.packageRestoreConsentCheckBox = new System.Windows.Forms.CheckBox();
             this.packageRestoreAutomaticCheckBox = new System.Windows.Forms.CheckBox();
-            this.bindingRedirectsPanel.SuspendLayout();
+            this.BindingRedirectsHeader = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // skipBindingRedirects
@@ -46,35 +42,10 @@
             this.skipBindingRedirects.Name = "skipBindingRedirects";
             this.skipBindingRedirects.UseVisualStyleBackColor = true;
             // 
-            // UpdateHeaderDivider
-            // 
-            resources.ApplyResources(this.UpdateHeaderDivider, "UpdateHeaderDivider");
-            this.UpdateHeaderDivider.Name = "UpdateHeaderDivider";
-            this.UpdateHeaderDivider.TabStop = false;
-            // 
-            // UpdateHeader
-            // 
-            resources.ApplyResources(this.UpdateHeader, "UpdateHeader");
-            this.UpdateHeader.Name = "UpdateHeader";
-            // 
-            // bindingRedirectsPanel
-            // 
-            this.bindingRedirectsPanel.Controls.Add(this.skipBindingRedirects);
-            this.bindingRedirectsPanel.Controls.Add(this.UpdateHeader);
-            this.bindingRedirectsPanel.Controls.Add(this.UpdateHeaderDivider);
-            resources.ApplyResources(this.bindingRedirectsPanel, "bindingRedirectsPanel");
-            this.bindingRedirectsPanel.Name = "bindingRedirectsPanel";
-            // 
             // PackageRestoreHeader
             // 
             resources.ApplyResources(this.PackageRestoreHeader, "PackageRestoreHeader");
             this.PackageRestoreHeader.Name = "PackageRestoreHeader";
-            // 
-            // groupBox1
-            // 
-            resources.ApplyResources(this.groupBox1, "groupBox1");
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.TabStop = false;
             // 
             // packageRestoreConsentCheckBox
             // 
@@ -89,18 +60,21 @@
             this.packageRestoreAutomaticCheckBox.Name = "packageRestoreAutomaticCheckBox";
             this.packageRestoreAutomaticCheckBox.UseVisualStyleBackColor = true;
             // 
+            // BindingRedirectsHeader
+            // 
+            resources.ApplyResources(this.BindingRedirectsHeader, "BindingRedirectsHeader");
+            this.BindingRedirectsHeader.Name = "BindingRedirectsHeader";
+            // 
             // GeneralOptionControl
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.BindingRedirectsHeader);
+            this.Controls.Add(this.skipBindingRedirects);
             this.Controls.Add(this.PackageRestoreHeader);
-            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.packageRestoreConsentCheckBox);
             this.Controls.Add(this.packageRestoreAutomaticCheckBox);
-            this.Controls.Add(this.bindingRedirectsPanel);
             this.Name = "GeneralOptionControl";
-            this.bindingRedirectsPanel.ResumeLayout(false);
-            this.bindingRedirectsPanel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -109,12 +83,9 @@
         #endregion
 
         private System.Windows.Forms.CheckBox skipBindingRedirects;
-        private System.Windows.Forms.GroupBox UpdateHeaderDivider;
-        private System.Windows.Forms.Label UpdateHeader;
-        private System.Windows.Forms.Panel bindingRedirectsPanel;
         private System.Windows.Forms.Label PackageRestoreHeader;
-        private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.CheckBox packageRestoreConsentCheckBox;
         private System.Windows.Forms.CheckBox packageRestoreAutomaticCheckBox;
+        private System.Windows.Forms.Label BindingRedirectsHeader;
     }
 }
