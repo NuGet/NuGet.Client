@@ -9,7 +9,8 @@ param (
 	[switch]$DelaySign,
     [string]$MSPFXPath,
     [string]$NuGetPFXPath,
-    [switch]$SkipXProj
+    [switch]$SkipXProj,
+    [switch]$SkipSubModules
 )
 
 ###Functions###
@@ -217,15 +218,18 @@ $startTime = [DateTime]::UtcNow
 Write-Host "Build started at " $startTime
 Write-Host
 
-if ((Test-Path -Path "submodules/FileSystem/src") -eq $False)
-{    
-    Write-Host "Updating and initializing submodules"
-    & git submodule update --init
-}
-else
+if ($SkipSubModules -eq $False)
 {
-    Write-Host "Updating submodules"
-    & git submodule update
+    if ((Test-Path -Path "submodules/FileSystem/src") -eq $False)
+    {    
+        Write-Host "Updating and initializing submodules"
+        & git submodule update --init
+    }
+    else
+    {
+        Write-Host "Updating submodules"
+        & git submodule update
+    }
 }
 
 # Download NuGet.exe if missing
