@@ -1158,7 +1158,7 @@ namespace NuGet.Test
             TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomProjectFolderPath);
         }
 
-        [Fact(Skip = "Tracked by github issue: https://github.com/NuGet/Home/issues/1612")]
+        [Fact]
         public async Task TestPacManBuildIntegratedInstallPackageWithInitPS1()
         {
             // Arrange
