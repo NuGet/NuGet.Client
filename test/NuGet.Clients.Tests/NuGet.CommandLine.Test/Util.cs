@@ -514,6 +514,16 @@ namespace NuGet.CommandLine.Test
             string[] references = null,
             string[] contentFiles = null)
         {
+            var project = CreateProjFileXmlContent(projectName, targetFrameworkVersion, references, contentFiles);
+            return project.ToString();
+        }
+
+        public static XElement CreateProjFileXmlContent(
+            string projectName = "proj1",
+            string targetFrameworkVersion = "v4.5",
+            string[] references = null,
+            string[] contentFiles = null)
+        {
             XNamespace msbuild = "http://schemas.microsoft.com/developer/msbuild/2003";
 
             var project = new XElement(msbuild + "Project",
@@ -539,7 +549,7 @@ namespace NuGet.CommandLine.Test
             project.Add(new XElement(msbuild + "Import",
                 new XAttribute("Project", @"$(MSBuildToolsPath)\Microsoft.CSharp.targets")));
 
-            return project.ToString();
+            return project;
         }
 
         public static string CreateSolutionFileContent()

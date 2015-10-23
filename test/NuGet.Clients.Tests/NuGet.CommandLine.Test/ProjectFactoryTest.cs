@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Xml.Linq;
 using Microsoft.Build.Evaluation;
 using Moq;
 using NuGet.CommandLine.Test;
@@ -9,8 +11,6 @@ using Xunit;
 
 namespace NuGet.CommandLine
 {
-    using System.Text;
-
     public class ProjectFactoryTest
     {
         [Fact]
@@ -168,10 +168,13 @@ namespace NuGet.CommandLine
                     workingDirectory,
                     "pack Link\\Link.csproj -build -IncludeReferencedProjects -Version 1.0.0",
                     waitForExit: true);
+
+                // Assert
+                Util.VerifyResultSuccess(r);
+
                 var package = new OptimizedZipPackage(Path.Combine(workingDirectory, "Link.1.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
 
-                // Assert
                 Assert.Equal(0, r.Item1);
                 Array.Sort(files);
                 Assert.Equal(files, new[] {
@@ -227,10 +230,12 @@ namespace NuGet.CommandLine
                     workingDirectory,
                     "pack Link\\Link.csproj -build -IncludeReferencedProjects -Version 1.0.0",
                     waitForExit: true);
+
+                // Assert
+                Util.VerifyResultSuccess(r);
                 var package = new OptimizedZipPackage(Path.Combine(workingDirectory, "Link.1.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
 
-                // Assert
                 Assert.Equal(0, r.Item1);
                 Array.Sort(files);
                 Assert.Equal(files, new[] {
@@ -341,106 +346,62 @@ namespace Assembly
         #region Helper
         private class DummyProject
         {
-            private readonly StringBuilder projectReferenceBuilder;
-
+            private static XNamespace MSBuildNS = "http://schemas.microsoft.com/developer/msbuild/2003";
             public DummyProject(string name, string path)
             {
-                this.Id = Guid.NewGuid();
-                this.Location = path;
-                this.Name = name;
-                this.projectReferenceBuilder = new StringBuilder();
+                Id = Guid.NewGuid();
+                Location = path;
+                Name = name;
+                ProjectReferences = new List<XElement>();
             }
 
-            public string Name { get; private set; }
-            public Guid Id { get; private set; }
-            public string Location { get; private set; }
+            public string Name { get; }
+            public Guid Id { get; }
+            public string Location { get; }
+            private List<XElement> ProjectReferences { get; }
 
             public void AddProjectReference(DummyProject project, bool exclude)
             {
-                this.projectReferenceBuilder.AppendLine(GenerateProjectReference(project, exclude));
+                var projectReferenceElement = GenerateProjectReference(project, exclude);
+                ProjectReferences.Add(projectReferenceElement);
             }
 
-            private static string GenerateProjectReference(DummyProject project, bool exclude)
+            private static XElement GenerateProjectReference(DummyProject project, bool exclude)
             {
-                StringBuilder b = new StringBuilder();
-                b.AppendLine(string.Format("\t<ProjectReference Include=\"{0}\">", project.Location));
-                b.AppendLine(string.Format("\t\t<Project>{0}</Project>", project.Id));
-                b.AppendLine(string.Format("\t\t<Name>{0}</Name>", project.Name));
+                var projectReferenceXElement = new XElement(MSBuildNS + "ProjectReference",
+                    new XAttribute("Include", project.Location),
+                    new XElement(MSBuildNS + "Project", project.Id),
+                    new XElement(MSBuildNS + "Name", project.Name));
+
                 if (exclude)
                 {
-                    b.AppendLine("\t\t<ReferenceOutputAssembly>false</ReferenceOutputAssembly>");
+                    projectReferenceXElement.Add(new XElement(MSBuildNS + "ReferenceOutputAssembly", "false"));
                 }
 
-                b.AppendLine("\t</ProjectReference>");
-                return b.ToString();
+                return projectReferenceXElement;
             }
 
             public void WriteToFile()
             {
-                FileInfo file = new System.IO.FileInfo(this.Location);
+                FileInfo file = new FileInfo(Location);
                 file.Directory.Create();
-                File.WriteAllText(this.Location, this.ToString());
+                File.WriteAllText(Location, ToString());
             }
 
             public override string ToString()
             {
-                string projectFormat = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<Project ToolsVersion=""4.0"" DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-  <Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"" Condition=""Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"" />
-  <PropertyGroup>
-    <Configuration Condition="" '$(Configuration)' == '' "">Debug</Configuration>
-    <Platform Condition="" '$(Platform)' == '' "">AnyCPU</Platform>
-    <ProjectGuid>{0}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>{1}</RootNamespace>
-    <AssemblyName>{2}</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-  </PropertyGroup>
-  <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' "">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>bin\Debug\Assembly.XML</DocumentationFile>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' "">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include=""System"" />
-    <Reference Include=""System.Core"" />
-    <Reference Include=""System.Xml.Linq"" />
-    <Reference Include=""System.Data.DataSetExtensions"" />
-    <Reference Include=""Microsoft.CSharp"" />
-    <Reference Include=""System.Data"" />
-    <Reference Include=""System.Xml"" />
-  </ItemGroup>
-  <ItemGroup>
-    <!-- Location for project reference -->
-{3}
-  </ItemGroup>
-  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
-</Project>";
+                var itemGroup = new XElement(MSBuildNS + "ItemGroup");
+                foreach(var projectReferenceXElement in ProjectReferences)
+                {
+                    itemGroup.Add(projectReferenceXElement);
+                }
 
-                return string.Format(
-                    projectFormat,
-                    this.Id,
-                    this.Name,
-                    this.Name,
-                    this.projectReferenceBuilder);
+                var projectXElement = Util.CreateProjFileXmlContent(Name);
+                projectXElement.Add(itemGroup);
+
+                return projectXElement.ToString();
             }
         }
-    #endregion
+        #endregion
     }
 }
