@@ -9,6 +9,8 @@ using Xunit;
 
 namespace NuGet.CommandLine
 {
+    using System.Text;
+
     public class ProjectFactoryTest
     {
         [Fact]
@@ -141,6 +143,116 @@ namespace NuGet.CommandLine
             }
         }
 
+        [Fact]
+        public void EnsureProjectFactoryWorksAsExpectedWithReferenceOutputAssemblyValuesBasic()
+        {
+            // Setup
+            var nugetexe = Util.GetNuGetExePath();
+            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            try
+            {
+                // Setup the projects
+                Directory.CreateDirectory(workingDirectory);
+                DummyProject link = new DummyProject("Link", Path.Combine(workingDirectory, "Link\\Link.csproj"));
+                DummyProject a = new DummyProject("A", Path.Combine(workingDirectory, "A\\A.csproj"));
+                DummyProject b = new DummyProject("B", Path.Combine(workingDirectory, "B\\B.csproj"));
+                link.AddProjectReference(a, false);
+                link.AddProjectReference(b, true);
+                link.WriteToFile();
+                a.WriteToFile();
+                b.WriteToFile();
+
+                // Act 
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack Link\\Link.csproj -build -IncludeReferencedProjects -Version 1.0.0",
+                    waitForExit: true);
+                var package = new OptimizedZipPackage(Path.Combine(workingDirectory, "Link.1.0.0.nupkg"));
+                var files = package.GetFiles().Select(f => f.Path).ToArray();
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                Array.Sort(files);
+                Assert.Equal(files, new[] {
+                    @"lib\net45\A.dll",
+                    @"lib\net45\Link.dll"
+                });
+            }
+            finally
+            {
+                // Teardown
+                try
+                {
+                    Directory.Delete(workingDirectory, true);
+                }
+                catch
+                {
+
+                }
+            }
+        }
+
+        [Fact]
+        public void EnsureProjectFactoryWorksAsExpectedWithReferenceOutputAssemblyValuesComplex()
+        {
+            // Setup
+            var nugetexe = Util.GetNuGetExePath();
+            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            try
+            {
+                // Setup the projects
+                Directory.CreateDirectory(workingDirectory);
+                DummyProject link = new DummyProject("Link", Path.Combine(workingDirectory, "Link\\Link.csproj"));
+                DummyProject a = new DummyProject("A", Path.Combine(workingDirectory, "A\\A.csproj"));
+                DummyProject b = new DummyProject("B", Path.Combine(workingDirectory, "B\\B.csproj"));
+                DummyProject c = new DummyProject("C", Path.Combine(workingDirectory, "C\\C.csproj"));
+                DummyProject d = new DummyProject("D", Path.Combine(workingDirectory, "D\\D.csproj"));
+                DummyProject e = new DummyProject("E", Path.Combine(workingDirectory, "E\\E.csproj"));
+                link.AddProjectReference(a, false);
+                link.AddProjectReference(b, true);
+                a.AddProjectReference(c, false);
+                c.AddProjectReference(d, true);
+                b.AddProjectReference(e, false);
+                link.WriteToFile();
+                a.WriteToFile();
+                b.WriteToFile();
+                c.WriteToFile();
+                d.WriteToFile();
+                e.WriteToFile();
+
+                // Act 
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack Link\\Link.csproj -build -IncludeReferencedProjects -Version 1.0.0",
+                    waitForExit: true);
+                var package = new OptimizedZipPackage(Path.Combine(workingDirectory, "Link.1.0.0.nupkg"));
+                var files = package.GetFiles().Select(f => f.Path).ToArray();
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                Array.Sort(files);
+                Assert.Equal(files, new[] {
+                    @"lib\net45\A.dll",
+                    @"lib\net45\C.dll",
+                    @"lib\net45\Link.dll"
+                });
+            }
+            finally
+            {
+                // Teardown
+                try
+                {
+                    Directory.Delete(workingDirectory, true);
+                }
+                catch
+                {
+
+                }
+            }
+        }
+
         private static string GetNuspecContent()
         {
             return @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -225,5 +337,110 @@ namespace Assembly
     }
 }";
         }
+
+        #region Helper
+        private class DummyProject
+        {
+            private readonly StringBuilder projectReferenceBuilder;
+
+            public DummyProject(string name, string path)
+            {
+                this.Id = Guid.NewGuid();
+                this.Location = path;
+                this.Name = name;
+                this.projectReferenceBuilder = new StringBuilder();
+            }
+
+            public string Name { get; private set; }
+            public Guid Id { get; private set; }
+            public string Location { get; private set; }
+
+            public void AddProjectReference(DummyProject project, bool exclude)
+            {
+                this.projectReferenceBuilder.AppendLine(GenerateProjectReference(project, exclude));
+            }
+
+            private static string GenerateProjectReference(DummyProject project, bool exclude)
+            {
+                StringBuilder b = new StringBuilder();
+                b.AppendLine(string.Format("\t<ProjectReference Include=\"{0}\">", project.Location));
+                b.AppendLine(string.Format("\t\t<Project>{0}</Project>", project.Id));
+                b.AppendLine(string.Format("\t\t<Name>{0}</Name>", project.Name));
+                if (exclude)
+                {
+                    b.AppendLine("\t\t<ReferenceOutputAssembly>false</ReferenceOutputAssembly>");
+                }
+
+                b.AppendLine("\t</ProjectReference>");
+                return b.ToString();
+            }
+
+            public void WriteToFile()
+            {
+                FileInfo file = new System.IO.FileInfo(this.Location);
+                file.Directory.Create();
+                File.WriteAllText(this.Location, this.ToString());
+            }
+
+            public override string ToString()
+            {
+                string projectFormat = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<Project ToolsVersion=""4.0"" DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+  <Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"" Condition=""Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"" />
+  <PropertyGroup>
+    <Configuration Condition="" '$(Configuration)' == '' "">Debug</Configuration>
+    <Platform Condition="" '$(Platform)' == '' "">AnyCPU</Platform>
+    <ProjectGuid>{0}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>{1}</RootNamespace>
+    <AssemblyName>{2}</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' "">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DocumentationFile>bin\Debug\Assembly.XML</DocumentationFile>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' "">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include=""System"" />
+    <Reference Include=""System.Core"" />
+    <Reference Include=""System.Xml.Linq"" />
+    <Reference Include=""System.Data.DataSetExtensions"" />
+    <Reference Include=""Microsoft.CSharp"" />
+    <Reference Include=""System.Data"" />
+    <Reference Include=""System.Xml"" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Location for project reference -->
+{3}
+  </ItemGroup>
+  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+</Project>";
+
+                return string.Format(
+                    projectFormat,
+                    this.Id,
+                    this.Name,
+                    this.Name,
+                    this.projectReferenceBuilder);
+            }
+        }
+    #endregion
     }
 }
