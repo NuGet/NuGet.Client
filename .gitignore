@@ -8,6 +8,8 @@ artifacts/
 **/.vs/
 
 **/nupkgs/*.nupkg
+**/nupkgs/**/*
+!nupkgs/readme.txt
 packages/
 .nuget/nuget.exe
 */.nuget/
