@@ -269,7 +269,7 @@
     </Grid.RowDefinitions>
     <Border
       x:Name="_updateButtonContainer"
-      Grid.Row="0"      
+      Grid.Row="0"
       BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
       BorderThickness="0,0,0,1"
       Background="{DynamicResource {x:Static resx:Brushes.LegalMessageBackground}}">
@@ -282,14 +282,14 @@
         <CheckBox
           x:Name="_selectAllPackages"
           Grid.Column="0"
-          Margin="24, 8"
+          Margin="16, 8"
           VerticalAlignment="Center"
           Checked="SelectAllPackagesCheckBox_Checked"
           Unchecked="SelectAllPackagesCheckBox_Unchecked"
           Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
           Content="{x:Static resx:Resources.Checkbox_SelectAllPackages}" />
         <Button
-          x:Name="_updateButton"          
+          x:Name="_updateButton"
           Grid.Column="2"
           MinWidth="100"
           MinHeight="24"
@@ -307,7 +307,7 @@
       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
       ScrollViewer.VerticalScrollBarVisibility="Visible"
       ItemContainerStyleSelector="{DynamicResource itemStyleSelector}"
-      BorderThickness="0,0,0,1"
+      BorderThickness="0,0,0,0"
       HorizontalContentAlignment="Stretch"
       SelectionChanged="List_SelectionChanged"
       Loaded="List_Loaded">

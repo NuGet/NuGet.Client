@@ -4,23 +4,19 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
-using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class VersionToStringConverter : IValueConverter
+    /// <summary>
+    /// Converts null to true, not null to false.
+    /// </summary>
+    public class NullToBooleanConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var version = value as NuGetVersion;
-            if (version == null)
-            {
-                return null;
-            }
-
-            var displayVersion = new DisplayVersion(version, string.Empty);
-            return displayVersion.ToString();
+            return value == null ? true : false;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

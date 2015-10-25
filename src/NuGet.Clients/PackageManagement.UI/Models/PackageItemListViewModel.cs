@@ -74,11 +74,11 @@ namespace NuGet.PackageManagement.UI
                     // update tool tip
                     if (_latestVersion != null)
                     {
-                        var versionForDisplay = new VersionForDisplay(_latestVersion, string.Empty);
+                        var displayVersion = new DisplayVersion(_latestVersion, string.Empty);
                         LatestVersionToolTip = string.Format(
                             CultureInfo.CurrentCulture,
                             Resources.ToolTip_LatestVersion,
-                            versionForDisplay);
+                            displayVersion);
                     }
                     else
                     {

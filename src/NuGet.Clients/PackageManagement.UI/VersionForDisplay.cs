@@ -5,20 +5,23 @@ using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class VersionForDisplay
+    /// <summary>
+    /// Represents a version that will be displayed on the UI.
+    /// </summary>
+    public class DisplayVersion
     {
         private readonly string _additionalInfo;
 
         private readonly string _toString;
 
-        public VersionForDisplay(
+        public DisplayVersion(
             NuGetVersion version,
             string additionalInfo)
             : this(GetRange(version), additionalInfo)
         {
         }
 
-        public VersionForDisplay(
+        public DisplayVersion(
             VersionRange range,
             string additionalInfo)
         {
@@ -31,8 +34,8 @@ namespace NuGet.PackageManagement.UI
             if (range.HasLowerAndUpperBounds && range.MinVersion == range.MaxVersion)
             {
                 _toString = string.IsNullOrEmpty(_additionalInfo) ?
-                    "v" + Version.ToNormalizedString() :
-                    _additionalInfo + " v" + Version.ToNormalizedString();
+                    Version.ToNormalizedString() :
+                    _additionalInfo + " " + Version.ToNormalizedString();
             }
             else
             {
@@ -54,7 +57,7 @@ namespace NuGet.PackageManagement.UI
 
         public override bool Equals(object obj)
         {
-            var other = obj as VersionForDisplay;
+            var other = obj as DisplayVersion;
             return other != null && other.Version == Version;
         }
 
