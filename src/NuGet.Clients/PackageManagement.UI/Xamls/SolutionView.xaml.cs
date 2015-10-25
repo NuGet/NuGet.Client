@@ -62,6 +62,56 @@ namespace NuGet.PackageManagement.UI
             SortByColumn(columnHeader);
         }
 
+        public void SaveSettings(UserSettings settings)
+        {
+            var sortDescription = _projectList.Items.SortDescriptions.FirstOrDefault();
+            if (sortDescription != null)
+            {
+                settings.SortPropertyName = sortDescription.PropertyName;
+                settings.SortDirection = sortDescription.Direction;
+            }
+        }
+
+        public void RestoreUserSettings(UserSettings userSettings)
+        {
+            // find the column to sort
+            var sortColumn = _sortableColumns.FirstOrDefault(
+                column =>
+                {
+                    var header = column.Content as SortableColumnHeader;
+                    return StringComparer.OrdinalIgnoreCase.Equals(
+                        header?.SortPropertyName,
+                        userSettings.SortPropertyName);
+                });
+            if (sortColumn == null)
+            {
+                return;
+            }
+
+            // add new sort description
+            _projectList.Items.SortDescriptions.Clear();
+            _projectList.Items.SortDescriptions.Add(
+                new SortDescription(
+                    userSettings.SortPropertyName,
+                    userSettings.SortDirection));
+
+            // upate sortInfo
+            var sortInfo = (SortableColumnHeader)sortColumn.Content;
+            sortInfo.SortDirection = userSettings.SortDirection;
+
+            // clear sort direction of other columns
+            foreach (var column in _sortableColumns)
+            {
+                if (column == sortColumn)
+                {
+                    continue;
+                }
+
+                sortInfo = (SortableColumnHeader)column.Content;
+                sortInfo.SortDirection = null;
+            }
+        }
+
         private void SortByColumn(GridViewColumnHeader sortColumn)
         {
             var sortInfo = sortColumn.Content as SortableColumnHeader;
@@ -130,7 +180,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ListView_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            // adjust thhe width of the project column so that it takes 
+            // adjust the width of the "project" column so that it takes 
             // up all remaining width.
             var gridView = (GridView)_projectList.View;
             var width = _projectList.ActualWidth - SystemParameters.VerticalScrollBarWidth;

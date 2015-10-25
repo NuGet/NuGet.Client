@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.UI
@@ -46,6 +47,35 @@ namespace NuGet.PackageManagement.UI
         private static bool IsHttpUrl(Uri uri)
         {
             return (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
+        }
+
+        private static readonly string[] _scalingFactor = new string[] {
+            String.Empty,
+            "K", // kilo
+            "M", // mega, million
+            "G", // giga, billion
+            "T"  // tera, trillion
+        };
+
+        // Convert numbers into strings like "1.2K", "33.4M" etc.
+        // Precondition: number > 0.
+        public static string NumberToString(int number)
+        {
+            double v = (double)number;
+            int exp = 0;
+
+            while (v >= 1000)
+            {
+                v /= 1000;
+                ++exp;
+            }
+
+            var s = string.Format(
+                CultureInfo.CurrentCulture,
+                "{0:G3}{1}",
+                v,
+                _scalingFactor[exp]);
+            return s;
         }
     }
 }

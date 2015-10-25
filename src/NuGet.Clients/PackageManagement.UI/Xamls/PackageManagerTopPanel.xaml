@@ -38,6 +38,7 @@
       <local:FilterLabel 
         Grid.Column="0"
         x:Name="_labelBrowse"
+        AutomationProperties.AutomationId="Tab_Browse"
         Filter="All"
         Text="{x:Static resx:Resources.Label_Browse}"
         ControlSelected="FilterLabel_ControlSelected"
@@ -45,6 +46,7 @@
       <local:FilterLabel 
         Grid.Column="1"
         x:Name="_labelInstalled"
+        AutomationProperties.AutomationId="Tab_Installed"
         Filter="Installed"
         Margin="35,0,0,0"
         Text="{x:Static resx:Resources.Label_Installed}"
@@ -53,6 +55,7 @@
       <local:FilterLabel 
         Grid.Column="2"
         x:Name="_labelUpgradeAvailable"
+        AutomationProperties.AutomationId="Tab_Updates"
         Filter="UpdatesAvailable"
         Margin="35,0,0,0"
         Text="{x:Static resx:Resources.Label_Updates}"
@@ -67,6 +70,7 @@
         Grid.Column="6"
         Margin="6,0,0,0"
         x:Name="_sourceRepoList"
+        AutomationProperties.AutomationId="ComboBox_PackageSource"
         VerticalAlignment="Center"
         DisplayMemberPath="PackageSource.Name"
         MinWidth="130"
@@ -85,6 +89,7 @@
       <Button
         Grid.Column="7"
         Margin="12,0,0,0"
+        AutomationProperties.AutomationId="Button_Settings"
         VerticalAlignment="Center"
         Padding="0"
         Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
@@ -141,6 +146,7 @@
       <!-- prerelease checkbox -->
       <CheckBox
         x:Name="_checkboxPrerelease"
+        AutomationProperties.AutomationId="CheckBox_Prerelease"
         Grid.Column="1"
         Margin="6,0,0,0"
         VerticalAlignment="Center"

@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.UI
 
         protected override void CreateVersions()
         {
-            _versions = new List<VersionForDisplay>();
+            _versions = new List<DisplayVersion>();
             var installedDependency = InstalledPackageDependencies.Where(p =>
                 StringComparer.OrdinalIgnoreCase.Equals(p.Id, Id) && p.VersionRange != null && p.VersionRange.HasLowerBound)
                 .OrderByDescending(p => p.VersionRange.MinVersion)
@@ -86,14 +86,14 @@ namespace NuGet.PackageManagement.UI
                 && (latestStableVersion == null || latestPrerelease > latestStableVersion) &&
                 !latestPrerelease.Equals(installedVersion))
             {
-                _versions.Add(new VersionForDisplay(latestPrerelease, Resources.Version_LatestPrerelease));
+                _versions.Add(new DisplayVersion(latestPrerelease, Resources.Version_LatestPrerelease));
             }
 
             // Add latest stable if needed
             if (latestStableVersion != null && 
                 !latestStableVersion.Equals(installedVersion))
             {
-                _versions.Add(new VersionForDisplay(latestStableVersion, Resources.Version_LatestStable));
+                _versions.Add(new DisplayVersion(latestStableVersion, Resources.Version_LatestStable));
             }
 
             // add a separator
@@ -106,7 +106,7 @@ namespace NuGet.PackageManagement.UI
             {
                 if (!version.Equals(installedVersion))
                 {
-                    _versions.Add(new VersionForDisplay(version, string.Empty));
+                    _versions.Add(new DisplayVersion(version, string.Empty));
                 }
             }
 

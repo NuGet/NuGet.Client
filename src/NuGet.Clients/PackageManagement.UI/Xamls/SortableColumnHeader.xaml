@@ -6,12 +6,39 @@
              xmlns:local="clr-namespace:NuGet.PackageManagement.UI"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300">
-  <StackPanel Orientation="Horizontal">
-    <TextBlock x:Name="_headerText" />
-    <TextBlock
-      x:Name="_sortDirectionIndicator"
-      Width="20"
-      Padding="5,0"
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition />
+      <ColumnDefinition Width="20"/>
+    </Grid.ColumnDefinitions>
+    
+    <TextBlock 
+      x:Name="_headerText" 
+      Grid.Column="0"
+      />
+
+    <!-- down arrow -->
+    <Path
+      x:Name="_downArrow"
+      Grid.Column="1"
+      Data="M 1,1.5 L 4.5,5 L 8,1.5"
+      Stretch="Uniform"
+      VerticalAlignment="Center"
+      HorizontalAlignment="Center"
+      StrokeThickness="1"
+      Stroke="{DynamicResource {x:Static local:Brushes.UIText}}"
       Visibility="Hidden" />
-  </StackPanel>
+
+    <!-- up arrow -->
+    <Path
+      x:Name="_upArrow"
+      Grid.Column="1"
+      Stretch="Uniform"
+      Data="M 1,4.5  L 4.5,1  L 8,4.5"
+      VerticalAlignment="Center"
+      HorizontalAlignment="Center"
+      StrokeThickness="1"
+      Stroke="{DynamicResource {x:Static local:Brushes.UIText}}"
+      Visibility="Hidden" />
+  </Grid>
 </UserControl>

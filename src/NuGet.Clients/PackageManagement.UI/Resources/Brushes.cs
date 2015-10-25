@@ -80,6 +80,51 @@ namespace NuGet.PackageManagement.UI
             get { return VsBrushes.ToolWindowButtonDownBorderKey; }
         }
 
+        public static object ComboBoxBorderKey
+        {
+            get { return VsBrushes.ComboBoxBorderKey; }
+        }
+
+        public static object SplitterBackgroundKey
+        {
+            get { return VsBrushes.CommandShelfBackgroundGradientKey; }
+        }
+
+
+        public static object HeaderColorsSeparatorLineBrushKey
+        {
+            get { return HeaderColors.SeparatorLineBrushKey; }
+        }
+
+        public static object HeaderColorsDefaultBrushKey
+        {
+            get { return HeaderColors.DefaultBrushKey; }
+        }
+
+        public static object HeaderColorsDefaultTextBrushKey
+        {
+            get { return HeaderColors.DefaultTextBrushKey; }
+        }
+
+        public static object HeaderColorsMouseOverBrushKey
+        {
+            get { return HeaderColors.MouseOverBrushKey; }
+        }
+
+        public static object HeaderColorsMouseOverTextBrushKey
+        {
+            get { return HeaderColors.MouseOverTextBrushKey; }
+        }
+
+        public static object HeaderColorsMouseDownBrushKey
+        {
+            get { return HeaderColors.MouseDownBrushKey; }
+        }
+
+        public static object HeaderColorsMouseDownTextBrushKey
+        {
+            get { return HeaderColors.MouseDownTextBrushKey; }
+        }
         public static object IndicatorFillBrushKey
         {
             get
@@ -144,7 +189,6 @@ namespace NuGet.PackageManagement.UI
         public static object ContentInactiveSelectedBrushKey { get; private set; }
 
         public static object ContentInactiveSelectedTextBrushKey { get; private set; }
-
 
         public static object ContentSelectedBrushKey { get; private set; }
 

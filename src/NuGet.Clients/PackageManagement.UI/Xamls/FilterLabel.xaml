@@ -50,7 +50,7 @@
           Background="{DynamicResource {x:Static local:Brushes.ContentSelectedBrushKey}}">
           <TextBlock
             x:Name="_textBlockCount"
-            Foreground="White"
+            Foreground="{DynamicResource {x:Static local:Brushes.ContentSelectedTextBrushKey}}"
             HorizontalAlignment="Right"
             VerticalAlignment="Top">
           </TextBlock>

@@ -32,7 +32,7 @@ namespace PackageManagement.UI.Test
         [InlineData(1234000000, "1.23G")]
         public void DownloadCountToStringTest(int num, string expected)
         {
-            var s = AuthorAndDownloadCountToStringConverter.NumberToString(num);
+            var s = UIUtility.NumberToString(num);
             Assert.Equal(expected, s);
         }
     }
