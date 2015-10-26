@@ -149,7 +149,7 @@ namespace NuGet.Commands
         {
             if (_request.Project.TargetFrameworks.Count == 0)
             {
-                _log.LogError(Strings.FormatLog_ProjectDoesNotSpecifyTargetFrameworks(_request.Project.Name));
+                _log.LogError(Strings.FormatLog_ProjectDoesNotSpecifyTargetFrameworks(_request.Project.Name, _request.Project.FilePath));
                 _success = false;
                 return Enumerable.Empty<RestoreTargetGraph>();
             }
