@@ -143,7 +143,7 @@ namespace NuGet.PackageManagement.UI
             {
                 return behavior;
             }
-            
+
             return null;
         }
 
@@ -176,6 +176,7 @@ namespace NuGet.PackageManagement.UI
 
                 // set depency behavior to the value from nugetSettings  
                 SetSelectedDepencyBehavior(GetDependencyBehaviorFromConfig(nugetSettings));
+                return;
             }
 
             _detailModel.Options.ShowPreviewWindow = settings.ShowPreviewWindow;
