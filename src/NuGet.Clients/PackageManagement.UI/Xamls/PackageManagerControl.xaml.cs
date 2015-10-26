@@ -147,7 +147,7 @@ namespace NuGet.PackageManagement.UI
             return null;
         }
 
-        private void SetSelectedDepencyBehavior(DependencyBehavior? dependencyBehavior)
+        private void SetSelectedDepencyBehavior(DependencyBehavior dependencyBehavior)
         {
             var selectedDependencyBehavior = _detailModel.Options.DependencyBehaviors
                 .FirstOrDefault(d => d.Behavior == dependencyBehavior);
@@ -166,7 +166,7 @@ namespace NuGet.PackageManagement.UI
             UserSettings settings,
             Configuration.ISettings nugetSettings)
         {
-            var dependencySetting = GetDependencyBehaviorFromConfig(nugetSettings) ?? settings.DependencyBehavior;
+            var dependencySetting = GetDependencyBehaviorFromConfig(nugetSettings);
             if (settings == null)
             {
                 if (nugetSettings == null)
@@ -174,8 +174,8 @@ namespace NuGet.PackageManagement.UI
                     return;
                 }
 
-                // set depency behavior to the value from nugetSettings  
-                SetSelectedDepencyBehavior(GetDependencyBehaviorFromConfig(nugetSettings));
+                // set depency behavior to the value from nugetSettings
+                SetSelectedDepencyBehavior(dependencySetting ?? DependencyBehavior.Lowest);
                 return;
             }
 
@@ -184,7 +184,7 @@ namespace NuGet.PackageManagement.UI
             _detailModel.Options.ForceRemove = settings.ForceRemove;
             _topPanel.CheckboxPrerelease.IsChecked = settings.IncludePrerelease;
 
-            SetSelectedDepencyBehavior(dependencySetting);
+            SetSelectedDepencyBehavior(dependencySetting ?? settings.DependencyBehavior);
 
             var selectedFileConflictAction = _detailModel.Options.FileConflictActions.
                 FirstOrDefault(a => a.Action == settings.FileConflictAction);
