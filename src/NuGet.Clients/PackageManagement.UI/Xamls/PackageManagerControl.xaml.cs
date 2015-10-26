@@ -136,17 +136,15 @@ namespace NuGet.PackageManagement.UI
         protected static DependencyBehavior? GetDependencyBehaviorFromConfig(
             Configuration.ISettings nugetSettings)
         {
-            if (nugetSettings == null)
+            if (nugetSettings != null)
             {
-                return null;
-            }
-
-            var dependencySetting = nugetSettings.GetValue("config", "dependencyversion");
-            DependencyBehavior behavior;
-            var success = Enum.TryParse(dependencySetting, true, out behavior);
-            if (success)
-            {
-                return behavior;
+                var dependencySetting = nugetSettings.GetValue("config", "dependencyversion");
+                DependencyBehavior behavior;
+                var success = Enum.TryParse(dependencySetting, true, out behavior);
+                if (success)
+                {
+                    return behavior;
+                }
             }
 
             return null;
@@ -174,11 +172,6 @@ namespace NuGet.PackageManagement.UI
             var dependencySetting = GetDependencyBehaviorFromConfig(nugetSettings);
             if (settings == null)
             {
-                if (nugetSettings == null)
-                {
-                    return;
-                }
-
                 // set depency behavior to the value from nugetSettings
                 SetSelectedDepencyBehavior(dependencySetting ?? DependencyBehavior.Lowest);
                 return;
