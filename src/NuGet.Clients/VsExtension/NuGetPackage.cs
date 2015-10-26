@@ -174,18 +174,6 @@ namespace NuGetVSExtension
             }
         }
 
-        private IVsSourceControlTracker VSSourceControlTracker
-        {
-            get
-            {
-                if (_vsSourceControlTracker == null)
-                {
-                    _vsSourceControlTracker = ServiceLocator.GetInstanceSafe<IVsSourceControlTracker>();
-                }
-                return _vsSourceControlTracker;
-            }
-        }
-
         private ICommonOperations CommonOperations
         {
             get
@@ -328,6 +316,9 @@ namespace NuGetVSExtension
             ProjectUpgradeHandler = new ProjectUpgradeHandler(this, SolutionManager);
 
             LoadNuGetSettings();
+
+            // This initializes the IVSSourceControlTracker, even though _vsSourceControlTracker is unused.
+            _vsSourceControlTracker = ServiceLocator.GetInstanceSafe<IVsSourceControlTracker>();
         }
 
         /// <summary>
@@ -1100,6 +1091,7 @@ namespace NuGetVSExtension
             }
         }
 
+        #region IVsPackageExtensionProvider implementation
         public dynamic CreateExtensionInstance(ref Guid extensionPoint, ref Guid instance)
         {
             if (instance == typeof(NuGetSearchProvider).GUID)
@@ -1108,6 +1100,7 @@ namespace NuGetVSExtension
             }
             return null;
         }
+        #endregion // IVsPackageExtensionProvider implementation
 
         private void OnBeginShutDown()
         {
@@ -1118,6 +1111,7 @@ namespace NuGetVSExtension
             OptimizedZipPackage.PurgeCache();
         }
 
+        #region IVsPersistSolutionOpts implementation
         public int LoadUserOptions(IVsSolutionPersistence pPersistence, uint grfLoadOpts)
         {
             return VSConstants.S_OK;
@@ -1166,5 +1160,6 @@ namespace NuGetVSExtension
 
             return VSConstants.S_OK;
         }
+        #endregion // IVsPersistSolutionOpts implementation
     }
 }
