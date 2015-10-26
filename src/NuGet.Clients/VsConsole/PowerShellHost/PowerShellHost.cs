@@ -169,25 +169,34 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         private string EvaluatePrompt()
         {
-            string prompt = "PM>";
+            var prompt = "PM>";
 
-            try
+            return ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                PSObject output = Runspace.Invoke("prompt", null, outputResults: false).FirstOrDefault();
-                if (output != null)
+                try
                 {
-                    string result = output.BaseObject.ToString();
-                    if (!String.IsNullOrEmpty(result))
+                    // Execute the prompt function from a worker thread, so that the UI thread is not blocked waiting
+                    // on it. Note that a default prompt function as defined in Profile.ps1 will simply return
+                    // a string "PM>". This will always work. However, a custom "prompt" function might call
+                    // Write-Host and NuGet will explicity switch to the main thread using JTF.
+                    // If the main thread was blocked then, it will consistently result in a hang.
+                    var output = await Task.Run(() =>
+                                        Runspace.Invoke("prompt", null, outputResults: false).FirstOrDefault());
+                    if (output != null)
                     {
-                        prompt = result;
+                        var result = output.BaseObject.ToString();
+                        if (!string.IsNullOrEmpty(result))
+                        {
+                            prompt = result;
+                        }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                ExceptionHelper.WriteToActivityLog(ex);
-            }
-            return prompt;
+                catch (Exception ex)
+                {
+                    ExceptionHelper.WriteToActivityLog(ex);
+                }
+                return prompt;
+            });
         }
 
         /// <summary>
