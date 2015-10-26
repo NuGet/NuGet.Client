@@ -151,7 +151,7 @@
     <value>Some packages are not compatible with {0}.</value>
   </data>
   <data name="Log_ProjectDoesNotSpecifyTargetFrameworks" xml:space="preserve">
-    <value>The project '{0}' does not specify any target frameworks in project.json.</value>
+    <value>The project '{0}' does not specify any target frameworks in {1}.</value>
   </data>
   <data name="Log_ResolvingConflicts" xml:space="preserve">
     <value>Resolving conflicts for {0}...</value>
