@@ -11,7 +11,7 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Test
 {
-    class TestNuGetProject : NuGetProject
+    internal class TestNuGetProject : NuGetProject
     {
         IList<NuGet.Packaging.PackageReference> _installedPackages;
 
@@ -21,7 +21,7 @@ namespace NuGet.Test
             _installedPackages = installedPackages;
         }
 
-        private static IDictionary<string, object> CreateMetadata()
+        private static Dictionary<string, object> CreateMetadata()
         {
             return new Dictionary<string, object>
             {

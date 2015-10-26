@@ -49,7 +49,7 @@ namespace NuGet.ProjectManagement
 
         private NuGetFramework TargetFramework { get; }
 
-        public PackagesConfigNuGetProject(string folderPath, IDictionary<string, object> metadata)
+        public PackagesConfigNuGetProject(string folderPath, Dictionary<string, object> metadata)
             : base(metadata)
         {
             if (folderPath == null)
@@ -179,7 +179,7 @@ namespace NuGet.ProjectManagement
             if (installedPackagesList.Any())
             {
                 // Matching packageReference is found and is the only entry
-                // Then just delete the packages.config file 
+                // Then just delete the packages.config file
                 if (installedPackagesList.Count == 1)
                 {
                     FileSystemUtility.DeleteFile(FullPath, nuGetProjectContext);
@@ -258,7 +258,7 @@ namespace NuGet.ProjectManagement
                     return reader.GetPackages().ToList();
                 }
             }
-            catch (Exception ex) 
+            catch (Exception ex)
                 when (ex is System.Xml.XmlException ||
                         ex is PackagesConfigReaderException)
             {
@@ -278,7 +278,7 @@ namespace NuGet.ProjectManagement
         {
             bool isDevelopmentDependency = false;
 
-            // Catch any exceptions while fetching DevelopmentDependency element from nuspec file. 
+            // Catch any exceptions while fetching DevelopmentDependency element from nuspec file.
             // So it can continue to write the packages.config file.
             try
             {

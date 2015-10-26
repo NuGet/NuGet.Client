@@ -64,9 +64,9 @@ namespace NuGet.Protocol.Core.v2
                 {
                     // Retrieve all packages
                     var repoPackage = GetRepository().FindPackage(
-                        package.Id, 
-                        legacyVersion, 
-                        allowPrereleaseVersions: true, 
+                        package.Id,
+                        legacyVersion,
+                        allowPrereleaseVersions: true,
                         allowUnlisted: true);
 
                     if (repoPackage != null)
@@ -113,8 +113,10 @@ namespace NuGet.Protocol.Core.v2
 
             try
             {
+                var repo = GetRepository();
+
                 // Retrieve all packages
-                var repoPackages = GetRepository().FindPackagesById(packageId);
+                var repoPackages = repo.FindPackagesById(packageId);
 
                 // Convert from v2 to v3 types and enumerate the list to finish all server requests before returning
                 results = repoPackages.Select(p => CreateDependencyInfo(p, projectFramework)).ToList();

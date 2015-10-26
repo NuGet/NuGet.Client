@@ -280,7 +280,7 @@ namespace ProjectManagement.Test
             Assert.Equal(targetFramework, installedPackagesList2[0].TargetFramework);
         }
 
-        private IDictionary<string, object> GetTestMetadata(NuGetFramework targetFramework, string projectName = "TestProject")
+        private Dictionary<string, object> GetTestMetadata(NuGetFramework targetFramework, string projectName = "TestProject")
         {
             var dict = new Dictionary<string, object>
                 {

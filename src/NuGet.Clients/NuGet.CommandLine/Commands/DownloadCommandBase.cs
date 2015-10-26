@@ -120,7 +120,7 @@ namespace NuGet.CommandLine
 
                 if (!string.IsNullOrEmpty(globalPackageFolder) && Directory.Exists(globalPackageFolder))
                 {
-                    packageSources.Add(new V2PackageSource(globalPackageFolder, 
+                    packageSources.Add(new V2PackageSource(globalPackageFolder,
                         () => new LocalPackageRepository(globalPackageFolder)));
                 }
             }

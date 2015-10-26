@@ -18,20 +18,21 @@ namespace NuGet.ProjectManagement
         {
         }
 
-        protected NuGetProject(IDictionary<string, object> metadata)
+        protected NuGetProject(Dictionary<string, object> metadata)
         {
             if (metadata == null)
             {
                 throw new ArgumentNullException(nameof(metadata));
             }
+
             InternalMetadata = metadata;
         }
 
-        protected IDictionary<string, object> InternalMetadata { get; }
+        protected Dictionary<string, object> InternalMetadata { get; }
 
         public IReadOnlyDictionary<string, object> Metadata
         {
-            get { return (IReadOnlyDictionary<string, object>)InternalMetadata; }
+            get { return InternalMetadata; }
         }
 
         // TODO: Consider adding CancellationToken here
@@ -88,19 +89,20 @@ namespace NuGet.ProjectManagement
         public bool TryGetMetadata<T>(string key, out T value)
         {
             value = default(T);
-            try
+
+            object oValue;
+            if (Metadata.TryGetValue(key, out oValue))
             {
-                value = GetMetadata<T>(key);
-                return true;
-            }
-            catch (KeyNotFoundException)
-            {
-            }
-            catch (InvalidCastException)
-            {
-            }
-            catch (Exception)
-            {
+                if (oValue == null)
+                {
+                    return true;
+                }
+
+                if (oValue is T)
+                {
+                    value = (T)oValue;
+                    return true;
+                }
             }
 
             return false;
