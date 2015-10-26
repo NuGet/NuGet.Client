@@ -136,6 +136,11 @@ namespace NuGet.PackageManagement.UI
         protected static DependencyBehavior? GetDependencyBehaviorFromConfig(
             Configuration.ISettings nugetSettings)
         {
+            if (nugetSettings == null)
+            {
+                return null;
+            }
+
             var dependencySetting = nugetSettings.GetValue("config", "dependencyversion");
             DependencyBehavior behavior;
             var success = Enum.TryParse(dependencySetting, true, out behavior);
