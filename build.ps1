@@ -157,7 +157,7 @@ function BuildXproj()
 
     ## Copying nupkgs
     Write-Host "Copying the packages to" $artifactsPackages
-    Get-ChildItem $artifacts\*.nupkg -Recurse | % { Move-Item $_ $nupkgsDir }
+    & $nugetExe init $($artifacts) $($nupkgsDir)
 }
 
 function BuildCSproj()
@@ -166,7 +166,8 @@ function BuildCSproj()
     $interopLib = ".\lib\Microsoft.VisualStudio.ProjectSystem.Interop"
     & dnu restore $interopLib -s https://www.myget.org/F/nuget-volatile/api/v2/ -s https://www.nuget.org/api/v2/
     & dnu pack $interopLib
-    Get-ChildItem $interopLib\*.nupkg -Recurse | % { Move-Item $_ $nupkgsDir }
+
+    & $nugetExe init $($interopLib) $($nupkgsDir)
 
     # Restore packages for NuGet.Tooling solution
     & $nugetExe restore -msbuildVersion 14 .\NuGet.Clients.sln
@@ -257,7 +258,7 @@ if ((Test-Path $dnvmLoc) -eq $False)
 if (Test-Path $nupkgsDir)
 {
     Write-Host "Cleaning nupkgs folder"
-    Remove-Item $nupkgsDir\*.nupkg
+    Remove-Item -Recurse -exclude readme.txt -Path $nupkgsDir
 }
 
 if( Test-Path $artifacts)
