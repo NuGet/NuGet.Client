@@ -560,7 +560,7 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                _packageDetail.Visibility = Visibility.Visible;                
+                _packageDetail.Visibility = Visibility.Visible;
                 _packageDetail.DataContext = _detailModel;
 
                 await _detailModel.SetCurrentPackage(
@@ -859,9 +859,9 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// This method is called after user clicks a button to execute an action, e.g. install a package.
         /// </summary>
-        /// <param name="performAction">A function that returns the task that is performing the action 
+        /// <param name="performAction">A function that returns the task that is performing the action
         /// thru UIActionEngine.</param>
-        /// <param name="setOptions">A method that is called to set the action options, 
+        /// <param name="setOptions">A method that is called to set the action options,
         /// such as dependency behavior.</param>
         public void ExecuteAction(Func<Task> performAction, Action<NuGetUI> setOptions)
         {
@@ -880,7 +880,7 @@ namespace NuGet.PackageManagement.UI
                     var restoreSucceded = await RestoreBar.UIRestorePackagesAsync(CancellationToken.None);
                     if (restoreSucceded)
                     {
-                        // Note that the task returned by performAction() will call something like 
+                        // Note that the task returned by performAction() will call something like
                         // UIActionEngine.PerformActionAsync(), which has to be called from a background thread.
                         // Thus, we need to use Task.Run() here.
                         await Task.Run(() => performAction());
@@ -902,7 +902,8 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            var action = new UserAction(NuGetProjectActionType.Uninstall, package.Id, package.InstalledVersion);
+            var action = UserAction.CreateUnInstallAction(package.Id);
+
             ExecuteAction(
                 () =>
                 {
@@ -912,9 +913,10 @@ namespace NuGet.PackageManagement.UI
                         this,
                         CancellationToken.None);
                 },
+
                 nugetUi => SetOptions(nugetUi));
         }
-        
+
         private void SetOptions(NuGetUI nugetUi)
         {
             var options = _detailModel.Options;
@@ -937,7 +939,8 @@ namespace NuGet.PackageManagement.UI
             }
 
             var versionToInstall = package.LatestVersion ?? package.Version;
-            var action = new UserAction(NuGetProjectActionType.Install, package.Id, versionToInstall);
+            var action = UserAction.CreateInstallAction(package.Id, versionToInstall);
+
             ExecuteAction(
                 () =>
                 {
@@ -947,6 +950,7 @@ namespace NuGet.PackageManagement.UI
                         this,
                         CancellationToken.None);
                 },
+
                 nugetUi => SetOptions(nugetUi));
         }
 

@@ -50,8 +50,9 @@ namespace NuGet.PackageManagement.UI
 
                     // Allow prerelease packages only if the target is prerelease
                     var includePrelease =
-                        userAction.PackageIdentity.Version.IsPrerelease ||
-                        userAction.Action == NuGetProjectActionType.Uninstall;
+                        userAction.Action == NuGetProjectActionType.Uninstall ||
+                        userAction.Version.IsPrerelease == true;
+
                     var includeUnlisted = userAction.Action == NuGetProjectActionType.Uninstall;
 
                     var resolutionContext = new ResolutionContext(
@@ -135,8 +136,8 @@ namespace NuGet.PackageManagement.UI
                     packageIds.Add(p.PackageIdentity.Id);
                 }
 
-                // We need to filter out packages from packagesToUpdate that are not installed 
-                // in the current project. Otherwise, we'll incorrectly install a 
+                // We need to filter out packages from packagesToUpdate that are not installed
+                // in the current project. Otherwise, we'll incorrectly install a
                 // package that is not installed before.
                 var packagesToUpdateInProject = packagesToUpdate.Where(
                     package => packageIds.Contains(package.Id)).ToList();
@@ -300,23 +301,7 @@ namespace NuGet.PackageManagement.UI
                 && userAction.Action == NuGetProjectActionType.Install
                 && nuGetProjectActions.Any())
             {
-                PackageIdentity directInstall = null;
-                if (userAction.PackageIdentity != null)
-                {
-                    directInstall = userAction.PackageIdentity;
-                }
-                else
-                {
-                    var identitiesWithSameId = nuGetProjectActions.Where(
-                        n => n.PackageIdentity.Id.Equals(userAction.PackageId, StringComparison.OrdinalIgnoreCase)).ToList();
-                    if (identitiesWithSameId.Count == 1)
-                    {
-                        directInstall = identitiesWithSameId[0].PackageIdentity;
-                    }
-                    // If there multiple actions with the same package id as the user action, just ignore
-                }
-
-                return directInstall;
+                return new PackageIdentity(userAction.PackageId, userAction.Version);
             }
 
             return null;
@@ -340,13 +325,11 @@ namespace NuGet.PackageManagement.UI
             Debug.Assert(userAction.PackageId != null, "Package id can never be null in a User action");
             if (userAction.Action == NuGetProjectActionType.Install)
             {
-                Debug.Assert(userAction.PackageIdentity != null, "Package identity cannot be null when installing a package");
-
                 foreach (var target in targets)
                 {
                     var actions = await _packageManager.PreviewInstallPackageAsync(
                         target,
-                        userAction.PackageIdentity,
+                        new PackageIdentity(userAction.PackageId, userAction.Version),
                         resolutionContext,
                         projectContext,
                         uiService.ActiveSource,
@@ -364,16 +347,10 @@ namespace NuGet.PackageManagement.UI
                 foreach (var target in targets)
                 {
                     IEnumerable<NuGetProjectAction> actions;
-                    if (userAction.PackageIdentity != null)
-                    {
-                        actions = await _packageManager.PreviewUninstallPackageAsync(
-                            target, userAction.PackageIdentity, uninstallationContext, projectContext, token);
-                    }
-                    else
-                    {
-                        actions = await _packageManager.PreviewUninstallPackageAsync(
-                            target, userAction.PackageId, uninstallationContext, projectContext, token);
-                    }
+
+                    actions = await _packageManager.PreviewUninstallPackageAsync(
+                        target, userAction.PackageId, uninstallationContext, projectContext, token);
+
                     results.AddRange(actions.Select(a => new ResolvedAction(target, a)));
                 }
             }
@@ -520,7 +497,7 @@ namespace NuGet.PackageManagement.UI
                         return packageMetadata;
                     }
                 }
-                catch(InvalidOperationException e)
+                catch (InvalidOperationException e)
                 {
                     exceptionList.Add(e);
                 }

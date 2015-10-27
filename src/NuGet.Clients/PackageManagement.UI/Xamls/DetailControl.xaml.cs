@@ -61,8 +61,7 @@ namespace NuGet.PackageManagement.UI
         private void ProjectInstallButtonClicked(object sender, EventArgs e)
         {
             var model = (DetailControlModel)DataContext;
-            var userAction = new UserAction(
-                NuGetProjectActionType.Install,
+            var userAction = UserAction.CreateInstallAction(
                 model.Id,
                 model.SelectedVersion.Version);
             ExecuteUserAction(userAction);
@@ -71,21 +70,19 @@ namespace NuGet.PackageManagement.UI
         private void ProjectUninstallButtonClicked(object sender, EventArgs e)
         {
             var model = (PackageDetailControlModel)DataContext;
-            var userAction = new UserAction(
-                NuGetProjectActionType.Uninstall,
-                model.Id,
-                model.InstalledVersion);
+            var userAction = UserAction.CreateUnInstallAction(model.Id);
+
             ExecuteUserAction(userAction);
         }
 
 
         private void SolutionInstallButtonClicked(object sender, EventArgs e)
         {
-            var model = (PackageSolutionDetailControlModel)DataContext;            
-            var userAction = new UserAction(
-                NuGetProjectActionType.Install,
+            var model = (PackageSolutionDetailControlModel)DataContext;
+            var userAction = UserAction.CreateInstallAction(
                 model.Id,
                 model.SelectedVersion.Version);
+
             ExecuteUserAction(userAction);
         }
 
@@ -93,12 +90,10 @@ namespace NuGet.PackageManagement.UI
         {
             var model = (PackageSolutionDetailControlModel)DataContext;
 
-            var userAction = new UserAction(
-                NuGetProjectActionType.Uninstall,
-                model.Id,
-                null);
+            var userAction = UserAction.CreateUnInstallAction(model.Id);
+
             ExecuteUserAction(userAction);
-        }        
+        }
 
         private void ExecuteUserAction(UserAction action)
         {

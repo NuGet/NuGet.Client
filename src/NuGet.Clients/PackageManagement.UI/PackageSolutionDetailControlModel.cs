@@ -271,7 +271,7 @@ namespace NuGet.PackageManagement.UI
         {
             UpdateCanInstallAndUninstall();
         }
-        
+
         private void UpdateSelectCheckBoxState()
         {
             _updatingSelectCheckBoxState = true;
@@ -382,7 +382,7 @@ namespace NuGet.PackageManagement.UI
                     // for install, the installed version can't be the same as the version to be installed.
                     if (VersionComparer.Default.Compare(
                         project.InstalledVersion,
-                        action.PackageIdentity.Version) != 0)
+                        action.Version) != 0)
                     {
                         selectedProjects.Add(project.NuGetProject);
                     }
