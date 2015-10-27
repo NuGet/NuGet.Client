@@ -163,7 +163,7 @@ function Test-ProjectKUninstallNonExistentPackage {
 
 # This test covers the scenario of installing a package that supports only non-dnxcore frameworks
 # It should be installed the correct dependency group, not global dependencies.
-function Test-ProjectKInstallNonDNXCorePackage {
+function ProjectKInstallNonDNXCorePackage {
     # Arrange
     $project = New-DNXClassLibrary
 
