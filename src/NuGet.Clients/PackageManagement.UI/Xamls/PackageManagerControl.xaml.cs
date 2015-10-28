@@ -89,11 +89,11 @@ namespace NuGet.PackageManagement.UI
 
             SetTitle();
 
+            _topPanel.IsSolution = Model.IsSolution;
             var settings = LoadSettings();
             InitializeFilterList(settings);
             InitSourceRepoList(settings);
             ApplySettings(settings, nugetSettings);
-
             _initialized = true;
 
             // UI is initialized. Start the first search
@@ -101,6 +101,7 @@ namespace NuGet.PackageManagement.UI
             _packageList.IsSolution = this.Model.IsSolution;
             SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
             RefreshAvailableUpdatesCount();
+            RefreshConsolidatablePackagesCount();
 
             // register with the UI controller
             var controller = model.UIController as NuGetUI;
@@ -478,22 +479,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private bool ShowInstalled
-        {
-            get
-            {
-                return _topPanel.Filter == Filter.Installed;
-            }
-        }
-
-        private bool ShowUpdatesAvailable
-        {
-            get
-            {
-                return _topPanel.Filter == Filter.UpdatesAvailable;
-            }
-        }
-
         public bool IncludePrerelease
         {
             get { return _topPanel.CheckboxPrerelease.IsChecked == true; }
@@ -538,6 +523,25 @@ namespace NuGet.PackageManagement.UI
                 await updatesLoader.InitializeAsync();
                 int updatesCount = await updatesLoader.CreatePackagesWithUpdatesAsync(CancellationToken.None);
                 _topPanel._labelUpgradeAvailable.Count = updatesCount;
+            });
+        }
+
+        private void RefreshConsolidatablePackagesCount()
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+                _topPanel._labelConsolidate.Count = 0;
+                var updatesLoader = new PackageLoader(
+                    new PackageLoaderOption(Filter.Consolidate, IncludePrerelease),
+                    Model.IsSolution,
+                    Model.Context.PackageManager,
+                    Model.Context.Projects,
+                    Model.Context.PackageManagerProviders,
+                    ActiveSource,
+                    String.Empty);
+                await updatesLoader.InitializeAsync();
+                var consolidatablePackages = await updatesLoader.GetConsolidatablePackagesAsync(CancellationToken.None);
+                _topPanel._labelConsolidate.Count = consolidatablePackages.Count;
             });
         }
 
@@ -628,7 +632,7 @@ namespace NuGet.PackageManagement.UI
 
         internal void UpdatePackageStatus()
         {
-            if (ShowInstalled || ShowUpdatesAvailable)
+            if (_topPanel.Filter != Filter.All)
             {
                 // refresh the whole package list
                 SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
@@ -655,6 +659,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             RefreshAvailableUpdatesCount();
+            RefreshConsolidatablePackagesCount();
         }
 
         private static IReadOnlyList<Packaging.PackageReference> GetInstalledPackages(IEnumerable<NuGetProject> projects)

@@ -7,6 +7,7 @@ namespace NuGet.PackageManagement.UI
     {
         All,
         Installed,
-        UpdatesAvailable
+        UpdatesAvailable,
+        Consolidate
     }
 }

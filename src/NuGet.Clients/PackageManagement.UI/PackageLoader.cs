@@ -82,6 +82,12 @@ namespace NuGet.PackageManagement.UI
                 return await SearchInstalledAsync(startIndex, ct);
             }
 
+            if (_option.Filter == Filter.Consolidate)
+            {
+                // show only the installed packages
+                return await SearchConsolidateAsync(startIndex, ct);
+            }
+
             // Search all / updates available cannot work without a source repo
             if (_sourceRepository == null)
             {
@@ -228,6 +234,107 @@ namespace NuGet.PackageManagement.UI
         private async Task<SearchResult> SearchInstalledAsync(int startIndex, CancellationToken cancellationToken)
         {
             var installedPackages = (await GetInstalledPackagesAsync(latest: true, token: cancellationToken))
+                .Where(p => p.Id.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) != -1)
+                .OrderBy(p => p.Id)
+                .Skip(startIndex)
+                .Take(_option.PageSize + 1)
+                .ToArray();
+
+            var results = new List<UISearchMetadata>();
+            var localResource = await _packageManager.PackagesFolderSourceRepository
+                .GetResourceAsync<UIMetadataResource>();
+
+            // UIMetadataResource may not be available
+            // Given that this is the 'Installed' filter, we ignore failures in reaching the remote server
+            // Instead, we will use the local UIMetadataResource
+            UIMetadataResource metadataResource;
+            try
+            {
+                metadataResource =
+                _sourceRepository == null ?
+                null :
+                await _sourceRepository.GetResourceAsync<UIMetadataResource>();
+            }
+            catch (Exception ex)
+            {
+                metadataResource = null;
+                // Write stack to activity log
+                Mvs.ActivityLog.LogError(LogEntrySource, ex.ToString());
+            }
+
+            var tasks = new List<Task<UISearchMetadata>>();
+            for (int i = 0; i < installedPackages.Length; i++)
+            {
+                var packageIdentity = installedPackages[i];
+
+                tasks.Add(
+                    Task.Run(() =>
+                        GetPackageMetadataAsync(localResource,
+                                                metadataResource,
+                                                packageIdentity,
+                                                cancellationToken)));
+            }
+
+            await Task.WhenAll(tasks);
+
+            foreach (var task in tasks)
+            {
+                results.Add(task.Result);
+            }
+
+            return new SearchResult
+            {
+                Items = results,
+                HasMoreItems = installedPackages.Length > _option.PageSize,
+            };
+        }
+
+        /// <summary>
+        /// Returns the list of packages that are consolidatable, i.e. different versions of the
+        /// package are installed.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ICollection<PackageIdentity>> GetConsolidatablePackagesAsync(
+            CancellationToken token)
+        {
+            if (_projects.Length <= 1)
+            {
+                return new List<PackageIdentity>();
+            }
+
+            // the key of the dictionary is the package id, and the value is
+            // versions installed.
+            var packages = new Dictionary<string, HashSet<NuGetVersion>>(
+                StringComparer.OrdinalIgnoreCase);
+
+            foreach (var project in _projects)
+            {
+                foreach (var package in (await project.GetInstalledPackagesAsync(token)))
+                {
+                    HashSet<NuGetVersion> versions;
+                    if (!packages.TryGetValue(package.PackageIdentity.Id, out versions))
+                    {
+                        versions = new HashSet<NuGetVersion>();
+                        packages[package.PackageIdentity.Id] = versions;
+                    }
+
+                    versions.Add(package.PackageIdentity.Version);
+                }
+            }
+
+            var consolidatablePackages = packages
+                .Where(p => p.Value.Count >= 2)
+                .Select(p => new PackageIdentity(p.Key, p.Value.Max()))
+                .ToList();
+
+            return consolidatablePackages;
+        }
+
+        private async Task<SearchResult> SearchConsolidateAsync(
+            int startIndex, 
+            CancellationToken cancellationToken)
+        {
+            var installedPackages = (await GetConsolidatablePackagesAsync(token: cancellationToken))
                 .Where(p => p.Id.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) != -1)
                 .OrderBy(p => p.Id)
                 .Skip(startIndex)
