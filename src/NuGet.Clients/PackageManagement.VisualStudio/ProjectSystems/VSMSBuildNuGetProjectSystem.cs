@@ -735,12 +735,23 @@ namespace NuGet.PackageManagement.VisualStudio
                                 NuGetProjectContext);
                         }
                     }
-                    catch (Exception ex) when (!behavior.FailOperations)
+                    catch (Exception ex)
                     {
-                        NuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning,
+                        var fileName = EnvDTEProjectUtility.GetFullPath(EnvDTEProject);
+
+                        var level = behavior.FailOperations ?
+                            ProjectManagement.MessageLevel.Error :
+                            ProjectManagement.MessageLevel.Warning;
+
+                        NuGetProjectContext.Log(level,
                             Strings.FailedToUpdateBindingRedirects,
-                            EnvDTEProject.FileName,
+                            fileName,
                             ex.Message);
+
+                        if (behavior.FailOperations)
+                        {
+                            throw;
+                        }
                     }
                 });
             }
