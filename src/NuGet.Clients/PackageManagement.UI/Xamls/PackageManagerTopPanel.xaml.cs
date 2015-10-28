@@ -64,6 +64,42 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        // Indicates if the control is hosted in solution package manager.
+        private bool _isSolution;
+
+        public bool IsSolution
+        {
+            get
+            {
+                return _isSolution;
+            }
+            set
+            {
+                if (_isSolution == value)
+                {
+                    return;
+                }
+
+                _isSolution = value;
+                if (!_isSolution)
+                {
+                    // Consolidate tab is only available in solution package manager
+                    _labelConsolidate.Visibility = Visibility.Collapsed;
+
+                    // if consolidate tab is currently selected, we need to select another
+                    // tab.
+                    if (_selectedFilter == _labelConsolidate)
+                    {
+                        SelectFilter(Filter.Installed);
+                    }
+                }
+                else
+                {
+                    _labelConsolidate.Visibility = Visibility.Visible;
+                }
+            }
+        }
+
         private void _checkboxPrerelease_Checked(object sender, RoutedEventArgs e)
         {
             if (PrereleaseCheckChanged != null)
@@ -144,6 +180,21 @@ namespace NuGet.PackageManagement.UI
                 case Filter.UpdatesAvailable:
                     _selectedFilter = _labelUpgradeAvailable;
                     break;
+
+                case Filter.Consolidate:
+                    if (_isSolution)
+                    {
+                        _selectedFilter = _labelConsolidate;
+                    }
+                    break;
+            }
+
+            // _selectedFilter could be null if we are running with a solution with user
+            // settings saved by a later version of NuGet that has more filters than
+            // can be recognized here.
+            if (_selectedFilter == null)
+            {
+                _selectedFilter = _labelInstalled;
             }
 
             _selectedFilter.Selected = true;

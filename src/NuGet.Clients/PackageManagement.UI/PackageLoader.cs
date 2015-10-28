@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -20,6 +21,8 @@ namespace NuGet.PackageManagement.UI
 {
     internal class PackageLoader : ILoader
     {
+        public static readonly int MaxDegreeOfParallelism = 16;
+
         private readonly SourceRepository _sourceRepository;
 
         private readonly NuGetProject[] _projects;
@@ -80,6 +83,12 @@ namespace NuGet.PackageManagement.UI
             {
                 // show only the installed packages
                 return await SearchInstalledAsync(startIndex, ct);
+            }
+
+            if (_option.Filter == Filter.Consolidate)
+            {
+                // show only the installed packages
+                return await SearchConsolidateAsync(startIndex, ct);
             }
 
             // Search all / updates available cannot work without a source repo
@@ -256,30 +265,143 @@ namespace NuGet.PackageManagement.UI
                 Mvs.ActivityLog.LogError(LogEntrySource, ex.ToString());
             }
 
-            var tasks = new List<Task<UISearchMetadata>>();
-            for (int i = 0; i < installedPackages.Length; i++)
+            // create tasks to get metadata in parallel
+            var bag = new ConcurrentBag<PackageIdentity>(installedPackages);
+            var tasks = new List<Task>();
+            var metadataList = new ConcurrentQueue<UISearchMetadata>();
+            for (int i = 0; i < MaxDegreeOfParallelism; ++i)
             {
-                var packageIdentity = installedPackages[i];
-
-                tasks.Add(
-                    Task.Run(() =>
-                        GetPackageMetadataAsync(localResource,
-                                                metadataResource,
-                                                packageIdentity,
-                                                cancellationToken)));
+                tasks.Add(Task.Run(async () =>
+                {
+                    PackageIdentity packageIdentity;
+                    while (bag.TryTake(out packageIdentity))
+                    {
+                        var metadata = await GetPackageMetadataAsync(
+                            localResource,
+                            metadataResource,
+                            packageIdentity,
+                            cancellationToken);
+                        metadataList.Enqueue(metadata);
+                    }
+                }));
             }
 
             await Task.WhenAll(tasks);
-
-            foreach (var task in tasks)
-            {
-                results.Add(task.Result);
-            }
-
+            results = metadataList.ToList();
+            
             return new SearchResult
             {
                 Items = results,
                 HasMoreItems = installedPackages.Length > _option.PageSize,
+            };
+        }
+
+        /// <summary>
+        /// Returns the list of packages that are consolidatable, i.e. different versions of the
+        /// package are installed.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ICollection<PackageIdentity>> GetConsolidatablePackagesAsync(
+            CancellationToken token)
+        {
+            if (_projects.Length <= 1)
+            {
+                return new List<PackageIdentity>();
+            }
+
+            // the key of the dictionary is the package id, and the value is
+            // versions installed.
+            var packages = new Dictionary<string, HashSet<NuGetVersion>>(
+                StringComparer.OrdinalIgnoreCase);
+
+            foreach (var project in _projects)
+            {
+                foreach (var package in (await project.GetInstalledPackagesAsync(token)))
+                {
+                    HashSet<NuGetVersion> versions;
+                    if (!packages.TryGetValue(package.PackageIdentity.Id, out versions))
+                    {
+                        versions = new HashSet<NuGetVersion>();
+                        packages[package.PackageIdentity.Id] = versions;
+                    }
+
+                    versions.Add(package.PackageIdentity.Version);
+                }
+            }
+
+            var consolidatablePackages = packages
+                .Where(p => p.Value.Count >= 2)
+                .Select(p => new PackageIdentity(p.Key, p.Value.Max()))
+                .ToList();
+
+            return consolidatablePackages;
+        }
+
+        private async Task<SearchResult> SearchConsolidateAsync(
+            int startIndex,
+            CancellationToken cancellationToken)
+        {
+            var packagesNeedingConsolidation = (await GetConsolidatablePackagesAsync(token: cancellationToken))
+                .Where(p => p.Id.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) != -1)
+                .OrderBy(p => p.Id)
+                .Skip(startIndex)
+                .Take(_option.PageSize + 1)
+                .ToArray();
+
+            var results = new List<UISearchMetadata>();
+            var localResource = await _packageManager.PackagesFolderSourceRepository
+                .GetResourceAsync<UIMetadataResource>();
+
+            // UIMetadataResource may not be available
+            // Given that this is the 'Installed' filter, we ignore failures in reaching the remote server
+            // Instead, we will use the local UIMetadataResource
+            UIMetadataResource metadataResource;
+            try
+            {
+                if (_sourceRepository == null)
+                {
+                    metadataResource = null;
+                }
+                else
+                {
+                    metadataResource = await _sourceRepository.GetResourceAsync<UIMetadataResource>();
+                }
+            }
+            catch (Exception ex)
+            {
+                metadataResource = null;
+                // Write stack to activity log
+                Mvs.ActivityLog.LogError(LogEntrySource, ex.ToString());
+            }
+
+            // create tasks to get metadata in parallel
+            var bag = new ConcurrentBag<PackageIdentity>(packagesNeedingConsolidation);
+            var tasks = new List<Task>();
+            var metadataList = new ConcurrentQueue<UISearchMetadata>();
+            for (int i = 0; i < MaxDegreeOfParallelism; ++i)
+            {
+                tasks.Add(Task.Run(async () =>
+                {
+                    PackageIdentity packageIdentity;
+                    while (bag.TryTake(out packageIdentity))
+                    {
+                        var metadata = await GetPackageMetadataAsync(
+                            localResource,
+                            metadataResource,
+                            packageIdentity,
+                            cancellationToken);
+                        metadataList.Enqueue(metadata);
+                    }
+                }));
+            }
+
+            await Task.WhenAll(tasks);
+            results = metadataList.ToList();
+
+            return new SearchResult
+            {
+                Items = results,
+                HasMoreItems = packagesNeedingConsolidation.Length > _option.PageSize,
             };
         }
 
@@ -584,7 +706,7 @@ namespace NuGet.PackageManagement.UI
                     searchResultPackage.ProvidersLoader = new Lazy<Task<AlternativePackageManagerProviders>>(
                         () => AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(
                             _packageManagerProviders,
-                            searchResultPackage.Id, 
+                            searchResultPackage.Id,
                             _projects[0]));
                 }
 

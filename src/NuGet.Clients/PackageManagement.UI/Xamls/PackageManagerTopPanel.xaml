@@ -28,6 +28,7 @@
         <ColumnDefinition Width="auto" />
         <ColumnDefinition Width="auto" />
         <ColumnDefinition Width="auto" />
+        <ColumnDefinition Width="auto" />
         <ColumnDefinition Width="*" MinWidth="20" />
         <ColumnDefinition Width="auto" />
         <ColumnDefinition Width="auto" />
@@ -35,15 +36,14 @@
         <ColumnDefinition Width="auto" />
       </Grid.ColumnDefinitions>
 
-      <local:FilterLabel 
+      <local:FilterLabel
         Grid.Column="0"
         x:Name="_labelBrowse"
         AutomationProperties.AutomationId="Tab_Browse"
         Filter="All"
         Text="{x:Static resx:Resources.Label_Browse}"
-        ControlSelected="FilterLabel_ControlSelected"
-        />      
-      <local:FilterLabel 
+        ControlSelected="FilterLabel_ControlSelected" />
+      <local:FilterLabel
         Grid.Column="1"
         x:Name="_labelInstalled"
         AutomationProperties.AutomationId="Tab_Installed"
@@ -52,7 +52,7 @@
         Text="{x:Static resx:Resources.Label_Installed}"
         ControlSelected="FilterLabel_ControlSelected">
       </local:FilterLabel>
-      <local:FilterLabel 
+      <local:FilterLabel
         Grid.Column="2"
         x:Name="_labelUpgradeAvailable"
         AutomationProperties.AutomationId="Tab_Updates"
@@ -61,13 +61,22 @@
         Text="{x:Static resx:Resources.Label_Updates}"
         ControlSelected="FilterLabel_ControlSelected">
       </local:FilterLabel>
+      <local:FilterLabel
+        Grid.Column="3"
+        x:Name="_labelConsolidate"
+        AutomationProperties.AutomationId="Tab_Consolidate"
+        Filter="Consolidate"
+        Margin="35,0,0,0"
+        Text="{x:Static resx:Resources.Action_Consolidate}"
+        ControlSelected="FilterLabel_ControlSelected"
+        Visibility="Collapsed" />
 
       <TextBlock
-        Grid.Column="4"
+        Grid.Column="5"
         VerticalAlignment="Center"
         Text="{x:Static resx:Resources.Label_Repository}" />
       <ComboBox
-        Grid.Column="6"
+        Grid.Column="7"
         Margin="6,0,0,0"
         x:Name="_sourceRepoList"
         AutomationProperties.AutomationId="ComboBox_PackageSource"
@@ -87,7 +96,7 @@
       </ComboBox>
 
       <Button
-        Grid.Column="7"
+        Grid.Column="8"
         Margin="12,0,0,0"
         AutomationProperties.AutomationId="Button_Settings"
         VerticalAlignment="Center"
@@ -131,7 +140,7 @@
     <Grid Grid.Row="2">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="auto" />
-        <ColumnDefinition Width="auto"/>
+        <ColumnDefinition Width="auto" />
       </Grid.ColumnDefinitions>
 
       <!-- container of the search control -->
