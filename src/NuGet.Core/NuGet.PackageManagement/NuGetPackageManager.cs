@@ -1525,7 +1525,7 @@ namespace NuGet.PackageManagement
                     }
                     await nuGetProject.PostProcessAsync(nuGetProjectContext, token);
 
-                    await OpenReadmeFile(nuGetProjectContext, token);
+                    await OpenReadmeFile(nuGetProject, nuGetProjectContext, token);
                 }
                 catch (Exception ex)
                 {
@@ -1851,6 +1851,8 @@ namespace NuGet.PackageManagement
                         Strings.RestoreFailedRollingBack,
                         buildIntegratedProject.ProjectName));
             }
+
+            await OpenReadmeFile(buildIntegratedProject, nuGetProjectContext, token);
         }
 
         private async Task Rollback(
@@ -1896,20 +1898,39 @@ namespace NuGet.PackageManagement
             }
         }
 
-        private Task OpenReadmeFile(INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        private Task OpenReadmeFile(NuGetProject nuGetProject, INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             var executionContext = nuGetProjectContext.ExecutionContext;
             if (executionContext != null
                 && executionContext.DirectInstall != null)
             {
-                var packagePath = PackagesFolderNuGetProject.GetInstalledPackageFilePath(executionContext.DirectInstall);
-                if (File.Exists(packagePath))
+                //packagesPath is different for project.json vs Packages.config scenarios. So check if the project is a build-integrated project
+                var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
+                var readmeFilePath = String.Empty;
+
+                if (buildIntegratedProject != null)
                 {
-                    var readmeFilePath = Path.Combine(Path.GetDirectoryName(packagePath), ProjectManagement.Constants.ReadmeFileName);
-                    if (File.Exists(readmeFilePath) && !token.IsCancellationRequested)
+                    var packageFolderPath = BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(
+                                            Configuration.SettingsUtility.GetGlobalPackagesFolder(Settings), 
+                                            nuGetProjectContext.ExecutionContext.DirectInstall);
+
+                    if (Directory.Exists(packageFolderPath))
                     {
-                        return executionContext.OpenFile(readmeFilePath);
+                        readmeFilePath = Path.Combine(packageFolderPath, ProjectManagement.Constants.ReadmeFileName);
                     }
+                }
+                else
+                {
+                    var packagePath = PackagesFolderNuGetProject.GetInstalledPackageFilePath(executionContext.DirectInstall);
+                    if (File.Exists(packagePath))
+                    {
+                        readmeFilePath = Path.Combine(Path.GetDirectoryName(packagePath), ProjectManagement.Constants.ReadmeFileName);
+                    }
+                }
+
+                if (File.Exists(readmeFilePath) && !token.IsCancellationRequested)
+                {
+                    return executionContext.OpenFile(readmeFilePath);
                 }
             }
 
