@@ -75,12 +75,12 @@
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition
-              Width="6*"
+              Width="65*"
               MinWidth="300" />
             <ColumnDefinition
               Width="auto" />
             <ColumnDefinition
-              Width="4*"
+              Width="35*"
               MinWidth="300" />
           </Grid.ColumnDefinitions>
 
@@ -95,32 +95,37 @@
             <Tools:InfiniteScrollList
               Grid.Row="0"
               x:Name="_packageList"
-              SelectionChanged="PackageList_SelectionChanged" 
+              SelectionChanged="PackageList_SelectionChanged"
               UpdateButtonClicked="PackageList_UpdateButtonClicked" />
 
-            <StackPanel
+            <Border
               Grid.Row="1"
-              Orientation="Vertical"
+              BorderThickness="0,1,0,0"
               x:Name="_legalDisclaimer"
+              BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
               Background="{DynamicResource {x:Static resx:Brushes.LegalMessageBackground}}">
-              <TextBlock
-                Margin="24,12,24,12"
-                TextWrapping="Wrap"
-                Text="{x:Static resx:Resources.Text_LegalDisclaimer}" />
-              <CheckBox
-                Margin="24,0,24,12"
-                Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
-                Content="{x:Static resx:Resources.DoNotShowThisAgain}"
-                Checked="SuppressDisclaimerChecked" />
-            </StackPanel>
+              <StackPanel
+                Orientation="Vertical">
+                <TextBlock
+                  Margin="24,12,24,12"
+                  TextWrapping="Wrap"
+                  Text="{x:Static resx:Resources.Text_LegalDisclaimer}" />
+                <CheckBox
+                  Margin="24,0,24,12"
+                  Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
+                  Content="{x:Static resx:Resources.DoNotShowThisAgain}"
+                  Checked="SuppressDisclaimerChecked" />
+              </StackPanel>
+            </Border>
           </Grid>
 
           <GridSplitter
             Grid.Column="1"
-            Width="5"
+            Width="4"
             Grid.RowSpan="2"
             HorizontalAlignment="Center"
             VerticalAlignment="Stretch"
+            Background="{DynamicResource {x:Static Tools:Brushes.SplitterBackgroundKey}}"
             BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
             BorderThickness="1,0" />
 

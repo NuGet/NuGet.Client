@@ -19,9 +19,14 @@
       Command="{x:Static Tools:PackageManagerControlCommands.OpenExternalLink}"
       Executed="ExecuteOpenExternalLink" />
   </UserControl.CommandBindings>
-  <Expander
-    Header="{x:Static resx:Resources.Label_Options}"
-    Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}" >
+  <Expander 
+    x:Name="_expander"
+    Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}">
+    <Expander.Header>
+      <TextBlock
+        Text="{x:Static resx:Resources.Label_Options}"
+        FontWeight="Bold" />
+    </Expander.Header>
     <Grid>
       <Grid.RowDefinitions>
         <RowDefinition Height="auto" />
@@ -31,114 +36,127 @@
       </Grid.RowDefinitions>
 
       <CheckBox
-      Grid.Row="1"
-      Margin="0,8,0,0"
-      IsChecked="{Binding Path=Options.ShowPreviewWindow}"
-      VerticalContentAlignment="Center"
-      Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
-      Content="{x:Static resx:Resources.Checkbox_ShowPreviewWindow}" />
+        Grid.Row="1"
+        Margin="16,8,0,0"
+        IsChecked="{Binding Path=Options.ShowPreviewWindow}"
+        VerticalContentAlignment="Center"
+        Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
+        Content="{x:Static resx:Resources.Checkbox_ShowPreviewWindow}" />
 
       <!-- install options -->
-      <GroupBox
-      Grid.Row="2"
-      Margin="0,8,0,0"
-      Padding="8"
-      Header="{x:Static resx:Resources.GroupBoxHeader_InstallOptions}"
-        Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}">
-        <Grid>
-          <Grid.RowDefinitions>
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="8" />
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="8" />
-            <RowDefinition Height="auto" />
-          </Grid.RowDefinitions>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition />
-          </Grid.ColumnDefinitions>
-          <TextBlock
-        Grid.Row="0" Grid.Column="0"
-        Margin="0,0,6,0"
-        VerticalAlignment="Center"
-        Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
-        Text="{x:Static resx:Resources.Label_DependencyBehavior}" />
-          <ComboBox
-        Grid.Row="0"
-        Grid.Column="1"
-        HorizontalAlignment="Left"
-        MinHeight="22"
-        MinWidth="150"
-        AutomationProperties.Name="{x:Static resx:Resources.Label_DependencyBehavior}"
-        ItemsSource="{Binding Path=Options.DependencyBehaviors}"
-        SelectedItem="{Binding Path=Options.SelectedDependencyBehavior}" />
+      <Grid
+          Grid.Row="2"
+          Margin="16,16,0,0">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="auto" />
+          <RowDefinition Height="8" />
+          <RowDefinition Height="auto" />
+          <RowDefinition Height="8" />
+          <RowDefinition Height="auto" />
+          <RowDefinition Height="8" />
+          <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <TextBlock
+          Grid.Row="0"
+          Grid.ColumnSpan="2"
+          Margin="-16,0,0,0"
+          Text="{x:Static resx:Resources.GroupBoxHeader_InstallOptions}"
+          FontWeight="Bold">
+        </TextBlock>
+        <TextBlock
+          Grid.Row="2"
+          Grid.Column="0"
+          Margin="0,0,6,0"
+          VerticalAlignment="Center"
+          Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
+          Text="{x:Static resx:Resources.Label_DependencyBehavior}" />
+        <ComboBox
+          Grid.Row="2"
+          Grid.Column="1"
+          HorizontalAlignment="Left"
+          MinHeight="22"
+          MinWidth="150"
+          AutomationProperties.Name="{x:Static resx:Resources.Label_DependencyBehavior}"
+          ItemsSource="{Binding Path=Options.DependencyBehaviors}"
+          SelectedItem="{Binding Path=Options.SelectedDependencyBehavior}" />
 
-          <TextBlock
-        Grid.Row="2" Grid.Column="0"
-        Margin="0,0,6,0"
-        VerticalAlignment="Center"
-        Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
-        Text="{x:Static resx:Resources.Label_FileConflictAction}" />
-          <ComboBox
-        Grid.Row="2" Grid.Column="1"
-        MinHeight="22"
-        MinWidth="150"
-        HorizontalAlignment="Left"
-        AutomationProperties.Name="{x:Static resx:Resources.Label_FileConflictAction}"
-        ItemsSource="{Binding Path=Options.FileConflictActions}"
-        SelectedItem="{Binding Path=Options.SelectedFileConflictAction}" />
+        <TextBlock
+          Grid.Row="4"
+          Grid.Column="0"
+          Margin="0,0,6,0"
+          VerticalAlignment="Center"
+          Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
+          Text="{x:Static resx:Resources.Label_FileConflictAction}" />
+        <ComboBox
+          Grid.Row="4"
+          Grid.Column="1"
+          MinHeight="22"
+          MinWidth="150"
+          HorizontalAlignment="Left"
+          AutomationProperties.Name="{x:Static resx:Resources.Label_FileConflictAction}"
+          ItemsSource="{Binding Path=Options.FileConflictActions}"
+          SelectedItem="{Binding Path=Options.SelectedFileConflictAction}" />
 
-          <TextBlock Grid.Row="4" Grid.Column="0" TextWrapping="Wrap">
-        <Hyperlink
-          NavigateUri="http://docs.nuget.org/consume/package-manager-ui#install-options"
-          Style="{StaticResource HyperlinkStyle}"
-          Command="{x:Static Tools:PackageManagerControlCommands.OpenExternalLink}">
-          <Run Text="{x:Static resx:Resources.Link_LearnAboutInstallOptions}" />
-        </Hyperlink>
-          </TextBlock>
-        </Grid>
-      </GroupBox>
+        <TextBlock Grid.Row="6" Grid.Column="0" TextWrapping="Wrap">
+          <Hyperlink
+            NavigateUri="http://docs.nuget.org/consume/package-manager-ui#install-options"
+            Style="{StaticResource HyperlinkStyle}"
+            Command="{x:Static Tools:PackageManagerControlCommands.OpenExternalLink}">
+            <Run Text="{x:Static resx:Resources.Link_LearnAboutInstallOptions}" />
+          </Hyperlink>
+        </TextBlock>
+      </Grid>
 
       <!-- uninstall options -->
-      <GroupBox
-      Grid.Row="3"
-      Margin="0,12,0,0"
-      Padding="8"
-      Header="{x:Static resx:Resources.GroupBoxHeader_UninstallOptions}"
-        Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}">
-        <Grid>
-          <Grid.RowDefinitions>
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="8" />
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="8" />
-            <RowDefinition Height="auto" />
-          </Grid.RowDefinitions>
+      <Grid
+          Grid.Row="3"
+          Margin="16,16,0,0">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="auto" />
+          <RowDefinition Height="8" />
+          <RowDefinition Height="auto" />
+          <RowDefinition Height="8" />
+          <RowDefinition Height="auto" />
+          <RowDefinition Height="8" />
+          <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
 
-          <CheckBox
-        Grid.Row="0"
-        IsChecked="{Binding Path=Options.RemoveDependencies}"
-        VerticalContentAlignment="Center"
-        Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
-        Content="{x:Static resx:Resources.Checkbox_RemoveDependencies}" />
+        <TextBlock
+          Grid.Row="0"
+          Margin="-16,0,0,0"
+          Text="{x:Static resx:Resources.GroupBoxHeader_UninstallOptions}"
+          FontWeight="Bold">
+        </TextBlock>
 
-          <CheckBox
-        Grid.Row="2"
-        IsChecked="{Binding Path=Options.ForceRemove}"
-        VerticalContentAlignment="Center"
-        Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
-        Content="{x:Static resx:Resources.Checkbox_ForceRemove}" />
+        <CheckBox
+          Grid.Row="2"
+          IsChecked="{Binding Path=Options.RemoveDependencies}"
+          VerticalContentAlignment="Center"
+          Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
+          Content="{x:Static resx:Resources.Checkbox_RemoveDependencies}" />
 
-          <TextBlock Grid.Row="4" Grid.Column="1" TextWrapping="Wrap">
-        <Hyperlink
-          NavigateUri="http://docs.nuget.org/consume/package-manager-ui#uninstall-options"
-          Style="{StaticResource HyperlinkStyle}"
-          Command="{x:Static Tools:PackageManagerControlCommands.OpenExternalLink}">
-          <Run Text="{x:Static resx:Resources.Link_LearnAboutUninstallOptions}" />
-        </Hyperlink>
-          </TextBlock>
-        </Grid>
-      </GroupBox>
+        <CheckBox
+          Grid.Row="4"
+          IsChecked="{Binding Path=Options.ForceRemove}"
+          VerticalContentAlignment="Center"
+          Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
+          Content="{x:Static resx:Resources.Checkbox_ForceRemove}" />
+
+        <TextBlock
+          Grid.Row="6"
+          TextWrapping="Wrap">
+          <Hyperlink
+            NavigateUri="http://docs.nuget.org/consume/package-manager-ui#uninstall-options"
+            Style="{StaticResource HyperlinkStyle}"
+            Command="{x:Static Tools:PackageManagerControlCommands.OpenExternalLink}">
+            <Run Text="{x:Static resx:Resources.Link_LearnAboutUninstallOptions}" />
+          </Hyperlink>
+        </TextBlock>
+      </Grid>
     </Grid>
   </Expander>
 </UserControl>

@@ -182,6 +182,8 @@ namespace NuGet.PackageManagement.UI
             _detailModel.Options.RemoveDependencies = settings.RemoveDependencies;
             _detailModel.Options.ForceRemove = settings.ForceRemove;
             _topPanel.CheckboxPrerelease.IsChecked = settings.IncludePrerelease;
+            _packageDetail._optionsControl.IsExpanded = settings.OptionsExpanded;
+            _packageDetail._solutionView.RestoreUserSettings(settings);
 
             SetSelectedDepencyBehavior(dependencySetting ?? settings.DependencyBehavior);
 
@@ -274,8 +276,10 @@ namespace NuGet.PackageManagement.UI
             settings.ForceRemove = _detailModel.Options.ForceRemove;
             settings.DependencyBehavior = _detailModel.Options.SelectedDependencyBehavior.Behavior;
             settings.FileConflictAction = _detailModel.Options.SelectedFileConflictAction.Action;
-            settings.IncludePrerelease = _topPanel.CheckboxPrerelease.IsChecked == true;
+            settings.IncludePrerelease = _topPanel.CheckboxPrerelease.IsChecked == true;            
             settings.SelectedFilter = _topPanel.Filter;
+            settings.OptionsExpanded = _packageDetail._optionsControl.IsExpanded;
+            _packageDetail._solutionView.SaveSettings(settings);
 
             Model.Context.AddSettings(GetSettingsKey(), settings);
         }
@@ -847,6 +851,7 @@ namespace NuGet.PackageManagement.UI
             RemoveRestoreBar();
             RemoveRestartBar();
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged -= Sources_PackageSourcesChanged;
+            _detailModel.CleanUp();
             _packageList.SelectionChanged -= PackageList_SelectionChanged;
         }
 

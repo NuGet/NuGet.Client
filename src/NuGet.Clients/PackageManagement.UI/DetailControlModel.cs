@@ -35,7 +35,7 @@ namespace NuGet.PackageManagement.UI
         protected Filter _filter;
 
         private Dictionary<NuGetVersion, DetailedPackageMetadata> _metadataDict;
-
+        
         protected DetailControlModel(IEnumerable<NuGetProject> nugetProjects)
         {
             _nugetProjects = nugetProjects;
@@ -43,6 +43,13 @@ namespace NuGet.PackageManagement.UI
 
             // Show dependency behavior and file conflict options if any of the projects are non-build integrated
             _options.ShowClassicOptions = nugetProjects.Any(project => !(project is BuildIntegratedNuGetProject));
+        }
+
+        /// <summary>
+        /// The method is called when the associated DocumentWindow is closed.
+        /// </summary>
+        public virtual void CleanUp()
+        {
         }
 
         /// <summary>
@@ -189,20 +196,20 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        protected abstract void CreateVersions();        
-        
+        protected abstract void CreateVersions();
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
-        protected List<VersionForDisplay> _versions;
+        protected List<DisplayVersion> _versions;
 
         // The list of versions that can be installed
-        public List<VersionForDisplay> Versions
+        public List<DisplayVersion> Versions
         {
             get { return _versions; }
         }
 
-        private VersionForDisplay _selectedVersion;
+        private DisplayVersion _selectedVersion;
 
-        public VersionForDisplay SelectedVersion
+        public DisplayVersion SelectedVersion
         {
             get { return _selectedVersion; }
             set
@@ -212,8 +219,9 @@ namespace NuGet.PackageManagement.UI
                     _selectedVersion = value;
 
                     DetailedPackageMetadata packageMetadata;
-                    if (_metadataDict != null
-                        && _metadataDict.TryGetValue(_selectedVersion.Version, out packageMetadata))
+                    if (_metadataDict != null && 
+                        _selectedVersion != null &&
+                        _metadataDict.TryGetValue(_selectedVersion.Version, out packageMetadata))
                     {
                         PackageMetadata = packageMetadata;
                     }
@@ -222,14 +230,9 @@ namespace NuGet.PackageManagement.UI
                         PackageMetadata = null;
                     }
 
-                    OnSelectedVersionChanged();
                     OnPropertyChanged(nameof(SelectedVersion));
                 }
             }
-        }
-
-        protected virtual void OnSelectedVersionChanged()
-        {
         }
 
         // Calculate the version to select among _versions and select it
@@ -241,7 +244,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            VersionForDisplay versionToSelect = _versions
+            DisplayVersion versionToSelect = _versions
                 .Where(v => v != null && v.Version.Equals(_searchResultPackage.Version))
                 .FirstOrDefault();
             if (versionToSelect == null)

@@ -17,6 +17,17 @@ namespace NuGet.PackageManagement.UI
             InitializeComponent();
         }
 
+        public bool IsExpanded
+        {
+            get
+            {
+                return _expander.IsExpanded;
+            }
+            set
+            {
+                _expander.IsExpanded = value;
+            }
+        }
         private void ExecuteOpenExternalLink(object sender, ExecutedRoutedEventArgs e)
         {
             var hyperlink = e.OriginalSource as Hyperlink;

@@ -43,10 +43,11 @@ namespace NuGet.PackageManagement.UI
             UpdateInstalledVersions();
         }
 
-        // the list of installed versions of the current selected package.
-        private ICollection<NuGetVersion> _installedVersions;
+        // The text describing the installed versions information, such as "not installed",
+        // "multiple versions installed" etc.
+        private string _installedVersions;
 
-        public ICollection<NuGetVersion> InstalledVersions
+        public string InstalledVersions
         {
             get
             {
@@ -78,7 +79,24 @@ namespace NuGet.PackageManagement.UI
             }
 
             InstalledVersionsCount = hash.Count;
-            InstalledVersions = hash;
+
+            if (hash.Count == 0)
+            {
+                InstalledVersions = Resources.Text_NotInstalled;
+            }
+            else if (hash.Count == 1)
+            {
+                var displayVersion = new DisplayVersion(
+                    hash.First(),
+                    string.Empty);
+                InstalledVersions = displayVersion.ToString();
+            }
+            else
+            {
+                InstalledVersions = Resources.Text_MultipleVersionsInstalled;
+            }
+
+            UpdateCanInstallAndCanUninstall();
         }
 
         private NuGetVersion GetInstalledVersion(NuGetProject project, string packageId)
@@ -119,7 +137,7 @@ namespace NuGet.PackageManagement.UI
 
         protected override void CreateVersions()
         {
-            _versions = new List<VersionForDisplay>();
+            _versions = new List<DisplayVersion>();
             var allVersions = _allPackageVersions.OrderByDescending(v => v);
             var latestPrerelease = allVersions.FirstOrDefault(v => v.IsPrerelease);
             var latestStableVersion = allVersions.FirstOrDefault(v => !v.IsPrerelease);
@@ -127,12 +145,12 @@ namespace NuGet.PackageManagement.UI
             if (latestPrerelease != null
                 && (latestStableVersion == null || latestPrerelease > latestStableVersion))
             {
-                _versions.Add(new VersionForDisplay(latestPrerelease, Resources.Version_LatestPrerelease));
+                _versions.Add(new DisplayVersion(latestPrerelease, Resources.Version_LatestPrerelease));
             }
 
             if (latestStableVersion != null)
             {
-                _versions.Add(new VersionForDisplay(latestStableVersion, Resources.Version_LatestStable));
+                _versions.Add(new DisplayVersion(latestStableVersion, Resources.Version_LatestStable));
             }
 
             // add a separator
@@ -143,7 +161,7 @@ namespace NuGet.PackageManagement.UI
 
             foreach (var version in allVersions)
             {
-                _versions.Add(new VersionForDisplay(version, string.Empty));
+                _versions.Add(new DisplayVersion(version, string.Empty));
             }
 
             SelectVersion();
@@ -174,12 +192,45 @@ namespace NuGet.PackageManagement.UI
                 base(projects)
         {
             _solutionManager = solutionManager;
-            _solutionManager.NuGetProjectAdded += (_, __) => CreateProjectLists();
-            _solutionManager.NuGetProjectRemoved += (_, __) => CreateProjectLists();
-            _solutionManager.NuGetProjectRenamed += (_, __) => CreateProjectLists();
+            _solutionManager.NuGetProjectAdded += SolutionProjectChanged;
+            _solutionManager.NuGetProjectRemoved += SolutionProjectChanged;
+            _solutionManager.NuGetProjectRenamed += SolutionProjectChanged;
+
+            // when the SelectedVersion is changed, we need to update CanInstall
+            // and CanUninstall.
+            PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(SelectedVersion))
+                {
+                    UpdateCanInstallAndCanUninstall();
+                }
+            };
+
             _packageManagerProviders = packageManagerProviders;
 
             CreateProjectLists();
+        }
+
+        // The event handler that is called when a project is added, removed or renamed.
+        private void SolutionProjectChanged(object sender, NuGetProjectEventArgs e)
+        {
+            CreateProjectLists();
+        }
+
+        public override void CleanUp()
+        {
+            // unhook event handlers
+            _solutionManager.NuGetProjectAdded -= SolutionProjectChanged;
+            _solutionManager.NuGetProjectRemoved -= SolutionProjectChanged;
+            _solutionManager.NuGetProjectRenamed -= SolutionProjectChanged;
+
+            if (Projects != null)
+            {
+                foreach (var project in Projects)
+                {
+                    project.SelectedChanged -= Project_SelectedChanged;
+                }
+            }
         }
 
         // Creates the project lists. Also called after a project is added/removed/renamed.
@@ -264,12 +315,7 @@ namespace NuGet.PackageManagement.UI
         private void Project_SelectedChanged(object sender, EventArgs e)
         {
             UpdateSelectCheckBoxState();
-            UpdateCanInstallAndUninstall();
-        }
-
-        protected override void OnSelectedVersionChanged()
-        {
-            UpdateCanInstallAndUninstall();
+            UpdateCanInstallAndCanUninstall();
         }
 
         private void UpdateSelectCheckBoxState()
@@ -292,7 +338,7 @@ namespace NuGet.PackageManagement.UI
             _updatingSelectCheckBoxState = false;
         }
 
-        private void UpdateCanInstallAndUninstall()
+        private void UpdateCanInstallAndCanUninstall()
         {
             CanUninstall = Projects.Any(project => project.IsSelected && project.InstalledVersion != null);
 
@@ -313,7 +359,7 @@ namespace NuGet.PackageManagement.UI
                 project.IsSelected = true;
             }
 
-            UpdateCanInstallAndUninstall();
+            UpdateCanInstallAndCanUninstall();
         }
 
         public void UnselectAllProjects()
@@ -328,7 +374,7 @@ namespace NuGet.PackageManagement.UI
                 project.IsSelected = false;
             }
 
-            UpdateCanInstallAndUninstall();
+            UpdateCanInstallAndCanUninstall();
         }
 
         private static bool IsInstalled(NuGetProject project, string id)

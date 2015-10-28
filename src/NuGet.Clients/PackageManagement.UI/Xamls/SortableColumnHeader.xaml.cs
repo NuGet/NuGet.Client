@@ -52,18 +52,18 @@ namespace NuGet.PackageManagement.UI
                 // update the sort direction indicator
                 if (_sortDirection == null)
                 {
-                    _sortDirectionIndicator.Text = "";
-                    _sortDirectionIndicator.Visibility = Visibility.Hidden;
+                    _downArrow.Visibility = Visibility.Hidden;
+                    _upArrow.Visibility = Visibility.Hidden;
                 }
                 else if (_sortDirection == ListSortDirection.Ascending)
                 {
-                    _sortDirectionIndicator.Text = "▴";
-                    _sortDirectionIndicator.Visibility = Visibility.Visible;
+                    _downArrow.Visibility = Visibility.Hidden;
+                    _upArrow.Visibility = Visibility.Visible;
                 }
                 else
                 {
-                    _sortDirectionIndicator.Text = "▾";
-                    _sortDirectionIndicator.Visibility = Visibility.Visible;
+                    _downArrow.Visibility = Visibility.Visible;
+                    _upArrow.Visibility = Visibility.Hidden;
                 }
             }
         }

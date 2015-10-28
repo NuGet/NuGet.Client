@@ -21,18 +21,37 @@ namespace NuGet.PackageManagement.UI
             this.DataContextChanged += PackageManagerProvidersLabel_DataContextChanged;
         }
 
+        private string _formatString;
+
         public string FormatString
         {
-            get;
-            set;
+            get
+            {
+                return _formatString;
+            }
+            set
+            {
+                if (_formatString != value)
+                {
+                    _formatString = value;
+                    UpdateControl();
+                }
+            }
         }
 
         private void PackageManagerProvidersLabel_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
+            UpdateControl();
+        }
+
+        private void UpdateControl()
+        {
             _textBlock.Inlines.Clear();
 
             var providers = DataContext as AlternativePackageManagerProviders;
-            if (providers == null || providers.PackageManagerProviders.IsEmpty())
+            if (providers == null ||
+                string.IsNullOrEmpty(FormatString) ||
+                providers.PackageManagerProviders.IsEmpty())
             {
                 Visibility = Visibility.Collapsed;
                 return;
@@ -41,21 +60,17 @@ namespace NuGet.PackageManagement.UI
             // Processing the format string ourselves. We only support "{0}".
             string begin = string.Empty;
             string end = string.Empty;
-            if (!string.IsNullOrEmpty(FormatString))
+            var index = FormatString.IndexOf("{0}");
+            if (index == -1)
             {
-                var index = FormatString.IndexOf("{0}");
-
-                if (index == -1)
-                {
-                    // Cannot find "{0}".
-                    Debug.Fail("Label_ConsiderUsing does not contain {0}");
-                    begin = FormatString;
-                }
-                else
-                {
-                    begin = FormatString.Substring(0, index);
-                    end = FormatString.Substring(index + "{0}".Length);
-                }
+                // Cannot find "{0}".
+                Debug.Fail("Label_ConsiderUsing does not contain {0}");
+                begin = FormatString;
+            }
+            else
+            {
+                begin = FormatString.Substring(0, index);
+                end = FormatString.Substring(index + "{0}".Length);
             }
 
             _textBlock.Inlines.Add(new Run(begin));

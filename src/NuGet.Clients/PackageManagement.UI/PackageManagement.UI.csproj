@@ -91,17 +91,16 @@
     </Compile>
     <Compile Include="Common\TriggerEventMethod.cs" />
     <Compile Include="Constants.cs" />
-    <Compile Include="Converters\AuthorAndDownloadCountToStringConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\DownloadCountToVisibilityConverter.cs" />
     <Compile Include="Converters\EnumerableToVisibilityConverter.cs" />
     <Compile Include="Converters\FontSizeConverter.cs" />
     <Compile Include="Converters\IconUrlToVisibilityConverter.cs" />
     <Compile Include="Converters\InstalledVersionsCountConverter.cs" />
-    <Compile Include="Converters\InstalledVersionsToTextConverter.cs" />
     <Compile Include="Converters\InverseNullToVisibilityConverter.cs" />
     <Compile Include="Converters\NuGetFrameworkToStringConverter.cs" />
     <Compile Include="Converters\NuGetFrameworkToVisibilityConverter.cs" />
+    <Compile Include="Converters\NullToBooleanConverter.cs" />
     <Compile Include="Converters\StringFormatConverter.cs" />
     <Compile Include="Converters\StyleKeyConverter.cs" />
     <Compile Include="Converters\SummaryToFontStyleConverter.cs" />
@@ -166,6 +165,9 @@
     <Compile Include="VsDialogWindow.cs" />
     <Compile Include="Xamls\ActionsAndVersions.xaml.cs">
       <DependentUpon>ActionsAndVersions.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Xamls\AuthorAndDownloadCount.xaml.cs">
+      <DependentUpon>AuthorAndDownloadCount.xaml</DependentUpon>
     </Compile>
     <Compile Include="Xamls\PackageManagerProvidersLabel.xaml.cs">
       <DependentUpon>PackageManagerProvidersLabel.xaml</DependentUpon>
@@ -247,6 +249,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Xamls\ActionsAndVersions.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Xamls\AuthorAndDownloadCount.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

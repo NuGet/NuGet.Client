@@ -51,7 +51,7 @@ namespace NuGet.Protocol.Core.v3
         public static readonly string LicenseUrl = "licenseUrl";
         public static readonly string ProjectUrl = "projectUrl";
         public static readonly string Tags = "tags";
-        public static readonly string DownloadCount = "downloadCount";
+        public static readonly string DownloadCount = "totalDownloads";
         public static readonly string Published = "published";
         public static readonly string RequireLicenseAcceptance = "requireLicenseAcceptance";
         public static readonly string DependencyGroups = "dependencyGroups";
