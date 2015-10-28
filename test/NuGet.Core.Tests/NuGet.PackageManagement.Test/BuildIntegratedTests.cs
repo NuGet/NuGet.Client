@@ -225,6 +225,52 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public async Task TestPacManBuildIntegratedInstallPackageWithReadMeFile()
+        {
+            // Arrange
+            var packageIdentity = new PackageIdentity("elmah", new NuGetVersion("1.2.2"));
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
+            var testSolutionManager = new TestSolutionManager();
+            var testSettings = new Configuration.NullSettings();
+            var deleteOnRestartManager = new TestDeleteOnRestartManager();
+            var nuGetPackageManager = new NuGetPackageManager(
+                sourceRepositoryProvider,
+                testSettings,
+                testSolutionManager,
+                deleteOnRestartManager);
+
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+            var token = CancellationToken.None;
+
+            CreateConfigJsonNet452(randomConfig);
+
+            var projectTargetFramework = NuGetFramework.Parse("net452");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
+            testNuGetProjectContext.TestExecutionContext = new TestExecutionContext(packageIdentity);
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, testNuGetProjectContext, randomProjectFolderPath);
+            var buildIntegratedProject = new BuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+
+            string message = string.Empty;
+
+            // Act
+            // Set the direct install on the execution context of INuGetProjectContext before installing a package
+            await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, packageIdentity,
+                new ResolutionContext(), testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
+
+            var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
+            var lockFile = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+
+            // Assert
+            Assert.Equal(packageIdentity, installedPackages.First().PackageIdentity);
+            Assert.True(File.Exists(lockFile));
+            Assert.Equal(1, testNuGetProjectContext.TestExecutionContext.FilesOpened.Count);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomProjectFolderPath);
+        }
+
+        [Fact]
         public async Task TestPacManBuildIntegratedInstallPackage()
         {
             // Arrange
@@ -1328,8 +1374,6 @@ namespace NuGet.Test
                 json["dependencies"] = new JObject();
 
                 json["frameworks"] = frameworks;
-
-                json.Add("runtimes", JObject.Parse("{ \"win-any\": { } }"));
 
                 return json;
             }
