@@ -18,6 +18,51 @@ namespace NuGet.Commands.Test
         private ConcurrentBag<string> _testFolders = new ConcurrentBag<string>();
 
         [Fact]
+        public async Task UWPRestore_VerifySameResultWhenRestoringWithLocalPackages()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://api.nuget.org/v3/index.json"));
+            var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+            var projectDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(packagesDir);
+            _testFolders.Add(projectDir);
+
+            var configJson = JObject.Parse(@"{
+                ""runtimes"": {
+                    ""win7-x86"": { }
+                    },
+                ""frameworks"": {
+                ""dnxcore50"": {
+                    ""dependencies"": {
+                    ""Microsoft.NETCore"": ""5.0.1-beta-23225""
+                    },
+                    ""imports"": ""portable-net451+win81""
+                }
+                }
+            }");
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var lockFileFormat = new LockFileFormat();
+            var logger = new TestLogger();
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            var result2 = await command.ExecuteAsync();
+
+            // Assert
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+            Assert.Equal(result.LockFile, result2.LockFile);
+        }
+
+        [Fact]
         public async Task UWPRestore_SystemDependencyVersionConflict()
         {
             // Arrange

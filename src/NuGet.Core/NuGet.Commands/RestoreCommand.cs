@@ -332,6 +332,9 @@ namespace NuGet.Commands
                     _request.MaxDegreeOfConcurrency,
                     token);
 
+            // Clear the local cache for newly installed packages
+            localRepository.ClearCacheForIds(allInstalledPackages.Select(package => package.Name));
+
             // Resolve runtime dependencies
             var runtimeGraphs = new List<RestoreTargetGraph>();
             if (runtimesByFramework.Count > 0)
@@ -375,6 +378,9 @@ namespace NuGet.Commands
                     allInstalledPackages,
                     _request.MaxDegreeOfConcurrency,
                     token);
+
+                // Clear the local cache for newly installed packages
+                localRepository.ClearCacheForIds(allInstalledPackages.Select(package => package.Name));
             }
 
             return Tuple.Create(true, graphs, allRuntimes);

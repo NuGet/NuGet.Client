@@ -76,6 +76,21 @@ namespace NuGet.Repositories
                 });
         }
 
+        /// <summary>
+        /// Remove cached results for the given ids. This is needed
+        /// after installing a new package.
+        /// </summary>
+        public void ClearCacheForIds(IEnumerable<string> packageIds)
+        {
+            lock (_cache)
+            {
+                foreach (var packageId in packageIds)
+                {
+                    _cache.Remove(packageId);
+                }
+            }
+        }
+
         private IEnumerable<LocalPackageInfo> GetOrAdd(string packageId, Func<string, List<LocalPackageInfo>> factory)
         {
             lock (_cache)
