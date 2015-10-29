@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine
@@ -24,7 +25,7 @@ namespace NuGet.CommandLine
         {
             _packageSourceProvider = packageSourceProvider;
 
-            _resourceProviders = Repository.Provider.GetCommandline(logger);
+            _resourceProviders = Repository.Provider.GetCommandline(logger).ToList();
 
             // Create repositories
             foreach (var source in _packageSourceProvider.LoadPackageSources())

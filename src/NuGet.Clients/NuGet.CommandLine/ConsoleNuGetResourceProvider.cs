@@ -24,10 +24,10 @@ namespace NuGet.CommandLine
 
             if (resource.Item1)
             {
-                var downloadResource = resource.Item2 as DownloadResource;
-                if (downloadResource != null)
+                var httpClientEvents = resource.Item2 as Protocol.Core.Types.IHttpClientEvents;
+                if (httpClientEvents != null)
                 {
-                    downloadResource.SendingRequest += OnSendingRequest;
+                    httpClientEvents.SendingRequest += OnSendingRequest;
                 }
             }
 
