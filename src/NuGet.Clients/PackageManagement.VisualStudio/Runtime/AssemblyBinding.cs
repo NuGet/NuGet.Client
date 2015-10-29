@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Xml.Linq;
 using NuGet.ProjectManagement;
 
@@ -49,12 +48,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 // point to the new version
                 return _oldVersion ?? "0.0.0.0-" + NewVersion;
             }
+
             set { _oldVersion = value; }
         }
 
-        public Version AssemblyNewVersion { get; private set; }
+        public Version AssemblyNewVersion { get; }
 
-        // These properties aren't meant for use, just used for round tripping existing 
+        // These properties aren't meant for use, just used for round tripping existing
         // <dependentAssembly /> elements
         public string CodeBaseHref { get; private set; }
 
@@ -65,28 +65,57 @@ namespace NuGet.PackageManagement.VisualStudio
         public XElement ToXElement()
         {
             // We're going to generate the fragment below.
-            //<dependentAssembly> 
-            //   <assemblyIdentity name="{Name}" 
-            //                     publicKeyToken="{PublicKeyToken}" 
-            //                     culture="{Culture}" 
+            //<dependentAssembly>
+            //   <assemblyIdentity name="{Name}"
+            //                     publicKeyToken="{PublicKeyToken}"
+            //                     culture="{Culture}"
             //                     processorArchitecture="{ProcessorArchitecture}" />
             //
-            //   <bindingRedirect oldVersion="{OldVersion}" 
+            //   <bindingRedirect oldVersion="{OldVersion}"
             //                    newVersion="{NewVersion}"/>
             //
             //   <publisherPolicy apply="{PublisherPolicy}" />
             //
             //   <codeBase href="{CodeBaseHref}" version="{CodeBaseVersion}" />
             //</dependentAssembly>
-            XElement dependenyAssembly = new XElement(GetQualifiedName("dependentAssembly"),
-                new XElement(GetQualifiedName("assemblyIdentity"),
-                    new XAttribute("name", Name),
-                    new XAttribute("publicKeyToken", PublicKeyToken),
-                    new XAttribute("culture", Culture),
-                    new XAttribute("processorArchitecture", ProcessorArchitecture ?? String.Empty)),
-                new XElement(GetQualifiedName("bindingRedirect"),
-                    new XAttribute("oldVersion", OldVersion),
-                    new XAttribute("newVersion", NewVersion)));
+
+            var assemblyIdentity = new XElement(GetQualifiedName("assemblyIdentity"));
+
+            if (Name != null)
+            {
+                assemblyIdentity.SetAttributeValue("name", Name);
+            }
+
+            if (PublicKeyToken != null)
+            {
+                assemblyIdentity.SetAttributeValue("publicKeyToken", PublicKeyToken);
+            }
+
+            if (Culture != null)
+            {
+                assemblyIdentity.SetAttributeValue("culture", Culture);
+            }
+
+            if (ProcessorArchitecture != null)
+            {
+                assemblyIdentity.SetAttributeValue("processorArchitecture", ProcessorArchitecture);
+            }
+
+            var bindingRedirect = new XElement(GetQualifiedName("bindingRedirect"));
+
+            if (OldVersion != null)
+            {
+                bindingRedirect.SetAttributeValue("oldVersion", OldVersion);
+            }
+
+            if (NewVersion != null)
+            {
+                bindingRedirect.SetAttributeValue("newVersion", NewVersion);
+            }
+
+            var dependenyAssembly = new XElement(GetQualifiedName("dependentAssembly"),
+                assemblyIdentity,
+                bindingRedirect);
 
             if (!String.IsNullOrEmpty(PublisherPolicy))
             {
@@ -96,10 +125,19 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (!String.IsNullOrEmpty(CodeBaseHref))
             {
-                Debug.Assert(!String.IsNullOrEmpty(CodeBaseVersion));
-                dependenyAssembly.Add(new XElement(GetQualifiedName("codeBase"),
-                    new XAttribute("href", CodeBaseHref),
-                    new XAttribute("version", CodeBaseVersion)));
+                var element = new XElement(GetQualifiedName("codeBase"));
+
+                if (CodeBaseHref != null)
+                {
+                    element.SetAttributeValue("href", CodeBaseHref);
+                }
+
+                if (CodeBaseVersion != null)
+                {
+                    element.SetAttributeValue("version", CodeBaseVersion);
+                }
+
+                dependenyAssembly.Add(element);
             }
 
             // Remove empty attributes
@@ -129,7 +167,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (assemblyIdentity != null)
             {
                 // <assemblyIdentity /> http://msdn.microsoft.com/en-us/library/b0yt6ck0.aspx
-                binding.Name = assemblyIdentity.Attribute("name").Value;
+                binding.Name = assemblyIdentity.GetOptionalAttributeValue("name");
                 binding.Culture = assemblyIdentity.GetOptionalAttributeValue("culture");
                 binding.PublicKeyToken = assemblyIdentity.GetOptionalAttributeValue("publicKeyToken");
                 binding.ProcessorArchitecture = assemblyIdentity.GetOptionalAttributeValue("processorArchitecture");
@@ -139,23 +177,23 @@ namespace NuGet.PackageManagement.VisualStudio
             if (bindingRedirect != null)
             {
                 // <bindingRedirect /> http://msdn.microsoft.com/en-us/library/eftw1fys.aspx
-                binding.OldVersion = bindingRedirect.Attribute("oldVersion").Value;
-                binding.NewVersion = bindingRedirect.Attribute("newVersion").Value;
+                binding.OldVersion = bindingRedirect.GetOptionalAttributeValue("oldVersion");
+                binding.NewVersion = bindingRedirect.GetOptionalAttributeValue("newVersion");
             }
 
             XElement codeBase = dependentAssembly.Element(GetQualifiedName("codeBase"));
             if (codeBase != null)
             {
                 // <codeBase /> http://msdn.microsoft.com/en-us/library/efs781xb.aspx
-                binding.CodeBaseHref = codeBase.Attribute("href").Value;
-                binding.CodeBaseVersion = codeBase.Attribute("version").Value;
+                binding.CodeBaseHref = codeBase.GetOptionalAttributeValue("href");
+                binding.CodeBaseVersion = codeBase.GetOptionalAttributeValue("version");
             }
 
             XElement publisherPolicy = dependentAssembly.Element(GetQualifiedName("publisherPolicy"));
             if (publisherPolicy != null)
             {
                 // <publisherPolicy /> http://msdn.microsoft.com/en-us/library/cf9025zt.aspx
-                binding.PublisherPolicy = publisherPolicy.Attribute("apply").Value;
+                binding.PublisherPolicy = publisherPolicy.GetOptionalAttributeValue("apply");
             }
 
             return binding;

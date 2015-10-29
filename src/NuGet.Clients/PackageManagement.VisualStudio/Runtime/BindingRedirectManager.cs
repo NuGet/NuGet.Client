@@ -268,8 +268,8 @@ namespace NuGet.PackageManagement.VisualStudio
             // Since we've successfully parsed this node, it has to be valid and this child must exist.
             if (existingBindingRedirectElement != null)
             {
-                existingBindingRedirectElement.Attribute("oldVersion").SetValue(newBindingRedirect.OldVersion);
-                existingBindingRedirectElement.Attribute("newVersion").SetValue(newBindingRedirect.NewVersion);
+                existingBindingRedirectElement.SetAttributeValue(XName.Get("oldVersion"), newBindingRedirect.OldVersion);
+                existingBindingRedirectElement.SetAttributeValue(XName.Get("newVersion"), newBindingRedirect.NewVersion);
             }
             else
             {
