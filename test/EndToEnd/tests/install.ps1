@@ -984,6 +984,7 @@ function Test-InstallPackageThrowWithLockedConfigFileIfSuccessRequired
 
 	$a = New-WebSite
 	$webConfigPath = (Get-ProjectItemPath $a web.config)
+    $projectDir = split-path $webConfigPath
 
 	try
 	{
@@ -995,7 +996,7 @@ function Test-InstallPackageThrowWithLockedConfigFileIfSuccessRequired
 		$stream.Lock(0, 10)
 
 		# Assert
-		$expectedErrorMessage = "Failed to load '$webConfigPath', while updating binding redirects. The process cannot access the file '$webConfigPath' because it is being used by another process."
+        $expectedErrorMessage = "Failed to update binding redirects for $projectDir : Failed to load '$webConfigPath', while updating binding redirects. The process cannot access the file '$webConfigPath' because it is being used by another process."
 		Assert-Throws { $a | Update-Package F -Safe -Source $context.RepositoryPath } $expectedErrorMessage
 	}
 	finally
