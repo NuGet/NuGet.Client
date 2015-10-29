@@ -68,7 +68,7 @@ namespace NuGet.Protocol.Core.v2
             });
         }
 
-        private static DownloadResourceResult DownloadFromUrl(
+        private DownloadResourceResult DownloadFromUrl(
             SourcePackageDependencyInfo package,
             DataServicePackageRepository repository,
             CancellationToken token)
@@ -127,7 +127,7 @@ namespace NuGet.Protocol.Core.v2
             return null;
         }
 
-        private static DownloadResourceResult DownloadFromIdentity(
+        private DownloadResourceResult DownloadFromIdentity(
             PackageIdentity identity,
             IPackageRepository repository,
             CancellationToken token)
@@ -203,7 +203,7 @@ namespace NuGet.Protocol.Core.v2
             return package != null && package.GetHash(hashProvider).Equals(hash, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static IPackage DownloadToMachineCache(
+        private IPackage DownloadToMachineCache(
             IPackageCacheRepository cacheRepository,
             PackageIdentity package,
             DataServicePackageRepository repository,
@@ -229,11 +229,17 @@ namespace NuGet.Protocol.Core.v2
                 token.ThrowIfCancellationRequested();
             };
 
+            EventHandler<WebRequestEventArgs> sendingRequestHandler = (sender, webRequestEventArgs) =>
+            {
+                RaiseSendingRequest(webRequestEventArgs.Request.RequestUri, webRequestEventArgs.Request.Method);
+            };
+
             Action<Stream> downloadAction = (stream) =>
             {
                 try
                 {
                     repository.PackageDownloader.ProgressAvailable += progressHandler;
+                    repository.PackageDownloader.SendingRequest += sendingRequestHandler;
                     repository.PackageDownloader.DownloadPackage(downloadClient, packageName, stream);
                 }
                 catch (OperationCanceledException)
@@ -253,6 +259,7 @@ namespace NuGet.Protocol.Core.v2
                 finally
                 {
                     repository.PackageDownloader.ProgressAvailable -= progressHandler;
+                    repository.PackageDownloader.SendingRequest -= sendingRequestHandler;
                 }
             };
 

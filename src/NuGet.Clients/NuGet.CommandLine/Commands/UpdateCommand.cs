@@ -295,7 +295,7 @@ namespace NuGet.CommandLine
 
         private CommandLineSourceRepositoryProvider GetSourceRepositoryProvider()
         {
-            var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
+            var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider, Console);
             return sourceRepositoryProvider;
         }
 

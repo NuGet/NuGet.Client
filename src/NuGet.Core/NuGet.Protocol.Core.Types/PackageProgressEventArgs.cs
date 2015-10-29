@@ -11,30 +11,33 @@ namespace NuGet.Protocol.Core.Types
     {
         private readonly PackageIdentity _identity;
         private readonly PackageSource _source;
-        private readonly double _complete;
+        private readonly string _operation;
+        private readonly double _progressPercentage;
 
         /// <summary>
         /// The status of a package action.
         /// </summary>
         /// <param name="identity">package identity</param>
         /// <param name="source">repository source or null</param>
-        /// <param name="complete">0.0 - 1.0</param>
-        public PackageProgressEventArgs(PackageIdentity identity, PackageSource source, double complete)
+        /// <param name="operation">The package action.</param>
+        /// <param name="progressPercentage">0.0 - 1.0</param>
+        public PackageProgressEventArgs(PackageIdentity identity, PackageSource source, string operation, double progressPercentage)
         {
-            if (complete < 0
-                || complete > 1)
+            if (progressPercentage < 0
+                || progressPercentage > 1)
             {
                 throw new ArgumentOutOfRangeException();
             }
 
             if (identity == null)
             {
-                throw new ArgumentNullException("identity");
+                throw new ArgumentNullException(nameof(identity));
             }
 
             _identity = identity;
             _source = source;
-            _complete = complete;
+            _operation = operation;
+            _progressPercentage = progressPercentage;
         }
 
         public PackageIdentity PackageIdentity
@@ -50,9 +53,9 @@ namespace NuGet.Protocol.Core.Types
         /// <summary>
         /// Completion - 0.0 - 1.0
         /// </summary>
-        public double Complete
+        public double ProgressPercentage
         {
-            get { return _complete; }
+            get { return _progressPercentage; }
         }
 
         /// <summary>
@@ -60,12 +63,17 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         public bool IsComplete
         {
-            get { return _complete == 1; }
+            get { return _progressPercentage == 1; }
         }
 
         public bool HasPackageSource
         {
             get { return PackageSource != null; }
+        }
+
+        public string Operation
+        {
+            get { return _operation; }
         }
     }
 }

@@ -136,6 +136,7 @@ namespace NuGet.Protocol.Core.v3
                 return packageFromGlobalPackages;
             }
 
+            RaiseSendingRequest(uri, "GET");
             using (var packageStream = await _client.GetStreamAsync(uri))
             {
                 var downloadResult = await GlobalPackagesFolderUtility.AddPackageAsync(identity,

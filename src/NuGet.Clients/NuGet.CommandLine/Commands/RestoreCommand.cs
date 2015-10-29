@@ -292,7 +292,7 @@ namespace NuGet.CommandLine
 
         private CommandLineSourceRepositoryProvider GetSourceRepositoryProvider()
         {
-            return new CommandLineSourceRepositoryProvider(SourceProvider);
+            return new CommandLineSourceRepositoryProvider(SourceProvider, Console);
         }
 
         private void ReadSettings(PackageRestoreInputs packageRestoreInputs)
@@ -329,7 +329,7 @@ namespace NuGet.CommandLine
             ReadSettings(packageRestoreInputs);
             var packagesFolderPath = GetPackagesFolder(packageRestoreInputs);
 
-            var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
+            var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider, Console);
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, packagesFolderPath);
 
             var installedPackageReferences = new HashSet<Packaging.PackageReference>(new PackageReferenceComparer());

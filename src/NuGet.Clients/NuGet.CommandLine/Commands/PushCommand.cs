@@ -72,7 +72,7 @@ namespace NuGet.CommandLine
         {
             var packageSource = new Configuration.PackageSource(source);
 
-            var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
+            var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider, Console);
 
             var sourceRepository = sourceRepositoryProvider.CreateRepository(packageSource);
             var pushCommandResource = await sourceRepository.GetResourceAsync<PushCommandResource>();
