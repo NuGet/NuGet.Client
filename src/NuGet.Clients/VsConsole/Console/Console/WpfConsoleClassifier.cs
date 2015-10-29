@@ -171,8 +171,22 @@ namespace NuGetConsole.Implementation.Console
                 // Check color spans
                 foreach (var t in _colorSpans.Overlap(span))
                 {
+                    var spanStart = t.Item1.Start;
+                    var spanLength = t.Item1.Length;
+                    var classificationType = t.Item2;
+
+                    // snapshot's length could be lower than spanStart + spanLength,
+                    // and if so, SnapshotSpan constructor will throw ArgumentOutOfRangeException.
+                    // We compute constrainedLength to overcome this problem.
+                    int constrainedLength = spanLength;
+                    if (spanStart + spanLength > snapshot.Length)
+                    {
+                        constrainedLength = snapshot.Length - spanStart;
+                    }
+
+                    var snapshotSpan = new SnapshotSpan(snapshot, spanStart, constrainedLength);
                     classificationSpans.Add(new ClassificationSpan(
-                        new SnapshotSpan(snapshot, t.Item1), t.Item2));
+                        snapshotSpan, classificationType));
                 }
             }
             return classificationSpans;
