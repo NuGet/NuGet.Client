@@ -9,6 +9,7 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using NuGet.Common;
+using NuGet.Logging;
 
 namespace NuGet.CommandLine
 {
@@ -68,6 +69,8 @@ namespace NuGet.CommandLine
             }
 
             var console = new Common.Console();
+            Logger.Instance = console;
+
             var fileSystem = new PhysicalFileSystem(workingDirectory);
 
             Func<Exception, string> getErrorMessage = e => e.Message;

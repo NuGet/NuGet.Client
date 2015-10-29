@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
+using NuGet.Logging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
@@ -136,6 +137,7 @@ namespace NuGet.Protocol.Core.v3
                 return packageFromGlobalPackages;
             }
 
+            Logger.Instance.LogVerbose($"  GET: {uri}");
             using (var packageStream = await _client.GetStreamAsync(uri))
             {
                 var downloadResult = await GlobalPackagesFolderUtility.AddPackageAsync(identity,
