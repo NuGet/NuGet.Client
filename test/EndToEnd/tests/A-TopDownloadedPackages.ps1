@@ -63,7 +63,7 @@ $projectSystemNames = (
     #'New-JavaScriptApplication' # At least 35 out of the 53 packages in the list cannot be installed on this project type
     )
 
-function Test-InstallPackageOnProjectSystem
+function DisabledTest-InstallPackageOnProjectSystem
 {
     param(
         $context,
@@ -99,7 +99,7 @@ function Test-InstallPackageOnProjectSystem
     Assert-Package $project $packageId
 }
 
-function TestCases-InstallPackageOnProjectSystem {
+function DisabledTestCases-InstallPackageOnProjectSystem {
     $testCases = @()
     # Act
     foreach($projectSystemName in $projectSystemNames)
