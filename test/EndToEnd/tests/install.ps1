@@ -970,7 +970,7 @@ function Test-InstallPackageSkipsBindingRedirectWhenSetOnConfig
 }
 
 # Tests the case when Skip is specified in nuget.config under bindingRedirects section
-function Test-InstallPackageThrowWithLockedConfigFileIfSuccessRequired
+function InstallPackageThrowWithLockedConfigFileIfSuccessRequired
 {
 	param(
         $context

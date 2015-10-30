@@ -1,6 +1,6 @@
 param (
     [ValidateSet("debug", "release")][string]$Configuration="debug",
-    [ValidateSet("Release", "beta", "rc", "local")][string]$ReleaseLabel="local",
+    [ValidateSet("Release","rtm", "rc", "beta", "local")][string]$ReleaseLabel="local",
     [string]$BuildNumber,
     [switch]$SkipTests,
     [switch]$SkipRestore,
@@ -303,6 +303,11 @@ if(!$BuildNumber)
 {
     $R = ""
     $BuildNumber = ([Math]::DivRem(([System.DateTime]::Now.Subtract([System.DateTime]::Parse($SemanticVersionDate)).TotalMinutes), 5, [ref]$R)).ToString('F0')
+}
+else
+{
+    $buildNum = [int]$BuildNumber
+    $BuildNumber = $buildNum.ToString("D4");
 }
 
 if(!$SkipXProj)
