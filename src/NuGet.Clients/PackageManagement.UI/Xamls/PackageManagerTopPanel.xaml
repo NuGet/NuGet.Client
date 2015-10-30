@@ -67,7 +67,7 @@
         AutomationProperties.AutomationId="Tab_Consolidate"
         Filter="Consolidate"
         Margin="35,0,0,0"
-        Text="{x:Static resx:Resources.Label_Consolidate}"
+        Text="{x:Static resx:Resources.Action_Consolidate}"
         ControlSelected="FilterLabel_ControlSelected"
         Visibility="Collapsed" />
 

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -20,6 +21,8 @@ namespace NuGet.PackageManagement.UI
 {
     internal class PackageLoader : ILoader
     {
+        public static readonly int MaxDegreeOfParallelism = 16;
+
         private readonly SourceRepository _sourceRepository;
 
         private readonly NuGetProject[] _projects;
@@ -262,26 +265,30 @@ namespace NuGet.PackageManagement.UI
                 Mvs.ActivityLog.LogError(LogEntrySource, ex.ToString());
             }
 
-            var tasks = new List<Task<UISearchMetadata>>();
-            for (int i = 0; i < installedPackages.Length; i++)
+            // create tasks to get metadata in parallel
+            var bag = new ConcurrentBag<PackageIdentity>(installedPackages);
+            var tasks = new List<Task>();
+            var metadataList = new ConcurrentQueue<UISearchMetadata>();
+            for (int i = 0; i < MaxDegreeOfParallelism; ++i)
             {
-                var packageIdentity = installedPackages[i];
-
-                tasks.Add(
-                    Task.Run(() =>
-                        GetPackageMetadataAsync(localResource,
-                                                metadataResource,
-                                                packageIdentity,
-                                                cancellationToken)));
+                tasks.Add(Task.Run(async () =>
+                {
+                    PackageIdentity packageIdentity;
+                    while (bag.TryTake(out packageIdentity))
+                    {
+                        var metadata = await GetPackageMetadataAsync(
+                            localResource,
+                            metadataResource,
+                            packageIdentity,
+                            cancellationToken);
+                        metadataList.Enqueue(metadata);
+                    }
+                }));
             }
 
             await Task.WhenAll(tasks);
-
-            foreach (var task in tasks)
-            {
-                results.Add(task.Result);
-            }
-
+            results = metadataList.ToList();
+            
             return new SearchResult
             {
                 Items = results,
@@ -331,10 +338,10 @@ namespace NuGet.PackageManagement.UI
         }
 
         private async Task<SearchResult> SearchConsolidateAsync(
-            int startIndex, 
+            int startIndex,
             CancellationToken cancellationToken)
         {
-            var installedPackages = (await GetConsolidatablePackagesAsync(token: cancellationToken))
+            var packagesNeedingConsolidation = (await GetConsolidatablePackagesAsync(token: cancellationToken))
                 .Where(p => p.Id.IndexOf(_searchText, StringComparison.OrdinalIgnoreCase) != -1)
                 .OrderBy(p => p.Id)
                 .Skip(startIndex)
@@ -351,10 +358,14 @@ namespace NuGet.PackageManagement.UI
             UIMetadataResource metadataResource;
             try
             {
-                metadataResource =
-                _sourceRepository == null ?
-                null :
-                await _sourceRepository.GetResourceAsync<UIMetadataResource>();
+                if (_sourceRepository == null)
+                {
+                    metadataResource = null;
+                }
+                else
+                {
+                    metadataResource = await _sourceRepository.GetResourceAsync<UIMetadataResource>();
+                }
             }
             catch (Exception ex)
             {
@@ -363,30 +374,34 @@ namespace NuGet.PackageManagement.UI
                 Mvs.ActivityLog.LogError(LogEntrySource, ex.ToString());
             }
 
-            var tasks = new List<Task<UISearchMetadata>>();
-            for (int i = 0; i < installedPackages.Length; i++)
+            // create tasks to get metadata in parallel
+            var bag = new ConcurrentBag<PackageIdentity>(packagesNeedingConsolidation);
+            var tasks = new List<Task>();
+            var metadataList = new ConcurrentQueue<UISearchMetadata>();
+            for (int i = 0; i < MaxDegreeOfParallelism; ++i)
             {
-                var packageIdentity = installedPackages[i];
-
-                tasks.Add(
-                    Task.Run(() =>
-                        GetPackageMetadataAsync(localResource,
-                                                metadataResource,
-                                                packageIdentity,
-                                                cancellationToken)));
+                tasks.Add(Task.Run(async () =>
+                {
+                    PackageIdentity packageIdentity;
+                    while (bag.TryTake(out packageIdentity))
+                    {
+                        var metadata = await GetPackageMetadataAsync(
+                            localResource,
+                            metadataResource,
+                            packageIdentity,
+                            cancellationToken);
+                        metadataList.Enqueue(metadata);
+                    }
+                }));
             }
 
             await Task.WhenAll(tasks);
-
-            foreach (var task in tasks)
-            {
-                results.Add(task.Result);
-            }
+            results = metadataList.ToList();
 
             return new SearchResult
             {
                 Items = results,
-                HasMoreItems = installedPackages.Length > _option.PageSize,
+                HasMoreItems = packagesNeedingConsolidation.Length > _option.PageSize,
             };
         }
 
@@ -691,7 +706,7 @@ namespace NuGet.PackageManagement.UI
                     searchResultPackage.ProvidersLoader = new Lazy<Task<AlternativePackageManagerProviders>>(
                         () => AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(
                             _packageManagerProviders,
-                            searchResultPackage.Id, 
+                            searchResultPackage.Id,
                             _projects[0]));
                 }
 

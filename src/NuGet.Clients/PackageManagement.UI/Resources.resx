@@ -511,7 +511,4 @@ Packages installed into Website projects will not be restored during build. Cons
     <value>not installed</value>
     <comment>In the solution package manager, if the select package is not installed, then this message is shown.</comment>
   </data>
-  <data name="Label_Consolidate" xml:space="preserve">
-    <value>Consolidate</value>
-  </data>
 </root>

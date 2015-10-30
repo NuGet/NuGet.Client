@@ -457,15 +457,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Consolidate.
-        /// </summary>
-        public static string Label_Consolidate {
-            get {
-                return ResourceManager.GetString("Label_Consolidate", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Date published:.
         /// </summary>
         public static string Label_DatePublished {
