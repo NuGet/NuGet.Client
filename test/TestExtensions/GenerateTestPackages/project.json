@@ -6,6 +6,6 @@
     "net451": {}
   },
   "runtimes": {
-    "win-x86": {}
+    "win-anycpu": {}
   }
 }
