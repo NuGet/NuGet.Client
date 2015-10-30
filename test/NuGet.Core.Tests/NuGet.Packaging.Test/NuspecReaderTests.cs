@@ -157,6 +157,34 @@ namespace NuGet.Packaging.Test
                   </metadata>
                 </package>";
 
+        private const string IncludeExcludeNuspec = @"<?xml version=""1.0""?>
+                <package xmlns=""http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd"">
+                  <metadata>
+                    <id>packageA</id>
+                    <version>1.0.1-alpha</version>
+                    <title>Package A</title>
+                    <authors>ownera, ownerb</authors>
+                    <owners>ownera, ownerb</owners>
+                    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+                    <description>package A description.</description>
+                    <language>en-US</language>
+                    <references>
+                      <reference file=""a.dll"" />
+                    </references>
+                    <dependencies>
+                        <group>
+                          <dependency id=""emptyValues"" version=""1.0.0"" include="""" exclude="""" />
+                          <dependency id=""noAttributes"" version=""1.0.0"" />
+                          <dependency id=""packageA"" version=""1.0.0"" include=""all"" exclude=""none"" />
+                          <dependency id=""packageB"" version=""1.0.0"" include=""runtime,compile,unknown"" />
+                          <dependency id=""packageC"" version=""1.0.0"" exclude=""compile,runtime"" />
+                          <dependency id=""packageD"" version=""1.0.0"" exclude=""a,,b"" />
+                          <dependency id=""packageE"" version=""1.0.0"" include=""a , b ,c "" />
+                        </group>
+                    </dependencies>
+                  </metadata>
+                </package>";
+
         [Fact]
         public void NuspecReaderTests_NamespaceOnMetadata()
         {
@@ -256,6 +284,111 @@ namespace NuGet.Packaging.Test
             Assert.Equal(5, dependencies.Count);
 
             Assert.Equal(4, dependencies.Where(g => g.TargetFramework == NuGetFramework.UnsupportedFramework).Count());
+        }
+
+        [Fact]
+        public void NuspecReaderTests_DependencyWithSingleIncludeExclude()
+        {
+            // Arrange
+            NuspecReader reader = GetReader(IncludeExcludeNuspec);
+
+            // Act
+            var group = reader.GetDependencyGroups().Single();
+            var dependency = group.Packages.Single(package => package.Id == "packageA");
+
+            // Assert
+            Assert.Equal("all", string.Join("|", dependency.Include.OrderBy(s => s)));
+            Assert.Equal("none", string.Join("|", dependency.Exclude.OrderBy(s => s)));
+        }
+
+        [Fact]
+        public void NuspecReaderTests_DependencyWithMultipleInclude()
+        {
+            // Arrange
+            NuspecReader reader = GetReader(IncludeExcludeNuspec);
+
+            // Act
+            var group = reader.GetDependencyGroups().Single();
+            var dependency = group.Packages.Single(package => package.Id == "packageB");
+
+            // Assert
+            Assert.Equal("compile|runtime|unknown", string.Join("|", dependency.Include.OrderBy(s => s)));
+            Assert.Equal(0, dependency.Exclude.Count);
+        }
+
+        [Fact]
+        public void NuspecReaderTests_DependencyWithWhiteSpace()
+        {
+            // Arrange
+            NuspecReader reader = GetReader(IncludeExcludeNuspec);
+
+            // Act
+            var group = reader.GetDependencyGroups().Single();
+            var dependency = group.Packages.Single(package => package.Id == "packageE");
+
+            // Assert
+            Assert.Equal("a|b|c", string.Join("|", dependency.Include.OrderBy(s => s)));
+            Assert.Equal(0, dependency.Exclude.Count);
+        }
+
+        [Fact]
+        public void NuspecReaderTests_DependencyWithMultipleExclude()
+        {
+            // Arrange
+            NuspecReader reader = GetReader(IncludeExcludeNuspec);
+
+            // Act
+            var group = reader.GetDependencyGroups().Single();
+            var dependency = group.Packages.Single(package => package.Id == "packageC");
+
+            // Assert
+            Assert.Equal(0, dependency.Include.Count);
+            Assert.Equal("compile|runtime", string.Join("|", dependency.Exclude.OrderBy(s => s)));
+        }
+
+        [Fact]
+        public void NuspecReaderTests_DependencyWithBlankExclude()
+        {
+            // Arrange
+            NuspecReader reader = GetReader(IncludeExcludeNuspec);
+
+            // Act
+            var group = reader.GetDependencyGroups().Single();
+            var dependency = group.Packages.Single(package => package.Id == "packageD");
+
+            // Assert bad flags stay as is
+            Assert.Equal(0, dependency.Include.Count);
+            Assert.Equal("a|b", string.Join("|", dependency.Exclude.OrderBy(s => s)));
+        }
+
+        [Fact]
+        public void NuspecReaderTests_DependencyNoAttributesForIncludeExclude()
+        {
+            // Arrange
+            NuspecReader reader = GetReader(IncludeExcludeNuspec);
+
+            // Act
+            var group = reader.GetDependencyGroups().Single();
+            var dependency = group.Packages.Single(package => package.Id == "noAttributes");
+
+            // Assert
+            Assert.Equal(0, dependency.Include.Count);
+            Assert.Equal(0, dependency.Exclude.Count);
+        }
+
+        [Fact]
+        public void NuspecReaderTests_DependencyEmptyAttributesForIncludeExclude()
+        {
+            // Arrange
+            NuspecReader reader = GetReader(IncludeExcludeNuspec);
+
+            // Act
+            var group = reader.GetDependencyGroups().Single();
+            var dependency = group.Packages.Single(package => package.Id == "emptyValues");
+
+            // Assert
+            Assert.Equal(0, dependency.Include.Count);
+            Assert.Equal(0, dependency.Exclude.Count);
         }
 
         private static NuspecReader GetReader(string nuspec)
