@@ -14,6 +14,8 @@
         <ResourceDictionary
           Source="Resources.xaml" />
       </ResourceDictionary.MergedDictionaries>
+      <local:NotNullToBooleanConverter
+        x:Key="NotNullToBooleanConverter" />
       <ControlTemplate
         x:Key="SeparatorControlTemplate">
         <Separator
@@ -112,6 +114,7 @@
       AutomationProperties.AutomationId="Project_Button_Update"
       Click="InstallButton_Clicked"
       Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}}"
+      IsEnabled="{Binding SelectedVersion,Converter={StaticResource NotNullToBooleanConverter}}"
       Content="{x:Static local:Resources.Button_Update}" />
   </Grid>
 </UserControl>

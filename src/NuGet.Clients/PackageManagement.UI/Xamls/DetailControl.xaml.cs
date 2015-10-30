@@ -61,6 +61,12 @@ namespace NuGet.PackageManagement.UI
         private void ProjectInstallButtonClicked(object sender, EventArgs e)
         {
             var model = (DetailControlModel)DataContext;
+
+            if (model.SelectedVersion == null)
+            {
+                return;
+            }
+
             var userAction = UserAction.CreateInstallAction(
                 model.Id,
                 model.SelectedVersion.Version);
