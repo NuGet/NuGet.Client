@@ -177,7 +177,7 @@ namespace NuGetConsole.Implementation.Console
 
                     // snapshot's length could be lower than spanStart + spanLength,
                     // and if so, SnapshotSpan constructor will throw ArgumentOutOfRangeException.
-                    // We compute fixedLength to overcome this problem.
+                    // We compute constrainedLength to overcome this problem.
                     int constrainedLength = spanLength;
                     if (spanStart + spanLength > snapshot.Length)
                     {
