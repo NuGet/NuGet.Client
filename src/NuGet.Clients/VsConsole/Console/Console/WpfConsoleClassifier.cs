@@ -178,10 +178,13 @@ namespace NuGetConsole.Implementation.Console
                     // snapshot's length could be lower than spanStart + spanLength,
                     // and if so, SnapshotSpan constructor will throw ArgumentOutOfRangeException.
                     // We compute fixedLength to overcome this problem.
-                    var fixedLength
-                        = spanStart + spanLength > snapshot.Length ? snapshot.Length - spanStart : spanLength;
+                    int constrainedLength = spanLength;
+                    if (spanStart + spanLength > snapshot.Length)
+                    {
+                        constrainedLength = snapshot.Length - spanStart;
+                    }
 
-                    var snapshotSpan = new SnapshotSpan(snapshot, spanStart, fixedLength);
+                    var snapshotSpan = new SnapshotSpan(snapshot, spanStart, constrainedLength);
                     classificationSpans.Add(new ClassificationSpan(
                         snapshotSpan, classificationType));
                 }
