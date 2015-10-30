@@ -925,6 +925,11 @@ namespace NuGet.Commands.Test
 
             Assert.Equal(1, GetNonEmptyCount(a.ContentFiles));
             Assert.Equal(0, GetNonEmptyCount(b.ContentFiles));
+
+            Assert.Equal(3, b.ContentFiles.Single().Properties.Count);
+            Assert.Equal("None", b.ContentFiles.Single().Properties["buildAction"]);
+            Assert.Equal("False", b.ContentFiles.Single().Properties["copyToOutput"]);
+            Assert.Equal("any", b.ContentFiles.Single().Properties["codeLanguage"]);
         }
 
         [Theory]

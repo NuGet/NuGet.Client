@@ -14,6 +14,8 @@ namespace NuGet.Commands
 {
     internal static class LockFileUtils
     {
+        private const string EmptyDir = "_._";
+
         public static LockFileTargetLibrary CreateLockFileTargetLibrary(
             LockFileLibrary library,
             LocalPackageInfo package,
@@ -227,14 +229,17 @@ namespace NuGet.Commands
                 ClearIfExists(lockFileLib.CompileTimeAssemblies);
             }
 
-            if (!dependencyType.Contains(LibraryIncludeTypeFlag.ContentFiles))
-            {
-                ClearIfExists(lockFileLib.ContentFiles);
-            }
-
             if (!dependencyType.Contains(LibraryIncludeTypeFlag.Native))
             {
                 ClearIfExists(lockFileLib.NativeLibraries);
+            }
+
+            if (!dependencyType.Contains(LibraryIncludeTypeFlag.ContentFiles)
+                && GroupHasNonEmptyItems(lockFileLib.ContentFiles))
+            {
+                // Empty lock file items still need lock file properties for language, action, and output.
+                lockFileLib.ContentFiles.Clear();
+                lockFileLib.ContentFiles.Add(ContentFileUtils.CreateEmptyItem());
             }
 
             return lockFileLib;
@@ -262,7 +267,7 @@ namespace NuGet.Commands
         /// </summary>
         private static void ClearIfExists(IList<LockFileItem> group)
         {
-            if (group?.Any() == true)
+            if (GroupHasNonEmptyItems(group))
             {
                 // Take the root directory
                 var firstItem = group.OrderBy(item => item.Path.LastIndexOf('/'))
@@ -274,12 +279,29 @@ namespace NuGet.Commands
                 Debug.Assert(!string.IsNullOrEmpty(fileName));
                 Debug.Assert(firstItem.Path.IndexOf('/') > 0);
 
-                var emptyDir = firstItem.Path.Substring(0, firstItem.Path.Length - fileName.Length) + "_._";
+                var emptyDir = firstItem.Path.Substring(0, firstItem.Path.Length - fileName.Length) + EmptyDir;
 
                 group.Clear();
 
-                group.Add(new LockFileItem(emptyDir));
+                // Create a new item with the _._ path
+                var emptyItem = new LockFileItem(emptyDir);
+
+                // Copy over the properties from the first 
+                foreach (var pair in firstItem.Properties)
+                {
+                    emptyItem.Properties.Add(pair.Key, pair.Value);
+                }
+
+                group.Add(emptyItem);
             }
+        }
+
+        /// <summary>
+        /// True if the group has items that do not end with _._
+        /// </summary>
+        private static bool GroupHasNonEmptyItems(IList<LockFileItem> group)
+        {
+            return group?.Any(item => !item.Path.EndsWith($"/{EmptyDir}")) == true;
         }
     }
 }
