@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.Common;
 using NuGet.Versioning;
 
@@ -53,6 +54,18 @@ namespace NuGet.Packaging.Core
                 result = _versionRangeComparer.Equals(x.VersionRange ?? VersionRange.All, y.VersionRange ?? VersionRange.All);
             }
 
+            if (result)
+            {
+                result = x.Include.OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
+                    .SequenceEqual(y.Include.OrderBy(s => s, StringComparer.OrdinalIgnoreCase));
+            }
+
+            if (result)
+            {
+                result = x.Exclude.OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
+                    .SequenceEqual(y.Exclude.OrderBy(s => s, StringComparer.OrdinalIgnoreCase));
+            }
+
             return result;
         }
 
@@ -72,6 +85,19 @@ namespace NuGet.Packaging.Core
                 && !obj.VersionRange.Equals(VersionRange.All))
             {
                 combiner.AddObject(_versionRangeComparer.GetHashCode(obj.VersionRange));
+            }
+
+            foreach (var include in obj.Include.OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
+            {
+                combiner.AddObject(include.ToLowerInvariant());
+            }
+
+            // separate the lists
+            combiner.AddInt32(8);
+
+            foreach (var exclude in obj.Exclude.OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
+            {
+                combiner.AddObject(exclude.ToLowerInvariant());
             }
 
             return combiner.CombinedHash;

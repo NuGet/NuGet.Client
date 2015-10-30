@@ -36,6 +36,9 @@ namespace NuGet.Packaging
         private const string BuildAction = "buildAction";
         private const string Flatten = "flatten";
         private const string CopyToOutput = "copyToOutput";
+        private const string IncludeFlags = "include";
+        private const string ExcludeFlags = "exclude";
+        private static readonly char[] CommaArray = new char[] { ',' };
         private readonly IFrameworkNameProvider _frameworkProvider;
 
         /// <summary>
@@ -110,10 +113,21 @@ namespace NuGet.Packaging
                         Debug.Assert(range != null, "Unable to parse range: " + rangeNode);
                     }
 
-                    packages.Add(new PackageDependency(GetAttributeValue(depNode, Id), range));
+                    var includeFlags = GetFlags(GetAttributeValue(depNode, IncludeFlags));
+                    var excludeFlags = GetFlags(GetAttributeValue(depNode, ExcludeFlags));
+
+                    var dependency = new PackageDependency(
+                        GetAttributeValue(depNode, Id), 
+                        range,
+                        includeFlags,
+                        excludeFlags);
+
+                    packages.Add(dependency);
                 }
 
-                var framework = String.IsNullOrEmpty(groupFramework) ? NuGetFramework.AnyFramework : NuGetFramework.Parse(groupFramework, _frameworkProvider);
+                var framework = String.IsNullOrEmpty(groupFramework) 
+                    ? NuGetFramework.AnyFramework 
+                    : NuGetFramework.Parse(groupFramework, _frameworkProvider);
 
                 yield return new PackageDependencyGroup(framework, packages);
             }
@@ -212,7 +226,7 @@ namespace NuGet.Packaging
                 }
                 else
                 {
-                    foreach (var fwString in group.Key.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    foreach (var fwString in group.Key.Split(CommaArray, StringSplitOptions.RemoveEmptyEntries))
                     {
                         if (!String.IsNullOrEmpty(fwString))
                         {
@@ -330,6 +344,22 @@ namespace NuGet.Packaging
         {
             var attribute = element.Attribute(XName.Get(attributeName));
             return attribute == null ? null : attribute.Value;
+        }
+
+        private static readonly List<string> EmptyList = new List<string>();
+        private static List<string> GetFlags(string flags)
+        {
+            if (string.IsNullOrEmpty(flags))
+            {
+                return EmptyList;
+            }
+
+            var set = new HashSet<string>(
+                flags.Split(CommaArray, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(flag => flag.Trim()),
+                StringComparer.OrdinalIgnoreCase);
+
+            return set.OrderBy(s => s, StringComparer.OrdinalIgnoreCase).ToList();
         }
     }
 }

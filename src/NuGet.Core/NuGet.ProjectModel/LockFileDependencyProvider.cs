@@ -80,18 +80,9 @@ namespace NuGet.ProjectModel
         {
             var libraryDependencies = new List<LibraryDependency>();
 
-            foreach (var d in library.Dependencies)
-            {
-                libraryDependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = d.Id,
-                        VersionRange = d.VersionRange
-                    }
-                });
-            }
-            
+            libraryDependencies.AddRange(
+                    library.Dependencies.Select(PackagingUtility.GetLibraryDependencyFromNuspec));
+
             foreach (var name in library.FrameworkAssemblies)
             {
                 libraryDependencies.Add(new LibraryDependency

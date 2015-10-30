@@ -179,6 +179,10 @@ namespace NuGet.ProjectModel
                     var dependencyValue = dependency.Value;
                     var dependencyTypeValue = LibraryDependencyType.Default;
 
+                    var dependencyIncludeFlagsValue = LibraryIncludeType.All;
+                    var dependencyExcludeFlagsValue = new LibraryIncludeType();
+                    var suppressParentFlagsValue = LibraryIncludeType.DefaultSuppress;
+
                     string dependencyVersionValue = null;
                     var dependencyVersionToken = dependencyValue;
 
@@ -203,6 +207,21 @@ namespace NuGet.ProjectModel
                         {
                             dependencyTypeValue = LibraryDependencyType.Parse(strings);
                         }
+
+                        if (TryGetStringEnumerable(dependencyValue["include"], out strings))
+                        {
+                            dependencyIncludeFlagsValue = LibraryIncludeType.Parse(strings);
+                        }
+
+                        if (TryGetStringEnumerable(dependencyValue["exclude"], out strings))
+                        {
+                            dependencyExcludeFlagsValue = LibraryIncludeType.Parse(strings);
+                        }
+
+                        if (TryGetStringEnumerable(dependencyValue["suppressParent"], out strings))
+                        {
+                            suppressParentFlagsValue = LibraryIncludeType.Parse(strings);
+                        }
                     }
 
                     VersionRange dependencyVersionRange = null;
@@ -222,6 +241,10 @@ namespace NuGet.ProjectModel
                         }
                     }
 
+                    var includeFlags = dependencyIncludeFlagsValue.Combine(
+                        Enumerable.Empty<LibraryIncludeTypeFlag>(),
+                        dependencyExcludeFlagsValue.Keywords);
+
                     results.Add(new LibraryDependency()
                     {
                         LibraryRange = new LibraryRange()
@@ -230,7 +253,9 @@ namespace NuGet.ProjectModel
                             TypeConstraint = isGacOrFrameworkReference ? LibraryTypes.Reference : null,
                             VersionRange = dependencyVersionRange,
                         },
-                        Type = dependencyTypeValue
+                        Type = dependencyTypeValue,
+                        IncludeType = includeFlags,
+                        SuppressParent = suppressParentFlagsValue
                     });
                 }
             }

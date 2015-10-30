@@ -11,6 +11,10 @@ namespace NuGet.LibraryModel
 
         public LibraryDependencyType Type { get; set; } = LibraryDependencyType.Default;
 
+        public LibraryIncludeType IncludeType { get; set; } = LibraryIncludeType.Default;
+
+        public LibraryIncludeType SuppressParent { get; set; } = LibraryIncludeType.None;
+
         public string Name
         {
             get { return LibraryRange.Name; }
@@ -21,14 +25,34 @@ namespace NuGet.LibraryModel
             var sb = new StringBuilder();
             sb.Append(LibraryRange);
             sb.Append(" ");
-
             sb.Append(Type);
+            sb.Append(" ");
+            sb.Append(IncludeType);
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Type property flag
+        /// </summary>
         public bool HasFlag(LibraryDependencyTypeFlag flag)
         {
             return Type.Contains(flag);
+        }
+
+        /// <summary>
+        /// Include/Exclude property flag
+        /// </summary>
+        public bool HasFlag(LibraryIncludeTypeFlag flag)
+        {
+            return IncludeType.Contains(flag);
+        }
+
+        /// <summary>
+        /// suppressParent property flag
+        /// </summary>
+        public bool HasSuppressParentFlag(LibraryIncludeTypeFlag flag)
+        {
+            return SuppressParent.Contains(flag);
         }
     }
 }

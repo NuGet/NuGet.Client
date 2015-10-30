@@ -200,7 +200,8 @@ namespace NuGet.Commands
                         package: package,
                         targetGraph: graph,
                         defaultPackagePathResolver: new VersionFolderPathResolver(_localRepository.RepositoryRoot),
-                        correctedPackageName: libraryId.Name);
+                        correctedPackageName: libraryId.Name,
+                        dependencyType: LibraryIncludeType.All);
                 }
 
                 return new CompatibilityData(files, targetLibrary);

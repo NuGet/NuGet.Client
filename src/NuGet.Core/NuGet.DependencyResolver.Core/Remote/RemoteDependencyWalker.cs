@@ -26,7 +26,7 @@ namespace NuGet.DependencyResolver
 
         public Task<GraphNode<RemoteResolveResult>> WalkAsync(LibraryRange library, NuGetFramework framework, string runtimeIdentifier, RuntimeGraph runtimeGraph, bool recursive)
         {
-            return CreateGraphNode(library, framework, runtimeIdentifier, runtimeGraph, _ => recursive ? DependencyResult.Acceptable : DependencyResult.Eclipsed);
+            return CreateGraphNode(library, framework, runtimeIdentifier, runtimeGraph, _ => recursive ? DependencyResult.Acceptable : DependencyResult.Eclipsed, outerEdge: null);
         }
 
         private async Task<GraphNode<RemoteResolveResult>> CreateGraphNode(
@@ -34,7 +34,8 @@ namespace NuGet.DependencyResolver
             NuGetFramework framework,
             string runtimeName,
             RuntimeGraph runtimeGraph,
-            Func<LibraryRange, DependencyResult> predicate)
+            Func<LibraryRange, DependencyResult> predicate,
+            GraphEdge<RemoteResolveResult> outerEdge)
         {
             var dependencies = new List<LibraryDependency>();
 
@@ -86,34 +87,45 @@ namespace NuGet.DependencyResolver
             }
 
             var tasks = new List<Task<GraphNode<RemoteResolveResult>>>();
+
             dependencies.AddRange(node.Item.Data.Dependencies);
 
             foreach (var dependency in dependencies)
             {
-                var result = predicate(dependency.LibraryRange);
+                // Skip dependencies if the dependency edge has 'all' excluded and
+                // the node is not a direct dependency.
+                if (outerEdge == null
+                    || !dependency.SuppressParent.Contains(LibraryIncludeType.All))
+                {
+                    var result = predicate(dependency.LibraryRange);
 
-                if (result == DependencyResult.Acceptable)
-                {
-                    tasks.Add(CreateGraphNode(
-                        dependency.LibraryRange,
-                        framework,
-                        runtimeName,
-                        runtimeGraph,
-                        ChainPredicate(predicate, node, dependency)));
-                }
-                else
-                {
-                    // Keep the node in the tree if we need to look at it later
-                    if (result == DependencyResult.PotentiallyDowngraded ||
-                        result == DependencyResult.Cycle)
+                    if (result == DependencyResult.Acceptable)
                     {
-                        var dependencyNode = new GraphNode<RemoteResolveResult>(dependency.LibraryRange)
-                        {
-                            Disposition = result == DependencyResult.Cycle ? Disposition.Cycle : Disposition.PotentiallyDowngraded
-                        };
+                        // Dependency edge from the current node to the dependency
+                        var innerEdge = new GraphEdge<RemoteResolveResult>(outerEdge, node.Item, dependency);
 
-                        dependencyNode.OuterNode = node;
-                        node.InnerNodes.Add(dependencyNode);
+                        tasks.Add(CreateGraphNode(
+                            dependency.LibraryRange,
+                            framework,
+                            runtimeName,
+                            runtimeGraph,
+                            ChainPredicate(predicate, node, dependency),
+                            innerEdge));
+                    }
+                    else
+                    {
+                        // Keep the node in the tree if we need to look at it later
+                        if (result == DependencyResult.PotentiallyDowngraded ||
+                            result == DependencyResult.Cycle)
+                        {
+                            var dependencyNode = new GraphNode<RemoteResolveResult>(dependency.LibraryRange)
+                            {
+                                Disposition = result == DependencyResult.Cycle ? Disposition.Cycle : Disposition.PotentiallyDowngraded
+                            };
+
+                            dependencyNode.OuterNode = node;
+                            node.InnerNodes.Add(dependencyNode);
+                        }
                     }
                 }
             }

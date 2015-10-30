@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using NuGet.Versioning;
 
@@ -12,8 +13,8 @@ namespace NuGet.Packaging.Core
     /// </summary>
     public class PackageDependency : IEquatable<PackageDependency>
     {
-        private readonly string _id;
         private VersionRange _versionRange;
+        private static readonly List<string> EmptyList = new List<string>();
 
         public PackageDependency(string id)
             : this(id, VersionRange.All)
@@ -21,23 +22,31 @@ namespace NuGet.Packaging.Core
         }
 
         public PackageDependency(string id, VersionRange versionRange)
+            : this(id, versionRange, include: null, exclude: null)
+        {
+        }
+
+        public PackageDependency(
+            string id,
+            VersionRange versionRange,
+            IReadOnlyList<string> include,
+            IReadOnlyList<string> exclude)
         {
             if (String.IsNullOrEmpty(id))
             {
-                throw new ArgumentException("id");
+                throw new ArgumentException(nameof(id));
             }
 
-            _id = id;
+            Id = id;
             _versionRange = versionRange ?? VersionRange.All;
+            Include = include ?? EmptyList;
+            Exclude = exclude ?? EmptyList;
         }
 
         /// <summary>
         /// Dependency package Id
         /// </summary>
-        public string Id
-        {
-            get { return _id; }
-        }
+        public string Id { get; }
 
         /// <summary>
         /// Range of versions allowed for the depenency
@@ -46,6 +55,16 @@ namespace NuGet.Packaging.Core
         {
             get { return _versionRange; }
         }
+
+        /// <summary>
+        /// Types to include from the dependency package.
+        /// </summary>
+        public IReadOnlyList<string> Include { get; }
+
+        /// <summary>
+        /// Types to exclude from the dependency package.
+        /// </summary>
+        public IReadOnlyList<string> Exclude { get; }
 
         /// <summary>
         /// Sets the version range to also include prerelease versions
