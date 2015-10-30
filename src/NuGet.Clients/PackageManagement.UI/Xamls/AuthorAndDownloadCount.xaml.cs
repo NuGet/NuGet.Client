@@ -61,7 +61,7 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return GetValue(AuthorProperty).ToString();
+                return GetValue(AuthorProperty) as string;
             }
             set
             {
