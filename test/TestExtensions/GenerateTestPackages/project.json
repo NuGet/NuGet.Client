@@ -1,0 +1,11 @@
+﻿{
+  "dependencies": {
+    "NuGet.Core": "2.8.5"
+  },
+  "frameworks": {
+    "net451": {}
+  },
+  "runtimes": {
+    "win-x86": {}
+  }
+}
