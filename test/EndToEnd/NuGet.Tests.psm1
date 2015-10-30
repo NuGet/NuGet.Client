@@ -16,22 +16,23 @@ $testRepositoryPath = Join-Path $currentPath Packages
 
 $nugetRoot = Join-Path $currentPath "..\.."
 
-$generatePackagesExePath = Join-Path $currentPath "GenerateTestPackages.exe"
-if (-not (Test-Path $generatePackagesExePath)) 
+$nugetExePath = Join-Path $nugetRoot ".nuget\nuget.exe"
+
+if ((Test-Path $nugetExePath) -eq $False)
 {
-    $toolsPath = "$nugetRoot\Tools"
-    $generatePackagesProject = Join-Path $toolsPath NuGet\GenerateTestPackages\GenerateTestPackages.csproj
-    $generatePackagesExePath = Join-Path $toolsPath NuGet\GenerateTestPackages\bin\Debug\GenerateTestPackages.exe
+    Write-Host -BackgroundColor Yellow 'nuget.exe cannot be found at' $nugetExePath
+    Write-Host "Downloading nuget.exe"
+    wget https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe -OutFile $nugetExePath
 }
 
-$nugetExePath = Join-Path $currentPath "NuGet.exe"
+$testExtensionNames = ( "GenerateTestPackages.exe", "API.Test.dll" )
+$testExtensionsRoot = Join-Path $nugetRoot "test\TestExtensions"
+$testExtensions  = [System.Collections.ArrayList]($testExtensionNames |
+                        %{ Join-Path $testExtensionsRoot ([System.IO.Path]::GetFileNameWithoutExtension($_) + "\bin\Debug\" + $_) })
 
-if (!(Test-Path $nugetExePath)) 
-{
-    $nugetExePath = "$nugetRoot\test\EndToEnd\NuGet.exe"
-}
-
-$msbuildPath = Join-Path $env:windir Microsoft.NET\Framework\v4.0.30319\msbuild
+# Remove GenerateTestPackages alone from the list of test extensions
+$generatePackagesExePath = $testExtensions[0]
+$testExtensions.RemoveAt(0)
 
 if ($dte.Version.SubString(0, 2) -eq "10")
 {
@@ -86,11 +87,10 @@ function global:Run-Test {
         [parameter(Position=2)]
         [bool]$LaunchResultsOnFailure=$true
     )
-    
-    if (!(Test-Path $generatePackagesExePath)) {
-        & $msbuildPath $generatePackagesProject /v:quiet /p:TargetFrameworkVersion=$targetFrameworkVersion
-    }
-    
+
+    Write-Verbose "Loading test extensions modules"
+    $testExtensions | %{ Import-Module $_ }
+
     # Close the solution after every test run
     $dte.Solution.Close()
     
