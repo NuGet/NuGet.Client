@@ -163,17 +163,9 @@ namespace NuGet.PackageManagement.UI
 
         public PackageIdentity SelectedPackage { get; set; }
 
-        public void RefreshPackageStatus()
+        public void OnActionsExecuted(IEnumerable<ResolvedAction> actions)
         {
-            if (PackageManagerControl != null)
-            {
-                UIDispatcher.Invoke(() => { PackageManagerControl.UpdatePackageStatus(); });
-            }
-
-            if (_detailControl != null)
-            {
-                UIDispatcher.Invoke(() => { _detailControl.Refresh(); });
-            }
+            this._context.SolutionManager.OnActionsExecuted(actions);
         }
 
         public SourceRepository ActiveSource

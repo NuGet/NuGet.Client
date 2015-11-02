@@ -54,8 +54,12 @@ namespace NuGet.PackageManagement.UI
 
         public void Refresh()
         {
-            var model = DataContext as DetailControlModel;
-            model?.Refresh();
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                var model = DataContext as DetailControlModel;
+                model?.Refresh();
+            });
         }
 
         private void ProjectInstallButtonClicked(object sender, EventArgs e)

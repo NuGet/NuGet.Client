@@ -43,9 +43,6 @@ namespace NuGet.PackageManagement.UI
 
         private readonly string LogEntrySource = "NuGet Package Manager";
 
-        // The list of packages that have updates available
-        private List<UISearchMetadata> _packagesWithUpdates;
-
         private IEnumerable<IVsPackageManagerProvider> _packageManagerProviders;
 
         public PackageLoader(PackageLoaderOption option,
@@ -288,7 +285,7 @@ namespace NuGet.PackageManagement.UI
 
             await Task.WhenAll(tasks);
             results = metadataList.ToList();
-            
+
             return new SearchResult
             {
                 Items = results,
@@ -567,37 +564,25 @@ namespace NuGet.PackageManagement.UI
         // Search in installed packages that have updates available
         private async Task<SearchResult> SearchUpdatesAsync(int startIndex, CancellationToken ct)
         {
-            if (_packagesWithUpdates == null)
-            {
-                await CreatePackagesWithUpdatesAsync(ct);
-            }
-
-            var items = _packagesWithUpdates.Skip(startIndex).Take(_option.PageSize + 1).ToList();
-
-            var hasMoreItems = items.Count > _option.PageSize + startIndex;
-
-            if (hasMoreItems)
-            {
-                items.RemoveAt(items.Count - 1);
-            }
+            var packagesWithUpdates = await GetPackagesWithUpdatesAsync(ct);
+            var items = packagesWithUpdates.Skip(startIndex).ToList();
 
             return new SearchResult
             {
                 Items = items,
-                HasMoreItems = hasMoreItems,
+                HasMoreItems = false
             };
         }
 
-        // Creates the list of installed packages that have updates available.
-        // Returns the number of packages that have updates available.
-        public async Task<int> CreatePackagesWithUpdatesAsync(CancellationToken ct)
+        // Returns the list of installed packages that have updates available.
+        public async Task<List<UISearchMetadata>> GetPackagesWithUpdatesAsync(CancellationToken ct)
         {
-            _packagesWithUpdates = new List<UISearchMetadata>();
+            var packagesWithUpdates = new List<UISearchMetadata>();
             var metadataResource = await _sourceRepository.GetResourceAsync<UIMetadataResource>();
 
             if (metadataResource == null)
             {
-                return 0;
+                return packagesWithUpdates;
             }
 
             var installedPackages = (await GetInstalledPackagesAsync(latest: false, token: ct))
@@ -635,12 +620,12 @@ namespace NuGet.PackageManagement.UI
                             highest.IconUrl,
                             lazyVersions,
                             highest);
-                        _packagesWithUpdates.Add(searchMetadata);
+                        packagesWithUpdates.Add(searchMetadata);
                     }
                 }
             }
 
-            return _packagesWithUpdates.Count;
+            return packagesWithUpdates;
         }
 
         public async Task<LoadResult> LoadItemsAsync(int startIndex, CancellationToken cancellationToken)

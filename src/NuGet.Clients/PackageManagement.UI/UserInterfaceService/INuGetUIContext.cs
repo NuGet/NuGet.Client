@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.UI
 
         IOptionsPageActivator OptionsPageActivator { get; }
 
-        IEnumerable<NuGetProject> Projects { get; }
+        IEnumerable<NuGetProject> Projects { get; set; }
 
         void AddSettings(string key, UserSettings settings);
 

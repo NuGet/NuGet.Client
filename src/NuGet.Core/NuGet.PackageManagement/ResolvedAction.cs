@@ -3,7 +3,7 @@
 
 using NuGet.ProjectManagement;
 
-namespace NuGet.PackageManagement.UI
+namespace NuGet.PackageManagement
 {
     public class ResolvedAction
     {
