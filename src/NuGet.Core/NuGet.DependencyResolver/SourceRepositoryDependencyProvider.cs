@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
@@ -98,17 +99,8 @@ namespace NuGet.DependencyResolver
 
             if (dependencies != null)
             {
-                foreach (var d in dependencies.Packages)
-                {
-                    libraryDependencies.Add(new LibraryDependency
-                        {
-                            LibraryRange = new LibraryRange
-                                {
-                                    Name = d.Id,
-                                    VersionRange = d.VersionRange
-                                }
-                        });
-                }
+                libraryDependencies.AddRange(
+                    dependencies.Packages.Select(PackagingUtility.GetLibraryDependencyFromNuspec));
             }
 
             if (frameworkAssemblies == null)

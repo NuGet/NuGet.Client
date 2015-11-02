@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
+﻿using System.Collections.Concurrent;
 
 namespace NuGet.Commands.Test
 {
@@ -9,7 +7,7 @@ namespace NuGet.Commands.Test
         /// <summary>
         /// Logged messages
         /// </summary>
-        public Queue<string> Messages { get; } = new Queue<string>();
+        public ConcurrentQueue<string> Messages { get; } = new ConcurrentQueue<string>();
 
         public int Errors { get; set; }
 
@@ -51,6 +49,15 @@ namespace NuGet.Commands.Test
         {
             // NOTE(anurse): Uncomment this to help when debugging tests
             //Console.WriteLine($"{level}: {data}");
+        }
+
+        public void Clear()
+        {
+            string msg;
+            while (Messages.TryDequeue(out msg))
+            {
+                // do nothing
+            }
         }
     }
 }
