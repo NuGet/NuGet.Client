@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
@@ -12,14 +14,24 @@ namespace NuGet.Commands
 {
     internal static class LockFileUtils
     {
+        private const string EmptyDir = "_._";
+
         public static LockFileTargetLibrary CreateLockFileTargetLibrary(
             LockFileLibrary library,
             LocalPackageInfo package,
             RestoreTargetGraph targetGraph,
             VersionFolderPathResolver defaultPackagePathResolver,
-            string correctedPackageName)
+            string correctedPackageName,
+            LibraryIncludeType dependencyType)
         {
-            return CreateLockFileTargetLibrary(library, package, targetGraph, defaultPackagePathResolver, correctedPackageName, targetFrameworkOverride: null);
+            return CreateLockFileTargetLibrary(
+                library,
+                package,
+                targetGraph,
+                defaultPackagePathResolver,
+                correctedPackageName,
+                dependencyType: dependencyType,
+                targetFrameworkOverride: null);
         }
 
         public static LockFileTargetLibrary CreateLockFileTargetLibrary(
@@ -28,6 +40,7 @@ namespace NuGet.Commands
             RestoreTargetGraph targetGraph,
             VersionFolderPathResolver defaultPackagePathResolver,
             string correctedPackageName,
+            LibraryIncludeType dependencyType,
             NuGetFramework targetFrameworkOverride)
         {
             var lockFileLib = new LockFileTargetLibrary();
@@ -138,7 +151,6 @@ namespace NuGet.Commands
                 }
             }
 
-            var nativeCriteria = targetGraph.Conventions.Criteria.ForRuntime(targetGraph.RuntimeIdentifier);
             var managedCriteria = targetGraph.Conventions.Criteria.ForFrameworkAndRuntime(framework, targetGraph.RuntimeIdentifier);
 
             var compileGroup = contentItems.FindBestItemGroup(managedCriteria, targetGraph.Conventions.Patterns.CompileAssemblies, targetGraph.Conventions.Patterns.RuntimeAssemblies);
@@ -159,6 +171,8 @@ namespace NuGet.Commands
             {
                 lockFileLib.ResourceAssemblies = resourceGroup.Items.Select(ToResourceLockFileItem).ToList();
             }
+
+            var nativeCriteria = targetGraph.Conventions.Criteria.ForRuntime(targetGraph.RuntimeIdentifier);
 
             var nativeGroup = contentItems.FindBestItemGroup(nativeCriteria, targetGraph.Conventions.Patterns.NativeLibraries);
             if (nativeGroup != null)
@@ -202,6 +216,32 @@ namespace NuGet.Commands
                 lockFileLib.CompileTimeAssemblies = lockFileLib.CompileTimeAssemblies.Where(p => !p.Path.StartsWith("lib/") || referenceFilter.Contains(Path.GetFileName(p.Path))).ToList();
             }
 
+            // Exclude items
+            if (!dependencyType.Contains(LibraryIncludeTypeFlag.Runtime))
+            {
+                ClearIfExists(lockFileLib.RuntimeAssemblies);
+                lockFileLib.FrameworkAssemblies.Clear();
+                lockFileLib.ResourceAssemblies.Clear();
+            }
+
+            if (!dependencyType.Contains(LibraryIncludeTypeFlag.Compile))
+            {
+                ClearIfExists(lockFileLib.CompileTimeAssemblies);
+            }
+
+            if (!dependencyType.Contains(LibraryIncludeTypeFlag.Native))
+            {
+                ClearIfExists(lockFileLib.NativeLibraries);
+            }
+
+            if (!dependencyType.Contains(LibraryIncludeTypeFlag.ContentFiles)
+                && GroupHasNonEmptyItems(lockFileLib.ContentFiles))
+            {
+                // Empty lock file items still need lock file properties for language, action, and output.
+                lockFileLib.ContentFiles.Clear();
+                lockFileLib.ContentFiles.Add(ContentFileUtils.CreateEmptyItem());
+            }
+
             return lockFileLib;
         }
 
@@ -221,5 +261,47 @@ namespace NuGet.Commands
             };
         }
 
+        /// <summary>
+        /// Clears a lock file group and replaces the first item with _._ if 
+        /// the group has items. Empty groups are left alone.
+        /// </summary>
+        private static void ClearIfExists(IList<LockFileItem> group)
+        {
+            if (GroupHasNonEmptyItems(group))
+            {
+                // Take the root directory
+                var firstItem = group.OrderBy(item => item.Path.LastIndexOf('/'))
+                    .ThenBy(item => item.Path, StringComparer.OrdinalIgnoreCase)
+                    .First();
+
+                var fileName = Path.GetFileName(firstItem.Path);
+
+                Debug.Assert(!string.IsNullOrEmpty(fileName));
+                Debug.Assert(firstItem.Path.IndexOf('/') > 0);
+
+                var emptyDir = firstItem.Path.Substring(0, firstItem.Path.Length - fileName.Length) + EmptyDir;
+
+                group.Clear();
+
+                // Create a new item with the _._ path
+                var emptyItem = new LockFileItem(emptyDir);
+
+                // Copy over the properties from the first 
+                foreach (var pair in firstItem.Properties)
+                {
+                    emptyItem.Properties.Add(pair.Key, pair.Value);
+                }
+
+                group.Add(emptyItem);
+            }
+        }
+
+        /// <summary>
+        /// True if the group has items that do not end with _._
+        /// </summary>
+        private static bool GroupHasNonEmptyItems(IList<LockFileItem> group)
+        {
+            return group?.Any(item => !item.Path.EndsWith($"/{EmptyDir}")) == true;
+        }
     }
 }

@@ -111,7 +111,7 @@ namespace NuGet.Commands.Test
             var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), NuGetFramework.Parse("portable-net452+win81"));
             var result = await command.ExecuteAsync();
             result.Commit(logger);
-            logger.Messages.Clear();
+            logger.Clear();
 
             // Act
             request = new RestoreRequest(spec, sources, packagesDir);

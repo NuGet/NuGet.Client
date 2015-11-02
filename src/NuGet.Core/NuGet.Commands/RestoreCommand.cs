@@ -434,56 +434,67 @@ namespace NuGet.Commands
 
             var pathResolver = new VersionFolderPathResolver(repository.RepositoryRoot);
 
+            var flattenedFlags = IncludeFlagUtils.FlattenDependencyTypes(graph, project);
+
             var targets = new List<string>();
             var props = new List<string>();
             foreach (var library in graph.Flattened
                 .Distinct()
                 .OrderBy(g => g.Data.Match.Library))
             {
+                var includeLibrary = true;
 
-                var packageIdentity = new PackageIdentity(library.Key.Name, library.Key.Version);
-                IList<string> packageFiles;
-                context.PackageFileCache.TryGetValue(packageIdentity, out packageFiles);
-
-                if (packageFiles != null)
+                LibraryIncludeType libraryFlags;
+                if (flattenedFlags.TryGetValue(library.Key.Name, out libraryFlags))
                 {
-                    var contentItemCollection = new ContentItemCollection();
-                    contentItemCollection.Load(packageFiles);
+                    includeLibrary = libraryFlags.Contains(LibraryIncludeTypeFlag.Build);
+                }
 
-                    // Find MSBuild thingies
-                    var groups = contentItemCollection.FindItemGroups(graph.Conventions.Patterns.MSBuildFiles);
+                // Skip libraries that do not include build files such as transitive packages
+                if (includeLibrary)
+                {
+                    var packageIdentity = new PackageIdentity(library.Key.Name, library.Key.Version);
+                    IList<string> packageFiles;
+                    context.PackageFileCache.TryGetValue(packageIdentity, out packageFiles);
 
-                    // Find the nearest msbuild group, this can include the root level Any group.
-                    var buildItems = NuGetFrameworkUtility.GetNearest(
-                        groups,
-                        graph.Framework,
-                        group =>
-                            group.Properties[ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker]
-                                as NuGetFramework);
-
-                    if (buildItems != null)
+                    if (packageFiles != null)
                     {
-                        // We need to additionally filter to items that are named "{packageId}.targets" and "{packageId}.props"
-                        // Filter by file name here and we'll filter by extension when we add things to the lists.
-                        var items = buildItems.Items
-                            .Where(item =>
-                                Path.GetFileNameWithoutExtension(item.Path)
-                                .Equals(library.Key.Name, StringComparison.OrdinalIgnoreCase))
-                            .ToList();
+                        var contentItemCollection = new ContentItemCollection();
+                        contentItemCollection.Load(packageFiles);
 
-                        targets.AddRange(items
-                            .Select(c => c.Path)
-                            .Where(path => Path.GetExtension(path).Equals(".targets", StringComparison.OrdinalIgnoreCase))
-                            .Select(path =>
-                                Path.Combine(pathResolver.GetPackageDirectory(library.Key.Name, library.Key.Version),
-                                path.Replace('/', Path.DirectorySeparatorChar))));
+                        // Find MSBuild thingies
+                        var groups = contentItemCollection.FindItemGroups(graph.Conventions.Patterns.MSBuildFiles);
 
-                        props.AddRange(items
-                            .Select(c => c.Path)
-                            .Where(path => Path.GetExtension(path).Equals(".props", StringComparison.OrdinalIgnoreCase))
-                            .Select(path =>
-                                Path.Combine(pathResolver.GetPackageDirectory(library.Key.Name, library.Key.Version),
-                                path.Replace('/', Path.DirectorySeparatorChar))));
+                        // Find the nearest msbuild group, this can include the root level Any group.
+                        var buildItems = NuGetFrameworkUtility.GetNearest(
+                            groups,
+                            graph.Framework,
+                            group =>
+                                group.Properties[ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker]
+                                    as NuGetFramework);
+
+                        if (buildItems != null)
+                        {
+                            // We need to additionally filter to items that are named "{packageId}.targets" and "{packageId}.props"
+                            // Filter by file name here and we'll filter by extension when we add things to the lists.
+                            var items = buildItems.Items
+                                .Where(item =>
+                                    Path.GetFileNameWithoutExtension(item.Path)
+                                    .Equals(library.Key.Name, StringComparison.OrdinalIgnoreCase))
+                                .ToList();
+
+                            targets.AddRange(items
+                                .Where(c => Path.GetExtension(c.Path).Equals(".targets", StringComparison.OrdinalIgnoreCase))
+                                .Select(c =>
+                                    Path.Combine(pathResolver.GetPackageDirectory(library.Key.Name, library.Key.Version),
+                                    c.Path.Replace('/', Path.DirectorySeparatorChar))));
+
+                            props.AddRange(items
+                                .Where(c => Path.GetExtension(c.Path).Equals(".props", StringComparison.OrdinalIgnoreCase))
+                                .Select(c =>
+                                    Path.Combine(pathResolver.GetPackageDirectory(library.Key.Name, library.Key.Version),
+                                    c.Path.Replace('/', Path.DirectorySeparatorChar))));
+                        }
                     }
                 }
             }
@@ -574,6 +585,8 @@ namespace NuGet.Commands
                 target.TargetFramework = targetGraph.Framework;
                 target.RuntimeIdentifier = targetGraph.RuntimeIdentifier;
 
+                var flattenedFlags = IncludeFlagUtils.FlattenDependencyTypes(targetGraph, project);
+
                 var fallbackFramework = target.TargetFramework as FallbackFramework;
                 var warnForImportsOnGraph = warnForImports && fallbackFramework != null;
 
@@ -587,12 +600,20 @@ namespace NuGet.Commands
                         continue;
                     }
 
+                    // include flags
+                    LibraryIncludeType includeFlags;
+                    if (!flattenedFlags.TryGetValue(library.Name, out includeFlags))
+                    {
+                        includeFlags = LibraryIncludeType.Default;
+                    }
+
                     var targetLibrary = LockFileUtils.CreateLockFileTargetLibrary(
                         libraries[Tuple.Create(library.Name, library.Version)],
                         packageInfo,
                         targetGraph,
                         resolver,
-                        correctedPackageName: library.Name);
+                        correctedPackageName: library.Name,
+                        dependencyType: includeFlags);
 
                     target.Libraries.Add(targetLibrary);
 
@@ -607,7 +628,8 @@ namespace NuGet.Commands
                             targetGraph,
                             resolver,
                             correctedPackageName: library.Name,
-                            targetFrameworkOverride: nonFallbackFramework);
+                            targetFrameworkOverride: nonFallbackFramework,
+                            dependencyType: includeFlags);
 
                         if (!targetLibrary.Equals(targetLibraryWithoutFallback))
                         {

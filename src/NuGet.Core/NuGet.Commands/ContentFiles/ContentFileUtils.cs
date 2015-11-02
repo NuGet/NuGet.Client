@@ -16,6 +16,10 @@ namespace NuGet.Commands
     internal static class ContentFileUtils
     {
         private const string ContentFilesFolderName = "contentFiles/";
+        private const string BuildAction = "buildAction";
+        private const string CopyToOutput = "copyToOutput";
+        private const string CodeLanguage = "codeLanguage";
+        private const string None = "None";
 
         /// <summary>
         /// Normalizes build action casing and validates the action string.
@@ -198,7 +202,7 @@ namespace NuGet.Commands
                 // _._ is needed for empty codeLanguage groups
                 if (file.EndsWith("/_._", StringComparison.Ordinal))
                 {
-                    action = "None";
+                    action = None;
                 }
                 else
                 {
@@ -229,7 +233,7 @@ namespace NuGet.Commands
 
                 // Add the language from the directory path
                 lockFileItem.Properties.Add(
-                    "codeLanguage",
+                    CodeLanguage,
                     languageMappings[file].ToLowerInvariant());
 
                 // normalize and validate the build action name
@@ -243,8 +247,8 @@ namespace NuGet.Commands
                     throw new PackagingException(message);
                 }
 
-                lockFileItem.Properties.Add("buildAction", normalizedAction);
-                lockFileItem.Properties.Add("copyToOutput", copyToOutput.ToString());
+                lockFileItem.Properties.Add(BuildAction, normalizedAction);
+                lockFileItem.Properties.Add(CopyToOutput, copyToOutput.ToString());
 
                 if (copyToOutput)
                 {
@@ -279,20 +283,33 @@ namespace NuGet.Commands
             return results;
         }
 
-    // Find path relative to the TxM
-    // Ex: contentFiles/cs/net45/config/config.xml -> config/config.xml
-    // Ex: contentFiles/any/any/config/config.xml -> config/config.xml
-    private static string GetContentFileFolderRelativeToFramework(string itemPath)
-    {
-        var parts = itemPath.Split('/');
-
-        if (parts.Length > 3)
+        /// <summary>
+        /// Create an empty lock file item for any/any
+        /// </summary>
+        internal static LockFileItem CreateEmptyItem()
         {
-            return string.Join("/", parts.Skip(3));
+            var item = new LockFileItem("contentFiles/any/any/_._");
+            item.Properties.Add(BuildAction, None);
+            item.Properties.Add(CopyToOutput, Boolean.FalseString);
+            item.Properties.Add(CodeLanguage, "any");
+
+            return item;
         }
 
-        Debug.Fail("Unable to get relative path: " + itemPath);
-        return itemPath;
+        // Find path relative to the TxM
+        // Ex: contentFiles/cs/net45/config/config.xml -> config/config.xml
+        // Ex: contentFiles/any/any/config/config.xml -> config/config.xml
+        private static string GetContentFileFolderRelativeToFramework(string itemPath)
+        {
+            var parts = itemPath.Split('/');
+
+            if (parts.Length > 3)
+            {
+                return string.Join("/", parts.Skip(3));
+            }
+
+            Debug.Fail("Unable to get relative path: " + itemPath);
+            return itemPath;
+        }
     }
-}
 }
