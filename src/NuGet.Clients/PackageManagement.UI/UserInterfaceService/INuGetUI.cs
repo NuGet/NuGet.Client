@@ -69,9 +69,10 @@ namespace NuGet.PackageManagement.UI
         FileConflictAction FileConflictAction { get; }
 
         /// <summary>
-        /// Refreshes the package details and installed status icons
+        /// Fires SolutionManager.ActionsExecuted event so that the UI will get 
+        /// refreshed.
         /// </summary>
-        void RefreshPackageStatus();
+        void OnActionsExecuted(IEnumerable<ResolvedAction> actions);
 
         SourceRepository ActiveSource { get; }
 

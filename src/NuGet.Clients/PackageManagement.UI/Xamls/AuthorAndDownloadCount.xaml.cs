@@ -148,6 +148,10 @@ namespace NuGet.PackageManagement.UI
             {
                 _self.Visibility = Visibility.Collapsed;
             }
+            else
+            {
+                _self.Visibility = Visibility.Visible;
+            }
         }
     }
 }

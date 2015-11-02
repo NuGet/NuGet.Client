@@ -211,8 +211,8 @@ namespace NuGet.PackageManagement.UI
                     // execute the actions
                     await executeActionsAsync(actions);
 
-                    // update
-                    uiService.RefreshPackageStatus();
+                    // fires ActionsExecuted event to update the UI
+                    uiService.OnActionsExecuted(actions);
                 }
             }
             catch (System.Net.Http.HttpRequestException ex)

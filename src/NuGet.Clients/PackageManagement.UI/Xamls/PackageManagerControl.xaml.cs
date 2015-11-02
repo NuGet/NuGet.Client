@@ -12,8 +12,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.Configuration;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
@@ -110,6 +108,12 @@ namespace NuGet.PackageManagement.UI
                 controller.PackageManagerControl = this;
             }
 
+            var solutionManager = Model.Context.SolutionManager;
+            solutionManager.NuGetProjectAdded += SolutionManager_ProjectsChanged;
+            solutionManager.NuGetProjectRemoved += SolutionManager_ProjectsChanged;
+            solutionManager.NuGetProjectRenamed += SolutionManager_ProjectsChanged;
+            solutionManager.ActionsExecuted += SolutionManager_ActionsExecuted;
+
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged += Sources_PackageSourcesChanged;
 
             if (IsUILegalDisclaimerSuppressed())
@@ -118,6 +122,46 @@ namespace NuGet.PackageManagement.UI
             }
 
             _missingPackageStatus = false;
+        }
+
+        private void SolutionManager_ProjectsChanged(object sender, NuGetProjectEventArgs e)
+        {
+            if (Model.IsSolution)
+            {
+                var solutionModel = _detailModel as PackageSolutionDetailControlModel;
+                if (solutionModel == null)
+                {
+                    return;
+                }
+
+                // get the list of projects
+                var projects = solutionModel.Projects.Select(p => p.NuGetProject);
+                Model.Context.Projects = projects;
+
+                // refresh UI
+                Refresh();
+            }
+        }
+
+        private void SolutionManager_ActionsExecuted(object sender, ActionsExecutedEventArgs e)
+        {
+            if (Model.IsSolution)
+            {
+                Refresh();
+            }
+            else
+            {
+                // this is a project package manager, so there is one and only one project.
+                var project = Model.Context.Projects.First();
+                var projectName = NuGetProject.GetUniqueNameOrName(project);
+
+                // we need refresh when packages are installed into or uninstalled from the project
+                if (e.Actions.Any(action =>
+                    NuGetProject.GetUniqueNameOrName(action.Project) == projectName))
+                {
+                    Refresh();
+                }
+            }
         }
 
         public PackageRestoreBar RestoreBar => _restoreBar;
@@ -277,7 +321,7 @@ namespace NuGet.PackageManagement.UI
             settings.ForceRemove = _detailModel.Options.ForceRemove;
             settings.DependencyBehavior = _detailModel.Options.SelectedDependencyBehavior.Behavior;
             settings.FileConflictAction = _detailModel.Options.SelectedFileConflictAction.Action;
-            settings.IncludePrerelease = _topPanel.CheckboxPrerelease.IsChecked == true;            
+            settings.IncludePrerelease = _topPanel.CheckboxPrerelease.IsChecked == true;
             settings.SelectedFilter = _topPanel.Filter;
             settings.OptionsExpanded = _packageDetail._optionsControl.IsExpanded;
             _packageDetail._solutionView.SaveSettings(settings);
@@ -411,7 +455,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            UpdatePackageStatus();
+            Refresh();
             _packageDetail.Refresh();
         }
 
@@ -493,6 +537,8 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
                 {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                     var option = new PackageLoaderOption(_topPanel.Filter, IncludePrerelease);
                     var loader = new PackageLoader(
                         option,
@@ -511,6 +557,8 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                 _topPanel._labelUpgradeAvailable.Count = 0;
                 var updatesLoader = new PackageLoader(
                     new PackageLoaderOption(Filter.UpdatesAvailable, IncludePrerelease),
@@ -521,8 +569,8 @@ namespace NuGet.PackageManagement.UI
                     ActiveSource,
                     String.Empty);
                 await updatesLoader.InitializeAsync();
-                int updatesCount = await updatesLoader.CreatePackagesWithUpdatesAsync(CancellationToken.None);
-                _topPanel._labelUpgradeAvailable.Count = updatesCount;
+                var packagesWithUpdates = await updatesLoader.GetPackagesWithUpdatesAsync(CancellationToken.None);
+                _topPanel._labelUpgradeAvailable.Count = packagesWithUpdates.Count;
             });
         }
 
@@ -530,6 +578,8 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                 _topPanel._labelConsolidate.Count = 0;
                 var updatesLoader = new PackageLoader(
                     new PackageLoaderOption(Filter.Consolidate, IncludePrerelease),
@@ -630,7 +680,10 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        internal void UpdatePackageStatus()
+        /// <summary>
+        /// Refreshes the control after packages are installed or uninstalled.
+        /// </summary>
+        private void Refresh()
         {
             if (_topPanel.Filter != Filter.All)
             {
@@ -660,6 +713,8 @@ namespace NuGet.PackageManagement.UI
 
             RefreshAvailableUpdatesCount();
             RefreshConsolidatablePackagesCount();
+
+            _packageDetail?.Refresh();
         }
 
         private static IReadOnlyList<Packaging.PackageReference> GetInstalledPackages(IEnumerable<NuGetProject> projects)
@@ -855,7 +910,15 @@ namespace NuGet.PackageManagement.UI
             _windowSearchHost.TerminateSearch();
             RemoveRestoreBar();
             RemoveRestartBar();
+
+            var solutionManager = Model.Context.SolutionManager;
+            solutionManager.NuGetProjectAdded -= SolutionManager_ProjectsChanged;
+            solutionManager.NuGetProjectRemoved -= SolutionManager_ProjectsChanged;
+            solutionManager.NuGetProjectRenamed -= SolutionManager_ProjectsChanged;
+            solutionManager.ActionsExecuted -= SolutionManager_ActionsExecuted;
+
             Model.Context.SourceProvider.PackageSourceProvider.PackageSourcesChanged -= Sources_PackageSourcesChanged;
+
             _detailModel.CleanUp();
             _packageList.SelectionChanged -= PackageList_SelectionChanged;
         }
@@ -982,7 +1045,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             ExecuteAction(
-                ()=>
+                () =>
                 {
                     return Model.Context.UIActionEngine.PerformUpdateAsync(
                         Model.UIController,

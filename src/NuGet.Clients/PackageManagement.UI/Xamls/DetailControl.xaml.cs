@@ -54,8 +54,15 @@ namespace NuGet.PackageManagement.UI
 
         public void Refresh()
         {
-            var model = DataContext as DetailControlModel;
-            model?.Refresh();
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                // because the code is async, it's possible that the DataContext has been changed
+                // once execution reaches here and thus 'model' could be null.
+                var model = DataContext as DetailControlModel;
+                model?.Refresh();
+            });
         }
 
         private void ProjectInstallButtonClicked(object sender, EventArgs e)

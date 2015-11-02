@@ -77,6 +77,8 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public event EventHandler SolutionOpening;
 
+        public event EventHandler<ActionsExecutedEventArgs> ActionsExecuted;
+
         public VSSolutionManager()
         {
             _dte = ServiceLocator.GetInstance<DTE>();
@@ -709,6 +711,14 @@ namespace NuGet.PackageManagement.VisualStudio
         public int OnSelectionChanged(IVsHierarchy pHierOld, uint itemidOld, IVsMultiItemSelect pMISOld, ISelectionContainer pSCOld, IVsHierarchy pHierNew, uint itemidNew, IVsMultiItemSelect pMISNew, ISelectionContainer pSCNew)
         {
             return VSConstants.S_OK;
+        }
+
+        public void OnActionsExecuted(IEnumerable<ResolvedAction> actions)
+        {
+            if (ActionsExecuted != null)
+            {
+                ActionsExecuted(this, new ActionsExecutedEventArgs(actions));
+            }
         }
 
         #endregion IVsSelectionEvents implementation
