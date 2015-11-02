@@ -19,6 +19,17 @@ namespace NuGet.Protocol.Core.v3
             return (int)value.Value;
         }
 
+        public static long? GetLong(this JObject json, string property)
+        {
+            var value = json[property] as JValue;
+            if (value == null || value.Type != JTokenType.Integer)
+            {
+                return null;
+            }
+
+            return (long)value.Value;
+        }
+
         public static bool? GetBoolean(this JObject json, string property)
         {
             var value = json[property] as JValue;

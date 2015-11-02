@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement.UI
         {
         }
 
-        public DetailedPackageMetadata(UIPackageMetadata serverData, int? downloadCount)
+        public DetailedPackageMetadata(UIPackageMetadata serverData, long? downloadCount)
         {
             Version = serverData.Identity.Version;
             Summary = serverData.Summary;
@@ -53,7 +53,7 @@ namespace NuGet.PackageManagement.UI
 
         public string Tags { get; set; }
 
-        public int? DownloadCount { get; set; }
+        public long? DownloadCount { get; set; }
 
         public DateTimeOffset? Published { get; set; }
 

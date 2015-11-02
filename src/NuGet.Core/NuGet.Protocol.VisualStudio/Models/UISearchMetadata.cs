@@ -17,7 +17,7 @@ namespace NuGet.Protocol.VisualStudio
                                 string title,
                                 string summary,
                                 string author,
-                                int? downloadCount,
+                                long? downloadCount,
                                 Uri iconUrl,
                                 Lazy<Task<IEnumerable<VersionInfo>>> versions,
                                 UIPackageMetadata latestPackageMetadata)
@@ -46,6 +46,6 @@ namespace NuGet.Protocol.VisualStudio
 
         public string Author { get; }
 
-        public int? DownloadCount { get; }
+        public long? DownloadCount { get; }
     }
 }

@@ -133,9 +133,9 @@ namespace NuGet.PackageManagement.UI
             return v1.Equals(v2, VersionComparison.Default);
         }
 
-        private int? _downloadCount;
+        private long? _downloadCount;
 
-        public int? DownloadCount
+        public long? DownloadCount
         {
             get
             {

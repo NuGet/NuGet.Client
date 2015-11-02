@@ -28,7 +28,7 @@ namespace NuGet.Protocol.VisualStudio
             DateTimeOffset? published,
             IEnumerable<PackageDependencyGroup> dependencySet,
             bool requireLicenseAccept,
-            int? downloadCount)
+            long? downloadCount)
         {
             Identity = identity;
             Summary = summary;
@@ -77,7 +77,7 @@ namespace NuGet.Protocol.VisualStudio
 
         public string Tags { get; private set; }
 
-        public int? DownloadCount { get; private set; }
+        public long? DownloadCount { get; private set; }
 
         public DateTimeOffset? Published { get; private set; }
 

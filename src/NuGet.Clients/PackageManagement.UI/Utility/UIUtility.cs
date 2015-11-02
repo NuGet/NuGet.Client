@@ -59,7 +59,7 @@ namespace NuGet.PackageManagement.UI
 
         // Convert numbers into strings like "1.2K", "33.4M" etc.
         // Precondition: number > 0.
-        public static string NumberToString(int number)
+        public static string NumberToString(long number)
         {
             double v = (double)number;
             int exp = 0;

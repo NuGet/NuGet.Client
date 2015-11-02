@@ -60,7 +60,7 @@ namespace NuGet.Protocol.VisualStudio
         {
             var version = NuGetVersion.Parse(metadata.Value<string>(Properties.Version));
             DateTimeOffset? published = metadata.GetDateTime(Properties.Published);
-            int? downloadCountValue = metadata.GetInt(Properties.DownloadCount);
+            long? downloadCountValue = metadata.GetLong(Properties.DownloadCount);
             var id = metadata.Value<string>(Properties.PackageId);
             var title = metadata.Value<string>(Properties.Title);
             var summary = metadata.Value<string>(Properties.Summary);

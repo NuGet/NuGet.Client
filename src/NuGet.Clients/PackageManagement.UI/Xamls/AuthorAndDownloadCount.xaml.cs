@@ -27,7 +27,7 @@ namespace NuGet.PackageManagement.UI
         public static readonly DependencyProperty DownloadCountProperty =
             DependencyProperty.Register(
                 nameof(DownloadCount),
-                typeof(int?),
+                typeof(long?),
                 typeof(AuthorAndDownloadCount),
                 new PropertyMetadata(OnPropertyChanged));
 
@@ -36,11 +36,11 @@ namespace NuGet.PackageManagement.UI
             InitializeComponent();
         }
 
-        public int? DownloadCount
+        public long? DownloadCount
         {
             get
             {
-                return GetValue(DownloadCountProperty) as int?;
+                return GetValue(DownloadCountProperty) as long?;
             }
             set
             {
