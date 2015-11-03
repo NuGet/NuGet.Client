@@ -260,6 +260,11 @@ namespace NuGet.Commands
                 lockFileItem.Properties.Add(BuildAction, normalizedAction);
                 lockFileItem.Properties.Add(CopyToOutput, copyToOutput.ToString());
 
+                // Check if this is a .pp transform. If the filename is ".pp" ignore it since it will
+                // have no file name after the transform.
+                var isPP = lockFileItem.Path.EndsWith(".pp", StringComparison.OrdinalIgnoreCase)
+                    && !string.IsNullOrEmpty(Path.GetFileNameWithoutExtension(lockFileItem.Path));
+
                 if (copyToOutput)
                 {
                     string destination = null;
@@ -275,11 +280,17 @@ namespace NuGet.Commands
                         destination = GetContentFileFolderRelativeToFramework(file);
                     }
 
+                    if (isPP)
+                    {
+                        // Remove .pp from the output file path
+                        destination = destination.Substring(0, destination.Length - 3);
+                    }
+
                     lockFileItem.Properties.Add("outputPath", destination);
                 }
 
                 // Add the pp transform file if one exists
-                if (lockFileItem.Path.EndsWith(".pp", StringComparison.OrdinalIgnoreCase))
+                if (isPP)
                 {
                     var destination = lockFileItem.Path.Substring(0, lockFileItem.Path.Length - 3);
                     destination = GetContentFileFolderRelativeToFramework(destination);

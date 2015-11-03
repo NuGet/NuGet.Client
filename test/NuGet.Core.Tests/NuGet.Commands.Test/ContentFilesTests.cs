@@ -18,6 +18,145 @@ namespace NuGet.Commands.Test
     public class ContentFilesTests : IDisposable
     {
         [Fact]
+        public async Task ContentFiles_VerifyLockFileContainsCorrectPPOutputPath()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var framework = "net46";
+
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
+            {
+                zip.AddEntry("contentFiles/any/any/a/code.cs.pp", new byte[] { 0 });
+
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
+                        <metadata>
+                            <id>packageA</id>
+                            <version>1.0.0</version>
+                            <title />
+                            <contentFiles>
+                                <files include=""**/*.*"" copyToOutput=""TRUE"" flatten=""true"" />
+                            </contentFiles>
+                        </metadata>
+                        </package>", Encoding.UTF8);
+            }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var helperCsItem = target.Libraries.Single().ContentFiles
+                .Single(item => item.Path == "contentFiles/any/any/a/code.cs.pp");
+
+            // Assert
+            Assert.Equal("code.cs", helperCsItem.Properties["outputPath"]);
+        }
+
+        [Fact]
+        public async Task ContentFiles_InvalidPPFileName()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var framework = "net46";
+
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
+            {
+                zip.AddEntry("contentFiles/any/any/a/.pp", new byte[] { 0 });
+
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
+                        <metadata>
+                            <id>packageA</id>
+                            <version>1.0.0</version>
+                            <title />
+                            <contentFiles>
+                                <files include=""**/*"" copyToOutput=""TRUE"" flatten=""true"" />
+                            </contentFiles>
+                        </metadata>
+                        </package>", Encoding.UTF8);
+            }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var helperCsItem = target.Libraries.Single().ContentFiles
+                .Single(item => item.Path == "contentFiles/any/any/a/.pp");
+
+            // Assert
+            Assert.Equal(".pp", helperCsItem.Properties["outputPath"]);
+            Assert.False(helperCsItem.Properties.ContainsKey("ppOutputPath"));
+        }
+
+        [Fact]
         public async Task ContentFiles_VerifyNearestTFMPerLanguageNoCompatibleItems()
         {
             // Arrange
