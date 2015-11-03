@@ -20,6 +20,202 @@ namespace NuGet.Commands.Test
     public class IncludeTypeTests : IDisposable
     {
         [Fact]
+        public async Task IncludeType_ProjectToProjectDefaultFlowDoubleRestore()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var framework = "net46";
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+
+            var configJson2 = @"{
+                ""dependencies"": {
+                    ""packageX"": {
+                        ""version"": ""1.0.0""
+                    }
+                },
+                ""frameworks"": {
+                ""net46"": {}
+                }
+            }";
+
+            var configJson1 = @"{
+                ""dependencies"": {
+                },
+                ""frameworks"": {
+                ""net46"": {}
+                }
+            }";
+
+            CreateXYZ(Path.Combine(workingDir, "repository"), "all", string.Empty);
+
+            // Act
+            var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
+            result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var targets = target.Libraries.ToDictionary(lib => lib.Name);
+
+            var msbuildTargets = GetInstalledTargets(workingDir);
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+
+            Assert.Equal(0, GetNonEmptyCount(targets["packageX"].ContentFiles));
+            Assert.Equal(1, GetNonEmptyCount(targets["packageX"].NativeLibraries));
+            Assert.Equal(1, GetNonEmptyCount(targets["packageX"].RuntimeAssemblies));
+            Assert.Equal(1, targets["packageX"].FrameworkAssemblies.Count);
+            Assert.Equal(1, targets["packageX"].Dependencies.Count);
+
+            Assert.Equal(0, GetNonEmptyCount(targets["packageY"].ContentFiles));
+            Assert.Equal(1, GetNonEmptyCount(targets["packageY"].NativeLibraries));
+            Assert.Equal(1, GetNonEmptyCount(targets["packageY"].RuntimeAssemblies));
+            Assert.Equal(1, targets["packageY"].FrameworkAssemblies.Count);
+            Assert.Equal(1, targets["packageY"].Dependencies.Count);
+
+            Assert.Equal(0, GetNonEmptyCount(targets["packageZ"].ContentFiles));
+            Assert.Equal(1, GetNonEmptyCount(targets["packageZ"].NativeLibraries));
+            Assert.Equal(1, GetNonEmptyCount(targets["packageZ"].RuntimeAssemblies));
+            Assert.Equal(1, targets["packageZ"].FrameworkAssemblies.Count);
+            Assert.Equal(0, targets["packageZ"].Dependencies.Count);
+
+            Assert.Equal(0, msbuildTargets["TestProject1"].Count);
+        }
+
+        [Fact]
+        public async Task IncludeType_ProjectToProjectFlowAllDoubleRestore()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var framework = "net46";
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+
+            var configJson2 = @"{
+                ""dependencies"": {
+                    ""packageX"": {
+                        ""version"": ""1.0.0"",
+                        ""suppressParent"": ""none""
+                    }
+                },
+                ""frameworks"": {
+                ""net46"": {}
+                }
+            }";
+
+            var configJson1 = @"{
+                ""dependencies"": {
+                },
+                ""frameworks"": {
+                ""net46"": {}
+                }
+            }";
+
+            CreateXYZ(Path.Combine(workingDir, "repository"), "all", string.Empty);
+
+            // Act
+            var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
+            result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var targets = target.Libraries.ToDictionary(lib => lib.Name);
+
+            var msbuildTargets = GetInstalledTargets(workingDir);
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+
+            Assert.Equal(1, GetNonEmptyCount(targets["packageX"].ContentFiles));
+            Assert.Equal(1, GetNonEmptyCount(targets["packageX"].NativeLibraries));
+            Assert.Equal(1, GetNonEmptyCount(targets["packageX"].RuntimeAssemblies));
+            Assert.Equal(1, targets["packageX"].FrameworkAssemblies.Count);
+            Assert.Equal(1, targets["packageX"].Dependencies.Count);
+
+            Assert.Equal(1, GetNonEmptyCount(targets["packageY"].ContentFiles));
+            Assert.Equal(1, GetNonEmptyCount(targets["packageY"].NativeLibraries));
+            Assert.Equal(1, GetNonEmptyCount(targets["packageY"].RuntimeAssemblies));
+            Assert.Equal(1, targets["packageY"].FrameworkAssemblies.Count);
+            Assert.Equal(1, targets["packageY"].Dependencies.Count);
+
+            Assert.Equal(1, GetNonEmptyCount(targets["packageZ"].ContentFiles));
+            Assert.Equal(1, GetNonEmptyCount(targets["packageZ"].NativeLibraries));
+            Assert.Equal(1, GetNonEmptyCount(targets["packageZ"].RuntimeAssemblies));
+            Assert.Equal(1, targets["packageZ"].FrameworkAssemblies.Count);
+            Assert.Equal(0, targets["packageZ"].Dependencies.Count);
+
+            Assert.Equal(3, msbuildTargets["TestProject1"].Count);
+        }
+
+        [Fact]
+        public async Task IncludeType_ProjectToProjectFlowAll()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var framework = "net46";
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+
+            var configJson2 = @"{
+                ""dependencies"": {
+                    ""packageX"": {
+                        ""version"": ""1.0.0"",
+                        ""suppressParent"": ""none""
+                    }
+                },
+                ""frameworks"": {
+                ""net46"": {}
+                }
+            }";
+
+            var configJson1 = @"{
+                ""dependencies"": {
+                },
+                ""frameworks"": {
+                ""net46"": {}
+                }
+            }";
+
+            CreateXYZ(Path.Combine(workingDir, "repository"), "all", string.Empty);
+
+            // Act
+            var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var targets = target.Libraries.ToDictionary(lib => lib.Name);
+
+            var msbuildTargets = GetInstalledTargets(workingDir);
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+
+            Assert.Equal(1, GetNonEmptyCount(targets["packageX"].ContentFiles));
+            Assert.Equal(1, GetNonEmptyCount(targets["packageX"].NativeLibraries));
+            Assert.Equal(1, GetNonEmptyCount(targets["packageX"].RuntimeAssemblies));
+            Assert.Equal(1, targets["packageX"].FrameworkAssemblies.Count);
+            Assert.Equal(1, targets["packageX"].Dependencies.Count);
+
+            Assert.Equal(1, GetNonEmptyCount(targets["packageY"].ContentFiles));
+            Assert.Equal(1, GetNonEmptyCount(targets["packageY"].NativeLibraries));
+            Assert.Equal(1, GetNonEmptyCount(targets["packageY"].RuntimeAssemblies));
+            Assert.Equal(1, targets["packageY"].FrameworkAssemblies.Count);
+            Assert.Equal(1, targets["packageY"].Dependencies.Count);
+
+            Assert.Equal(1, GetNonEmptyCount(targets["packageZ"].ContentFiles));
+            Assert.Equal(1, GetNonEmptyCount(targets["packageZ"].NativeLibraries));
+            Assert.Equal(1, GetNonEmptyCount(targets["packageZ"].RuntimeAssemblies));
+            Assert.Equal(1, targets["packageZ"].FrameworkAssemblies.Count);
+            Assert.Equal(0, targets["packageZ"].Dependencies.Count);
+
+            Assert.Equal(3, msbuildTargets["TestProject1"].Count);
+        }
+
+        [Fact]
         public async Task IncludeType_ProjectToProjectsIntersectExcludes()
         {
             // Arrange

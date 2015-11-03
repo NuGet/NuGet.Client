@@ -11,9 +11,9 @@ namespace NuGet.LibraryModel
 
         public LibraryDependencyType Type { get; set; } = LibraryDependencyType.Default;
 
-        public LibraryIncludeType IncludeType { get; set; } = LibraryIncludeType.Default;
+        public LibraryIncludeType IncludeType { get; set; } = LibraryIncludeType.All;
 
-        public LibraryIncludeType SuppressParent { get; set; } = LibraryIncludeType.None;
+        public LibraryIncludeType SuppressParent { get; set; } = LibraryIncludeType.DefaultSuppress;
 
         public string Name
         {
