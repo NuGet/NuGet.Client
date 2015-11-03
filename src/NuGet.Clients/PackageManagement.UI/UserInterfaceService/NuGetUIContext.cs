@@ -14,7 +14,7 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public abstract class NuGetUIContextBase : INuGetUIContext
     {
-        private readonly NuGetProject[] _projects;
+        private NuGetProject[] _projects;
 
         protected NuGetUIContextBase(
             ISourceRepositoryProvider sourceProvider,
@@ -52,6 +52,10 @@ namespace NuGet.PackageManagement.UI
         public IEnumerable<NuGetProject> Projects
         {
             get { return _projects; }
+            set
+            {
+                _projects = value.ToArray();
+            }
         }
 
         public abstract void AddSettings(string key, UserSettings settings);

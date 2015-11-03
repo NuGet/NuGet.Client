@@ -10,12 +10,23 @@ namespace NuGet.PackageManagement
     public interface ISolutionManager
     {
         event EventHandler SolutionOpening;
+
         event EventHandler SolutionOpened;
+
         event EventHandler SolutionClosing;
+
         event EventHandler SolutionClosed;
+
         event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;
+
         event EventHandler<NuGetProjectEventArgs> NuGetProjectRemoved;
+
         event EventHandler<NuGetProjectEventArgs> NuGetProjectRenamed;
+
+        /// <summary>
+        /// Event raised after user actions are executed.
+        /// </summary>
+        event EventHandler<ActionsExecutedEventArgs> ActionsExecuted;
 
         /// <summary>
         /// Gets the current open solution directory, can only be called from the main UI thread.
@@ -71,6 +82,12 @@ namespace NuGet.PackageManagement
         /// passed in.
         /// </returns>
         NuGetProject GetNuGetProject(string nuGetProjectSafeName);
+
+        /// <summary>
+        /// Fires ActionsExecuted event.
+        /// </summary>
+        /// <param name="actions"></param>
+        void OnActionsExecuted(IEnumerable<ResolvedAction> actions);
     }
 
     public class NuGetProjectEventArgs : EventArgs

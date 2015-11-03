@@ -27,6 +27,8 @@ namespace NuGet.PackageManagement.UI
         {
             InitializeComponent();
 
+            _projectList.SizeChanged += ListView_SizeChanged;
+
             _sortableColumns = new List<GridViewColumnHeader> {
                 _projectColumnHeader,
                 _versionColumnHeader
@@ -192,6 +194,9 @@ namespace NuGet.PackageManagement.UI
 
             var newWidth = _projectColumnHeader.ActualWidth + width;
             _projectColumn.Width = newWidth;
+
+            // this width adjustment is only done once.
+            _projectList.SizeChanged -= ListView_SizeChanged;
         }
     }
 }

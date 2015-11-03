@@ -163,6 +163,15 @@ namespace Test.Utility
 
         public event EventHandler SolutionOpened;
         public event EventHandler SolutionOpening;
+        public event EventHandler<ActionsExecutedEventArgs> ActionsExecuted;
+
+        public void OnActionsExecuted(IEnumerable<ResolvedAction> actions)
+        {
+            if (ActionsExecuted != null)
+            {
+                ActionsExecuted(this, new ActionsExecutedEventArgs(actions));
+            }
+        }
 
 #pragma warning restore 0067
     }

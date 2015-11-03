@@ -16,103 +16,7 @@
       <local:InstalledVersionsCountConverter
         x:Key="InstalledVersionsCountConverter" />
 
-      <!-- style of the list view headers
-      <Style x:Key="GridViewColumnHeaderGripper" TargetType="{x:Type Thumb}">
-        <Setter Property="Canvas.Right" Value="-9" />
-        <Setter Property="Width" Value="18" />
-        <Setter Property="Height" Value="{Binding ActualHeight, RelativeSource={RelativeSource TemplatedParent}}" />
-        <Setter Property="Padding" Value="0" />
-        <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" />
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="{x:Type Thumb}">
-              <Border Background="Transparent" Padding="{TemplateBinding Padding}">
-                <Rectangle Fill="{TemplateBinding Background}" HorizontalAlignment="Center" Width="1" />
-              </Border>
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
-      </Style>
-      <Style x:Key="GridViewColumnHeaderStyle1" TargetType="{x:Type GridViewColumnHeader}">
-        <Setter Property="HorizontalContentAlignment" Value="Center" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="Background" Value="{DynamicResource {x:Static local:Brushes.ListPaneBackground}}" />
-        <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Padding" Value="4,0,4,4" />
-        <Setter Property="Margin" Value="0" />
-        <Setter Property="Foreground" Value="{DynamicResource {x:Static local:Brushes.UIText}}" />
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="{x:Type GridViewColumnHeader}">
-              <Grid SnapsToDevicePixels="true">
-                <Border
-                  x:Name="HeaderBorder"
-                  BorderThickness="0"
-                  Background="{TemplateBinding Background}"
-                  Padding="{TemplateBinding Padding}">
-                  <ContentPresenter x:Name="HeaderContent" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="0,0,0,1" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                </Border>
-                <Canvas>
-                  <Thumb x:Name="PART_HeaderGripper" Style="{StaticResource GridViewColumnHeaderGripper}" />
-                </Canvas>
-              </Grid>
-              <ControlTemplate.Triggers>
-                <Trigger Property="IsMouseOver" Value="true">
-                  <Setter Property="Background" TargetName="HeaderBorder" Value="{DynamicResource {x:Static local:Brushes.ContentMouseOverBrushKey}}" />
-                  <Setter
-                    Property="TextBlock.Foreground"
-                    Value="{DynamicResource {x:Static local:Brushes.ContentMouseOverTextBrushKey}}" />
-                </Trigger>
-                <Trigger Property="IsPressed" Value="true">
-                  <Setter Property="Background" TargetName="HeaderBorder" Value="{DynamicResource {x:Static local:Brushes.ContentSelectedBrushKey}}" />
-                  <Setter
-                    Property="TextBlock.Foreground"
-                    Value="{DynamicResource {x:Static local:Brushes.ContentSelectedTextBrushKey}}" />
-                  <Setter Property="Visibility" TargetName="PART_HeaderGripper" Value="Hidden" />
-                  <Setter Property="Margin" TargetName="HeaderContent" Value="1,1,0,0" />
-                </Trigger>
-                <Trigger Property="Height" Value="Auto">
-                  <Setter Property="MinHeight" Value="20" />
-                </Trigger>
-              </ControlTemplate.Triggers>
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
-        <Style.Triggers>
-          <Trigger Property="Role" Value="Floating">
-            <Setter Property="Opacity" Value="0.4082" />
-            <Setter Property="Template">
-              <Setter.Value>
-                <ControlTemplate TargetType="{x:Type GridViewColumnHeader}">
-                  <Canvas x:Name="PART_FloatingHeaderCanvas">
-                    <Rectangle Fill="#FF000000" Height="{TemplateBinding ActualHeight}" Opacity="0.4697" Width="{TemplateBinding ActualWidth}" />
-                  </Canvas>
-                </ControlTemplate>
-              </Setter.Value>
-            </Setter>
-          </Trigger>
-          <Trigger Property="Role" Value="Padding">
-            <Setter Property="Template">
-              <Setter.Value>
-                <ControlTemplate TargetType="{x:Type GridViewColumnHeader}">
-                  <Border
-                    x:Name="HeaderBorder"
-                    Background="{TemplateBinding Background}" />
-                  <ControlTemplate.Triggers>
-                    <Trigger Property="Height" Value="Auto">
-                      <Setter Property="MinHeight" Value="20" />
-                    </Trigger>
-                  </ControlTemplate.Triggers>
-                </ControlTemplate>
-              </Setter.Value>
-            </Setter>
-          </Trigger>
-        </Style.Triggers>
-      </Style>
-
-      -->
-
+      <!-- style of the list view headers -->      
       <Style x:Uid="Style_1" x:Key="GridViewColumnHeaderGripper" TargetType="{x:Type Thumb}">
         <Setter x:Uid="Setter_1" Property="Canvas.Right" Value="-8.5" />
         <Setter x:Uid="Setter_2" Property="Width" Value="18" />
@@ -260,8 +164,7 @@
       Margin="0,8,0,0"
       ItemsSource="{Binding Projects}"
       Background="{DynamicResource {x:Static local:Brushes.ListPaneBackground}}"
-      Foreground="{DynamicResource {x:Static local:Brushes.UIText}}"      
-      SizeChanged="ListView_SizeChanged">
+      Foreground="{DynamicResource {x:Static local:Brushes.UIText}}" >
       <ListView.View>
         <GridView ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
 
