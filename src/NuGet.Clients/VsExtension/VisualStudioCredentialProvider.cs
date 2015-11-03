@@ -3,13 +3,14 @@
 
 using System;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet;
 
 namespace NuGetVSExtension
 {
-    public class VisualStudioCredentialProvider : ICredentialProvider
+    public class VisualStudioCredentialProvider : NuGet.Credentials.ICredentialProvider
     {
         private readonly IVsWebProxy _webProxyService;
 
@@ -17,7 +18,7 @@ namespace NuGetVSExtension
         {
             if (webProxyService == null)
             {
-                throw new ArgumentNullException("webProxyService");
+                throw new ArgumentNullException(nameof(webProxyService));
             }
             _webProxyService = webProxyService;
         }
@@ -26,12 +27,14 @@ namespace NuGetVSExtension
         /// Returns an ICredentials instance that the consumer would need in order
         /// to properly authenticate to the given Uri.
         /// </summary>
-        public ICredentials GetCredentials(Uri uri, IWebProxy proxy, CredentialType credentialType, bool retrying)
+        public async Task<ICredentials> Get(Uri uri, IWebProxy proxy, bool isProxyRequest, bool isRetry,
+            bool nonInteractive, CancellationToken cancellationToken)
         {
             if (uri == null)
             {
-                throw new ArgumentNullException("uri");
+                throw new ArgumentNullException(nameof(uri));
             }
+
             // Capture the original proxy before we do anything
             // so that we can re-set it once we get the credentials for the given Uri.
             IWebProxy originalProxy = null;
@@ -58,7 +61,7 @@ namespace NuGetVSExtension
                 // The cached credentials that we found are not valid so let's ask the user
                 // until they abort or give us valid credentials.
                 var uriToDisplay = uri;
-                if (credentialType == CredentialType.ProxyCredentials && proxy != null)
+                if (isProxyRequest && proxy != null)
                 {
                     // Display the proxy server's host name when asking for proxy credentials
                     uriToDisplay = proxy.GetProxy(uri);
@@ -69,11 +72,15 @@ namespace NuGetVSExtension
                 // so this is needed no matter wether we're prompting for proxy credentials 
                 // or request credentials. 
                 WebRequest.DefaultWebProxy = new WebProxy(uriToDisplay);
-                return PromptForCredentials(uri);
+
+                var cred = await PromptForCredentials(uri, cancellationToken);
+
+                return cred;
             }
             finally
             {
-                // Reset the original WebRequest.DefaultWebProxy to what it was when we started credential discovery.
+                // Reset the original WebRequest.DefaultWebProxy to what it was when we started credential
+                // discovery.
                 WebRequest.DefaultWebProxy = originalProxy;
             }
         }
@@ -82,12 +89,14 @@ namespace NuGetVSExtension
         /// This method is responsible for retrieving either cached credentials
         /// or forcing a prompt if we need the user to give us new credentials.
         /// </summary>
-        private ICredentials PromptForCredentials(Uri uri)
+        private Task<ICredentials> PromptForCredentials(Uri uri, CancellationToken cancellationToken)
         {
             const __VsWebProxyState oldState = __VsWebProxyState.VsWebProxyState_PromptForCredentials;
 
             var newState = (uint)__VsWebProxyState.VsWebProxyState_NoCredentials;
             int result = 0;
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             ThreadHelper.JoinableTaskFactory.Run(async () =>
             {
@@ -110,7 +119,7 @@ namespace NuGetVSExtension
                 return null;
             }
             // Get the new credentials from the proxy instance
-            return WebRequest.DefaultWebProxy.Credentials;
+            return System.Threading.Tasks.Task.FromResult(WebRequest.DefaultWebProxy.Credentials);
         }
     }
 }

@@ -96,7 +96,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
                             if (HttpHandlerResourceV3.PromptForCredentials != null)
                             {
-                                credentials = HttpHandlerResourceV3.PromptForCredentials(_baseUri);
+                                credentials = await HttpHandlerResourceV3.PromptForCredentials(_baseUri, cancellationToken).ConfigureAwait(false);
                             }
 
                             if (credentials == null)

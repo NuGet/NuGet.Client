@@ -1,6 +1,5 @@
 ﻿{
   "dependencies": {
-    "Microsoft.IdentityModel.Clients.ActiveDirectory": "2.16.204221202",
     "Microsoft.VisualStudio.OLE.Interop": "7.10.6070",
     "Microsoft.VisualStudio.Services.Client": "14.83.2",
     "Microsoft.VisualStudio.Services.InteractiveClient": "14.83.2",
@@ -16,13 +15,17 @@
     "Microsoft.VisualStudio.Shell.Interop.8.0": "8.0.50727",
     "Microsoft.VisualStudio.Shell.Interop.9.0": "9.0.30729",
     "Microsoft.VisualStudio.Threading": "14.0.50702",
-    "Microsoft.VSSDK.BuildTools": "14.0.23107",
-    "Microsoft.WindowsAzure.ConfigurationManager": "1.7.0",
-    "NuGet.Commands": "3.3.0-*",
-    "System.IdentityModel.Tokens.Jwt": "4.0.0"
+    "Moq": "4.2.1507.118",
+    "xunit": "2.0.0",
+    "xunit.runner.visualstudio": "2.0.0",
+    "Test.Utility": "3.3.0-*"
   },
   "frameworks": {
-    "net45": {}
+    "net45": {
+      "frameworkAssemblies": {
+        "System.ComponentModel.DataAnnotations": "4.0.0.0"
+      }
+    }
   },
   "runtimes": {
     "win-anycpu": {}

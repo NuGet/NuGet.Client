@@ -61,6 +61,42 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not get the account manager, unable to check the keychain..
+        /// </summary>
+        internal static string AccountProvider_FailedToLoadAccountManager {
+            get {
+                return ResourceManager.GetString("AccountProvider_FailedToLoadAccountManager", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not get the account provider, unable to check the keychain..
+        /// </summary>
+        internal static string AccountProvider_FailedToLoadVSOAccountProvider {
+            get {
+                return ResourceManager.GetString("AccountProvider_FailedToLoadVSOAccountProvider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No valid credentials found for VSO account..
+        /// </summary>
+        internal static string AccountProvider_NoValidCrededentialsFound {
+            get {
+                return ResourceManager.GetString("AccountProvider_NoValidCrededentialsFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to authenticate without prompting user..
+        /// </summary>
+        internal static string AccountProvider_TriedToShowUIOnNonInteractive {
+            get {
+                return ResourceManager.GetString("AccountProvider_TriedToShowUIOnNonInteractive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to NuGet Package restore failed for project {0} for &apos;{1}&apos;..
         /// </summary>
         internal static string BuildIntegratedPackageRestoreFailedForProject {
@@ -234,7 +270,7 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to NuGet Package restored finished for project {0}..
+        ///   Looks up a localized string similar to NuGet Package restore finished for project &apos;{0}&apos;..
         /// </summary>
         internal static string PackageRestoreFinishedForProject {
             get {
