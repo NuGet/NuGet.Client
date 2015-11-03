@@ -610,6 +610,87 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public async Task ContentFiles_NuspecContentFilesRuleOrdering()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var framework = "net46";
+
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
+            {
+                zip.AddEntry("contentFiles/any/any/a/file.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/b/file.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/a/a/file.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/a/b/file.txt", new byte[] { 0 });
+
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
+                        <metadata>
+                            <id>packageA</id>
+                            <version>1.0.0</version>
+                            <title />
+                            <contentFiles>
+                                <files include=""**/*"" buildAction=""None"" copyToOutput=""true"" />
+                                <files include=""**/*/a/file.txt"" copyToOutput=""false"" />
+                            </contentFiles>
+                        </metadata>
+                        </package>", Encoding.UTF8);
+            }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var bFiles = target.Libraries.Single().ContentFiles.Where(item => item.Path.Contains("/b/")).ToList();
+            var aFiles = target.Libraries.Single().ContentFiles.Where(item => !item.Path.Contains("/b/")).ToList();
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+            Assert.Equal(4, target.Libraries.Single().ContentFiles.Count);
+            Assert.True(bFiles.All(item => item.Properties["copyToOutput"] == "True"));
+            Assert.True(aFiles.All(item => item.Properties["copyToOutput"] == "False"));
+            Assert.True(bFiles.All(item => item.Properties["buildAction"] == "None"));
+            Assert.True(aFiles.All(item => item.Properties["buildAction"] == "None"));
+        }
+
+        [Fact]
         public async Task ContentFiles_NuspecContentFilesGlobbingSupportIncludeDir()
         {
             // Arrange

@@ -121,8 +121,8 @@ namespace NuGet.Commands
             var rootFolderPathLength = ContentFilesFolderName.Length;
 
             // Read the contentFiles section of the nuspec
-            // Reverse the entries so that the top entry has priority
-            var nuspecContentFiles = nuspec.GetContentFiles().Reverse().ToList();
+            // Read the entries so that the bottom entry has priority
+            var nuspecContentFiles = nuspec.GetContentFiles().ToList();
 
             // Initialize mappings
             var entryMappings = new Dictionary<string, List<ContentFilesEntry>>(StringComparer.OrdinalIgnoreCase);
