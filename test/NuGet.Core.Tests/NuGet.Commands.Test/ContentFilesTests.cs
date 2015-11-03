@@ -18,6 +18,389 @@ namespace NuGet.Commands.Test
     public class ContentFilesTests : IDisposable
     {
         [Fact]
+        public async Task ContentFiles_VerifyNearestTFMPerLanguageNoCompatibleItems()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var framework = "uap10.0";
+
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
+            {
+                zip.AddEntry("contentFiles/any/net40/image.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/net40/image2.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/net45/code.cs", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs6/net46/code.cs", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/dotnet6.0/code.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net46/code.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net46/code2.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net45/code.vb", new byte[] { 0 });
+
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
+                        <metadata>
+                            <id>packageA</id>
+                            <version>1.0.0</version>
+                            <title />
+                        </metadata>
+                        </package>", Encoding.UTF8);
+            }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var csItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "cs");
+
+            var cs6Items = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "cs6");
+
+            var vbItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "vb");
+
+            var anyItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "any");
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+
+            Assert.Equal(0, cs6Items.Count());
+            Assert.Equal(0, csItems.Count());
+            Assert.Equal(0, vbItems.Count());
+            Assert.Equal(0, anyItems.Count());
+        }
+
+        [Fact]
+        public async Task ContentFiles_VerifyNearestTFMPerLanguageUap10()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var framework = "uap10.0";
+
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
+            {
+                zip.AddEntry("contentFiles/any/any/image.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/net40/image.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/net40/image2.jpg", new byte[] { 0 });
+
+                zip.AddEntry("contentFiles/cs/net45/code.cs", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/uap10.0/code.cs", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/any/csharp.jpg", new byte[] { 0 });
+
+                zip.AddEntry("contentFiles/cs6/net46/code.cs", new byte[] { 0 });
+
+                zip.AddEntry("contentFiles/vb/dotnet6.0/code.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net46/code.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net46/code2.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net45/code.vb", new byte[] { 0 });
+
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
+                        <metadata>
+                            <id>packageA</id>
+                            <version>1.0.0</version>
+                            <title />
+                        </metadata>
+                        </package>", Encoding.UTF8);
+            }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var csItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "cs");
+
+            var cs6Items = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "cs6");
+
+            var vbItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "vb");
+
+            var anyItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "any");
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+
+            Assert.Equal(0, cs6Items.Count());
+            Assert.Equal(1, csItems.Count());
+            Assert.Equal(0, vbItems.Count());
+            Assert.Equal(1, anyItems.Count());
+
+            Assert.Equal("contentFiles/any/any/image.jpg", string.Join("|", anyItems));
+            Assert.Equal("contentFiles/cs/uap10.0/code.cs", string.Join("|", csItems));
+        }
+
+        [Fact]
+        public async Task ContentFiles_VerifyNearestTFMPerLanguageNet45()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var framework = "net45";
+
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
+            {
+                zip.AddEntry("contentFiles/any/any/image.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/net40/image.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/net40/image2.jpg", new byte[] { 0 });
+
+                zip.AddEntry("contentFiles/cs/net45/code.cs", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/uap10.0/code.cs", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/any/csharp.jpg", new byte[] { 0 });
+
+                zip.AddEntry("contentFiles/cs6/net46/code.cs", new byte[] { 0 });
+
+                zip.AddEntry("contentFiles/vb/dotnet6.0/code.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net46/code.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net46/code2.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net45/code.vb", new byte[] { 0 });
+
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
+                        <metadata>
+                            <id>packageA</id>
+                            <version>1.0.0</version>
+                            <title />
+                        </metadata>
+                        </package>", Encoding.UTF8);
+            }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var csItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "cs");
+
+            var cs6Items = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "cs6");
+
+            var vbItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "vb");
+
+            var anyItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "any");
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+
+            Assert.Equal(0, cs6Items.Count());
+            Assert.Equal(1, csItems.Count());
+            Assert.Equal(1, vbItems.Count());
+            Assert.Equal(2, anyItems.Count());
+        }
+
+        [Fact]
+        public async Task ContentFiles_VerifyNearestTFMPerLanguage()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var framework = "net46";
+
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
+            {
+                zip.AddEntry("contentFiles/any/any/image.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/net40/image.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/net40/image2.jpg", new byte[] { 0 });
+
+                zip.AddEntry("contentFiles/cs/net45/code.cs", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/uap10.0/code.cs", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/any/csharp.jpg", new byte[] { 0 });
+
+                zip.AddEntry("contentFiles/cs6/net46/code.cs", new byte[] { 0 });
+
+                zip.AddEntry("contentFiles/vb/dotnet6.0/code.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net46/code.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net46/code2.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net45/code.vb", new byte[] { 0 });
+
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
+                        <metadata>
+                            <id>packageA</id>
+                            <version>1.0.0</version>
+                            <title />
+                        </metadata>
+                        </package>", Encoding.UTF8);
+            }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var csItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "cs");
+
+            var cs6Items = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "cs6");
+
+            var vbItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "vb");
+
+            var anyItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "any");
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+
+            Assert.Equal(1, cs6Items.Count());
+            Assert.Equal(1, csItems.Count());
+            Assert.Equal(2, vbItems.Count());
+            Assert.Equal(2, anyItems.Count());
+
+            Assert.Equal("contentFiles/any/net40/image.jpg|contentFiles/any/net40/image2.jpg", string.Join("|", anyItems));
+        }
+
+        [Fact]
         public async Task ContentFiles_VerifyLockFileChange_Changed()
         {
             // Arrange

@@ -83,27 +83,37 @@ namespace NuGet.Commands
         {
             var groups = new List<ContentItemGroup>();
 
-            // Find all unique frameworks
-            var frameworks = contentGroups.Select(
-                group =>
-                    (NuGetFramework)group.Properties[ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker])
-                .Distinct()
-                .ToList();
+            // Group by content by code language and find the nearest TxM under each language.
+            var groupsByLanguage = new Dictionary<string, List<ContentItemGroup>>(StringComparer.OrdinalIgnoreCase);
 
-            // Find the best framework
-            var nearestFramework =
-                NuGetFrameworkUtility.GetNearest<NuGetFramework>(frameworks, framework, item => item);
-
-            // If a compatible framework exists get all groups with that framework
-            if (nearestFramework != null)
+            foreach (var group in contentGroups)
             {
-                var contentFilesGroupsWithSameFramework = contentGroups.Where(
-                    group =>
-                    nearestFramework.Equals(
-                        (NuGetFramework)group.Properties[ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker])
-                    );
+                var codeLanguage = (string)group.Properties[ManagedCodeConventions.PropertyNames.CodeLanguage];
 
-                groups.AddRange(contentFilesGroupsWithSameFramework);
+                List<ContentItemGroup> index;
+                if (!groupsByLanguage.TryGetValue(codeLanguage, out index))
+                {
+                    index = new List<ContentItemGroup>(1);
+                    groupsByLanguage.Add(codeLanguage, index);
+                }
+
+                index.Add(group);
+            }
+
+            // Find the nearest TxM within each language
+            foreach (var codeLanguagePair in groupsByLanguage)
+            {
+                var languageGroups = codeLanguagePair.Value;
+
+                var nearestGroup = NuGetFrameworkUtility.GetNearest<ContentItemGroup>(languageGroups, framework, 
+                    group =>
+                       (NuGetFramework)group.Properties[ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker]);
+
+                // If a compatible group exists within the code language add it to the results
+                if (nearestGroup != null)
+                {
+                    groups.Add(nearestGroup);
+                }
             }
 
             return groups;
