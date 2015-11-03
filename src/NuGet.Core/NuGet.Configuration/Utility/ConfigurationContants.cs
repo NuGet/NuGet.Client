@@ -40,6 +40,5 @@ namespace NuGet.Configuration
         internal static string ValueAttribute = "value";
 
         internal static string ProtocolVersionAttribute = "protocolVersion";
-
     }
 }

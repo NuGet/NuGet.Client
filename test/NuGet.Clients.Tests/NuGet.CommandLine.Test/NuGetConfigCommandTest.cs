@@ -92,39 +92,6 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-
-        [Fact(Skip="Expected to fail until plugins loaded as extensions fix is in")]
-        public void ConfigCommand_MisconfiguredPluginCredentialProviderDoesNotBlockConfigCommand()
-        {
-            var configFile = Path.GetTempFileName();
-            var missingPluginProvider = Path.Combine(Path.GetTempPath(), "PluginDoesNotExist.exe");
-            Util.CreateFile(Path.GetDirectoryName(configFile), Path.GetFileName(configFile), "<configuration/>");
-            try
-            {
-                string[] args = new string[] {
-                    "config",
-                    "-Set",
-                    $"CredentialProvider.Plugin.BadPlugin={missingPluginProvider}",
-                    "-ConfigFile",
-                    configFile
-                };
-
-                // This call sets a bad credential provider
-                int result = Program.Main(args);
-                // This call should still succeed, since bad credential provider is not used in config commands
-                int result2 = Program.Main(args);
-
-                // Assert
-                Assert.Equal(0, result);
-                Assert.Equal(0, result2);
-            }
-            finally
-            {
-                // cleanup
-                File.Delete(configFile);
-            }
-        }
-
         [Fact]
         public void ConfigCommand_GetValueWithAsPathOption()
         {

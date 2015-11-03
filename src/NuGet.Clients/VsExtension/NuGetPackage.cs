@@ -7,7 +7,6 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
@@ -30,7 +29,6 @@ using IMachineWideSettings = NuGet.Configuration.IMachineWideSettings;
 using ISettings = NuGet.Configuration.ISettings;
 using Resx = NuGet.PackageManagement.UI.Resources;
 using Strings = NuGet.PackageManagement.VisualStudio.Strings;
-using NuGet.Credentials;
 
 namespace NuGetVSExtension
 {
@@ -334,39 +332,27 @@ namespace NuGetVSExtension
 
             PackageSourceProvider packageSourceProvider = new PackageSourceProvider(
                 new SettingsToLegacySettings(Settings));
-
-            CredentialService.DefaultProviders = new List<NuGet.Credentials.ICredentialProvider>
-                    {
-                        new CredentialProviderAdapter(new SettingsCredentialProvider(
-                            NuGet.NullCredentialProvider.Instance, packageSourceProvider)),
-                        new VisualStudioAccountProvider(),
-                        new VisualStudioCredentialProvider(webProxy)
-                    };
-
-            var credentialService = new CredentialService(
-                (s) => this._outputConsoleLogger.OutputConsole.WriteLine(s),
-                nonInteractive: false,
-                useCache: true);
-
-            HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(credentialService); ;
+            var visualStudioCredentialProvider = new VisualStudioCredentialProvider(webProxy);
+            var settingsCredentialProvider = new SettingsCredentialProvider(
+                visualStudioCredentialProvider,
+                packageSourceProvider);
+            HttpClient.DefaultCredentialProvider = settingsCredentialProvider;
 
             // Set up proxy handling for v3 sources.
             // We need to sync the v2 proxy cache and v3 proxy cache so that the user will not
             // get prompted twice for the same authenticated proxy.
             var v2ProxyCache = ProxyCache.Instance;
-            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForProxyCredentials =
-                async (uri, proxy, cancellationToken) =>
+            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForProxyCredentials = (uri, proxy) =>
+            {
+                var v2Credentials = v2ProxyCache?.GetProxy(uri)?.Credentials;
+                if (v2Credentials != null && proxy.Credentials != v2Credentials)
                 {
-                    var v2Credentials = v2ProxyCache?.GetProxy(uri)?.Credentials;
-                    if (v2Credentials != null && proxy.Credentials != v2Credentials)
-                    {
-                        // if cached v2 credentials have not been used, try using it first.
-                        return v2Credentials;
-                    }
+                    // if cached v2 credentials have not been used, try using it first.
+                    return v2Credentials;
+                }
 
-                    return await credentialService
-                        .GetCredentials(uri, proxy, isProxy: true, cancellationToken: cancellationToken);
-                };
+                return visualStudioCredentialProvider.GetCredentials(uri, proxy, CredentialType.ProxyCredentials, retrying: false);
+            };
 
             NuGet.Protocol.Core.v3.HttpHandlerResourceV3.ProxyPassed = proxy =>
             {
@@ -374,17 +360,30 @@ namespace NuGetVSExtension
                 v2ProxyCache?.Add(proxy);
             };
 
-            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForCredentials =
-                async (uri, cancellationToken) =>
-                {
-                    // Get the proxy for this URI so we can pass it to the credentialService methods
-                    // this lets them use the proxy if they have to hit the network.
-                    var proxyCache = ProxyCache.Instance;
-                    var proxy = proxyCache?.GetProxy(uri);
+            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.ProxyPassed = proxy =>
+            {
+                // add the proxy to v2 proxy cache.
+                v2ProxyCache?.Add(proxy);
+            };
 
-                    return await credentialService
-                        .GetCredentials(uri, proxy: proxy, isProxy: false, cancellationToken: cancellationToken);
-                };
+            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForCredentials = uri =>
+            {
+                bool retrying = _credentialRequested.Contains(uri);
+
+                // Add uri to the hash set so that the next time we know the credentials for this
+                // uri has been requested before. In this case, a dialog will pop up asking
+                // for credentials.
+                if (!retrying)
+                {
+                    _credentialRequested.Add(uri);
+                }
+
+                return settingsCredentialProvider.GetCredentials(
+                    uri,
+                    proxy: null,
+                    credentialType: CredentialType.RequestCredentials,
+                    retrying: retrying);
+            };
 
             NuGet.Protocol.Core.v3.HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
             {

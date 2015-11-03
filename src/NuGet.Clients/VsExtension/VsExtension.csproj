@@ -68,7 +68,6 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="SettingsToLegacySettings.cs" />
-    <Compile Include="VisualStudioAccountProvider.cs" />
     <Compile Include="VisualStudioCredentialProvider.cs" />
     <Compile Include="VisualStudioUIContext.cs" />
     <Compile Include="VisualStudioUIContextFactory.cs" />
@@ -127,15 +126,11 @@
     <None Include="project.json" />
     <None Include="Resources\nugetAbout.ico" />
     <None Include="Resources\Toolbar.png" />
-    <None Include="source.extension.vsixmanifest">
+	<None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NuGet.Credentials\NuGet.Credentials.csproj">
-      <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
-      <Name>NuGet.Credentials</Name>
-    </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj">
       <Project>{9623cf30-192c-4864-b419-29649169ae30}</Project>
       <Name>NuGet.VisualStudio.Implementation</Name>

@@ -319,7 +319,8 @@ namespace NuGet.CommandLine
 
                 // Recreate the source provider and credential provider
                 SourceProvider = PackageSourceBuilder.CreateSourceProvider(Settings);
-                SetDefaultCredentialProvider();
+                HttpClient.DefaultCredentialProvider =
+                    new SettingsCredentialProvider(new ConsoleCredentialProvider(Console), SourceProvider, Console);
             }
         }
 
