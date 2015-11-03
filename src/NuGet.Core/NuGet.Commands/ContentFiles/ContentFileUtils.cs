@@ -83,11 +83,9 @@ namespace NuGet.Commands
         {
             var groups = new List<ContentItemGroup>();
 
-            // Find all unique code languages
-            Dictionary<string, List<ContentItemGroup>> groupsByLanguage 
-                = new Dictionary<string, List<ContentItemGroup>>(StringComparer.OrdinalIgnoreCase);
+            // Group by content by code language and find the nearest TxM under each language.
+            var groupsByLanguage = new Dictionary<string, List<ContentItemGroup>>(StringComparer.OrdinalIgnoreCase);
 
-            // Index groups by their code language
             foreach (var group in contentGroups)
             {
                 var codeLanguage = (string)group.Properties[ManagedCodeConventions.PropertyNames.CodeLanguage];
