@@ -131,5 +131,73 @@ namespace NuGet.Client.Test
             Assert.Equal(1, group.Items.Count);
             Assert.Equal("lib/net46/a.dll", group.Items[0].Path);
         }
+
+        [Fact]
+        public void ContentModel_GetNearestRIDAndTFM()
+        {
+            // Arrange
+            var runtimes = new List<RuntimeDescription>()
+            {
+                new RuntimeDescription("a"),
+                new RuntimeDescription("b", new string[] { "a" }),
+                new RuntimeDescription("c", new string[] { "b" }),
+                new RuntimeDescription("d", new string[] { "c" }),
+            };
+
+            var conventions = new ManagedCodeConventions(
+                new RuntimeGraph(
+                    runtimes,
+                    new List<CompatibilityProfile>() { new CompatibilityProfile("netcore50.app") }));
+
+            var criteria = conventions.Criteria.ForFrameworkAndRuntime(NuGetFramework.Parse("netcore50"), "d");
+
+            var collection = new ContentItemCollection();
+            collection.Load(new string[]
+            {
+                "runtimes/a/lib/netcore50/assembly.dll",
+                "runtimes/b/lib/netcore50/assembly.dll",
+                "runtimes/c/lib/netcore50/assembly.dll",
+            });
+
+            // Act
+            var group = collection.FindBestItemGroup(criteria, conventions.Patterns.RuntimeAssemblies);
+
+            // Assert
+            Assert.Equal("runtimes/c/lib/netcore50/assembly.dll", group.Items.Single().Path);
+        }
+
+        [Fact]
+        public void ContentModel_GetNearestRIDAndTFMReverse()
+        {
+            // Arrange
+            var runtimes = new List<RuntimeDescription>()
+            {
+                new RuntimeDescription("a"),
+                new RuntimeDescription("b", new string[] { "a" }),
+                new RuntimeDescription("c", new string[] { "b" }),
+                new RuntimeDescription("d", new string[] { "c" }),
+            };
+
+            var conventions = new ManagedCodeConventions(
+                new RuntimeGraph(
+                    runtimes,
+                    new List<CompatibilityProfile>() { new CompatibilityProfile("netcore50.app") }));
+
+            var criteria = conventions.Criteria.ForFrameworkAndRuntime(NuGetFramework.Parse("netcore50"), "d");
+
+            var collection = new ContentItemCollection();
+            collection.Load(new string[]
+            {
+                "runtimes/c/lib/netcore50/assembly.dll",
+                "runtimes/b/lib/netcore50/assembly.dll",
+                "runtimes/a/lib/netcore50/assembly.dll",
+            });
+
+            // Act
+            var group = collection.FindBestItemGroup(criteria, conventions.Patterns.RuntimeAssemblies);
+
+            // Assert
+            Assert.Equal("runtimes/c/lib/netcore50/assembly.dll", group.Items.Single().Path);
+        }
     }
 }
