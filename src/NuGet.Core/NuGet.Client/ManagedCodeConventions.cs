@@ -162,20 +162,24 @@ namespace NuGet.Client
                 && availableFrameworkName != null
                 && projectFrameworkName != null)
             {
-                var reducer = new FrameworkReducer();
-                var frameworks = new NuGetFramework[] { criteriaFrameworkName, availableFrameworkName };
-
-                // Find the nearest compatible framework to the project framework.
-                var nearest = reducer.GetNearest(projectFrameworkName, frameworks);
-
-                if (criteriaFrameworkName.Equals(nearest))
+                // If the frameworks are the same this can be skipped
+                if (!criteriaFrameworkName.Equals(availableFrameworkName))
                 {
-                    return -1;
-                }
+                    var reducer = new FrameworkReducer();
+                    var frameworks = new NuGetFramework[] { criteriaFrameworkName, availableFrameworkName };
 
-                if (availableFrameworkName.Equals(nearest))
-                {
-                    return 1;
+                    // Find the nearest compatible framework to the project framework.
+                    var nearest = reducer.GetNearest(projectFrameworkName, frameworks);
+
+                    if (criteriaFrameworkName.Equals(nearest))
+                    {
+                        return -1;
+                    }
+
+                    if (availableFrameworkName.Equals(nearest))
+                    {
+                        return 1;
+                    }
                 }
             }
 
