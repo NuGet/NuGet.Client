@@ -201,6 +201,8 @@ namespace NuGet.Client
 
             public SelectionCriteria ForFrameworkAndRuntime(NuGetFramework framework, string runtimeIdentifier)
             {
+                // Both criteria must specify a RID
+
                 var builder = new SelectionCriteriaBuilder(_conventions.Properties);
                 if (!string.IsNullOrEmpty(runtimeIdentifier))
                 {
@@ -211,7 +213,7 @@ namespace NuGet.Client
 
                 // Then try runtime-agnostic
                 builder = builder
-                    .Add[PropertyNames.TargetFrameworkMoniker, framework];
+                    .Add[PropertyNames.TargetFrameworkMoniker, framework][PropertyNames.RuntimeIdentifier, value: null];
 
                 return builder.Criteria;
             }
