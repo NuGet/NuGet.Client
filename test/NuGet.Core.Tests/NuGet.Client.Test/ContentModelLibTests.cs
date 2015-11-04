@@ -12,6 +12,54 @@ namespace NuGet.Client.Test
     public class ContentModelLibTests
     {
         [Fact]
+        public void ContentModel_RuntimeAgnosticFallback()
+        {
+            // Arrange
+            var conventions = new ManagedCodeConventions(
+                new RuntimeGraph(
+                    new List<CompatibilityProfile>() { new CompatibilityProfile("netcore50.app") }));
+
+            var collection = new ContentItemCollection();
+            collection.Load(new string[]
+            {
+                "runtimes/aot/lib/netcore50/System.Reflection.Emit.dll",
+                "lib/netcore50/System.Reflection.Emit.dll",
+            });
+
+            var criteria = conventions.Criteria.ForFramework(NuGetFramework.Parse("netcore50"));
+
+            // Act
+            var group = collection.FindBestItemGroup(criteria, conventions.Patterns.RuntimeAssemblies);
+
+            // Assert
+            Assert.Equal("lib/netcore50/System.Reflection.Emit.dll", group.Items.Single().Path);
+        }
+
+        [Fact]
+        public void ContentModel_RuntimeAgnosticFallbackReverse()
+        {
+            // Arrange
+            var conventions = new ManagedCodeConventions(
+                new RuntimeGraph(
+                    new List<CompatibilityProfile>() { new CompatibilityProfile("netcore50.app") }));
+
+            var collection = new ContentItemCollection();
+            collection.Load(new string[]
+            {
+                "lib/netcore50/System.Reflection.Emit.dll",
+                "runtimes/aot/lib/netcore50/System.Reflection.Emit.dll",
+            });
+
+            var criteria = conventions.Criteria.ForFramework(NuGetFramework.Parse("netcore50"));
+
+            // Act
+            var group = collection.FindBestItemGroup(criteria, conventions.Patterns.RuntimeAssemblies);
+
+            // Assert
+            Assert.Equal("lib/netcore50/System.Reflection.Emit.dll", group.Items.Single().Path);
+        }
+
+        [Fact]
         public void ContentModel_LibNoFilesAtRootNoAnyGroup()
         {
             // Arrange
