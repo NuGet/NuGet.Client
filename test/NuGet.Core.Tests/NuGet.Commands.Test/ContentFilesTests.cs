@@ -1359,7 +1359,10 @@ namespace NuGet.Commands.Test
 
             var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
-            var contentFiles = target.Libraries.Single().ContentFiles;
+            var contentFiles = target.Libraries.Single()
+                .ContentFiles
+                .Where(e => e.Properties["codeLanguage"] == "cs")
+                .ToList();
 
             // Assert
             Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
@@ -1439,14 +1442,18 @@ namespace NuGet.Commands.Test
 
             var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
-            var contentFiles = target.Libraries.Single().ContentFiles;
+            var contentFiles = target.Libraries.Single()
+                .ContentFiles
+                .Where(e => e.Properties["codeLanguage"] == "cs")
+                .ToList();
 
             // Assert
             Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
             Assert.Equal(0, logger.Errors);
             Assert.Equal(0, logger.Warnings);
             Assert.Equal(3, contentFiles.Count);
-            Assert.Equal(2, contentFiles.Where(item => item.Properties["buildAction"] == "None").Count());
+            Assert.Equal(2, contentFiles.Where(item => item.Properties["buildAction"] == "None"
+            && item.Properties["codeLanguage"] == "cs").Count());
         }
 
         [Fact]
@@ -1518,7 +1525,9 @@ namespace NuGet.Commands.Test
 
             var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
-            var contentFiles = target.Libraries.Single().ContentFiles;
+            var contentFiles = target.Libraries.Single().ContentFiles
+                .Where(e => e.Properties["codeLanguage"] == "cs")
+                .ToList();
 
             // Assert
             Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
@@ -1766,7 +1775,7 @@ namespace NuGet.Commands.Test
             var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
             var item = target.Libraries.Single().ContentFiles
-                .Single();
+                .Single(e => e.Properties["codeLanguage"] == "cs");
 
             // Assert
             Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));

@@ -129,19 +129,19 @@ namespace NuGet.Commands.Test
             Assert.Equal(0, logger.Errors);
             Assert.Equal(0, logger.Warnings);
 
-            Assert.Equal(1, GetNonEmptyCount(targets["packageX"].ContentFiles));
+            Assert.Equal(2, GetNonEmptyCount(targets["packageX"].ContentFiles));
             Assert.Equal(1, GetNonEmptyCount(targets["packageX"].NativeLibraries));
             Assert.Equal(1, GetNonEmptyCount(targets["packageX"].RuntimeAssemblies));
             Assert.Equal(1, targets["packageX"].FrameworkAssemblies.Count);
             Assert.Equal(1, targets["packageX"].Dependencies.Count);
 
-            Assert.Equal(1, GetNonEmptyCount(targets["packageY"].ContentFiles));
+            Assert.Equal(2, GetNonEmptyCount(targets["packageY"].ContentFiles));
             Assert.Equal(1, GetNonEmptyCount(targets["packageY"].NativeLibraries));
             Assert.Equal(1, GetNonEmptyCount(targets["packageY"].RuntimeAssemblies));
             Assert.Equal(1, targets["packageY"].FrameworkAssemblies.Count);
             Assert.Equal(1, targets["packageY"].Dependencies.Count);
 
-            Assert.Equal(1, GetNonEmptyCount(targets["packageZ"].ContentFiles));
+            Assert.Equal(2, GetNonEmptyCount(targets["packageZ"].ContentFiles));
             Assert.Equal(1, GetNonEmptyCount(targets["packageZ"].NativeLibraries));
             Assert.Equal(1, GetNonEmptyCount(targets["packageZ"].RuntimeAssemblies));
             Assert.Equal(1, targets["packageZ"].FrameworkAssemblies.Count);
@@ -194,19 +194,19 @@ namespace NuGet.Commands.Test
             Assert.Equal(0, logger.Errors);
             Assert.Equal(0, logger.Warnings);
 
-            Assert.Equal(1, GetNonEmptyCount(targets["packageX"].ContentFiles));
+            Assert.Equal(2, GetNonEmptyCount(targets["packageX"].ContentFiles));
             Assert.Equal(1, GetNonEmptyCount(targets["packageX"].NativeLibraries));
             Assert.Equal(1, GetNonEmptyCount(targets["packageX"].RuntimeAssemblies));
             Assert.Equal(1, targets["packageX"].FrameworkAssemblies.Count);
             Assert.Equal(1, targets["packageX"].Dependencies.Count);
 
-            Assert.Equal(1, GetNonEmptyCount(targets["packageY"].ContentFiles));
+            Assert.Equal(2, GetNonEmptyCount(targets["packageY"].ContentFiles));
             Assert.Equal(1, GetNonEmptyCount(targets["packageY"].NativeLibraries));
             Assert.Equal(1, GetNonEmptyCount(targets["packageY"].RuntimeAssemblies));
             Assert.Equal(1, targets["packageY"].FrameworkAssemblies.Count);
             Assert.Equal(1, targets["packageY"].Dependencies.Count);
 
-            Assert.Equal(1, GetNonEmptyCount(targets["packageZ"].ContentFiles));
+            Assert.Equal(2, GetNonEmptyCount(targets["packageZ"].ContentFiles));
             Assert.Equal(1, GetNonEmptyCount(targets["packageZ"].NativeLibraries));
             Assert.Equal(1, GetNonEmptyCount(targets["packageZ"].RuntimeAssemblies));
             Assert.Equal(1, targets["packageZ"].FrameworkAssemblies.Count);
@@ -1074,9 +1074,9 @@ namespace NuGet.Commands.Test
             Assert.Equal(0, logger.Errors);
             Assert.Equal(0, logger.Warnings);
 
-            Assert.Equal(1, GetNonEmptyCount(targets["packageX"].ContentFiles));
-            Assert.Equal(1, GetNonEmptyCount(targets["packageY"].ContentFiles));
-            Assert.Equal(1, GetNonEmptyCount(targets["packageZ"].ContentFiles));
+            Assert.Equal(2, GetNonEmptyCount(targets["packageX"].ContentFiles));
+            Assert.Equal(2, GetNonEmptyCount(targets["packageY"].ContentFiles));
+            Assert.Equal(2, GetNonEmptyCount(targets["packageZ"].ContentFiles));
         }
 
         [Fact]
@@ -1118,8 +1118,8 @@ namespace NuGet.Commands.Test
             Assert.Equal(0, logger.Errors);
             Assert.Equal(0, logger.Warnings);
 
-            Assert.Equal(1, GetNonEmptyCount(a.ContentFiles));
-            Assert.Equal(1, GetNonEmptyCount(b.ContentFiles));
+            Assert.Equal(2, GetNonEmptyCount(a.ContentFiles));
+            Assert.Equal(2, GetNonEmptyCount(b.ContentFiles));
         }
 
         [Fact]
@@ -1158,7 +1158,7 @@ namespace NuGet.Commands.Test
             Assert.Equal(0, logger.Errors);
             Assert.Equal(0, logger.Warnings);
 
-            Assert.Equal(1, GetNonEmptyCount(a.ContentFiles));
+            Assert.Equal(2, GetNonEmptyCount(a.ContentFiles));
             Assert.Equal(0, GetNonEmptyCount(b.ContentFiles));
 
             Assert.Equal(3, b.ContentFiles.Single().Properties.Count);
@@ -1291,7 +1291,7 @@ namespace NuGet.Commands.Test
             Assert.Equal(0, logger.Errors);
             Assert.Equal(0, logger.Warnings);
 
-            Assert.Equal(1, GetNonEmptyCount(a.ContentFiles));
+            Assert.Equal(2, GetNonEmptyCount(a.ContentFiles));
             Assert.Equal(1, GetNonEmptyCount(a.NativeLibraries));
             Assert.Equal(1, GetNonEmptyCount(a.RuntimeAssemblies));
             Assert.Equal(1, a.FrameworkAssemblies.Count);
