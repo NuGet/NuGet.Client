@@ -17,6 +17,48 @@ namespace NuGet.Commands.Test
     {
         private ConcurrentBag<string> _testFolders = new ConcurrentBag<string>();
 
+        [Fact]
+        public async Task UWPRestore_VerifySatellitePackagesAreCompatibleInPCL()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://api.nuget.org/v3/index.json"));
+            var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+            var projectDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(packagesDir);
+            _testFolders.Add(projectDir);
+
+            var configJson = JObject.Parse(@"{
+                  ""dependencies"": {
+                    ""Microsoft.AspNet.Mvc.de"": ""5.2.3""
+                  },
+                  ""frameworks"": {
+                    ""net46"": {
+                    }
+                  }
+                }");
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var lockFileFormat = new LockFileFormat();
+            var logger = new TestLogger();
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+            Assert.Equal(5, result.GetAllInstalled().Count);
+        }
+
         // Verify that UWP packages are still compatible after excluding their contents.
         [Fact]
         public async Task UWPRestore_BlankUWPAppWithExcludes()

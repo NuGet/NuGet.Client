@@ -133,11 +133,14 @@ namespace NuGet.Commands
         {
             // A package is compatible if it has...
             return
-                compatibilityData.TargetLibrary.FrameworkAssemblies.Any() ||                        // Framework Assemblies, or
-                compatibilityData.TargetLibrary.CompileTimeAssemblies.Any() ||                      // Compile-time Assemblies, or
-                compatibilityData.TargetLibrary.RuntimeAssemblies.Any() ||                          // Runtime Assemblies, or
-                compatibilityData.TargetLibrary.ContentFiles.Any() ||                              // Shared content
-                !compatibilityData.Files.Any(p => p.StartsWith("ref/") || p.StartsWith("lib/"));    // No assemblies at all (for any TxM)
+                compatibilityData.TargetLibrary.RuntimeAssemblies.Count > 0 ||                          // Runtime Assemblies, or
+                compatibilityData.TargetLibrary.CompileTimeAssemblies.Count > 0 ||                      // Compile-time Assemblies, or
+                compatibilityData.TargetLibrary.FrameworkAssemblies.Count > 0 ||                        // Framework Assemblies, or
+                compatibilityData.TargetLibrary.ContentFiles.Count > 0 ||                               // Shared content
+                compatibilityData.TargetLibrary.ResourceAssemblies.Count > 0 ||                         // Resources (satellite package)
+                !compatibilityData.Files.Any(p => 
+                    p.StartsWith("ref/", StringComparison.OrdinalIgnoreCase) 
+                    || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase));                       // No assemblies at all (for any TxM)
         }
 
         private CompatibilityData GetCompatibilityData(RestoreTargetGraph graph, LibraryIdentity libraryId)
