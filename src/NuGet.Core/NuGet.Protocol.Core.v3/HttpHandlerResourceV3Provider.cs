@@ -85,7 +85,8 @@ namespace NuGet.Protocol.Core.v3
 
         private class CredentialPromptWebRequestHandler : WebRequestHandler
         {
-            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+                CancellationToken cancellationToken)
             {
                 while (true)
                 {
@@ -105,7 +106,10 @@ namespace NuGet.Protocol.Core.v3
                             HttpHandlerResourceV3.PromptForProxyCredentials != null)
                         {
                             // prompt use for proxy credentials.
-                            var credentials = HttpHandlerResourceV3.PromptForProxyCredentials(request.RequestUri, Proxy);
+                            var credentials = await HttpHandlerResourceV3
+                                .PromptForProxyCredentials(request.RequestUri, Proxy, cancellationToken)
+                                .ConfigureAwait(false);
+
                             if (credentials == null)
                             {
                                 throw;

@@ -97,6 +97,10 @@
       <Project>{f2f53b1a-b973-4932-80cb-5eda38f9d74c}</Project>
       <Name>SampleCommandLineExtensions</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\TestExtensions\TestablePluginCredentialProvider\TestableCredentialProvider.csproj">
+      <Project>{e901bdc7-cb84-40fa-a2c0-03db4f9aea3c}</Project>
+      <Name>TestableCredentialProvider</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MockServerResource.resx">
