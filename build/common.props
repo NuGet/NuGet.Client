@@ -71,13 +71,13 @@
 		  <_Parameter1>$(SemanticVersionMajor).$(SemanticVersionMinor).$(SemanticVersionPatch)$(PreReleaseInformationVersion)</_Parameter1>
 		</AssemblyAttributes>
 		<AssemblyAttributes Include="AssemblyCompany">
-		  <_Parameter1>.NET Foundation</_Parameter1>
+		  <_Parameter1>Microsoft Corporation</_Parameter1>
 		</AssemblyAttributes>
 		<AssemblyAttributes Include="AssemblyProduct">
 		  <_Parameter1>NuGet</_Parameter1>
 		</AssemblyAttributes>
 		<AssemblyAttributes Include="AssemblyCopyright">
-		  <_Parameter1>© .NET Foundation. All rights reserved.</_Parameter1>
+		  <_Parameter1>Microsoft Corporation. All rights reserved.</_Parameter1>
 		</AssemblyAttributes>
 		<AssemblyAttributes Include="System.Resources.NeutralResourcesLanguage">
 		  <_Parameter1>en-US</_Parameter1>

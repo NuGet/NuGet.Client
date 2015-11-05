@@ -6,8 +6,8 @@ using System.Reflection;
 using System.Resources;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyCompany(".NET Foundation")]
+[assembly: AssemblyCompany("Microsoft Corporation")]
 [assembly: AssemblyProduct("NuGet")]
-[assembly: AssemblyCopyright("\x00a9 .NET Foundation. All rights reserved.")]
+[assembly: AssemblyCopyright("Microsoft Corporation. All rights reserved.")]
 [assembly: ComVisible(false)]
 [assembly: NeutralResourcesLanguage("en-US")]

@@ -3,8 +3,8 @@
   <metadata>
     <id>NuGet.CommandLine</id>
     <version>3.3.0</version>
-    <authors>.NET Foundation</authors>
-    <owners>.NET Foundation</owners>
+    <authors>Microsoft Corporation</authors>
+    <owners>Microsoft Corporation</owners>
     <licenseUrl>http://nuget.codeplex.com/license</licenseUrl>
     <projectUrl>http://nuget.codeplex.com</projectUrl>
     <copyright>&#169; .NET Foundation. All rights reserved.</copyright>
