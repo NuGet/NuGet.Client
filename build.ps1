@@ -17,21 +17,16 @@ param (
 
 function RestoreXProj($file)
 {
-    $ext = [System.IO.Path]::GetExtension($file.FullName)
+    $xprojDir = [System.IO.Path]::GetDirectoryName($file.FullName)
+    $projectJsonFile = [System.IO.Path]::Combine($xprojDir, "project.json")
 
-    if ($ext -eq ".xproj")
+    Write-Host "Restoring $projectJsonFile"
+    Write-Host "dnu restore '$projectJsonFile' -s https://www.myget.org/F/nuget-volatile/api/v3/index.json -s https://api.nuget.org/v3/index.json"
+    & dnu restore "$($projectJsonFile)" -s https://www.myget.org/F/nuget-volatile/api/v3/index.json -s https://api.nuget.org/v3/index.json
+
+    if ($LASTEXITCODE -ne 0)
     {
-        $xprojDir = [System.IO.Path]::GetDirectoryName($file.FullName)
-        $projectJsonFile = [System.IO.Path]::Combine($xprojDir, "project.json")
-
-        Write-Host "Restoring $projectJsonFile"
-        Write-Host "dnu restore '$projectJsonFile' -s https://www.myget.org/F/nuget-volatile/api/v2/ -s https://www.nuget.org/api/v2/"
-        & dnu restore "$($projectJsonFile)" -s https://www.myget.org/F/nuget-volatile/api/v2/ -s https://www.nuget.org/api/v2/
-
-        if ($LASTEXITCODE -ne 0)
-        {
-            throw "Restore failed $projectJsonFile"
-        }
+        throw "Restore failed $projectJsonFile"
     }
 }
 
@@ -89,7 +84,7 @@ function BuildXproj()
     if ($SkipRestore -eq $False)
     {
         Write-Host "Restoring XProj packages"
-        foreach ($file in (Get-ChildItem "src" -rec))
+        foreach ($file in (Get-ChildItem "src" -rec -Filter "*.xproj"))
         {
             RestoreXProj($file)
         }
@@ -98,21 +93,16 @@ function BuildXproj()
     $artifactsSrc = Join-Path $artifacts "src\NuGet.Core"
     $artifactsTest = Join-Path $artifacts "test"
 
-    foreach ($file in (Get-ChildItem "src" -rec))
+    foreach ($file in (Get-ChildItem "src" -rec -Filter "*.xproj"))
     {
-        $ext = [System.IO.Path]::GetExtension($file.FullName)
+        $srcDir = [System.IO.Path]::GetDirectoryName($file.FullName)
+        $outDir = Join-Path $artifacts $file.BaseName
 
-        if ($ext -eq ".xproj")
+        & dnu pack "$($srcDir)" --configuration $Configuration --out $outDir
+
+        if ($LASTEXITCODE -ne 0)
         {
-            $srcDir = [System.IO.Path]::GetDirectoryName($file.FullName)
-            $outDir = Join-Path $artifacts $file.BaseName
-
-            & dnu pack "$($srcDir)" --configuration $Configuration --out $outDir
-
-            if ($LASTEXITCODE -ne 0)
-            {
-                throw "Build failed $srcDir"
-            }
+            throw "Build failed $srcDir"
         }
     }
 
@@ -129,29 +119,24 @@ function BuildXproj()
             Remove-Item Env:\DNX_BUILD_DELAY_SIGN
         }
 
-        foreach ($file in (Get-ChildItem "test\NuGet.Core.Tests" -rec))
+        foreach ($file in (Get-ChildItem "test\NuGet.Core.Tests" -rec -filter "*.xproj"))
         {
             RestoreXProj($file)
         }
 
-        foreach ($file in (Get-ChildItem "test\NuGet.Core.Tests" -rec))
+        foreach ($file in (Get-ChildItem "test\NuGet.Core.Tests" -rec -Filter "*.xproj"))
         {
-            $ext = [System.IO.Path]::GetExtension($file.FullName)
+            $srcDir = [System.IO.Path]::GetDirectoryName($file.FullName)
+            Write-Host "Running tests in $srcDir"
 
-            if ($ext -eq ".xproj")
+            pushd $srcDir
+            & dnx test
+            popd
+
+            if ($LASTEXITCODE -ne 0)
             {
-                $srcDir = [System.IO.Path]::GetDirectoryName($file.FullName)
-                Write-Host "Running tests in $srcDir"
-
-                pushd $srcDir
-                & dnx test
-                popd
-
-                if ($LASTEXITCODE -ne 0)
-                {
-                    throw "Tests failed $srcDir"
-                }
-             }
+                throw "Tests failed $srcDir"
+            }
         }
     }
 
