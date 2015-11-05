@@ -251,19 +251,10 @@ namespace NuGetVSExtension
                     cancellationToken: cancellationToken);
             });
 
-            var aadcred = new VssAadCredential(new VssAadToken(result));
-
-            // create the session token
-            var connection = new VssConnection(AccountManager.VsoEndpoint, aadcred);
-            var delegatedClient = connection.GetClient<DelegatedAuthorizationHttpClient>();
-
-            // Create a scoped session token to the endpoint
-            var sessionToken = await delegatedClient.CreateSessionToken(cancellationToken: cancellationToken, scope: SessionTokenScope);
-
             var cred = new NetworkCredential
             {
                 UserName = account.UserAccount.DisplayInfo.UserName,
-                Password = sessionToken.Token
+                Password = result.AccessToken
             };
 
             return cred;
