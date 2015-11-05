@@ -963,16 +963,17 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             assemblies = new HashSet<string>(PathComparer.Default);
+            visitedProjects.Add(envDTEProject.UniqueName, assemblies);
+
             var localProjectAssemblies = GetLocalProjectAssemblies(envDTEProject);
             CollectionsUtility.AddRange(assemblies, localProjectAssemblies);
+            
             var referencedProjects = GetReferencedProjects(envDTEProject);
             foreach (var project in referencedProjects)
             {
                 var assemblyClosure = GetAssemblyClosure(project, visitedProjects);
                 CollectionsUtility.AddRange(assemblies, assemblyClosure);
             }
-
-            visitedProjects.Add(envDTEProject.UniqueName, assemblies);
 
             return assemblies;
         }
