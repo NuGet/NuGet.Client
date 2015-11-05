@@ -748,9 +748,7 @@ namespace NuGet.PackageManagement.UI
         {
             var versions = await allVersions.Value;
 
-            var latestStableVersion = versions
-                .Where(p => !p.Version.IsPrerelease)
-                .Max(p => p.Version);
+            var latestAvailableVersion = versions.Max(p => p.Version);
 
             // Get the minimum version installed in any target project/solution
             var minimumInstalledPackage = installedPackages
@@ -762,11 +760,11 @@ namespace NuGet.PackageManagement.UI
             BackgroundLoaderResult result;
             if (minimumInstalledPackage != null)
             {
-                if (minimumInstalledPackage.PackageIdentity.Version < latestStableVersion)
+                if (minimumInstalledPackage.PackageIdentity.Version < latestAvailableVersion)
                 {
                     result = new BackgroundLoaderResult()
                     {
-                        LatestVersion = latestStableVersion,
+                        LatestVersion = latestAvailableVersion,
                         InstalledVersion = minimumInstalledPackage.PackageIdentity.Version,
                         Status = PackageStatus.UpdateAvailable
                     };
@@ -784,7 +782,7 @@ namespace NuGet.PackageManagement.UI
             {
                 result = new BackgroundLoaderResult()
                 {
-                    LatestVersion = latestStableVersion,
+                    LatestVersion = latestAvailableVersion,
                     Status = PackageStatus.NotInstalled
                 };
             }

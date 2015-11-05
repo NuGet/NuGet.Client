@@ -592,7 +592,7 @@ namespace NuGet.PackageManagement.UI
             foreach (var package in installedPackages)
             {
                 // only release packages respect the prerel option
-                var includePre = _option.IncludePrerelease || package.Version.IsPrerelease;
+                var includePre = _option.IncludePrerelease;
 
                 var data = await metadataResource.GetMetadata(package.Id, includePre, false, ct);
                 var highest = data.OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease).FirstOrDefault();
