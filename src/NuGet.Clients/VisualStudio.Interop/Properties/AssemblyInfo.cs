@@ -11,9 +11,9 @@ using System.Runtime.InteropServices;
 // The version of this assembly should never be changed.
 
 [assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyCompany(".NET Foundation")]
+[assembly: AssemblyCompany("Microsoft Corporation")]
 [assembly: AssemblyProduct("NuGet")]
-[assembly: AssemblyCopyright("\x00a9 .NET Foundation. All rights reserved.")]
+[assembly: AssemblyCopyright("Microsoft Corporation. All rights reserved.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyTrademark("")]
 [assembly: ComVisible(false)]
