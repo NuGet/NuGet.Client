@@ -125,6 +125,12 @@ namespace NuGetVSExtension
             {
                 //  If we only have one posible account use it
                 ret = await GetTokenFromAccount(posibleAccounts[0], provider, nonInteractive, cancellationToken);
+                if (ret == null)
+                {
+                    throw new InvalidOperationException(Resources.AccountProvider_NoValidCrededentialsFound);
+
+                }
+
                 if (isRetry)
                 {
                     var hasAccess = await AccountHasAccess(uri, proxy, ret, cancellationToken);
@@ -146,6 +152,10 @@ namespace NuGetVSExtension
                         provider,
                         nonInteractive: true,
                         cancellationToken:cancellationToken);
+                    if (cred == null)
+                    {
+                        continue;
+                    }
 
                     var hasAccess = await AccountHasAccess(uri, proxy, cred, cancellationToken);
                     if (hasAccess)
@@ -241,15 +251,27 @@ namespace NuGetVSExtension
                     parent = new IntPtr(_dte.MainWindow.HWnd);
                 }
 
-                result = await provider.AcquireAdalTokenAsync(
-                    resource: VsoEndpointResource,
-                    tenantId: tenantId,
-                    identitifer: new UserIdentifier(uniqueId, UserIdentifierType.UniqueId),
-                    parentWindowHandle: parent,
-                    accountKeyForReAuthentication: account.UserAccount,
-                    prompt: shouldPrompt,
-                    cancellationToken: cancellationToken);
+                try
+                {
+                    result = await provider.AcquireAdalTokenAsync(
+                        resource: VsoEndpointResource,
+                        tenantId: tenantId,
+                        identitifer: new UserIdentifier(uniqueId, UserIdentifierType.UniqueId),
+                        parentWindowHandle: parent,
+                        accountKeyForReAuthentication: account.UserAccount,
+                        prompt: shouldPrompt,
+                        cancellationToken: cancellationToken);
+                }
+                catch (AdalSilentTokenAcquisitionException)
+                {
+                    result = null;
+                }
             });
+
+            if (result == null)
+            {
+                return null;
+            }
 
             var aadcred = new VssAadCredential(new VssAadToken(result));
 
