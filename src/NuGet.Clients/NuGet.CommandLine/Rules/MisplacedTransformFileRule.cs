@@ -24,7 +24,10 @@ namespace NuGet.CommandLine.Rules
                 }
 
                 // if not inside 'content' folder, warn
-                if (!path.StartsWith(Constants.ContentDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                if (!path.StartsWith(Constants.ContentDirectory + Path.DirectorySeparatorChar,
+                    StringComparison.OrdinalIgnoreCase)
+                    && !path.StartsWith(Constants.ContentFilesDirectory + Path.DirectorySeparatorChar,
+                    StringComparison.OrdinalIgnoreCase))
                 {
                     yield return CreatePackageIssueForMisplacedContent(path);
                 }
