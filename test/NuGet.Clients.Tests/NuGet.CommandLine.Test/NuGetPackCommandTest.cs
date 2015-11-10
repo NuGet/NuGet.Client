@@ -2,14 +2,162 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
     public class NuGetPackCommandTest
     {
+        [Fact]
+        public void PackCommand_PackAnalyzers()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
+            try
+            {
+                // Arrange
+                Util.CreateDirectory(workingDirectory);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "analyzers/cs/code"),
+                    "a.dll",
+                    "");
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>packageA</id>
+    <version>1.0.0</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+                var files = package.GetFiles().Select(f => f.Path).ToArray();
+                Array.Sort(files);
+
+                Assert.Equal(
+                    files,
+                    new string[]
+                    {
+                            @"analyzers\cs\code\a.dll",
+                    });
+
+                Assert.False(r.Item2.Contains("Assembly outside lib folder"));
+            }
+            finally
+            {
+                Directory.Delete(workingDirectory, true);
+            }
+        }
+
+        [Fact]
+        public void PackCommand_ContentV2PackageFromNuspec()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
+            try
+            {
+                // Arrange
+                Util.CreateDirectory(workingDirectory);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles/any/any"),
+                    "image.jpg",
+                    "");
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles/cs/net45"),
+                    "code.cs",
+                    "");
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>packageA</id>
+    <version>1.0.0</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <contentFiles>
+        <files include=""**/*"" exclude=""**/*.cs"" buildAction=""None"" copyToOutput=""true"" flatten=""true"" />
+        <files include=""**/*.cs"" buildAction=""Compile"" />
+    </contentFiles>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+                using (var zip = new ZipArchive(File.OpenRead(path)))
+                {
+                    var manifestReader
+                        = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open());
+                    var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
+
+                    var node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "contentFiles");
+
+                    var files = package.GetFiles().Select(f => f.Path).ToArray();
+                    Array.Sort(files);
+
+                    Assert.Equal(
+                        files,
+                        new string[]
+                        {
+                        @"contentFiles\any\any\image.jpg",
+                        @"contentFiles\cs\net45\code.cs",
+                        });
+
+                    Assert.Equal(
+                        @"<contentFiles xmlns=""http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"">
+  <files include=""**/*"" exclude=""**/*.cs"" buildAction=""None"" copyToOutput=""true"" flatten=""true"" />
+  <files include=""**/*.cs"" buildAction=""Compile"" />
+</contentFiles>".Replace("\r\n", "\n"),
+                        node.ToString().Replace("\r\n", "\n"));
+                }
+            }
+            finally
+            {
+                Directory.Delete(workingDirectory, true);
+            }
+        }
+
         // Test that when creating a package from project file, referenced projects
         // are also included in the package.
         [Fact]

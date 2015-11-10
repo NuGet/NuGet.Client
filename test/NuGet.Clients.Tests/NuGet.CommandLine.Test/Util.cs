@@ -210,6 +210,11 @@ namespace NuGet.CommandLine.Test
         /// <param name="fileContent">The content of the created file.</param>
         public static void CreateFile(string directory, string fileName, string fileContent)
         {
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
             var fileFullName = Path.Combine(directory, fileName);
             using (var writer = new StreamWriter(fileFullName))
             {
