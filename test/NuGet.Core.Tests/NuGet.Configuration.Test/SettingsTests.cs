@@ -1760,6 +1760,39 @@ namespace NuGet.Configuration.Test
             Assert.Equal(String.Format(@"File '{0}' does not exist.", Path.Combine(mockBaseDirectory, "user.config")), ex.Message);
         }
 
+        // Tests that when configFileName is not null, the specified
+        // file must exist and it must be valid.
+        [Fact]
+        public void UserSpecifiedConfigFileMustBeValid()
+        {
+            // Arrange
+            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+
+            var config = @"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+    <packageSources>
+        <add key='key1' value='value1'/>
+    </packageSources>
+    <solution>
+        <solution>
+    <add key='disableSourceControlIntegration' value='true' />
+  </solution>
+</configuration>";
+
+            TestFilesystemUtility.CreateConfigurationFile("user.config", mockBaseDirectory, config);
+
+            // Act and assert
+            Exception ex = Record.Exception(() => Settings.LoadDefaultSettings(
+                mockBaseDirectory,
+                configFileName: "user.config",
+                machineWideSettings: null));
+            Assert.NotNull(ex);
+            var tex = Assert.IsAssignableFrom<InvalidOperationException>(ex);
+            Assert.True(ex.Message.Contains(
+                string.Format(@"Unable to parse config file '{0}'. Error Message:",
+                Path.Combine(mockBaseDirectory, "user.config"))), "Error message is not as expected");
+        }
+
         // Tests the scenario where there are two user settings, both created
         // with the same machine wide settings.
         [Fact]

@@ -141,4 +141,7 @@
   <data name="UserSettings_UnableToParseConfigFile" xml:space="preserve">
     <value>Unable to parse config file '{0}'.</value>
   </data>
+  <data name="UserSettings_UnableToParseConfigFile_ErrorMessage" xml:space="preserve">
+    <value>Unable to parse config file '{0}'. Error Message: {1}.</value>
+  </data>
 </root>

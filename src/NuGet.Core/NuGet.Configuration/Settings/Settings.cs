@@ -152,7 +152,7 @@ namespace NuGet.Configuration
                 {
                     validSettingFiles.AddRange(
                         GetSettingsFileNames(root)
-                            .Select(f => ReadSettings(root, f))
+                            .Select(f => ReadSettings(root, f, isMachineWideSettings: false, throwOnFailure: false))
                             .Where(f => f != null));
                 }
 
@@ -231,7 +231,9 @@ namespace NuGet.Configuration
                         // used as root for the PhysicalFileSystem.
                         appDataSettings = ReadSettings(
                         root,
-                        defaultSettingsFilePath);
+                        defaultSettingsFilePath,
+                        isMachineWideSettings: false,
+                        throwOnFailure: false);
 
                         // Disable machinewide sources to improve perf
                         var disabledSources = new List<SettingValue>();
@@ -247,7 +249,10 @@ namespace NuGet.Configuration
                     }
                     else
                     {
-                        appDataSettings = ReadSettings(root, defaultSettingsFilePath);
+                        appDataSettings = ReadSettings(root,
+                            defaultSettingsFilePath,
+                            isMachineWideSettings: false,
+                            throwOnFailure: false);
                     }
                 }
             }
@@ -261,7 +266,8 @@ namespace NuGet.Configuration
                     throw new InvalidOperationException(message);
                 }
 
-                appDataSettings = ReadSettings(root, configFileName);
+                appDataSettings
+                    = ReadSettings(root, configFileName, isMachineWideSettings: false, throwOnFailure: true);
             }
 
             if (appDataSettings != null)
@@ -304,7 +310,7 @@ namespace NuGet.Configuration
                 // load setting files in directory
                 foreach (var file in FileSystemUtility.GetFilesRelativeToRoot(root, directory, "*.config", SearchOption.TopDirectoryOnly))
                 {
-                    var settings = ReadSettings(root, file, true);
+                    var settings = ReadSettings(root, file, isMachineWideSettings: true, throwOnFailure: false);
                     if (settings != null)
                     {
                         settingFiles.Add(settings);
@@ -871,7 +877,10 @@ namespace NuGet.Configuration
             }
         }
 
-        private static Settings ReadSettings(string root, string settingsPath, bool isMachineWideSettings = false)
+        private static Settings ReadSettings(string root,
+            string settingsPath,
+            bool isMachineWideSettings,
+            bool throwOnFailure)
         {
             try
             {
@@ -880,8 +889,18 @@ namespace NuGet.Configuration
                 root = tuple.Item2;
                 return new Settings(root, fileName, isMachineWideSettings);
             }
-            catch (XmlException)
+            catch (XmlException ex)
             {
+                if (throwOnFailure)
+                {
+                    var configFilePath = Path.GetFullPath(Path.Combine(root, settingsPath));
+
+                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                        Resources.UserSettings_UnableToParseConfigFile_ErrorMessage,
+                        configFilePath,
+                        ex.Message));
+                }
+
                 return null;
             }
         }

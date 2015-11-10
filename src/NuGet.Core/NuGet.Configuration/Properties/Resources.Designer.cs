@@ -131,6 +131,14 @@ namespace NuGet.Configuration
         }
 
         /// <summary>
+        /// Unable to parse config file '{0}'. Error Message: {1}.
+        /// </summary>
+        internal static string UserSettings_UnableToParseConfigFile_ErrorMessage
+        {
+            get { return GetString("UserSettings_UnableToParseConfigFile_ErrorMessage"); }
+        }
+
+        /// <summary>
         /// Unable to parse config file '{0}'.
         /// </summary>
         internal static string FormatUserSettings_UnableToParseConfigFile(object p0)
