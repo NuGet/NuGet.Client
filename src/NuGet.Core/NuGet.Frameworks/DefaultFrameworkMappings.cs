@@ -326,15 +326,15 @@ namespace NuGet.Frameworks
                                FrameworkConstants.FrameworkIdentifiers.DnxCore,
                                FrameworkConstants.DotNetGenerationRanges.DotNet55),
 
-                           // uap -> dotnet5.4
+                           // uap -> dotnet5.5
                            CreateDotNetGenerationMappingForAllVersions(
                                FrameworkConstants.FrameworkIdentifiers.UAP,
-                               FrameworkConstants.DotNetGenerationRanges.DotNet54),
+                               FrameworkConstants.DotNetGenerationRanges.DotNet55),
 
-                           // netcore50 -> dotnet5.4
+                           // netcore50 -> dotnet5.5
                            CreateDotNetGenerationMapping(
                                FrameworkConstants.CommonFrameworks.NetCore50,
-                               FrameworkConstants.DotNetGenerationRanges.DotNet54),
+                               FrameworkConstants.DotNetGenerationRanges.DotNet55),
 
                            // wpa81 -> dotnet5.3
                            CreateDotNetGenerationMapping(
