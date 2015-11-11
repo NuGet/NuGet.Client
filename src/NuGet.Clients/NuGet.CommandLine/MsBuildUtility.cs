@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.Build.Evaluation;
 using NuGet.Common;
 
@@ -16,6 +17,8 @@ namespace NuGet.CommandLine
     {
         private const string GetProjectReferencesTarget =
             "NuGet.CommandLine.GetProjectsReferencingProjectJsonFiles.target";
+        private const string GetProjectReferencesEntryPointTarget =
+            "NuGet.CommandLine.GetProjectsReferencingProjectJsonFilesEntryPoint.target";
 
         private static readonly HashSet<string> _msbuildExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -29,7 +32,12 @@ namespace NuGet.CommandLine
             return _msbuildExtensions.Contains(Path.GetExtension(projectFullPath));
         }
 
-        public static IEnumerable<string> GetProjectReferences(string msbuildDirectory, string projectFullPath)
+        /// <summary>
+        /// Returns the closure of project references for projects specified in <paramref name="projectPaths"/>.
+        /// </summary>
+        public static Dictionary<string, HashSet<string>> GetProjectReferences(
+            string msbuildDirectory,
+            string[] projectPaths)
         {
             string msbuildPath = Path.Combine(msbuildDirectory, "msbuild.exe");
             if (!File.Exists(msbuildPath))
@@ -41,29 +49,39 @@ namespace NuGet.CommandLine
                         msbuildPath));
             }
 
-            var targetPath = Path.GetTempFileName();
-            using (var input = typeof(MsBuildUtility).Assembly.GetManifestResourceStream(GetProjectReferencesTarget))
-            {
-                using (var output = File.OpenWrite(targetPath))
-                {
-                    input.CopyTo(output);
-                }
-            }
-
+            var entryPointTargetPath = Path.GetTempFileName();
+            var customAfterBuildTargetPath = Path.GetTempFileName();
             var resultsPath = Path.GetTempFileName();
-            var arguments =
+
+            ExtractResource(GetProjectReferencesEntryPointTarget, entryPointTargetPath);
+            ExtractResource(GetProjectReferencesTarget, customAfterBuildTargetPath);
+
+            var argumentBuilder = new StringBuilder(
                 "/t:NuGet_GetProjectsReferencingProjectJson " +
                 "/nologo /nr:false /v:q " +
-                "/p:BuildProjectReferences=false " +
-                $"/p:CustomAfterMicrosoftCommonTargets={targetPath} " +
-                $"/p:ResultsFile={resultsPath} " +
-                $"\"{projectFullPath.Trim('"')}\"";
+                "/p:BuildProjectReferences=false");
+
+            argumentBuilder.Append(" /p:NuGetCustomAfterBuildTargetPath=");
+            AppendQuoted(argumentBuilder, customAfterBuildTargetPath);
+
+            argumentBuilder.Append(" /p:ResultsFile=");
+            AppendQuoted(argumentBuilder, resultsPath);
+
+            argumentBuilder.Append(" /p:NuGet_ProjectReferenceToResolve=\"");
+            for (var i = 0; i < projectPaths.Length; i++)
+            {
+                argumentBuilder.Append(projectPaths[i])
+                    .Append(";");
+            }
+
+            argumentBuilder.Append("\" ");
+            AppendQuoted(argumentBuilder, entryPointTargetPath);
 
             var processStartInfo = new ProcessStartInfo
             {
                 UseShellExecute = false,
                 FileName = msbuildPath,
-                Arguments = arguments,
+                Arguments = argumentBuilder.ToString(),
                 RedirectStandardError = true
             };
             try
@@ -78,20 +96,37 @@ namespace NuGet.CommandLine
                     }
                 }
 
+                var lookup = new Dictionary<string, HashSet<string>>(
+                    projectPaths.Length,
+                    StringComparer.OrdinalIgnoreCase);
                 if (File.Exists(resultsPath))
                 {
-                    return File.ReadAllLines(resultsPath)
-                        .Where(file => !string.Equals(projectFullPath, file, StringComparison.OrdinalIgnoreCase))
-                        .Distinct(StringComparer.OrdinalIgnoreCase);
+                    HashSet<string> referencedProjects = null;
+                    foreach (var line in File.ReadAllLines(resultsPath))
+                    {
+                        if (line.StartsWith("#:", StringComparison.Ordinal))
+                        {
+                            // First entry for each project grouping is of the format "#:ProjectPath". 
+                            // We'll use this as a delimiter to start a new grouping.
+                            referencedProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                            lookup[line.Substring(2)] = referencedProjects;
+                        }
+                        else
+                        {
+                            Debug.Assert(referencedProjects != null);
+                            referencedProjects.Add(line);
+                        }
+                    }
                 }
+
+                return lookup;
             }
             finally
             {
-                File.Delete(targetPath);
+                File.Delete(entryPointTargetPath);
+                File.Delete(customAfterBuildTargetPath);
                 File.Delete(resultsPath);
             }
-
-            return Enumerable.Empty<string>();
         }
 
         public static IEnumerable<string> GetAllProjectFileNames(string solutionFile, string msbuildPath)
@@ -229,7 +264,7 @@ namespace NuGet.CommandLine
             using (var projectCollection = new ProjectCollection())
             {
                 installedToolsets = projectCollection.Toolsets.OrderByDescending(
-                    toolset => new Version(toolset.ToolsVersion)).ToList();                
+                    toolset => new Version(toolset.ToolsVersion)).ToList();
             }
 
             if (string.IsNullOrEmpty(version))
@@ -294,6 +329,25 @@ namespace NuGet.CommandLine
                 }
 
                 return selectedToolset.ToolsPath;
+            }
+        }
+
+        private static void AppendQuoted(StringBuilder builder, string targetPath)
+        {
+            builder
+                .Append('"')
+                .Append(targetPath)
+                .Append('"');
+        }
+
+        private static void ExtractResource(string resourceName, string targetPath)
+        {
+            using (var input = typeof(MsBuildUtility).Assembly.GetManifestResourceStream(resourceName))
+            {
+                using (var output = File.OpenWrite(targetPath))
+                {
+                    input.CopyTo(output);
+                }
             }
         }
     }

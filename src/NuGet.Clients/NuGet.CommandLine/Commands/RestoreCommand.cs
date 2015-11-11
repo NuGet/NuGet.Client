@@ -85,7 +85,13 @@ namespace NuGet.CommandLine
                 {
                     foreach (var file in restoreInputs.V3RestoreFiles)
                     {
-                        var v3RestoreResult = await PerformNuGetV3RestoreAsync(packagesDir, file);
+                        HashSet<string> projectReferences;
+                        restoreInputs.ProjectReferenceLookup.TryGetValue(file, out projectReferences);
+
+                        var v3RestoreResult = await PerformNuGetV3RestoreAsync(
+                            packagesDir,
+                            file,
+                            projectReferences);
                         success &= v3RestoreResult;
                     }
                 }
@@ -110,7 +116,13 @@ namespace NuGet.CommandLine
                         for (int i = 0; currentFileIndex < restoreCount && i < newTasks; i++, currentFileIndex++)
                         {
                             var file = restoreInputs.V3RestoreFiles[currentFileIndex];
-                            var newTask = PerformNuGetV3RestoreAsync(packagesDir, file);
+                            HashSet<string> projectReferences;
+                            restoreInputs.ProjectReferenceLookup.TryGetValue(file, out projectReferences);
+
+                            var newTask = PerformNuGetV3RestoreAsync(
+                                packagesDir,
+                                file,
+                                projectReferences);
 
                             tasks.Add(newTask);
                         }
@@ -168,7 +180,10 @@ namespace NuGet.CommandLine
             throw new CommandLineException(message);
         }
 
-        private async Task<bool> PerformNuGetV3RestoreAsync(string packagesDir, string inputPath)
+        private async Task<bool> PerformNuGetV3RestoreAsync(
+            string packagesDir,
+            string inputPath,
+            HashSet<string> projectReferences)
         {
             var inputFileName = Path.GetFileName(inputPath);
             var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(inputPath));
@@ -179,7 +194,6 @@ namespace NuGet.CommandLine
             // Determine the type of the input and restore it appropriately
             // Inputs can be: project.json files or msbuild project files
 
-            IEnumerable<string> externalProjects = null;
             if (BuildIntegratedProjectUtility.IsProjectConfig(inputPath))
             {
                 // Restore a project.json file using the directory as the Id
@@ -198,14 +212,6 @@ namespace NuGet.CommandLine
             {
                 projectName = Path.GetFileNameWithoutExtension(inputPath);
                 projectJsonPath = BuildIntegratedProjectUtility.GetProjectConfigPath(projectDirectory, projectName);
-
-                // For known project types that support the msbuild p2p reference task find all project references.
-                if (MsBuildUtility.IsMsBuildBasedProject(inputPath))
-                {
-                    // Restore a .csproj or other msbuild project file using the
-                    // file name without the extension as the Id
-                    externalProjects = MsBuildUtility.GetProjectReferences(_msbuildDirectory, inputPath);
-                }
             }
 
             var success = false;
@@ -234,8 +240,8 @@ namespace NuGet.CommandLine
                 // Create a restore request
                 var request = new RestoreRequest(
                     packageSpec,
-                   repositories,
-                packagesDirectory: null);
+                    repositories,
+                    packagesDirectory: null);
 
                 request.PackagesDirectory = packagesDir;
 
@@ -258,22 +264,26 @@ namespace NuGet.CommandLine
                 // Resolve the packages directory
                 Console.LogVerbose($"Using packages directory: {request.PackagesDirectory}");
 
-                if (externalProjects != null)
+                if (projectReferences != null)
                 {
-                    foreach (var externalReference in externalProjects)
+                    foreach (var projectReference in projectReferences)
                     {
-                        var projectDir = Path.GetDirectoryName(externalReference);
-                        var childProjectName = Path.GetFileNameWithoutExtension(externalReference);
-                        var childProjectJson =
-                            BuildIntegratedProjectUtility.GetProjectConfigPath(projectDir, childProjectName);
+                        var projectDir = Path.GetDirectoryName(projectReference);
+                        var projectReferenceName = Path.GetFileNameWithoutExtension(projectReference);
 
-                        Debug.Assert(childProjectJson != null && File.Exists(childProjectJson), childProjectJson);
+                        var childProjectJson = BuildIntegratedProjectUtility.GetProjectConfigPath(
+                            projectDir,
+                            projectReferenceName);
 
-                        request.ExternalProjects.Add(
-                            new ExternalProjectReference(
-                                externalReference,
-                                childProjectJson,
-                                projectReferences: Enumerable.Empty<string>()));
+                        // Determine if this is a p2p reference with project.json
+                        if (File.Exists(childProjectJson))
+                        {
+                            request.ExternalProjects.Add(
+                                new ExternalProjectReference(
+                                    projectReference,
+                                    childProjectJson,
+                                    projectReferences: Enumerable.Empty<string>()));
+                        }
                     }
                 }
 
@@ -557,6 +567,20 @@ namespace NuGet.CommandLine
                 }
             }
 
+
+            var projectsWithPotentialP2PReferences = packageRestoreInputs
+                .V3RestoreFiles
+                .Where(MsBuildUtility.IsMsBuildBasedProject)
+                .ToArray();
+
+            if (projectsWithPotentialP2PReferences.Length > 0)
+            {
+                var referencesLookup = MsBuildUtility.GetProjectReferences(
+                    _msbuildDirectory,
+                    projectsWithPotentialP2PReferences);
+                packageRestoreInputs.ProjectReferenceLookup = referencesLookup;
+            }
+
             return packageRestoreInputs;
         }
 
@@ -696,6 +720,8 @@ namespace NuGet.CommandLine
             public List<string> PackageReferenceFiles { get; } = new List<string>();
 
             public List<string> V3RestoreFiles { get; } = new List<string>();
+
+            public Dictionary<string, HashSet<string>> ProjectReferenceLookup { get; set; }
         }
     }
 }

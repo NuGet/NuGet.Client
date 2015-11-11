@@ -36,6 +36,7 @@
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="GetProjectsReferencingProjectJsonFiles.target" />
+    <EmbeddedResource Include="GetProjectsReferencingProjectJsonFilesEntryPoint.target" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalysisResources.Designer.cs">
@@ -152,6 +153,7 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.Composition.Registration" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.XML" />
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
