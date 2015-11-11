@@ -179,6 +179,17 @@ namespace Test.Utility
                 });
         }
 
+        public static FileInfo GetPackageWithEmptyFolders(string path, string packageId, string packageVersion)
+        {
+            return GeneratePackage(path, packageId, packageVersion,
+                new[]
+                {
+                    "build/net45/_._",
+                    "lib/net45/_._",
+                    "content/_._"
+                });
+        }
+
         public static FileInfo GetPackageWithFrameworkReference(string path,
             string packageId = "packageA",
             string packageVersion = "2.0.3")
