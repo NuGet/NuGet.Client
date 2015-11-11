@@ -15,6 +15,7 @@ namespace NuGet.Test
         [InlineData("dotnet5.1", "dotnet", true)]
 
         // dnxcore50 -> dotnet
+        [InlineData("dnxcore50", "dotnet5.6", true)]
         [InlineData("dnxcore50", "dotnet5.5", true)]
         [InlineData("dnxcore50", "dotnet5.4", true)]
         [InlineData("dnxcore50", "dotnet5.3", true)]
@@ -22,6 +23,15 @@ namespace NuGet.Test
         [InlineData("dnxcore50", "dotnet5.1", true)]
 
         // net -> dotnet
+        [InlineData("net462", "dotnet5.6", true)]
+        [InlineData("net462", "dotnet5.5", true)]
+        [InlineData("net462", "dotnet5.4", true)]
+        [InlineData("net462", "dotnet5.3", true)]
+        [InlineData("net462", "dotnet5.2", true)]
+        [InlineData("net462", "dotnet5.1", true)]
+        [InlineData("net462", "dotnet", true)]
+        
+        [InlineData("net461", "dotnet5.6", false)]
         [InlineData("net461", "dotnet5.5", true)]
         [InlineData("net461", "dotnet5.4", true)]
         [InlineData("net461", "dotnet5.3", true)]
@@ -29,6 +39,7 @@ namespace NuGet.Test
         [InlineData("net461", "dotnet5.1", true)]
         [InlineData("net461", "dotnet", true)]
 
+        [InlineData("net46", "dotnet5.6", false)]
         [InlineData("net46", "dotnet5.5", false)]
         [InlineData("net46", "dotnet5.4", true)]
         [InlineData("net46", "dotnet5.3", true)]
@@ -36,6 +47,7 @@ namespace NuGet.Test
         [InlineData("net46", "dotnet5.1", true)]
         [InlineData("net46", "dotnet", true)]
 
+        [InlineData("net452", "dotnet5.6", false)]
         [InlineData("net452", "dotnet5.5", false)]
         [InlineData("net452", "dotnet5.4", false)]
         [InlineData("net452", "dotnet5.3", true)]
@@ -43,6 +55,7 @@ namespace NuGet.Test
         [InlineData("net452", "dotnet5.1", true)]
         [InlineData("net452", "dotnet", true)]
 
+        [InlineData("net451", "dotnet5.6", false)]
         [InlineData("net451", "dotnet5.5", false)]
         [InlineData("net451", "dotnet5.4", false)]
         [InlineData("net451", "dotnet5.3", true)]
@@ -50,6 +63,7 @@ namespace NuGet.Test
         [InlineData("net451", "dotnet5.1", true)]
         [InlineData("net451", "dotnet", true)]
 
+        [InlineData("net45", "dotnet5.6", false)]
         [InlineData("net45", "dotnet5.5", false)]
         [InlineData("net45", "dotnet5.4", false)]
         [InlineData("net45", "dotnet5.3", false)]
@@ -58,6 +72,15 @@ namespace NuGet.Test
         [InlineData("net45", "dotnet", true)]
 
         // dnx -> dotnet
+        [InlineData("dnx462", "dotnet5.6", true)]
+        [InlineData("dnx462", "dotnet5.5", true)]
+        [InlineData("dnx462", "dotnet5.4", true)]
+        [InlineData("dnx462", "dotnet5.3", true)]
+        [InlineData("dnx462", "dotnet5.2", true)]
+        [InlineData("dnx462", "dotnet5.1", true)]
+        [InlineData("dnx462", "dotnet", true)]
+        
+        [InlineData("dnx461", "dotnet5.6", false)]
         [InlineData("dnx461", "dotnet5.5", true)]
         [InlineData("dnx461", "dotnet5.4", true)]
         [InlineData("dnx461", "dotnet5.3", true)]
@@ -65,6 +88,7 @@ namespace NuGet.Test
         [InlineData("dnx461", "dotnet5.1", true)]
         [InlineData("dnx461", "dotnet", true)]
 
+        [InlineData("dnx46", "dotnet5.6", false)]
         [InlineData("dnx46", "dotnet5.5", false)]
         [InlineData("dnx46", "dotnet5.4", true)]
         [InlineData("dnx46", "dotnet5.3", true)]
@@ -72,6 +96,7 @@ namespace NuGet.Test
         [InlineData("dnx46", "dotnet5.1", true)]
         [InlineData("dnx46", "dotnet", true)]
 
+        [InlineData("dnx452", "dotnet5.6", false)]
         [InlineData("dnx452", "dotnet5.5", false)]
         [InlineData("dnx452", "dotnet5.4", false)]
         [InlineData("dnx452", "dotnet5.3", true)]
@@ -79,6 +104,7 @@ namespace NuGet.Test
         [InlineData("dnx452", "dotnet5.1", true)]
         [InlineData("dnx452", "dotnet", true)]
 
+        [InlineData("dnx451", "dotnet5.6", false)]
         [InlineData("dnx451", "dotnet5.5", false)]
         [InlineData("dnx451", "dotnet5.4", false)]
         [InlineData("dnx451", "dotnet5.3", true)]
@@ -87,6 +113,7 @@ namespace NuGet.Test
         [InlineData("dnx451", "dotnet", true)]
 
         // dnx45 doesn't really work, but it's here for completeness :)
+        [InlineData("dnx45", "dotnet5.6", false)]
         [InlineData("dnx45", "dotnet5.5", false)]
         [InlineData("dnx45", "dotnet5.4", false)]
         [InlineData("dnx45", "dotnet5.3", false)]
@@ -98,6 +125,7 @@ namespace NuGet.Test
         [InlineData("uap10.0", "netcore50", true)]
         [InlineData("uap10.0", "win81", true)]
         [InlineData("uap10.0", "wpa81", true)]
+        [InlineData("uap10.0", "dotnet5.6", true)]
         [InlineData("uap10.0", "dotnet5.5", true)]
         [InlineData("uap10.0", "dotnet5.4", true)]
         [InlineData("uap10.0", "dotnet5.3", true)]
@@ -105,6 +133,7 @@ namespace NuGet.Test
         [InlineData("uap10.0", "dotnet5.1", true)]
         [InlineData("netcore50", "win81", true)]
         [InlineData("netcore50", "wpa81", false)]
+        [InlineData("netcore50", "dotnet5.6", true)]
         [InlineData("netcore50", "dotnet5.5", true)]
         [InlineData("netcore50", "dotnet5.4", true)]
         [InlineData("netcore50", "dotnet5.3", true)]
@@ -112,6 +141,7 @@ namespace NuGet.Test
         [InlineData("netcore50", "dotnet5.1", true)]
 
         // wpa81/win81 -> dotnet
+        [InlineData("wpa81", "dotnet5.6", false)]
         [InlineData("wpa81", "dotnet5.5", false)]
         [InlineData("wpa81", "dotnet5.4", false)]
         [InlineData("wpa81", "dotnet5.3", true)]
@@ -124,21 +154,25 @@ namespace NuGet.Test
         [InlineData("win81", "dotnet5.1", true)]
 
         // wp8/wp81 -> dotnet
+        [InlineData("wp81", "dotnet5.6", false)]
         [InlineData("wp81", "dotnet5.5", false)]
         [InlineData("wp81", "dotnet5.4", false)]
         [InlineData("wp81", "dotnet5.3", false)]
         [InlineData("wp81", "dotnet5.2", false)]
         [InlineData("wp81", "dotnet5.1", true)]
+        [InlineData("wp8", "dotnet5.6", false)]
         [InlineData("wp8", "dotnet5.5", false)]
         [InlineData("wp8", "dotnet5.4", false)]
         [InlineData("wp8", "dotnet5.3", false)]
         [InlineData("wp8", "dotnet5.2", false)]
         [InlineData("wp8", "dotnet5.1", true)]
+        [InlineData("sl8-windowsphone", "dotnet5.6", false)]
         [InlineData("sl8-windowsphone", "dotnet5.5", false)]
         [InlineData("sl8-windowsphone", "dotnet5.4", false)]
         [InlineData("sl8-windowsphone", "dotnet5.3", false)]
         [InlineData("sl8-windowsphone", "dotnet5.2", false)]
         [InlineData("sl8-windowsphone", "dotnet5.1", true)]
+        [InlineData("sl7-windowsphone", "dotnet5.6", false)]
         [InlineData("sl7-windowsphone", "dotnet5.5", false)]
         [InlineData("sl7-windowsphone", "dotnet5.4", false)]
         [InlineData("sl7-windowsphone", "dotnet5.3", false)]
@@ -146,6 +180,8 @@ namespace NuGet.Test
         [InlineData("sl7-windowsphone", "dotnet5.1", false)]
 
         // win8 -> dotnet
+        [InlineData("win8", "dotnet5.6", false)]
+        [InlineData("win8", "dotnet5.5", false)]
         [InlineData("win8", "dotnet5.4", false)]
         [InlineData("win8", "dotnet5.3", false)]
         [InlineData("win8", "dotnet5.2", true)]
