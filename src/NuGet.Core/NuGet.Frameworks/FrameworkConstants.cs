@@ -78,6 +78,7 @@ namespace NuGet.Frameworks
             public static readonly NuGetFramework Net452 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 5, 2, 0));
             public static readonly NuGetFramework Net46 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 0, 0));
             public static readonly NuGetFramework Net461 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 1, 0));
+            public static readonly NuGetFramework Net462 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 2, 0));
 
             public static readonly NuGetFramework NetCore45 = new NuGetFramework(FrameworkIdentifiers.NetCore, new Version(4, 5, 0, 0));
             public static readonly NuGetFramework NetCore451 = new NuGetFramework(FrameworkIdentifiers.NetCore, new Version(4, 5, 1, 0));
@@ -123,6 +124,8 @@ namespace NuGet.Frameworks
                 = new NuGetFramework(FrameworkIdentifiers.NetPlatform, new Version(5, 4, 0, 0));
             public static readonly NuGetFramework DotNet55
                 = new NuGetFramework(FrameworkIdentifiers.NetPlatform, new Version(5, 5, 0, 0));
+            public static readonly NuGetFramework DotNet56
+                = new NuGetFramework(FrameworkIdentifiers.NetPlatform, new Version(5, 6, 0, 0));
 
             public static readonly NuGetFramework UAP10 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.UAP, Version10);
         }
@@ -149,6 +152,9 @@ namespace NuGet.Frameworks
 
             public static readonly FrameworkRange DotNet55
                 = new FrameworkRange(CommonFrameworks.DotNet, CommonFrameworks.DotNet55);
+
+            public static readonly FrameworkRange DotNet56
+                = new FrameworkRange(CommonFrameworks.DotNet, CommonFrameworks.DotNet56);
         }
     }
 }
