@@ -7,12 +7,17 @@ namespace API.Test
     {
         public static void InstallPackageApi(string id, string version)
         {
+            InstallPackageApi(null, id, version, false);
+        }
+
+        public static void InstallPackageApi(string source, string id, string version, bool prerelease)
+        {
             var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
             IVsPackageInstaller services = ServiceLocator.GetInstance<IVsPackageInstaller>();
 
             foreach (EnvDTE.Project project in dte.Solution.Projects)
             {
-                services.InstallPackage(null, project, id, version, false);
+                services.InstallPackage(source, project, id, version, prerelease);
                 return;
             }
         }
