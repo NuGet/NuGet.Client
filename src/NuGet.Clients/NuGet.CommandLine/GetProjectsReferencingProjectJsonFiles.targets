@@ -3,36 +3,32 @@
             DependsOnTargets="_SplitProjectReferencesByFileExistence"
             Returns="@(_ProjectReferencingProjectJsonFile)">
 
+        <PropertyGroup>
+            <EntryPointProject Condition=" '$(EntryPointProject)' == '' ">$(MsBuildProjectFullPath)</EntryPointProject>
+        </PropertyGroup>
+
         <ItemGroup>
             <_ProjectReferencingProjectJsonFile
+                Include="#:$(MSBuildProjectFullPath)"
+                Condition=" '$(MSBuildProjectFullPath)' == '$(EntryPointProject)' " />
+            <_ProjectReferencingProjectJsonFile
                 Include="$(MSBuildProjectFullPath)"
-                Condition=" Exists('$(MsBuildProjectDirectory)\project.json') " />
+                Condition=" '$(MSBuildProjectFullPath)' != '$(EntryPointProject)' " />
         </ItemGroup>
 
         <MSBuild
           Projects="@(ProjectReference)"
           Targets="_NuGet_GetProjectsReferencingProjectJsonInternal"
           BuildInParallel="$(BuildInParallel)"
-          Properties="%(_MSBuildProjectReferenceExistent.SetConfiguration); %(_MSBuildProjectReferenceExistent.SetPlatform);"
+          Properties="
+            %(_MSBuildProjectReferenceExistent.SetConfiguration);
+            %(_MSBuildProjectReferenceExistent.SetPlatform);
+            EntryPointProject=$(EntryPointProject)"
           RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
 
             <Output
                 TaskParameter="TargetOutputs"
                 ItemName="_ProjectReferencingProjectJsonFile" />
         </MSBuild>
-    </Target>
-
-    <Target Name="NuGet_GetProjectsReferencingProjectJson">
-        <CallTarget
-            Targets="_NuGet_GetProjectsReferencingProjectJsonInternal">
-            <Output
-                ItemName="_ProjectReferencingProjectJsonFile"
-                TaskParameter="TargetOutputs" />
-        </CallTarget>
-
-        <WriteLinesToFile
-            File="$(ResultsFile)"
-            Lines="@(_ProjectReferencingProjectJsonFile)"
-            Overwrite="true" />
     </Target>
 </Project>

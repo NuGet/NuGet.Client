@@ -131,7 +131,7 @@ namespace NuGet.CommandLine.Test
                                             @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
                         xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-        <Target Name=""NuGet_GetProjectsReferencingProjectJson""></Target>
+        <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
         </Project>");
 
             string[] args = new string[] {
@@ -192,7 +192,7 @@ namespace NuGet.CommandLine.Test
                                             @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
                         xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-        <Target Name=""NuGet_GetProjectsReferencingProjectJson""></Target>
+        <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
         </Project>");
 
             string[] args = new string[] {
@@ -261,7 +261,7 @@ namespace NuGet.CommandLine.Test
                                             @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
                         xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-        <Target Name=""NuGet_GetProjectsReferencingProjectJson""></Target>
+        <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
         </Project>");
 
             Util.CreateFile(projectDir2, "project.json",
@@ -279,7 +279,7 @@ namespace NuGet.CommandLine.Test
                                             @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
                         xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-        <Target Name=""NuGet_GetProjectsReferencingProjectJson""></Target>
+        <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
         </Project>");
 
             var slnPath = Path.Combine(workingPath, "xyz.sln");
@@ -372,7 +372,7 @@ namespace NuGet.CommandLine.Test
                                             @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
                         xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-        <Target Name=""NuGet_GetProjectsReferencingProjectJson""></Target>
+        <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
         </Project>");
 
             Util.CreateFile(projectDir2, "project.json",
@@ -389,7 +389,7 @@ namespace NuGet.CommandLine.Test
                                             @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
                         xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-        <Target Name=""NuGet_GetProjectsReferencingProjectJson""></Target>
+        <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
         </Project>");
 
             var slnPath = Path.Combine(workingPath, "xyz.sln");
@@ -1022,7 +1022,7 @@ namespace NuGet.CommandLine.Test
                                             @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
                         xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-        <Target Name=""NuGet_GetProjectsReferencingProjectJson""></Target>
+        <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
         </Project>");
 
             var csprojPath = Path.Combine(workingPath, "test.csproj");
@@ -1096,7 +1096,7 @@ namespace NuGet.CommandLine.Test
                                             @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
                         xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-        <Target Name=""NuGet_GetProjectsReferencingProjectJson""></Target>
+        <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
         </Project>");
 
             var slnPath = Path.Combine(workingPath, "xyz.sln");
@@ -1207,7 +1207,7 @@ namespace NuGet.CommandLine.Test
                                             @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
                         xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-        <Target Name=""NuGet_GetProjectsReferencingProjectJson""></Target>
+        <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
         </Project>");
 
             var csprojPath = Path.Combine(workingPath, "test.csproj");
@@ -1628,7 +1628,7 @@ namespace NuGet.CommandLine.Test
         private const string CSProjXML = @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
                         xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-        <Target Name=""NuGet_GetProjectsReferencingProjectJson""></Target>
+        <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
         </Project>";
 
         /// <summary>
