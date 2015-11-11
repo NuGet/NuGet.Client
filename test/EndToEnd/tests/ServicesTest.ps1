@@ -268,6 +268,20 @@ function Test-InstallPackageAPIBadSource
     Assert-NoPackage $p "owin"
 }
 
+function Test-InstallPackageAPI_FWLinkSource
+{
+    param($context)
+
+    # Arrange
+    $p = New-BuildIntegratedProj UAPApp
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallPackageApi("https://go.microsoft.com/fwlink/?LinkId=699556", "Microsoft.Xaml.Behaviors.Uwp.Managed", [NuGet.Versioning.NuGetVersion]$null, $true)
+
+    # Assert
+    Assert-ProjectJsonDependency $p Microsoft.Xaml.Behaviors.Uwp.Managed 1.0.0
+}
+
 function Test-UninstallPackageAPI
 {
     param($context)
