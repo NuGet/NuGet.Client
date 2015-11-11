@@ -1,3 +1,24 @@
+# Verify Xunit 2.1.0 can be installed into a net45 project.
+# https://github.com/NuGet/Home/issues/1711
+function Test-InstallXunit210WithEmptyBuildFolderSucceeds
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act
+    $p | Install-Package xunit -version 2.1.0
+
+    # Assert
+    Assert-Package $p xunit 2.1.0
+    Assert-Package $p xunit.core 2.1.0
+    Assert-Package $p xunit.assert 2.1.0
+    Assert-Package $p xunit.extensibility.core 2.1.0
+    Assert-Package $p xunit.extensibility.execution 2.1.0
+    Assert-Package $p xunit.abstractions 2.0.0
+}
+
 function Test-SinglePackageInstallIntoSingleProject {
     # Arrange
     $project = New-ConsoleApplication
