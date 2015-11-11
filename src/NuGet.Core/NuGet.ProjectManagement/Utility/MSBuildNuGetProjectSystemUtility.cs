@@ -35,24 +35,31 @@ namespace NuGet.ProjectManagement
             return null;
         }
 
+        /// <summary>
+        /// Filter out invalid package items and replace the directory separator with the correct slash for the 
+        /// current OS.
+        /// </summary>
+        /// <remarks>If the group is null or contains _._ this method will return the same group.</remarks>
         internal static FrameworkSpecificGroup Normalize(FrameworkSpecificGroup group)
         {
-            if (group == null)
+            // Default to returning the same group
+            var result = group;
+
+            // If the group is null or contains only _._ then this is a no-op.
+            // If it does have items create a new normalized group to replace it with.
+            if (group?.HasEmptyFolder == false)
             {
-                return null;
+                // Filter out invalid files
+                var normalizedItems = GetValidPackageItems(group.Items)
+                                            .Select(item => PathUtility.ReplaceAltDirSeparatorWithDirSeparator(item));
+
+                // Create a new group
+                result = new FrameworkSpecificGroup(
+                    targetFramework: group.TargetFramework,
+                    items: normalizedItems);
             }
 
-            var items = group.Items.ToList();
-            if (group.HasEmptyFolder)
-            {
-                items.Add(FrameworkSpecificGroup.EmptyFolder);
-            }
-
-            var normalizedGroup = new FrameworkSpecificGroup(group.TargetFramework,
-                                    GetValidPackageItems(items)
-                                    .Select(item => PathUtility.ReplaceAltDirSeparatorWithDirSeparator(item)));
-
-            return normalizedGroup;
+            return result;
         }
 
         internal static bool IsValid(FrameworkSpecificGroup frameworkSpecificGroup)
