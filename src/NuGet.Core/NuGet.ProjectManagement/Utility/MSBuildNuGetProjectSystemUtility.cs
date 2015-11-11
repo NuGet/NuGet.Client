@@ -39,15 +39,15 @@ namespace NuGet.ProjectManagement
         /// Filter out invalid package items and replace the directory separator with the correct slash for the 
         /// current OS.
         /// </summary>
-        /// <remarks>If the group is null or contains _._ this method will return the same group.</remarks>
+        /// <remarks>If the group is null or contains only only _._ this method will return the same group.</remarks>
         internal static FrameworkSpecificGroup Normalize(FrameworkSpecificGroup group)
         {
             // Default to returning the same group
             var result = group;
 
-            // If the group is null or contains only _._ then this is a no-op.
+            // If the group is null or it does not contain any items besides _._ then this is a no-op.
             // If it does have items create a new normalized group to replace it with.
-            if (group?.HasEmptyFolder == false)
+            if (group?.Items.Any() == true)
             {
                 // Filter out invalid files
                 var normalizedItems = GetValidPackageItems(group.Items)
