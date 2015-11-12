@@ -153,7 +153,8 @@ namespace NuGet.Configuration
                     validSettingFiles.AddRange(
                         GetSettingsFileNames(root)
                             .Select(f => ReadSettings(root, f))
-                            .Where(f => f != null));
+                            .Where(f => f != null 
+                            && !f.ConfigFilePath.Equals(Path.GetFullPath(Path.Combine(root, configFileName ?? "")))));
                 }
 
                 if (loadAppDataSettings)
