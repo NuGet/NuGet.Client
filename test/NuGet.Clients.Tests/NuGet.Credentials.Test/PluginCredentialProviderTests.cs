@@ -92,7 +92,7 @@ namespace NuGet.Credentials.Test
             _mockProvider.Setup(x => x.Execute(It.IsAny<PluginCredentialRequest>(), It.IsAny<CancellationToken>()))
                 .Throws(PluginException.CreateAbortMessage(@"c:\path\plugin.exe", "Extra message."));
 
-            var exception =  await Record.ExceptionAsync(async () => provider.Object.Get(
+            var exception =  await Record.ExceptionAsync(async () => await provider.Object.Get(
                 uri, null, isProxyRequest, isRetry, nonInteractive, CancellationToken.None));
 
             Assert.IsAssignableFrom<PluginException>(exception);
@@ -137,6 +137,14 @@ namespace NuGet.Credentials.Test
             Assert.NotNull(result);
             Assert.NotNull(result.Credentials);
             Assert.Equal("p", ((NetworkCredential)result.Credentials)?.Password);
+        }
+
+        [Fact]
+        public void SetsIdBasedOnTypeAndFilename()
+        {
+            var provider = new PluginCredentialProvider(@"c:\some\path\provider.exe", 5);
+
+            Assert.StartsWith("PluginCredentialProvider_provider.exe_", provider.Id);
         }
     }
 }

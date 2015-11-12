@@ -27,6 +27,7 @@ namespace NuGet.Credentials.Test
                 .Get(It.IsAny<Uri>(), It.IsAny<IWebProxy>(), It.IsAny<bool>(), It.IsAny<bool>(),
                     It.IsAny<bool>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult<CredentialResponse>(new CredentialResponse (CredentialStatus.ProviderNotApplicable)));
+            _mockProvider.Setup(x => x.Id).Returns("1");
         }
 
         private void TestableErrorWriter(string s)
@@ -183,6 +184,45 @@ namespace NuGet.Credentials.Test
             _mockProvider.Verify(
                 x => x.Get(It.IsAny<Uri>(), It.IsAny<IWebProxy>(), It.IsAny<bool>(), It.IsAny<bool>(),
                 It.IsAny<bool>(), It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+
+        [Fact]
+        public async Task GetCredentials_TriesAllProviders_EvenWhenSameType()
+        {
+            var mockProvider1 = new Mock<ICredentialProvider>();
+            mockProvider1.Setup(x => x
+                .Get(It.IsAny<Uri>(), It.IsAny<IWebProxy>(), It.IsAny<bool>(), It.IsAny<bool>(),
+                    It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Returns(
+                    Task.FromResult<CredentialResponse>(new CredentialResponse(CredentialStatus.ProviderNotApplicable)));
+            mockProvider1.Setup(x => x.Id).Returns("1");
+            var mockProvider2 = new Mock<ICredentialProvider>();
+            mockProvider2.Setup(x => x
+                .Get(It.IsAny<Uri>(), It.IsAny<IWebProxy>(), It.IsAny<bool>(), It.IsAny<bool>(),
+                    It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+                .Returns(
+                    Task.FromResult<CredentialResponse>(new CredentialResponse(CredentialStatus.ProviderNotApplicable)));
+            mockProvider2.Setup(x => x.Id).Returns("2");
+            var service = new CredentialService(
+                new[] {mockProvider1.Object, mockProvider2.Object},
+                TestableErrorWriter,
+                nonInteractive: false);
+            var uri1 = new Uri("http://host/some/path");
+
+
+            var result1 = await service.GetCredentials(uri1, null, isProxy: false,
+                cancellationToken: CancellationToken.None);
+
+            Assert.Null(result1);
+            mockProvider1.Verify(
+                x => x.Get(It.IsAny<Uri>(), It.IsAny<IWebProxy>(), It.IsAny<bool>(), It.IsAny<bool>(),
+                    It.IsAny<bool>(), It.IsAny<CancellationToken>()),
+                Times.Once);
+            mockProvider2.Verify(
+                x => x.Get(It.IsAny<Uri>(), It.IsAny<IWebProxy>(), It.IsAny<bool>(), It.IsAny<bool>(),
+                    It.IsAny<bool>(), It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 

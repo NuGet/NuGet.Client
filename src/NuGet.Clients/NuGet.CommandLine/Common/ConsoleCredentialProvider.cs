@@ -13,7 +13,13 @@ namespace NuGet
         public ConsoleCredentialProvider(IConsole console)
         {
             Console = console;
+            Id = $"{typeof (ConsoleCredentialProvider).Name}_{Guid.NewGuid()}";
         }
+
+        /// <summary>
+        /// Unique identifier of this credential provider
+        /// </summary>
+        public string Id { get; }
 
         private IConsole Console { get; set; }
 
