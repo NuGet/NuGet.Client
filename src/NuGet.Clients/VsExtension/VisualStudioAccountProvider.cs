@@ -39,7 +39,13 @@ namespace NuGetVSExtension
         {
             _accountManager = accountManager;
             _loginProvider = interactiveLogin;
+            Id = $"{typeof (VisualStudioAccountProvider).Name}_{Guid.NewGuid()}";
         }
+
+        /// <summary>
+        /// Unique identifier of this credential provider
+        /// </summary>
+        public string Id { get; }
 
         /// <summary>
         /// Determins if the endpoint is a Visual Studio Online endpoint.  If so, uses the keychain to get a

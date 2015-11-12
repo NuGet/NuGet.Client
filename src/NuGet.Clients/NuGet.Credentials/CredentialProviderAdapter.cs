@@ -23,7 +23,13 @@ namespace NuGet.Credentials
             }
 
             _provider = provider;
+            Id = $"{typeof (CredentialProviderAdapter).Name}_{provider.GetType().Name}_{Guid.NewGuid()}";
         }
+
+        /// <summary>
+        /// Unique identifier of this credential provider
+        /// </summary>
+        public string Id { get; }
 
         public Task<CredentialResponse> Get(
             Uri uri,

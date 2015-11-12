@@ -10,6 +10,8 @@ namespace NuGet.Credentials
 {
     public interface ICredentialProvider
     {
+        string Id { get; }
+
         Task<CredentialResponse> Get(Uri uri, 
                                IWebProxy proxy, 
                                bool isProxyRequest, 
