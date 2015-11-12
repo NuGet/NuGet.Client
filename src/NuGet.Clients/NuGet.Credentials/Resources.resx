@@ -136,12 +136,12 @@
     <value>Credential plugin {0} not found at any of the following locations {1}.</value>
   </data>
   <data name="PluginException_Timeout_Format" xml:space="preserve">
-    <value>Credential plugin {0} timed out after {1} milliseconds.</value>
+    <value>Credential plugin {0} timed out after {1} seconds.</value>
   </data>
   <data name="ProviderException_InvalidCredentialResponse" xml:space="preserve">
     <value>Could not create credential response object because the response was invalid.</value>
   </data>
   <data name="ProviderException_MalformedResponse" xml:space="preserve">
-    <value>One of the credential providers gave an invalid response</value>
+    <value>Credential provider gave an invalid response.</value>
   </data>
 </root>
