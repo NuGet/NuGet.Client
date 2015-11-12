@@ -83,9 +83,16 @@ namespace NuGet.CommandLine
 
                 if (DisableParallelProcessing)
                 {
+                    bool printPackageSources = true;
                     foreach (var file in restoreInputs.V3RestoreFiles)
                     {
-                        var v3RestoreResult = await PerformNuGetV3RestoreAsync(packagesDir, file);
+                        var v3RestoreResult = await PerformNuGetV3RestoreAsync(packagesDir, file, printPackageSources);
+
+                        if (printPackageSources)
+                        {
+                            printPackageSources = false;
+                        }
+
                         success &= v3RestoreResult;
                     }
                 }
@@ -99,7 +106,7 @@ namespace NuGet.CommandLine
                     int restoreCount = restoreInputs.V3RestoreFiles.Count;
 
                     int currentFileIndex = 0;
-
+                    bool printPackageSources = true;
                     do
                     {
                         Debug.Assert(tasks.Count < 16);
@@ -110,7 +117,12 @@ namespace NuGet.CommandLine
                         for (int i = 0; currentFileIndex < restoreCount && i < newTasks; i++, currentFileIndex++)
                         {
                             var file = restoreInputs.V3RestoreFiles[currentFileIndex];
-                            var newTask = PerformNuGetV3RestoreAsync(packagesDir, file);
+                            var newTask = PerformNuGetV3RestoreAsync(packagesDir, file, printPackageSources);
+
+                            if (printPackageSources)
+                            {
+                                printPackageSources = false;
+                            }
 
                             tasks.Add(newTask);
                         }
@@ -168,7 +180,7 @@ namespace NuGet.CommandLine
             throw new CommandLineException(message);
         }
 
-        private async Task<bool> PerformNuGetV3RestoreAsync(string packagesDir, string inputPath)
+        private async Task<bool> PerformNuGetV3RestoreAsync(string packagesDir, string inputPath, bool printPackageSources)
         {
             var inputFileName = Path.GetFileName(inputPath);
             var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(inputPath));
@@ -229,7 +241,19 @@ namespace NuGet.CommandLine
 
                 // Convert package sources to repositories
                 var sourceProvider = GetSourceRepositoryProvider();
-                var repositories = GetPackageSources(Settings).Select(source => sourceProvider.CreateRepository(source));
+
+                var packageSources = GetPackageSources(Settings);
+
+                if (printPackageSources)
+                {
+                    Console.WriteLine("Feeds used:");
+                    foreach (var packageSource in packageSources)
+                    {
+                        Console.WriteLine(packageSource.Source);
+                    }
+                }
+
+                var repositories = packageSources.Select(source => sourceProvider.CreateRepository(source));
 
                 // Create a restore request
                 var request = new RestoreRequest(
@@ -383,7 +407,15 @@ namespace NuGet.CommandLine
                                 ? packageRestoreInputs.DirectoryOfSolutionFile
                                 : packageRestoreInputs.PackageReferenceFiles[0] },
                     isMissing: true));
-            var repositories = GetPackageSources(Settings)
+
+            var packageSources = GetPackageSources(Settings);
+            Console.WriteLine("Feeds used:");
+            foreach (var packageSource in packageSources)
+            {
+                Console.WriteLine(packageSource.Source);
+            }
+
+            var repositories = packageSources
                 .Select(sourceRepositoryProvider.CreateRepository)
                 .ToArray();
 

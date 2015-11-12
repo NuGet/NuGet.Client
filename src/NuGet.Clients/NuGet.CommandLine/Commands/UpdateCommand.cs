@@ -221,12 +221,6 @@ namespace NuGet.CommandLine
                 packageSources.AddRange(availableSources);
             }
             
-            Console.WriteLine("Feeds used:");
-            foreach (var packageSource in packageSources)
-            {
-                Console.WriteLine(packageSource.Source);
-            }
-
             return packageSources;
         }
 
@@ -254,6 +248,12 @@ namespace NuGet.CommandLine
             var projectActions = new List<NuGetProjectAction>();
 
             var packageSources = GetPackageSources();
+
+            Console.WriteLine("Feeds used:");
+            foreach (var packageSource in packageSources)
+            {
+                Console.WriteLine(packageSource.Source);
+            }
 
             var sourceRepositories = packageSources.Select(sourceRepositoryProvider.CreateRepository);
             if (Id.Count > 0)

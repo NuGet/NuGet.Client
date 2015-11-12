@@ -140,12 +140,6 @@ namespace NuGet.CommandLine
                 packageSources.Add(Common.PackageSourceProviderExtensions.ResolveSource(packageSources, source));
             }
 
-            Console.WriteLine("Feeds used:");
-            foreach (var packageSource in packageSources)
-            {
-                Console.WriteLine(packageSource.Source);
-            }
-
             return packageSources;
         }
     }
