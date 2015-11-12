@@ -1871,6 +1871,48 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void AddPackageSourcesWithConfigFile()
+        {
+            
+            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var configContents =
+                     @"<?xml version=""1.0""?>
+<configuration>
+<packageSources>
+    <add key='NuGet.org' value='https://NuGet.org' />
+</packageSources>
+</configuration>
+";
+                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), configContents);
+
+                var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
+                   configFileName: "NuGet.config",
+                   machineWideSettings: null,
+                   loadAppDataSettings: true);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+
+                // Act
+                List<PackageSource> sources = packageSourceProvider.LoadPackageSources().ToList();
+                sources.Add(new PackageSource("https://test.org", "test"));
+                packageSourceProvider.SavePackageSources(sources);
+
+                // Assert
+                Assert.Equal(
+                      @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+<packageSources>
+ <add key=""NuGet.org"" value=""https://NuGet.org"" />
+ <add key=""test"" value=""https://test.org"" />
+</packageSources>
+</configuration>
+".Replace("\r\n", "\n"),
+                  File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")).Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
         public void SavePackageSources_AddDisabledSourceToTheConfigContainingSource()
         {
             using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())

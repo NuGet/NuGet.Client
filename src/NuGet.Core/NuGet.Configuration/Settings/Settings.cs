@@ -147,13 +147,16 @@ namespace NuGet.Configuration
         {
             {
                 // Walk up the tree to find a config file; also look in .nuget subdirectories
+                // In order to avoid duplicate settings
+                // Exclude specified configeFile from hierarchy Config files
                 var validSettingFiles = new List<Settings>();
                 if (root != null)
                 {
                     validSettingFiles.AddRange(
                         GetSettingsFileNames(root)
                             .Select(f => ReadSettings(root, f))
-                            .Where(f => f != null));
+                            .Where(f => f != null
+                            && !ConfigPathComparer(f.ConfigFilePath, Path.Combine(root, configFileName ?? string.Empty))));
                 }
 
                 if (loadAppDataSettings)
@@ -825,9 +828,9 @@ namespace NuGet.Configuration
                 value = Path.Combine(Root, Path.Combine(configDirectory, value));
             }
 
-            var settingValue = new SettingValue(keyAttribute.Value, 
-                                                value, 
-                                                origin: this, 
+            var settingValue = new SettingValue(keyAttribute.Value,
+                                                value,
+                                                origin: this,
                                                 isMachineWide: IsMachineWideSettings,
                                                 originalValue: originalValue,
                                                 priority: _priority);
@@ -994,6 +997,27 @@ namespace NuGet.Configuration
                         mutex.ReleaseMutex();
                     }
                 }
+            }
+        }
+        
+        // Compare two config file path, return true if two path are the same.
+        private static bool ConfigPathComparer(string path1, string path2)
+        {
+            if (path1 == null && path2 == null)
+            {
+                return true;
+            }
+            else if (path1 == null || path2 == null)
+            {
+                return false;
+            }
+            else if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                return path1.Equals(path2, StringComparison.OrdinalIgnoreCase);
+            }
+            else
+            {
+                return path1.Equals(path2);
             }
         }
     }
