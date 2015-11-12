@@ -64,7 +64,7 @@ namespace NuGet.Test.TestExtensions.TestablePluginCredentialProvider
                             break;
                         }
                         var value = args[++i];
-                        if (!value.StartsWith("http://") || !value.EndsWith(""))
+                        if (string.IsNullOrWhiteSpace(value))
                         {
                             isValid = false;
                         }

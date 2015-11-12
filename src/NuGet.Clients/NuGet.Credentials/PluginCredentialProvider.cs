@@ -32,7 +32,14 @@ namespace NuGet.Credentials
 
             Path = path;
             TimeoutSeconds = timeoutSeconds;
+            var filename = System.IO.Path.GetFileName(path);
+            Id = $"{typeof (PluginCredentialProvider).Name}_{filename}_{Guid.NewGuid()}";
         }
+
+        /// <summary>
+        /// Unique identifier of this credential provider
+        /// </summary>
+        public string Id { get; }
 
         /// <summary>
         /// Call the plugin credential provider application to acquire credentials.

@@ -22,7 +22,13 @@ namespace NuGetVSExtension
                 throw new ArgumentNullException(nameof(webProxyService));
             }
             _webProxyService = webProxyService;
+            Id = $"{typeof (VisualStudioCredentialProvider).Name}_{Guid.NewGuid()}";
         }
+
+        /// <summary>
+        /// Unique identifier of this credential provider
+        /// </summary>
+        public string Id { get; }
 
         /// <summary>
         /// Returns an ICredentials instance that the consumer would need in order

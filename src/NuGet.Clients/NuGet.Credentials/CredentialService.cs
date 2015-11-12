@@ -161,13 +161,13 @@ namespace NuGet.Credentials
 
         private static string RetryCacheKey(Uri uri, bool isProxy, ICredentialProvider provider)
         {
-            return $"{provider.GetType().FullName}_{isProxy}_{uri}";
+            return $"{provider.Id}_{isProxy}_{uri}";
         }
 
         private static string CredentialCacheKey(Uri uri, bool isProxy, ICredentialProvider provider)
         {
             var rootUri = GetRootUri(uri);
-            return $"{provider.GetType().FullName}_{isProxy}_{rootUri}";
+            return $"{provider.Id}_{isProxy}_{rootUri}";
         }
 
         private static Uri GetRootUri(Uri uri)
