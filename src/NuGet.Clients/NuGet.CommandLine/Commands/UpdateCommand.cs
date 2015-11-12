@@ -207,9 +207,9 @@ namespace NuGet.CommandLine
             return null;
         }
 
-        private IEnumerable<Configuration.PackageSource> GetPackageSources()
+        private IReadOnlyCollection<Configuration.PackageSource> GetPackageSources()
         {
-            var availableSources = SourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
+            var availableSources = SourceProvider.LoadPackageSources().Where(source => source.IsEnabled).ToList();
             var packageSources = new List<Configuration.PackageSource>();
             foreach (var source in Source)
             {
@@ -221,12 +221,6 @@ namespace NuGet.CommandLine
                 packageSources.AddRange(availableSources);
             }
             
-            Console.WriteLine("Feeds used:");
-            foreach (var packageSource in packageSources)
-            {
-                Console.WriteLine(packageSource.Source);
-            }
-
             return packageSources;
         }
 
@@ -254,6 +248,8 @@ namespace NuGet.CommandLine
             var projectActions = new List<NuGetProjectAction>();
 
             var packageSources = GetPackageSources();
+
+            Console.PrintPackageSources(packageSources);
 
             var sourceRepositories = packageSources.Select(sourceRepositoryProvider.CreateRepository);
             if (Id.Count > 0)
