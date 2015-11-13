@@ -204,7 +204,7 @@ namespace NuGet.Commands
                         targetGraph: graph,
                         defaultPackagePathResolver: new VersionFolderPathResolver(_localRepository.RepositoryRoot),
                         correctedPackageName: libraryId.Name,
-                        dependencyType: LibraryIncludeType.All);
+                        dependencyType: LibraryIncludeFlags.All);
                 }
 
                 return new CompatibilityData(files, targetLibrary);

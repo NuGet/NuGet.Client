@@ -11,9 +11,9 @@ namespace NuGet.LibraryModel
 
         public LibraryDependencyType Type { get; set; } = LibraryDependencyType.Default;
 
-        public LibraryIncludeType IncludeType { get; set; } = LibraryIncludeType.All;
+        public LibraryIncludeFlags IncludeType { get; set; } = LibraryIncludeFlags.All;
 
-        public LibraryIncludeType SuppressParent { get; set; } = LibraryIncludeType.DefaultSuppress;
+        public LibraryIncludeFlags SuppressParent { get; set; } = LibraryIncludeFlagUtils.DefaultSuppressParent;
 
         public string Name
         {
@@ -27,7 +27,7 @@ namespace NuGet.LibraryModel
             sb.Append(" ");
             sb.Append(Type);
             sb.Append(" ");
-            sb.Append(IncludeType);
+            sb.Append(LibraryIncludeFlagUtils.GetFlagString(IncludeType));
             return sb.ToString();
         }
 
@@ -37,22 +37,6 @@ namespace NuGet.LibraryModel
         public bool HasFlag(LibraryDependencyTypeFlag flag)
         {
             return Type.Contains(flag);
-        }
-
-        /// <summary>
-        /// Include/Exclude property flag
-        /// </summary>
-        public bool HasFlag(LibraryIncludeTypeFlag flag)
-        {
-            return IncludeType.Contains(flag);
-        }
-
-        /// <summary>
-        /// suppressParent property flag
-        /// </summary>
-        public bool HasSuppressParentFlag(LibraryIncludeTypeFlag flag)
-        {
-            return SuppressParent.Contains(flag);
         }
     }
 }

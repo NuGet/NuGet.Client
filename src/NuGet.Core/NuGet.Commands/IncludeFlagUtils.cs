@@ -10,15 +10,48 @@ namespace NuGet.Commands
 {
     internal static class IncludeFlagUtils
     {
-        /// <summary>
-        /// Walk the flattened dependency nodes and determine the <see cref="LibraryIncludeType"/>
-        /// for each library id.
-        /// </summary>
-        internal static Dictionary<string, LibraryIncludeType> FlattenDependencyTypes(
+        internal static Dictionary<string, LibraryIncludeFlags> FlattenDependencyTypes(
             RestoreTargetGraph targetGraph,
             PackageSpec spec)
         {
-            var result = new Dictionary<string, LibraryIncludeType>(StringComparer.OrdinalIgnoreCase);
+            var result = new Dictionary<string, LibraryIncludeFlags>(StringComparer.OrdinalIgnoreCase);
+
+            // Walk dependencies
+            FlattenDependencyTypesUnified(targetGraph, result);
+
+            // Override flags for direct dependencies
+            var directDependencies = spec.Dependencies.ToList();
+
+            // Add dependencies defined under the framework node
+            var specFramework = spec.GetTargetFramework(targetGraph.Framework);
+            if (specFramework != null && specFramework.Dependencies != null)
+            {
+                directDependencies.AddRange(specFramework.Dependencies);
+            }
+
+            // Override the flags for direct dependencies. This lets the 
+            // user take control when needed.
+            foreach (var dependency in directDependencies)
+            {
+                if (result.ContainsKey(dependency.Name))
+                {
+                    result[dependency.Name] = dependency.IncludeType;
+                }
+                else
+                {
+                    result.Add(dependency.Name, dependency.IncludeType);
+                }
+            }
+
+            return result;
+        }
+
+        private static void FlattenDependencyTypesUnified(
+            RestoreTargetGraph targetGraph,
+            Dictionary<string, LibraryIncludeFlags> result)
+        {
+            var nodeQueue = new Queue<DependencyNode>(1);
+            DependencyNode node = null;
 
             var unifiedNodes = new Dictionary<string, GraphItem<RemoteResolveResult>>(StringComparer.OrdinalIgnoreCase);
 
@@ -36,12 +69,9 @@ namespace NuGet.Commands
                 }
             }
 
-            // Walk all graphs and merge the results
+            // Queue all direct references
             foreach (var graph in targetGraph.Graphs)
             {
-                // The top level edge contains only the root node.
-                var outerEdge = new GraphEdge<RemoteResolveResult>(outerEdge: null, item: graph.Item, edge: null);
-
                 foreach (var root in graph.InnerNodes)
                 {
                     // Walk only the projects and packages
@@ -51,90 +81,62 @@ namespace NuGet.Commands
                         // Find the initial project -> dependency flags
                         var typeIntersection = GetDependencyType(graph, root);
 
-                        FlattenDependencyTypesUnified(result, root.Item, outerEdge, unifiedNodes, typeIntersection);
+                        node = new DependencyNode(root.Item, typeIntersection);
+
+                        nodeQueue.Enqueue(node);
                     }
                 }
             }
 
-            // Override flags for direct dependencies
-            var directDependencies = spec.Dependencies.ToList();
-
-            // Add dependencies defined under the framework node
-            var specFramework = spec.GetTargetFramework(targetGraph.Framework);
-            if (specFramework != null && specFramework.Dependencies != null)
+            // Walk the graph using BFS
+            // During the walk find the intersection of the include type flags.
+            // Dependencies can only have less flags the deeper down the graph
+            // we move. Using this we can no-op when a node is encountered that
+            // has already been assigned at least as many flags as the current
+            // node. We can also assume that all dependencies under it are
+            // already correct. If the existing node has less flags then the
+            // walk must continue and all new flags found combined with the
+            // existing ones.
+            while (nodeQueue.Count > 0)
             {
-                directDependencies.AddRange(specFramework.Dependencies);
-            }
+                node = nodeQueue.Dequeue();
+                var rootId = node.Item.Key.Name;
 
-            foreach (var dependency in directDependencies)
-            {
-                if (result.ContainsKey(dependency.Name))
+                // Combine results on the way up
+                LibraryIncludeFlags currentTypes;
+                if (result.TryGetValue(rootId, out currentTypes))
                 {
-                    result[dependency.Name] = dependency.IncludeType;
+                    if ((node.DependencyType & currentTypes) == node.DependencyType)
+                    {
+                        // Noop, this is done
+                        continue;
+                    }
+
+                    result[rootId] = (currentTypes | node.DependencyType);
                 }
                 else
                 {
-                    result.Add(dependency.Name, dependency.IncludeType);
-                }
-            }
-
-            return result;
-        }
-
-        private static void FlattenDependencyTypesUnified(
-            Dictionary<string, LibraryIncludeType> result,
-            GraphItem<RemoteResolveResult> root,
-            GraphEdge<RemoteResolveResult> outerEdge,
-            Dictionary<string, GraphItem<RemoteResolveResult>> unifiedNodes,
-            LibraryIncludeType dependencyType)
-        {
-            var rootId = root.Key.Name;
-
-            var hasCycle = false;
-
-            var cursor = outerEdge;
-            while (cursor != null)
-            {
-                if (rootId.Equals(cursor.Item.Key.Name, StringComparison.OrdinalIgnoreCase))
-                {
-                    // Cycle detected
-                    hasCycle = true;
-                    break;
+                    result.Add(rootId, node.DependencyType);
                 }
 
-                cursor = cursor.OuterEdge;
-            }
-
-            if (!hasCycle)
-            {
-                // Intersect on the way down
-                foreach (var dependency in root.Data.Dependencies)
+                foreach (var dependency in node.Item.Data.Dependencies)
                 {
                     // Any nodes that are not in unifiedNodes are types that should be ignored
                     // We should also ignore dependencies that are excluded
                     GraphItem<RemoteResolveResult> child;
                     if (unifiedNodes.TryGetValue(dependency.Name, out child)
-                        && !dependency.SuppressParent.Equals(LibraryIncludeType.All))
+                        && dependency.SuppressParent != LibraryIncludeFlags.All)
                     {
-                        var typeIntersection = dependencyType.Intersect(dependency.IncludeType)
-                            .Except(dependency.SuppressParent);
+                        // intersect the edges and remove any suppressParent flags
+                        LibraryIncludeFlags typeIntersection = 
+                            node.DependencyType 
+                            & dependency.IncludeType
+                            & ~dependency.SuppressParent;
 
-                        var innerEdge = new GraphEdge<RemoteResolveResult>(outerEdge, root, dependency);
-
-                        FlattenDependencyTypesUnified(result, child, innerEdge, unifiedNodes, typeIntersection);
+                        var childNode = new DependencyNode(child, typeIntersection);
+                        nodeQueue.Enqueue(childNode);
                     }
                 }
-            }
-
-            // Combine results on the way up
-            LibraryIncludeType currentTypes;
-            if (result.TryGetValue(rootId, out currentTypes))
-            {
-                result[rootId] = currentTypes.Combine(dependencyType);
-            }
-            else
-            {
-                result.Add(rootId, dependencyType);
             }
         }
 
@@ -142,7 +144,7 @@ namespace NuGet.Commands
         /// Find the flags for a node. 
         /// Include - Exclude - ParentExclude
         /// </summary>
-        private static LibraryIncludeType GetDependencyType(
+        private static LibraryIncludeFlags GetDependencyType(
             GraphNode<RemoteResolveResult> parent,
             GraphNode<RemoteResolveResult> child)
         {
@@ -157,7 +159,7 @@ namespace NuGet.Commands
             // child since it has no effect on the parent.
             if (parent.OuterNode != null)
             {
-                flags = flags.Except(match.SuppressParent);
+                flags &= ~match.SuppressParent;
             }
 
             return flags;
@@ -188,6 +190,28 @@ namespace NuGet.Commands
             }
 
             return 5;
+        }
+
+        /// <summary>
+        /// A simple node class to hold the incoming dependency edge during the graph walk.
+        /// </summary>
+        private class DependencyNode
+        {
+            public DependencyNode(GraphItem<RemoteResolveResult> item, LibraryIncludeFlags dependencyType)
+            {
+                DependencyType = dependencyType;
+                Item = item;
+            }
+
+            /// <summary>
+            /// Incoming edge
+            /// </summary>
+            public LibraryIncludeFlags DependencyType { get; }
+
+            /// <summary>
+            /// Node item
+            /// </summary>
+            public GraphItem<RemoteResolveResult> Item { get; }
         }
     }
 }
