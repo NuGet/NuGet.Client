@@ -44,6 +44,9 @@ namespace NuGet.Packaging
             var targetNupkg = packagePathResolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version);
             var hashPath = packagePathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
 
+            logger.LogVerbose(
+                $"Acquiring lock for the installation of {packageIdentity.Id} {packageIdentity.Version}");
+
             // Acquire the lock on a nukpg before we extract it to prevent the race condition when multiple
             // processes are extracting to the same destination simultaneously
             await ConcurrencyUtilities.ExecuteWithFileLocked(targetNupkg,
@@ -54,6 +57,9 @@ namespace NuGet.Packaging
                     // waiting on this lock don't need to install it again.
                     if (!File.Exists(hashPath))
                     {
+                        logger.LogVerbose(
+                            $"Acquired lock for the installation of {packageIdentity.Id} {packageIdentity.Version}");
+
                         logger.LogInformation(string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.Log_InstallingPackage,
@@ -106,7 +112,9 @@ namespace NuGet.Packaging
                                 }
                                 else
                                 {
-                                    ExtractFiles(archive, targetPath, NupkgFilter);
+                                    var nupkgFileName = Path.GetFileName(targetNupkg);
+                                    var hashFileName = Path.GetFileName(hashPath);
+                                    ExtractFiles(archive, targetPath, nupkgFileName, hashFileName);
                                 }
                             }
                         }
@@ -121,18 +129,13 @@ namespace NuGet.Packaging
                             FixNuSpecIdCasing(nuspecFile, targetNuspec, packageIdentity.Id);
                         }
 
-                        // Some packages accidentally include a nupkg with the same name as the package
-                        if (File.Exists(targetNupkg))
-                        {
-                            File.Delete(targetNupkg);
-                        }
-
                         // Now rename the tmp file
                         File.Move(targetTempNupkg, targetNupkg);
 
                         var tempHashPath = Path.Combine(targetPath, Path.GetRandomFileName());
 
-                        using (var nupkgStream = File.Open(targetNupkg, FileMode.Open, FileAccess.Read, FileShare.Read))
+                        using (var nupkgStream
+                                    = File.Open(targetNupkg, FileMode.Open, FileAccess.Read, FileShare.Read))
                         {
                             string packageHash;
                             using (var sha512 = SHA512.Create())
@@ -149,6 +152,11 @@ namespace NuGet.Packaging
                         }
 
                         logger.LogVerbose($"Completed installation of {packageIdentity.Id} {packageIdentity.Version}");
+                    }
+                    else
+                    {
+                        logger.LogVerbose("Lock not required - Package already installed "
+                                            + $"{packageIdentity.Id} {packageIdentity.Version}");
                     }
 
                     return 0;
@@ -208,7 +216,7 @@ namespace NuGet.Packaging
             }
         }
 
-        private static bool NupkgFilter(string fullName)
+        private static bool ShouldInclude(string fullName, string nupkgFileName, string hashFileName)
         {
             // Not all the files from a zip file are needed
             // So, files such as '.rels' and '[Content_Types].xml' are not extracted
@@ -232,10 +240,22 @@ namespace NuGet.Packaging
                 return false;
             }
 
+            if (string.Equals(fullName, nupkgFileName, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(fullName, hashFileName, StringComparison.OrdinalIgnoreCase))
+            {
+                // Return false when the fullName is the nupkg file or the hash file.
+                // Some packages accidentally have the nupkg file or the nupkg hash file in the package.
+                // We filter them out during package extraction
+                return false;
+            }
+
             return true;
         }
 
-        private static void ExtractFiles(ZipArchive archive, string targetPath, Func<string, bool> shouldInclude)
+        private static void ExtractFiles(ZipArchive archive,
+            string targetPath,
+            string nupkgFileName,
+            string hashFileName)
         {
             foreach (var entry in archive.Entries)
             {
@@ -257,7 +277,7 @@ namespace NuGet.Packaging
                     continue;
                 }
 
-                if (!shouldInclude(entryFullName))
+                if (!ShouldInclude(entryFullName, nupkgFileName, hashFileName))
                 {
                     continue;
                 }

@@ -5,12 +5,37 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Text;
 
 namespace NuGet.Test.Utility
 {
     public static class TestPackages
     {
+        private static readonly string NuspecStringFormat = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                            <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
+                              <metadata>
+                                <id>{0}</id>
+                                <version>{1}</version>
+                                <authors>Author1, author2</authors>
+                                <description>Sample description</description>
+                                <language>en-US</language>
+                                <projectUrl>http://www.nuget.org/</projectUrl>
+                                <licenseUrl>http://www.nuget.org/license</licenseUrl>
+                                {2}
+                              </metadata>
+                            </package>";
+
+        private static readonly string FrameworkAssembliesStringFormat = @"<frameworkAssemblies>
+            <frameworkAssembly assemblyName='{0}' targetFramework='{1}' />
+        </frameworkAssemblies>";
+
+        private static readonly string DependenciesStringFormat = @"<dependencies>
+            <dependency id='{0}' version='{1}' />
+        </dependencies>";
+
+
+
         public class TestPackageInfo
         {
             public string Id { get; set; }
@@ -528,6 +553,110 @@ namespace NuGet.Test.Utility
             }
 
             return stream;
+        }
+
+        public static FileInfo GetPackageWithSHA512AtRoot(string path, string packageId, string packageVersion)
+        {
+            return GeneratePackage(path, packageId, packageVersion,
+                new[]
+                {
+                     "lib/net45/A.dll",
+                     "lib/net45/B.sha512",
+                     packageId + "." + packageVersion + ".nupkg.sha512",
+                     "C.sha512",
+                });
+        }
+
+        public static FileInfo GetPackageWithNupkgAtRoot(string path, string packageId, string packageVersion)
+        {
+            return GeneratePackage(path, packageId, packageVersion,
+                new[]
+                {
+                     "lib/net45/A.dll",
+                     "lib/net45/B.nupkg",
+                     packageId + "." + packageVersion + ".nupkg",
+                });
+        }
+
+        private static FileInfo GeneratePackage(
+            string path,
+            string packageId,
+            string packageVersion,
+            string[] zipEntries)
+        {
+            var zipContents = Enumerable.Repeat(string.Empty, zipEntries.Length).ToArray();
+            return GeneratePackage(
+                path,
+                packageId,
+                packageVersion,
+                zipEntries,
+                zipContents,
+                frameworkAssemblies: false,
+                dependencies: false);
+        }
+
+        private static FileInfo GeneratePackage(
+            string path,
+            string packageId,
+            string packageVersion,
+            string[] zipEntries,
+            string[] zipContents,
+            bool frameworkAssemblies,
+            bool dependencies)
+        {
+            if (zipEntries == null || zipContents == null || zipEntries.Length != zipContents.Length)
+            {
+                throw new Exception("TEST Exception: zipEntries and zipContents should be non-null and" +
+                    "zipEntries.Length should be equal to zipContents.Length");
+            }
+            var fileInfo = GetFileInfo(path, packageId, packageVersion);
+
+            using (var zip = new ZipArchive(File.Create(fileInfo.FullName), ZipArchiveMode.Create))
+            {
+                for (int i = 0; i < zipEntries.Length; i++)
+                {
+                    zip.AddEntry(zipEntries[i], zipContents[i], Encoding.UTF8);
+                }
+
+                SetSimpleNuspec(zip, packageId, packageVersion, frameworkAssemblies, dependencies);
+            }
+
+            return fileInfo;
+        }
+
+        private static FileInfo GetFileInfo(string path, string packageId, string packageVersion)
+        {
+            var file = Path.Combine(path, Guid.NewGuid() + ".nupkg");
+            var fileInfo = new FileInfo(file);
+
+            return fileInfo;
+        }
+
+        public static void SetSimpleNuspec(ZipArchive zip,
+            string packageId,
+            string packageVersion,
+            bool frameworkAssemblies,
+            bool dependencies)
+        {
+            zip.AddEntry(packageId + ".nuspec", GetSimpleNuspecString(packageId,
+                packageVersion,
+                frameworkAssemblies,
+                dependencies),
+                Encoding.UTF8);
+        }
+
+        private static string GetSimpleNuspecString(string packageId,
+            string packageVersion,
+            bool frameworkAssemblies,
+            bool dependencies)
+        {
+            var frameworkAssemblyReferences = frameworkAssemblies ?
+                string.Format(FrameworkAssembliesStringFormat, "System.Xml", "net45") : string.Empty;
+
+            var dependenciesString = dependencies ?
+                string.Format(DependenciesStringFormat, "Owin", "1.0") : string.Empty;
+            return string.Format(NuspecStringFormat, packageId, packageVersion,
+                string.Join(Environment.NewLine, frameworkAssemblyReferences, dependenciesString));
         }
     }
 }

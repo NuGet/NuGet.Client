@@ -462,6 +462,121 @@ namespace Commands.Test
             }
         }
 
+        [Fact]
+        public async Task Test_ExtractionIgnoresNupkgHashFile()
+        {
+            // Arrange
+            var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
+            var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder();
+            var packageFileInfo = TestPackages.GetPackageWithSHA512AtRoot(
+                packagesDirectory,
+                package.Id,
+                package.Version.ToNormalizedString());
+
+            var versionFolderPathContext = new VersionFolderPathContext(
+                package,
+                packagesDirectory,
+                NullLogger.Instance,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: false,
+                normalizeFileNames: true);
+
+            try
+            {
+                // Act
+                using (var packageFileStream = packageFileInfo.OpenRead())
+                {
+                    await NuGetPackageUtils.InstallFromSourceAsync(
+                        stream => packageFileStream.CopyToAsync(stream),
+                        versionFolderPathContext,
+                        CancellationToken.None);
+                }
+
+                // Assert
+                var packageIdDirectory = Path.Combine(packagesDirectory, package.Id.ToLowerInvariant());
+                var packageVersionDirectory = Path.Combine(packageIdDirectory, package.Version.ToNormalizedString());
+                Assert.True(Directory.Exists(packageIdDirectory));
+                Assert.True(Directory.Exists(packageVersionDirectory));
+                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg")));
+                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.nuspec")));
+                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, @"lib", "net45", "A.dll")));
+
+                var hashPath = Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg.sha512");
+                var hashFileInfo = new FileInfo(hashPath);
+                Assert.True(File.Exists(hashFileInfo.FullName));
+                Assert.NotEqual(0, hashFileInfo.Length);
+
+                var bsha512Path = Path.Combine(packageVersionDirectory, "lib", "net45", "B.sha512");
+                var bsha512FileInfo = new FileInfo(bsha512Path);
+                Assert.True(File.Exists(bsha512FileInfo.FullName));
+                Assert.Equal(0, bsha512FileInfo.Length);
+
+                var csha512Path = Path.Combine(packageVersionDirectory, "C.sha512");
+                var csha512FileInfo = new FileInfo(csha512Path);
+                Assert.True(File.Exists(csha512FileInfo.FullName));
+                Assert.Equal(0, csha512FileInfo.Length);
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
+        }
+
+        [Fact]
+        public async Task Test_ExtractionIgnoresNupkgFile()
+        {
+            // Arrange
+            var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
+            var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder();
+            var packageFileInfo = TestPackages.GetPackageWithNupkgAtRoot(
+                packagesDirectory,
+                package.Id,
+                package.Version.ToNormalizedString());
+
+            var versionFolderPathContext = new VersionFolderPathContext(
+                package,
+                packagesDirectory,
+                NullLogger.Instance,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: false,
+                normalizeFileNames: true);
+
+            try
+            {
+                // Act
+                using (var packageFileStream = packageFileInfo.OpenRead())
+                {
+                    await NuGetPackageUtils.InstallFromSourceAsync(
+                        stream => packageFileStream.CopyToAsync(stream),
+                        versionFolderPathContext,
+                        CancellationToken.None);
+                }
+
+                // Assert
+                var packageIdDirectory = Path.Combine(packagesDirectory, package.Id.ToLowerInvariant());
+                var packageVersionDirectory = Path.Combine(packageIdDirectory, package.Version.ToNormalizedString());
+                Assert.True(Directory.Exists(packageIdDirectory));
+                Assert.True(Directory.Exists(packageVersionDirectory));
+                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg")));
+                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.nuspec")));
+                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, @"lib", "net45", "A.dll")));
+
+                var nupkgPath = Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg");
+                var nupkgFileInfo = new FileInfo(nupkgPath);
+                Assert.True(File.Exists(nupkgFileInfo.FullName));
+                Assert.NotEqual(0, nupkgFileInfo.Length);
+
+                var bnupkgPath = Path.Combine(packageVersionDirectory, "lib", "net45", "B.nupkg");
+                var bnupkgFileInfo = new FileInfo(bnupkgPath);
+                Assert.True(File.Exists(bnupkgFileInfo.FullName));
+                Assert.Equal(0, bnupkgFileInfo.Length);
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
+        }
+
         private class StreamWrapperBase : Stream
         {
             protected readonly Stream _stream;
