@@ -151,6 +151,12 @@ namespace NuGetVSExtension
         public async Task<string> LookupTenant(Uri uri, IWebProxy proxy,
             CancellationToken cancellationToken)
         {
+            if (!IsValidScheme(uri))
+            {
+                // We are not talking to a https endpoint so it cannot be a VSO endpoint
+                return null;
+            }
+
             string tenantId;
             //  we assume the call will be access denied (or the provider shouldn't have been called)
             //  so calling the URI shouldn't be too expensive.
@@ -217,6 +223,24 @@ namespace NuGetVSExtension
             catch (WebException)
             {
                 // Hit an error while doing the request requesting unauthorized so we don't have access.
+                ret = false;
+            }
+
+            return ret;
+        }
+
+        public static bool IsValidScheme(Uri uri)
+        {
+            bool ret;
+            try
+            {
+                ret = uri.Scheme.ToLower() == "https";
+            }
+            catch (InvalidOperationException)
+            {
+                // if getting the uri scheme causes an invalid operation exception
+                // then we know we are not pointing to a https endpoint so this cannot
+                // be a VSO endpoint
                 ret = false;
             }
 
