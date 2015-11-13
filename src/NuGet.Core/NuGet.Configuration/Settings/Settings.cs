@@ -147,6 +147,8 @@ namespace NuGet.Configuration
         {
             {
                 // Walk up the tree to find a config file; also look in .nuget subdirectories
+                // In order to avoid duplicate settings
+                // Exclude specified configeFile from hierarchy Config
                 var validSettingFiles = new List<Settings>();
                 if (root != null)
                 {
@@ -154,7 +156,7 @@ namespace NuGet.Configuration
                         GetSettingsFileNames(root)
                             .Select(f => ReadSettings(root, f))
                             .Where(f => f != null 
-                            && !f.ConfigFilePath.Equals(Path.GetFullPath(Path.Combine(root, configFileName ?? "")), StringComparison.OrdinalIgnoreCase)));
+                            && !f.ConfigFilePath.Equals(Path.Combine(root, configFileName ?? "").ToString(), StringComparison.OrdinalIgnoreCase)));
                 }
 
                 if (loadAppDataSettings)
