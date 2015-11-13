@@ -81,18 +81,20 @@ namespace NuGet.CommandLine
                                     globalPackagesFolder);
 
 
+                var packageSources = GetPackageSources(Settings);
+
+                Console.WriteLine("Feeds used:");
+                foreach (var packageSource in packageSources)
+                {
+                    Console.WriteLine(packageSource.Source);
+                }
+
                 if (DisableParallelProcessing)
                 {
-                    bool printPackageSources = true;
                     foreach (var file in restoreInputs.V3RestoreFiles)
                     {
-                        var v3RestoreResult = await PerformNuGetV3RestoreAsync(packagesDir, file, printPackageSources);
-
-                        if (printPackageSources)
-                        {
-                            printPackageSources = false;
-                        }
-
+                        var v3RestoreResult = await PerformNuGetV3RestoreAsync(packagesDir, file, packageSources);
+                        
                         success &= v3RestoreResult;
                     }
                 }
@@ -106,7 +108,7 @@ namespace NuGet.CommandLine
                     int restoreCount = restoreInputs.V3RestoreFiles.Count;
 
                     int currentFileIndex = 0;
-                    bool printPackageSources = true;
+                    
                     do
                     {
                         Debug.Assert(tasks.Count < 16);
@@ -117,12 +119,7 @@ namespace NuGet.CommandLine
                         for (int i = 0; currentFileIndex < restoreCount && i < newTasks; i++, currentFileIndex++)
                         {
                             var file = restoreInputs.V3RestoreFiles[currentFileIndex];
-                            var newTask = PerformNuGetV3RestoreAsync(packagesDir, file, printPackageSources);
-
-                            if (printPackageSources)
-                            {
-                                printPackageSources = false;
-                            }
+                            var newTask = PerformNuGetV3RestoreAsync(packagesDir, file, packageSources);
 
                             tasks.Add(newTask);
                         }
@@ -180,7 +177,7 @@ namespace NuGet.CommandLine
             throw new CommandLineException(message);
         }
 
-        private async Task<bool> PerformNuGetV3RestoreAsync(string packagesDir, string inputPath, bool printPackageSources)
+        private async Task<bool> PerformNuGetV3RestoreAsync(string packagesDir, string inputPath, IEnumerable<Configuration.PackageSource> packageSources)
         {
             var inputFileName = Path.GetFileName(inputPath);
             var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(inputPath));
@@ -241,17 +238,6 @@ namespace NuGet.CommandLine
 
                 // Convert package sources to repositories
                 var sourceProvider = GetSourceRepositoryProvider();
-
-                var packageSources = GetPackageSources(Settings);
-
-                if (printPackageSources)
-                {
-                    Console.WriteLine("Feeds used:");
-                    foreach (var packageSource in packageSources)
-                    {
-                        Console.WriteLine(packageSource.Source);
-                    }
-                }
 
                 var repositories = packageSources.Select(source => sourceProvider.CreateRepository(source));
 
