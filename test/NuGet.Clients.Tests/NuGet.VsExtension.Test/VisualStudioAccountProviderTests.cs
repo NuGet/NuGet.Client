@@ -76,7 +76,7 @@ namespace NuGet.VsExtension.Test
         public async Task Get_WhenIsProxyRequest_ThenReturnsNull()
         {
             // Arange
-            var uri = new Uri("http://uri1");
+            var uri = new Uri("https://uri1");
             var webProxy = null as IWebProxy;
             var isProxyRequest = true;
             var isRetry = false;
@@ -111,7 +111,7 @@ namespace NuGet.VsExtension.Test
         public async Task Get_WhenEmptyKeychain_ThenPromptForCredentials()
         {
             // Arange
-            var uri = new Uri("http://uri1");
+            var uri = new Uri("https://uri1");
             var webProxy = null as IWebProxy;
             var isProxyRequest = false;
             var isRetry = false;
@@ -136,7 +136,7 @@ namespace NuGet.VsExtension.Test
                 .Setup(x => x.LookupTenant(It.IsAny<Uri>(), It.IsAny<IWebProxy>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(""));
 
-            var uri = new Uri("http://uri1");
+            var uri = new Uri("https://uri1");
             var webProxy = null as IWebProxy;
             var isProxyRequest = false;
             var isRetry = false;
@@ -151,10 +151,33 @@ namespace NuGet.VsExtension.Test
         }
 
         [Fact]
+        public async Task Get_WhenUriNotHTTPS_ThenReturnsNotApplicable()
+        {
+            // Arange
+            _mockLoginProvider
+                .Setup(x => x.LookupTenant(It.IsAny<Uri>(), It.IsAny<IWebProxy>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(""));
+
+            var uri = new Uri("http://uri1");
+            var webProxy = null as IWebProxy;
+            var isProxyRequest = false;
+            var isRetry = false;
+            var nonInteractive = false;
+
+            // Act
+            var cred = await _provider.Get(uri, webProxy, isProxyRequest, isRetry, nonInteractive,
+                CancellationToken.None);
+
+            // Assert
+            Assert.Null(cred.Credentials);
+            Assert.Equal(CredentialStatus.ProviderNotApplicable, cred.Status);
+        }
+
+        [Fact]
         public async Task Get_WhenEmptyKeychainAndNonInteractive_ThenThrowsException()
         {
             // Arange
-            var uri = new Uri("http://uri1");
+            var uri = new Uri("https://uri1");
             var webProxy = null as IWebProxy;
             var isProxyRequest = false;
             var isRetry = false;
@@ -183,7 +206,7 @@ namespace NuGet.VsExtension.Test
             var accounts = new List<Account> { account };
             _mockAccountManager.Setup(x => x.Store.GetAllAccounts()).Returns(accounts.AsReadOnly());
 
-            var uri = new Uri("http://uri1");
+            var uri = new Uri("https://uri1");
             var webProxy = null as IWebProxy;
             var isProxyRequest = false;
             var isRetry = false;
@@ -218,7 +241,7 @@ namespace NuGet.VsExtension.Test
                 x => x.FindTenantInAccount(It.IsAny<Account>(), It.IsAny<string>(), It.IsAny<VSAccountProvider>()))
                 .Returns(new TenantInformation("uid", TestTenantId, "name", true, true));
 
-            var uri = new Uri("http://uri1");
+            var uri = new Uri("https://uri1");
             var webProxy = null as IWebProxy;
             var isProxyRequest = false;
             var isRetry = false;
@@ -256,7 +279,7 @@ namespace NuGet.VsExtension.Test
                 x => x.FindTenantInAccount(account2, It.IsAny<string>(), It.IsAny<VSAccountProvider>()))
                 .Returns((TenantInformation)null);
 
-            var uri = new Uri("http://uri1");
+            var uri = new Uri("https://uri1");
             var webProxy = null as IWebProxy;
             var isProxyRequest = false;
             var isRetry = false;
@@ -307,7 +330,7 @@ namespace NuGet.VsExtension.Test
                     It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(true));
 
-            var uri = new Uri("http://uri1");
+            var uri = new Uri("https://uri1");
             var webProxy = null as IWebProxy;
             var isProxyRequest = false;
             var isRetry = false;
@@ -339,7 +362,7 @@ namespace NuGet.VsExtension.Test
                     It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(false));
 
-            var uri = new Uri("http://uri1");
+            var uri = new Uri("https://uri1");
             var webProxy = null as IWebProxy;
             var isProxyRequest = false;
             var isRetry = true;
