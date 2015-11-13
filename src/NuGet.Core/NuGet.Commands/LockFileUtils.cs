@@ -22,7 +22,7 @@ namespace NuGet.Commands
             RestoreTargetGraph targetGraph,
             VersionFolderPathResolver defaultPackagePathResolver,
             string correctedPackageName,
-            LibraryIncludeType dependencyType)
+            LibraryIncludeFlags dependencyType)
         {
             return CreateLockFileTargetLibrary(
                 library,
@@ -40,7 +40,7 @@ namespace NuGet.Commands
             RestoreTargetGraph targetGraph,
             VersionFolderPathResolver defaultPackagePathResolver,
             string correctedPackageName,
-            LibraryIncludeType dependencyType,
+            LibraryIncludeFlags dependencyType,
             NuGetFramework targetFrameworkOverride)
         {
             var lockFileLib = new LockFileTargetLibrary();
@@ -217,24 +217,24 @@ namespace NuGet.Commands
             }
 
             // Exclude items
-            if (!dependencyType.Contains(LibraryIncludeTypeFlag.Runtime))
+            if (!dependencyType.HasFlag(LibraryIncludeFlags.Runtime))
             {
                 ClearIfExists(lockFileLib.RuntimeAssemblies);
                 lockFileLib.FrameworkAssemblies.Clear();
                 lockFileLib.ResourceAssemblies.Clear();
             }
 
-            if (!dependencyType.Contains(LibraryIncludeTypeFlag.Compile))
+            if (!dependencyType.HasFlag(LibraryIncludeFlags.Compile))
             {
                 ClearIfExists(lockFileLib.CompileTimeAssemblies);
             }
 
-            if (!dependencyType.Contains(LibraryIncludeTypeFlag.Native))
+            if (!dependencyType.HasFlag(LibraryIncludeFlags.Native))
             {
                 ClearIfExists(lockFileLib.NativeLibraries);
             }
 
-            if (!dependencyType.Contains(LibraryIncludeTypeFlag.ContentFiles)
+            if (!dependencyType.HasFlag(LibraryIncludeFlags.ContentFiles)
                 && GroupHasNonEmptyItems(lockFileLib.ContentFiles))
             {
                 // Empty lock file items still need lock file properties for language, action, and output.

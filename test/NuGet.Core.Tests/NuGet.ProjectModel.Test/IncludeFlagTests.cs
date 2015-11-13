@@ -29,11 +29,10 @@ namespace NuGet.ProjectModel.Test
             var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
             var dependency = spec.Dependencies.Single();
 
-            var futureFlag = LibraryIncludeType.Parse(new string[] { "futureFlag" });
+            var futureFlag = LibraryIncludeFlagUtils.GetFlags(new string[] { "futureFlag" });
 
             // Assert
-            Assert.True(dependency.IncludeType.Equals(futureFlag));
-            Assert.True(dependency.SuppressParent.Equals(futureFlag));
+            Assert.Equal(LibraryIncludeFlags.None, futureFlag);
         }
 
         [Fact]
@@ -58,7 +57,11 @@ namespace NuGet.ProjectModel.Test
             var dependency = spec.Dependencies.Single();
 
             // Assert
-            Assert.True(dependency.SuppressParent.Equals(LibraryIncludeType.Parse(new string[] { "build", "runtime", "contentFiles", "native" })));
+            var expected = LibraryIncludeFlagUtils.GetFlags(
+                new string[] 
+                    { "build", "runtime", "contentFiles", "native" });
+
+            Assert.Equal(expected, dependency.SuppressParent);
         }
 
         [Fact]
@@ -83,7 +86,7 @@ namespace NuGet.ProjectModel.Test
             var dependency = spec.Dependencies.Single();
 
             // Assert
-            Assert.True(dependency.SuppressParent.Equals(LibraryIncludeType.All));
+            Assert.True(dependency.SuppressParent == LibraryIncludeFlags.All);
         }
 
         [Fact]
@@ -107,7 +110,7 @@ namespace NuGet.ProjectModel.Test
             var dependency = spec.Dependencies.Single();
 
             // Assert
-            Assert.True(dependency.SuppressParent.Equals(LibraryIncludeType.DefaultSuppress));
+            Assert.True(dependency.SuppressParent == LibraryIncludeFlagUtils.DefaultSuppressParent);
         }
 
         [Fact]
@@ -133,7 +136,7 @@ namespace NuGet.ProjectModel.Test
             var dependency = spec.Dependencies.Single();
 
             // Assert
-            Assert.True(dependency.IncludeType.Equals(LibraryIncludeType.None));
+            Assert.True(dependency.IncludeType == LibraryIncludeFlags.None);
         }
 
         [Fact]
@@ -158,7 +161,7 @@ namespace NuGet.ProjectModel.Test
             var dependency = spec.Dependencies.Single();
 
             // Assert
-            Assert.True(dependency.IncludeType.Equals(LibraryIncludeType.All));
+            Assert.True(dependency.IncludeType == LibraryIncludeFlags.All);
         }
 
         [Fact]
@@ -183,7 +186,7 @@ namespace NuGet.ProjectModel.Test
             var dependency = spec.Dependencies.Single();
 
             // Assert
-            Assert.True(dependency.IncludeType.Equals(LibraryIncludeType.None));
+            Assert.True(dependency.IncludeType == LibraryIncludeFlags.None);
         }
 
         [Fact]
@@ -208,7 +211,7 @@ namespace NuGet.ProjectModel.Test
             var dependency = spec.Dependencies.Single();
 
             // Assert
-            Assert.True(dependency.IncludeType.Equals(LibraryIncludeType.Parse(new string[] { "build", "runtime", "compile", "native" })));
+            Assert.Equal(dependency.IncludeType, ~LibraryIncludeFlags.ContentFiles);
         }
 
         [Fact]
@@ -233,7 +236,8 @@ namespace NuGet.ProjectModel.Test
             var dependency = spec.Dependencies.Single();
 
             // Assert
-            Assert.True(dependency.IncludeType.Equals(LibraryIncludeType.Parse(new string[] { "contentFiles" })));
+            Assert.True(dependency.IncludeType
+                == LibraryIncludeFlagUtils.GetFlags(new string[] { "contentFiles" }));
         }
 
         [Fact]
@@ -259,7 +263,7 @@ namespace NuGet.ProjectModel.Test
             var dependency = spec.Dependencies.Single();
 
             // Assert
-            Assert.True(dependency.IncludeType.Equals(LibraryIncludeType.None));
+            Assert.True(dependency.IncludeType == LibraryIncludeFlags.None);
         }
 
         [Fact]
@@ -285,7 +289,7 @@ namespace NuGet.ProjectModel.Test
             var dependency = spec.Dependencies.Single();
 
             // Assert
-            Assert.True(dependency.IncludeType.Equals(LibraryIncludeType.None));
+            Assert.True(dependency.IncludeType.Equals(LibraryIncludeFlags.None));
         }
 
         [Fact]
@@ -311,7 +315,7 @@ namespace NuGet.ProjectModel.Test
             var dependency = spec.Dependencies.Single();
 
             // Assert
-            Assert.True(dependency.IncludeType.Equals(LibraryIncludeType.None));
+            Assert.True(dependency.IncludeType.Equals(LibraryIncludeFlags.None));
         }
 
         [Fact]
@@ -337,7 +341,7 @@ namespace NuGet.ProjectModel.Test
             var dependency = spec.Dependencies.Single();
 
             // Assert
-            Assert.True(dependency.IncludeType.Equals(LibraryIncludeType.None));
+            Assert.True(dependency.IncludeType.Equals(LibraryIncludeFlags.None));
         }
 
         [Fact]
@@ -361,7 +365,23 @@ namespace NuGet.ProjectModel.Test
             var dependency = spec.Dependencies.Single();
 
             // Assert
-            Assert.True(dependency.IncludeType.Equals(LibraryIncludeType.All));
+            Assert.True(dependency.IncludeType.Equals(LibraryIncludeFlags.All));
+        }
+
+        [Theory]
+        [InlineData("all", "all")]
+        [InlineData("none", "none")]
+        [InlineData("none", "unknown")]
+        [InlineData("runtime", "runtime")]
+        [InlineData("runtime, build", "build|runtime")]
+        public void IncludeFlag_RoundTrip(string expected, string flags)
+        {
+            // Arrange & Act
+            var parsed = LibraryIncludeFlagUtils.GetFlags(flags.Split('|'));
+            var actual = LibraryIncludeFlagUtils.GetFlagString(parsed);
+
+            // Assert
+            Assert.Equal(expected, actual);
         }
     }
 }
