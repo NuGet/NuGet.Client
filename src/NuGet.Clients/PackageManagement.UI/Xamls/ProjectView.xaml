@@ -58,6 +58,7 @@
       VerticalAlignment="Center">
       <TextBlock
         VerticalAlignment="Center"
+        AutomationProperties.AutomationId="InstalledVersion"
         Margin="4,0,0,0"
         Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}}" />
     </Border>
