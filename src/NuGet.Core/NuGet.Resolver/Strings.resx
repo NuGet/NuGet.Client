@@ -123,6 +123,9 @@
   <data name="DependencyConstraint" xml:space="preserve">
     <value>constraint</value>
   </data>
+  <data name="DuplicateDependencyIdsError" xml:space="preserve">
+    <value>The package '{0}' version '{1}' declared a duplicate dependency '{2}'. This might mean the package is corrupt or the server metadata for the package is corrupt.</value>
+  </data>
   <data name="FatalError" xml:space="preserve">
     <value>A fatal error occured while resolving dependencies.</value>
   </data>

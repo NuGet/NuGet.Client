@@ -186,6 +186,22 @@ namespace NuGet.Resolver
             return string.Format(CultureInfo.CurrentCulture, GetString("VersionIsNotCompatible"), p0, p1);
         }
 
+        /// <summary>
+        /// The package '{0}' version '{1}' declared a duplicate dependency '{2}'. This might mean the package is corrupt or the server metadata for the package is corrupt.
+        /// </summary>
+        internal static string DuplicateDependencyIdsError
+        {
+            get { return GetString("DuplicateDependencyIdsError"); }
+        }
+
+        /// <summary>
+        /// The package '{0}' version '{1}' declared a duplicate dependency '{2}'. This might mean the package is corrupt or the server metadata for the package is corrupt.
+        /// </summary>
+        internal static string FormatDuplicateDependencyIdsError(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("DuplicateDependencyIdsError"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -44,6 +44,11 @@ namespace NuGet.Resolver
                 _dependencyIds = new SortedDictionary<string, VersionRange>(StringComparer.OrdinalIgnoreCase);
                 foreach (var dependency in dependencies)
                 {
+                    if (_dependencyIds.ContainsKey(dependency.Id))
+                    {
+                        throw new InvalidOperationException(Strings.FormatDuplicateDependencyIdsError(id, version, dependency.Id));
+                    }
+
                     _dependencyIds.Add(dependency.Id, dependency.VersionRange == null ? VersionRange.All : dependency.VersionRange);
                 }
             }
