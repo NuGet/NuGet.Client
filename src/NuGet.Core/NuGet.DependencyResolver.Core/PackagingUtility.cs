@@ -9,20 +9,21 @@ namespace NuGet.DependencyResolver
         /// </summary>
         public static LibraryDependency GetLibraryDependencyFromNuspec(Packaging.Core.PackageDependency dependency)
         {
-            // Start with the default
-            var includeType = LibraryIncludeType.Default;
+            // Start with the default. For package to package this is everything but content v2.
+            var includeType = LibraryIncludeFlagUtils.NoContent;
 
             // Add includes
             if (dependency.Include.Count > 0)
             {
-                includeType = LibraryIncludeType.Parse(dependency.Include);
+                includeType = LibraryIncludeFlagUtils.GetFlags(dependency.Include);
             }
 
             // Remove excludes
             if (dependency.Exclude.Count > 0)
             {
-                includeType = includeType.Except(
-                    LibraryIncludeType.Parse(dependency.Exclude));
+                var excludeType = LibraryIncludeFlagUtils.GetFlags(dependency.Exclude);
+
+                includeType = includeType & ~excludeType;
             }
 
             // Create the library
@@ -35,7 +36,7 @@ namespace NuGet.DependencyResolver
                     VersionRange = dependency.VersionRange
                 },
                 IncludeType = includeType,
-                SuppressParent = LibraryIncludeType.None
+                SuppressParent = LibraryIncludeFlags.None
             };
 
             return libraryDependency;

@@ -444,10 +444,10 @@ namespace NuGet.Commands
             {
                 var includeLibrary = true;
 
-                LibraryIncludeType libraryFlags;
+                LibraryIncludeFlags libraryFlags;
                 if (flattenedFlags.TryGetValue(library.Key.Name, out libraryFlags))
                 {
-                    includeLibrary = libraryFlags.Contains(LibraryIncludeTypeFlag.Build);
+                    includeLibrary = libraryFlags.HasFlag(LibraryIncludeFlags.Build);
                 }
 
                 // Skip libraries that do not include build files such as transitive packages
@@ -601,10 +601,10 @@ namespace NuGet.Commands
                     }
 
                     // include flags
-                    LibraryIncludeType includeFlags;
+                    LibraryIncludeFlags includeFlags;
                     if (!flattenedFlags.TryGetValue(library.Name, out includeFlags))
                     {
-                        includeFlags = LibraryIncludeType.Default;
+                        includeFlags = ~LibraryIncludeFlags.ContentFiles;
                     }
 
                     var targetLibrary = LockFileUtils.CreateLockFileTargetLibrary(

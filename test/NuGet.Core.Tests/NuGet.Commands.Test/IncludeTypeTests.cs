@@ -20,6 +20,112 @@ namespace NuGet.Commands.Test
     public class IncludeTypeTests : IDisposable
     {
         [Fact]
+        public async Task IncludeType_ProjectToProjectDeeperDependencyExcluded()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var framework = "net46";
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+
+            var configJson2 = @"{
+                ""dependencies"": {
+                    ""packageX"": {
+                        ""version"": ""1.0.0"",
+                        ""suppressParent"": ""runtime,compile""
+                    },
+                    ""packageY"": {
+                        ""version"": ""1.0.0"",
+                        ""exclude"": ""runtime,compile"",
+                        ""suppressParent"": ""runtime,compile""
+                    }
+                },
+                ""frameworks"": {
+                ""net46"": {}
+                }
+            }";
+
+            var configJson1 = @"{
+                ""dependencies"": {
+                },
+                ""frameworks"": {
+                ""net46"": {}
+                }
+            }";
+
+            CreateXYZ(Path.Combine(workingDir, "repository"), "all", string.Empty);
+
+            // Act
+            var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
+            result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var targets = target.Libraries.ToDictionary(lib => lib.Name);
+
+            var msbuildTargets = GetInstalledTargets(workingDir);
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+
+            Assert.Equal(0, GetNonEmptyCount(targets["packageY"].CompileTimeAssemblies));
+            Assert.Equal(0, GetNonEmptyCount(targets["packageY"].RuntimeAssemblies));
+        }
+
+        [Fact]
+        public async Task IncludeType_ProjectToProjectDeeperDependencyOverrides()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var framework = "net46";
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+
+            var configJson2 = @"{
+                ""dependencies"": {
+                    ""packageX"": {
+                        ""version"": ""1.0.0""
+                    },
+                    ""packageY"": {
+                        ""version"": ""1.0.0"",
+                        ""exclude"": ""runtime,compile""
+                    }
+                },
+                ""frameworks"": {
+                ""net46"": {}
+                }
+            }";
+
+            var configJson1 = @"{
+                ""dependencies"": {
+                },
+                ""frameworks"": {
+                ""net46"": {}
+                }
+            }";
+
+            CreateXYZ(Path.Combine(workingDir, "repository"), "all", string.Empty);
+
+            // Act
+            var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
+            result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var targets = target.Libraries.ToDictionary(lib => lib.Name);
+
+            var msbuildTargets = GetInstalledTargets(workingDir);
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+
+            Assert.Equal(1, GetNonEmptyCount(targets["packageY"].CompileTimeAssemblies));
+            Assert.Equal(1, GetNonEmptyCount(targets["packageY"].RuntimeAssemblies));
+        }
+
+        [Fact]
         public async Task IncludeType_ProjectToProjectDefaultFlowDoubleRestore()
         {
             // Arrange

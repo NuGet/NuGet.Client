@@ -95,7 +95,7 @@ namespace NuGet.DependencyResolver
                 // Skip dependencies if the dependency edge has 'all' excluded and
                 // the node is not a direct dependency.
                 if (outerEdge == null
-                    || !dependency.SuppressParent.Contains(LibraryIncludeType.All))
+                    || dependency.SuppressParent != LibraryIncludeFlags.All)
                 {
                     var result = predicate(dependency.LibraryRange);
 

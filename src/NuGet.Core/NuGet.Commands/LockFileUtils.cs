@@ -22,7 +22,7 @@ namespace NuGet.Commands
             RestoreTargetGraph targetGraph,
             VersionFolderPathResolver defaultPackagePathResolver,
             string correctedPackageName,
-            LibraryIncludeType dependencyType)
+            LibraryIncludeFlags dependencyType)
         {
             return CreateLockFileTargetLibrary(
                 library,
@@ -40,7 +40,7 @@ namespace NuGet.Commands
             RestoreTargetGraph targetGraph,
             VersionFolderPathResolver defaultPackagePathResolver,
             string correctedPackageName,
-            LibraryIncludeType dependencyType,
+            LibraryIncludeFlags dependencyType,
             NuGetFramework targetFrameworkOverride)
         {
             var lockFileLib = new LockFileTargetLibrary();
@@ -217,24 +217,24 @@ namespace NuGet.Commands
             }
 
             // Exclude items
-            if (!dependencyType.Contains(LibraryIncludeTypeFlag.Runtime))
+            if ((dependencyType & LibraryIncludeFlags.Runtime) == LibraryIncludeFlags.None)
             {
                 ClearIfExists(lockFileLib.RuntimeAssemblies);
                 lockFileLib.FrameworkAssemblies.Clear();
                 lockFileLib.ResourceAssemblies.Clear();
             }
 
-            if (!dependencyType.Contains(LibraryIncludeTypeFlag.Compile))
+            if ((dependencyType & LibraryIncludeFlags.Compile) == LibraryIncludeFlags.None)
             {
                 ClearIfExists(lockFileLib.CompileTimeAssemblies);
             }
 
-            if (!dependencyType.Contains(LibraryIncludeTypeFlag.Native))
+            if ((dependencyType & LibraryIncludeFlags.Native) == LibraryIncludeFlags.None)
             {
                 ClearIfExists(lockFileLib.NativeLibraries);
             }
 
-            if (!dependencyType.Contains(LibraryIncludeTypeFlag.ContentFiles)
+            if ((dependencyType & LibraryIncludeFlags.ContentFiles) == LibraryIncludeFlags.None
                 && GroupHasNonEmptyItems(lockFileLib.ContentFiles))
             {
                 // Empty lock file items still need lock file properties for language, action, and output.
