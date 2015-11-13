@@ -66,6 +66,12 @@ namespace NuGetVSExtension
                 throw new ArgumentNullException(nameof(uri));
             }
 
+            if (!InteractiveLoginProvider.IsValidScheme(uri))
+            {
+                // We are not talking to a https endpoint so it cannot be a VSO endpoint
+                return new CredentialResponse(CredentialStatus.ProviderNotApplicable);
+            }
+
             if (isProxyRequest)
             {
                 //  We don't handle getting proxy credentials so don't try to do anything on a isProxyRequest.
