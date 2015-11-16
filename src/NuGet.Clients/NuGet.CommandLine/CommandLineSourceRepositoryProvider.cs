@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine
@@ -11,20 +12,20 @@ namespace NuGet.CommandLine
     public class CommandLineSourceRepositoryProvider : ISourceRepositoryProvider
     {
         private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
-        private readonly List<Lazy<INuGetResourceProvider>> _resourceProviders;
+        private readonly IEnumerable<Lazy<INuGetResourceProvider>> _resourceProviders;
         private readonly List<SourceRepository> _repositories = new List<SourceRepository>();
 
         // There should only be one instance of the source repository for each package source.
-        private static ConcurrentDictionary<Configuration.PackageSource, SourceRepository> _sources
+        private static readonly ConcurrentDictionary<Configuration.PackageSource, SourceRepository> _sources
             = new ConcurrentDictionary<Configuration.PackageSource, SourceRepository>();
 
-        public CommandLineSourceRepositoryProvider(Configuration.IPackageSourceProvider packageSourceProvider)
+        public CommandLineSourceRepositoryProvider(
+            Configuration.IPackageSourceProvider packageSourceProvider,
+            Logging.ILogger logger)
         {
             _packageSourceProvider = packageSourceProvider;
 
-            _resourceProviders = new List<Lazy<INuGetResourceProvider>>();
-            _resourceProviders.AddRange(Protocol.Core.v2.FactoryExtensionsV2.GetCoreV2(Repository.Provider));
-            _resourceProviders.AddRange(Protocol.Core.v3.FactoryExtensionsV2.GetCoreV3(Repository.Provider));
+            _resourceProviders = Repository.Provider.GetCommandline(logger).ToList();
 
             // Create repositories
             foreach (var source in _packageSourceProvider.LoadPackageSources())

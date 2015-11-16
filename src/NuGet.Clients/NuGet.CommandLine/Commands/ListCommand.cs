@@ -108,7 +108,7 @@ namespace NuGet.Commands
                 packageSources = configurationSources;
             }
 
-            var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
+            var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider, Console);
 
             var listCommandResourceTasks = new List<Task<ListCommandResource>>();
 

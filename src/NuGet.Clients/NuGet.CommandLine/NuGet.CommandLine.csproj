@@ -93,6 +93,7 @@
     <Compile Include="Common\Solution.cs" />
     <Compile Include="Common\TypeHelper.cs" />
     <Compile Include="Common\Verbosity.cs" />
+    <Compile Include="ConsoleNuGetResourceProvider.cs" />
     <Compile Include="DebugHelper.cs" />
     <Compile Include="DefaultManifestValuesRule.cs" />
     <Compile Include="DefaultPackageRules.cs" />
@@ -105,6 +106,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>NuGetCommand.resx</DependentUpon>
     </Compile>
+    <Compile Include="NuGetResourceProviderExtensions.cs" />
     <Compile Include="NuGetResources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

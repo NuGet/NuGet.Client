@@ -111,7 +111,6 @@
     <Compile Include="PowerShellRemotePackage.cs" />
     <Compile Include="PowerShellUpdatePackage.cs" />
     <Compile Include="Utility\IErrorHandler.cs" />
-    <Compile Include="Utility\IHttpClientEvents.cs" />
     <Compile Include="Cmdlets\InstallPackageCommand.cs" />
     <Compile Include="Utility\NuGetErrorId.cs" />
     <Compile Include="NuGetPowerShellBaseCommand.cs" />
@@ -129,7 +128,6 @@
     <Compile Include="Cmdlets\UninstallPackageCommand.cs" />
     <Compile Include="Cmdlets\UpdatePackageCommand.cs" />
     <Compile Include="Utility\PSPathUtility.cs" />
-    <Compile Include="Utility\WebRequestEventArgs.cs" />
     <Compile Include="VersionType.cs" />
   </ItemGroup>
   <ItemGroup>

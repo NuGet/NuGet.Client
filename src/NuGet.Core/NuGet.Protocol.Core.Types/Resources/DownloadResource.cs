@@ -12,13 +12,22 @@ namespace NuGet.Protocol.Core.Types
     /// <summary>
     /// Finds the download url of a nupkg
     /// </summary>
-    public abstract class DownloadResource : INuGetResource
+    public abstract class DownloadResource : INuGetResource, IHttpClientEvents
     {
         public abstract Task<DownloadResourceResult> GetDownloadResourceResultAsync(
             PackageIdentity identity,
             ISettings settings,
             CancellationToken token);
+        
+        public event EventHandler<WebRequestEventArgs> SendingRequest;
+        public event EventHandler<PackageProgressEventArgs> ProgressAvailable;
 
-        public event EventHandler<PackageProgressEventArgs> Progress;
+        protected void RaiseSendingRequest(Uri requestUri, string method)
+        {
+            if (SendingRequest != null)
+            {
+                SendingRequest(this, new WebRequestEventArgs(requestUri, method));
+            }
+        }
     }
 }

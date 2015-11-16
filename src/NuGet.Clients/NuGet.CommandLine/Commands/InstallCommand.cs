@@ -169,7 +169,7 @@ namespace NuGet.CommandLine
 
         private CommandLineSourceRepositoryProvider GetSourceRepositoryProvider()
         {
-            return new CommandLineSourceRepositoryProvider(SourceProvider);
+            return new CommandLineSourceRepositoryProvider(SourceProvider, Console);
         }
 
         private async Task InstallPackage(
