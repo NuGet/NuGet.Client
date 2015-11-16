@@ -83,11 +83,7 @@ namespace NuGet.CommandLine
 
                 var packageSources = GetPackageSources(Settings);
 
-                Console.WriteLine("Feeds used:");
-                foreach (var packageSource in packageSources)
-                {
-                    Console.WriteLine(packageSource.Source);
-                }
+                Console.PrintPackageSources(packageSources);
 
                 if (DisableParallelProcessing)
                 {
@@ -395,11 +391,8 @@ namespace NuGet.CommandLine
                     isMissing: true));
 
             var packageSources = GetPackageSources(Settings);
-            Console.WriteLine("Feeds used:");
-            foreach (var packageSource in packageSources)
-            {
-                Console.WriteLine(packageSource.Source);
-            }
+
+            Console.PrintPackageSources(packageSources);
 
             var repositories = packageSources
                 .Select(sourceRepositoryProvider.CreateRepository)

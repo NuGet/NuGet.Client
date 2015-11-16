@@ -93,6 +93,7 @@
     <Compile Include="Common\Solution.cs" />
     <Compile Include="Common\TypeHelper.cs" />
     <Compile Include="Common\Verbosity.cs" />
+    <Compile Include="ConsoleExtensions.cs" />
     <Compile Include="DebugHelper.cs" />
     <Compile Include="DefaultManifestValuesRule.cs" />
     <Compile Include="DefaultPackageRules.cs" />

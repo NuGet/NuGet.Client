@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
@@ -158,11 +159,8 @@ namespace NuGet.CommandLine
                     isMissing: true));
 
             var packageSources = GetPackageSources(Settings);
-            Console.WriteLine("Feeds used:");
-            foreach (var packageSource in packageSources)
-            {
-                Console.WriteLine(packageSource.Source);
-            }
+            
+            Console.PrintPackageSources(packageSources);
 
             var packageRestoreContext = new PackageRestoreContext(
                 nuGetPackageManager,
@@ -198,11 +196,8 @@ namespace NuGet.CommandLine
             var packageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, installPath);
 
             var packageSources = GetPackageSources(Settings);
-            Console.WriteLine("Feeds used:");
-            foreach (var packageSource in packageSources)
-            {
-                Console.WriteLine(packageSource.Source);
-            }
+
+            Console.PrintPackageSources(packageSources);
 
             var primaryRepositories = packageSources.Select(sourceRepositoryProvider.CreateRepository);
 
