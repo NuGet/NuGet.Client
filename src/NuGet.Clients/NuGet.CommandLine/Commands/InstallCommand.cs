@@ -170,7 +170,19 @@ namespace NuGet.CommandLine
                 packageRestoreFailedEvent: null,
                 sourceRepositories: packageSources.Select(sourceRepositoryProvider.CreateRepository),
                 maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism);
-            return PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Console));
+
+            Task<PackageRestoreResult> packageRestoreTask = PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Console));
+            PackageRestoreResult result = packageRestoreTask.Result;
+
+            if (!result.Restored)
+            {
+                string message = String.Format(
+                          CultureInfo.CurrentCulture,
+                          LocalizedResourceManager.GetString("InstallCommandNothingToInstall"), packagesConfigFilePath);
+                Console.LogInformation(message);
+            }
+
+            return packageRestoreTask;
         }
 
         private CommandLineSourceRepositoryProvider GetSourceRepositoryProvider()
