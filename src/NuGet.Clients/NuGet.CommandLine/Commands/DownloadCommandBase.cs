@@ -102,7 +102,7 @@ namespace NuGet.CommandLine
             return Enumerable.Empty<Packaging.PackageReference>();
         }
 
-        protected IEnumerable<Configuration.PackageSource> GetPackageSources(Configuration.ISettings settings)
+        protected IReadOnlyCollection<Configuration.PackageSource> GetPackageSources(Configuration.ISettings settings)
         {
             var availableSources = SourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
             var packageSources = new List<Configuration.PackageSource>();
