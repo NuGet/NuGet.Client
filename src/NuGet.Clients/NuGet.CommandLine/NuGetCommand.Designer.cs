@@ -70,7 +70,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specifies the fileSourceFolder to which the nupkg will be added. http sources are not supported..
+        ///   Looks up a localized string similar to Specifies the package source, which is a folder or UNC share, to which the nupkg will be added. Http sources are not supported..
         /// </summary>
         internal static string AddCommandSourceDescription {
             get {
@@ -79,7 +79,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specify the path to the package to be added to the specified file source..
+        ///   Looks up a localized string similar to Specifies the path to the package to be added and the package source, which is a folder or UNC share, to which the nupkg will be added. Http sources are not supported..
         /// </summary>
         internal static string AddCommandUsageDescription {
             get {
@@ -99,7 +99,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;packagePath&gt; -Source &lt;fileSourceFolder&gt; [options].
+        ///   Looks up a localized string similar to &lt;packagePath&gt; -Source &lt;folderBasedPackageSource&gt; [options].
         /// </summary>
         internal static string AddCommandUsageSummary {
             get {
@@ -3159,7 +3159,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Adds all the packages from the &lt;srcFeed&gt; to the hierarchical &lt;destFeed&gt;. http feeds are not supported. For more info, goto https://docs.nuget.org/consume/command-line-reference#init-command..
+        ///   Looks up a localized string similar to Adds all the packages from the &lt;srcPackageSourcePath&gt; to the hierarchical &lt;destPackageSourcePath&gt;. http feeds are not supported. For more info, goto https://docs.nuget.org/consume/command-line-reference#init-command..
         /// </summary>
         internal static string InitCommandDescription {
             get {
@@ -3168,16 +3168,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specifies the fileSourceFolder. Cannot be an http source..
-        /// </summary>
-        internal static string InitCommandSourceDescription {
-            get {
-                return ResourceManager.GetString("InitCommandSourceDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Specify the path to the feed to be added to the specified destination feed.
+        ///   Looks up a localized string similar to Specify the path to source package source to be copied from and the path to the destination package source to be copied to..
         /// </summary>
         internal static string InitCommandUsageDescription {
             get {
@@ -3188,7 +3179,7 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget init c:\foo c:\bar
         ///
-        ///nuget add \\foo\packages \\bar\packages.
+        ///nuget init \\foo\packages \\bar\packages.
         /// </summary>
         internal static string InitCommandUsageExamples {
             get {
@@ -3197,7 +3188,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;srcFeedPath&gt; &lt;destFeedPath&gt; [options].
+        ///   Looks up a localized string similar to &lt;srcPackageSourcePath&gt; &lt;destPackageSourcePath&gt; [options].
         /// </summary>
         internal static string InitCommandUsageSummary {
             get {
