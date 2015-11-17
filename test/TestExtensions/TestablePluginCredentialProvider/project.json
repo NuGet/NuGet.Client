@@ -1,4 +1,4 @@
-﻿ {
+﻿{
   "dependencies": {
     "Newtonsoft.Json": "6.0.4"
   },
@@ -6,6 +6,7 @@
     "net45": {}
   },
   "runtimes": {
-    "win-anycpu": {}
+    "win-anycpu": {},
+    "win": {}
   }
 }
