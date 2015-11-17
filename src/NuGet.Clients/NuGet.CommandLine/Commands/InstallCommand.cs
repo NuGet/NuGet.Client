@@ -171,17 +171,20 @@ namespace NuGet.CommandLine
                 sourceRepositories: packageSources.Select(sourceRepositoryProvider.CreateRepository),
                 maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism);
 
-            Task<PackageRestoreResult> packageRestoreTask = PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Console));
-            PackageRestoreResult result = packageRestoreTask.Result;
+            var missingPackageReferences = installedPackageReferences.Where(reference =>
+                !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity)).ToArray();
 
-            if (!result.Restored)
+            if (missingPackageReferences.Length == 0)
             {
-                string message = String.Format(
-                          CultureInfo.CurrentCulture,
-                          LocalizedResourceManager.GetString("InstallCommandNothingToInstall"), packagesConfigFilePath);
+                var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    LocalizedResourceManager.GetString("InstallCommandNothingToInstall"),
+                    packagesConfigFilePath);
+
                 Console.LogInformation(message);
             }
 
+            Task<PackageRestoreResult> packageRestoreTask = PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Console));
             return packageRestoreTask;
         }
 
