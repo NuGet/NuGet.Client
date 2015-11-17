@@ -454,7 +454,8 @@ namespace NuGet.CommandLine.Test
                 waitForExit: true);
 
             // Assert
-            Util.VerifyResultSuccess(result, "usage: NuGet add <packagePath> -Source <fileSourceFolder> [options]");
+            Util.VerifyResultSuccess(result,
+                "usage: NuGet add <packagePath> -Source <folderBasedPackageSource> [options]");
         }
 
         [Fact]
