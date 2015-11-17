@@ -17,6 +17,7 @@ namespace NuGet.CommandLine
     {
         private const string GetProjectReferencesTarget =
             "NuGet.CommandLine.GetProjectsReferencingProjectJsonFiles.targets";
+
         private const string GetProjectReferencesEntryPointTarget =
             "NuGet.CommandLine.GetProjectsReferencingProjectJsonFilesEntryPoint.targets";
 
@@ -106,7 +107,7 @@ namespace NuGet.CommandLine
                     {
                         if (line.StartsWith("#:", StringComparison.Ordinal))
                         {
-                            // First entry for each project grouping is of the format "#:ProjectPath". 
+                            // First entry for each project grouping is of the format "#:ProjectPath".
                             // We'll use this as a delimiter to start a new grouping.
                             referencedProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                             lookup[line.Substring(2)] = referencedProjects;
@@ -151,7 +152,7 @@ namespace NuGet.CommandLine
         }
 
         /// <summary>
-        /// Gets the version of MSBuild in PATH. 
+        /// Gets the version of MSBuild in PATH.
         /// </summary>
         /// <returns>The version of MSBuild in PATH. Returns null if MSBuild does not exist in PATH.</returns>
         private static Version GetMSBuildVersionInPath()
@@ -180,7 +181,7 @@ namespace NuGet.CommandLine
                         // Microsoft (R) Build Engine version 14.0.23107.0
                         // Copyright(C) Microsoft Corporation. All rights reserved.
                         //
-                        // 14.0.23107.0                            
+                        // 14.0.23107.0
                         var lines = output.Split(
                             new[] { Environment.NewLine },
                             StringSplitOptions.RemoveEmptyEntries);
@@ -197,7 +198,7 @@ namespace NuGet.CommandLine
             }
             catch
             {
-                // ignore errors                
+                // ignore errors
             }
 
             return null;
@@ -207,12 +208,14 @@ namespace NuGet.CommandLine
         /// Gets the msbuild toolset that matches the given <paramref name="msbuildVersion"/>.
         /// </summary>
         /// <param name="msbuildVersion">The msbuild version. Can be null.</param>
-        /// <param name="installedToolsets">List of installed toolsets, 
+        /// <param name="installedToolsets">List of installed toolsets,
         /// ordered by ToolsVersion, from highest to lowest.</param>
         /// <returns>The matching toolset.</returns>
+        /// <remarks>This method is not intended to be called directly. It's marked public so that it
+        /// can be called by unit tests.</remarks>
         public static Toolset SelectMsbuildToolset(
             Version msbuildVersion,
-            IList<Toolset> installedToolsets)
+            IEnumerable<Toolset> installedToolsets)
         {
             Toolset selectedToolset;
             if (msbuildVersion == null)
@@ -226,7 +229,7 @@ namespace NuGet.CommandLine
                 selectedToolset = installedToolsets.FirstOrDefault(
                     toolset =>
                     {
-                        var v = new Version(toolset.ToolsVersion);
+                        var v = SafeParseVersion(toolset.ToolsVersion);
                         return v.Major == msbuildVersion.Major && v.Minor == v.Minor;
                     });
 
@@ -236,7 +239,7 @@ namespace NuGet.CommandLine
                     selectedToolset = installedToolsets.FirstOrDefault(
                         toolset =>
                         {
-                            var v = new Version(toolset.ToolsVersion);
+                            var v = SafeParseVersion(toolset.ToolsVersion);
                             return v.Major == msbuildVersion.Major;
                         });
                 }
@@ -258,16 +261,35 @@ namespace NuGet.CommandLine
             return selectedToolset;
         }
 
-        public static string GetMsbuildDirectory(string version, IConsole console)
+        /// <summary>
+        /// Returns the msbuild directory. If <paramref name="userVersion"/> is null, then the directory containing
+        /// the highest installed msbuild version is returned. Otherwise, the directory containing msbuild
+        /// whose version matches <paramref name="userVersion"/> is returned. If no match is found,
+        /// an exception will be thrown.
+        /// </summary>
+        /// <param name="userVersion">The user specified version. Can be null</param>
+        /// <param name="console">The console used to output messages.</param>
+        /// <returns>The msbuild directory.</returns>
+        public static string GetMsbuildDirectory(string userVersion, IConsole console)
         {
             List<Toolset> installedToolsets;
             using (var projectCollection = new ProjectCollection())
             {
                 installedToolsets = projectCollection.Toolsets.OrderByDescending(
-                    toolset => new Version(toolset.ToolsVersion)).ToList();
+                    toolset => SafeParseVersion(toolset.ToolsVersion)).ToList();
             }
 
-            if (string.IsNullOrEmpty(version))
+            return GetMsbuildDirectoryInternal(userVersion, console, installedToolsets);
+        }
+
+        // This method is called by GetMsbuildDirectory(). This method is not intended to be called directly.
+        // It's marked public so that it can be called by unit tests.
+        public static string GetMsbuildDirectoryInternal(
+            string userVersion, 
+            IConsole console, 
+            IEnumerable<Toolset> installedToolsets)
+        {
+            if (string.IsNullOrEmpty(userVersion))
             {
                 var msbuildVersion = GetMSBuildVersionInPath();
                 var toolset = SelectMsbuildToolset(msbuildVersion, installedToolsets);
@@ -296,35 +318,46 @@ namespace NuGet.CommandLine
             }
             else
             {
-                var versionString = version.Contains('.') ?
-                    version :
-                    version + ".0";
-                Version ver;
-                if (!Version.TryParse(versionString, out ver))
-                {
-                    var message = string.Format(
-                        CultureInfo.CurrentCulture,
-                        LocalizedResourceManager.GetString(
-                            nameof(NuGetResources.Error_InvalidMsbuildVersion)),
-                        version);
+                // append ".0" if the userVersion is a number
+                string userVersionString = userVersion;
+                int unused;
 
-                    throw new CommandLineException(message);
+                if (int.TryParse(userVersion, out unused))
+                {
+                    userVersionString = userVersion + ".0";
                 }
 
+                Version ver;
+                bool hasNumericVersion = Version.TryParse(userVersionString, out ver);
+
                 var selectedToolset = installedToolsets.FirstOrDefault(
-                    toolset =>
+                toolset =>
+                {
+                    // first match by string comparison
+                    if (string.Equals(userVersionString, toolset.ToolsVersion, StringComparison.OrdinalIgnoreCase))
                     {
-                        var toolsVersion = new Version(toolset.ToolsVersion);
+                        return true;
+                    }
+
+                    // then match by Major & Minor version numbers.
+                    Version toolsVersion;
+                    if (hasNumericVersion && Version.TryParse(toolset.ToolsVersion, out toolsVersion))
+                    {
                         return (toolsVersion.Major == ver.Major &&
                             toolsVersion.Minor == ver.Minor);
-                    });
+                    }
+
+                    return false;
+                });
+
                 if (selectedToolset == null)
                 {
                     var message = string.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString(
                             nameof(NuGetResources.Error_CannotFindMsbuild)),
-                        version);
+                        userVersion);
+
                     throw new CommandLineException(message);
                 }
 
@@ -348,6 +381,21 @@ namespace NuGet.CommandLine
                 {
                     input.CopyTo(output);
                 }
+            }
+        }
+
+        // We sort the none offical version to be first so they don't get automatically picked up
+        private static Version SafeParseVersion(string version)
+        {
+            Version result;
+
+            if (Version.TryParse(version, out result))
+            {
+                return result;
+            }
+            else
+            {
+                return new Version(0, 0);
             }
         }
     }
