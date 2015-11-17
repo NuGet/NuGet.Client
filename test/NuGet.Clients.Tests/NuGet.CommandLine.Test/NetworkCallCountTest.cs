@@ -99,7 +99,8 @@ namespace NuGet.CommandLine.Test
 
                 string[] args = new string[] {
                     "restore",
-                    packagesConfigPath
+                    packagesConfigPath,
+                    "-DisableParallelProcessing"
                 };
 
                 // Act
@@ -239,7 +240,8 @@ namespace NuGet.CommandLine.Test
 
                 string[] args = new string[] {
                     "restore",
-                    packagesConfigPath
+                    packagesConfigPath,
+                    "-DisableParallelProcessing"
                 };
 
                 // Act
@@ -376,7 +378,8 @@ namespace NuGet.CommandLine.Test
 
                 string[] args = new string[] {
                     "restore",
-                    packagesConfigPath
+                    packagesConfigPath,
+                    "-DisableParallelProcessing"
                 };
 
                 // Act
@@ -510,7 +513,8 @@ namespace NuGet.CommandLine.Test
 
                 string[] args = new string[] {
                     "restore",
-                    packagesConfigPath
+                    packagesConfigPath,
+                    "-DisableParallelProcessing"
                 };
 
                 // Act
@@ -598,7 +602,8 @@ namespace NuGet.CommandLine.Test
                     "restore",
                     slnPath,
                     "-Verbosity",
-                    "detailed"
+                    "detailed",
+                    "-DisableParallelProcessing"
                 };
 
                 // Delete the entire machine cache
@@ -693,7 +698,8 @@ namespace NuGet.CommandLine.Test
                     "restore",
                     slnPath,
                     "-Verbosity",
-                    "detailed"
+                    "detailed",
+                    "-DisableParallelProcessing"
                 };
 
                 // Delete the entire machine cache
@@ -784,7 +790,8 @@ namespace NuGet.CommandLine.Test
                     "restore",
                     slnPath,
                     "-Verbosity",
-                    "detailed"
+                    "detailed",
+                    "-DisableParallelProcessing"
                 };
 
                 // Act
@@ -851,7 +858,8 @@ namespace NuGet.CommandLine.Test
                     "-OutputDirectory",
                     outputPath,
                     "-Verbosity",
-                    "detailed"
+                    "detailed",
+                    "-DisableParallelProcessing"
                 };
 
                 // Act
@@ -912,7 +920,8 @@ namespace NuGet.CommandLine.Test
                     "-OutputDirectory",
                     outputPath,
                     "-Verbosity",
-                    "detailed"
+                    "detailed",
+                    "-DisableParallelProcessing"
                 };
 
                 // Act
@@ -973,7 +982,8 @@ namespace NuGet.CommandLine.Test
                     "-OutputDirectory",
                     outputPath,
                     "-Verbosity",
-                    "detailed"
+                    "detailed",
+                    "-DisableParallelProcessing"
                 };
 
                 // Act
@@ -1032,7 +1042,8 @@ namespace NuGet.CommandLine.Test
                     "-OutputDirectory",
                     outputPath,
                     "-Verbosity",
-                    "detailed"
+                    "detailed",
+                    "-DisableParallelProcessing"
                 };
 
                 // Act
@@ -1095,7 +1106,8 @@ namespace NuGet.CommandLine.Test
                     "restore",
                     slnPath,
                     "-Verbosity",
-                    "detailed"
+                    "detailed",
+                    "-DisableParallelProcessing"
                 };
 
                 // Act
@@ -1154,7 +1166,8 @@ namespace NuGet.CommandLine.Test
                     "restore",
                     slnPath,
                     "-Verbosity",
-                    "detailed"
+                    "detailed",
+                    "-DisableParallelProcessing"
                 };
 
                 // Act
@@ -1169,12 +1182,12 @@ namespace NuGet.CommandLine.Test
 
                 foreach (var url in hitsByUrl.Keys)
                 {
-                    Assert.True(1 == hitsByUrl[url], url);
+                    Assert.True(1 == hitsByUrl[url], url + " hits: " + hitsByUrl[url]);
                 }
 
                 foreach (var url in hitsByUrl2.Keys)
                 {
-                    Assert.True(1 == hitsByUrl2[url], url);
+                    Assert.True(1 == hitsByUrl2[url], url + " hits: " + hitsByUrl2[url]);
                 }
             }
         }
@@ -1226,7 +1239,8 @@ namespace NuGet.CommandLine.Test
                     "restore",
                     slnPath,
                     "-Verbosity",
-                    "detailed"
+                    "detailed",
+                    "-DisableParallelProcessing"
                 };
 
                 // Act
@@ -1283,7 +1297,8 @@ namespace NuGet.CommandLine.Test
                     "restore",
                     slnPath,
                     "-Verbosity",
-                    "detailed"
+                    "detailed",
+                    "-DisableParallelProcessing"
                 };
 
                 // Act
@@ -1339,7 +1354,8 @@ namespace NuGet.CommandLine.Test
                     "restore",
                     slnPath,
                     "-Verbosity",
-                    "detailed"
+                    "detailed",
+                    "-DisableParallelProcessing"
                 };
 
                 // Act
@@ -1396,7 +1412,8 @@ namespace NuGet.CommandLine.Test
                     "restore",
                     slnPath,
                     "-Verbosity",
-                    "detailed"
+                    "detailed",
+                    "-DisableParallelProcessing"
                 };
 
                 // Act
