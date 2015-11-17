@@ -166,12 +166,9 @@ namespace NuGet.Configuration
 
                 if (machineWideSettings != null)
                 {
-                    // In order to avoid duplicate settings
-                    // Exclude specified configFile from machine wide config files
                     validSettingFiles.AddRange(
                         machineWideSettings.Settings.Select(
-                            s => new Settings(s.Root, s.ConfigFileName, s.IsMachineWideSettings))
-                            .Where(f => !ConfigPathComparer(f.ConfigFilePath, Path.Combine(root, configFileName?? string.Empty))));
+                            s => new Settings(s.Root, s.ConfigFileName, s.IsMachineWideSettings)));
                 }
 
                 if (validSettingFiles == null
