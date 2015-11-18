@@ -999,7 +999,8 @@ namespace NuGet.Configuration
                 }
             }
         }
-
+        
+        // Compare two config file path, return true if two path are the same.
         private static bool ConfigPathComparer(string path1, string path2)
         {
             if (path1 == null && path2 == null)
