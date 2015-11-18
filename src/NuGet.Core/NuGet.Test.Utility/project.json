@@ -4,7 +4,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "xunit": "2.1.0-rc1-build3168"
+    "xunit": "2.1.0"
   },
   "frameworks": {
     "net45": {
