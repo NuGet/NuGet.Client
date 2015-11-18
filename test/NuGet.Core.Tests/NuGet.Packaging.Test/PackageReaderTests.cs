@@ -29,11 +29,11 @@ namespace NuGet.Packaging.Test
                 var reader = new PackageReader(stream);
 
                 // Act
-                var nuspec = reader.GetNuspec();
+                var nuspec = new BinaryReader(reader.GetNuspec());
 
                 // Assert
                 Assert.NotNull(nuspec);
-                Assert.Equal(5, nuspec.ReadAllBytes().Count());
+                Assert.Equal(5, nuspec.ReadBytes(4096).Length);
             }
         }
 
@@ -53,11 +53,11 @@ namespace NuGet.Packaging.Test
                 var reader = new PackageReader(stream);
 
                 // Act
-                var nuspec = reader.GetNuspec();
+                var nuspec = new BinaryReader(reader.GetNuspec());
 
                 // Assert
                 Assert.NotNull(nuspec);
-                Assert.Equal(5, nuspec.ReadAllBytes().Count());
+                Assert.Equal(5, nuspec.ReadBytes(4096).Length);
             }
         }
 
@@ -200,11 +200,11 @@ namespace NuGet.Packaging.Test
                 var reader = new PackageReader(stream);
 
                 // Act
-                var nuspec = reader.GetNuspec();
+                var nuspec = new BinaryReader(reader.GetNuspec());
 
                 // Assert
                 Assert.NotNull(nuspec);
-                Assert.Equal(5, nuspec.ReadAllBytes().Count());
+                Assert.Equal(5, nuspec.ReadBytes(4096).Length);
             }
         }
 
