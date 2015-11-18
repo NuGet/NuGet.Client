@@ -12,7 +12,7 @@ namespace NuGet.CommandLine
     public class CommandLineSourceRepositoryProvider : ISourceRepositoryProvider
     {
         private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
-        private readonly IEnumerable<Lazy<INuGetResourceProvider>> _resourceProviders;
+        private readonly List<Lazy<INuGetResourceProvider>> _resourceProviders;
         private readonly List<SourceRepository> _repositories = new List<SourceRepository>();
 
         // There should only be one instance of the source repository for each package source.

@@ -10,6 +10,7 @@ namespace NuGet.Protocol.Core.Types
             {
                 throw new ArgumentNullException(nameof(requestUri));
             }
+
             if (method == null)
             {
                 throw new ArgumentNullException(nameof(method));

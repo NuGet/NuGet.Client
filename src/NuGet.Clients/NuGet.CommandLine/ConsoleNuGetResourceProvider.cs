@@ -56,7 +56,7 @@ namespace NuGet.CommandLine
 
         private void OnSendingRequest(object sender, Protocol.Core.Types.WebRequestEventArgs webRequestEventArgs)
         {
-            _logger.LogDebug($"  {webRequestEventArgs.Method}: {webRequestEventArgs.RequestUri}");
+            _logger.LogVerbose($"  {webRequestEventArgs.Method}: {webRequestEventArgs.RequestUri}");
         }
     }
 }
