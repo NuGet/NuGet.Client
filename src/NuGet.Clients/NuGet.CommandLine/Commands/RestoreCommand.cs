@@ -14,6 +14,7 @@ using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine
 {
@@ -72,6 +73,11 @@ namespace NuGet.CommandLine
                 // Read the settings outside of parallel loops.
                 ReadSettings(restoreInputs);
 
+                // Convert package sources to repositories
+                var sourceProvider = GetSourceRepositoryProvider();
+                var repositories = GetPackageSources(Settings).Select(source => sourceProvider.CreateRepository(source))
+                    .ToArray();
+
                 // Resolve the packages directory
                 var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(Settings);
                 var packagesDir = GetEffectiveGlobalPackagesFolder(
@@ -85,61 +91,46 @@ namespace NuGet.CommandLine
 
                 Console.PrintPackageSources(packageSources);
 
-                if (DisableParallelProcessing)
-                {
-                    foreach (var file in restoreInputs.V3RestoreFiles)
-                    {
-                        HashSet<string> projectReferences = null;
-                        restoreInputs?.ProjectReferenceLookup.TryGetValue(file, out projectReferences);
+                int maxTasks = DisableParallelProcessing ? 1 : 16;
 
-                        var v3RestoreResult = await PerformNuGetV3RestoreAsync(
+                // Throttle the tasks so no more than 16 run at a time, so memory doesn't accumulate.
+                // This should make large project (over 100 project.json files) allocate reasonable
+                // amounts of memory.
+
+                var tasks = new List<Task<bool>>();
+                int restoreCount = restoreInputs.V3RestoreFiles.Count;
+
+                int currentFileIndex = 0;
+
+                do
+                {
+                    Debug.Assert(tasks.Count < 16);
+
+                    // Fill with 16 tasks upfront, then add one by one as they get completed.
+                    int newTasks = 16 - tasks.Count;
+
+                    for (int i = 0; currentFileIndex < restoreCount && i < newTasks; i++, currentFileIndex++)
+                    {
+                        var file = restoreInputs.V3RestoreFiles[currentFileIndex];
+                        HashSet<string> projectReferences = null;
+                        restoreInputs.ProjectReferenceLookup?.TryGetValue(file, out projectReferences);
+
+                        var newTask = PerformNuGetV3RestoreAsync(
                             packagesDir,
                             file,
                             packageSources,
-                            projectReferences);
-                        success &= v3RestoreResult;
+                            projectReferences,
+                            repositories);
+
+                        tasks.Add(newTask);
                     }
+
+                    var task = await Task.WhenAny(tasks);
+
+                    success &= task.Result;
+                    tasks.Remove(task);
                 }
-                else
-                {
-                    // Throttle the tasks so no more than 16 run at a time, so memory doesn't accumulate.
-                    // This should make large project (over 100 project.json files) allocate reasonable
-                    // amounts of memory.
-
-                    var tasks = new List<Task<bool>>();
-                    int restoreCount = restoreInputs.V3RestoreFiles.Count;
-
-                    int currentFileIndex = 0;
-                    
-                    do
-                    {
-                        Debug.Assert(tasks.Count < 16);
-
-                        // Fill with 16 tasks upfront, then add one by one as they get completed.
-                        int newTasks = 16 - tasks.Count;
-
-                        for (int i = 0; currentFileIndex < restoreCount && i < newTasks; i++, currentFileIndex++)
-                        {
-                            var file = restoreInputs.V3RestoreFiles[currentFileIndex];
-                            HashSet<string> projectReferences = null;
-                            restoreInputs.ProjectReferenceLookup?.TryGetValue(file, out projectReferences);
-
-                            var newTask = PerformNuGetV3RestoreAsync(
-                                packagesDir,
-                                file,
-                                packageSources,
-                                projectReferences);
-
-                            tasks.Add(newTask);
-                        }
-
-                        var task = await Task.WhenAny(tasks);
-
-                        success &= task.Result;
-                        tasks.Remove(task);
-                    }
-                    while (tasks.Count > 0);
-                }
+                while (tasks.Count > 0);
             }
 
             if (!success)
@@ -190,7 +181,8 @@ namespace NuGet.CommandLine
             string packagesDir,
             string inputPath,
             IEnumerable<Configuration.PackageSource> packageSources,
-            HashSet<string> projectReferences)
+            HashSet<string> projectReferences,
+            SourceRepository[] repositories)
         {
             var inputFileName = Path.GetFileName(inputPath);
             var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(inputPath));
@@ -239,11 +231,6 @@ namespace NuGet.CommandLine
                 Console.LogVerbose($"Found project root directory: {rootDirectory}");
 
                 Console.LogVerbose($"Using packages directory: {packagesDir}");
-
-                // Convert package sources to repositories
-                var sourceProvider = GetSourceRepositoryProvider();
-
-                var repositories = packageSources.Select(source => sourceProvider.CreateRepository(source));
 
                 // Create a restore request
                 var request = new RestoreRequest(

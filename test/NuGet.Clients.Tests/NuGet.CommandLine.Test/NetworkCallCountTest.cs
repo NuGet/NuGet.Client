@@ -403,7 +403,7 @@ namespace NuGet.CommandLine.Test
 
                 foreach (var package in expectedPackages)
                 {
-                    Assert.True(allPackages.Any(p => p.Id == package.Id 
+                    Assert.True(allPackages.Any(p => p.Id == package.Id
                         && p.Version.ToNormalizedString() == package.Version.ToNormalizedString()));
                 }
 
@@ -1312,11 +1312,12 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
                 Assert.Equal(1, hitsByUrl["/index.json"]);
 
-                // PackageE is hit twice, once from packages.config and the other from project.json. 
+                // PackageE is hit twice, once from packages.config and the other from project.json.
                 // The rest should only be hit once.
                 foreach (var url in hitsByUrl.Keys.Where(s => s != "/reg/packagee/index.json"))
                 {
-                    Assert.True(1 == hitsByUrl[url], url);
+                    var hits = hitsByUrl[url];
+                    Assert.True(1 == hits, url + $" was hit {hitsByUrl[url]} times instead of 1");
                 }
             }
         }
@@ -1562,7 +1563,7 @@ namespace NuGet.CommandLine.Test
         {
             return ServerHandler(request,
                 hitsByUrl,
-                server, 
+                server,
                 indexJson,
                 localRepo,
                 new ManualResetEventSlim(true),

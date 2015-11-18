@@ -24,7 +24,6 @@ namespace NuGet.CommandLine
 
         private LogLevel Verbosity { get { return _verbosity.Value; } }
 
-
         internal CommandOutputLogger()
         {
             _verbosity = new Lazy<LogLevel>(() => LogLevel.Verbose);

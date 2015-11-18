@@ -138,9 +138,9 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         // (2) cache for pages is valid for only 30 min.
                         // So we decide to leave current logic and observe.
                         using (var data = await _httpSource.GetAsync(
-                            uri, 
+                            uri,
                             $"list_{id}_page{page}",
-                            retry == 0 ? CacheContext.ListMaxAgeTimeSpan : TimeSpan.Zero, 
+                            retry == 0 ? CacheContext.ListMaxAgeTimeSpan : TimeSpan.Zero,
                             cancellationToken))
                         {
                             try
@@ -263,10 +263,16 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         cancellationToken))
                     {
                         return new NupkgEntry
-                            {
-                                TempFileName = data.CacheFileName
-                            };
+                        {
+                            TempFileName = data.CacheFileName
+                        };
                     }
+                }
+                catch (TaskCanceledException ex) when (retry == 0)
+                {
+                    // First request can get cancelled if we got the data from elsewhere, no reason to warn.
+                    // Theoretically we can still get
+                    Logger.LogInformation(string.Format("Warning: DownloadPackageAsync: {1}\r\n  {0}", ex.Message, package.ContentUri));
                 }
                 catch (Exception ex)
                 {
