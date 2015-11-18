@@ -35,12 +35,12 @@
     },
     "dnxcore50": {
       "dependencies": {
-        "System.Dynamic.Runtime": "4.0.10-beta-*",
-        "System.Net.Http.WinHttpHandler": "4.0.0-beta-*",
-        "System.ObjectModel": "4.0.10-beta-*",
-        "System.Runtime.InteropServices": "4.0.20-beta-*",
-        "System.Threading": "4.0.10-beta-*",
-        "System.Threading.Thread": "4.0.0-beta-*"
+        "System.Dynamic.Runtime": "4.0.10-beta-23109",
+        "System.Net.Http.WinHttpHandler": "4.0.0-beta-23409",
+        "System.ObjectModel": "4.0.10-beta-23109",
+        "System.Runtime.InteropServices": "4.0.20-beta-23109",
+        "System.Threading": "4.0.10-beta-23109",
+        "System.Threading.Thread": "4.0.0-beta-23109"
       }
     }
   }

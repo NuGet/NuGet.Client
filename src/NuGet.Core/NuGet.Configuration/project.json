@@ -32,22 +32,22 @@
     },
     "dnxcore50": {
       "dependencies": {
-        "System.Runtime.Extensions": "4.0.10-beta-*",
-        "System.Collections": "4.0.10-beta-*",
-        "System.Collections.Concurrent": "4.0.10-beta-*",
-        "System.Diagnostics.Debug": "4.0.10-beta-*",
-        "System.Diagnostics.Tools": "4.0.0-beta-*",
-        "System.Globalization": "4.0.10-beta-*",
-        "System.IO": "4.0.10-beta-*",
-        "System.IO.FileSystem": "4.0.0-beta-*",
-        "System.Linq": "4.0.0-beta-*",
-        "System.Net.Primitives": "4.0.10-beta-*",
-        "System.Resources.ResourceManager": "4.0.0-beta-*",
-        "System.Text.RegularExpressions": "4.0.10-beta-*",
-        "System.Threading": "4.0.10-beta-*",
-        "System.Xml.XDocument": "4.0.10-beta-*",
-        "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-*",
-        "System.Security.Cryptography.Hashing": "4.0.0-beta-*"
+        "System.Runtime.Extensions": "4.0.10-beta-23109",
+        "System.Collections": "4.0.10-beta-23109",
+        "System.Collections.Concurrent": "4.0.10-beta-23109",
+        "System.Diagnostics.Debug": "4.0.10-beta-23109",
+        "System.Diagnostics.Tools": "4.0.0-beta-23109",
+        "System.Globalization": "4.0.10-beta-23109",
+        "System.IO": "4.0.10-beta-23109",
+        "System.IO.FileSystem": "4.0.0-beta-23109",
+        "System.Linq": "4.0.0-beta-23109",
+        "System.Net.Primitives": "4.0.10-beta-23109",
+        "System.Resources.ResourceManager": "4.0.0-beta-23109",
+        "System.Text.RegularExpressions": "4.0.10-beta-23109",
+        "System.Threading": "4.0.10-beta-23109",
+        "System.Xml.XDocument": "4.0.10-beta-23109",
+        "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-23225",
+        "System.Security.Cryptography.Hashing": "4.0.0-beta-23225"
       }
     }
   }

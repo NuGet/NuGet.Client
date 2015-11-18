@@ -62,8 +62,8 @@
     },
     "dnxcore50": {
       "dependencies": {
-        "System.Xml.XDocument": "4.0.10-beta-*",
-        "System.IO.Compression": "4.0.0-*"
+        "System.Xml.XDocument": "4.0.10-beta-23109",
+        "System.IO.Compression": "4.0.0-23109"
       }
     }
   }
