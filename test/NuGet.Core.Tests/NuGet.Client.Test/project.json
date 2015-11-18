@@ -4,18 +4,13 @@
     "NuGet.Client": "3.4.0-*",
     "NuGet.Test.Utility": "3.4.0-*",
     "xunit": "2.1.0",
-    "xunit.runner.dnx": "2.1.0-beta6-build191",
-    "Microsoft.Framework.Runtime": "1.0.0-beta6"
+    "xunit.runner.dnx": "2.1.0-beta6-build191"
   },
   "commands": {
     "test": "xunit.runner.dnx"
   },
   "frameworks": {
-    "dnx451": {},
-    "dnxcore50": {
-      "dependencies": {
-        "System.Runtime.Serialization.Primitives": "4.0.10-beta-23109"
-      }
-    }
+    "dnx451": { },
+    "dnxcore50": { }
   }
 }
