@@ -213,7 +213,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 #else
             var localAppDataFolder = Environment.GetEnvironmentVariable("LocalAppData");
 #endif
-            var cacheFolder = Path.Combine(localAppDataFolder, "nuget", "v3-cache", baseFolderName);
+            var cacheFolder = Path.Combine(localAppDataFolder, "NuGet", "v3-cache", baseFolderName);
             var cacheFile = Path.Combine(cacheFolder, baseFileName);
 
             if (!Directory.Exists(cacheFolder)
