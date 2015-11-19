@@ -265,7 +265,7 @@
     <value>Exception '{0}' thrown when trying to add source '{1}'. Please verify all your online package sources are available.</value>
   </data>
   <data name="PackageNotFoundInPrimarySources" xml:space="preserve">
-    <value>Package '{0}' is not found in the following primary source(s): '{1}'. Please verify all your online package sources are available.</value>
+    <value>Package '{0}' is not found in the following primary source(s): '{1}'. Please verify all your online package sources are available (OR) package id, version are specified correctly.</value>
   </data>
   <data name="UnableToGatherPackageFromSource" xml:space="preserve">
     <value>Unable to gather package '{0}' from source '{1}'. Please verify all your online package sources are available. </value>
