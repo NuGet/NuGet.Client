@@ -172,9 +172,9 @@ namespace NuGet.CommandLine
                 maxNumberOfParallelTasks: DisableParallelProcessing ? 1 : PackageManagementConstants.DefaultMaxDegreeOfParallelism);
 
             var missingPackageReferences = installedPackageReferences.Where(reference =>
-                !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity)).ToArray();
+                !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity)).Any();
 
-            if (missingPackageReferences.Length == 0)
+            if (!missingPackageReferences)
             {
                 var message = string.Format(
                     CultureInfo.CurrentCulture,
