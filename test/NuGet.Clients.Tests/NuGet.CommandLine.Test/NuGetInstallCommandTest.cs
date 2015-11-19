@@ -67,6 +67,83 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public void InstallCommand_ShowsAlreadyInstalledMessageWhenAllPackagesArePresent()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var currentFolderName = Guid.NewGuid().ToString();
+            var workingPath = Path.Combine(tempPath, currentFolderName);
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var nugetexe = Util.GetNuGetExePath();
+            var packagesConfig = Path.Combine(workingPath, "packages.config");
+
+            try
+            {
+                Util.CreateDirectory(workingPath);
+                Util.CreateDirectory(repositoryPath);
+                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
+                Util.CreateFile(workingPath, "packages.config",
+@"<packages>
+  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
+</packages>");
+
+                string[] args = new string[]
+                {
+                    "install",
+                    packagesConfig,
+                    "-OutputDirectory",
+                    "outputDir",
+                    "-Source",
+                    repositoryPath
+                };
+
+                // Act
+                var path = Environment.GetEnvironmentVariable("PATH");
+                Environment.SetEnvironmentVariable("PATH", null);
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+                
+                // Assert
+                Assert.Equal(0, r.Item1);
+                var packageFileA = Path.Combine(workingPath, @"outputDir\packageA.1.1.0\packageA.1.1.0.nupkg");
+                var packageFileB = Path.Combine(workingPath, @"outputDir\packageB.2.2.0\packageB.2.2.0.nupkg");
+                Assert.True(File.Exists(packageFileA));
+                Assert.True(File.Exists(packageFileB));
+
+                //Act (Install a second time)
+                string[] args2 = new string[]
+                {
+                    "install",
+                    packagesConfig
+                };
+
+                var r1 = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args2),
+                    waitForExit: true);
+
+                Environment.SetEnvironmentVariable("PATH", path);
+
+                //Assert
+                var message = r1.Item2;
+                string alreadyInstalledMessage = String.Format("All packages listed in {0} are already installed.", packagesConfig);
+                Assert.Contains(alreadyInstalledMessage, message, StringComparison.OrdinalIgnoreCase);
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(currentDirectory);
+                Util.DeleteDirectory(workingPath);
+            }
+        }
+
+        [Fact]
         public void InstallCommand_FromPackagesConfigFile_SpecifyingSolutionDir()
         {
             // Arrange

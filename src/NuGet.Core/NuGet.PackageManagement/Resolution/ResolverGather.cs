@@ -199,7 +199,18 @@ namespace NuGet.PackageManagement
             {
                 if (!combinedResults.Any(package => string.Equals(package.Id, targetId, StringComparison.OrdinalIgnoreCase)))
                 {
-                    string message = String.Format(Strings.PackageNotFoundInPrimarySources, targetId, allPrimarySources);
+                    string packageIdentity = targetId;
+
+                    foreach (var pid in _context.PrimaryTargets)
+                    {
+                        if (string.Equals(targetId, pid.Id, StringComparison.OrdinalIgnoreCase))
+                        {
+                            packageIdentity = String.Concat(targetId, ",", pid.Version);
+                            break;
+                        }
+                    }
+
+                    string message = String.Format(Strings.PackageNotFoundInPrimarySources, packageIdentity, allPrimarySources);
                     throw new InvalidOperationException(message);
                 }
             }
