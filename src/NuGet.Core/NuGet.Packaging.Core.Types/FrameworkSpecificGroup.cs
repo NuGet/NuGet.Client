@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging
 {
@@ -14,7 +15,6 @@ namespace NuGet.Packaging
     /// </summary>
     public class FrameworkSpecificGroup : IEquatable<FrameworkSpecificGroup>, IFrameworkSpecific
     {
-        public readonly static string EmptyFolder = "/_._";
         private readonly NuGetFramework _targetFramework;
         private readonly string[] _items;
 
@@ -37,10 +37,13 @@ namespace NuGet.Packaging
 
             _targetFramework = targetFramework;
 
-            HasEmptyFolder = items.Any(item => item.EndsWith(EmptyFolder, StringComparison.Ordinal));
+            HasEmptyFolder = items.Any(item => item.EndsWith(PackagingCoreConstants.ForwardSlashEmptyFolder, 
+                StringComparison.Ordinal));
 
             // Remove empty folder markers here
-            _items = items.Where(item => !item.EndsWith(EmptyFolder, StringComparison.Ordinal)).ToArray();
+            _items = items.Where(item => !item.EndsWith(PackagingCoreConstants.ForwardSlashEmptyFolder,
+                StringComparison.Ordinal))
+                    .ToArray();
         }
 
         /// <summary>

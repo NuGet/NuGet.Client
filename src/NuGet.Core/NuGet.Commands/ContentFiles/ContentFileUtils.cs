@@ -210,7 +210,7 @@ namespace NuGet.Commands
                 var flatten = false;
 
                 // _._ is needed for empty codeLanguage groups
-                if (file.EndsWith("/_._", StringComparison.Ordinal))
+                if (file.EndsWith(PackagingCoreConstants.ForwardSlashEmptyFolder, StringComparison.Ordinal))
                 {
                     action = None;
                 }

@@ -542,8 +542,8 @@ namespace NuGet.ProjectManagement
         private static bool IsAssemblyReference(string filePath)
         {
             // assembly reference must be under lib/
-            if (!filePath.StartsWith(Constants.LibDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
-                && !filePath.StartsWith(Constants.LibDirectory + Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            if (!filePath.StartsWith(PackagingConstants.Folders.Lib + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                && !filePath.StartsWith(PackagingConstants.Folders.Lib + Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
@@ -551,7 +551,7 @@ namespace NuGet.ProjectManagement
             var fileName = Path.GetFileName(filePath);
 
             // if it's an empty folder, yes
-            if (fileName == Constants.PackageEmptyFileName)
+            if (fileName == PackagingCoreConstants.EmptyFolder)
             {
                 return true;
             }
@@ -578,6 +578,6 @@ namespace NuGet.ProjectManagement
         public static readonly string Install = "install.ps1";
         public static readonly string Uninstall = "uninstall.ps1";
         public static readonly string Init = "init.ps1";
-        public static readonly string InitPS1RelativePath = Constants.ToolsDirectory + Path.AltDirectorySeparatorChar + Init;
+        public static readonly string InitPS1RelativePath = PackagingConstants.Folders.Tools + Path.AltDirectorySeparatorChar + Init;
     }
 }

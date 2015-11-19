@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
 
 namespace NuGet.Client
@@ -16,8 +17,6 @@ namespace NuGet.Client
     /// </summary>
     public class ManagedCodeConventions
     {
-        private const string EmptyFolder = "_._";
-
         private static readonly ContentPropertyDefinition TfmProperty = new ContentPropertyDefinition(PropertyNames.TargetFrameworkMoniker,
             table: new Dictionary<string, object>()
                 {
@@ -34,7 +33,7 @@ namespace NuGet.Client
             PropertyNames.AnyValue,
             parser: o => o); // Identity parser, all strings are valid for any
         private static readonly ContentPropertyDefinition AssemblyProperty = new ContentPropertyDefinition(PropertyNames.ManagedAssembly,
-            parser: o => o.Equals(EmptyFolder, StringComparison.Ordinal) ? o : null, // Accept "_._" as a pseudo-assembly
+            parser: o => o.Equals(PackagingCoreConstants.EmptyFolder, StringComparison.Ordinal) ? o : null, // Accept "_._" as a pseudo-assembly
             fileExtensions: new[] { ".dll", ".winmd" });
         private static readonly ContentPropertyDefinition MSBuildProperty = new ContentPropertyDefinition(PropertyNames.MSBuild, fileExtensions: new[] { ".targets", ".props" });
         private static readonly ContentPropertyDefinition SatelliteAssemblyProperty = new ContentPropertyDefinition(PropertyNames.SatelliteAssembly, fileExtensions: new[] { ".resources.dll" });
