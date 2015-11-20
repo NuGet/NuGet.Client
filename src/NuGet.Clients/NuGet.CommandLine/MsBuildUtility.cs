@@ -50,43 +50,43 @@ namespace NuGet.CommandLine
                         msbuildPath));
             }
 
-            var entryPointTargetPath = Path.GetTempFileName();
-            var customAfterBuildTargetPath = Path.GetTempFileName();
-            var resultsPath = Path.GetTempFileName();
-
-            ExtractResource(GetProjectReferencesEntryPointTarget, entryPointTargetPath);
-            ExtractResource(GetProjectReferencesTarget, customAfterBuildTargetPath);
-
-            var argumentBuilder = new StringBuilder(
-                "/t:NuGet_GetProjectsReferencingProjectJson " +
-                "/nologo /nr:false /v:q " +
-                "/p:BuildProjectReferences=false");
-
-            argumentBuilder.Append(" /p:NuGetCustomAfterBuildTargetPath=");
-            AppendQuoted(argumentBuilder, customAfterBuildTargetPath);
-
-            argumentBuilder.Append(" /p:ResultsFile=");
-            AppendQuoted(argumentBuilder, resultsPath);
-
-            argumentBuilder.Append(" /p:NuGet_ProjectReferenceToResolve=\"");
-            for (var i = 0; i < projectPaths.Length; i++)
+            var tempDirectory = Path.GetTempPath();
+            using (var entryPointTargetPath = new TempFile(tempDirectory, ".targets"))
+            using (var customAfterBuildTargetPath = new TempFile(tempDirectory, ".targets"))
+            using (var resultsPath = new TempFile(tempDirectory, ".result"))
             {
-                argumentBuilder.Append(projectPaths[i])
-                    .Append(";");
-            }
+                ExtractResource(GetProjectReferencesEntryPointTarget, entryPointTargetPath);
+                ExtractResource(GetProjectReferencesTarget, customAfterBuildTargetPath);
 
-            argumentBuilder.Append("\" ");
-            AppendQuoted(argumentBuilder, entryPointTargetPath);
+                var argumentBuilder = new StringBuilder(
+                    "/t:NuGet_GetProjectsReferencingProjectJson " +
+                    "/nologo /nr:false /v:q " +
+                    "/p:BuildProjectReferences=false");
 
-            var processStartInfo = new ProcessStartInfo
-            {
-                UseShellExecute = false,
-                FileName = msbuildPath,
-                Arguments = argumentBuilder.ToString(),
-                RedirectStandardError = true
-            };
-            try
-            {
+                argumentBuilder.Append(" /p:NuGetCustomAfterBuildTargetPath=");
+                AppendQuoted(argumentBuilder, customAfterBuildTargetPath);
+
+                argumentBuilder.Append(" /p:ResultsFile=");
+                AppendQuoted(argumentBuilder, resultsPath);
+
+                argumentBuilder.Append(" /p:NuGet_ProjectReferenceToResolve=\"");
+                for (var i = 0; i < projectPaths.Length; i++)
+                {
+                    argumentBuilder.Append(projectPaths[i])
+                        .Append(";");
+                }
+
+                argumentBuilder.Append("\" ");
+                AppendQuoted(argumentBuilder, entryPointTargetPath);
+
+                var processStartInfo = new ProcessStartInfo
+                {
+                    UseShellExecute = false,
+                    FileName = msbuildPath,
+                    Arguments = argumentBuilder.ToString(),
+                    RedirectStandardError = true
+                };
+
                 using (var process = Process.Start(processStartInfo))
                 {
                     process.WaitForExit(60 * 1000);
@@ -121,12 +121,6 @@ namespace NuGet.CommandLine
                 }
 
                 return lookup;
-            }
-            finally
-            {
-                File.Delete(entryPointTargetPath);
-                File.Delete(customAfterBuildTargetPath);
-                File.Delete(resultsPath);
             }
         }
 
@@ -285,8 +279,8 @@ namespace NuGet.CommandLine
         // This method is called by GetMsbuildDirectory(). This method is not intended to be called directly.
         // It's marked public so that it can be called by unit tests.
         public static string GetMsbuildDirectoryInternal(
-            string userVersion, 
-            IConsole console, 
+            string userVersion,
+            IConsole console,
             IEnumerable<Toolset> installedToolsets)
         {
             if (string.IsNullOrEmpty(userVersion))
@@ -396,6 +390,71 @@ namespace NuGet.CommandLine
             else
             {
                 return new Version(0, 0);
+            }
+        }
+
+        
+        /// <summary>
+        /// This class is used to create a temp file, which is deleted in Dispose().
+        /// </summary>
+        private class TempFile : IDisposable
+        {
+            private readonly string _filePath;
+
+            /// <summary>
+            /// Constructor. It creates an empty temp file under directory <paramref name="directory"/>, with 
+            /// extension <paramref name="extension"/>.
+            /// </summary>
+            /// <param name="directory">The directory where the temp file is created.</param>
+            /// <param name="extension">The extension of the temp file.</param>
+            public TempFile(string directory, string extension)
+            {
+                if (string.IsNullOrEmpty(directory))
+                {
+                    throw new ArgumentNullException(nameof(directory));
+                }
+
+                if (string.IsNullOrEmpty(extension))
+                {
+                    throw new ArgumentNullException(nameof(extension));
+                }
+
+                int count = 0;
+                do
+                {
+                    _filePath = Path.Combine(directory, Path.GetRandomFileName() + extension);
+                    count++;
+                }
+                while (File.Exists(_filePath) && count < 3);
+
+                if (count == 3)
+                {
+                    throw new InvalidOperationException("Failed to create a random file.");
+                }
+
+                // create an empty file
+                using (var filestream = File.Open(_filePath, FileMode.CreateNew))
+                {
+                }
+            }
+
+            public static implicit operator string(TempFile f)
+            {
+                return f._filePath;
+            }
+
+            public void Dispose()
+            {
+                if (File.Exists(_filePath))
+                {
+                    try
+                    {
+                        File.Delete(_filePath);
+                    }
+                    catch
+                    {
+                    }
+                }
             }
         }
     }
