@@ -4,7 +4,6 @@ using System.IO;
 using System.Net;
 using System.Security.Principal;
 using System.Text;
-using NuGet.ContentModel;
 using Test.Utility;
 using Xunit;
 

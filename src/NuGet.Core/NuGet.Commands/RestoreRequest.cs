@@ -12,7 +12,7 @@ using NuGet.Protocol.Core.v3;
 
 namespace NuGet.Commands
 {
-    public class RestoreRequest
+    public class RestoreRequest : IDisposable
     {
         public static readonly int DefaultDegreeOfConcurrency = 16;
 
@@ -91,11 +91,16 @@ namespace NuGet.Commands
         /// <summary>
         /// Cache settings
         /// </summary>
-        public SourceCacheContext CacheContext { get; set; }
+        public SourceCacheContext CacheContext { get; }
 
         /// <summary>
         /// Additional compatibility profiles to check compatibility with.
         /// </summary>
         public ISet<FrameworkRuntimePair> CompatibilityProfiles { get; }
+
+        public void Dispose()
+        {
+            CacheContext.Dispose();
+        }
     }
 }

@@ -39,7 +39,7 @@ namespace NuGet.PackageManagement
                 logger,
                 sources,
                 effectiveGlobalPackagesFolder,
-                new SourceCacheContext(),
+                c => { },
                 token);
         }
 
@@ -51,7 +51,7 @@ namespace NuGet.PackageManagement
             Logging.ILogger logger,
             IEnumerable<SourceRepository> sources,
             string effectiveGlobalPackagesFolder,
-            SourceCacheContext cacheContext,
+            Action<SourceCacheContext> cacheContextModifier,
             CancellationToken token)
         {
             // Restore
@@ -61,7 +61,7 @@ namespace NuGet.PackageManagement
                 logger,
                 sources,
                 effectiveGlobalPackagesFolder,
-                cacheContext,
+                cacheContextModifier,
                 token);
 
             // Throw before writing if this has been canceled
@@ -82,7 +82,7 @@ namespace NuGet.PackageManagement
             Logging.ILogger logger,
             IEnumerable<SourceRepository> sources,
             string effectiveGlobalPackagesFolder,
-            SourceCacheContext cacheContext,
+            Action<SourceCacheContext> cacheContextModifier,
             CancellationToken token)
         {
             // Restoring packages
@@ -90,44 +90,50 @@ namespace NuGet.PackageManagement
                 Strings.BuildIntegratedPackageRestoreStarted,
                 project.ProjectName));
 
-            var request = new RestoreRequest(packageSpec, sources, effectiveGlobalPackagesFolder);
-            request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
-            request.CacheContext = cacheContext;
-
-            // Add the existing lock file if it exists
-            var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(project.JsonConfigPath);
-            request.LockFilePath = lockFilePath;
-            request.ExistingLockFile = GetLockFile(lockFilePath, logger);
-
-            // Find the full closure of project.json files and referenced projects
-            var projectReferences = await project.GetProjectReferenceClosureAsync(logger);
-            request.ExternalProjects = projectReferences
-                .Where(reference => !string.IsNullOrEmpty(reference.PackageSpecPath))
-                .Select(reference => BuildIntegratedProjectUtility.ConvertProjectReference(reference))
-                .ToList();
-
-            token.ThrowIfCancellationRequested();
-
-            var command = new RestoreCommand(logger, request);
-
-            // Execute the restore
-            var result = await command.ExecuteAsync(token);
-
-            // Report a final message with the Success result
-            if (result.Success)
+            using (var request = new RestoreRequest(packageSpec, sources, effectiveGlobalPackagesFolder))
             {
-                logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                    Strings.BuildIntegratedPackageRestoreSucceeded,
-                    project.ProjectName));
-            }
-            else
-            {
-                logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
-                    Strings.BuildIntegratedPackageRestoreFailed,
-                    project.ProjectName));
-            }
+                request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
 
-            return result;
+                if (cacheContextModifier != null)
+                {
+                    cacheContextModifier(request.CacheContext);
+                }
+
+                // Add the existing lock file if it exists
+                var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(project.JsonConfigPath);
+                request.LockFilePath = lockFilePath;
+                request.ExistingLockFile = GetLockFile(lockFilePath, logger);
+
+                // Find the full closure of project.json files and referenced projects
+                var projectReferences = await project.GetProjectReferenceClosureAsync(logger);
+                request.ExternalProjects = projectReferences
+                    .Where(reference => !string.IsNullOrEmpty(reference.PackageSpecPath))
+                    .Select(reference => BuildIntegratedProjectUtility.ConvertProjectReference(reference))
+                    .ToList();
+
+                token.ThrowIfCancellationRequested();
+
+                var command = new RestoreCommand(logger, request);
+
+                // Execute the restore
+                var result = await command.ExecuteAsync(token);
+
+                // Report a final message with the Success result
+                if (result.Success)
+                {
+                    logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                        Strings.BuildIntegratedPackageRestoreSucceeded,
+                        project.ProjectName));
+                }
+                else
+                {
+                    logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                        Strings.BuildIntegratedPackageRestoreFailed,
+                        project.ProjectName));
+                }
+
+                return result;
+            }
         }
 
         /// <summary>
@@ -159,7 +165,7 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Creates an index of the project unique name to the cache entry. 
+        /// Creates an index of the project unique name to the cache entry.
         /// The cache entry contains the project and the closure of project.json files.
         /// </summary>
         public static async Task<Dictionary<string, BuildIntegratedProjectCacheEntry>>
@@ -359,7 +365,7 @@ namespace NuGet.PackageManagement
                     // find all projects which have a child reference matching the same project.json path as the target
                     if (closure.Any(reference =>
                         !string.IsNullOrEmpty(reference.PackageSpecPath) &&
-                        string.Equals(targetProjectJson, 
+                        string.Equals(targetProjectJson,
                             Path.GetFullPath(reference.PackageSpecPath),
                             StringComparison.OrdinalIgnoreCase)))
                     {

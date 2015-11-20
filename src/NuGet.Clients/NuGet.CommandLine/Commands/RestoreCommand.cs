@@ -110,7 +110,7 @@ namespace NuGet.CommandLine
                     int restoreCount = restoreInputs.V3RestoreFiles.Count;
 
                     int currentFileIndex = 0;
-                    
+
                     do
                     {
                         Debug.Assert(tasks.Count < 16);
@@ -246,63 +246,64 @@ namespace NuGet.CommandLine
                 var repositories = packageSources.Select(source => sourceProvider.CreateRepository(source));
 
                 // Create a restore request
-                var request = new RestoreRequest(
+                using (var request = new RestoreRequest(
                     packageSpec,
                     repositories,
-                    packagesDirectory: null);
-
-                request.PackagesDirectory = packagesDir;
-
-                if (DisableParallelProcessing)
+                    packagesDirectory: null))
                 {
-                    request.MaxDegreeOfConcurrency = 1;
-                }
-                else
-                {
-                    request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
-                }
+                    request.PackagesDirectory = packagesDir;
 
-                request.CacheContext.NoCache = NoCache;
-
-                // Read the existing lock file, this is needed to support IsLocked=true
-                var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(projectJsonPath);
-                request.LockFilePath = lockFilePath;
-                request.ExistingLockFile = BuildIntegratedRestoreUtility.GetLockFile(lockFilePath, Console);
-
-                // Resolve the packages directory
-                Console.LogVerbose($"Using packages directory: {request.PackagesDirectory}");
-
-                if (projectReferences != null)
-                {
-                    foreach (var projectReference in projectReferences)
+                    if (DisableParallelProcessing)
                     {
-                        var projectDir = Path.GetDirectoryName(projectReference);
-                        var projectReferenceName = Path.GetFileNameWithoutExtension(projectReference);
+                        request.MaxDegreeOfConcurrency = 1;
+                    }
+                    else
+                    {
+                        request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
+                    }
 
-                        var childProjectJson = BuildIntegratedProjectUtility.GetProjectConfigPath(
-                            projectDir,
-                            projectReferenceName);
+                    request.CacheContext.NoCache = NoCache;
 
-                        // Determine if this is a p2p reference with project.json
-                        if (File.Exists(childProjectJson))
+                    // Read the existing lock file, this is needed to support IsLocked=true
+                    var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(projectJsonPath);
+                    request.LockFilePath = lockFilePath;
+                    request.ExistingLockFile = BuildIntegratedRestoreUtility.GetLockFile(lockFilePath, Console);
+
+                    // Resolve the packages directory
+                    Console.LogVerbose($"Using packages directory: {request.PackagesDirectory}");
+
+                    if (projectReferences != null)
+                    {
+                        foreach (var projectReference in projectReferences)
                         {
-                            request.ExternalProjects.Add(
-                                new ExternalProjectReference(
-                                    projectReference,
-                                    childProjectJson,
-                                    projectReferences: Enumerable.Empty<string>()));
+                            var projectDir = Path.GetDirectoryName(projectReference);
+                            var projectReferenceName = Path.GetFileNameWithoutExtension(projectReference);
+
+                            var childProjectJson = BuildIntegratedProjectUtility.GetProjectConfigPath(
+                                projectDir,
+                                projectReferenceName);
+
+                            // Determine if this is a p2p reference with project.json
+                            if (File.Exists(childProjectJson))
+                            {
+                                request.ExternalProjects.Add(
+                                    new ExternalProjectReference(
+                                        projectReference,
+                                        childProjectJson,
+                                        projectReferences: Enumerable.Empty<string>()));
+                            }
                         }
                     }
+
+                    CheckRequireConsent();
+
+                    // Run the restore
+                    var command = new NuGet.Commands.RestoreCommand(Console, request);
+                    var result = await command.ExecuteAsync();
+                    result.Commit(Console);
+
+                    success = result.Success;
                 }
-
-                CheckRequireConsent();
-
-                // Run the restore
-                var command = new NuGet.Commands.RestoreCommand(Console, request);
-                var result = await command.ExecuteAsync();
-                result.Commit(Console);
-
-                success = result.Success;
             }
 
             return success;
