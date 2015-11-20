@@ -2,8 +2,8 @@
 {
     public static class PackagingCoreConstants
     {
-        public const string NupkgExtension = ".nupkg";
-        public const string NuspecExtension = ".nuspec";
+        public static readonly string NupkgExtension = ".nupkg";
+        public static readonly string NuspecExtension = ".nuspec";
 
         /// <summary>
         /// _._ denotes an empty folder since OPC does not allow an
