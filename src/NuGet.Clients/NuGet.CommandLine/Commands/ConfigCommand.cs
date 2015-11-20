@@ -56,7 +56,7 @@ namespace NuGet.CommandLine
                 string value = SettingsUtility.GetConfigValue(Settings, getKey, isPath: AsPath);
                 if (String.IsNullOrEmpty(value))
                 {
-                    Console.WriteWarning(LocalizedResourceManager.GetString("ConfigCommandKeyNotFound"), getKey);
+                    Console.WriteError(LocalizedResourceManager.GetString("ConfigCommandKeyNotFound"), getKey);
                 }
                 else
                 {

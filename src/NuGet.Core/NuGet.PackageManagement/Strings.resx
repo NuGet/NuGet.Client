@@ -270,4 +270,7 @@
   <data name="UnableToGatherPackageFromSource" xml:space="preserve">
     <value>Unable to gather package '{0}' from source '{1}'. Please verify all your online package sources are available. </value>
   </data>
+  <data name="NoUpdatesAvailable" xml:space="preserve">
+    <value>There are no new updates available.</value>
+  </data>
 </root>
