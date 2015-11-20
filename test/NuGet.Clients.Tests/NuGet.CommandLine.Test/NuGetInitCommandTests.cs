@@ -5,6 +5,7 @@ using System.Linq;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
 
@@ -41,11 +42,11 @@ namespace NuGet.CommandLine.Test
             public TestInfo(string sourceFeed = null, string destinationFeed = null)
             {
                 NuGetExePath = Util.GetNuGetExePath();
-                WorkingPath = TestFilesystemUtility.CreateRandomTestFolder();
+                WorkingPath = TestFileSystemUtility.CreateRandomTestFolder();
 
                 if (sourceFeed == null)
                 {
-                    SourceFeed = TestFilesystemUtility.CreateRandomTestFolder();
+                    SourceFeed = TestFileSystemUtility.CreateRandomTestFolder();
                 }
                 else
                 {
@@ -54,7 +55,7 @@ namespace NuGet.CommandLine.Test
 
                 if (destinationFeed == null)
                 {
-                    DestinationFeed = TestFilesystemUtility.CreateRandomTestFolder();
+                    DestinationFeed = TestFileSystemUtility.CreateRandomTestFolder();
                 }
                 else
                 {
@@ -113,7 +114,9 @@ namespace NuGet.CommandLine.Test
                         Directory.CreateDirectory(packageDirectory);
                     }
 
-                    TestPackages.GetLegacyTestPackage(packageDirectory, package.Id, package.Version.ToString());
+                    TestPackagesGroupedByFolder.GetLegacyTestPackage(packageDirectory,
+                        package.Id,
+                        package.Version.ToString());
                 }
 
                 return packages;
@@ -121,7 +124,7 @@ namespace NuGet.CommandLine.Test
 
             public void Dispose()
             {
-                TestFilesystemUtility.DeleteRandomTestFolders(WorkingPath, SourceFeed, DestinationFeed);
+                TestFileSystemUtility.DeleteRandomTestFolders(WorkingPath, SourceFeed, DestinationFeed);
             }
         }
 
@@ -205,7 +208,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var nonExistentPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            using (var testInfo = new TestInfo(TestFilesystemUtility.CreateRandomTestFolder(), nonExistentPath))
+            using (var testInfo = new TestInfo(TestFileSystemUtility.CreateRandomTestFolder(), nonExistentPath))
             {
                 var packages = testInfo.AddPackagesToSource();
 
@@ -446,7 +449,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var nonExistentPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            using (var testInfo = new TestInfo(nonExistentPath, TestFilesystemUtility.CreateRandomTestFolder()))
+            using (var testInfo = new TestInfo(nonExistentPath, TestFileSystemUtility.CreateRandomTestFolder()))
             {
                 var args = new string[]
                 {
@@ -474,7 +477,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var invalidPath = "https://api.nuget.org/v3/index.json";
-            using (var testInfo = new TestInfo(invalidPath, TestFilesystemUtility.CreateRandomTestFolder()))
+            using (var testInfo = new TestInfo(invalidPath, TestFileSystemUtility.CreateRandomTestFolder()))
             {
                 var args = new string[]
                 {
@@ -502,7 +505,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var invalidPath = "https://api.nuget.org/v3/index.json";
-            using (var testInfo = new TestInfo(TestFilesystemUtility.CreateRandomTestFolder(), invalidPath))
+            using (var testInfo = new TestInfo(TestFileSystemUtility.CreateRandomTestFolder(), invalidPath))
             {
                 var args = new string[]
                 {
@@ -530,7 +533,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var invalidPath = "foo|<>|bar";
-            using (var testInfo = new TestInfo(invalidPath, TestFilesystemUtility.CreateRandomTestFolder()))
+            using (var testInfo = new TestInfo(invalidPath, TestFileSystemUtility.CreateRandomTestFolder()))
             {
                 var args = new string[]
                 {
@@ -557,7 +560,7 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var invalidPath = "foo|<>|bar";
-            using (var testInfo = new TestInfo(TestFilesystemUtility.CreateRandomTestFolder(), invalidPath))
+            using (var testInfo = new TestInfo(TestFileSystemUtility.CreateRandomTestFolder(), invalidPath))
             {
                 var args = new string[]
                 {

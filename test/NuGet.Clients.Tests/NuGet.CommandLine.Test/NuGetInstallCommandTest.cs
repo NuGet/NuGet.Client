@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
 
@@ -1072,11 +1073,11 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_AuthenticatedV3WithCredentialSavedInConfig()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            bool credentialsPassedToRegistrationEndPoint = false;
 
-            try
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                bool credentialsPassedToRegistrationEndPoint = false;
+
                 // Server setup
                 using (var serverV3 = new MockServer())
                 {
@@ -1177,20 +1178,13 @@ namespace NuGet.CommandLine.Test
                     Assert.True(credentialsPassedToRegistrationEndPoint);
                 }
             }
-            finally
-            {
-                // Cleanup
-                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
-            }
         }
 
         [Fact]
         public void TestInstallWhenNoFeedAvailable()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
-
-            try
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Create an empty config file and pass it as -ConfigFile switch.
                 // This imitates the scenario where there is a machine without a default nuget.config under %APPDATA%
@@ -1222,10 +1216,6 @@ namespace NuGet.CommandLine.Test
                     "Newtonsoft.Json.7.0.1.nupkg");
 
                 Assert.True(File.Exists(expectedPath), "nuget.exe did not install Newtonsoft.Json.7.0.1");
-            }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
             }
         }
     }

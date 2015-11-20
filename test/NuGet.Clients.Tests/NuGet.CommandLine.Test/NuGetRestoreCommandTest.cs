@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using NuGet.Configuration;
+using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
 
@@ -14,9 +15,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void RestoreCommand_BadInputPath()
         {
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
-
-            try
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -42,18 +41,12 @@ namespace NuGet.CommandLine.Test
                 var error = r.Item3;
                 Assert.Contains("could not find a part of the path", r.Item3, StringComparison.OrdinalIgnoreCase);
             }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
-            }
         }
 
         [Fact]
         public void RestoreCommand_MissingSolutionFile()
         {
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
-
-            try
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -79,18 +72,12 @@ namespace NuGet.CommandLine.Test
                 var error = r.Item3;
                 Assert.Contains("could not find a part of the path", r.Item3, StringComparison.OrdinalIgnoreCase);
             }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
-            }
         }
 
         [Fact]
         public void RestoreCommand_MissingPackagesConfigFile()
         {
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
-
-            try
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -115,10 +102,6 @@ namespace NuGet.CommandLine.Test
                 Assert.NotEqual(0, r.Item1);
                 var error = r.Item3;
                 Assert.Contains("input file does not exist", r.Item3, StringComparison.OrdinalIgnoreCase);
-            }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
             }
         }
 
@@ -262,22 +245,23 @@ EndProject");
         public void RestoreCommand_FromProjectFile()
         {
             // Arrange
-            var repositoryPath = TestFilesystemUtility.CreateRandomTestFolder();
-            var workingPath = TestFilesystemUtility.CreateRandomTestFolder();
-            var proj1Directory = Path.Combine(workingPath, "proj1");
-            Directory.CreateDirectory(proj1Directory);
-            var currentDirectory = Directory.GetCurrentDirectory();
-            var nugetexe = Util.GetNuGetExePath();
-
-            try
+            using (var repositoryPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
-                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+                Directory.CreateDirectory(proj1Directory);
+                var currentDirectory = Directory.GetCurrentDirectory();
+                var nugetexe = Util.GetNuGetExePath();
 
-                var proj1File = Path.Combine(proj1Directory, "proj1.csproj");
-                File.WriteAllText(
-                    proj1File,
-                    @"<Project ToolsVersion='4.0' DefaultTargets='Build'
+                try
+                {
+                    Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                    Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
+
+                    var proj1File = Path.Combine(proj1Directory, "proj1.csproj");
+                    File.WriteAllText(
+                        proj1File,
+                        @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -289,41 +273,41 @@ EndProject");
   </ItemGroup>
 </Project>");
 
-                File.WriteAllText(
-                    Path.Combine(proj1Directory, "packages.config"),
-@"<packages>
+                    File.WriteAllText(
+                        Path.Combine(proj1Directory, "packages.config"),
+    @"<packages>
   <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
-                string[] args = new string[]
-                    {
+                    string[] args = new string[]
+                        {
                         "restore",
                         proj1File,
                         "-Source",
                         repositoryPath,
                         "-solutionDir",
                         workingPath
-                    };
+                        };
 
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingPath,
-                    string.Join(" ", args),
-                    waitForExit: true);
+                    // Act
+                    var r = CommandRunner.Run(
+                        nugetexe,
+                        workingPath,
+                        string.Join(" ", args),
+                        waitForExit: true);
 
-                // Assert
-                Assert.Equal(0, r.Item1);
-                var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
-                var packageFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
-                Assert.True(File.Exists(packageFileA));
-                Assert.True(File.Exists(packageFileB));
-            }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
+                    // Assert
+                    Assert.Equal(0, r.Item1);
+                    var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
+                    var packageFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
+                    Assert.True(File.Exists(packageFileA));
+                    Assert.True(File.Exists(packageFileB));
+                }
+                finally
+                {
+                    Directory.SetCurrentDirectory(currentDirectory);
+                }
             }
         }
 
@@ -1480,9 +1464,8 @@ EndProject");
         [Fact]
         public void RestoreCommand_InvalidPackagesConfigFile()
         {
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
 
-            try
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -1513,18 +1496,12 @@ EndProject");
                 var error = r.Item3;
                 Assert.True(error.Contains("Error parsing packages.config file"));
             }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
-            }
         }
 
         [Fact]
         public void RestoreCommand_InvalidSolutionFile()
         {
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
-
-            try
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -1558,10 +1535,6 @@ EndProject";
                 Assert.NotEqual(0, r.Item1);
                 var error = r.Item3;
                 Assert.True(error.Contains("Error parsing solution file"));
-            }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
             }
         }
 
@@ -1619,9 +1592,7 @@ EndProject";
         public void RestoreCommand_NoFeedAvailable()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
-
-            try
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Create an empty config file and pass it as -ConfigFile switch.
                 // This imitates the scenario where there is a machine without a default nuget.config under %APPDATA%
@@ -1668,19 +1639,14 @@ EndProject";
 
                 Assert.True(File.Exists(expectedPath));
             }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
-            }
         }
 
         [Fact]
         public void RestoreCommand_LegacySolutionLevelPackages_SolutionDirectory()
         {
-            var randomRepositoryPath = TestFilesystemUtility.CreateRandomTestFolder();
-            var randomSolutionFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            using (var randomRepositoryPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomSolutionFolder = TestFileSystemUtility.CreateRandomTestFolder())
 
-            try
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -1746,19 +1712,13 @@ EndProject";
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(randomSolutionFolder, randomRepositoryPath);
-            }
         }
 
         [Fact]
         public void RestoreCommand_LegacySolutionLevelPackages_SolutionFile()
         {
-            var randomRepositoryPath = TestFilesystemUtility.CreateRandomTestFolder();
-            var randomSolutionFolder = TestFilesystemUtility.CreateRandomTestFolder();
-
-            try
+            using (var randomRepositoryPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomSolutionFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -1824,19 +1784,14 @@ EndProject";
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(randomSolutionFolder, randomRepositoryPath);
-            }
         }
 
         [Fact]
         public void RestoreCommand_LegacySolutionLevelPackages_NoArgument()
         {
-            var randomRepositoryPath = TestFilesystemUtility.CreateRandomTestFolder();
-            var randomSolutionFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            using (var randomRepositoryPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomSolutionFolder = TestFileSystemUtility.CreateRandomTestFolder())
 
-            try
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -1902,19 +1857,13 @@ EndProject";
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(randomSolutionFolder, randomRepositoryPath);
-            }
         }
 
         [Fact]
         public void RestoreCommand_LegacySolutionLevelPackages_DuplicatePackageIds()
         {
-            var randomRepositoryPath = TestFilesystemUtility.CreateRandomTestFolder();
-            var randomSolutionFolder = TestFilesystemUtility.CreateRandomTestFolder();
-
-            try
+            using (var randomRepositoryPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomSolutionFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -2007,19 +1956,13 @@ EndProject";
                 Assert.True(File.Exists(Path.Combine(randomSolutionFolder,
                     @"packages\packageC.1.0.0\packageC.1.0.0.nupkg")));
             }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(randomSolutionFolder, randomRepositoryPath);
-            }
         }
 
         [Fact]
         public void RestoreCommand_LegacySolutionLevelPackages_DuplicatePackageIdentities()
         {
-            var randomRepositoryPath = TestFilesystemUtility.CreateRandomTestFolder();
-            var randomSolutionFolder = TestFilesystemUtility.CreateRandomTestFolder();
-
-            try
+            using (var randomRepositoryPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomSolutionFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -2086,10 +2029,6 @@ EndProject";
                 // Assert
                 Assert.False(0 == r.Item1, r.Item2 + " " + r.Item3);
                 Assert.Contains("There are duplicate packages: packageA.1.0.0, packageA.3.0.0", r.Item3);
-            }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(randomSolutionFolder, randomRepositoryPath);
             }
         }
     }

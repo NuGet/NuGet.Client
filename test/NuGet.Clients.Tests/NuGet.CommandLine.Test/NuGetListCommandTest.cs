@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Text;
+using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
 
@@ -242,7 +243,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        // Tests that list command show delisted packages 
+        // Tests that list command show delisted packages
         // when IncludeDelisted is specified.
         [Fact]
         public void ListCommand_IncludeDelisted()
@@ -372,7 +373,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        // Tests that when -AllVersions is specified, list command sends request 
+        // Tests that when -AllVersions is specified, list command sends request
         // without $filter
         [Fact]
         public void ListCommand_AllVersions()
@@ -569,9 +570,7 @@ namespace NuGet.CommandLine.Test
         public void ListCommand_SimpleV3()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var packageDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-
-            try
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
@@ -662,20 +661,13 @@ namespace NuGet.CommandLine.Test
                     }
                 }
             }
-            finally
-            {
-                // Cleanup
-                TestFilesystemUtility.DeleteRandomTestFolders(packageDirectory);
-            }
         }
 
         [Fact]
         public void ListCommand_SimpleV3_NoListEndpoint()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var packageDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-
-            try
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 // Server setup
@@ -725,20 +717,14 @@ namespace NuGet.CommandLine.Test
                     Assert.True(result.Item2.Contains(expectedOutput));
                 }
             }
-            finally
-            {
-                // Cleanup
-                TestFilesystemUtility.DeleteRandomTestFolders(packageDirectory);
-            }
         }
 
         [Fact]
         public void ListCommand_UnavailableV3()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var packageDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
 
-            try
             {
                 // Arrange
                 // Server setup
@@ -781,11 +767,6 @@ namespace NuGet.CommandLine.Test
                         "Expected error message not found in " + result.Item3
                         );
                 }
-            }
-            finally
-            {
-                // Cleanup
-                TestFilesystemUtility.DeleteRandomTestFolders(packageDirectory);
             }
         }
 

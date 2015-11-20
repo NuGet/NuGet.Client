@@ -40,41 +40,35 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        void PackageExtractor_duplicateNupkg()
+        public async void PackageExtractor_duplicateNupkg()
         {
             var packageFileInfo = TestPackages.GetLegacyTestPackage();
 
             try
             {
-                var root = TestFileSystemUtility.CreateRandomTestFolder();
-                var folder = Path.Combine(packageFileInfo.Directory.FullName, Guid.NewGuid().ToString());
-
-                try
+                using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+                using (var packageFolder = TestFileSystemUtility.CreateRandomTestFolder())
                 {
-                    var zip = new ZipArchive(packageFileInfo.OpenRead());
-                    PackageReader zipReader = new PackageReader(zip);
-
-                    using (var zipFile = new ZipArchive(File.OpenRead(packageFileInfo.FullName)))
+                    using (var stream = File.OpenRead(packageFileInfo.FullName))
+                    using (var zipFile = new ZipArchive(stream))
                     {
-                        zipFile.ExtractAll(folder);
+                        zipFile.ExtractAll(packageFolder);
+                    }
 
-                        var folderReader = new PackageFolderReader(folder);
-
+                    using (var stream = File.OpenRead(packageFileInfo.FullName))
+                    using (var folderReader = new PackageFolderReader(packageFolder))
+                    {
                         // Act
-                        var files = PackageExtractor.ExtractPackageAsync(folderReader,
-                                                                         File.OpenRead(packageFileInfo.FullName),
+                        var files = await PackageExtractor.ExtractPackageAsync(folderReader,
+                                                                         stream,
                                                                          new PackagePathResolver(root),
                                                                          null,
                                                                          PackageSaveModes.Nupkg,
-                                                                         CancellationToken.None).Result;
+                                                                         CancellationToken.None);
 
                         // Assert
                         Assert.Equal(1, files.Where(p => p.EndsWith(".nupkg")).Count());
                     }
-                }
-                finally
-                {
-                    TestFileSystemUtility.DeleteRandomTestFolders(root, folder);
                 }
             }
             finally

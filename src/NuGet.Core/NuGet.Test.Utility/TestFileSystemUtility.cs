@@ -12,6 +12,12 @@ namespace NuGet.Test.Utility
         {
             var randomFolderName = Guid.NewGuid().ToString();
             var path = Path.Combine(NuGetTestFolder, randomFolderName);
+
+            if (Directory.Exists(path))
+            {
+                throw new InvalidOperationException("Guid collission");
+            }
+
             Directory.CreateDirectory(path);
 
             return new TestDirectory(path);

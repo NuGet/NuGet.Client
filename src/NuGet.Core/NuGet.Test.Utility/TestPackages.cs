@@ -173,9 +173,8 @@ namespace NuGet.Test.Utility
         public static FileInfo GetLegacyTestPackage()
         {
             var file = new TempFile();
-            var result = new FileInfo(file);
 
-            using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
+            using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
                 zip.AddEntry("lib/test.dll", new byte[] { 0 });
                 zip.AddEntry("lib/net40/test40.dll", new byte[] { 0 });
@@ -206,6 +205,8 @@ namespace NuGet.Test.Utility
                               </metadata>
                             </package>", Encoding.UTF8);
             }
+
+            var result = new FileInfo(file);
 
             return result;
         }
@@ -657,14 +658,14 @@ namespace NuGet.Test.Utility
 
             public TempFile()
             {
-                string temp = TestFileSystemUtility.NuGetTestFolder;
+                string packagesFolder = Path.Combine(TestFileSystemUtility.NuGetTestFolder, "NuGetTestPackages");
 
-                Directory.CreateDirectory(temp);
+                Directory.CreateDirectory(packagesFolder);
 
                 int count = 0;
                 do
                 {
-                    _filePath = Path.Combine(temp, "NuGetTestPackages", Path.GetRandomFileName() + ".nupkg");
+                    _filePath = Path.Combine(packagesFolder, Path.GetRandomFileName() + ".nupkg");
                     count++;
                 }
                 while (File.Exists(_filePath) && count < 3);
@@ -674,7 +675,6 @@ namespace NuGet.Test.Utility
                     throw new InvalidOperationException("Failed to create a random file.");
                 }
             }
-
 
             public static implicit operator string (TempFile f)
             {

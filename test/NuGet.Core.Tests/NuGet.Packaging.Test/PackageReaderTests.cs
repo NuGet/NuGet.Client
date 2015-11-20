@@ -206,20 +206,23 @@ namespace NuGet.Packaging.Test
             {
                 var path = zipInfo.File;
                 _paths.Add(path.FullName);
-                var zip = TestPackages.GetZip(path);
-                var reader = new PackageReader(zip);
 
-                // Act
-                var references = reader.GetReferenceItems();
-                var netResult = NuGetFrameworkUtility.GetNearest<FrameworkSpecificGroup>(references, NuGetFramework.Parse("net45"));
-                var slResult = NuGetFrameworkUtility.GetNearest<FrameworkSpecificGroup>(references, NuGetFramework.Parse("sl5"));
+                using (var zip = TestPackages.GetZip(path))
+                using (var reader = new PackageReader(zip))
+                {
 
-                // Assert
-                Assert.Equal(2, netResult.Items.Count());
-                Assert.Equal(1, slResult.Items.Count());
-                Assert.Equal("lib/sl40/a.dll", slResult.Items.First());
-                Assert.Equal("lib/net40/one.dll", netResult.Items.First());
-                Assert.Equal("lib/net40/three.dll", netResult.Items.Skip(1).First());
+                    // Act
+                    var references = reader.GetReferenceItems();
+                    var netResult = NuGetFrameworkUtility.GetNearest<FrameworkSpecificGroup>(references, NuGetFramework.Parse("net45"));
+                    var slResult = NuGetFrameworkUtility.GetNearest<FrameworkSpecificGroup>(references, NuGetFramework.Parse("sl5"));
+
+                    // Assert
+                    Assert.Equal(2, netResult.Items.Count());
+                    Assert.Equal(1, slResult.Items.Count());
+                    Assert.Equal("lib/sl40/a.dll", slResult.Items.First());
+                    Assert.Equal("lib/net40/one.dll", netResult.Items.First());
+                    Assert.Equal("lib/net40/three.dll", netResult.Items.Skip(1).First());
+                }
             }
         }
 

@@ -267,24 +267,26 @@ namespace NuGet.Packaging.Test
             {
                 _path.Add(packageFileInfo.FullName);
 
-                var zip = new ZipArchive(packageFileInfo.OpenRead());
-                PackageReader zipReader = new PackageReader(zip);
-
-                var folder = Path.Combine(packageFileInfo.Directory.FullName, Guid.NewGuid().ToString());
-
-                using (var zipFile = new ZipArchive(File.OpenRead(packageFileInfo.FullName)))
+                using (var zip = new ZipArchive(packageFileInfo.OpenRead()))
+                using (var zipReader = new PackageReader(zip))
                 {
-                    zipFile.ExtractAll(folder);
 
-                    var folderReader = new PackageFolderReader(folder);
+                    var folder = Path.Combine(packageFileInfo.Directory.FullName, Guid.NewGuid().ToString());
 
-                    Assert.Equal(zipReader.GetIdentity(), folderReader.GetIdentity(), new PackageIdentityComparer());
+                    using (var zipFile = new ZipArchive(File.OpenRead(packageFileInfo.FullName)))
+                    {
+                        zipFile.ExtractAll(folder);
 
-                    Assert.Equal(zipReader.GetLibItems().Count(), folderReader.GetLibItems().Count());
+                        var folderReader = new PackageFolderReader(folder);
 
-                    Assert.Equal(zipReader.GetReferenceItems().Count(), folderReader.GetReferenceItems().Count());
+                        Assert.Equal(zipReader.GetIdentity(), folderReader.GetIdentity(), new PackageIdentityComparer());
 
-                    Assert.Equal(zipReader.GetReferenceItems().First().Items.First(), folderReader.GetReferenceItems().First().Items.First());
+                        Assert.Equal(zipReader.GetLibItems().Count(), folderReader.GetLibItems().Count());
+
+                        Assert.Equal(zipReader.GetReferenceItems().Count(), folderReader.GetReferenceItems().Count());
+
+                        Assert.Equal(zipReader.GetReferenceItems().First().Items.First(), folderReader.GetReferenceItems().First().Items.First());
+                    }
                 }
             }
             finally

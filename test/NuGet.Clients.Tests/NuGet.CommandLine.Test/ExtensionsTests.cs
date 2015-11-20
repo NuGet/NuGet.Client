@@ -1,5 +1,5 @@
 ﻿using System;
-using Test.Utility;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -10,15 +10,16 @@ namespace NuGet.CommandLine.Test
         public void TestExtensionsFromProgramDirLoaded()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    randomTestFolder,
+                    "hello",
+                    true);
 
-            var result = CommandRunner.Run(
-                nugetexe,
-                randomTestFolder,
-                "hello",
-                true);
-
-            Assert.Equal(result.Item2, "Hello!" + Environment.NewLine);
+                Assert.Equal(result.Item2, "Hello!" + Environment.NewLine);
+            }
         }
     }
 }
