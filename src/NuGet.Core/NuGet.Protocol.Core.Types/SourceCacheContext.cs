@@ -3,14 +3,17 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace NuGet.Protocol.Core.Types
 {
     /// <summary>
     /// Cache control settings for the V3 disk cache.
     /// </summary>
-    public class SourceCacheContext
+    public class SourceCacheContext : IDisposable
     {
+        private static readonly string _tempFolderGuid = Guid.NewGuid().ToString();
+
         /// <summary>
         /// Default amount of time to cache version lists.
         /// </summary>
@@ -90,6 +93,19 @@ namespace NuGet.Protocol.Core.Types
             }
 
             return timeSpan;
+        }
+
+        public string GeneratedTempFolder { get; } = Path.Combine(Path.GetTempPath(), "NuGetTempCache", _tempFolderGuid);
+
+        public void Dispose()
+        {
+            try
+            {
+                Directory.Delete(GeneratedTempFolder, recursive: true);
+            }
+            catch
+            {
+            }
         }
     }
 }

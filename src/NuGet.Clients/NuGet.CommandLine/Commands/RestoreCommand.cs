@@ -105,12 +105,11 @@ namespace NuGet.CommandLine
                     // Throttle the tasks so no more than 16 run at a time, so memory doesn't accumulate.
                     // This should make large project (over 100 project.json files) allocate reasonable
                     // amounts of memory.
-
                     var tasks = new List<Task<bool>>();
                     int restoreCount = restoreInputs.V3RestoreFiles.Count;
 
                     int currentFileIndex = 0;
-                    
+
                     do
                     {
                         Debug.Assert(tasks.Count < 16);

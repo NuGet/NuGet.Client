@@ -742,10 +742,10 @@ namespace NuGet.PackageManagement
                 var installedPackagesInDependencyOrder = await GetInstalledPackagesInDependencyOrder(nuGetProject, token);
 
                 nuGetProjectActions = GetProjectActionsForUpdate(
-                    newListOfInstalledPackages, 
-                    installedPackagesInDependencyOrder, 
-                    prunedAvailablePackages, 
-                    nuGetProjectContext, 
+                    newListOfInstalledPackages,
+                    installedPackagesInDependencyOrder,
+                    prunedAvailablePackages,
+                    nuGetProjectContext,
                     isReinstall,
                     targetIds);
 
@@ -834,10 +834,10 @@ namespace NuGet.PackageManagement
                     // we are targeting a particular package - there is no need therefore to alter other aspects of the project
                     // specifically an unrelated package may have been force removed in which case we should be happy to leave things that way
 
-                    // firstly, we will allow all the dependencies of the package(s) beging targeted 
+                    // first, we will allow all the dependencies of the package(s) beging targeted
                     var allowed = GetDependencies(targetIds, newListOfInstalledPackages, availablePackageDependencyInfoWithSourceSet);
 
-                    // secondly, any package that is currently in the solution will also be allowed to change
+                    // second, any package that is currently in the solution will also be allowed to change
                     // (note this logically doesn't include packages that have been force uninstalled from the project
                     // because we wouldn't want to just add those back in)
                     foreach (var p in oldListOfInstalledPackages)
@@ -908,7 +908,7 @@ namespace NuGet.PackageManagement
 
             result.Add(id);
 
-            // iterate through all the dependencies and call recursively to collect dependencies 
+            // iterate through all the dependencies and call recursively to collect dependencies
             foreach (var dependency in sourceDepInfo.Dependencies)
             {
                 // check we don't fall into an infinite loop caused by bad dependency data in the packages
@@ -1639,19 +1639,19 @@ namespace NuGet.PackageManagement
                 rawPackageSpec = JObject.Load(reader);
             }
 
-            // For installs only use cache entries newer than the current time.
-            // This is needed for scenarios where a new package shows up in search
-            // but a previous cache entry does not yet have it.
-            var cacheContext = new SourceCacheContext()
-            {
-                ListMaxAge = DateTimeOffset.UtcNow
-            };
-
             var logger = new ProjectContextLogger(nuGetProjectContext);
 
             var effectiveGlobalPackagesFolder = BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
                                                     SolutionManager?.SolutionDirectory,
                                                     Settings);
+
+            // For installs only use cache entries newer than the current time.
+            // This is needed for scenarios where a new package shows up in search
+            // but a previous cache entry does not yet have it.
+            // So we want to capture the time once here, then pass it down to the two
+            // restores happening in this flow.
+            var startTimeOfRestore = DateTimeOffset.UtcNow;
+            Action<SourceCacheContext> cacheContextModifier = c => c.ListMaxAge = startTimeOfRestore;
 
             // If the lock file does not exist, restore before starting the operations
             if (originalLockFile == null)
@@ -1667,7 +1667,7 @@ namespace NuGet.PackageManagement
                     logger,
                     sources,
                     effectiveGlobalPackagesFolder,
-                    cacheContext,
+                    cacheContextModifier,
                     token);
 
                 originalLockFile = originalRestoreResult.LockFile;
@@ -1697,7 +1697,7 @@ namespace NuGet.PackageManagement
                 logger,
                 sources,
                 effectiveGlobalPackagesFolder,
-                cacheContext,
+                cacheContextModifier,
                 token);
 
             return new BuildIntegratedProjectAction(nuGetProjectActions.First().PackageIdentity,
@@ -1825,10 +1825,8 @@ namespace NuGet.PackageManagement
                 // Restore parent projects. These will be updated to include the transitive changes.
                 var parents = await BuildIntegratedRestoreUtility.GetParentProjectsInClosure(SolutionManager, buildIntegratedProject);
 
-                var cacheContext = new SourceCacheContext()
-                {
-                    ListMaxAge = DateTimeOffset.UtcNow
-                };
+                var now = DateTime.UtcNow;
+                Action<SourceCacheContext> cacheContextModifier = c => c.ListMaxAge = now;
 
                 foreach (var parent in parents)
                 {
@@ -1838,7 +1836,7 @@ namespace NuGet.PackageManagement
                         logger,
                         projectAction.Sources,
                         effectiveGlobalPackagesFolder,
-                        cacheContext,
+                        cacheContextModifier,
                         token);
                 }
             }
@@ -1911,7 +1909,7 @@ namespace NuGet.PackageManagement
                 if (buildIntegratedProject != null)
                 {
                     var packageFolderPath = BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(
-                                            Configuration.SettingsUtility.GetGlobalPackagesFolder(Settings), 
+                                            Configuration.SettingsUtility.GetGlobalPackagesFolder(Settings),
                                             nuGetProjectContext.ExecutionContext.DirectInstall);
 
                     if (Directory.Exists(packageFolderPath))
