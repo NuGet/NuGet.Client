@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using NuGet.Packaging;
 
 namespace NuGet.CommandLine.Rules
 {
@@ -15,15 +17,14 @@ namespace NuGet.CommandLine.Rules
                 string directory = Path.GetDirectoryName(path);
 
                 // if under 'lib' directly
-                if (directory.Equals(Constants.LibDirectory, StringComparison.OrdinalIgnoreCase))
+                if (directory.Equals(PackagingConstants.Folders.Lib, StringComparison.OrdinalIgnoreCase))
                 {
                     if (PackageHelper.IsAssembly(path))
                     {
                         yield return CreatePackageIssueForAssembliesUnderLib(path);
                     }
                 }
-                else if (!directory.StartsWith(Constants.LibDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
-                    && !directory.StartsWith(Constants.AnalyzersDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                else if (!ValidFolders.Any(folder => path.StartsWith(folder, StringComparison.OrdinalIgnoreCase)))
                 {
                     // when checking for assemblies outside 'lib' folder, only check .dll files.
                     // .exe files are often legitimate outside 'lib'.
@@ -52,6 +53,22 @@ namespace NuGet.CommandLine.Rules
                 String.Format(CultureInfo.CurrentCulture, AnalysisResources.AssemblyOutsideLibDescription, target),
                 AnalysisResources.AssemblyOutsideLibSolution
             );
+        }
+
+        /// <summary>
+        /// Folders that are expected to have .dll and .winmd files
+        /// </summary>
+        private static IEnumerable<string> ValidFolders
+        {
+            get
+            {
+                yield return PackagingConstants.Folders.Lib + Path.DirectorySeparatorChar;
+                yield return PackagingConstants.Folders.Analyzers + Path.DirectorySeparatorChar;
+                yield return PackagingConstants.Folders.Ref + Path.DirectorySeparatorChar;
+                yield return PackagingConstants.Folders.Runtimes + Path.DirectorySeparatorChar;
+                yield return PackagingConstants.Folders.Native + Path.DirectorySeparatorChar;
+                yield break;
+            }
         }
     }
 }

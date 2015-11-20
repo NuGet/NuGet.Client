@@ -7,6 +7,7 @@ using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
 
@@ -14,8 +15,6 @@ namespace NuGet.Commands
 {
     internal static class LockFileUtils
     {
-        private const string EmptyDir = "_._";
-
         public static LockFileTargetLibrary CreateLockFileTargetLibrary(
             LockFileLibrary library,
             LocalPackageInfo package,
@@ -279,7 +278,8 @@ namespace NuGet.Commands
                 Debug.Assert(!string.IsNullOrEmpty(fileName));
                 Debug.Assert(firstItem.Path.IndexOf('/') > 0);
 
-                var emptyDir = firstItem.Path.Substring(0, firstItem.Path.Length - fileName.Length) + EmptyDir;
+                var emptyDir = firstItem.Path.Substring(0, firstItem.Path.Length - fileName.Length) 
+                    + PackagingCoreConstants.EmptyFolder;
 
                 group.Clear();
 
@@ -301,7 +301,7 @@ namespace NuGet.Commands
         /// </summary>
         private static bool GroupHasNonEmptyItems(IList<LockFileItem> group)
         {
-            return group?.Any(item => !item.Path.EndsWith($"/{EmptyDir}")) == true;
+            return group?.Any(item => !item.Path.EndsWith(PackagingCoreConstants.ForwardSlashEmptyFolder)) == true;
         }
     }
 }
