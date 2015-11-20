@@ -597,20 +597,20 @@ namespace NuGet.CommandLine
             return packageRestoreInputs;
         }
 
-        private bool IsSolutionOrProjectFile(string fileName)
+        private static bool IsSolutionOrProjectFile(string fileName)
         {
-            if (!String.IsNullOrEmpty(fileName) && File.Exists(fileName))
+            if (!String.IsNullOrEmpty(fileName))
             {
-                string extension = Path.GetExtension(fileName);
-                string lastFourCharacters = string.Empty;
+                var extension = Path.GetExtension(fileName);
+                var lastFourCharacters = string.Empty;
+                var length = extension.Length;
 
-                if (extension.ToLowerInvariant().Contains("proj"))
+                if (length >= 4)
                 {
-                    int length = extension.Length;
                     lastFourCharacters = extension.Substring(length - 4);
                 }
 
-                return (String.Equals(extension, ".sln", StringComparison.OrdinalIgnoreCase) 
+                return (string.Equals(extension, ".sln", StringComparison.OrdinalIgnoreCase) 
                         || string.Equals(lastFourCharacters, "proj", StringComparison.OrdinalIgnoreCase));
             }
             return false;
@@ -627,6 +627,9 @@ namespace NuGet.CommandLine
         /// <returns>The full path of the solution file. Or null if no solution file can be found.</returns>
         private string GetSolutionFile(string solutionFileOrDirectory)
         {
+            //Check if the string passed is a file
+            //If it is a file, then check if it a solution or project file
+            //For other file types and directories it will fall out of these checks and fail later for invalid inputs
             if (File.Exists(solutionFileOrDirectory) && IsSolutionOrProjectFile(solutionFileOrDirectory))
             {
                 return Path.GetFullPath(solutionFileOrDirectory);
