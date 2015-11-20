@@ -761,7 +761,7 @@ namespace NuGet.Configuration
             {
                 return Path.Combine(Path.GetPathRoot(configDirectory), value.Substring(1));
             }
-            return Path.GetFullPath(Path.Combine(configDirectory, value));
+            return Path.Combine(configDirectory, value);
         }
 
         private void PopulateValues(string section, List<SettingValue> current, bool isPath)

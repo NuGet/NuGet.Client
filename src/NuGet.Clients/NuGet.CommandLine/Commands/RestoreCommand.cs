@@ -597,6 +597,25 @@ namespace NuGet.CommandLine
             return packageRestoreInputs;
         }
 
+        private bool IsSolutionOrProjectFile(string fileName)
+        {
+            if (!String.IsNullOrEmpty(fileName) && File.Exists(fileName))
+            {
+                string extension = Path.GetExtension(fileName);
+                string lastFourCharacters = string.Empty;
+
+                if (extension.ToLowerInvariant().Contains("proj"))
+                {
+                    int length = extension.Length;
+                    lastFourCharacters = extension.Substring(length - 4);
+                }
+
+                return (String.Equals(extension, ".sln", StringComparison.OrdinalIgnoreCase) 
+                        || string.Equals(lastFourCharacters, "proj", StringComparison.OrdinalIgnoreCase));
+            }
+            return false;
+        }
+
         /// <summary>
         /// Gets the solution file, in full path format. If <paramref name="solutionFileOrDirectory"/> is a file,
         /// that file is returned. Otherwise, searches for a *.sln file in
@@ -608,7 +627,7 @@ namespace NuGet.CommandLine
         /// <returns>The full path of the solution file. Or null if no solution file can be found.</returns>
         private string GetSolutionFile(string solutionFileOrDirectory)
         {
-            if (File.Exists(solutionFileOrDirectory))
+            if (File.Exists(solutionFileOrDirectory) && IsSolutionOrProjectFile(solutionFileOrDirectory))
             {
                 return Path.GetFullPath(solutionFileOrDirectory);
             }

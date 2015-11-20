@@ -83,7 +83,7 @@ namespace NuGet.ProjectManagement
                 return false;
             }
 
-            nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageToFolder, packageIdentity, Root);
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageToFolder, packageIdentity, Path.GetFullPath(Root));
             // 2. Call PackageExtractor to extract the package into the root directory of this FileSystemNuGetProject
             downloadResourceResult.PackageStream.Seek(0, SeekOrigin.Begin);
             var addedPackageFilesList = new List<string>();
@@ -121,7 +121,7 @@ namespace NuGet.ProjectManagement
             // Pend all the package files including the nupkg file
             FileSystemUtility.PendAddFiles(addedPackageFilesList, Root, nuGetProjectContext);
 
-            nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToFolder, packageIdentity, Root);
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToFolder, packageIdentity, Path.GetFullPath(Root));
             return true;
         }
 

@@ -1571,7 +1571,7 @@ namespace NuGet.Configuration.Test
             string result = settings.GetValue("SectionName", "path-key", isPath: true);
 
             // Assert
-            Assert.Equal(Path.Combine(TestFilesystemUtility.NuGetTestFolder, "Blah"), result);
+            Assert.Equal(String.Format(@"{0}\..\Blah", mockBaseDirectory), result);
         }
 
         // Checks that the correct files are read, in the right order, 
