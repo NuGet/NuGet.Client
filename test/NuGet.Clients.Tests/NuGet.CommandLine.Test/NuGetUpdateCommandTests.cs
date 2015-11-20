@@ -655,5 +655,185 @@ namespace NuGet.CommandLine.Test
                 }
             }
         }
+
+        [Fact]
+        public async Task UpdateCommand_Success_CustomPackagesFolder_RelativePath()
+        {
+            // Arrange
+            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Use a different folder name instead of 'packages'
+                var packagesDirectory = Path.Combine(solutionDirectory, "custom-pcks");
+
+                // Create a couple of packages
+                var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+                var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
+
+                var a1Package = Util.CreateTestPackage(
+                    a1.Id,
+                    a1.Version.ToString(),
+                    packagesSourceDirectory,
+                    new List<NuGetFramework>() { NuGetFramework.Parse("net45") },
+                    new List<PackageDependencyGroup>() { });
+
+                var a2Package = Util.CreateTestPackage(
+                    a2.Id,
+                    a2.Version.ToString(),
+                    packagesSourceDirectory,
+                    new List<NuGetFramework>() { NuGetFramework.Parse("net45") },
+                    new List<PackageDependencyGroup>() { });
+
+                // Create a nuget.config file with a relative 'repositoryPath' setting
+                Util.CreateNuGetConfig(solutionDirectory, new[] { packagesSourceDirectory.Path }.ToList(), @".\custom-pcks");
+
+                var projectDirectory = Path.Combine(solutionDirectory, "proj1");
+                Directory.CreateDirectory(projectDirectory);
+                // create project 1
+                Util.CreateFile(
+                    projectDirectory,
+                    "proj1.csproj",
+                    Util.CreateProjFileContent());
+
+                Util.CreateFile(solutionDirectory, "a.sln",
+                    Util.CreateSolutionFileContent());
+
+                var projectFile = Path.Combine(projectDirectory, "proj1.csproj");
+                var solutionFile = Path.Combine(solutionDirectory, "a.sln");
+
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msbuildDirectory = MsBuildUtility.GetMsbuildDirectory("14.0", null);
+                var projectSystem1 = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
+                var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory);
+                using (var stream = File.OpenRead(a1Package))
+                {
+                    var downloadResult = new DownloadResourceResult(stream);
+                    await msBuildProject1.InstallPackageAsync(
+                        a1,
+                        downloadResult,
+                        testNuGetProjectContext,
+                        CancellationToken.None);
+                }
+
+                // The install should create custom the packages folder
+                Assert.True(Directory.Exists(packagesDirectory));
+
+                // Run the update command on the solution, which should update package 'A' to v2 into the custom packages folder.
+                var args = new[]
+                {
+                    "update",
+                    solutionFile,
+                    "-Source",
+                    packagesSourceDirectory
+                };
+
+                var r = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    solutionDirectory,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Should be no errors returned - used to fail as update command assumed folder was <solutiondir>\packages.
+                Assert.Empty(r.Item3);
+
+                // Check that the new version is installed into the custom folder
+                Assert.True(Directory.Exists(Path.Combine(packagesDirectory, "A.2.0.0")));
+
+                // Check the custom package folder is used in the assembly reference
+                var content1 = File.ReadAllText(projectFile);
+                Assert.False(content1.Contains(@"<HintPath>..\custom-pcks\A.1.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.True(content1.Contains(@"<HintPath>..\custom-pcks\A.2.0.0\lib\net45\file.dll</HintPath>"));
+            }
+        }
+
+
+        [Fact]
+        public async Task UpdateCommand_Success_CustomPackagesFolder_AbsolutePath()
+        {
+            // Arrange
+            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Create some packages
+                var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+                var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
+
+                var a1Package = Util.CreateTestPackage(
+                    a1.Id,
+                    a1.Version.ToString(),
+                    packagesSourceDirectory,
+                    new List<NuGetFramework>() { NuGetFramework.Parse("net45") },
+                    new List<PackageDependencyGroup>() { });
+
+                var a2Package = Util.CreateTestPackage(
+                    a2.Id,
+                    a2.Version.ToString(),
+                    packagesSourceDirectory,
+                    new List<NuGetFramework>() { NuGetFramework.Parse("net45") },
+                    new List<PackageDependencyGroup>() { });
+
+                var projectDirectory = Path.Combine(solutionDirectory, "proj1");
+                // Create a nuget.config file that has the full absolute path to 'packagesDirectory'
+                Util.CreateNuGetConfig(solutionDirectory, new[] { packagesSourceDirectory.Path }.ToList(), packagesDirectory);
+
+                Directory.CreateDirectory(projectDirectory);
+                // create project 1
+                Util.CreateFile(
+                    projectDirectory,
+                    "proj1.csproj",
+                    Util.CreateProjFileContent());
+
+                Util.CreateFile(solutionDirectory, "a.sln",
+                    Util.CreateSolutionFileContent());
+
+                var projectFile = Path.Combine(projectDirectory, "proj1.csproj");
+                var solutionFile = Path.Combine(solutionDirectory, "a.sln");
+
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msbuildDirectory = MsBuildUtility.GetMsbuildDirectory("14.0", null);
+                var projectSystem1 = new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
+                var msBuildProject1 = new MSBuildNuGetProject(projectSystem1, packagesDirectory, projectDirectory);
+                using (var stream = File.OpenRead(a1Package))
+                {
+                    var downloadResult = new DownloadResourceResult(stream);
+                    await msBuildProject1.InstallPackageAsync(
+                        a1,
+                        downloadResult,
+                        testNuGetProjectContext,
+                        CancellationToken.None);
+                }
+
+                // The install should create custom the packages folder
+                Assert.True(Directory.Exists(packagesDirectory));
+
+                var args = new[]
+                {
+                    "update",
+                    solutionFile,
+                    "-Source",
+                    packagesSourceDirectory
+                };
+
+                // Run the update command on the solution
+                var r = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    solutionDirectory,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Should be no errors returned - used to fail as update command assumed folder was <solutiondir>\packages.
+                Assert.Empty(r.Item3);
+
+                // Check that the new version is installed into the custom folder
+                Assert.True(Directory.Exists(Path.Combine(packagesDirectory, "A.2.0.0")));
+
+                // Check the custom package folder is used in the assembly reference
+                var content1 = File.ReadAllText(projectFile);
+                var customPackageFolderName = new DirectoryInfo(packagesDirectory.Path).Name;
+                Assert.False(content1.Contains(@"<HintPath>..\..\" + customPackageFolderName + @"\A.1.0.0\lib\net45\file.dll</HintPath>"));
+                Assert.True(content1.Contains(@"<HintPath>..\..\" + customPackageFolderName + @"\A.2.0.0\lib\net45\file.dll</HintPath>"));
+            }
+        }
     }
 }

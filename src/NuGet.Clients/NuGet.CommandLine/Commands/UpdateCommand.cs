@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -324,10 +325,15 @@ namespace NuGet.CommandLine
         {
             string packagesDir = RepositoryPath;
 
-            if (String.IsNullOrEmpty(packagesDir) &&
-                !String.IsNullOrEmpty(solutionDir))
+            if (String.IsNullOrEmpty(packagesDir))
             {
-                packagesDir = Path.Combine(solutionDir, CommandLineConstants.PackagesDirectoryName);
+                // Try and get the packages folder from the nuget.config file otherwise full back to assuming it's <solution>\'packages'.
+                packagesDir = SettingsUtility.GetRepositoryPath(Settings);
+                if (String.IsNullOrEmpty(packagesDir) &&
+                    !String.IsNullOrEmpty(solutionDir))
+                {
+                    packagesDir = Path.Combine(solutionDir, CommandLineConstants.PackagesDirectoryName);
+                }
             }
 
             return GetPackagesDirectory(packagesDir);
