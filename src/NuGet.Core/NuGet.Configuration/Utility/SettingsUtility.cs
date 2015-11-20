@@ -11,8 +11,8 @@ namespace NuGet.Configuration
         public const string ConfigSection = "config";
         public const string GlobalPackagesFolderKey = "globalPackagesFolder";
         public const string GlobalPackagesFolderEnvironmentKey = "NUGET_PACKAGES";
-        public const string DefaultGlobalPackagesFolderPath = ".nuget\\packages\\";
         public const string RepositoryPathKey = "repositoryPath";
+        public static readonly string DefaultGlobalPackagesFolderPath = Path.Combine(".nuget", "packages") + Path.DirectorySeparatorChar;
 
         public static string GetRepositoryPath(ISettings settings)
         {
