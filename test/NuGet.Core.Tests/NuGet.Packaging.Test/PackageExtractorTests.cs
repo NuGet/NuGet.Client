@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -19,54 +16,71 @@ namespace NuGet.Packaging.Test
             // Arrange
             var packageStream = TestPackages.GetTestPackageWithContentXmlFile();
             var root = TestFileSystemUtility.CreateRandomTestFolder();
-            var packageReader = new PackageReader(packageStream);
-            var packagePath = Path.Combine(root, "packageA.2.0.3");
-            
-            // Act
-            var files = PackageExtractor.ExtractPackageAsync(packageReader, 
-                                                             packageStream, 
-                                                             new PackagePathResolver(root), 
-                                                             null, 
-                                                             PackageSaveModes.Nupkg, 
-                                                             CancellationToken.None).Result;
-            // Assert
-            Assert.False(files.Contains(Path.Combine(packagePath + "[Content_Types].xml")));
-            Assert.True(files.Contains(Path.Combine(packagePath,"content/[Content_Types].xml")));
 
-            // Clean
-            TestFileSystemUtility.DeleteRandomTestFolders(root);
+            try
+            {
+                var packageReader = new PackageReader(packageStream);
+                var packagePath = Path.Combine(root, "packageA.2.0.3");
+
+                // Act
+                var files = PackageExtractor.ExtractPackageAsync(packageReader,
+                                                                 packageStream,
+                                                                 new PackagePathResolver(root),
+                                                                 null,
+                                                                 PackageSaveModes.Nupkg,
+                                                                 CancellationToken.None).Result;
+                // Assert
+                Assert.False(files.Contains(Path.Combine(packagePath + "[Content_Types].xml")));
+                Assert.True(files.Contains(Path.Combine(packagePath, "content/[Content_Types].xml")));
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(root);
+            }
         }
 
         [Fact]
         void PackageExtractor_duplicateNupkg()
         {
-            var packageNupkg = TestPackages.GetLegacyTestPackage();
-            var root = TestFileSystemUtility.CreateRandomTestFolder();
-            var zip = new ZipArchive(packageNupkg.OpenRead());
-            PackageReader zipReader = new PackageReader(zip);
+            var packageFileInfo = TestPackages.GetLegacyTestPackage();
 
-            var folder = Path.Combine(packageNupkg.Directory.FullName, Guid.NewGuid().ToString());
-
-            using (var zipFile = new ZipArchive(File.OpenRead(packageNupkg.FullName)))
+            try
             {
-                zipFile.ExtractAll(folder);
+                var root = TestFileSystemUtility.CreateRandomTestFolder();
+                var folder = Path.Combine(packageFileInfo.Directory.FullName, Guid.NewGuid().ToString());
 
-                var folderReader = new PackageFolderReader(folder);
+                try
+                {
+                    var zip = new ZipArchive(packageFileInfo.OpenRead());
+                    PackageReader zipReader = new PackageReader(zip);
 
-                // Act
-                var files = PackageExtractor.ExtractPackageAsync(folderReader,
-                                                                 File.OpenRead(packageNupkg.FullName),
-                                                                 new PackagePathResolver(root),
-                                                                 null,
-                                                                 PackageSaveModes.Nupkg,
-                                                                 CancellationToken.None).Result;
+                    using (var zipFile = new ZipArchive(File.OpenRead(packageFileInfo.FullName)))
+                    {
+                        zipFile.ExtractAll(folder);
 
-                // Assert
-                Assert.Equal(1, files.Where(p => p.EndsWith(".nupkg")).Count());
+                        var folderReader = new PackageFolderReader(folder);
 
-                // Clean
-                TestFileSystemUtility.DeleteRandomTestFolders(root, folder);
+                        // Act
+                        var files = PackageExtractor.ExtractPackageAsync(folderReader,
+                                                                         File.OpenRead(packageFileInfo.FullName),
+                                                                         new PackagePathResolver(root),
+                                                                         null,
+                                                                         PackageSaveModes.Nupkg,
+                                                                         CancellationToken.None).Result;
+
+                        // Assert
+                        Assert.Equal(1, files.Where(p => p.EndsWith(".nupkg")).Count());
+                    }
+                }
+                finally
+                {
+                    TestFileSystemUtility.DeleteRandomTestFolders(root, folder);
+                }
             }
-        }  
+            finally
+            {
+                packageFileInfo.Delete();
+            }
+        }
     }
 }

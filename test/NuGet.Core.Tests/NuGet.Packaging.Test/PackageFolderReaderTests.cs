@@ -261,27 +261,35 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackageFolderReader_Basic()
         {
-            var packageNupkg = TestPackages.GetLegacyTestPackage();
-            _path.Add(packageNupkg.FullName);
+            var packageFileInfo = TestPackages.GetLegacyTestPackage();
 
-            var zip = new ZipArchive(packageNupkg.OpenRead());
-            PackageReader zipReader = new PackageReader(zip);
-
-            var folder = Path.Combine(packageNupkg.Directory.FullName, Guid.NewGuid().ToString());
-
-            using (var zipFile = new ZipArchive(File.OpenRead(packageNupkg.FullName)))
+            try
             {
-                zipFile.ExtractAll(folder);
+                _path.Add(packageFileInfo.FullName);
 
-                var folderReader = new PackageFolderReader(folder);
+                var zip = new ZipArchive(packageFileInfo.OpenRead());
+                PackageReader zipReader = new PackageReader(zip);
 
-                Assert.Equal(zipReader.GetIdentity(), folderReader.GetIdentity(), new PackageIdentityComparer());
+                var folder = Path.Combine(packageFileInfo.Directory.FullName, Guid.NewGuid().ToString());
 
-                Assert.Equal(zipReader.GetLibItems().Count(), folderReader.GetLibItems().Count());
+                using (var zipFile = new ZipArchive(File.OpenRead(packageFileInfo.FullName)))
+                {
+                    zipFile.ExtractAll(folder);
 
-                Assert.Equal(zipReader.GetReferenceItems().Count(), folderReader.GetReferenceItems().Count());
+                    var folderReader = new PackageFolderReader(folder);
 
-                Assert.Equal(zipReader.GetReferenceItems().First().Items.First(), folderReader.GetReferenceItems().First().Items.First());
+                    Assert.Equal(zipReader.GetIdentity(), folderReader.GetIdentity(), new PackageIdentityComparer());
+
+                    Assert.Equal(zipReader.GetLibItems().Count(), folderReader.GetLibItems().Count());
+
+                    Assert.Equal(zipReader.GetReferenceItems().Count(), folderReader.GetReferenceItems().Count());
+
+                    Assert.Equal(zipReader.GetReferenceItems().First().Items.First(), folderReader.GetReferenceItems().First().Items.First());
+                }
+            }
+            finally
+            {
+                packageFileInfo.Delete();
             }
         }
 

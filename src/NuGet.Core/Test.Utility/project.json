@@ -14,7 +14,7 @@
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
-        "System.Threading.Tasks": "", 
+        "System.Threading.Tasks": "",
         "System.Runtime": "",
         "System.Runtime.Serialization": ""
       }

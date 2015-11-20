@@ -11,6 +11,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
 
@@ -22,262 +23,326 @@ namespace ProjectManagement.Test
         public async Task TestInstallPackage()
         {
             // Arrange
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var targetFramework = NuGetFramework.Parse("net45");
-            var metadata = GetTestMetadata(targetFramework);
-            var packagesConfigNuGetProject = new PackagesConfigNuGetProject(randomTestFolder, metadata);
-            var packageIdentity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
-            var token = CancellationToken.None;
-            MakeFileReadOnly(randomTestFolder);
+            var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder();
 
-            // Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, GetDownloadResourceResult(), new TestNuGetProjectContext(), token);
-            MakeFileReadOnly(randomTestFolder);
+            try
+            {
+                var targetFramework = NuGetFramework.Parse("net45");
+                var metadata = GetTestMetadata(targetFramework);
+                var packagesConfigNuGetProject = new PackagesConfigNuGetProject(randomTestFolder, metadata);
+                var packageIdentity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+                var token = CancellationToken.None;
+                MakeFileReadOnly(randomTestFolder);
 
-            // Assert
-            var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-            Assert.Equal(1, installedPackagesList.Count);
-            Assert.Equal(packageIdentity, installedPackagesList[0].PackageIdentity);
-            Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
+                // Act
+                await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, GetDownloadResourceResult(), new TestNuGetProjectContext(), token);
+                MakeFileReadOnly(randomTestFolder);
+
+                // Assert
+                var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+                Assert.Equal(1, installedPackagesList.Count);
+                Assert.Equal(packageIdentity, installedPackagesList[0].PackageIdentity);
+                Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(randomTestFolder);
+            }
         }
 
         [Fact]
         public async Task TestInstallPackageUnsupportedFx()
         {
             // Arrange
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var targetFramework = NuGetFramework.UnsupportedFramework;
-            var metadata = GetTestMetadata(targetFramework);
-            var packagesConfigNuGetProject = new PackagesConfigNuGetProject(randomTestFolder, metadata);
-            var packageIdentity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
-            var token = CancellationToken.None;
-            MakeFileReadOnly(randomTestFolder);
+            var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder();
 
-            // Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, GetDownloadResourceResult(), new TestNuGetProjectContext(), token);
-            MakeFileReadOnly(randomTestFolder);
+            try
+            {
+                var targetFramework = NuGetFramework.UnsupportedFramework;
+                var metadata = GetTestMetadata(targetFramework);
+                var packagesConfigNuGetProject = new PackagesConfigNuGetProject(randomTestFolder, metadata);
+                var packageIdentity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+                var token = CancellationToken.None;
+                MakeFileReadOnly(randomTestFolder);
 
-            // Assert
-            var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-            Assert.Equal(1, installedPackagesList.Count);
-            Assert.Equal(packageIdentity, installedPackagesList[0].PackageIdentity);
-            Assert.True(installedPackagesList[0].TargetFramework.IsUnsupported);
+                // Act
+                await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, GetDownloadResourceResult(), new TestNuGetProjectContext(), token);
+                MakeFileReadOnly(randomTestFolder);
+
+                // Assert
+                var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+                Assert.Equal(1, installedPackagesList.Count);
+                Assert.Equal(packageIdentity, installedPackagesList[0].PackageIdentity);
+                Assert.True(installedPackagesList[0].TargetFramework.IsUnsupported);
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(randomTestFolder);
+            }
         }
 
         [Fact]
         public async Task TestUninstallLastPackage()
         {
             // Arrange
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var targetFramework = NuGetFramework.Parse("net45");
-            var metadata = GetTestMetadata(targetFramework);
-            var packagesConfigNuGetProject = new PackagesConfigNuGetProject(randomTestFolder, metadata);
-            var packageIdentity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
-            var testNuGetProjectContext = new TestNuGetProjectContext();
-            var token = CancellationToken.None;
-            MakeFileReadOnly(randomTestFolder);
+            var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder();
 
-            // Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, GetDownloadResourceResult(), testNuGetProjectContext, token);
-            MakeFileReadOnly(randomTestFolder);
+            try
+            {
+                var targetFramework = NuGetFramework.Parse("net45");
+                var metadata = GetTestMetadata(targetFramework);
+                var packagesConfigNuGetProject = new PackagesConfigNuGetProject(randomTestFolder, metadata);
+                var packageIdentity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var token = CancellationToken.None;
+                MakeFileReadOnly(randomTestFolder);
 
-            // Assert
-            var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-            Assert.Equal(1, installedPackagesList.Count);
-            Assert.Equal(packageIdentity, installedPackagesList[0].PackageIdentity);
-            Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
+                // Act
+                await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, GetDownloadResourceResult(), testNuGetProjectContext, token);
+                MakeFileReadOnly(randomTestFolder);
 
-            // Main Act
-            await packagesConfigNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
+                // Assert
+                var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+                Assert.Equal(1, installedPackagesList.Count);
+                Assert.Equal(packageIdentity, installedPackagesList[0].PackageIdentity);
+                Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
 
-            // Main Assert
-            installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-            Assert.Equal(0, installedPackagesList.Count);
+                // Main Act
+                await packagesConfigNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
+
+                // Main Assert
+                installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+                Assert.Equal(0, installedPackagesList.Count);
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(randomTestFolder);
+            }
         }
 
         [Fact]
         public async Task TestInstallSecondPackage()
         {
             // Arrange
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var targetFramework = NuGetFramework.Parse("net45");
-            var metadata = GetTestMetadata(targetFramework);
-            var packagesConfigNuGetProject = new PackagesConfigNuGetProject(randomTestFolder, metadata);
+            var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder();
 
-            var packageA = new PackageIdentity("A", new NuGetVersion("1.0.0"));
-            var packageB = new PackageIdentity("B", new NuGetVersion("1.0.0"));
-            var testNuGetProjectContext = new TestNuGetProjectContext();
-            var token = CancellationToken.None;
-            MakeFileReadOnly(randomTestFolder);
+            try
+            {
+                var targetFramework = NuGetFramework.Parse("net45");
+                var metadata = GetTestMetadata(targetFramework);
+                var packagesConfigNuGetProject = new PackagesConfigNuGetProject(randomTestFolder, metadata);
 
-            // Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageA, GetDownloadResourceResult(), testNuGetProjectContext, token);
-            MakeFileReadOnly(randomTestFolder);
+                var packageA = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+                var packageB = new PackageIdentity("B", new NuGetVersion("1.0.0"));
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var token = CancellationToken.None;
+                MakeFileReadOnly(randomTestFolder);
 
-            // Assert
-            var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-            Assert.Equal(1, installedPackagesList.Count);
-            Assert.Equal(packageA, installedPackagesList[0].PackageIdentity);
-            Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
+                // Act
+                await packagesConfigNuGetProject.InstallPackageAsync(packageA, GetDownloadResourceResult(), testNuGetProjectContext, token);
+                MakeFileReadOnly(randomTestFolder);
 
-            // Main Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageB, GetDownloadResourceResult(), testNuGetProjectContext, token);
-            // Assert
-            installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-            Assert.Equal(2, installedPackagesList.Count);
-            Assert.Equal(packageA, installedPackagesList[0].PackageIdentity);
-            Assert.Equal(packageB, installedPackagesList[1].PackageIdentity);
-            Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
-            Assert.Equal(targetFramework, installedPackagesList[1].TargetFramework);
+                // Assert
+                var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+                Assert.Equal(1, installedPackagesList.Count);
+                Assert.Equal(packageA, installedPackagesList[0].PackageIdentity);
+                Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
+
+                // Main Act
+                await packagesConfigNuGetProject.InstallPackageAsync(packageB, GetDownloadResourceResult(), testNuGetProjectContext, token);
+                // Assert
+                installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+                Assert.Equal(2, installedPackagesList.Count);
+                Assert.Equal(packageA, installedPackagesList[0].PackageIdentity);
+                Assert.Equal(packageB, installedPackagesList[1].PackageIdentity);
+                Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
+                Assert.Equal(targetFramework, installedPackagesList[1].TargetFramework);
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(randomTestFolder);
+            }
         }
 
         [Fact]
         public async Task TestUninstallPenultimatePackage()
         {
             // Arrange
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var targetFramework = NuGetFramework.Parse("net45");
-            var metadata = GetTestMetadata(targetFramework);
-            var packagesConfigNuGetProject = new PackagesConfigNuGetProject(randomTestFolder, metadata);
-            var packageA = new PackageIdentity("A", new NuGetVersion("1.0.0"));
-            var packageB = new PackageIdentity("B", new NuGetVersion("1.0.0"));
-            var testNuGetProjectContext = new TestNuGetProjectContext();
-            var token = CancellationToken.None;
-            MakeFileReadOnly(randomTestFolder);
+            var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder();
 
-            // Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageA, GetDownloadResourceResult(), testNuGetProjectContext, token);
-            MakeFileReadOnly(randomTestFolder);
+            try
+            {
+                var targetFramework = NuGetFramework.Parse("net45");
+                var metadata = GetTestMetadata(targetFramework);
+                var packagesConfigNuGetProject = new PackagesConfigNuGetProject(randomTestFolder, metadata);
+                var packageA = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+                var packageB = new PackageIdentity("B", new NuGetVersion("1.0.0"));
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var token = CancellationToken.None;
+                MakeFileReadOnly(randomTestFolder);
 
-            // Assert
-            var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-            Assert.Equal(1, installedPackagesList.Count);
-            Assert.Equal(packageA, installedPackagesList[0].PackageIdentity);
-            Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
+                // Act
+                await packagesConfigNuGetProject.InstallPackageAsync(packageA, GetDownloadResourceResult(), testNuGetProjectContext, token);
+                MakeFileReadOnly(randomTestFolder);
 
-            // Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageB, GetDownloadResourceResult(), testNuGetProjectContext, token);
-            // Assert
-            installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-            Assert.Equal(2, installedPackagesList.Count);
-            Assert.Equal(packageA, installedPackagesList[0].PackageIdentity);
-            Assert.Equal(packageB, installedPackagesList[1].PackageIdentity);
-            Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
-            Assert.Equal(targetFramework, installedPackagesList[1].TargetFramework);
+                // Assert
+                var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+                Assert.Equal(1, installedPackagesList.Count);
+                Assert.Equal(packageA, installedPackagesList[0].PackageIdentity);
+                Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
 
-            // Main Act
-            await packagesConfigNuGetProject.UninstallPackageAsync(packageA, testNuGetProjectContext, token);
+                // Act
+                await packagesConfigNuGetProject.InstallPackageAsync(packageB, GetDownloadResourceResult(), testNuGetProjectContext, token);
+                // Assert
+                installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+                Assert.Equal(2, installedPackagesList.Count);
+                Assert.Equal(packageA, installedPackagesList[0].PackageIdentity);
+                Assert.Equal(packageB, installedPackagesList[1].PackageIdentity);
+                Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
+                Assert.Equal(targetFramework, installedPackagesList[1].TargetFramework);
 
-            // Main Assert
-            installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-            Assert.Equal(1, installedPackagesList.Count);
-            Assert.Equal(packageB, installedPackagesList[0].PackageIdentity);
-            Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
+                // Main Act
+                await packagesConfigNuGetProject.UninstallPackageAsync(packageA, testNuGetProjectContext, token);
+
+                // Main Assert
+                installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+                Assert.Equal(1, installedPackagesList.Count);
+                Assert.Equal(packageB, installedPackagesList[0].PackageIdentity);
+                Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(randomTestFolder);
+            }
         }
 
         [Fact]
         public async Task TestInstallHigherVersionPackage()
         {
             // Arrange
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var targetFramework = NuGetFramework.Parse("net45");
-            var metadata = GetTestMetadata(targetFramework);
-            var packagesConfigNuGetProject = new PackagesConfigNuGetProject(randomTestFolder, metadata);
-            var packageA1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
-            var packageA2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
-            var token = CancellationToken.None;
-            MakeFileReadOnly(randomTestFolder);
+            var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder();
 
-            // Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageA1, GetDownloadResourceResult(), new TestNuGetProjectContext(), token);
-            MakeFileReadOnly(randomTestFolder);
+            try
+            {
+                var targetFramework = NuGetFramework.Parse("net45");
+                var metadata = GetTestMetadata(targetFramework);
+                var packagesConfigNuGetProject = new PackagesConfigNuGetProject(randomTestFolder, metadata);
+                var packageA1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+                var packageA2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
+                var token = CancellationToken.None;
+                MakeFileReadOnly(randomTestFolder);
 
-            // Assert
-            var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-            Assert.Equal(1, installedPackagesList.Count);
-            Assert.Equal(packageA1, installedPackagesList[0].PackageIdentity);
-            Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
+                // Act
+                await packagesConfigNuGetProject.InstallPackageAsync(packageA1, GetDownloadResourceResult(), new TestNuGetProjectContext(), token);
+                MakeFileReadOnly(randomTestFolder);
 
-            // Main Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageA2, GetDownloadResourceResult(), new TestNuGetProjectContext(), token);
+                // Assert
+                var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+                Assert.Equal(1, installedPackagesList.Count);
+                Assert.Equal(packageA1, installedPackagesList[0].PackageIdentity);
+                Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
 
-            // Assert
-            installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-            Assert.Equal(1, installedPackagesList.Count);
-            Assert.Equal(packageA2, installedPackagesList[0].PackageIdentity);
-            Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
+                // Main Act
+                await packagesConfigNuGetProject.InstallPackageAsync(packageA2, GetDownloadResourceResult(), new TestNuGetProjectContext(), token);
+
+                // Assert
+                installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+                Assert.Equal(1, installedPackagesList.Count);
+                Assert.Equal(packageA2, installedPackagesList[0].PackageIdentity);
+                Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(randomTestFolder);
+            }
         }
 
         [Fact]
         public async Task TestRenameOfPackagesConfigToIncludeProjectName()
         {
             // Arrange
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var targetFramework = NuGetFramework.Parse("net45");
-            var projectName = "TestProject";
-            var metadata = GetTestMetadata(targetFramework, projectName);
-            var packagesConfigNuGetProject = new PackagesConfigNuGetProject(randomTestFolder, metadata);
-            var packageIdentity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
-            var token = CancellationToken.None;
-            MakeFileReadOnly(randomTestFolder);
+            var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder();
 
-            // Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, GetDownloadResourceResult(), new TestNuGetProjectContext(), token);
-            MakeFileReadOnly(randomTestFolder);
+            try
+            {
+                var targetFramework = NuGetFramework.Parse("net45");
+                var projectName = "TestProject";
+                var metadata = GetTestMetadata(targetFramework, projectName);
+                var packagesConfigNuGetProject = new PackagesConfigNuGetProject(randomTestFolder, metadata);
+                var packageIdentity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+                var token = CancellationToken.None;
+                MakeFileReadOnly(randomTestFolder);
 
-            // Assert
-            var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-            Assert.Equal(1, installedPackagesList.Count);
-            Assert.Equal(packageIdentity, installedPackagesList[0].PackageIdentity);
-            Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
+                // Act
+                await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, GetDownloadResourceResult(), new TestNuGetProjectContext(), token);
+                MakeFileReadOnly(randomTestFolder);
 
-            // Main Act
-            var packagesConfigPath = Path.Combine(randomTestFolder, "packages.config");
-            var packagesProjectNameConfigPath = Path.Combine(randomTestFolder, "packages." + projectName + ".config");
-            File.Move(packagesConfigPath, packagesProjectNameConfigPath);
+                // Assert
+                var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+                Assert.Equal(1, installedPackagesList.Count);
+                Assert.Equal(packageIdentity, installedPackagesList[0].PackageIdentity);
+                Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
 
-            // Assert
-            installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-            Assert.Equal(1, installedPackagesList.Count);
-            Assert.Equal(packageIdentity, installedPackagesList[0].PackageIdentity);
-            Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
+                // Main Act
+                var packagesConfigPath = Path.Combine(randomTestFolder, "packages.config");
+                var packagesProjectNameConfigPath = Path.Combine(randomTestFolder, "packages." + projectName + ".config");
+                File.Move(packagesConfigPath, packagesProjectNameConfigPath);
+
+                // Assert
+                installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+                Assert.Equal(1, installedPackagesList.Count);
+                Assert.Equal(packageIdentity, installedPackagesList[0].PackageIdentity);
+                Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(randomTestFolder);
+            }
         }
 
         [Fact]
         public async Task TestRenameOfPackagesProjectConfigToExcludeProjectName()
         {
             // Arrange
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var targetFramework = NuGetFramework.Parse("net45");
-            var projectName = "TestProject";
-            var metadata = GetTestMetadata(targetFramework, projectName);
-            var packagesConfigNuGetProject = new PackagesConfigNuGetProject(randomTestFolder, metadata);
-            var packageIdentity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
-            var token = CancellationToken.None;
-            MakeFileReadOnly(randomTestFolder);
+            var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder();
 
-            // Act
-            await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, GetDownloadResourceResult(), new TestNuGetProjectContext(), token);
-            MakeFileReadOnly(randomTestFolder);
+            try
+            {
+                var targetFramework = NuGetFramework.Parse("net45");
+                var projectName = "TestProject";
+                var metadata = GetTestMetadata(targetFramework, projectName);
+                var packagesConfigNuGetProject = new PackagesConfigNuGetProject(randomTestFolder, metadata);
+                var packageIdentity = new PackageIdentity("A", new NuGetVersion("1.0.0"));
+                var token = CancellationToken.None;
+                MakeFileReadOnly(randomTestFolder);
 
-            // Assert
-            var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
-            Assert.Equal(1, installedPackagesList.Count);
-            Assert.Equal(packageIdentity, installedPackagesList[0].PackageIdentity);
-            Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
+                // Act
+                await packagesConfigNuGetProject.InstallPackageAsync(packageIdentity, GetDownloadResourceResult(), new TestNuGetProjectContext(), token);
+                MakeFileReadOnly(randomTestFolder);
 
-            // Act
-            var packagesConfigPath = Path.Combine(randomTestFolder, "packages.config");
-            var packagesProjectNameConfigPath = Path.Combine(randomTestFolder, "packages." + projectName + ".config");
-            File.Move(packagesConfigPath, packagesProjectNameConfigPath);
+                // Assert
+                var installedPackagesList = (await packagesConfigNuGetProject.GetInstalledPackagesAsync(token)).ToList();
+                Assert.Equal(1, installedPackagesList.Count);
+                Assert.Equal(packageIdentity, installedPackagesList[0].PackageIdentity);
+                Assert.Equal(targetFramework, installedPackagesList[0].TargetFramework);
 
-            var packagesConfigNuGetProject2 = new PackagesConfigNuGetProject(randomTestFolder, metadata);
+                // Act
+                var packagesConfigPath = Path.Combine(randomTestFolder, "packages.config");
+                var packagesProjectNameConfigPath = Path.Combine(randomTestFolder, "packages." + projectName + ".config");
+                File.Move(packagesConfigPath, packagesProjectNameConfigPath);
 
-            // Assert
-            var installedPackagesList2 = (await packagesConfigNuGetProject2.GetInstalledPackagesAsync(token)).ToList();
-            Assert.Equal(1, installedPackagesList2.Count);
-            Assert.Equal(packageIdentity, installedPackagesList2[0].PackageIdentity);
-            Assert.Equal(targetFramework, installedPackagesList2[0].TargetFramework);
+                var packagesConfigNuGetProject2 = new PackagesConfigNuGetProject(randomTestFolder, metadata);
+
+                // Assert
+                var installedPackagesList2 = (await packagesConfigNuGetProject2.GetInstalledPackagesAsync(token)).ToList();
+                Assert.Equal(1, installedPackagesList2.Count);
+                Assert.Equal(packageIdentity, installedPackagesList2[0].PackageIdentity);
+                Assert.Equal(targetFramework, installedPackagesList2[0].TargetFramework);
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(randomTestFolder);
+            }
         }
 
         private Dictionary<string, object> GetTestMetadata(NuGetFramework targetFramework, string projectName = "TestProject")

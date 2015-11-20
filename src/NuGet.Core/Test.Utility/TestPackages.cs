@@ -11,7 +11,7 @@ using NuGet.Versioning;
 
 namespace Test.Utility
 {
-    public static class TestPackages
+    public static class TestPackagesGroupedByFolder
     {
         private static readonly string NuspecStringFormat = @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
@@ -305,7 +305,7 @@ namespace Test.Utility
         {
             if (zipEntries == null || zipContents == null || zipEntries.Length != zipContents.Length)
             {
-                throw new Exception("TEST Exception: zipEntries and zipContents should be non-null and" +
+                throw new InvalidOperationException("TEST Exception: zipEntries and zipContents should be non-null and" +
                     "zipEntries.Length should be equal to zipContents.Length");
             }
             var fileInfo = GetFileInfo(path, packageId, packageVersion);

@@ -202,79 +202,97 @@ namespace NuGet.Packaging.Test
             // Copy of the InstallPackageRespectReferencesAccordingToDifferentFrameworks functional test
 
             // Arrange
-            var zipInfo = TestPackages.GetNearestReferenceFilteringPackage();
-            var path = zipInfo.File;
-            _paths.Add(path.FullName);
-            var zip = TestPackages.GetZip(path);
-            var reader = new PackageReader(zip);
+            using (var zipInfo = TestPackages.GetNearestReferenceFilteringPackage())
+            {
+                var path = zipInfo.File;
+                _paths.Add(path.FullName);
+                var zip = TestPackages.GetZip(path);
+                var reader = new PackageReader(zip);
 
-            // Act
-            var references = reader.GetReferenceItems();
-            var netResult = NuGetFrameworkUtility.GetNearest<FrameworkSpecificGroup>(references, NuGetFramework.Parse("net45"));
-            var slResult = NuGetFrameworkUtility.GetNearest<FrameworkSpecificGroup>(references, NuGetFramework.Parse("sl5"));
+                // Act
+                var references = reader.GetReferenceItems();
+                var netResult = NuGetFrameworkUtility.GetNearest<FrameworkSpecificGroup>(references, NuGetFramework.Parse("net45"));
+                var slResult = NuGetFrameworkUtility.GetNearest<FrameworkSpecificGroup>(references, NuGetFramework.Parse("sl5"));
 
-            // Assert
-            Assert.Equal(2, netResult.Items.Count());
-            Assert.Equal(1, slResult.Items.Count());
-            Assert.Equal("lib/sl40/a.dll", slResult.Items.First());
-            Assert.Equal("lib/net40/one.dll", netResult.Items.First());
-            Assert.Equal("lib/net40/three.dll", netResult.Items.Skip(1).First());
+                // Assert
+                Assert.Equal(2, netResult.Items.Count());
+                Assert.Equal(1, slResult.Items.Count());
+                Assert.Equal("lib/sl40/a.dll", slResult.Items.First());
+                Assert.Equal("lib/net40/one.dll", netResult.Items.First());
+                Assert.Equal("lib/net40/three.dll", netResult.Items.Skip(1).First());
+            }
         }
 
         [Fact]
         public void PackageReader_LegacyFolders()
         {
             // Verify legacy folder names such as 40 and 35 parse to frameworks
-            var path = TestPackages.GetLegacyFolderPackage();
-            _paths.Add(path.FullName);
-            var zip = TestPackages.GetZip(path);
+            var packageFile = TestPackages.GetLegacyFolderPackage();
 
-            using (PackageReader reader = new PackageReader(zip))
+            try
             {
-                var groups = reader.GetReferenceItems().ToArray();
+                _paths.Add(packageFile.FullName);
+                var zip = TestPackages.GetZip(packageFile);
 
-                Assert.Equal(4, groups.Count());
+                using (PackageReader reader = new PackageReader(zip))
+                {
+                    var groups = reader.GetReferenceItems().ToArray();
 
-                Assert.Equal(NuGetFramework.AnyFramework, groups[0].TargetFramework);
-                Assert.Equal("lib/a.dll", groups[0].Items.ToArray()[0]);
+                    Assert.Equal(4, groups.Count());
 
-                Assert.Equal(NuGetFramework.Parse("net35"), groups[1].TargetFramework);
-                Assert.Equal("lib/35/b.dll", groups[1].Items.ToArray()[0]);
+                    Assert.Equal(NuGetFramework.AnyFramework, groups[0].TargetFramework);
+                    Assert.Equal("lib/a.dll", groups[0].Items.ToArray()[0]);
 
-                Assert.Equal(NuGetFramework.Parse("net4"), groups[2].TargetFramework);
-                Assert.Equal("lib/40/test40.dll", groups[2].Items.ToArray()[0]);
-                Assert.Equal("lib/40/x86/testx86.dll", groups[2].Items.ToArray()[1]);
+                    Assert.Equal(NuGetFramework.Parse("net35"), groups[1].TargetFramework);
+                    Assert.Equal("lib/35/b.dll", groups[1].Items.ToArray()[0]);
 
-                Assert.Equal(NuGetFramework.Parse("net45"), groups[3].TargetFramework);
-                Assert.Equal("lib/45/a.dll", groups[3].Items.ToArray()[0]);
+                    Assert.Equal(NuGetFramework.Parse("net4"), groups[2].TargetFramework);
+                    Assert.Equal("lib/40/test40.dll", groups[2].Items.ToArray()[0]);
+                    Assert.Equal("lib/40/x86/testx86.dll", groups[2].Items.ToArray()[1]);
+
+                    Assert.Equal(NuGetFramework.Parse("net45"), groups[3].TargetFramework);
+                    Assert.Equal("lib/45/a.dll", groups[3].Items.ToArray()[0]);
+                }
+            }
+            finally
+            {
+                packageFile.Delete();
             }
         }
 
         [Fact]
         public void PackageReader_NestedReferenceItemsMixed()
         {
-            var path = TestPackages.GetLibEmptyFolderPackage();
-            _paths.Add(path.FullName);
-            var zip = TestPackages.GetZip(path);
+            var packageFileInfo = TestPackages.GetLibEmptyFolderPackage();
 
-            using (PackageReader reader = new PackageReader(zip))
+            try
             {
-                var groups = reader.GetReferenceItems().ToArray();
+                _paths.Add(packageFileInfo.FullName);
+                var zip = TestPackages.GetZip(packageFileInfo);
 
-                Assert.Equal(3, groups.Count());
+                using (PackageReader reader = new PackageReader(zip))
+                {
+                    var groups = reader.GetReferenceItems().ToArray();
 
-                Assert.Equal(NuGetFramework.AnyFramework, groups[0].TargetFramework);
-                Assert.Equal(2, groups[0].Items.Count());
-                Assert.Equal("lib/a.dll", groups[0].Items.ToArray()[0]);
-                Assert.Equal("lib/x86/b.dll", groups[0].Items.ToArray()[1]);
+                    Assert.Equal(3, groups.Count());
 
-                Assert.Equal(NuGetFramework.Parse("net40"), groups[1].TargetFramework);
-                Assert.Equal(2, groups[1].Items.Count());
-                Assert.Equal("lib/net40/test40.dll", groups[1].Items.ToArray()[0]);
-                Assert.Equal("lib/net40/x86/testx86.dll", groups[1].Items.ToArray()[1]);
+                    Assert.Equal(NuGetFramework.AnyFramework, groups[0].TargetFramework);
+                    Assert.Equal(2, groups[0].Items.Count());
+                    Assert.Equal("lib/a.dll", groups[0].Items.ToArray()[0]);
+                    Assert.Equal("lib/x86/b.dll", groups[0].Items.ToArray()[1]);
 
-                Assert.Equal(NuGetFramework.Parse("net45"), groups[2].TargetFramework);
-                Assert.Equal(0, groups[2].Items.Count());
+                    Assert.Equal(NuGetFramework.Parse("net40"), groups[1].TargetFramework);
+                    Assert.Equal(2, groups[1].Items.Count());
+                    Assert.Equal("lib/net40/test40.dll", groups[1].Items.ToArray()[0]);
+                    Assert.Equal("lib/net40/x86/testx86.dll", groups[1].Items.ToArray()[1]);
+
+                    Assert.Equal(NuGetFramework.Parse("net45"), groups[2].TargetFramework);
+                    Assert.Equal(0, groups[2].Items.Count());
+                }
+            }
+            finally
+            {
+                packageFileInfo.Delete();
             }
         }
 
@@ -282,37 +300,53 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackageReader_EmptyLibFolder()
         {
-            var path = TestPackages.GetLibEmptyFolderPackage();
-            _paths.Add(path.FullName);
-            var zip = TestPackages.GetZip(path);
+            var packageFileInfo = TestPackages.GetLibEmptyFolderPackage();
 
-            using (PackageReader reader = new PackageReader(zip))
+            try
             {
-                var groups = reader.GetReferenceItems().ToArray();
+                _paths.Add(packageFileInfo.FullName);
+                var zip = TestPackages.GetZip(packageFileInfo);
 
-                var emptyGroup = groups.Where(g => g.TargetFramework == NuGetFramework.ParseFolder("net45")).Single();
+                using (PackageReader reader = new PackageReader(zip))
+                {
+                    var groups = reader.GetReferenceItems().ToArray();
 
-                Assert.Equal(0, emptyGroup.Items.Count());
+                    var emptyGroup = groups.Where(g => g.TargetFramework == NuGetFramework.ParseFolder("net45")).Single();
+
+                    Assert.Equal(0, emptyGroup.Items.Count());
+                }
+            }
+            finally
+            {
+                packageFileInfo.Delete();
             }
         }
 
         [Fact]
         public void PackageReader_NestedReferenceItems()
         {
-            var path = TestPackages.GetLibSubFolderPackage();
-            _paths.Add(path.FullName);
-            var zip = TestPackages.GetZip(path);
+            var packageFileInfo = TestPackages.GetLibSubFolderPackage();
 
-            using (PackageReader reader = new PackageReader(zip))
+            try
             {
-                var groups = reader.GetReferenceItems().ToArray();
+                _paths.Add(packageFileInfo.FullName);
+                var zip = TestPackages.GetZip(packageFileInfo);
 
-                Assert.Equal(1, groups.Count());
+                using (PackageReader reader = new PackageReader(zip))
+                {
+                    var groups = reader.GetReferenceItems().ToArray();
 
-                Assert.Equal(NuGetFramework.Parse("net40"), groups[0].TargetFramework);
-                Assert.Equal(2, groups[0].Items.Count());
-                Assert.Equal("lib/net40/test40.dll", groups[0].Items.ToArray()[0]);
-                Assert.Equal("lib/net40/x86/testx86.dll", groups[0].Items.ToArray()[1]);
+                    Assert.Equal(1, groups.Count());
+
+                    Assert.Equal(NuGetFramework.Parse("net40"), groups[0].TargetFramework);
+                    Assert.Equal(2, groups[0].Items.Count());
+                    Assert.Equal("lib/net40/test40.dll", groups[0].Items.ToArray()[0]);
+                    Assert.Equal("lib/net40/x86/testx86.dll", groups[0].Items.ToArray()[1]);
+                }
+            }
+            finally
+            {
+                packageFileInfo.Delete();
             }
         }
 
@@ -322,64 +356,96 @@ namespace NuGet.Packaging.Test
         [InlineData("2.5-beta", "2.5.0-beta")]
         public void PackageReader_MinClientVersion(string minClientVersion, string expected)
         {
-            var path = TestPackages.GetLegacyTestPackageMinClient(minClientVersion);
-            _paths.Add(path.FullName);
-            var zip = TestPackages.GetZip(path);
+            var packageFileInfo = TestPackages.GetLegacyTestPackageMinClient(minClientVersion);
 
-            using (PackageReader reader = new PackageReader(zip))
+            try
             {
-                var version = reader.GetMinClientVersion();
+                _paths.Add(packageFileInfo.FullName);
+                var zip = TestPackages.GetZip(packageFileInfo);
 
-                Assert.Equal(expected, version.ToNormalizedString());
+                using (PackageReader reader = new PackageReader(zip))
+                {
+                    var version = reader.GetMinClientVersion();
+
+                    Assert.Equal(expected, version.ToNormalizedString());
+                }
+            }
+            finally
+            {
+                packageFileInfo.Delete();
             }
         }
 
         [Fact]
         public void PackageReader_ContentWithMixedFrameworks()
         {
-            var path = TestPackages.GetLegacyContentPackageMixed();
-            _paths.Add(path.FullName);
-            var zip = TestPackages.GetZip(path);
+            var packageFileInfo = TestPackages.GetLegacyContentPackageMixed();
 
-            using (PackageReader reader = new PackageReader(zip))
+            try
             {
-                var groups = reader.GetContentItems().ToArray();
+                _paths.Add(packageFileInfo.FullName);
+                var zip = TestPackages.GetZip(packageFileInfo);
 
-                Assert.Equal(3, groups.Count());
+                using (PackageReader reader = new PackageReader(zip))
+                {
+                    var groups = reader.GetContentItems().ToArray();
+
+                    Assert.Equal(3, groups.Count());
+                }
+            }
+            finally
+            {
+                packageFileInfo.Delete();
             }
         }
 
         [Fact]
         public void PackageReader_ContentWithFrameworks()
         {
-            var path = TestPackages.GetLegacyContentPackageWithFrameworks();
-            _paths.Add(path.FullName);
-            var zip = TestPackages.GetZip(path);
+            var packageFileInfo = TestPackages.GetLegacyContentPackageWithFrameworks();
 
-            using (PackageReader reader = new PackageReader(zip))
+            try
             {
-                var groups = reader.GetContentItems().ToArray();
+                _paths.Add(packageFileInfo.FullName);
+                var zip = TestPackages.GetZip(packageFileInfo);
 
-                Assert.Equal(3, groups.Count());
+                using (PackageReader reader = new PackageReader(zip))
+                {
+                    var groups = reader.GetContentItems().ToArray();
+
+                    Assert.Equal(3, groups.Count());
+                }
+            }
+            finally
+            {
+                packageFileInfo.Delete();
             }
         }
 
         [Fact]
         public void PackageReader_ContentNoFrameworks()
         {
-            var path = TestPackages.GetLegacyContentPackage();
-            _paths.Add(path.FullName);
-            var zip = TestPackages.GetZip(path);
+            var packageFileInfo = TestPackages.GetLegacyContentPackage();
 
-            using (PackageReader reader = new PackageReader(zip))
+            try
             {
-                var groups = reader.GetContentItems().ToArray();
+                _paths.Add(packageFileInfo.FullName);
+                var zip = TestPackages.GetZip(packageFileInfo);
 
-                Assert.Equal(1, groups.Count());
+                using (PackageReader reader = new PackageReader(zip))
+                {
+                    var groups = reader.GetContentItems().ToArray();
 
-                Assert.Equal(NuGetFramework.AnyFramework, groups.Single().TargetFramework);
+                    Assert.Equal(1, groups.Count());
 
-                Assert.Equal(3, groups.Single().Items.Count());
+                    Assert.Equal(NuGetFramework.AnyFramework, groups.Single().TargetFramework);
+
+                    Assert.Equal(3, groups.Single().Items.Count());
+                }
+            }
+            finally
+            {
+                packageFileInfo.Delete();
             }
         }
 
@@ -387,17 +453,25 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackageReader_NoReferences()
         {
-            var path = TestPackages.GetLegacyTestPackage();
-            _paths.Add(path.FullName);
-            var zip = TestPackages.GetZip(path);
+            var packageFileInfo = TestPackages.GetLegacyTestPackage();
 
-            using (PackageReader reader = new PackageReader(zip))
+            try
             {
-                var groups = reader.GetReferenceItems().ToArray();
+                _paths.Add(packageFileInfo.FullName);
+                var zip = TestPackages.GetZip(packageFileInfo);
 
-                Assert.Equal(3, groups.Count());
+                using (PackageReader reader = new PackageReader(zip))
+                {
+                    var groups = reader.GetReferenceItems().ToArray();
 
-                Assert.Equal(4, groups.SelectMany(e => e.Items).Count());
+                    Assert.Equal(3, groups.Count());
+
+                    Assert.Equal(4, groups.SelectMany(e => e.Items).Count());
+                }
+            }
+            finally
+            {
+                packageFileInfo.Delete();
             }
         }
 
@@ -405,23 +479,31 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackageReader_ReferencesWithGroups()
         {
-            var path = TestPackages.GetLegacyTestPackageWithReferenceGroups();
-            _paths.Add(path.FullName);
-            var zip = TestPackages.GetZip(path);
+            var packageFileInfo = TestPackages.GetLegacyTestPackageWithReferenceGroups();
 
-            using (PackageReader reader = new PackageReader(zip))
+            try
             {
-                var groups = reader.GetReferenceItems().ToArray();
+                _paths.Add(packageFileInfo.FullName);
+                var zip = TestPackages.GetZip(packageFileInfo);
 
-                Assert.Equal(2, groups.Count());
+                using (PackageReader reader = new PackageReader(zip))
+                {
+                    var groups = reader.GetReferenceItems().ToArray();
 
-                Assert.Equal(NuGetFramework.AnyFramework, groups[0].TargetFramework);
-                Assert.Equal(1, groups[0].Items.Count());
-                Assert.Equal("lib/test.dll", groups[0].Items.Single());
+                    Assert.Equal(2, groups.Count());
 
-                Assert.Equal(NuGetFramework.Parse("net45"), groups[1].TargetFramework);
-                Assert.Equal(1, groups[1].Items.Count());
-                Assert.Equal("lib/net45/test45.dll", groups[1].Items.Single());
+                    Assert.Equal(NuGetFramework.AnyFramework, groups[0].TargetFramework);
+                    Assert.Equal(1, groups[0].Items.Count());
+                    Assert.Equal("lib/test.dll", groups[0].Items.Single());
+
+                    Assert.Equal(NuGetFramework.Parse("net45"), groups[1].TargetFramework);
+                    Assert.Equal(1, groups[1].Items.Count());
+                    Assert.Equal("lib/net45/test45.dll", groups[1].Items.Single());
+                }
+            }
+            finally
+            {
+                packageFileInfo.Delete();
             }
         }
 
@@ -429,45 +511,61 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void PackageReader_ReferencesWithoutGroups()
         {
-            var path = TestPackages.GetLegacyTestPackageWithPre25References();
-            _paths.Add(path.FullName);
-            var zip = TestPackages.GetZip(path);
+            var packageFileInfo = TestPackages.GetLegacyTestPackageWithPre25References();
 
-            using (PackageReader reader = new PackageReader(zip))
+            try
             {
-                var groups = reader.GetReferenceItems().ToArray();
+                _paths.Add(packageFileInfo.FullName);
+                var zip = TestPackages.GetZip(packageFileInfo);
 
-                Assert.Equal(3, groups.Count());
+                using (PackageReader reader = new PackageReader(zip))
+                {
+                    var groups = reader.GetReferenceItems().ToArray();
 
-                Assert.Equal(NuGetFramework.AnyFramework, groups[0].TargetFramework);
-                Assert.Equal(1, groups[0].Items.Count());
-                Assert.Equal("lib/test.dll", groups[0].Items.Single());
+                    Assert.Equal(3, groups.Count());
 
-                Assert.Equal(NuGetFramework.Parse("net40"), groups[1].TargetFramework);
-                Assert.Equal(1, groups[1].Items.Count());
-                Assert.Equal("lib/net40/test.dll", groups[1].Items.Single());
+                    Assert.Equal(NuGetFramework.AnyFramework, groups[0].TargetFramework);
+                    Assert.Equal(1, groups[0].Items.Count());
+                    Assert.Equal("lib/test.dll", groups[0].Items.Single());
 
-                Assert.Equal(NuGetFramework.Parse("net451"), groups[2].TargetFramework);
-                Assert.Equal(1, groups[1].Items.Count());
-                Assert.Equal("lib/net451/test.dll", groups[2].Items.Single());
+                    Assert.Equal(NuGetFramework.Parse("net40"), groups[1].TargetFramework);
+                    Assert.Equal(1, groups[1].Items.Count());
+                    Assert.Equal("lib/net40/test.dll", groups[1].Items.Single());
+
+                    Assert.Equal(NuGetFramework.Parse("net451"), groups[2].TargetFramework);
+                    Assert.Equal(1, groups[1].Items.Count());
+                    Assert.Equal("lib/net451/test.dll", groups[2].Items.Single());
+                }
+            }
+            finally
+            {
+                packageFileInfo.Delete();
             }
         }
 
         [Fact]
         public void PackageReader_SupportedFrameworks()
         {
-            var path = TestPackages.GetLegacyTestPackage();
-            _paths.Add(path.FullName);
-            var zip = TestPackages.GetZip(path);
+            var packageFileInfo = TestPackages.GetLegacyTestPackage();
 
-            using (PackageReader reader = new PackageReader(zip))
+            try
             {
-                string[] frameworks = reader.GetSupportedFrameworks().Select(f => f.DotNetFrameworkName).ToArray();
+                _paths.Add(packageFileInfo.FullName);
+                var zip = TestPackages.GetZip(packageFileInfo);
 
-                Assert.Equal("Any,Version=v0.0", frameworks[0]);
-                Assert.Equal(".NETFramework,Version=v4.0", frameworks[1]);
-                Assert.Equal(".NETFramework,Version=v4.5", frameworks[2]);
-                Assert.Equal(3, frameworks.Length);
+                using (PackageReader reader = new PackageReader(zip))
+                {
+                    string[] frameworks = reader.GetSupportedFrameworks().Select(f => f.DotNetFrameworkName).ToArray();
+
+                    Assert.Equal("Any,Version=v0.0", frameworks[0]);
+                    Assert.Equal(".NETFramework,Version=v4.0", frameworks[1]);
+                    Assert.Equal(".NETFramework,Version=v4.5", frameworks[2]);
+                    Assert.Equal(3, frameworks.Length);
+                }
+            }
+            finally
+            {
+                packageFileInfo.Delete();
             }
         }
 

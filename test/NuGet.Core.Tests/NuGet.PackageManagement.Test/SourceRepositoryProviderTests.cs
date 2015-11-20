@@ -44,35 +44,34 @@ namespace NuGet.Test
         public void TestSourceRepoPackageSourcesChanged2()
         {
             // Arrange
-            var settingsPath = TestPackageSourceSettings.CreateAndGetSettingFilePath();
-            var settings = new Configuration.Settings(settingsPath);
-            var packageSourceProvider = new Configuration.PackageSourceProvider(settings);
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(packageSourceProvider);
+            using (var settingsPath = TestPackageSourceSettings.CreateAndGetSettingFilePath())
+            {
+                var settings = new Configuration.Settings(settingsPath);
+                var packageSourceProvider = new Configuration.PackageSourceProvider(settings);
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(packageSourceProvider);
 
-            // Act
-            var oldEffectivePackageSources = sourceRepositoryProvider.GetRepositories().ToList();
+                // Act
+                var oldEffectivePackageSources = sourceRepositoryProvider.GetRepositories().ToList();
 
-            // Assert
-            Assert.Equal(1, oldEffectivePackageSources.Count);
-            Assert.Equal(TestSourceRepositoryUtility.V2PackageSource.Source, oldEffectivePackageSources[0].PackageSource.Source);
+                // Assert
+                Assert.Equal(1, oldEffectivePackageSources.Count);
+                Assert.Equal(TestSourceRepositoryUtility.V2PackageSource.Source, oldEffectivePackageSources[0].PackageSource.Source);
 
-            // Main Act
-            var newPackageSources = new List<Configuration.PackageSource>
+                // Main Act
+                var newPackageSources = new List<Configuration.PackageSource>
                 {
                     TestSourceRepositoryUtility.V3PackageSource,
                     TestSourceRepositoryUtility.V2PackageSource
                 };
-            packageSourceProvider.SavePackageSources(newPackageSources);
+                packageSourceProvider.SavePackageSources(newPackageSources);
 
-            var newEffectivePackageSources = sourceRepositoryProvider.GetRepositories().ToList();
+                var newEffectivePackageSources = sourceRepositoryProvider.GetRepositories().ToList();
 
-            // Main Assert
-            Assert.Equal(2, newEffectivePackageSources.Count);
-            Assert.Equal(TestSourceRepositoryUtility.V3PackageSource.Source, newEffectivePackageSources[0].PackageSource.Source);
-            Assert.Equal(TestSourceRepositoryUtility.V2PackageSource.Source, newEffectivePackageSources[1].PackageSource.Source);
-
-            // Clean-up
-            TestFilesystemUtility.DeleteRandomTestFolders(settingsPath);
+                // Main Assert
+                Assert.Equal(2, newEffectivePackageSources.Count);
+                Assert.Equal(TestSourceRepositoryUtility.V3PackageSource.Source, newEffectivePackageSources[0].PackageSource.Source);
+                Assert.Equal(TestSourceRepositoryUtility.V2PackageSource.Source, newEffectivePackageSources[1].PackageSource.Source);
+            }
         }
     }
 }

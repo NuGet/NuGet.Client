@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Moq;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Configuration.Test
@@ -107,121 +108,139 @@ namespace NuGet.Configuration.Test
         {
             // Act
             //Create nuget.config that has Primary name used for a different feed
-            string nugetConfigFileFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.config");
-            File.Create(nugetConfigFilePath).Close();
+            string nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder();
 
-            var randomURL = "https://www.somerandomURL.com/";
-            var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + randomURL + "' />";
-            var disabledReplacement = string.Empty;
-            File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
+            try
+            {
+                var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.config");
+                File.Create(nugetConfigFilePath).Close();
 
-            Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
-            PackageSourceProvider before = new PackageSourceProvider(settings);
-            VerifyPackageSource(before, 1, new string[] { NuGetConstants.FeedName },
-                new string[] { randomURL },
-                new bool[] { true }, new bool[] { false });
+                var randomURL = "https://www.somerandomURL.com/";
+                var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + randomURL + "' />";
+                var disabledReplacement = string.Empty;
+                File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
 
-            List<PackageSource> primary = new List<PackageSource>();
-            PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName);
-            primary.Add(item);
+                Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
+                PackageSourceProvider before = new PackageSourceProvider(settings);
+                VerifyPackageSource(before, 1, new string[] { NuGetConstants.FeedName },
+                    new string[] { randomURL },
+                    new bool[] { true }, new bool[] { false });
 
-            PackageSourceProvider after = new PackageSourceProvider(settings, primary, null);
+                List<PackageSource> primary = new List<PackageSource>();
+                PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName);
+                primary.Add(item);
 
-            // Assert
-            //Primary Name already exists in nuget.config but with different URL
-            //It gets overwritten by primary package source (which is enabled above while creating it)
-            //IsEnabled = true, IsOfficial = true
-            VerifyPackageSource(after, 1, new string[] { NuGetConstants.FeedName },
-                new string[] { NuGetConstants.V3FeedUrl },
-                new bool[] { false }, new bool[] { true });
+                PackageSourceProvider after = new PackageSourceProvider(settings, primary, null);
 
-            //Clean up
-            TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+                // Assert
+                //Primary Name already exists in nuget.config but with different URL
+                //It gets overwritten by primary package source (which is enabled above while creating it)
+                //IsEnabled = true, IsOfficial = true
+                VerifyPackageSource(after, 1, new string[] { NuGetConstants.FeedName },
+                    new string[] { NuGetConstants.V3FeedUrl },
+                    new bool[] { false }, new bool[] { true });
+
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+            }
         }
 
         public void SecondaryURLIsForcedWhenSecondaryNameHasAnotherFeed()
         {
             // Act
             //Create nuget.config that has Secondary name used for a different feed
-            string nugetConfigFileFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.config");
-            File.Create(nugetConfigFilePath).Close();
+            string nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder();
 
-            var randomURL = "https://www.somerandomURL.com/";
-            var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V3FeedUrl + "' />";
-            enabledReplacement = enabledReplacement + @"<add key='" + NuGetConstants.FeedName + "' value='" + randomURL + "' />";
-            var disabledReplacement = string.Empty;
-            File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
+            try
+            {
+                var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.config");
+                File.Create(nugetConfigFilePath).Close();
 
-            Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
-            PackageSourceProvider before = new PackageSourceProvider(settings);
-            VerifyPackageSource(before, 2, new string[] { NuGetConstants.FeedName, NuGetConstants.FeedName },
-                new string[] { NuGetConstants.V3FeedUrl, randomURL },
-                new bool[] { true, true }, new bool[] { false, false });
+                var randomURL = "https://www.somerandomURL.com/";
+                var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V3FeedUrl + "' />";
+                enabledReplacement = enabledReplacement + @"<add key='" + NuGetConstants.FeedName + "' value='" + randomURL + "' />";
+                var disabledReplacement = string.Empty;
+                File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
 
-            List<PackageSource> primary = new List<PackageSource>();
-            PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName);
-            primary.Add(item);
+                Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
+                PackageSourceProvider before = new PackageSourceProvider(settings);
+                VerifyPackageSource(before, 2, new string[] { NuGetConstants.FeedName, NuGetConstants.FeedName },
+                    new string[] { NuGetConstants.V3FeedUrl, randomURL },
+                    new bool[] { true, true }, new bool[] { false, false });
 
-            List<PackageSource> secondary = new List<PackageSource>();
-            PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.FeedName, false);
-            secondary.Add(item2);
+                List<PackageSource> primary = new List<PackageSource>();
+                PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName);
+                primary.Add(item);
 
-            PackageSourceProvider after = new PackageSourceProvider(settings, primary, secondary);
-            // Assert
-            //Seconday name already exists in nuget.config but with different URL
-            //It gets overwritten by secondary scource which is disabled (while getting created above)
-            //IsOfficial is set to true
-            VerifyPackageSource(after, 2, new string[] { NuGetConstants.FeedName, NuGetConstants.FeedName },
-                new string[] { NuGetConstants.V3FeedUrl, NuGetConstants.V2FeedUrl },
-                new bool[] { true, false }, new bool[] { true, true });
+                List<PackageSource> secondary = new List<PackageSource>();
+                PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.FeedName, false);
+                secondary.Add(item2);
 
-            //Clean up
-            TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+                PackageSourceProvider after = new PackageSourceProvider(settings, primary, secondary);
+                // Assert
+                //Seconday name already exists in nuget.config but with different URL
+                //It gets overwritten by secondary scource which is disabled (while getting created above)
+                //IsOfficial is set to true
+                VerifyPackageSource(after, 2, new string[] { NuGetConstants.FeedName, NuGetConstants.FeedName },
+                    new string[] { NuGetConstants.V3FeedUrl, NuGetConstants.V2FeedUrl },
+                    new bool[] { true, false }, new bool[] { true, true });
+
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+            }
         }
 
         [Fact]
         public void PrimaryNameNotChangedWhenTheFeedHasAnotherName()
         {
             // Act
-            //Create nuget.config that has Primary defined (Feed Name is different) and Secondary defined 
-            string nugetConfigFileFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.config");
-            File.Create(nugetConfigFilePath).Close();
+            //Create nuget.config that has Primary defined (Feed Name is different) and Secondary defined
+            string nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder();
 
-            var enabledReplacement = @"<add key='anotherName' value='" + NuGetConstants.V3FeedUrl + "' />";
-            enabledReplacement = enabledReplacement + @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
-            var disabledReplacement = string.Empty;
-            File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
+            try
+            {
+                var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.config");
+                File.Create(nugetConfigFilePath).Close();
 
-            Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
-            PackageSourceProvider before = new PackageSourceProvider(settings);
-            VerifyPackageSource(before, 2, new string[] { "anotherName", NuGetConstants.FeedName },
-                new string[] { NuGetConstants.V3FeedUrl, NuGetConstants.V2FeedUrl },
-                new bool[] { true, true }, new bool[] { false, false });
+                var enabledReplacement = @"<add key='anotherName' value='" + NuGetConstants.V3FeedUrl + "' />";
+                enabledReplacement = enabledReplacement + @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
+                var disabledReplacement = string.Empty;
+                File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
 
-            List<PackageSource> primary = new List<PackageSource>();
-            PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName);
-            primary.Add(item);
+                Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
+                PackageSourceProvider before = new PackageSourceProvider(settings);
+                VerifyPackageSource(before, 2, new string[] { "anotherName", NuGetConstants.FeedName },
+                    new string[] { NuGetConstants.V3FeedUrl, NuGetConstants.V2FeedUrl },
+                    new bool[] { true, true }, new bool[] { false, false });
 
-            List<PackageSource> secondary = new List<PackageSource>();
-            PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.FeedName, false);
-            secondary.Add(item2);
+                List<PackageSource> primary = new List<PackageSource>();
+                PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName);
+                primary.Add(item);
 
-            PackageSourceProvider after = new PackageSourceProvider(settings, primary, secondary);
+                List<PackageSource> secondary = new List<PackageSource>();
+                PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.FeedName, false);
+                secondary.Add(item2);
 
-            // Assert
-            //Primary feed is present in nuget.config but with a different name
-            //In this case, we don't set IsOfficial = true
-            //Secondary matches both name and URL so secondary is set to true
-            //Since this is not the first time primary is getting added, we aren't aggressive in demoting secondary from enabled to disabled
-            VerifyPackageSource(after, 2, new string[] { "anotherName", NuGetConstants.FeedName },
-                new string[] { NuGetConstants.V3FeedUrl, NuGetConstants.V2FeedUrl },
-                new bool[] { true, true }, new bool[] { false, true });
+                PackageSourceProvider after = new PackageSourceProvider(settings, primary, secondary);
 
-            //Clean up
-            TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+                // Assert
+                //Primary feed is present in nuget.config but with a different name
+                //In this case, we don't set IsOfficial = true
+                //Secondary matches both name and URL so secondary is set to true
+                //Since this is not the first time primary is getting added, we aren't aggressive in demoting secondary from enabled to disabled
+                VerifyPackageSource(after, 2, new string[] { "anotherName", NuGetConstants.FeedName },
+                    new string[] { NuGetConstants.V3FeedUrl, NuGetConstants.V2FeedUrl },
+                    new bool[] { true, true }, new bool[] { false, true });
+
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+            }
         }
 
         [Fact]
@@ -229,81 +248,93 @@ namespace NuGet.Configuration.Test
         {
             // Act
             //Create nuget.config that has Primary defined and Secondary missing
-            string nugetConfigFileFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.config");
-            File.Create(nugetConfigFilePath).Close();
+            string nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder();
 
-            var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V3FeedUrl + "' />";
-            enabledReplacement = enabledReplacement + @"<add key='anotherName' value='" + NuGetConstants.V2FeedUrl + "' />";
-            var disabledReplacement = string.Empty;
-            File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
+            try
+            {
+                var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.config");
+                File.Create(nugetConfigFilePath).Close();
 
-            Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
-            PackageSourceProvider before = new PackageSourceProvider(settings);
-            VerifyPackageSource(before, 2, new string[] { NuGetConstants.FeedName, "anotherName" },
-                new string[] { NuGetConstants.V3FeedUrl, NuGetConstants.V2FeedUrl },
-                new bool[] { true, true }, new bool[] { false, false });
+                var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V3FeedUrl + "' />";
+                enabledReplacement = enabledReplacement + @"<add key='anotherName' value='" + NuGetConstants.V2FeedUrl + "' />";
+                var disabledReplacement = string.Empty;
+                File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
 
-            List<PackageSource> primary = new List<PackageSource>();
-            PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName);
-            primary.Add(item);
+                Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
+                PackageSourceProvider before = new PackageSourceProvider(settings);
+                VerifyPackageSource(before, 2, new string[] { NuGetConstants.FeedName, "anotherName" },
+                    new string[] { NuGetConstants.V3FeedUrl, NuGetConstants.V2FeedUrl },
+                    new bool[] { true, true }, new bool[] { false, false });
 
-            List<PackageSource> secondary = new List<PackageSource>();
-            PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.FeedName, false);
-            secondary.Add(item2);
+                List<PackageSource> primary = new List<PackageSource>();
+                PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName);
+                primary.Add(item);
 
-            PackageSourceProvider after = new PackageSourceProvider(settings, primary, secondary);
+                List<PackageSource> secondary = new List<PackageSource>();
+                PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.FeedName, false);
+                secondary.Add(item2);
 
-            // Assert
-            //Secondary feed is present in nuget.config but with a different name
-            //In this case, we don't set IsOfficial = true
-            //Primary matches both name and URL so primary's IsOfficial is set to true
-            //Since this is not the first time primary is getting added, we aren't aggressive in demoting secondary from enabled to disabled
-            VerifyPackageSource(after, 2, new string[] { NuGetConstants.FeedName, "anotherName" },
-                new string[] { NuGetConstants.V3FeedUrl, NuGetConstants.V2FeedUrl },
-                new bool[] { true, true }, new bool[] { true, false });
+                PackageSourceProvider after = new PackageSourceProvider(settings, primary, secondary);
 
-            //Clean up
-            TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+                // Assert
+                //Secondary feed is present in nuget.config but with a different name
+                //In this case, we don't set IsOfficial = true
+                //Primary matches both name and URL so primary's IsOfficial is set to true
+                //Since this is not the first time primary is getting added, we aren't aggressive in demoting secondary from enabled to disabled
+                VerifyPackageSource(after, 2, new string[] { NuGetConstants.FeedName, "anotherName" },
+                    new string[] { NuGetConstants.V3FeedUrl, NuGetConstants.V2FeedUrl },
+                    new bool[] { true, true }, new bool[] { true, false });
+
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+            }
         }
 
         public void PrimaryIsEnabledAndSecondaryIsDisabledWhenPrimaryIsAddedForTheFirstTimeAndSecondaryAlreadyExists()
         {
             // Act
             //Create nuget.config that has Secondary defined
-            string nugetConfigFileFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
-            File.Create(nugetConfigFilePath).Close();
+            string nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder();
 
-            var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
-            var disabledReplacement = string.Empty;
-            File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
+            try
+            {
+                var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
+                File.Create(nugetConfigFilePath).Close();
 
-            Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
-            PackageSourceProvider before = new PackageSourceProvider(settings);
-            VerifyPackageSource(before, 1, new string[] { NuGetConstants.FeedName },
-                new string[] { NuGetConstants.V2FeedUrl },
-                new bool[] { true }, new bool[] { false });
+                var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
+                var disabledReplacement = string.Empty;
+                File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement));
 
-            List<PackageSource> primary = new List<PackageSource>();
-            PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName);
-            primary.Add(item);
+                Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
+                PackageSourceProvider before = new PackageSourceProvider(settings);
+                VerifyPackageSource(before, 1, new string[] { NuGetConstants.FeedName },
+                    new string[] { NuGetConstants.V2FeedUrl },
+                    new bool[] { true }, new bool[] { false });
 
-            List<PackageSource> secondary = new List<PackageSource>();
-            PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.FeedName, false);
-            secondary.Add(item2);
+                List<PackageSource> primary = new List<PackageSource>();
+                PackageSource item = new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName);
+                primary.Add(item);
 
-            PackageSourceProvider after = new PackageSourceProvider(settings, primary, secondary);
+                List<PackageSource> secondary = new List<PackageSource>();
+                PackageSource item2 = new PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.FeedName, false);
+                secondary.Add(item2);
 
-            // Assert
-            //First time Primary is getting added so it is set to Enabled
-            //Secondary is demoted to disabled even though it is already enabled through nuget.config
-            VerifyPackageSource(after, 2, new string[] { NuGetConstants.FeedName, NuGetConstants.FeedName },
-                new string[] { NuGetConstants.V2FeedUrl, NuGetConstants.V3FeedUrl },
-                new bool[] { false, true }, new bool[] { true, true });
+                PackageSourceProvider after = new PackageSourceProvider(settings, primary, secondary);
 
-            //Clean up
-            TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+                // Assert
+                //First time Primary is getting added so it is set to Enabled
+                //Secondary is demoted to disabled even though it is already enabled through nuget.config
+                VerifyPackageSource(after, 2, new string[] { NuGetConstants.FeedName, NuGetConstants.FeedName },
+                    new string[] { NuGetConstants.V2FeedUrl, NuGetConstants.V3FeedUrl },
+                    new bool[] { false, true }, new bool[] { true, true });
+
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+            }
         }
 
         [Fact]
@@ -311,24 +342,30 @@ namespace NuGet.Configuration.Test
         {
             // Act
             //Create nuget.config that has active package source defined
-            string nugetConfigFileFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
-            File.Create(nugetConfigFilePath).Close();
+            string nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder();
 
-            var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
-            var disabledReplacement = string.Empty;
-            var activeReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
-            File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement, activeReplacement));
+            try
+            {
+                var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
+                File.Create(nugetConfigFilePath).Close();
 
-            Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
-            PackageSourceProvider before = new PackageSourceProvider(settings);
-            Assert.Equal(NuGetConstants.FeedName, before.ActivePackageSourceName);
+                var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
+                var disabledReplacement = string.Empty;
+                var activeReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
+                File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement, activeReplacement));
 
-            before.SaveActivePackageSource(new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName));
-            Assert.Equal(NuGetConstants.FeedName, before.ActivePackageSourceName);
+                Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
+                PackageSourceProvider before = new PackageSourceProvider(settings);
+                Assert.Equal(NuGetConstants.FeedName, before.ActivePackageSourceName);
 
-            //Clean up
-            TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+                before.SaveActivePackageSource(new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName));
+                Assert.Equal(NuGetConstants.FeedName, before.ActivePackageSourceName);
+
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+            }
         }
 
         [Fact]
@@ -336,7 +373,7 @@ namespace NuGet.Configuration.Test
         {
             // Act
             //Create nuget.config that has active package source defined
-            string nugetConfigFileFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            string nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder();
             var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
             File.Create(nugetConfigFilePath).Close();
 
@@ -351,7 +388,7 @@ namespace NuGet.Configuration.Test
             Assert.Equal(NuGetConstants.FeedName, before.ActivePackageSourceName);
 
             //Clean up
-            TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+            TestFileSystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
         }
 
         [Fact]
@@ -359,7 +396,7 @@ namespace NuGet.Configuration.Test
         {
             // Act
             //Create nuget.config that has active package source defined
-            string nugetConfigFileFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            string nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder();
             var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
             File.Create(nugetConfigFilePath).Close();
 
@@ -378,7 +415,7 @@ namespace NuGet.Configuration.Test
             Assert.Equal(NuGetConstants.FeedName, before.ActivePackageSourceName);
 
             //Clean up
-            TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+            TestFileSystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
         }
 
         [Fact]
@@ -386,10 +423,13 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             //Create nuget.config that has active package source defined
-            string nugetConfigFileFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
+            string nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder();
 
-            var configContent = @"<?xml version='1.0' encoding='utf-8'?>
+            try
+            {
+                var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
+
+                var configContent = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
   <apikeys>
     <add key='https://www.nuget.org' value='removed' />
@@ -439,22 +479,27 @@ namespace NuGet.Configuration.Test
   </packageSourceCredentials>
 </configuration>";
 
-            using (var stream = File.Create(nugetConfigFilePath))
-            {
-                var bytes = Encoding.UTF8.GetBytes(configContent);
-                await stream.WriteAsync(bytes, 0, configContent.Length);
+                using (var stream = File.Create(nugetConfigFilePath))
+                {
+                    var bytes = Encoding.UTF8.GetBytes(configContent);
+                    await stream.WriteAsync(bytes, 0, configContent.Length);
+                }
+
+                Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
+                PackageSourceProvider psp = new PackageSourceProvider(settings);
+
+                var sources = psp.LoadPackageSources().ToList();
+
+                Assert.Equal(6, sources.Count);
+                Assert.NotNull(sources[1].Password);
+                Assert.True(String.Equals(sources[1].Password, "removed", StringComparison.OrdinalIgnoreCase));
+                Assert.NotNull(sources[5].Password);
+                Assert.True(String.Equals(sources[5].Password, "removed", StringComparison.OrdinalIgnoreCase));
             }
-
-            Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
-            PackageSourceProvider psp = new PackageSourceProvider(settings);
-
-            var sources = psp.LoadPackageSources().ToList();
-
-            Assert.Equal(6, sources.Count);
-            Assert.NotNull(sources[1].Password);
-            Assert.True(String.Equals(sources[1].Password, "removed", StringComparison.OrdinalIgnoreCase));
-            Assert.NotNull(sources[5].Password);
-            Assert.True(String.Equals(sources[5].Password, "removed", StringComparison.OrdinalIgnoreCase));
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+            }
         }
 
         [Fact]
@@ -616,7 +661,7 @@ namespace NuGet.Configuration.Test
 
             var provider = CreatePackageSourceProvider(settings);
 
-            // Act            
+            // Act
             provider.SavePackageSources(
                 new PackageSource[]
                     {
@@ -661,7 +706,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSourcesWithRelativePath()
         {
-            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var configContents =
@@ -669,21 +714,21 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSources>
         <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""Packages"" /> 
+        <add key=""test.org"" value=""Packages"" />
     </packageSources>
 </configuration>
 ";
                 File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), configContents);
 
                 var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
-                
+
                 var settings = Settings.LoadDefaultSettings(rootPath,
                     configFileName: null,
                     machineWideSettings: null,
                     loadAppDataSettings: false);
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var packageSourceList = packageSourceProvider.LoadPackageSources().ToList();
-                
+
                 // Act
                 packageSourceProvider.SavePackageSources(packageSourceList);
 
@@ -704,7 +749,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSourcesWithRelativePathAndAddNewSource()
         {
-            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var configContents =
@@ -712,7 +757,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSources>
         <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""Packages"" /> 
+        <add key=""test.org"" value=""Packages"" />
     </packageSources>
 </configuration>
 ";
@@ -749,7 +794,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSourcesWithOneClear()
         {
-            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var configContents =
@@ -757,8 +802,8 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSources>
         <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""https://test.org"" /> 
-         <clear /> 
+        <add key=""test.org"" value=""https://test.org"" />
+         <clear />
         <add key=""test.org"" value=""https://new.test.org"" protocolVersion=""3"" />
         <add key=""test2"" value=""https://test2.net"" />
     </packageSources>
@@ -785,7 +830,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSources>
         <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""https://test.org"" /> 
+        <add key=""test.org"" value=""https://test.org"" />
          <clear />
         <add key=""test.org"" value=""https://new.test.org"" protocolVersion=""3"" />
         <add key=""test2"" value=""https://test2.net"" />
@@ -800,7 +845,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSourcesWithMoreCLear()
         {
-            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var configContents =
@@ -808,8 +853,8 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSources>
         <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""https://test.org"" /> 
-        <clear /> 
+        <add key=""test.org"" value=""https://test.org"" />
+        <clear />
         <add key=""test.org"" value=""https://new.test.org"" protocolVersion=""3"" />
         <clear />
         <add key=""test2"" value=""https://test2.net"" />
@@ -837,8 +882,8 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSources>
         <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""https://test.org"" /> 
-        <clear /> 
+        <add key=""test.org"" value=""https://test.org"" />
+        <clear />
         <add key=""test.org"" value=""https://new.test.org"" protocolVersion=""3"" />
         <clear />
         <add key=""test2"" value=""https://test2.net"" />
@@ -853,14 +898,14 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSourcesWithOnlyClear()
         {
-            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var configContents =
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <clear /> 
+        <clear />
     </packageSources>
     <disabledPackageSources>
         <clear />
@@ -887,7 +932,7 @@ namespace NuGet.Configuration.Test
                        @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <clear /> 
+        <clear />
         <add key=""test3"" value=""https://test3.net"" />
     </packageSources>
     <disabledPackageSources>
@@ -902,7 +947,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSourcesWithHierarchyClear()
         {
-            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // assert
                 var nugetConfigPath = "NuGet.Config";
@@ -914,15 +959,15 @@ namespace NuGet.Configuration.Test
     <add key=""key2"" value=""https://test.org/2"" />
   </packageSources>
 </configuration>";
-                TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
                 config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
-    <add key=""key1"" value=""https://test.org/1"" /> 
-    <clear />   
+    <add key=""key1"" value=""https://test.org/1"" />
+    <clear />
   </packageSources>
 </configuration>";
-                TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
 
                 var rootPath = Path.Combine(Path.Combine(mockBaseDirectory, @"dir1\dir2"), Path.GetRandomFileName());
                 var settings = Settings.LoadDefaultSettings(rootPath,
@@ -954,8 +999,8 @@ namespace NuGet.Configuration.Test
                      @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
-    <add key=""key1"" value=""https://test.org/1"" /> 
-    <clear />   
+    <add key=""key1"" value=""https://test.org/1"" />
+    <clear />
   </packageSources>
 </configuration>".Replace("\r\n", "\n"),
                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, @"dir1\NuGet.config")).Replace("\r\n", "\n"));
@@ -965,7 +1010,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void WithMachineWideSources()
         {
-            // Arrange           
+            // Arrange
             var settings = new Mock<ISettings>();
             settings.Setup(s => s.GetSettingValues("packageSources", true))
                 .Returns(new[]
@@ -992,7 +1037,7 @@ namespace NuGet.Configuration.Test
                 .Callback((string section, IReadOnlyList<SettingValue> values) =>
                     {
                         // verifies that the machine wide source "one" is passed here
-                        // since it is disabled.                    
+                        // since it is disabled.
                         Assert.Equal(1, values.Count);
                         Assert.Equal("one", values[0].Key);
                         Assert.Equal("true", values[0].Value);
@@ -1263,7 +1308,7 @@ namespace NuGet.Configuration.Test
                                 });
                     })
                 .Verifiable();
-           
+
             var migratePackageSources = new Dictionary<PackageSource, PackageSource>
                 {
                     {
@@ -1768,41 +1813,43 @@ namespace NuGet.Configuration.Test
             AssertPackageSource(values[2], "three", "threesource", true);
         }
 
-        // Test that a source added in a high priority config file is not 
+        // Test that a source added in a high priority config file is not
         // disabled by <disabledPackageSources> in a low priority file.
         [Fact]
         public void HighPrioritySourceNotDisabled()
         {
             // Arrange
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var configContent1 = @"<configuration>
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var configContent1 = @"<configuration>
     <disabledPackageSources>
         <add key='a' value='true' />
     </disabledPackageSources>
 </configuration>";
-            var configContent2 = @"<configuration>
+                var configContent2 = @"<configuration>
     <packageSources>
         <add key='a' value='http://a' />
     </packageSources>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, @"a\b"), configContent1);
-            TestFilesystemUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, @"a\b\c"), configContent2);
+                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, @"a\b"), configContent1);
+                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, @"a\b\c"), configContent2);
 
-            var settings = Settings.LoadDefaultSettings(
-                Path.Combine(mockBaseDirectory, @"a\b\c"),
-                configFileName: null,
-                machineWideSettings: null,
-                loadAppDataSettings: false);
+                var settings = Settings.LoadDefaultSettings(
+                    Path.Combine(mockBaseDirectory, @"a\b\c"),
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadAppDataSettings: false);
 
-            var provider = CreatePackageSourceProvider(settings);
-            // Act
-            var values = provider.LoadPackageSources().ToList();
+                var provider = CreatePackageSourceProvider(settings);
+                // Act
+                var values = provider.LoadPackageSources().ToList();
 
-            // Assert
-            Assert.Equal(1, values.Count);
-            Assert.True(values[0].IsEnabled);
-            Assert.Equal("a", values[0].Name);
-            Assert.Equal("http://a", values[0].Source);
+                // Assert
+                Assert.Equal(1, values.Count);
+                Assert.True(values[0].IsEnabled);
+                Assert.Equal("a", values[0].Name);
+                Assert.Equal("http://a", values[0].Source);
+            }
         }
 
         // Test that a source added in a low priority config file is disabled
@@ -1811,70 +1858,74 @@ namespace NuGet.Configuration.Test
         public void LowPrioritySourceDisabled()
         {
             // Arrange
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var configContent1 = @"<configuration>
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var configContent1 = @"<configuration>
     <disabledPackageSources>
         <add key='a' value='true' />
     </disabledPackageSources>
 </configuration>";
-            var configContent2 = @"<configuration>
+                var configContent2 = @"<configuration>
     <packageSources>
         <add key='a' value='http://a' />
     </packageSources>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, @"a\b"), configContent2);
-            TestFilesystemUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, @"a\b\c"), configContent1);
+                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, @"a\b"), configContent2);
+                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, @"a\b\c"), configContent1);
 
-            var settings = Settings.LoadDefaultSettings(
-                Path.Combine(mockBaseDirectory, @"a\b\c"),
-                configFileName: null,
-                machineWideSettings: null,
-                loadAppDataSettings: false);
+                var settings = Settings.LoadDefaultSettings(
+                    Path.Combine(mockBaseDirectory, @"a\b\c"),
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadAppDataSettings: false);
 
-            var provider = CreatePackageSourceProvider(settings);
+                var provider = CreatePackageSourceProvider(settings);
 
-            // Act
-            var values = provider.LoadPackageSources().ToList();
+                // Act
+                var values = provider.LoadPackageSources().ToList();
 
-            // Assert
-            Assert.Equal(1, values.Count);
-            Assert.False(values[0].IsEnabled);
-            Assert.Equal("a", values[0].Name);
-            Assert.Equal("http://a", values[0].Source);
+                // Assert
+                Assert.Equal(1, values.Count);
+                Assert.False(values[0].IsEnabled);
+                Assert.Equal("a", values[0].Name);
+                Assert.Equal("http://a", values[0].Source);
+            }
         }
 
         [Fact]
         public void V2NotDisabled()
         {
             // Arrange
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var configContent = @"<configuration>
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var configContent = @"<configuration>
     <packageSources>
         <add key='nuget.org' value='https://www.nuget.org/api/v2/' />
     </packageSources>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile("nuget.config", mockBaseDirectory, configContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", mockBaseDirectory, configContent);
 
-            var settings = Settings.LoadDefaultSettings(
-                mockBaseDirectory,
-                configFileName: null,
-                machineWideSettings: null,
-                loadAppDataSettings: false);
+                var settings = Settings.LoadDefaultSettings(
+                    mockBaseDirectory,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadAppDataSettings: false);
 
-            var provider = CreatePackageSourceProvider(settings);
+                var provider = CreatePackageSourceProvider(settings);
 
-            // Act
-            var values = provider.LoadPackageSources().Where(p => p.Name.Equals("nuget.org", StringComparison.OrdinalIgnoreCase)).ToList();
+                // Act
+                var values = provider.LoadPackageSources().Where(p => p.Name.Equals("nuget.org", StringComparison.OrdinalIgnoreCase)).ToList();
 
-            // Assert
-            Assert.True(values[0].IsEnabled);
+                // Assert
+                Assert.True(values[0].IsEnabled);
+            }
         }
 
         [Fact]
         public void AddPackageSourcesWithConfigFile()
         {
-            
-            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var configContents =
@@ -1915,7 +1966,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_AddDisabledSourceToTheConfigContainingSource()
         {
-            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var config1Contents =
@@ -1939,7 +1990,7 @@ namespace NuGet.Configuration.Test
                     machineWideSettings: null,
                     loadAppDataSettings: false);
                 var packageSourceProvider = new PackageSourceProvider(settings);
-                
+
                 // Act - 1
                 var sources = packageSourceProvider.LoadPackageSources();
 
@@ -1973,7 +2024,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_WritesToTheSettingsFileWithTheNearestPriority()
         {
-            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var config1Contents =
@@ -2047,7 +2098,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_UpdatesSourceInAllConfigs()
         {
-            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var config1Contents =
@@ -2124,7 +2175,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_AddsNewSourcesToTheSettingWithLowestPriority()
         {
-            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var config1Contents =
@@ -2202,7 +2253,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_AddsOrderingForCollapsedFeeds()
         {
-            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var configContents =
@@ -2278,7 +2329,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_DisabledMachineWideSource()
         {
-            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var configContents =
@@ -2326,7 +2377,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_DisabledOneMachineWideSource()
         {
-            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var configContents =
@@ -2374,7 +2425,7 @@ namespace NuGet.Configuration.Test
         [Fact(Skip = "Test currently failing")]
         public void DisabledMachineWideSourceByDefault()
         {
-            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var configContents =
@@ -2410,7 +2461,7 @@ namespace NuGet.Configuration.Test
         [Fact(Skip = "Test currently failing")]
         public void DisabledMachineWideSourceByDefaultWithNull()
         {
-            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
@@ -2426,7 +2477,7 @@ namespace NuGet.Configuration.Test
                 Assert.Equal(2, sources.Count);
             }
         }
-        
+
         private string CreateNuGetConfigContent(string enabledReplacement = "", string disabledReplacement = "", string activeSourceReplacement = "")
         {
             var nugetConfigBaseString = new StringBuilder();
