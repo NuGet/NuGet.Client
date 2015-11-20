@@ -1571,7 +1571,6 @@ namespace NuGet.Configuration.Test
             string result = settings.GetValue("SectionName", "path-key", isPath: true);
 
             // Assert
-
             Assert.Equal(String.Format(@"{0}\..\Blah", mockBaseDirectory), result);
         }
 

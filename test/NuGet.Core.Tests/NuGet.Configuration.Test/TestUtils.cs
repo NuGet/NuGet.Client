@@ -11,7 +11,15 @@ namespace NuGet.Configuration.Test
 {
     public static class TestFilesystemUtility
     {
-        private static readonly string NuGetTestFolder = Path.Combine(Path.GetTempPath(), "NuGetTestFolder");
+        private static readonly string _NuGetTestFolder = Path.Combine(Path.GetTempPath(), "NuGetTestFolder");
+
+        public static string NuGetTestFolder
+        {
+            get
+            {
+                return _NuGetTestFolder;
+            }
+        }
 
         public static TestDirectory CreateRandomTestFolder()
         {
