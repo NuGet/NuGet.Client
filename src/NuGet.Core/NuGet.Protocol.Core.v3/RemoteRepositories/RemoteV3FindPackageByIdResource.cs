@@ -168,13 +168,13 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     using (var data = await _httpSource.GetAsync(
                         package.ContentUri,
                         "nupkg_" + package.Identity.Id + "." + package.Identity.Version.ToNormalizedString(),
-                        retry == 0 ? CacheContext.NupkgMaxAgeTimeSpan : TimeSpan.Zero,
+                        CreateCacheContext(CacheContext, retry),
                         cancellationToken))
                     {
                         return new NupkgEntry
-                            {
-                                TempFileName = data.CacheFileName
-                            };
+                        {
+                            TempFileName = data.CacheFileName
+                        };
                     }
                 }
                 catch (Exception ex) when (retry < 2)

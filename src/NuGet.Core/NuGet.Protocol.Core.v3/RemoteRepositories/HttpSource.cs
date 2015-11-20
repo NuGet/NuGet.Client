@@ -34,17 +34,24 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
         public ILogger Logger { get; set; }
 
-        internal Task<HttpSourceResult> GetAsync(string uri, string cacheKey, TimeSpan cacheAgeLimit, CancellationToken cancellationToken)
+        internal Task<HttpSourceResult> GetAsync(string uri,
+            string cacheKey,
+            HttpSourceCacheContext context,
+            CancellationToken cancellationToken)
         {
-            return GetAsync(uri, cacheKey, cacheAgeLimit, ignoreNotFounds: false, cancellationToken: cancellationToken);
+            return GetAsync(uri, cacheKey, context, ignoreNotFounds: false, cancellationToken: cancellationToken);
         }
 
-        internal async Task<HttpSourceResult> GetAsync(string uri, string cacheKey, TimeSpan cacheAgeLimit, bool ignoreNotFounds, CancellationToken cancellationToken)
+        internal async Task<HttpSourceResult> GetAsync(string uri,
+            string cacheKey,
+            HttpSourceCacheContext context,
+            bool ignoreNotFounds,
+            CancellationToken cancellationToken)
         {
             var sw = new Stopwatch();
             sw.Start();
 
-            var result = await TryCache(uri, cacheKey, cacheAgeLimit, cancellationToken);
+            var result = await TryCache(uri, cacheKey, context, cancellationToken);
             if (result.Stream != null)
             {
                 Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture, "  {0} {1}", "CACHE", uri));
@@ -117,7 +124,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                             HttpHandlerResourceV3.CredentialsSuccessfullyUsed(_baseUri, credentials);
                         }
 
-                        await CreateCacheFile(result, response, cacheAgeLimit, cancellationToken);
+                        await CreateCacheFile(result, response, context, cancellationToken);
 
                         Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture,
                             "  {1} {0} {2}ms", uri, response.StatusCode.ToString(), sw.ElapsedMilliseconds.ToString()));
@@ -133,17 +140,28 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private static Task CreateCacheFile(
             HttpSourceResult result,
             HttpResponseMessage response,
-            TimeSpan cacheAgeLimit,
+            HttpSourceCacheContext context,
             CancellationToken cancellationToken)
         {
             var newFile = result.CacheFileName + "-new";
 
             // Zero value of TTL means we always download the latest package
             // So we write to a temp file instead of cache
-            if (cacheAgeLimit.Equals(TimeSpan.Zero))
+            if (context.MaxAge.Equals(TimeSpan.Zero))
             {
-                result.CacheFileName = Path.GetTempFileName();
-                newFile = Path.GetTempFileName();
+                try
+                {
+                    var newCacheFile = Path.Combine(context.RootTempFolder, Path.GetRandomFileName());
+                    using (File.Create(result.CacheFileName)) { }
+                    result.CacheFileName = newCacheFile;
+                }
+                catch
+                {
+                    System.Diagnostics.Debugger.Launch();
+                    throw;
+                }
+
+                newFile = Path.Combine(context.RootTempFolder, Path.GetRandomFileName());
             }
 
             // The update of a cached file is divided into two steps:
@@ -202,11 +220,12 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
         private async Task<HttpSourceResult> TryCache(string uri,
             string cacheKey,
-            TimeSpan cacheAgeLimit,
+            HttpSourceCacheContext context,
             CancellationToken token)
         {
             var baseFolderName = RemoveInvalidFileNameChars(ComputeHash(_baseUri.OriginalString));
             var baseFileName = RemoveInvalidFileNameChars(cacheKey) + ".dat";
+            var cacheAgeLimit = context.MaxAge;
 
 #if NET45
             var localAppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);

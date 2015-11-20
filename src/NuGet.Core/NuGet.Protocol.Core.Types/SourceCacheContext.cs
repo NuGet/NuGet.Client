@@ -12,7 +12,7 @@ namespace NuGet.Protocol.Core.Types
     /// </summary>
     public class SourceCacheContext : IDisposable
     {
-        private static readonly string _tempFolderGuide = new Guid().ToString();
+        private static readonly string _tempFolderGuide = Guid.NewGuid().ToString();
 
         /// <summary>
         /// Default amount of time to cache version lists.
@@ -101,7 +101,7 @@ namespace NuGet.Protocol.Core.Types
         {
             try
             {
-                Directory.Delete(GeneratedTempFolder, recursive: true);
+                //Directory.Delete(GeneratedTempFolder, recursive: true);
             }
             catch
             {

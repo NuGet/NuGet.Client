@@ -138,9 +138,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 {
                     var uri = baseUri + id.ToLowerInvariant() + "/index.json";
                     var results = new List<PackageInfo>();
+
                     using (var data = await _httpSource.GetAsync(uri,
                         $"list_{id}",
-                        retry == 0 ? CacheContext.ListMaxAgeTimeSpan : TimeSpan.Zero,
+                        CreateCacheContext(CacheContext, retry),
                         ignoreNotFounds: true,
                         cancellationToken: cancellationToken))
                     {
@@ -250,7 +251,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     using (var data = await _httpSource.GetAsync(
                         package.ContentUri,
                         "nupkg_" + package.Id + "." + package.Version.ToNormalizedString(),
-                        retry == 0 ? CacheContext.NupkgMaxAgeTimeSpan : TimeSpan.Zero,
+                        CreateCacheContext(CacheContext, retry),
                         cancellationToken))
                     {
                         return new NupkgEntry
