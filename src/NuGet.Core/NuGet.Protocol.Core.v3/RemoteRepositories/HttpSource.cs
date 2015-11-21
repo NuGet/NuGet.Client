@@ -149,17 +149,9 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             // So we write to a temp file instead of cache
             if (context.MaxAge.Equals(TimeSpan.Zero))
             {
-                try
-                {
-                    var newCacheFile = Path.Combine(context.RootTempFolder, Path.GetRandomFileName());
-                    using (File.Create(result.CacheFileName)) { }
-                    result.CacheFileName = newCacheFile;
-                }
-                catch
-                {
-                    System.Diagnostics.Debugger.Launch();
-                    throw;
-                }
+                var newCacheFile = Path.Combine(context.RootTempFolder, Path.GetRandomFileName());
+
+                result.CacheFileName = newCacheFile;
 
                 newFile = Path.Combine(context.RootTempFolder, Path.GetRandomFileName());
             }

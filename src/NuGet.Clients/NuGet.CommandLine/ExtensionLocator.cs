@@ -120,6 +120,6 @@ namespace NuGet.CommandLine
                     StringSplitOptions.RemoveEmptyEntries));
             }
             return result;
-        } 
+        }
     }
 }

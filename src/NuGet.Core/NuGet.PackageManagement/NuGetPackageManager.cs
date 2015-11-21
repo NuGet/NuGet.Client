@@ -1825,10 +1825,7 @@ namespace NuGet.PackageManagement
                 // Restore parent projects. These will be updated to include the transitive changes.
                 var parents = await BuildIntegratedRestoreUtility.GetParentProjectsInClosure(SolutionManager, buildIntegratedProject);
 
-                var cacheContext = new SourceCacheContext()
-                {
-                    ListMaxAge = DateTimeOffset.UtcNow
-                };
+                Action<SourceCacheContext> cacheContextModifier = c => c.ListMaxAge = DateTimeOffset.UtcNow;
 
                 foreach (var parent in parents)
                 {
@@ -1838,7 +1835,7 @@ namespace NuGet.PackageManagement
                         logger,
                         projectAction.Sources,
                         effectiveGlobalPackagesFolder,
-                        c => c.ListMaxAge = DateTimeOffset.Now,
+                        cacheContextModifier,
                         token);
                 }
             }
