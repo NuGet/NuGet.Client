@@ -375,7 +375,7 @@ namespace NuGet.Test
 
             // Clean-up
             TestFilesystemUtility.DeleteRandomTestFolders(
-                testSolutionManager.SolutionDirectory, 
+                testSolutionManager.SolutionDirectory,
                 randomProjectFolderPath);
         }
 
@@ -900,7 +900,7 @@ namespace NuGet.Test
             Assert.True(actions.First() is BuildIntegratedProjectAction);
 
             Assert.Equal(3, installedPackages.Count());
-            
+
             foreach (var installed in installedPackages)
             {
                 if (installed.PackageIdentity.Id.Equals("nuget.versioning", StringComparison.OrdinalIgnoreCase))

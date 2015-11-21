@@ -24,7 +24,7 @@ namespace NuGet.Protocol.Core.v3.Data
         {
             _uri = uri;
             _msWait = msWait;
-            _guid = new Guid();
+            _guid = Guid.NewGuid();
             _cancellationToken = cancellationToken;
 
             GetLock();

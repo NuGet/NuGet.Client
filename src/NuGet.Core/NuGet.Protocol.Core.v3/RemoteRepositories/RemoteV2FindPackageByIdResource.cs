@@ -138,9 +138,9 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         // (2) cache for pages is valid for only 30 min.
                         // So we decide to leave current logic and observe.
                         using (var data = await _httpSource.GetAsync(
-                            uri, 
+                            uri,
                             $"list_{id}_page{page}",
-                            retry == 0 ? CacheContext.ListMaxAgeTimeSpan : TimeSpan.Zero, 
+                            CreateCacheContext(CacheContext, retry),
                             cancellationToken))
                         {
                             try
@@ -157,12 +157,12 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                                 // Example of what this looks like in the odata feed:
                                 // <link rel="next" href="{nextLink}" />
                                 var nextUri = (from e in doc.Root.Elements(_xnameLink)
-                                    let attr = e.Attribute("rel")
-                                    where attr != null && string.Equals(attr.Value, "next", StringComparison.OrdinalIgnoreCase)
-                                    select e.Attribute("href")
+                                               let attr = e.Attribute("rel")
+                                               where attr != null && string.Equals(attr.Value, "next", StringComparison.OrdinalIgnoreCase)
+                                               select e.Attribute("href")
                                     into nextLink
-                                    where nextLink != null
-                                    select nextLink.Value).FirstOrDefault();
+                                               where nextLink != null
+                                               select nextLink.Value).FirstOrDefault();
 
                                 // Stop if there's nothing else to GET
                                 if (string.IsNullOrEmpty(nextUri))
@@ -183,11 +183,11 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
                     return results;
                 }
-                catch (Exception ex) when(retry < 2)
+                catch (Exception ex) when (retry < 2)
                 {
                     Logger.LogInformation(string.Format("Warning: FindPackagesById: {1}\r\n  {0}", ex.Message, id));
                 }
-                catch (Exception ex) when(retry == 2)
+                catch (Exception ex) when (retry == 2)
                 {
                     // Fail silently by returning empty result list
                     var message = Strings.FormatLog_FailedToRetrievePackage(_baseUri);
@@ -259,13 +259,13 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     using (var data = await _httpSource.GetAsync(
                         package.ContentUri,
                         "nupkg_" + package.Id + "." + package.Version,
-                        retry == 0 ? CacheContext.NupkgMaxAgeTimeSpan : TimeSpan.Zero,
+                        CreateCacheContext(CacheContext, retry),
                         cancellationToken))
                     {
                         return new NupkgEntry
-                            {
-                                TempFileName = data.CacheFileName
-                            };
+                        {
+                            TempFileName = data.CacheFileName
+                        };
                     }
                 }
                 catch (Exception ex)
