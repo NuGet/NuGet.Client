@@ -13,6 +13,163 @@ namespace NuGet.CommandLine.Test
     public class NuGetPackCommandTest
     {
         [Fact]
+        public void PackCommand_IncludeExcludePackageFromNuspec()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
+            try
+            {
+                // Arrange
+                Util.CreateDirectory(workingDirectory);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles/any/any"),
+                    "image.jpg",
+                    "");
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>packageA</id>
+    <version>1.0.0</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <dependencies>
+        <group>
+            <dependency id=""packageB"" version=""1.0.0"" include=""a,b,c"" exclude=""b,c"" />
+            <dependency id=""packageC"" version=""1.0.0"" include=""a,b,c"" />
+            <dependency id=""packageD"" version=""1.0.0"" exclude=""a,b,c"" />
+            <dependency id=""packageE"" version=""1.0.0"" exclude=""z"" />
+        </group>
+    </dependencies>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+                using (var zip = new ZipArchive(File.OpenRead(path)))
+                {
+                    var manifestReader
+                        = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open());
+                    var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
+
+                    var node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "dependencies");
+
+                    var actual = node.ToString().Replace("\r\n", "\n");
+
+                    Assert.Equal(
+                        @"<dependencies xmlns=""http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"">
+  <group>
+    <dependency id=""packageB"" version=""1.0.0"" include=""a,b,c"" exclude=""b,c"" />
+    <dependency id=""packageC"" version=""1.0.0"" include=""a,b,c"" />
+    <dependency id=""packageD"" version=""1.0.0"" exclude=""a,b,c"" />
+    <dependency id=""packageE"" version=""1.0.0"" exclude=""z"" />
+  </group>
+</dependencies>".Replace("\r\n", "\n"), actual);
+                }
+            }
+            finally
+            {
+                Directory.Delete(workingDirectory, true);
+            }
+        }
+
+        [Fact]
+        public void PackCommand_PackRuntimesRefNativeNoWarnings()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
+            try
+            {
+                // Arrange
+                Util.CreateDirectory(workingDirectory);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "ref/uap10.0"),
+                    "a.dll",
+                    string.Empty);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "native"),
+                    "a.dll",
+                    string.Empty);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "runtimes/win-x86/lib/uap10.0"),
+                    "a.dll",
+                    string.Empty);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "lib/uap10.0"),
+                    "a.dll",
+                    string.Empty);
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>packageA</id>
+    <version>1.0.0</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+                var files = package.GetFiles().Select(f => f.Path).OrderBy(s => s).ToArray();
+                Array.Sort(files);
+
+                Assert.Equal(
+                    files,
+                    new string[]
+                    {
+                            @"lib\uap10.0\a.dll",
+                            @"native\a.dll",
+                            @"ref\uap10.0\a.dll",
+                            @"runtimes\win-x86\lib\uap10.0\a.dll",
+                    });
+
+                Assert.False(r.Item2.Contains("Assembly outside lib folder"));
+            }
+            finally
+            {
+                Directory.Delete(workingDirectory, true);
+            }
+        }
+
+        [Fact]
         public void PackCommand_PackAnalyzers()
         {
             var nugetexe = Util.GetNuGetExePath();

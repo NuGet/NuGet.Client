@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Packaging.Core;
 
 namespace NuGet.CommandLine
 {
@@ -30,7 +31,7 @@ namespace NuGet.CommandLine
             // If the Destination Feed Folder does not exist, it will be created.
             OfflineFeedUtility.ThrowIfInvalid(destination);
 
-            var packagePaths = GetPackageFilePaths(source, "*" + ProjectManagement.Constants.PackageExtension);
+            var packagePaths = GetPackageFilePaths(source, "*" + PackagingCoreConstants.NupkgExtension);
 
             if (packagePaths.Count > 0)
             {

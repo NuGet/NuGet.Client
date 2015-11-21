@@ -83,7 +83,7 @@ namespace NuGet.Packaging
 
             var results = new List<FrameworkSpecificGroup>();
 
-            foreach (var group in GetFileGroups("build"))
+            foreach (var group in GetFileGroups(PackagingConstants.Folders.Build))
             {
                 var filteredGroup = group;
 
@@ -121,12 +121,12 @@ namespace NuGet.Packaging
 
         public IEnumerable<FrameworkSpecificGroup> GetToolItems()
         {
-            return GetFileGroups("tools");
+            return GetFileGroups(PackagingConstants.Folders.Tools);
         }
 
         public IEnumerable<FrameworkSpecificGroup> GetContentItems()
         {
-            return GetFileGroups("content");
+            return GetFileGroups(PackagingConstants.Folders.Content);
         }
 
         public IEnumerable<PackageDependencyGroup> GetPackageDependencies()
@@ -136,7 +136,7 @@ namespace NuGet.Packaging
 
         public IEnumerable<FrameworkSpecificGroup> GetLibItems()
         {
-            return GetFileGroups("lib");
+            return GetFileGroups(PackagingConstants.Folders.Lib);
         }
 
         /// <summary>
@@ -262,7 +262,7 @@ namespace NuGet.Packaging
         {
             var groups = new Dictionary<NuGetFramework, List<string>>(new NuGetFrameworkFullComparer());
 
-            var isContentFolder = StringComparer.OrdinalIgnoreCase.Equals(folder, PackagingConstants.ContentFolder);
+            var isContentFolder = StringComparer.OrdinalIgnoreCase.Equals(folder, PackagingConstants.Folders.Content);
             var allowSubFolders = true;
 
             foreach (var path in GetFiles(folder))

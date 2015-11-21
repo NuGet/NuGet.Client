@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using NuGet.Frameworks;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 
 namespace NuGet.ProjectManagement
 {
@@ -452,7 +453,7 @@ namespace NuGet.ProjectManagement
         private static bool IsEmptyFolder(string packageFilePath)
         {
             return packageFilePath != null &&
-                   Constants.PackageEmptyFileName.Equals(Path.GetFileName(packageFilePath), StringComparison.OrdinalIgnoreCase);
+                   PackagingCoreConstants.EmptyFolder.Equals(Path.GetFileName(packageFilePath), StringComparison.OrdinalIgnoreCase);
         }
 
         private static string ResolvePath(
@@ -524,9 +525,9 @@ namespace NuGet.ProjectManagement
             // Always use Path.DirectorySeparatorChar
             var effectivePathForContentFile = PathUtility.ReplaceAltDirSeparatorWithDirSeparator(zipArchiveEntryFullName);
 
-            if (effectivePathForContentFile.StartsWith(Constants.ContentDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            if (effectivePathForContentFile.StartsWith(PackagingConstants.Folders.Content + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
             {
-                effectivePathForContentFile = effectivePathForContentFile.Substring((Constants.ContentDirectory + Path.DirectorySeparatorChar).Length);
+                effectivePathForContentFile = effectivePathForContentFile.Substring((PackagingConstants.Folders.Content + Path.DirectorySeparatorChar).Length);
                 if (!nuGetFramework.Equals(NuGetFramework.AnyFramework))
                 {
                     // Parsing out the framework name out of the effective path
