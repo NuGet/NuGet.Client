@@ -21,6 +21,8 @@ namespace NuGet.CommandLine
         private const string GetProjectReferencesEntryPointTarget =
             "NuGet.CommandLine.GetProjectsReferencingProjectJsonFilesEntryPoint.targets";
 
+        private const string ReferenceSeparator = "||";
+
         private static readonly HashSet<string> _msbuildExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             ".csproj",
@@ -58,9 +60,7 @@ namespace NuGet.CommandLine
             ExtractResource(GetProjectReferencesTarget, customAfterBuildTargetPath);
 
             var argumentBuilder = new StringBuilder(
-                "/t:NuGet_GetProjectsReferencingProjectJson " +
-                "/nologo /nr:false /v:q " +
-                "/p:BuildProjectReferences=false");
+                "/t:NuGet_GetProjectsReferencingProjectJson /nologo /v:q /m /p:BuildProjectReferences=false");
 
             argumentBuilder.Append(" /p:NuGetCustomAfterBuildTargetPath=");
             AppendQuoted(argumentBuilder, customAfterBuildTargetPath);
@@ -102,21 +102,30 @@ namespace NuGet.CommandLine
                     StringComparer.OrdinalIgnoreCase);
                 if (File.Exists(resultsPath))
                 {
+                    string currentProject = null;
                     HashSet<string> referencedProjects = null;
                     foreach (var line in File.ReadAllLines(resultsPath))
                     {
-                        if (line.StartsWith("#:", StringComparison.Ordinal))
+                        var index = line.IndexOf(ReferenceSeparator, StringComparison.Ordinal);
+                        Debug.Assert(index > 0);
+
+                        // Avoid looking up the dictionary if the previously looked up project
+                        // is the same as the current one.
+                        if (currentProject == null ||
+                            index != currentProject.Length ||
+                            string.Compare(line, 0, currentProject, 0, index, StringComparison.Ordinal) != 0)
                         {
-                            // First entry for each project grouping is of the format "#:ProjectPath".
-                            // We'll use this as a delimiter to start a new grouping.
-                            referencedProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                            lookup[line.Substring(2)] = referencedProjects;
+                            currentProject = line.Substring(0, index);
+                            if (!lookup.TryGetValue(currentProject, out referencedProjects))
+                            {
+                                referencedProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                                lookup[currentProject] = referencedProjects;
+                            }
                         }
-                        else
-                        {
-                            Debug.Assert(referencedProjects != null);
-                            referencedProjects.Add(line);
-                        }
+
+                        Debug.Assert(referencedProjects != null);
+                        var reference = line.Substring(index + ReferenceSeparator.Length);
+                        referencedProjects.Add(reference);
                     }
                 }
 
@@ -285,8 +294,8 @@ namespace NuGet.CommandLine
         // This method is called by GetMsbuildDirectory(). This method is not intended to be called directly.
         // It's marked public so that it can be called by unit tests.
         public static string GetMsbuildDirectoryInternal(
-            string userVersion, 
-            IConsole console, 
+            string userVersion,
+            IConsole console,
             IEnumerable<Toolset> installedToolsets)
         {
             if (string.IsNullOrEmpty(userVersion))

@@ -6,7 +6,7 @@
         <MsBuild
             Projects="@(NuGet_ProjectReferenceToResolveItems)"
             Targets="_NuGet_GetProjectsReferencingProjectJsonInternal"
-            BuildInParallel="false"
+            BuildInParallel="$(BuildInParallel)"
             Properties="
                 %(_MSBuildProjectReferenceExistent.SetConfiguration);
                 %(_MSBuildProjectReferenceExistent.SetPlatform);

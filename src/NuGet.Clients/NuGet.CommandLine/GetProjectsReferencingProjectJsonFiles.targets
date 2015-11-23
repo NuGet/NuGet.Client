@@ -9,10 +9,7 @@
 
         <ItemGroup>
             <_ProjectReferencingProjectJsonFile
-                Include="#:$(MSBuildProjectFullPath)"
-                Condition=" '$(MSBuildProjectFullPath)' == '$(EntryPointProject)' " />
-            <_ProjectReferencingProjectJsonFile
-                Include="$(MSBuildProjectFullPath)"
+                Include="$(EntryPointProject)||$(MSBuildProjectFullPath)"
                 Condition=" '$(MSBuildProjectFullPath)' != '$(EntryPointProject)' " />
         </ItemGroup>
 
