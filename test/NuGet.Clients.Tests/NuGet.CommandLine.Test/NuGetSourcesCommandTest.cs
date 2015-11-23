@@ -202,5 +202,39 @@ namespace NuGet.CommandLine.Test
                 }
             }
         }
+
+        [Fact]
+        public void TestVerbosityQuiet_DoesNotShowInfoMessages()
+        {
+            using (var preserver = new DefaultConfigurationFilePreserver())
+            {
+                // Arrange
+                var nugetexe = Util.GetNuGetExePath();
+                string[] args = new string[] {
+                    "sources",
+                    "Add",
+                    "-Name",
+                    "test_source",
+                    "-Source",
+                    "http://test_source",
+                    "-Verbosity",
+                    "Quiet"
+                };
+
+                // Act
+                // Set the working directory to C:\, otherwise,
+                // the test will change the nuget.config at the code repo's root directory
+                // And, will fail since global nuget.config is updated
+                var result = CommandRunner.Run(nugetexe, @"c:\", string.Join(" ", args), true);
+
+                // Assert
+                Util.VerifyResultSuccess(result);
+                // Ensure that no messages are shown with Verbosity as Quiet
+                Assert.Equal(string.Empty, result.Item2);
+                var settings = Configuration.Settings.LoadDefaultSettings(null, null, null);
+                var source = settings.GetValue("packageSources", "test_source");
+                Assert.Equal("http://test_source", source);
+            }
+        }
     }
 }

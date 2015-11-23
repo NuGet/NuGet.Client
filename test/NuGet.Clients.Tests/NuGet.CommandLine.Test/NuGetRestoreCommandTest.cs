@@ -86,6 +86,45 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public void TestVerbosityQuiet_ShowsErrorMessages()
+        {
+            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
+            {
+                // Arrange
+                var nugetexe = Util.GetNuGetExePath();
+                var solutionPath = Path.Combine(randomTestFolder, "solution.sln");
+
+                var args = new string[]
+                {
+                    "restore",
+                    solutionPath,
+                    "-PackagesDirectory",
+                    randomTestFolder,
+                    "-Verbosity",
+                    "Quiet"
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.NotEqual(0, r.Item1);
+                var error = r.Item3;
+                Assert.Contains("could not find a part of the path", r.Item3, StringComparison.OrdinalIgnoreCase);
+            }
+            finally
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
+            }
+        }
+
+        [Fact]
         public void RestoreCommand_MissingPackagesConfigFile()
         {
             var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();

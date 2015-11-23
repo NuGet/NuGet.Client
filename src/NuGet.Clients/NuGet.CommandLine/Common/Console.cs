@@ -183,7 +183,7 @@ namespace NuGet.Common
                                  ? String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("CommandLine_Warning"), value)
                                  : value;
 
-            WriteColor(Out, ConsoleColor.Yellow, message, args);
+            WriteColor(System.Console.Out, ConsoleColor.Yellow, message, args);
         }
 
         public void WriteLine(ConsoleColor color, string value, params object[] args)
