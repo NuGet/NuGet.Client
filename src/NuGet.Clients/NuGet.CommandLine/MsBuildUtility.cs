@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Microsoft.Build.Evaluation;
 using NuGet.Common;
@@ -124,7 +125,58 @@ namespace NuGet.CommandLine
             }
         }
 
-        public static IEnumerable<string> GetAllProjectFileNames(string solutionFile, string msbuildPath)
+        /// <summary>
+        /// Gets the list of project files in a solution, using XBuild's solution parser.
+        /// </summary>
+        /// <param name="solutionFile">The solution file. </param>
+        /// <returns>The list of project files (in full path) in the solution.</returns>
+        public static IEnumerable<string> GetAllProjectFileNamesWithXBuild(string solutionFile)
+        {
+            try
+            {
+                var assembly = Assembly.Load(
+                    "Microsoft.Build.Engine, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
+                var solutionParserType = assembly.GetType("Mono.XBuild.CommandLine.SolutionParser");
+                if (solutionParserType == null)
+                {
+                    throw new CommandLineException(
+                        LocalizedResourceManager.GetString("Error_CannotGetXBuildSolutionParser"));
+                }
+
+                var getAllProjectFileNamesMethod = solutionParserType.GetMethod(
+                    "GetAllProjectFileNames",
+                    new Type[] { typeof(string) });
+                if (getAllProjectFileNamesMethod == null)
+                {
+                    throw new CommandLineException(
+                        LocalizedResourceManager.GetString("Error_CannotGetGetAllProjectFileNamesMethod"));
+                }
+
+                var names = (IEnumerable<string>)getAllProjectFileNamesMethod.Invoke(
+                    null, new object[] { solutionFile });
+                return names;
+            }
+            catch (Exception ex)
+            {
+                var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    LocalizedResourceManager.GetString("Error_SolutionFileParseError"),
+                    solutionFile,
+                    ex.Message);
+
+                throw new CommandLineException(message);
+            }
+        }
+
+        /// <summary>
+        /// Gets the list of project files in a solution, using MSBuild API.
+        /// </summary>
+        /// <param name="solutionFile">The solution file. </param>
+        /// <param name="msbuildPath">The directory that contains msbuild.</param>
+        /// <returns>The list of project files (in full path) in the solution.</returns>
+        public static IEnumerable<string> GetAllProjectFileNamesWithMsbuild(
+            string solutionFile,
+            string msbuildPath)
         {
             try
             {
@@ -142,6 +194,20 @@ namespace NuGet.CommandLine
                     ex.Message);
 
                 throw new CommandLineException(message);
+            }
+        }
+
+        public static IEnumerable<string> GetAllProjectFileNames(
+            string solutionFile,
+            string msbuildPath)
+        {
+            if (EnvironmentUtility.IsMonoRuntime)
+            {
+                return GetAllProjectFileNamesWithXBuild(solutionFile);
+            }
+            else
+            {
+                return GetAllProjectFileNamesWithMsbuild(solutionFile, msbuildPath);
             }
         }
 
@@ -393,7 +459,6 @@ namespace NuGet.CommandLine
             }
         }
 
-        
         /// <summary>
         /// This class is used to create a temp file, which is deleted in Dispose().
         /// </summary>
@@ -402,7 +467,7 @@ namespace NuGet.CommandLine
             private readonly string _filePath;
 
             /// <summary>
-            /// Constructor. It creates an empty temp file under directory <paramref name="directory"/>, with 
+            /// Constructor. It creates an empty temp file under directory <paramref name="directory"/>, with
             /// extension <paramref name="extension"/>.
             /// </summary>
             /// <param name="directory">The directory where the temp file is created.</param>
@@ -444,8 +509,8 @@ namespace NuGet.CommandLine
                     count++;
                 }
                 while (count < 3);
-                
-                throw new InvalidOperationException("Failed to create a random file.");                
+
+                throw new InvalidOperationException("Failed to create a random file.");
             }
 
             public static implicit operator string(TempFile f)
