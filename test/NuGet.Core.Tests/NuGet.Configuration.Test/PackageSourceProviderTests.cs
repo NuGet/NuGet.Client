@@ -963,6 +963,60 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void SavePackageSources_RetainUnavailableDisabledSources()
+        {
+            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var configContents =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""a"" value=""https://a"" />
+        <add key=""b"" value=""https://b"" />
+    </packageSources>
+    <disabledPackageSources>
+        <add key=""Microsoft and .NET"" value=""true"" />
+        <add key=""b"" value=""true"" />
+    </disabledPackageSources>
+</configuration>
+";
+                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), configContents);
+
+                var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
+
+                var settings = Settings.LoadDefaultSettings(rootPath,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadAppDataSettings: false);
+
+                var expectedDisabledSources = settings.GetSettingValues("disabledPackageSources")?.ToList();
+
+                var packageSourceProvider = new PackageSourceProvider(settings);
+                var packageSourceList = packageSourceProvider.LoadPackageSources().ToList();
+
+                // Act
+                packageSourceProvider.SavePackageSources(packageSourceList);
+
+                // Assert
+                var newContentsOfConfig = File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"));
+
+                var newSettings = Settings.LoadDefaultSettings(rootPath,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadAppDataSettings: false);
+
+                var actualDisabledSources = newSettings.GetSettingValues("disabledPackageSources")?.ToList();
+
+                Assert.Equal(expectedDisabledSources.Count, actualDisabledSources.Count);
+                foreach(var item in expectedDisabledSources)
+                {
+                    Assert.Contains(item, actualDisabledSources);
+                }
+            }
+        }
+
+        [Fact]
         public void WithMachineWideSources()
         {
             // Arrange           
