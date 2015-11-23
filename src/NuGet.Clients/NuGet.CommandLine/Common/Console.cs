@@ -79,7 +79,7 @@ namespace NuGet.Common
 
         private TextWriter Out
         {
-            get { return Verbosity == Verbosity.Quiet ? TextWriter.Null : System.Console.Out; }
+            get { return System.Console.Out; }
         }
 
         public void Write(object value)
