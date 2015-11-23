@@ -998,15 +998,12 @@ namespace NuGet.Configuration.Test
                 // Act
                 packageSourceProvider.SavePackageSources(packageSourceList);
 
-                // Assert
-                var newContentsOfConfig = File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"));
-
                 var newSettings = Settings.LoadDefaultSettings(rootPath,
                     configFileName: null,
                     machineWideSettings: null,
                     loadAppDataSettings: false);
 
-                var actualDisabledSources = newSettings.GetSettingValues("disabledPackageSources")?.ToList();
+                var actualDisabledSources = newSettings.GetSettingValues("disabledPackageSources").ToList();
 
                 Assert.Equal(expectedDisabledSources.Count, actualDisabledSources.Count);
                 foreach(var item in expectedDisabledSources)
