@@ -423,19 +423,29 @@ namespace NuGet.CommandLine
                 do
                 {
                     _filePath = Path.Combine(directory, Path.GetRandomFileName() + extension);
+
+                    if (!File.Exists(_filePath))
+                    {
+                        try
+                        {
+                            // create an empty file
+                            using (var filestream = File.Open(_filePath, FileMode.CreateNew))
+                            {
+                            }
+
+                            // file is created successfully.
+                            return;
+                        }
+                        catch
+                        {
+                        }
+                    }
+
                     count++;
                 }
-                while (File.Exists(_filePath) && count < 3);
-
-                if (count == 3)
-                {
-                    throw new InvalidOperationException("Failed to create a random file.");
-                }
-
-                // create an empty file
-                using (var filestream = File.Open(_filePath, FileMode.CreateNew))
-                {
-                }
+                while (count < 3);
+                
+                throw new InvalidOperationException("Failed to create a random file.");                
             }
 
             public static implicit operator string(TempFile f)
