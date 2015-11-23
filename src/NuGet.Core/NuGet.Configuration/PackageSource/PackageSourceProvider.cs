@@ -530,6 +530,18 @@ namespace NuGet.Configuration
                 sourcesToDisable.Add(new SettingValue(source.Name, "true", origin: null, isMachineWide: true, priority: 0));
             }
 
+            // add entries to the disablePackageSource for disabled package sources that are not in loaded 'sources'
+            foreach (var setting in existingDisabledSources)
+            {
+                if (!sourcesToDisable.Any(
+                    s => s.Key == setting.Key
+                    && s.Priority == setting.Priority
+                    && s.IsMachineWide == setting.IsMachineWide))
+                {
+                    sourcesToDisable.Add(setting);
+                }
+            }
+
             // Write the updates to the nearest settings file.
             Settings.UpdateSections(ConfigurationContants.PackageSources, sourceSettings);
 
