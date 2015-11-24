@@ -27,6 +27,7 @@ namespace NuGet.Test.Utility
                 RedirectStandardError = true,
                 RedirectStandardInput = inputAction != null
             };
+            psi.EnvironmentVariables["NuGetTestModeEnabled"] = "True";
 
             int exitCode = 1;
 
