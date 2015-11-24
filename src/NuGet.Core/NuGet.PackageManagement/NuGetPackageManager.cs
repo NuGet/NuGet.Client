@@ -49,10 +49,20 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// To construct a NuGetPackageManager that does not need a SolutionManager like NuGet.exe
         /// </summary>
+
+	public NuGetPackageManager(
+            ISourceRepositoryProvider sourceRepositoryProvider,
+            Configuration.ISettings settings,
+            string packagesFolderPath) 
+ : this(sourceRepositoryProvider, settings, packagesFolderPath, excludeVersion: false)  
+ {
+}
+
         public NuGetPackageManager(
             ISourceRepositoryProvider sourceRepositoryProvider,
             Configuration.ISettings settings,
-            string packagesFolderPath)
+            string packagesFolderPath,
+            bool excludeVersion)
         {
             if (sourceRepositoryProvider == null)
             {
@@ -72,17 +82,27 @@ namespace NuGet.PackageManagement
             SourceRepositoryProvider = sourceRepositoryProvider;
             Settings = settings;
 
-            InitializePackagesFolderInfo(packagesFolderPath);
+            InitializePackagesFolderInfo(packagesFolderPath, excludeVersion);
         }
 
         /// <summary>
         /// To construct a NuGetPackageManager with a mandatory SolutionManager lke VS
         /// </summary>
-        public NuGetPackageManager(
+	public NuGetPackageManager(
             ISourceRepositoryProvider sourceRepositoryProvider,
             Configuration.ISettings settings,
             ISolutionManager solutionManager,
             IDeleteOnRestartManager deleteOnRestartManager)
+	: this(sourceRepositoryProvider, settings, solutionManager, deleteOnRestartManager, excludeVersion: false)
+{
+}
+
+        public NuGetPackageManager(
+            ISourceRepositoryProvider sourceRepositoryProvider,
+            Configuration.ISettings settings,
+            ISolutionManager solutionManager,
+            IDeleteOnRestartManager deleteOnRestartManager,
+	    bool excludeVersion)
         {
             if (sourceRepositoryProvider == null)
             {
@@ -108,13 +128,13 @@ namespace NuGet.PackageManagement
             Settings = settings;
             SolutionManager = solutionManager;
 
-            InitializePackagesFolderInfo(PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings));
+            InitializePackagesFolderInfo(PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings), excludeVersion);
             DeleteOnRestartManager = deleteOnRestartManager;
         }
 
-        private void InitializePackagesFolderInfo(string packagesFolderPath)
+        private void InitializePackagesFolderInfo(string packagesFolderPath, bool excludeVersion = false)
         {
-            PackagesFolderNuGetProject = new FolderNuGetProject(packagesFolderPath);
+            PackagesFolderNuGetProject = new FolderNuGetProject(packagesFolderPath, excludeVersion);
             // Capturing it locally is important since it allows for the instance to cache packages for the lifetime
             // of the closure \ NuGetPackageManager.
             var sharedPackageRepository = new SharedPackageRepository(packagesFolderPath);

@@ -11,6 +11,104 @@ namespace NuGet.CommandLine.Test
     public class NuGetInstallCommandTest
     {
         [Fact]
+        public void InstallCommand_FromPackagesConfigFileWithExcludeVersion()
+        {
+            // Arrange
+            var tempPath = Path.GetTempPath();
+            var currentFolderName = Guid.NewGuid().ToString();
+            var workingPath = Path.Combine(tempPath, currentFolderName);
+            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var nugetexe = Util.GetNuGetExePath();
+
+            try
+            {
+                Util.CreateDirectory(workingPath);
+                Util.CreateDirectory(repositoryPath);
+                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
+                Util.CreateFile(workingPath, "packages.config",
+@"<packages>
+  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+  <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
+</packages>");
+
+                string[] args = new string[]
+                {
+                    "install",
+                    "-OutputDirectory",
+                    "outputDir",
+                    "-Source",
+                    repositoryPath,
+            "-ExcludeVersion"
+                };
+
+                // Act
+                var path = Environment.GetEnvironmentVariable("PATH");
+                Environment.SetEnvironmentVariable("PATH", null);
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+                Environment.SetEnvironmentVariable("PATH", path);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                var packageADir = Path.Combine(workingPath, @"outputDir\packageA");
+                var packageBDir = Path.Combine(workingPath, @"outputDir\packageB");
+                Assert.True(Directory.Exists(packageADir));
+                Assert.True(Directory.Exists(packageBDir));
+            }
+            finally
+            {
+                Directory.SetCurrentDirectory(currentDirectory);
+                Util.DeleteDirectory(workingPath);
+            }
+        }
+
+        [Fact]
+        public void InstallCommand_WithExcludeVersion()
+        {
+            var tempPath = Path.GetTempPath();
+            var source = Path.Combine(tempPath, Guid.NewGuid().ToString());
+            var outputDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
+
+            try
+            {
+                // Arrange
+                Util.CreateDirectory(source);
+                Util.CreateDirectory(outputDirectory);
+
+                var packageFileName = PackageCreater.CreatePackage(
+                    "testPackage1", "1.1.0", source);
+
+                // Act
+                string[] args = new string[] {
+                    "install", "testPackage1",
+                    "-OutputDirectory", outputDirectory,
+                    "-Source", source,
+                    "-ExcludeVersion" };
+                int r = Program.Main(args);
+
+                // Assert
+                Assert.Equal(0, r);
+
+                var packageDir = Path.Combine(
+                    outputDirectory,
+                    @"testPackage1");
+
+                Assert.True(Directory.Exists(packageDir));
+            }
+            finally
+            {
+                // Cleanup
+                Util.DeleteDirectory(outputDirectory);
+                Util.DeleteDirectory(source);
+            }
+        }
+
+        [Fact]
         public void InstallCommand_FromPackagesConfigFile()
         {
             // Arrange

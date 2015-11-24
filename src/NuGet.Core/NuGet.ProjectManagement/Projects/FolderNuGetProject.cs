@@ -32,6 +32,11 @@ namespace NuGet.ProjectManagement
         {
         }
 
+        public FolderNuGetProject(string root, bool excludeVersion)
+            : this(root, new PackagePathResolver(root, !excludeVersion))
+        {
+        }
+
         public FolderNuGetProject(string root, PackagePathResolver packagePathResolver)
         {
             if (root == null)
