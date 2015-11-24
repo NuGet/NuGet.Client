@@ -27,8 +27,8 @@ namespace NuGet.ProjectManagement
         /// </summary>
         public PackageSaveModes PackageSaveMode { get; set; }
 
-        public FolderNuGetProject(string root)
-            : this(root, new PackagePathResolver(root))
+        public FolderNuGetProject(string root, bool excludeVersion = false)
+            : this(root, new PackagePathResolver(root, !excludeVersion))
         {
         }
 
