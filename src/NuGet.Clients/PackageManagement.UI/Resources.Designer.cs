@@ -1071,6 +1071,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Operation canceled by user..
+        /// </summary>
+        public static string Text_UserCanceled {
+            get {
+                return ResourceManager.GetString("Text_UserCanceled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to View License.
         /// </summary>
         public static string Text_ViewLicense {
