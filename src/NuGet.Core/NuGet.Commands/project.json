@@ -1,5 +1,5 @@
 ﻿{
-  "version": "3.3.0-*",
+  "version": "3.3.0",
   "description": "Complete commands common to command-line and GUI NuGet clients",
   "compilationOptions": {
     "warningsAsErrors": true
@@ -17,14 +17,14 @@
     "../../../tools/compiler/preprocess/Internalization.cs"
   ],
   "dependencies": {
-    "NuGet.Client": "3.3.0-*",
-    "NuGet.ContentModel": "3.3.0-*",
-    "NuGet.ProjectModel": "3.3.0-*",
-    "NuGet.Configuration": "3.3.0-*",
-    "NuGet.DependencyResolver": "3.3.0-*",
-    "NuGet.RuntimeModel": "3.3.0-*",
+    "NuGet.Client": "3.3.0",
+    "NuGet.ContentModel": "3.3.0",
+    "NuGet.ProjectModel": "3.3.0",
+    "NuGet.Configuration": "3.3.0",
+    "NuGet.DependencyResolver": "3.3.0",
+    "NuGet.RuntimeModel": "3.3.0",
     "NuGet.Common": {
-      "version": "3.3.0-*",
+      "version": "3.3.0",
       "type": "build"
     },
     "Microsoft.Extensions.HashCodeCombiner.Sources": {

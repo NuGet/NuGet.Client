@@ -1,15 +1,15 @@
 ﻿{
-  "version": "3.3.0-*",
+  "version": "3.3.0",
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Packaging": "3.3.0-*",
-    "NuGet.Protocol.Core.v3": "3.3.0-*",
-    "NuGet.DependencyResolver.Core": "3.3.0-*",
+    "NuGet.Packaging": "3.3.0",
+    "NuGet.Protocol.Core.v3": "3.3.0",
+    "NuGet.DependencyResolver.Core": "3.3.0",
     "NuGet.Common": {
       "type": "build",
-      "version": "3.3.0-*"
+      "version": "3.3.0"
     }
   },
   "frameworks": {

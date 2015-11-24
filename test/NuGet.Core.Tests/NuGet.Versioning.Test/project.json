@@ -1,6 +1,6 @@
 ﻿{
   "dependencies": {
-    "NuGet.Versioning": "3.3.0-*",
+    "NuGet.Versioning": "3.3.0",
     "xunit": "2.1.0-rc1-build3168",
     "xunit.runner.dnx": "2.1.0-beta5-build169"
   },

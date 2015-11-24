@@ -1,10 +1,10 @@
 ﻿{
   "dependencies": {
-    "NuGet.ProjectManagement": "3.3.0-*",
-    "NuGet.PackageManagement": "3.3.0-*"
+    "NuGet.ProjectManagement": "3.3.0",
+    "NuGet.PackageManagement": "3.3.0"
   },
   "frameworks": {
-    "net45": { }
+    "net45": {}
   },
   "runtimes": {
     "win-anycpu": {},

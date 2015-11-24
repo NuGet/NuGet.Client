@@ -1,20 +1,20 @@
 ﻿{
-  "version": "3.3.0-*",
+  "version": "3.3.0",
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.PackageManagement": "3.3.0-*",
-    "NuGet.ProjectManagement": "3.3.0-*",
-    "NuGet.Protocol.VisualStudio": "3.3.0-*",
+    "NuGet.PackageManagement": "3.3.0",
+    "NuGet.ProjectManagement": "3.3.0",
+    "NuGet.Protocol.VisualStudio": "3.3.0",
     "Microsoft.VisualStudio.ProjectSystem.Interop": "",
     "xunit": "2.1.0-rc1-build3168",
-    "NuGet.Test.Utility": "3.3.0-*"
+    "NuGet.Test.Utility": "3.3.0"
   },
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
-        "System.Threading.Tasks": "", 
+        "System.Threading.Tasks": "",
         "System.Runtime": "",
         "System.Runtime.Serialization": ""
       }

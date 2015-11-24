@@ -1,16 +1,16 @@
 ﻿{
-  "version": "3.3.0-*",
+  "version": "3.3.0",
   "description": "NuGet Package Management",
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.ProjectManagement": "3.3.0-*",
-    "NuGet.Commands": "3.3.0-*",
-    "NuGet.Protocol.Core.v2": "3.3.0-*",
-    "NuGet.Resolver": "3.3.0-*",
+    "NuGet.ProjectManagement": "3.3.0",
+    "NuGet.Commands": "3.3.0",
+    "NuGet.Protocol.Core.v2": "3.3.0",
+    "NuGet.Resolver": "3.3.0",
     "NuGet.Common": {
-      "version": "3.3.0-*",
+      "version": "3.3.0",
       "type": "build"
     }
   },
