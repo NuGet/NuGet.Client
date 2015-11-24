@@ -31,7 +31,17 @@ namespace NuGet.Common
                             System.ConsoleColor.Green,
                             "{0} {1}", args.Request.Method, args.Request.RequestUri);
                     }
-                    string userAgent = HttpUtility.CreateUserAgentString(CommandLineConstants.UserAgent);
+
+                    string userAgent;
+                    if (NuGetTestMode.Enabled)
+                    {
+                        userAgent = HttpUtility.CreateUserAgentString(NuGetTestMode.NuGetTestClientName);
+                    }
+                    else
+                    {
+                        userAgent = HttpUtility.CreateUserAgentString(CommandLineConstants.UserAgent);
+                    }
+
                     HttpUtility.SetUserAgent(args.Request, userAgent);
                 };
             }
