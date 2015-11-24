@@ -179,6 +179,29 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Fact]
+        public void TestVerbosityQuiet_ShowsWarnings()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+            var args = new string[] {
+                    "config",
+                    "nonExistentKey",
+                    "-Verbosity",
+                    "Quiet"
+            };
+
+            // Act
+            var result = CommandRunner.Run(
+                nugetexe,
+                Directory.GetCurrentDirectory(),
+                string.Join(" ", args),
+                waitForExit: true);
+
+            // Assert
+            Util.VerifyResultSuccess(result, "WARNING: Key 'nonExistentKey' not found.");
+        }
+
         private void AssertEqualCollections(IList<Configuration.SettingValue> actual, string[] expected)
         {
             Assert.Equal(actual.Count, expected.Length / 2);

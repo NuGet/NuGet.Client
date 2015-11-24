@@ -79,7 +79,7 @@ namespace NuGet.Common
 
         private TextWriter Out
         {
-            get { return System.Console.Out; }
+            get { return Verbosity == Verbosity.Quiet ? TextWriter.Null : System.Console.Out; }
         }
 
         public void Write(object value)
@@ -183,7 +183,7 @@ namespace NuGet.Common
                                  ? String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("CommandLine_Warning"), value)
                                  : value;
 
-            WriteColor(Out, ConsoleColor.Yellow, message, args);
+            WriteColor(System.Console.Out, ConsoleColor.Yellow, message, args);
         }
 
         public void WriteLine(ConsoleColor color, string value, params object[] args)
