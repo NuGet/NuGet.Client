@@ -158,7 +158,7 @@ namespace NuGet.Protocol.Core.Types
             {
                 get
                 {
-                    var testMode = System.Environment.GetEnvironmentVariable(_testModeEnvironmentVariableName);
+                    var testMode = Environment.GetEnvironmentVariable(_testModeEnvironmentVariableName);
                     if (string.IsNullOrEmpty(testMode))
                     {
                         return false;
