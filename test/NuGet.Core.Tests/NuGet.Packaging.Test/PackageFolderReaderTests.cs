@@ -40,7 +40,7 @@ namespace NuGet.Packaging.Test
             {
                 // Assert
                 Assert.NotNull(nuspec);
-                Assert.Equal(5, nuspec.ReadAllBytes().Count());
+                Assert.Equal(5, nuspec.Length);
             }
         }
 
@@ -71,7 +71,7 @@ namespace NuGet.Packaging.Test
             {
                 // Assert
                 Assert.NotNull(nuspec);
-                Assert.Equal(5, nuspec.ReadAllBytes().Count());
+                Assert.Equal(5, nuspec.Length);
             }
         }
 
@@ -253,7 +253,7 @@ namespace NuGet.Packaging.Test
             {
                 // Assert
                 Assert.NotNull(nuspec);
-                Assert.Equal(5, nuspec.ReadAllBytes().Count());
+                Assert.Equal(5, nuspec.Length);
             }
         }
 
