@@ -146,7 +146,7 @@ namespace NuGet.CommandLine
         private Task PerformV2Restore(string packagesConfigFilePath, string installPath)
         {
             var sourceRepositoryProvider = GetSourceRepositoryProvider();
-            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, installPath);
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, installPath, ExcludeVersion);
 
             var installedPackageReferences = GetInstalledPackageReferences(
                 packagesConfigFilePath,
