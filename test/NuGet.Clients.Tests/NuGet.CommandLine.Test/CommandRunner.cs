@@ -23,6 +23,7 @@ namespace NuGet.CommandLine.Test
             ProcessStartInfo psi = new ProcessStartInfo(Path.GetFullPath(process), arguments)
             {
                 WorkingDirectory = Path.GetFullPath(workingDirectory),
+                EnvironmentVariables["NuGetTestModeEnabled"] = "True",
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardOutput = true,
