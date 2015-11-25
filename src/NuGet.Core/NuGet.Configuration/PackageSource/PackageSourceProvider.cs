@@ -533,10 +533,13 @@ namespace NuGet.Configuration
             // add entries to the disablePackageSource for disabled package sources that are not in loaded 'sources'
             foreach (var setting in existingDisabledSources)
             {
-                if (!sourcesToDisable.Any(
-                    s => s.Key == setting.Key
-                    && s.Priority == setting.Priority
-                    && s.IsMachineWide == setting.IsMachineWide))
+                // The following code ensures that we do not miss to mark an existing disabled source as disabled.
+                // However, ONLY mark an existing disable source setting as disabled, if,
+                // 1) it is not in the list of loaded package sources, or,
+                // 2) it is not already in the list of sources to disable.
+                if (!sources.Any(s => string.Equals(s.Name, setting.Key, StringComparison.OrdinalIgnoreCase)) &&
+                    !sourcesToDisable.Any(s => string.Equals(s.Key, setting.Key, StringComparison.OrdinalIgnoreCase)
+                                            && s.Priority == setting.Priority))
                 {
                     sourcesToDisable.Add(setting);
                 }
