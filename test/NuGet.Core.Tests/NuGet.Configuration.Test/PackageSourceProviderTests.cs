@@ -1014,6 +1014,76 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void SavePackageSources_EnablesDisabledSources()
+        {
+            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var configContents =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""a"" value=""https://a"" />
+        <add key=""b"" value=""https://b"" />
+    </packageSources>
+    <disabledPackageSources>
+        <add key=""Microsoft and .NET"" value=""true"" />
+        <add key=""b"" value=""true"" />
+    </disabledPackageSources>
+</configuration>
+";
+                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), configContents);
+
+                var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
+
+                var settings = Settings.LoadDefaultSettings(rootPath,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadAppDataSettings: false);
+
+                var disabledSources = settings.GetSettingValues("disabledPackageSources")?.ToList();
+
+                // Pre-Assert
+                Assert.Equal(2, disabledSources.Count);
+                Assert.Equal("Microsoft and .NET", disabledSources[0].Key);
+                Assert.Equal("b", disabledSources[1].Key);
+
+                var packageSourceProvider = new PackageSourceProvider(settings);
+                var packageSourceList = packageSourceProvider.LoadPackageSources().ToList();
+
+                Assert.Equal(2, packageSourceList.Count);
+                Assert.Equal("a", packageSourceList[0].Name);
+                Assert.True(packageSourceList[0].IsEnabled);
+                Assert.Equal("b", packageSourceList[1].Name);
+                Assert.False(packageSourceList[1].IsEnabled);
+
+                // Main Act
+                packageSourceList[1].IsEnabled = true;
+                packageSourceProvider.SavePackageSources(packageSourceList);
+
+                var newSettings = Settings.LoadDefaultSettings(rootPath,
+                    configFileName: null,
+                    machineWideSettings: null,
+                    loadAppDataSettings: false);
+
+                // Main Assert
+                disabledSources = newSettings.GetSettingValues("disabledPackageSources")?.ToList();
+
+                Assert.Equal(1, disabledSources.Count);
+                Assert.Equal("Microsoft and .NET", disabledSources[0].Key);
+
+                packageSourceProvider = new PackageSourceProvider(newSettings);
+                packageSourceList = packageSourceProvider.LoadPackageSources().ToList();
+
+                Assert.Equal(2, packageSourceList.Count);
+                Assert.Equal("a", packageSourceList[0].Name);
+                Assert.True(packageSourceList[0].IsEnabled);
+                Assert.Equal("b", packageSourceList[1].Name);
+                Assert.True(packageSourceList[1].IsEnabled);
+            }
+        }
+
+        [Fact]
         public void WithMachineWideSources()
         {
             // Arrange           
