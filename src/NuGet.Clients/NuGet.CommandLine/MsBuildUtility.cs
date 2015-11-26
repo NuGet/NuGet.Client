@@ -16,6 +16,8 @@ namespace NuGet.CommandLine
 {
     public static class MsBuildUtility
     {
+        private const int MsBuildWaitTime = 5 * 60 * 1000; // 5 minutes in milliseconds
+
         private const string GetProjectReferencesTarget =
             "NuGet.CommandLine.GetProjectsReferencingProjectJsonFiles.targets";
 
@@ -90,7 +92,7 @@ namespace NuGet.CommandLine
 
                 using (var process = Process.Start(processStartInfo))
                 {
-                    process.WaitForExit(60 * 1000);
+                    process.WaitForExit(MsBuildWaitTime);
 
                     if (process.ExitCode != 0)
                     {
