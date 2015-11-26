@@ -61,7 +61,7 @@ namespace NuGet.Test.Utility
                         Directory.CreateDirectory(targetEntryPath);
                     }
                     
-                    ZipFileExtensions.ExtractToFile(entry, targetFile, /*overwrite*/false);
+                    ZipFileExtensions.ExtractToFile(entry, targetFile, /*overwrite*/true);
                 }
             }
         }

@@ -88,7 +88,7 @@ namespace NuGet.Common
                         Directory.CreateDirectory(targetEntryPath);
                     }
 
-                    ZipFileExtensions.ExtractToFile(entry, targetFile, /*overwrite*/false);
+                    ZipFileExtensions.ExtractToFile(entry, targetFile, /*overwrite*/true);
                 }
             }
         }

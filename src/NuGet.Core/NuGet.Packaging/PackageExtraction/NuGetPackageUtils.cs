@@ -178,7 +178,7 @@ namespace NuGet.Packaging
             }
 
             // Nuspec found, extract and leave the rest
-            ZipFileExtensions.ExtractToFile(nuspecEntry, targetNuspec, /*overwrite*/false);
+            ZipFileExtensions.ExtractToFile(nuspecEntry, targetNuspec, /*overwrite*/true);
         }
 
         // DNU REFACTORING TODO: delete this temporary workaround after we have NuSpecFormatter.Read()
@@ -287,7 +287,7 @@ namespace NuGet.Packaging
                         Directory.CreateDirectory(targetEntryPath);
                     }
 
-                    ZipFileExtensions.ExtractToFile(entry, targetFile, /*overwrite*/false);
+                    ZipFileExtensions.ExtractToFile(entry, targetFile, /*overwrite*/true);
                 }
             }
         }
