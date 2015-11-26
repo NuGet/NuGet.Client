@@ -49,7 +49,7 @@ namespace NuGet.CommandLine
                 throw new CommandLineException(
                     string.Format(
                         CultureInfo.CurrentCulture,
-                        NuGetResources.MsBuildDoesNotExistAtPath,
+                        LocalizedResourceManager.GetString(nameof(NuGetResources.MsBuildDoesNotExistAtPath)),
                         msbuildPath));
             }
 
@@ -92,7 +92,25 @@ namespace NuGet.CommandLine
 
                 using (var process = Process.Start(processStartInfo))
                 {
-                    process.WaitForExit(MsBuildWaitTime);
+                    var finished = process.WaitForExit(MsBuildWaitTime);
+
+                    if (!finished)
+                    {
+                        try
+                        {
+                            process.Kill();
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new CommandLineException(
+                                LocalizedResourceManager.GetString(nameof(NuGetResources.Error_CannotKillMsBuild)) + " : " +
+                                ex.Message,
+                                ex);
+                        }
+
+                        throw new CommandLineException(
+                            LocalizedResourceManager.GetString(nameof(NuGetResources.Error_MsBuildTimedOut)));
+                    }
 
                     if (process.ExitCode != 0)
                     {

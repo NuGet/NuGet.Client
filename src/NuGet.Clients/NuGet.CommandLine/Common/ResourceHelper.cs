@@ -4,14 +4,13 @@ using System.Globalization;
 using System.Reflection;
 using System.Resources;
 using System.Text;
-using System.Threading;
 
 namespace NuGet
 {
     public static class ResourceHelper
     {
         private static Dictionary<Type, ResourceManager> _cachedManagers;
-        
+
         public static string GetLocalizedString(Type resourceType, string resourceNames)
         {
             if (resourceType == null)

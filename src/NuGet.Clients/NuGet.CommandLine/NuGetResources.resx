@@ -6127,4 +6127,10 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="LocalsCommand_LocalResourcePathNotSet" xml:space="preserve">
     <value>The location of local resource '{0}' is undefined.</value>
   </data>
+  <data name="Error_MsBuildTimedOut" xml:space="preserve">
+    <value>MsBuild timeout out while trying to get project to project references.</value>
+  </data>
+  <data name="Error_CannotKillMsBuild" xml:space="preserve">
+    <value>MsBuild timeout out while trying to get project to project references, and NuGet.exe failed to kill the process.</value>
+  </data>
 </root>
