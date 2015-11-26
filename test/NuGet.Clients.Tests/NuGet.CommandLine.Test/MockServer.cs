@@ -14,14 +14,12 @@ namespace NuGet.CommandLine.Test
     /// <summary>
     /// A Mock Server that is used to mimic a NuGet Server.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")]
     public class MockServer : IDisposable
     {
-        HttpListener _listener;
-        RouteTable _get, _put, _delete;
-        Task _listenerTask;
-        bool _disposedValue = false;
-        PortReserver _portReserver;
+        private readonly PortReserver _portReserver;
+
+        private Task _listenerTask;
+        private bool _disposed = false;
 
         /// <summary>
         /// Initializes an instance of MockServer.
@@ -30,33 +28,17 @@ namespace NuGet.CommandLine.Test
         {
             _portReserver = new PortReserver();
 
-            _listener = new HttpListener();
-            _listener.Prefixes.Add(_portReserver.BaseUri);
-
-            _get = new RouteTable();
-            _put = new RouteTable();
-            _delete = new RouteTable();
-        }
-        
-        public RouteTable Get
-        {
-            get { return _get; }
+            Listener = new HttpListener();
+            Listener.Prefixes.Add(_portReserver.BaseUri);
         }
 
-        public RouteTable Put
-        {
-            get { return _put; }
-        }
+        public RouteTable Get { get; } = new RouteTable();
 
-        public RouteTable Delete
-        {
-            get { return _delete; }
-        }
+        public RouteTable Put { get; } = new RouteTable();
 
-        public HttpListener Listener
-        {
-            get { return _listener; }
-        }
+        public RouteTable Delete { get; } = new RouteTable();
+
+        public HttpListener Listener { get; }
 
         public string Uri { get { return _portReserver.BaseUri; } }
 
@@ -65,7 +47,7 @@ namespace NuGet.CommandLine.Test
         /// </summary>
         public void Start()
         {
-            _listener.Start();
+            Listener.Start();
             _listenerTask = Task.Factory.StartNew(() => HandleRequest());
         }
 
@@ -74,8 +56,13 @@ namespace NuGet.CommandLine.Test
         /// </summary>
         public void Stop()
         {
-            _listener.Abort();
-            _listenerTask.Wait();
+            Listener.Abort();
+
+            if (_listenerTask != null)
+            {
+                _listenerTask.Wait();
+                _listenerTask = null;
+            }
         }
 
         /// <summary>
@@ -121,7 +108,7 @@ namespace NuGet.CommandLine.Test
         }
 
         /// <summary>
-        /// Returns the index of the first occurrence of <paramref name="pattern"/> in 
+        /// Returns the index of the first occurrence of <paramref name="pattern"/> in
         /// <paramref name="buffer"/>. The search starts at a specified position.
         /// </summary>
         /// <param name="buffer">The buffer to search.</param>
@@ -143,7 +130,7 @@ namespace NuGet.CommandLine.Test
         }
 
         /// <summary>
-        /// Determines if the subset of <paramref name="buffer"/> starting at 
+        /// Determines if the subset of <paramref name="buffer"/> starting at
         /// <paramref name="startIndex"/> starts with <paramref name="pattern"/>.
         /// </summary>
         /// <param name="buffer">The buffer to check.</param>
@@ -197,15 +184,15 @@ namespace NuGet.CommandLine.Test
                 RouteTable m = null;
                 if (request.HttpMethod == "GET")
                 {
-                    m = _get;
+                    m = Get;
                 }
                 else if (request.HttpMethod == "PUT")
                 {
-                    m = _put;
+                    m = Put;
                 }
                 else if (request.HttpMethod == "DELETE")
                 {
-                    m = _delete;
+                    m = Delete;
                 }
 
                 if (m == null)
@@ -259,7 +246,7 @@ namespace NuGet.CommandLine.Test
             {
                 try
                 {
-                    var context = _listener.GetContext();
+                    var context = Listener.GetContext();
                     GenerateResponse(context);
                 }
                 catch (ObjectDisposedException)
@@ -347,26 +334,18 @@ namespace NuGet.CommandLine.Test
             return doc.ToString();
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposedValue)
-            {
-                if (disposing)
-                {
-                    // Closing the http listener
-                    Stop();
-
-                    // Disposing the PortReserver
-                    _portReserver.Dispose();
-                }
-                
-                _disposedValue = true;
-            }
-        }
-        
         public void Dispose()
         {
-            Dispose(true);
+            if (!_disposed)
+            {
+                // Closing the http listener
+                Stop();
+
+                // Disposing the PortReserver
+                _portReserver.Dispose();
+
+                _disposed = true;
+            }
         }
     }
 
@@ -375,7 +354,7 @@ namespace NuGet.CommandLine.Test
     /// </summary>
     /// <remarks>
     /// The return type of a request handler could be:
-    /// - string: the string will be sent back as the response content, and the response 
+    /// - string: the string will be sent back as the response content, and the response
     ///           status code is OK.
     /// - HttpStatusCode: the value is returned as the response status code.
     /// - Action&lt;HttpListenerResponse&gt;: The action will be called to construct the response.
