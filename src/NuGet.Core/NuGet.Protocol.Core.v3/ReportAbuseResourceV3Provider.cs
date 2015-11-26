@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
@@ -23,13 +24,10 @@ namespace NuGet.Protocol.Core.v3
             var serviceIndex = await source.GetResourceAsync<ServiceIndexResourceV3>(token);
             if (serviceIndex != null)
             {
-                resource = new ReportAbuseResourceV3();
+                var uriTemplate = serviceIndex[ServiceTypes.ReportAbuse].FirstOrDefault()?.AbsoluteUri;
 
-                //IEnumerable<Uri> templateUrls = serviceIndex[ServiceTypes.ReportAbuse];
-                //if (templateUrls != null && templateUrls.Any())
-                //{
-                //    resource = new ReportAbuseResourceV3(templateUrls);
-                //}
+                // construct a new resource
+                resource = new ReportAbuseResourceV3(uriTemplate);
             }
 
             return new Tuple<bool, INuGetResource>(resource != null, resource);
