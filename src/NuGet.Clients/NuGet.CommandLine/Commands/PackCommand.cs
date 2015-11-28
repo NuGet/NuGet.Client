@@ -60,6 +60,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "PackageCommandVersionDescription")]
         public string Version { get; set; }
 
+        [Option(typeof(NuGetCommand), "PackageCommandSuffixDescription")]
+        public string Suffix { get; set; }
+
         [Option(typeof(NuGetCommand), "PackageCommandExcludeDescription")]
         public ICollection<string> Exclude
         {
@@ -150,6 +153,11 @@ namespace NuGet.CommandLine
             if (!String.IsNullOrEmpty(Version))
             {
                 builder.Version = new SemanticVersion(Version);
+            }
+
+            if (!string.IsNullOrEmpty(Suffix))
+            {
+                builder.Version = new SemanticVersion(builder.Version.Version, Suffix);
             }
 
             if (_minClientVersionValue != null)

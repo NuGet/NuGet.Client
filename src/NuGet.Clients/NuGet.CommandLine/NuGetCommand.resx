@@ -5305,4 +5305,7 @@ nuget locals global-packages -list</value>
   <data name="RestoreCommandP2PTimeOut" xml:space="preserve">
     <value>Timeout in seconds for resolving project to project references.</value>
   </data>
+  <data name="PackageCommandSuffixDescription" xml:space="preserve">
+    <value>Appends a pre-release suffix to the internally generated version number.</value>
+  </data>
 </root>

@@ -7724,6 +7724,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Appends a pre-release suffix to the internally generated version number..
+        /// </summary>
+        internal static string PackageCommandSuffixDescription {
+            get {
+                return ResourceManager.GetString("PackageCommandSuffixDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Determines if a package containing sources and symbols should be created. When specified with a nuspec, creates a regular NuGet package file and the corresponding symbols package..
         /// </summary>
         internal static string PackageCommandSymbolsDescription {

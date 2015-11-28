@@ -1723,6 +1723,29 @@ namespace Proj2
             }
         }
 
+        [Fact]
+        public void PackCommand_VersionSuffixIsAssigned()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange                    
+                CreateTestProject(workingDirectory, "proj1", null);
+
+                // Act
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "pack proj1.csproj -Build -Suffix alpha",
+                    waitForExit: true);
+
+                // Assert
+                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.0-alpha.nupkg"));
+                Assert.Equal(package.Version.ToString(), "0.0.0.0-alpha");
+            }
+        }
+
         /// <summary>
         /// Creates a simple project.
         /// </summary>
