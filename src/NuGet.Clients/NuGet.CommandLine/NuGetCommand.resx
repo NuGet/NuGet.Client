@@ -5302,4 +5302,7 @@ nuget locals global-packages -list</value>
   <data name="LocalsCommandListDescription" xml:space="preserve">
     <value>List the selected local resources or cache location(s).</value>
   </data>
+  <data name="PackageCommandSuffixDescription" xml:space="preserve">
+    <value>Adds a suffix to the generated version</value>
+  </data>
 </root>
