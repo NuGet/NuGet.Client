@@ -1854,6 +1854,37 @@ namespace Proj2
             }
         }
 
+        [Fact]
+        public void PackCommand_VersionSuffixIsAssigned()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
+            try
+            {
+                // Arrange
+                Util.CreateDirectory(workingDirectory);
+
+                CreateTestProject(workingDirectory, "proj1", null);
+
+                // Act
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    "pack proj1.csproj -Build -Suffix alpha",
+                    waitForExit: true);
+
+                // Assert
+                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.0-alpha.nupkg"));
+                Assert.Equal(package.Version.ToString(), "0.0.0.0-alpha");
+            }
+            finally
+            {
+                Directory.Delete(workingDirectory, true);
+            }
+        }
+
         /// <summary>
         /// Creates a simple project.
         /// </summary>
