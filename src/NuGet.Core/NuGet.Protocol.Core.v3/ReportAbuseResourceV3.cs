@@ -11,19 +11,13 @@ namespace NuGet.Protocol.Core.v3
     public class ReportAbuseResourceV3 : INuGetResource
     {
         private readonly string _uriTemplate;
-        private const string _fallbackUriTemplate = "https://www.nuget.org/packages/{id}/{version}/ReportAbuse";
-
-        public ReportAbuseResourceV3()
-            : this(_fallbackUriTemplate)
-        {
-        }
 
         public ReportAbuseResourceV3(string uriTemplate)
         {
-            if (string.IsNullOrEmpty(uriTemplate))
+            if (string.IsNullOrEmpty(uriTemplate) || !IsValidUriTemplate(uriTemplate))
             {
                 // fallback to default nuget.org ReportAbuseUriTemplate
-                _uriTemplate = _fallbackUriTemplate;
+                _uriTemplate = "https://www.nuget.org/packages/{id}/{version}/ReportAbuse";
             }
             else
             {
@@ -39,10 +33,29 @@ namespace NuGet.Protocol.Core.v3
         /// <returns>The first URL from the resource, with the URI template applied.</returns>
         public Uri GetReportAbuseUrl(string id, NuGetVersion version)
         {
-            var url = string.Format(CultureInfo.InvariantCulture, _uriTemplate, id, version.ToNormalizedString());
-            var uriBuilder = new UriBuilder(url);
+            try
+            {
+                var uriString = _uriTemplate
+                   .Replace("{id}", id)
+                   .Replace("{version}", version.ToNormalizedString());
 
-            return uriBuilder.Uri;
+                return new Uri(uriString);
+            }
+            catch (UriFormatException)
+            {
+                // fallback to default nuget.org ReportAbuse Uri
+                return new Uri(string.Format(CultureInfo.InvariantCulture,
+                    $"https://www.nuget.org/packages/{id}/{version.ToNormalizedString()}/ReportAbuse"));
+            }
+        }
+
+        private static bool IsValidUriTemplate(string uriTemplate)
+        {
+            Uri uri;
+            var isValidUri = Uri.TryCreate(uriTemplate, UriKind.Absolute, out uri);
+            return isValidUri
+                && uriTemplate.Contains("{id}")
+                && uriTemplate.Contains("{version}");
         }
     }
 }
