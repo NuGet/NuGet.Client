@@ -359,26 +359,25 @@ namespace NuGet.Configuration.Test
         {
             // Act
             //Create nuget.config that has active package source defined
-            string nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder();
-            var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
-            File.Create(nugetConfigFilePath).Close();
+            using (var nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
+                File.Create(nugetConfigFilePath).Close();
 
-            var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
-            var fileContents = CreateNuGetConfigContent(enabledReplacement);
-            fileContents = fileContents.Replace("<activePackageSource>", string.Empty);
-            fileContents = fileContents.Replace("</activePackageSource>", string.Empty);
-            File.WriteAllText(nugetConfigFilePath, fileContents);
+                var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
+                var fileContents = CreateNuGetConfigContent(enabledReplacement);
+                fileContents = fileContents.Replace("<activePackageSource>", string.Empty);
+                fileContents = fileContents.Replace("</activePackageSource>", string.Empty);
+                File.WriteAllText(nugetConfigFilePath, fileContents);
 
-            Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
-            PackageSourceProvider before = new PackageSourceProvider(settings);
-            Assert.Null(before.ActivePackageSourceName);
+                Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
+                PackageSourceProvider before = new PackageSourceProvider(settings);
+                Assert.Null(before.ActivePackageSourceName);
 
-            SettingValue newActiveValue = new SettingValue(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, false);
-            before.SaveActivePackageSource(new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName));
-            Assert.Equal(NuGetConstants.FeedName, before.ActivePackageSourceName);
-
-            //Clean up
-            TestFileSystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+                SettingValue newActiveValue = new SettingValue(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, false);
+                before.SaveActivePackageSource(new PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName));
+                Assert.Equal(NuGetConstants.FeedName, before.ActivePackageSourceName);
+            }
         }
 
         [Fact]

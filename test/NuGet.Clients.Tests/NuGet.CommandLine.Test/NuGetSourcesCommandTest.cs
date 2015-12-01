@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
 using Xunit.Extensions;
@@ -209,8 +210,8 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
-            var configFileDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            try
+
+            using (var configFileDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(configFileDirectory, configFileName);
@@ -281,10 +282,6 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal("http://test_source", source.Source);
                 Assert.True(source.IsEnabled, "Source is not enabled");
             }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(configFileDirectory);
-            }
         }
 
         [Fact]
@@ -292,8 +289,8 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
-            var configFileDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            try
+
+            using (var configFileDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(configFileDirectory, configFileName);
@@ -355,10 +352,6 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal("test_source", source.Name);
                 Assert.Equal("http://test_source", source.Source);
                 Assert.False(source.IsEnabled, "Source is not disabled");
-            }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(configFileDirectory);
             }
         }
 

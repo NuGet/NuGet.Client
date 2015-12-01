@@ -77,9 +77,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void TestVerbosityQuiet_ShowsErrorMessages()
         {
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
-
-            try
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -106,10 +104,6 @@ namespace NuGet.CommandLine.Test
                 Assert.NotEqual(0, r.Item1);
                 var error = r.Item3;
                 Assert.Contains("could not find a part of the path", r.Item3, StringComparison.OrdinalIgnoreCase);
-            }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
             }
         }
 

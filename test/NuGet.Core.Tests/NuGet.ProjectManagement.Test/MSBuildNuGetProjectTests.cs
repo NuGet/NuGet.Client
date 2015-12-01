@@ -1709,9 +1709,6 @@ namespace ProjectManagement.Test
                 Assert.Equal(1, packagesInPackagesConfig.Count);
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
                 Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
-
-                // Clean-up
-                TestFileSystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
             }
         }
 
@@ -1757,9 +1754,6 @@ namespace ProjectManagement.Test
                 Assert.Equal(1, packagesInPackagesConfig.Count);
                 Assert.Equal(packageIdentity, packagesInPackagesConfig[0].PackageIdentity);
                 Assert.Equal(projectTargetFramework, packagesInPackagesConfig[0].TargetFramework);
-
-                // Clean-up
-                TestFileSystemUtility.DeleteRandomTestFolders(randomTestPackageSourcePath, randomPackagesFolderPath, randomPackagesConfigFolderPath);
             }
         }
 

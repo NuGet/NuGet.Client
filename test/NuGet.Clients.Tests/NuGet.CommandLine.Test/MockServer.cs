@@ -17,11 +17,12 @@ namespace NuGet.CommandLine.Test
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")]
     public class MockServer : IDisposable
     {
-        HttpListener _listener;
-        RouteTable _get, _put, _delete;
-        Task _listenerTask;
-        bool _disposedValue = false;
-        PortReserver _portReserver;
+        private readonly HttpListener _listener;
+        private readonly RouteTable _get, _put, _delete;
+        private readonly PortReserver _portReserver;
+
+        private Task _listenerTask;
+        private bool _disposed = false;
 
         /// <summary>
         /// Initializes an instance of MockServer.
@@ -37,7 +38,7 @@ namespace NuGet.CommandLine.Test
             _put = new RouteTable();
             _delete = new RouteTable();
         }
-        
+
         public RouteTable Get
         {
             get { return _get; }
@@ -75,7 +76,14 @@ namespace NuGet.CommandLine.Test
         public void Stop()
         {
             _listener.Abort();
-            _listenerTask.Wait();
+
+            var task = _listenerTask;
+            _listenerTask = null;
+
+            if (task != null)
+            {
+                task.Wait();
+            }
         }
 
         /// <summary>
@@ -121,7 +129,7 @@ namespace NuGet.CommandLine.Test
         }
 
         /// <summary>
-        /// Returns the index of the first occurrence of <paramref name="pattern"/> in 
+        /// Returns the index of the first occurrence of <paramref name="pattern"/> in
         /// <paramref name="buffer"/>. The search starts at a specified position.
         /// </summary>
         /// <param name="buffer">The buffer to search.</param>
@@ -143,7 +151,7 @@ namespace NuGet.CommandLine.Test
         }
 
         /// <summary>
-        /// Determines if the subset of <paramref name="buffer"/> starting at 
+        /// Determines if the subset of <paramref name="buffer"/> starting at
         /// <paramref name="startIndex"/> starts with <paramref name="pattern"/>.
         /// </summary>
         /// <param name="buffer">The buffer to check.</param>
@@ -347,26 +355,18 @@ namespace NuGet.CommandLine.Test
             return doc.ToString();
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposedValue)
-            {
-                if (disposing)
-                {
-                    // Closing the http listener
-                    Stop();
-
-                    // Disposing the PortReserver
-                    _portReserver.Dispose();
-                }
-                
-                _disposedValue = true;
-            }
-        }
-        
         public void Dispose()
         {
-            Dispose(true);
+            if (!_disposed)
+            {
+                // Closing the http listener
+                Stop();
+
+                // Disposing the PortReserver
+                _portReserver.Dispose();
+
+                _disposed = true;
+            }
         }
     }
 
@@ -375,7 +375,7 @@ namespace NuGet.CommandLine.Test
     /// </summary>
     /// <remarks>
     /// The return type of a request handler could be:
-    /// - string: the string will be sent back as the response content, and the response 
+    /// - string: the string will be sent back as the response content, and the response
     ///           status code is OK.
     /// - HttpStatusCode: the value is returned as the response status code.
     /// - Action&lt;HttpListenerResponse&gt;: The action will be called to construct the response.

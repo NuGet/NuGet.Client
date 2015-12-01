@@ -124,7 +124,9 @@ namespace NuGet.CommandLine.Test
 
             public void Dispose()
             {
-                TestFileSystemUtility.DeleteRandomTestFolders(WorkingPath, SourceFeed, DestinationFeed);
+                TestFileSystemUtility.DeleteRandomTestFolder(WorkingPath);
+                TestFileSystemUtility.DeleteRandomTestFolder(SourceFeed);
+                TestFileSystemUtility.DeleteRandomTestFolder(DestinationFeed);
             }
         }
 

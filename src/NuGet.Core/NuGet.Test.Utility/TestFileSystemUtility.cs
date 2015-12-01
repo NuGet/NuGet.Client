@@ -23,15 +23,7 @@ namespace NuGet.Test.Utility
             return new TestDirectory(path);
         }
 
-        public static void DeleteRandomTestFolders(params string[] randomTestPaths)
-        {
-            foreach (var randomTestPath in randomTestPaths)
-            {
-                DeleteRandomTestFolder(randomTestPath);
-            }
-        }
-
-        private static void DeleteRandomTestFolder(string randomTestPath)
+        public static void DeleteRandomTestFolder(string randomTestPath)
         {
             try
             {

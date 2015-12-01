@@ -1,17 +1,17 @@
 ﻿{
-  "version": "3.3.0",
+  "version": "3.4.0-*",
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.LibraryModel": "3.3.0",
-    "NuGet.Frameworks": "3.3.0",
-    "NuGet.Protocol.Core.v3": "3.3.0",
-    "NuGet.Repositories": "3.3.0",
-    "NuGet.RuntimeModel": "3.3.0",
+    "NuGet.LibraryModel": "3.4.0-*",
+    "NuGet.Frameworks": "3.4.0-*",
+    "NuGet.Protocol.Core.v3": "3.4.0-*",
+    "NuGet.Repositories": "3.4.0-*",
+    "NuGet.RuntimeModel": "3.4.0-*",
     "NuGet.Common": {
       "type": "build",
-      "version": "3.3.0"
+      "version": "3.4.0-*"
     }
   },
   "frameworks": {

@@ -1,5 +1,5 @@
 ﻿{
-  "version": "3.3.0",
+  "version": "3.4.0-*",
   "description": "The core data structures for NuGet.Packaging",
   "authors": [
     "NuGet"
@@ -11,10 +11,10 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Packaging.Core.Types": "3.3.0",
+    "NuGet.Packaging.Core.Types": "3.4.0-*",
     "NuGet.Common": {
       "type": "build",
-      "version": "3.3.0"
+      "version": "3.4.0-*"
     }
   },
   "frameworks": {

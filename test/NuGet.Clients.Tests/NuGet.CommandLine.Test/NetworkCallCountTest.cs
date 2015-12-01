@@ -9,12 +9,13 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging.Core;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
-    public class NetworkCallCountTest : IDisposable
+    public class NetworkCallCountTest
     {
         [Fact]
         public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesWithAllMissingPackages()
@@ -23,21 +24,17 @@ namespace NuGet.CommandLine.Test
             var testCount = 100;
 
             using (var server2 = new MockServer())
-            using (var server = new MockServer())
+            using (var server1 = new MockServer())
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var tempPath = Path.GetTempPath();
-                var guid = Guid.NewGuid();
-                var workingPath = Path.Combine(tempPath, guid.ToString());
-                _dirs.TryAdd(workingPath, false);
-                var repositoryPath = Path.Combine(workingPath, "repo");
+                var repositoryPath1 = Path.Combine(workingPath, "repo");
                 var repositoryPath2 = Path.Combine(workingPath, "repo2");
                 var repositoryPath3 = Path.Combine(workingPath, "repo3");
                 var allRepo = Path.Combine(workingPath, "allRepo");
                 var packagesFolderPath = Path.Combine(workingPath, "packages");
 
-                Directory.CreateDirectory(workingPath);
                 Directory.CreateDirectory(allRepo);
-                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(repositoryPath1);
                 Directory.CreateDirectory(repositoryPath2);
                 Directory.CreateDirectory(repositoryPath3);
                 Directory.CreateDirectory(packagesFolderPath);
@@ -52,7 +49,7 @@ namespace NuGet.CommandLine.Test
 
                 for (int i = 0; i < testCount; i++)
                 {
-                    var id = $"package{i}";
+                    var id = $"package{Guid.NewGuid()}_{i}";
                     var version = $"1.0.{i}";
 
                     var entry = new XElement(XName.Get("package"));
@@ -65,7 +62,7 @@ namespace NuGet.CommandLine.Test
                 Util.CreateFile(workingPath, "packages.config", doc.ToString());
 
                 var nugetexe = Util.GetNuGetExePath();
-                var serverRepo = new LocalPackageRepository(repositoryPath);
+                var serverRepo = new LocalPackageRepository(repositoryPath1);
                 var server2Repo = new LocalPackageRepository(repositoryPath2);
                 var allPackageRepo = new LocalPackageRepository(allRepo);
 
@@ -73,17 +70,17 @@ namespace NuGet.CommandLine.Test
                 var indexJson = Util.CreateIndexJson();
                 var indexJson2 = Util.CreateIndexJson();
 
-                Util.AddFlatContainerResource(indexJson, server);
-                Util.AddRegistrationResource(indexJson, server);
+                Util.AddFlatContainerResource(indexJson, server1);
+                Util.AddRegistrationResource(indexJson, server1);
                 var hitsByUrl = new ConcurrentDictionary<string, int>();
 
                 Util.AddFlatContainerResource(indexJson2, server2);
                 Util.AddRegistrationResource(indexJson2, server2);
                 var hitsByUrl2 = new ConcurrentDictionary<string, int>();
 
-                server.Get.Add("/", request =>
+                server1.Get.Add("/", request =>
                 {
-                    return ServerHandler(request, hitsByUrl, server, indexJson, serverRepo);
+                    return ServerHandler(request, hitsByUrl, server1, indexJson, serverRepo);
                 });
 
                 server2.Get.Add("/", request =>
@@ -91,10 +88,10 @@ namespace NuGet.CommandLine.Test
                     return ServerHandler(request, hitsByUrl2, server2, indexJson2, server2Repo);
                 });
 
-                server.Start();
+                server1.Start();
                 server2.Start();
 
-                var sources = new List<string>() { server2.Uri + "nuget", server.Uri + "index.json", repositoryPath3 };
+                var sources = new List<string>() { server2.Uri + "nuget", server1.Uri + "index.json", repositoryPath3 };
                 Util.CreateNuGetConfig(workingPath, sources);
 
                 string[] args = new string[] {
@@ -111,9 +108,6 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true,
                     timeOutInMilliseconds: (int)TimeSpan.FromMinutes(3).TotalMilliseconds);
 
-                server.Stop();
-                server2.Stop();
-
                 var packagesFolder = new LocalPackageRepository(packagesFolderPath);
                 var allPackages = packagesFolder.GetPackages().ToList();
 
@@ -124,6 +118,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(1, hitsByUrl2["/nuget"]);
 
                 Assert.Equal(0, allPackages.Count());
+
                 Assert.Equal(0,
                     Directory.Exists(MachineCache.Default.Source) ?
                     Directory.GetFiles(MachineCache.Default.Source, "*.tmp").Count()
@@ -139,19 +134,17 @@ namespace NuGet.CommandLine.Test
 
             using (var server2 = new MockServer())
             using (var server = new MockServer())
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var tempPath = Path.GetTempPath();
-                var guid = Guid.NewGuid();
-                var workingPath = Path.Combine(tempPath, guid.ToString());
-                _dirs.TryAdd(workingPath, false);
                 var repositoryPath = Path.Combine(workingPath, "repo");
                 var repositoryPath2 = Path.Combine(workingPath, "repo2");
                 var repositoryPath3 = Path.Combine(workingPath, "repo3");
                 var allRepo = Path.Combine(workingPath, "allRepo");
                 var packagesFolderPath = Path.Combine(workingPath, "packages");
-                MachineCache.Default.Clear();
 
-                Directory.CreateDirectory(workingPath);
+                MachineCache.Default.Clear();
+                Assert.Equal(0, Directory.GetFiles(MachineCache.Default.Source, "*.tmp").Count());
+
                 Directory.CreateDirectory(allRepo);
                 Directory.CreateDirectory(repositoryPath);
                 Directory.CreateDirectory(repositoryPath2);
@@ -168,7 +161,7 @@ namespace NuGet.CommandLine.Test
 
                 for (int i = 0; i < testCount; i++)
                 {
-                    var id = $"package{i}";
+                    var id = $"package{Guid.NewGuid()}_{i}";
                     var version = $"1.0.{i}";
 
                     var entry = new XElement(XName.Get("package"));
@@ -252,9 +245,6 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true,
                     timeOutInMilliseconds: (int)TimeSpan.FromMinutes(3).TotalMilliseconds);
 
-                server.Stop();
-                server2.Stop();
-
                 var packagesFolder = new LocalPackageRepository(packagesFolderPath);
                 var allPackages = packagesFolder.GetPackages().ToList();
 
@@ -284,16 +274,14 @@ namespace NuGet.CommandLine.Test
 
             using (var server2 = new MockServer())
             using (var server = new MockServer())
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var tempPath = Path.GetTempPath();
-                var guid = Guid.NewGuid();
-                var workingPath = Path.Combine(tempPath, guid.ToString());
-                _dirs.TryAdd(workingPath, false);
                 var repositoryPath = Path.Combine(workingPath, "repo");
                 var repositoryPath2 = Path.Combine(workingPath, "repo2");
                 var repositoryPath3 = Path.Combine(workingPath, "repo3");
                 var allRepo = Path.Combine(workingPath, "allRepo");
                 var packagesFolderPath = Path.Combine(workingPath, "packages");
+
                 MachineCache.Default.Clear();
 
                 Directory.CreateDirectory(workingPath);
@@ -311,7 +299,7 @@ namespace NuGet.CommandLine.Test
 
                 var expectedPackages = new HashSet<PackageIdentity>();
 
-                for (int i=0; i < testCount; i++)
+                for (int i = 0; i < testCount; i++)
                 {
                     var id = $"package{i}";
                     var version = $"1.0.{i}";
@@ -390,9 +378,6 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true,
                     timeOutInMilliseconds: (int)TimeSpan.FromMinutes(3).TotalMilliseconds);
 
-                server.Stop();
-                server2.Stop();
-
                 var packagesFolder = new LocalPackageRepository(packagesFolderPath);
                 var allPackages = packagesFolder.GetPackages().ToList();
 
@@ -419,19 +404,18 @@ namespace NuGet.CommandLine.Test
 
             using (var server2 = new MockServer())
             using (var server = new MockServer())
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var tempPath = Path.GetTempPath();
-                var guid = Guid.NewGuid();
-                var workingPath = Path.Combine(tempPath, guid.ToString());
-                _dirs.TryAdd(workingPath, false);
                 var repositoryPath = Path.Combine(workingPath, "repo");
                 var repositoryPath2 = Path.Combine(workingPath, "repo2");
                 var repositoryPath3 = Path.Combine(workingPath, "repo3");
                 var allRepo = Path.Combine(workingPath, "allRepo");
                 var packagesFolderPath = Path.Combine(workingPath, "packages");
+
                 MachineCache.Default.Clear();
 
-                Directory.CreateDirectory(workingPath);
+                Assert.Equal(0, Directory.GetFiles(MachineCache.Default.Source, "*.tmp").Count());
+
                 Directory.CreateDirectory(allRepo);
                 Directory.CreateDirectory(repositoryPath);
                 Directory.CreateDirectory(repositoryPath2);
@@ -525,9 +509,6 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true,
                     timeOutInMilliseconds: (int)TimeSpan.FromMinutes(3).TotalMilliseconds);
 
-                server.Stop();
-                server2.Stop();
-
                 var packagesFolder = new LocalPackageRepository(packagesFolderPath);
                 var allPackages = packagesFolder.GetPackages().ToList();
 
@@ -552,16 +533,17 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var server2 = new MockServer())
             using (var server = new MockServer())
+            using (var workingPath = CreateMixedConfigAndJson())
             {
-                var workingDir = CreateMixedConfigAndJson();
-                var workingPath = workingDir.FullName;
                 var repositoryPath = Path.Combine(workingPath, "repo");
+
                 var slnPath = Path.Combine(workingPath, "test.sln");
                 var nugetexe = Util.GetNuGetExePath();
                 var localRepo = new LocalPackageRepository(repositoryPath);
 
                 var packagesFolder =
                     new DirectoryInfo(Path.Combine(workingPath, "packages"));
+
                 packagesFolder.Create();
 
                 var globalFolder =
@@ -653,10 +635,10 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var server2 = new MockServer())
             using (var server = new MockServer())
+            using (var workingPath = CreateMixedConfigAndJson())
             {
-                var workingDir = CreateMixedConfigAndJson();
-                var workingPath = workingDir.FullName;
                 var repositoryPath = Path.Combine(workingPath, "repo");
+
                 var slnPath = Path.Combine(workingPath, "test.sln");
                 var nugetexe = Util.GetNuGetExePath();
                 var localRepo = new LocalPackageRepository(repositoryPath);
@@ -750,9 +732,8 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var server2 = new MockServer())
             using (var server = new MockServer())
+            using (var workingPath = CreateMixedConfigAndJson())
             {
-                var workingDir = CreateMixedConfigAndJson();
-                var workingPath = workingDir.FullName;
                 var repositoryPath = Path.Combine(workingPath, "repo");
                 var slnPath = Path.Combine(workingPath, "test.sln");
                 var nugetexe = Util.GetNuGetExePath();
@@ -823,14 +804,14 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             using (var server = new MockServer())
+            using (var workingPath = CreateMixedConfigAndJson())
             {
-                var workingDir = CreateMixedConfigAndJson();
-                var workingPath = workingDir.FullName;
                 var repositoryPath = Path.Combine(workingPath, "repo");
                 var slnPath = Path.Combine(workingPath, "test.sln");
                 var nugetexe = Util.GetNuGetExePath();
                 var localRepo = new LocalPackageRepository(repositoryPath);
-                var outputPath = Path.Combine(workingDir.FullName, "output");
+                var outputPath = Path.Combine(workingPath, "output");
+
                 Directory.CreateDirectory(outputPath);
 
                 var packageA = Util.CreatePackage(repositoryPath, "packageA", "1.0.0");
@@ -885,14 +866,14 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             using (var server = new MockServer())
+            using (var workingPath = CreateMixedConfigAndJson())
             {
-                var workingDir = CreateMixedConfigAndJson();
-                var workingPath = workingDir.FullName;
                 var repositoryPath = Path.Combine(workingPath, "repo");
                 var slnPath = Path.Combine(workingPath, "test.sln");
                 var nugetexe = Util.GetNuGetExePath();
                 var localRepo = new LocalPackageRepository(repositoryPath);
-                var outputPath = Path.Combine(workingDir.FullName, "output");
+                var outputPath = Path.Combine(workingPath, "output");
+
                 Directory.CreateDirectory(outputPath);
 
                 var packageA = Util.CreatePackage(repositoryPath, "packageA", "1.0.0");
@@ -949,14 +930,14 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             using (var server = new MockServer())
+            using (var workingPath = CreateMixedConfigAndJson())
             {
-                var workingDir = CreateMixedConfigAndJson();
-                var workingPath = workingDir.FullName;
+
                 var repositoryPath = Path.Combine(workingPath, "repo");
                 var slnPath = Path.Combine(workingPath, "test.sln");
                 var nugetexe = Util.GetNuGetExePath();
                 var localRepo = new LocalPackageRepository(repositoryPath);
-                var outputPath = Path.Combine(workingDir.FullName, "output");
+                var outputPath = Path.Combine(workingPath, "output");
                 Directory.CreateDirectory(outputPath);
 
                 var packageA = Util.CreatePackage(repositoryPath, "packageA", "1.0.0");
@@ -1009,14 +990,13 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             using (var server = new MockServer())
+            using (var workingPath = CreateMixedConfigAndJson())
             {
-                var workingDir = CreateMixedConfigAndJson();
-                var workingPath = workingDir.FullName;
                 var repositoryPath = Path.Combine(workingPath, "repo");
                 var slnPath = Path.Combine(workingPath, "test.sln");
                 var nugetexe = Util.GetNuGetExePath();
                 var localRepo = new LocalPackageRepository(repositoryPath);
-                var outputPath = Path.Combine(workingDir.FullName, "output");
+                var outputPath = Path.Combine(workingPath, "output");
                 Directory.CreateDirectory(outputPath);
 
                 var packageA = Util.CreatePackage(repositoryPath, "packageA", "1.0.0");
@@ -1072,9 +1052,8 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var server2 = new MockServer())
             using (var server = new MockServer())
+            using (var workingPath = CreateMixedConfigAndJson())
             {
-                var workingDir = CreateMixedConfigAndJson();
-                var workingPath = workingDir.FullName;
                 var repositoryPath = Path.Combine(workingPath, "repo");
                 var slnPath = Path.Combine(workingPath, "test.sln");
                 var nugetexe = Util.GetNuGetExePath();
@@ -1132,9 +1111,8 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var server2 = new MockServer())
             using (var server = new MockServer())
+            using (var workingPath = CreateMixedConfigAndJson())
             {
-                var workingDir = CreateMixedConfigAndJson();
-                var workingPath = workingDir.FullName;
                 var repositoryPath = Path.Combine(workingPath, "repo");
                 var slnPath = Path.Combine(workingPath, "test.sln");
                 var nugetexe = Util.GetNuGetExePath();
@@ -1199,9 +1177,8 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var server2 = new MockServer())
             using (var server = new MockServer())
+            using (var workingPath = CreateMixedConfigAndJson())
             {
-                var workingDir = CreateMixedConfigAndJson();
-                var workingPath = workingDir.FullName;
                 var repositoryPath = Path.Combine(workingPath, "repo");
                 var slnPath = Path.Combine(workingPath, "test.sln");
                 var nugetexe = Util.GetNuGetExePath();
@@ -1271,9 +1248,8 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             using (var server = new MockServer())
+            using (var workingPath = CreateMixedConfigAndJson())
             {
-                var workingDir = CreateMixedConfigAndJson();
-                var workingPath = workingDir.FullName;
                 var repositoryPath = Path.Combine(workingPath, "repo");
                 var slnPath = Path.Combine(workingPath, "test.sln");
                 var nugetexe = Util.GetNuGetExePath();
@@ -1328,9 +1304,8 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             using (var server = new MockServer())
+            using (var workingPath = CreateMixedConfigAndJson())
             {
-                var workingDir = CreateMixedConfigAndJson();
-                var workingPath = workingDir.FullName;
                 var repositoryPath = Path.Combine(workingPath, "repo");
                 var slnPath = Path.Combine(workingPath, "test.sln");
                 var nugetexe = Util.GetNuGetExePath();
@@ -1367,8 +1342,6 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args),
                     waitForExit: true);
 
-                server.Stop();
-
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
                 Assert.Equal(1, hitsByUrl["/index.json"]);
@@ -1385,9 +1358,8 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             using (var server = new MockServer())
+            using (var workingPath = CreateMixedConfigAndJson())
             {
-                var workingDir = CreateMixedConfigAndJson();
-                var workingPath = workingDir.FullName;
                 var repositoryPath = Path.Combine(workingPath, "repo");
                 var slnPath = Path.Combine(workingPath, "test.sln");
                 var nugetexe = Util.GetNuGetExePath();
@@ -1436,21 +1408,17 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        private DirectoryInfo CreateMixedConfigAndJson()
+        private TestDirectory CreateMixedConfigAndJson()
         {
-            var tempPath = Path.GetTempPath();
-            var guid = Guid.NewGuid();
-            var workingPath = Path.Combine(tempPath, guid.ToString());
+            var workingPath = TestFileSystemUtility.CreateRandomTestFolder();
+
             var repositoryPath = Path.Combine(workingPath, "repo");
-            var currentDirectory = Directory.GetCurrentDirectory();
+
             var proj1Dir = Path.Combine(workingPath, "proj1");
             var proj2Dir = Path.Combine(workingPath, "proj2");
             var proj3Dir = Path.Combine(workingPath, "proj3");
             var proj4Dir = Path.Combine(workingPath, "proj4");
 
-            _dirs.TryAdd(workingPath, false);
-
-            Util.CreateDirectory(workingPath);
             Util.CreateDirectory(repositoryPath);
             Util.CreateDirectory(proj1Dir);
             Util.CreateDirectory(proj2Dir);
@@ -1552,7 +1520,7 @@ namespace NuGet.CommandLine.Test
                         EndGlobal
                         ");
 
-            return new DirectoryInfo(workingPath);
+            return workingPath;
         }
 
         private Action<HttpListenerResponse> ServerHandler(
@@ -1794,33 +1762,6 @@ namespace NuGet.CommandLine.Test
                     File.Delete(file);
                 }
             }
-        }
-
-        /// <summary>
-        /// Store all directories used by the unit tests and clean them up at the end during Dispose()
-        /// </summary>
-        private ConcurrentDictionary<string, bool> _dirs = new ConcurrentDictionary<string, bool>();
-
-        public void Dispose()
-        {
-            foreach (var dir in _dirs.Keys)
-            {
-                try
-                {
-                    Util.DeleteDirectory(dir);
-                }
-                catch
-                {
-                    // Ignore failures
-                    Console.WriteLine("Unable to delete: " + dir);
-                }
-            }
-        }
-
-        public NetworkCallCountTest()
-        {
-            // Clear the machine cache before each test
-            ClearMachineCache();
         }
     }
 }

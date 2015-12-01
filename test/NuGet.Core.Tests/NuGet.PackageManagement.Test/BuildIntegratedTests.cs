@@ -131,7 +131,7 @@ namespace NuGet.Test
             {
                 foreach (var folder in projectFolderPaths)
                 {
-                    TestFileSystemUtility.DeleteRandomTestFolders(folder);
+                    TestFileSystemUtility.DeleteRandomTestFolder(folder);
                 }
             }
         }
@@ -233,7 +233,7 @@ namespace NuGet.Test
             {
                 foreach (var folder in projectFolderPaths)
                 {
-                    TestFileSystemUtility.DeleteRandomTestFolders(folder);
+                    TestFileSystemUtility.DeleteRandomTestFolder(folder);
                 }
             }
         }

@@ -1,9 +1,9 @@
 ﻿{
   "dependencies": {
-    "NuGet.Protocol.VisualStudio": "3.3.0",
-    "NuGet.Resolver": "3.3.0",
-    "NuGet.ProjectManagement": "3.3.0",
-    "NuGet.PackageManagement": "3.3.0",
+    "NuGet.Protocol.VisualStudio": "3.4.0-*",
+    "NuGet.Resolver": "3.4.0-*",
+    "NuGet.ProjectManagement": "3.4.0-*",
+    "NuGet.PackageManagement": "3.4.0-*",
     "Microsoft.VisualStudio.Shell.Interop": "7.10.6071",
     "Microsoft.VisualStudio.Shell.Interop.10.0": "10.0.30319",
     "Microsoft.VisualStudio.Shell.Interop.11.0": "11.0.61030",
