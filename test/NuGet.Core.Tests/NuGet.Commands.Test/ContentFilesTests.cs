@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -14,7 +15,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
-    public class ContentFilesTests
+    public class ContentFilesTests : IDisposable
     {
         [Fact]
         public async Task ContentFiles_VerifyLockFileContainsCorrectPPOutputPath()
@@ -23,22 +24,23 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+                zip.AddEntry("contentFiles/any/any/a/code.cs.pp", new byte[] { 0 });
 
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
-
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/any/any/a/code.cs.pp", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -49,40 +51,39 @@ namespace NuGet.Commands.Test
                             </contentFiles>
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
-
-                var helperCsItem = target.Libraries.Single().ContentFiles
-                    .Single(item => item.Path == "contentFiles/any/any/a/code.cs.pp");
-
-                // Assert
-                Assert.Equal("code.cs", helperCsItem.Properties["outputPath"]);
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var helperCsItem = target.Libraries.Single().ContentFiles
+                .Single(item => item.Path == "contentFiles/any/any/a/code.cs.pp");
+
+            // Assert
+            Assert.Equal("code.cs", helperCsItem.Properties["outputPath"]);
         }
 
         [Fact]
@@ -92,22 +93,23 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+                zip.AddEntry("contentFiles/any/any/a/.pp", new byte[] { 0 });
 
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
-
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/any/any/a/.pp", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -118,41 +120,40 @@ namespace NuGet.Commands.Test
                             </contentFiles>
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
-
-                var helperCsItem = target.Libraries.Single().ContentFiles
-                    .Single(item => item.Path == "contentFiles/any/any/a/.pp");
-
-                // Assert
-                Assert.Equal(".pp", helperCsItem.Properties["outputPath"]);
-                Assert.False(helperCsItem.Properties.ContainsKey("ppOutputPath"));
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var helperCsItem = target.Libraries.Single().ContentFiles
+                .Single(item => item.Path == "contentFiles/any/any/a/.pp");
+
+            // Assert
+            Assert.Equal(".pp", helperCsItem.Properties["outputPath"]);
+            Assert.False(helperCsItem.Properties.ContainsKey("ppOutputPath"));
         }
 
         [Fact]
@@ -162,30 +163,30 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "uap10.0";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
+                zip.AddEntry("contentFiles/any/net40/image.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/net40/image2.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/net45/code.cs", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs6/net46/code.cs", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/dotnet6.0/code.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net46/code.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net46/code2.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net45/code.vb", new byte[] { 0 });
 
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
-
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
-
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/any/net40/image.jpg", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/net40/image2.jpg", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/cs/net45/code.cs", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/cs6/net46/code.cs", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/vb/dotnet6.0/code.vb", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/vb/net46/code.vb", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/vb/net46/code2.vb", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/vb/net45/code.vb", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -193,57 +194,56 @@ namespace NuGet.Commands.Test
                             <title />
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
-
-                var csItems = target.Libraries.Single().ContentFiles
-                    .Where(item => item.Properties["codeLanguage"] == "cs");
-
-                var cs6Items = target.Libraries.Single().ContentFiles
-                    .Where(item => item.Properties["codeLanguage"] == "cs6");
-
-                var vbItems = target.Libraries.Single().ContentFiles
-                    .Where(item => item.Properties["codeLanguage"] == "vb");
-
-                var anyItems = target.Libraries.Single().ContentFiles
-                    .Where(item => item.Properties["codeLanguage"] == "any");
-
-                // Assert
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-
-                Assert.Equal(0, cs6Items.Count());
-                Assert.Equal(0, csItems.Count());
-                Assert.Equal(0, vbItems.Count());
-                Assert.Equal(0, anyItems.Count());
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var csItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "cs");
+
+            var cs6Items = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "cs6");
+
+            var vbItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "vb");
+
+            var anyItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "any");
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+
+            Assert.Equal(0, cs6Items.Count());
+            Assert.Equal(0, csItems.Count());
+            Assert.Equal(0, vbItems.Count());
+            Assert.Equal(0, anyItems.Count());
         }
 
         [Fact]
@@ -253,35 +253,36 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "uap10.0";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+                zip.AddEntry("contentFiles/any/any/image.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/net40/image.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/net40/image2.jpg", new byte[] { 0 });
 
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+                zip.AddEntry("contentFiles/cs/net45/code.cs", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/uap10.0/code.cs", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/any/csharp.jpg", new byte[] { 0 });
 
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/any/any/image.jpg", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/net40/image.jpg", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/net40/image2.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs6/net46/code.cs", new byte[] { 0 });
 
-                    zip.AddEntry("contentFiles/cs/net45/code.cs", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/cs/uap10.0/code.cs", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/cs/any/csharp.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/dotnet6.0/code.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net46/code.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net46/code2.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net45/code.vb", new byte[] { 0 });
 
-                    zip.AddEntry("contentFiles/cs6/net46/code.cs", new byte[] { 0 });
-
-                    zip.AddEntry("contentFiles/vb/dotnet6.0/code.vb", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/vb/net46/code.vb", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/vb/net46/code2.vb", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/vb/net45/code.vb", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -289,60 +290,59 @@ namespace NuGet.Commands.Test
                             <title />
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
-
-                var csItems = target.Libraries.Single().ContentFiles
-                    .Where(item => item.Properties["codeLanguage"] == "cs");
-
-                var cs6Items = target.Libraries.Single().ContentFiles
-                    .Where(item => item.Properties["codeLanguage"] == "cs6");
-
-                var vbItems = target.Libraries.Single().ContentFiles
-                    .Where(item => item.Properties["codeLanguage"] == "vb");
-
-                var anyItems = target.Libraries.Single().ContentFiles
-                    .Where(item => item.Properties["codeLanguage"] == "any");
-
-                // Assert
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-
-                Assert.Equal(0, cs6Items.Count());
-                Assert.Equal(1, csItems.Count());
-                Assert.Equal(0, vbItems.Count());
-                Assert.Equal(1, anyItems.Count());
-
-                Assert.Equal("contentFiles/any/any/image.jpg", string.Join("|", anyItems));
-                Assert.Equal("contentFiles/cs/uap10.0/code.cs", string.Join("|", csItems));
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var csItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "cs");
+
+            var cs6Items = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "cs6");
+
+            var vbItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "vb");
+
+            var anyItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "any");
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+
+            Assert.Equal(0, cs6Items.Count());
+            Assert.Equal(1, csItems.Count());
+            Assert.Equal(0, vbItems.Count());
+            Assert.Equal(1, anyItems.Count());
+
+            Assert.Equal("contentFiles/any/any/image.jpg", string.Join("|", anyItems));
+            Assert.Equal("contentFiles/cs/uap10.0/code.cs", string.Join("|", csItems));
         }
 
         [Fact]
@@ -352,35 +352,36 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net45";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+                zip.AddEntry("contentFiles/any/any/image.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/net40/image.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/net40/image2.jpg", new byte[] { 0 });
 
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+                zip.AddEntry("contentFiles/cs/net45/code.cs", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/uap10.0/code.cs", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/any/csharp.jpg", new byte[] { 0 });
 
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/any/any/image.jpg", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/net40/image.jpg", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/net40/image2.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs6/net46/code.cs", new byte[] { 0 });
 
-                    zip.AddEntry("contentFiles/cs/net45/code.cs", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/cs/uap10.0/code.cs", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/cs/any/csharp.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/dotnet6.0/code.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net46/code.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net46/code2.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net45/code.vb", new byte[] { 0 });
 
-                    zip.AddEntry("contentFiles/cs6/net46/code.cs", new byte[] { 0 });
-
-                    zip.AddEntry("contentFiles/vb/dotnet6.0/code.vb", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/vb/net46/code.vb", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/vb/net46/code2.vb", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/vb/net45/code.vb", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -388,57 +389,56 @@ namespace NuGet.Commands.Test
                             <title />
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
-
-                var csItems = target.Libraries.Single().ContentFiles
-                    .Where(item => item.Properties["codeLanguage"] == "cs");
-
-                var cs6Items = target.Libraries.Single().ContentFiles
-                    .Where(item => item.Properties["codeLanguage"] == "cs6");
-
-                var vbItems = target.Libraries.Single().ContentFiles
-                    .Where(item => item.Properties["codeLanguage"] == "vb");
-
-                var anyItems = target.Libraries.Single().ContentFiles
-                    .Where(item => item.Properties["codeLanguage"] == "any");
-
-                // Assert
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-
-                Assert.Equal(0, cs6Items.Count());
-                Assert.Equal(1, csItems.Count());
-                Assert.Equal(1, vbItems.Count());
-                Assert.Equal(2, anyItems.Count());
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var csItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "cs");
+
+            var cs6Items = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "cs6");
+
+            var vbItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "vb");
+
+            var anyItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "any");
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+
+            Assert.Equal(0, cs6Items.Count());
+            Assert.Equal(1, csItems.Count());
+            Assert.Equal(1, vbItems.Count());
+            Assert.Equal(2, anyItems.Count());
         }
 
         [Fact]
@@ -448,35 +448,36 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+                zip.AddEntry("contentFiles/any/any/image.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/net40/image.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/net40/image2.jpg", new byte[] { 0 });
 
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+                zip.AddEntry("contentFiles/cs/net45/code.cs", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/uap10.0/code.cs", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/any/csharp.jpg", new byte[] { 0 });
 
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/any/any/image.jpg", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/net40/image.jpg", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/net40/image2.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs6/net46/code.cs", new byte[] { 0 });
 
-                    zip.AddEntry("contentFiles/cs/net45/code.cs", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/cs/uap10.0/code.cs", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/cs/any/csharp.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/dotnet6.0/code.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net46/code.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net46/code2.vb", new byte[] { 0 });
+                zip.AddEntry("contentFiles/vb/net45/code.vb", new byte[] { 0 });
 
-                    zip.AddEntry("contentFiles/cs6/net46/code.cs", new byte[] { 0 });
-
-                    zip.AddEntry("contentFiles/vb/dotnet6.0/code.vb", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/vb/net46/code.vb", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/vb/net46/code2.vb", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/vb/net45/code.vb", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -484,59 +485,58 @@ namespace NuGet.Commands.Test
                             <title />
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
-
-                var csItems = target.Libraries.Single().ContentFiles
-                    .Where(item => item.Properties["codeLanguage"] == "cs");
-
-                var cs6Items = target.Libraries.Single().ContentFiles
-                    .Where(item => item.Properties["codeLanguage"] == "cs6");
-
-                var vbItems = target.Libraries.Single().ContentFiles
-                    .Where(item => item.Properties["codeLanguage"] == "vb");
-
-                var anyItems = target.Libraries.Single().ContentFiles
-                    .Where(item => item.Properties["codeLanguage"] == "any");
-
-                // Assert
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-
-                Assert.Equal(1, cs6Items.Count());
-                Assert.Equal(1, csItems.Count());
-                Assert.Equal(2, vbItems.Count());
-                Assert.Equal(2, anyItems.Count());
-
-                Assert.Equal("contentFiles/any/net40/image.jpg|contentFiles/any/net40/image2.jpg", string.Join("|", anyItems));
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var csItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "cs");
+
+            var cs6Items = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "cs6");
+
+            var vbItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "vb");
+
+            var anyItems = target.Libraries.Single().ContentFiles
+                .Where(item => item.Properties["codeLanguage"] == "any");
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+
+            Assert.Equal(1, cs6Items.Count());
+            Assert.Equal(1, csItems.Count());
+            Assert.Equal(2, vbItems.Count());
+            Assert.Equal(2, anyItems.Count());
+
+            Assert.Equal("contentFiles/any/net40/image.jpg|contentFiles/any/net40/image2.jpg", string.Join("|", anyItems));
         }
 
         [Fact]
@@ -546,23 +546,24 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+                zip.AddEntry("contentFiles/any/any/a/file1.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/b/file1.txt", new byte[] { 0 });
 
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
-
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/any/any/a/file1.txt", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/b/file1.txt", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -573,46 +574,45 @@ namespace NuGet.Commands.Test
                             </contentFiles>
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var format = new LockFileFormat();
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var fromDisk = format.Read(request.LockFilePath);
-
-                fromDisk.Targets.Single()
-                    .Libraries
-                    .Single()
-                    .ContentFiles
-                    .First()
-                    .Properties["copyToOutput"] = "False";
-
-                // Assert
-                Assert.False(fromDisk.Equals(result.LockFile));
-                Assert.NotEqual(fromDisk.GetHashCode(), result.LockFile.GetHashCode());
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var format = new LockFileFormat();
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var fromDisk = format.Read(request.LockFilePath);
+
+            fromDisk.Targets.Single()
+                .Libraries
+                .Single()
+                .ContentFiles
+                .First()
+                .Properties["copyToOutput"] = "False";
+
+            // Assert
+            Assert.False(fromDisk.Equals(result.LockFile));
+            Assert.NotEqual(fromDisk.GetHashCode(), result.LockFile.GetHashCode());
         }
 
         [Fact]
@@ -622,22 +622,23 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+                zip.AddEntry("contentFiles/any/any/a/file1.txt", new byte[] { 0 });
 
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
-
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/any/any/a/file1.txt", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -648,39 +649,38 @@ namespace NuGet.Commands.Test
                             </contentFiles>
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var format = new LockFileFormat();
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var fromDisk = format.Read(request.LockFilePath);
-
-                // Assert
-                Assert.True(fromDisk.Equals(result.LockFile));
-                Assert.Equal(fromDisk.GetHashCode(), result.LockFile.GetHashCode());
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var format = new LockFileFormat();
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var fromDisk = format.Read(request.LockFilePath);
+
+            // Assert
+            Assert.True(fromDisk.Equals(result.LockFile));
+            Assert.Equal(fromDisk.GetHashCode(), result.LockFile.GetHashCode());
         }
 
         [Fact]
@@ -690,25 +690,26 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+                zip.AddEntry("contentFiles/i-n-valid/any/file.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/file.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/file.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/_._", new byte[] { 0 });
 
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
-
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/i-n-valid/any/file.txt", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/file.txt", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/file.txt", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/_._", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -719,41 +720,40 @@ namespace NuGet.Commands.Test
                             </contentFiles>
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
-                var count = target.Libraries.Single().ContentFiles.Count;
-
-                // Assert
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-                Assert.Equal(0, count);
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+            var count = target.Libraries.Single().ContentFiles.Count;
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+            Assert.Equal(0, count);
         }
 
         [Fact]
@@ -763,22 +763,23 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+                zip.AddEntry("contentFiles/any/any/a/file1.txt", new byte[] { 0 });
 
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
-
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/any/any/a/file1.txt", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -789,41 +790,40 @@ namespace NuGet.Commands.Test
                             </contentFiles>
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
-                var contentFile = target.Libraries.Single().ContentFiles.Single();
-
-                // Assert
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-                Assert.Equal("Compile", contentFile.Properties["buildAction"]);
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+            var contentFile = target.Libraries.Single().ContentFiles.Single();
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+            Assert.Equal("Compile", contentFile.Properties["buildAction"]);
         }
 
         [Fact]
@@ -833,22 +833,23 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+                zip.AddEntry("contentFiles/any/any/a/file1.txt", new byte[] { 0 });
 
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
-
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/any/any/a/file1.txt", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -859,44 +860,43 @@ namespace NuGet.Commands.Test
                             </contentFiles>
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                Exception exception = null;
-
-                try
-                {
-                    var result = await command.ExecuteAsync();
-                }
-                catch (Exception ex)
-                {
-                    exception = ex;
-                }
-
-                // Assert
-                var expected = "Package 'packageA.1.0.0' specifies an invalid build action 'BAD!' for file 'contentFiles/any/any/a/file1.txt'.";
-                Assert.Equal(expected, exception.Message);
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            Exception exception = null;
+
+            try
+            {
+                var result = await command.ExecuteAsync();
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+            }
+
+            // Assert
+            var expected = "Package 'packageA.1.0.0' specifies an invalid build action 'BAD!' for file 'contentFiles/any/any/a/file1.txt'.";
+            Assert.Equal(expected, exception.Message);
         }
 
         [Fact]
@@ -906,25 +906,26 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+                zip.AddEntry("contentFiles/any/any/a/file1.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/b/file1.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/a/a/file1.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/a/b/file2.txt", new byte[] { 0 });
 
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
-
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/any/any/a/file1.txt", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/b/file1.txt", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/a/a/file1.txt", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/a/b/file2.txt", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -936,43 +937,42 @@ namespace NuGet.Commands.Test
                             </contentFiles>
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
-                var files = target.Libraries.Single().ContentFiles;
-
-                // Assert
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-                Assert.Equal(4, target.Libraries.Single().ContentFiles.Count);
-                Assert.True(files.All(item => item.Properties["copyToOutput"] == "False"));
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+            var files = target.Libraries.Single().ContentFiles;
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+            Assert.Equal(4, target.Libraries.Single().ContentFiles.Count);
+            Assert.True(files.All(item => item.Properties["copyToOutput"] == "False"));
         }
 
         [Fact]
@@ -982,25 +982,26 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+                zip.AddEntry("contentFiles/any/any/a/file1.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/b/file1.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/a/a/file1.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/a/b/file2.txt", new byte[] { 0 });
 
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
-
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/any/any/a/file1.txt", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/b/file1.txt", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/a/a/file1.txt", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/a/b/file2.txt", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -1011,46 +1012,45 @@ namespace NuGet.Commands.Test
                             </contentFiles>
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
-
-                var files1 = target.Libraries.Single().ContentFiles.Where(item => item.Path.Contains("file1.txt")).ToList();
-                var files2 = target.Libraries.Single().ContentFiles.Where(item => item.Path.Contains("file2.txt")).ToList();
-
-                // Assert
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-                Assert.Equal(4, target.Libraries.Single().ContentFiles.Count);
-                Assert.True(files1.All(item => item.Properties["copyToOutput"] == "True"));
-                Assert.True(files2.All(item => item.Properties["copyToOutput"] == "False"));
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var files1 = target.Libraries.Single().ContentFiles.Where(item => item.Path.Contains("file1.txt")).ToList();
+            var files2 = target.Libraries.Single().ContentFiles.Where(item => item.Path.Contains("file2.txt")).ToList();
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+            Assert.Equal(4, target.Libraries.Single().ContentFiles.Count);
+            Assert.True(files1.All(item => item.Properties["copyToOutput"] == "True"));
+            Assert.True(files2.All(item => item.Properties["copyToOutput"] == "False"));
         }
 
         [Fact]
@@ -1060,25 +1060,26 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+                zip.AddEntry("contentFiles/any/any/a/file.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/b/file.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/a/a/file.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/a/b/file.txt", new byte[] { 0 });
 
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
-
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/any/any/a/file.txt", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/b/file.txt", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/a/a/file.txt", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/a/b/file.txt", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -1089,46 +1090,45 @@ namespace NuGet.Commands.Test
                             </contentFiles>
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
-
-                var bFiles = target.Libraries.Single().ContentFiles.Where(item => item.Path.Contains("/b/")).ToList();
-                var aFiles = target.Libraries.Single().ContentFiles.Where(item => !item.Path.Contains("/b/")).ToList();
-
-                // Assert
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-                Assert.Equal(4, target.Libraries.Single().ContentFiles.Count);
-                Assert.True(bFiles.All(item => item.Properties["copyToOutput"] == "False"));
-                Assert.True(aFiles.All(item => item.Properties["copyToOutput"] == "True"));
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var bFiles = target.Libraries.Single().ContentFiles.Where(item => item.Path.Contains("/b/")).ToList();
+            var aFiles = target.Libraries.Single().ContentFiles.Where(item => !item.Path.Contains("/b/")).ToList();
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+            Assert.Equal(4, target.Libraries.Single().ContentFiles.Count);
+            Assert.True(bFiles.All(item => item.Properties["copyToOutput"] == "False"));
+            Assert.True(aFiles.All(item => item.Properties["copyToOutput"] == "True"));
         }
 
         [Fact]
@@ -1138,25 +1138,26 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+                zip.AddEntry("contentFiles/any/any/a/file.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/b/file.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/a/a/file.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/a/b/file.txt", new byte[] { 0 });
 
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
-
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/any/any/a/file.txt", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/b/file.txt", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/a/a/file.txt", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/a/b/file.txt", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -1168,48 +1169,47 @@ namespace NuGet.Commands.Test
                             </contentFiles>
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
-
-                var bFiles = target.Libraries.Single().ContentFiles.Where(item => item.Path.Contains("/b/")).ToList();
-                var aFiles = target.Libraries.Single().ContentFiles.Where(item => !item.Path.Contains("/b/")).ToList();
-
-                // Assert
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-                Assert.Equal(4, target.Libraries.Single().ContentFiles.Count);
-                Assert.True(bFiles.All(item => item.Properties["copyToOutput"] == "True"));
-                Assert.True(aFiles.All(item => item.Properties["copyToOutput"] == "False"));
-                Assert.True(bFiles.All(item => item.Properties["buildAction"] == "None"));
-                Assert.True(aFiles.All(item => item.Properties["buildAction"] == "None"));
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var bFiles = target.Libraries.Single().ContentFiles.Where(item => item.Path.Contains("/b/")).ToList();
+            var aFiles = target.Libraries.Single().ContentFiles.Where(item => !item.Path.Contains("/b/")).ToList();
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+            Assert.Equal(4, target.Libraries.Single().ContentFiles.Count);
+            Assert.True(bFiles.All(item => item.Properties["copyToOutput"] == "True"));
+            Assert.True(aFiles.All(item => item.Properties["copyToOutput"] == "False"));
+            Assert.True(bFiles.All(item => item.Properties["buildAction"] == "None"));
+            Assert.True(aFiles.All(item => item.Properties["buildAction"] == "None"));
         }
 
         [Fact]
@@ -1219,25 +1219,26 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+                zip.AddEntry("contentFiles/any/any/a/file.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/b/file.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/a/a/file.txt", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/a/b/file.txt", new byte[] { 0 });
 
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
-
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/any/any/a/file.txt", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/b/file.txt", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/a/a/file.txt", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/a/b/file.txt", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -1248,46 +1249,45 @@ namespace NuGet.Commands.Test
                             </contentFiles>
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
-
-                var bFiles = target.Libraries.Single().ContentFiles.Where(item => item.Path.Contains("/b/")).ToList();
-                var aFiles = target.Libraries.Single().ContentFiles.Where(item => !item.Path.Contains("/b/")).ToList();
-
-                // Assert
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-                Assert.Equal(4, target.Libraries.Single().ContentFiles.Count);
-                Assert.True(bFiles.All(item => item.Properties["copyToOutput"] == "True"));
-                Assert.True(aFiles.All(item => item.Properties["copyToOutput"] == "False"));
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var bFiles = target.Libraries.Single().ContentFiles.Where(item => item.Path.Contains("/b/")).ToList();
+            var aFiles = target.Libraries.Single().ContentFiles.Where(item => !item.Path.Contains("/b/")).ToList();
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+            Assert.Equal(4, target.Libraries.Single().ContentFiles.Count);
+            Assert.True(bFiles.All(item => item.Properties["copyToOutput"] == "True"));
+            Assert.True(aFiles.All(item => item.Properties["copyToOutput"] == "False"));
         }
 
         [Fact]
@@ -1297,28 +1297,29 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+                zip.AddEntry("contentFiles/any/any/config/config.xml", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/images/image.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/images/image2.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/net45/code/code.cs", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/net45/config/config.xml", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/net45/images/image.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/win8/_._", new byte[] { 0 });
 
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
-
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/any/any/config/config.xml", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/images/image.jpg", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/images/image2.jpg", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/cs/net45/code/code.cs", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/cs/net45/config/config.xml", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/cs/net45/images/image.jpg", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/cs/win8/_._", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -1329,48 +1330,47 @@ namespace NuGet.Commands.Test
                             </contentFiles>
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
-
-                var contentFiles = target.Libraries.Single()
-                    .ContentFiles
-                    .Where(e => e.Properties["codeLanguage"] == "cs")
-                    .ToList();
-
-                // Assert
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-                Assert.Equal(3, contentFiles.Count);
-                Assert.True(contentFiles.All(item => item.Properties["copyToOutput"] == "False"));
-                Assert.True(contentFiles.All(item => item.Properties["buildAction"] == "Compile"));
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var contentFiles = target.Libraries.Single()
+                .ContentFiles
+                .Where(e => e.Properties["codeLanguage"] == "cs")
+                .ToList();
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+            Assert.Equal(3, contentFiles.Count);
+            Assert.True(contentFiles.All(item => item.Properties["copyToOutput"] == "False"));
+            Assert.True(contentFiles.All(item => item.Properties["buildAction"] == "Compile"));
         }
 
         [Fact]
@@ -1380,28 +1380,29 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+                zip.AddEntry("contentFiles/any/any/config/config.xml", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/images/image.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/images/image2.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/net45/code/code.cs", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/net45/config/config.xml", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/net45/images/image.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/win8/_._", new byte[] { 0 });
 
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
-
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/any/any/config/config.xml", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/images/image.jpg", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/images/image2.jpg", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/cs/net45/code/code.cs", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/cs/net45/config/config.xml", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/cs/net45/images/image.jpg", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/cs/win8/_._", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -1412,48 +1413,47 @@ namespace NuGet.Commands.Test
                             </contentFiles>
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
-
-                var contentFiles = target.Libraries.Single()
-                    .ContentFiles
-                    .Where(e => e.Properties["codeLanguage"] == "cs")
-                    .ToList();
-
-                // Assert
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-                Assert.Equal(3, contentFiles.Count);
-                Assert.Equal(2, contentFiles.Where(item => item.Properties["buildAction"] == "None"
-                && item.Properties["codeLanguage"] == "cs").Count());
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var contentFiles = target.Libraries.Single()
+                .ContentFiles
+                .Where(e => e.Properties["codeLanguage"] == "cs")
+                .ToList();
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+            Assert.Equal(3, contentFiles.Count);
+            Assert.Equal(2, contentFiles.Where(item => item.Properties["buildAction"] == "None"
+            && item.Properties["codeLanguage"] == "cs").Count());
         }
 
         [Fact]
@@ -1463,28 +1463,29 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+                zip.AddEntry("contentFiles/any/any/config/config.xml", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/images/image.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/any/any/images/image2.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/net45/code/code.cs", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/net45/config/config.xml", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/net45/images/image.jpg", new byte[] { 0 });
+                zip.AddEntry("contentFiles/cs/win8/_._", new byte[] { 0 });
 
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
-
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/any/any/config/config.xml", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/images/image.jpg", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/any/any/images/image2.jpg", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/cs/net45/code/code.cs", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/cs/net45/config/config.xml", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/cs/net45/images/image.jpg", new byte[] { 0 });
-                    zip.AddEntry("contentFiles/cs/win8/_._", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -1495,48 +1496,47 @@ namespace NuGet.Commands.Test
                             </contentFiles>
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
-
-                var contentFiles = target.Libraries.Single().ContentFiles
-                    .Where(e => e.Properties["codeLanguage"] == "cs")
-                    .ToList();
-
-                // Assert
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-                Assert.Equal(3, contentFiles.Count);
-                Assert.True(contentFiles.All(item => item.Properties["copyToOutput"] == "True"));
-                Assert.True(contentFiles.All(item => item.Properties["outputPath"].IndexOf("/") == -1));
-                Assert.True(contentFiles.All(item => item.Properties["buildAction"] == "None"));
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var contentFiles = target.Libraries.Single().ContentFiles
+                .Where(e => e.Properties["codeLanguage"] == "cs")
+                .ToList();
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+            Assert.Equal(3, contentFiles.Count);
+            Assert.True(contentFiles.All(item => item.Properties["copyToOutput"] == "True"));
+            Assert.True(contentFiles.All(item => item.Properties["outputPath"].IndexOf("/") == -1));
+            Assert.True(contentFiles.All(item => item.Properties["buildAction"] == "None"));
         }
 
         [Fact]
@@ -1546,22 +1546,23 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+                zip.AddEntry("contentFiles/any/any/config.xml", new byte[] { 0 });
 
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
-
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/any/any/config.xml", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -1572,43 +1573,42 @@ namespace NuGet.Commands.Test
                             </contentFiles>
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
-
-                var contentFile = target.Libraries.Single().ContentFiles.Single();
-
-                // Assert
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-                Assert.True(contentFile.Properties["buildAction"] == "None");
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var contentFile = target.Libraries.Single().ContentFiles.Single();
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+            Assert.True(contentFile.Properties["buildAction"] == "None");
         }
 
         [Fact]
@@ -1618,22 +1618,23 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
+
+            using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+                zip.AddEntry("contentFiles/any/any/config.xml", new byte[] { 0 });
 
-                var file = new FileInfo(Path.Combine(repository, "packageA.1.0.0.nupkg"));
-
-                using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
-                {
-                    zip.AddEntry("contentFiles/any/any/config.xml", new byte[] { 0 });
-
-                    zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
                         <metadata>
                             <id>packageA</id>
@@ -1644,44 +1645,44 @@ namespace NuGet.Commands.Test
                             </contentFiles>
                         </metadata>
                         </package>", Encoding.UTF8);
-                }
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
-
-                var contentFile = target.Libraries.Single().ContentFiles.Single();
-
-                // Assert
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-                Assert.Equal("Compile", contentFile.Properties["buildAction"]);
             }
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+            var contentFile = target.Libraries.Single().ContentFiles.Single();
+
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+            Assert.Equal("Compile", contentFile.Properties["buildAction"]);
         }
+
         [Fact]
         public async Task ContentFiles_DefaultActionsWithNoNuspecSettings()
         {
@@ -1689,76 +1690,76 @@ namespace NuGet.Commands.Test
             var logger = new TestLogger();
             var framework = "net46";
 
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
 
-                // Create a shared content package with no nuspec
-                CreateSharedContentPackageWithNoNuspecSettings(repository);
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
 
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
+            // Create a shared content package with no nuspec
+            CreateSharedContentPackageWithNoNuspecSettings(repository);
 
-                var configJson = JObject.Parse(@"{
-                    ""dependencies"": {
-                    ""packageA"": ""1.0.0""
-                    },
-                    ""frameworks"": {
-                    ""_FRAMEWORK_"": {}
-                    }
-                }".Replace("_FRAMEWORK_", framework));
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
 
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+            var configJson = JObject.Parse(@"{
+                ""dependencies"": {
+                ""packageA"": ""1.0.0""
+                },
+                ""frameworks"": {
+                ""_FRAMEWORK_"": {}
+                }
+            }".Replace("_FRAMEWORK_", framework));
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
-                var command = new RestoreCommand(logger, request);
+            var command = new RestoreCommand(logger, request);
 
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
 
-                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+            var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
 
-                var utilItem = target.Libraries.Single().ContentFiles
-                    .Single(item => item.Path == "contentFiles/cs/net45/code/util.cs.pp");
+            var utilItem = target.Libraries.Single().ContentFiles
+                .Single(item => item.Path == "contentFiles/cs/net45/code/util.cs.pp");
 
-                var configItem = target.Libraries.Single().ContentFiles
-                    .Single(item => item.Path == "contentFiles/cs/net45/config/config.xml");
+            var configItem = target.Libraries.Single().ContentFiles
+                .Single(item => item.Path == "contentFiles/cs/net45/config/config.xml");
 
-                var imageItem = target.Libraries.Single().ContentFiles
-                    .Single(item => item.Path == "contentFiles/cs/net45/images/image.jpg");
+            var imageItem = target.Libraries.Single().ContentFiles
+                .Single(item => item.Path == "contentFiles/cs/net45/images/image.jpg");
 
-                var utilFSItem = target.Libraries.Single().ContentFiles
-                    .Single(item => item.Path == "contentFiles/fs/net45/code/util.fs.pp");
+            var utilFSItem = target.Libraries.Single().ContentFiles
+                .Single(item => item.Path == "contentFiles/fs/net45/code/util.fs.pp");
 
-                // Assert
-                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
-                Assert.Equal(4, utilItem.Properties.Count);
-                Assert.Equal("Compile", utilItem.Properties["buildAction"]);
-                Assert.Equal("False", utilItem.Properties["copyToOutput"]);
-                Assert.Equal("code/util.cs", utilItem.Properties["ppOutputPath"]);
-                Assert.Equal(3, configItem.Properties.Count);
-                Assert.Equal("Compile", configItem.Properties["buildAction"]);
-                Assert.Equal("False", configItem.Properties["copyToOutput"]);
-                Assert.Equal(3, imageItem.Properties.Count);
-                Assert.Equal("Compile", imageItem.Properties["buildAction"]);
-                Assert.Equal("False", imageItem.Properties["copyToOutput"]);
-                Assert.Equal(4, utilFSItem.Properties.Count);
-                Assert.Equal("Compile", utilFSItem.Properties["buildAction"]);
-                Assert.Equal("False", utilFSItem.Properties["copyToOutput"]);
-                Assert.Equal("code/util.fs", utilFSItem.Properties["ppOutputPath"]);
-            }
+            // Assert
+            Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+            Assert.Equal(0, logger.Errors);
+            Assert.Equal(0, logger.Warnings);
+            Assert.Equal(4, utilItem.Properties.Count);
+            Assert.Equal("Compile", utilItem.Properties["buildAction"]);
+            Assert.Equal("False", utilItem.Properties["copyToOutput"]);
+            Assert.Equal("code/util.cs", utilItem.Properties["ppOutputPath"]);
+            Assert.Equal(3, configItem.Properties.Count);
+            Assert.Equal("Compile", configItem.Properties["buildAction"]);
+            Assert.Equal("False", configItem.Properties["copyToOutput"]);
+            Assert.Equal(3, imageItem.Properties.Count);
+            Assert.Equal("Compile", imageItem.Properties["buildAction"]);
+            Assert.Equal("False", imageItem.Properties["copyToOutput"]);
+            Assert.Equal(4, utilFSItem.Properties.Count);
+            Assert.Equal("Compile", utilFSItem.Properties["buildAction"]);
+            Assert.Equal("False", utilFSItem.Properties["copyToOutput"]);
+            Assert.Equal("code/util.fs", utilFSItem.Properties["ppOutputPath"]);
         }
 
         [Fact]
@@ -1839,23 +1840,24 @@ namespace NuGet.Commands.Test
         private async Task<RestoreResult> SetupWithRuntimes(string framework, NuGet.Logging.ILogger logger)
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
 
-                // Create a shared content package
-                CreateSharedContentPackage(repository);
-                CreateRuntimesPackage(repository);
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
 
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
+            // Create a shared content package
+            CreateSharedContentPackage(repository);
+            CreateRuntimesPackage(repository);
 
-                var configJson = JObject.Parse(@"{
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            var configJson = JObject.Parse(@"{
                   ""supports"": {
                       ""net46.app"": {},
                       ""uwp.10.0.app"": { },
@@ -1870,21 +1872,20 @@ namespace NuGet.Commands.Test
                   }
                 }".Replace("_FRAMEWORK_", framework));
 
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+            var command = new RestoreCommand(logger, request);
 
-                var command = new RestoreCommand(logger, request);
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
 
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                return result;
-            }
+            return result;
         }
 
         private async Task<RestoreResult> StandardSetup(
@@ -1900,48 +1901,48 @@ namespace NuGet.Commands.Test
             JObject configJson)
         {
             // Arrange
-            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var workingDir = TestFileSystemUtility.CreateRandomTestFolder();
+            _testFolders.Add(workingDir);
+
+            var repository = Path.Combine(workingDir, "repository");
+            Directory.CreateDirectory(repository);
+            var projectDir = Path.Combine(workingDir, "project");
+            Directory.CreateDirectory(projectDir);
+            var packagesDir = Path.Combine(workingDir, "packages");
+            Directory.CreateDirectory(packagesDir);
+
+            // Create a shared content package
+            CreateSharedContentPackage(repository);
+
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource(repository));
+
+            if (configJson == null)
             {
-                var repository = Path.Combine(workingDir, "repository");
-                Directory.CreateDirectory(repository);
-                var projectDir = Path.Combine(workingDir, "project");
-                Directory.CreateDirectory(projectDir);
-                var packagesDir = Path.Combine(workingDir, "packages");
-                Directory.CreateDirectory(packagesDir);
-
-                // Create a shared content package
-                CreateSharedContentPackage(repository);
-
-                var sources = new List<PackageSource>();
-                sources.Add(new PackageSource(repository));
-
-                if (configJson == null)
-                {
-                    configJson = JObject.Parse(@"{
-                      ""dependencies"": {
-                        ""packageA"": ""1.0.0""
-                      },
-                      ""frameworks"": {
-                        ""_FRAMEWORK_"": {}
-                      }
-                    }".Replace("_FRAMEWORK_", framework));
-                }
-
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
-
-                var request = new RestoreRequest(spec, sources, packagesDir);
-
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
-
-                var command = new RestoreCommand(logger, request);
-
-                // Act
-                var result = await command.ExecuteAsync();
-                result.Commit(logger);
-
-                return result;
+                configJson = JObject.Parse(@"{
+                  ""dependencies"": {
+                    ""packageA"": ""1.0.0""
+                  },
+                  ""frameworks"": {
+                    ""_FRAMEWORK_"": {}
+                  }
+                }".Replace("_FRAMEWORK_", framework));
             }
+
+            var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+            var request = new RestoreRequest(spec, sources, packagesDir);
+            
+            request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+            var command = new RestoreCommand(logger, request);
+
+            // Act
+            var result = await command.ExecuteAsync();
+            result.Commit(logger);
+
+            return result;
         }
 
         private static FileInfo CreateRuntimesPackage(string repositoryDir)
@@ -2056,5 +2057,16 @@ namespace NuGet.Commands.Test
                 }
             }";
         }
+
+        public void Dispose()
+        {
+            // Clean up
+            foreach (var folder in _testFolders)
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(folder);
+            }
+        }
+
+        private ConcurrentBag<string> _testFolders = new ConcurrentBag<string>();
     }
 }
