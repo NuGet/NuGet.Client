@@ -30,12 +30,15 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
     {
         private const int MaxRetries = 3;
         private readonly HttpSource _httpSource;
-        private readonly Dictionary<string, Task<IEnumerable<PackageInfo>>> _packageInfoCache = new Dictionary<string, Task<IEnumerable<PackageInfo>>>();
+        private readonly Dictionary<string, Task<IEnumerable<PackageInfo>>> _packageInfoCache =
+            new Dictionary<string, Task<IEnumerable<PackageInfo>>>();
         private readonly Dictionary<string, Task<NupkgEntry>> _nupkgCache = new Dictionary<string, Task<NupkgEntry>>();
         private readonly IReadOnlyList<Uri> _baseUris;
         private bool _ignored;
 
-        public HttpFileSystemBasedFindPackageByIdResource(IReadOnlyList<Uri> baseUris, Func<Task<HttpHandlerResource>> handlerFactory)
+        public HttpFileSystemBasedFindPackageByIdResource(
+            IReadOnlyList<Uri> baseUris,
+            Func<Task<HttpHandlerResource>> handlerFactory)
         {
             if (baseUris == null)
             {
@@ -203,14 +206,14 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             var parsedVersion = NuGetVersion.Parse(version);
             var normalizedVersionString = parsedVersion.ToNormalizedString();
             return new PackageInfo
-                {
-                    // If 'Id' element exist, use its value as accurate package Id
-                    // Otherwise, use the value of 'title' if it exist
-                    // Use the given Id as final fallback if all elements above don't exist
-                    Id = id,
-                    Version = parsedVersion,
-                    ContentUri = baseUri + id.ToLowerInvariant() + "/" + normalizedVersionString + "/" + id.ToLowerInvariant() + "." + normalizedVersionString + ".nupkg",
-                };
+            {
+                // If 'Id' element exist, use its value as accurate package Id
+                // Otherwise, use the value of 'title' if it exist
+                // Use the given Id as final fallback if all elements above don't exist
+                Id = id,
+                Version = parsedVersion,
+                ContentUri = baseUri + id.ToLowerInvariant() + "/" + normalizedVersionString + "/" + id.ToLowerInvariant() + "." + normalizedVersionString + ".nupkg",
+            };
         }
 
         private async Task<Stream> OpenNupkgStreamAsync(PackageInfo package, CancellationToken cancellationToken)
@@ -236,8 +239,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 action: token =>
                 {
                     return Task.FromResult(
-                        new FileStream(result.TempFileName, FileMode.Open, FileAccess.Read,
-                            FileShare.ReadWrite | FileShare.Delete));
+                        new FileStream(result.TempFileName,
+                                       FileMode.Open,
+                                       FileAccess.Read,
+                                       FileShare.ReadWrite | FileShare.Delete));
                 },
                 token: cancellationToken);
         }
@@ -255,9 +260,9 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         cancellationToken))
                     {
                         return new NupkgEntry
-                            {
-                                TempFileName = data.CacheFileName
-                            };
+                        {
+                            TempFileName = data.CacheFileName
+                        };
                     }
                 }
                 catch (Exception ex) when (retry < 2)

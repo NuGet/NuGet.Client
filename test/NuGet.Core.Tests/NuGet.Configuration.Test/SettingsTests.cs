@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using Moq;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Configuration.Test
@@ -33,105 +34,117 @@ namespace NuGet.Configuration.Test
             // Act & Assert
             var ex = Record.Exception(() => new Settings(null));
             Assert.NotNull(ex);
-            var tex = Assert.IsAssignableFrom<ArgumentException>(ex);
+            Assert.IsAssignableFrom<ArgumentException>(ex);
         }
 
         [Fact]
         public void WillGetConfigurationFromSpecifiedPath()
         {
-            // Arrange 
-            const string configFile = "NuGet.Config";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var config = @"
+            // Arrange
+            string configFile = "NuGet.Config";
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var config = @"
 <configuration>
     <SectionName>
         <add key='key1' value='value1' />
         <add key='key2' value='value2' />
     </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(configFile, mockBaseDirectory, config);
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, config);
 
-            // Act
-            var settings = new Settings(mockBaseDirectory);
+                // Act
+                var settings = new Settings(mockBaseDirectory);
 
-            // Assert 
-            Assert.Equal("value1", settings.GetValue("SectionName", "key1"));
-            Assert.Equal("value2", settings.GetValue("SectionName", "key2"));
+                // Assert
+                Assert.Equal("value1", settings.GetValue("SectionName", "key1"));
+                Assert.Equal("value2", settings.GetValue("SectionName", "key2"));
+            }
         }
 
         [Fact]
         public void CallingGetSettingValuesWithNullSectionWillThrowException()
         {
             // Arrange
-            const string configFile = "NuGet.Config";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
-            var settings = new Settings(mockBaseDirectory);
+            string configFile = "NuGet.Config";
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                var settings = new Settings(mockBaseDirectory);
 
-            // Act & Assert
-            Exception ex = Record.Exception(() => settings.GetSettingValues(null));
-            Assert.NotNull(ex);
-            var tex = Assert.IsAssignableFrom<ArgumentException>(ex);
+                // Act & Assert
+                Exception ex = Record.Exception(() => settings.GetSettingValues(null));
+                Assert.NotNull(ex);
+                Assert.IsAssignableFrom<ArgumentException>(ex);
+            }
         }
 
         [Fact]
         public void CallingGetValueWithNullSectionWillThrowException()
         {
             // Arrange
-            const string configFile = "NuGet.Config";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
-            var settings = new Settings(mockBaseDirectory);
+            string configFile = "NuGet.Config";
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                var settings = new Settings(mockBaseDirectory);
 
-            // Act & Assert
-            Exception ex = Record.Exception(() => settings.GetValue(null, "SomeKey"));
-            Assert.NotNull(ex);
-            var tex = Assert.IsAssignableFrom<ArgumentException>(ex);
+                // Act & Assert
+                Exception ex = Record.Exception(() => settings.GetValue(null, "SomeKey"));
+                Assert.NotNull(ex);
+                Assert.IsAssignableFrom<ArgumentException>(ex);
+            }
         }
 
         [Fact]
         public void CallingGetValueWithNullKeyWillThrowException()
         {
             // Arrange
-            const string configFile = "NuGet.Config";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
-            var settings = new Settings(mockBaseDirectory);
+            string configFile = "NuGet.Config";
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                var settings = new Settings(mockBaseDirectory);
 
-            // Act & Assert
-            Exception ex = Record.Exception(() => settings.GetValue("SomeSection", null));
-            Assert.NotNull(ex);
-            var tex = Assert.IsAssignableFrom<ArgumentException>(ex);
+                // Act & Assert
+                Exception ex = Record.Exception(() => settings.GetValue("SomeSection", null));
+                Assert.NotNull(ex);
+                Assert.IsAssignableFrom<ArgumentException>(ex);
+            }
         }
 
         [Fact]
         public void CallingCtorWithMalformedConfigThrowsException()
         {
             // Arrange
-            const string configFile = "NuGet.Config";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration><sectionName></configuration>");
+            string configFile = "NuGet.Config";
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration><sectionName></configuration>");
 
-            // Act & Assert
-            var ex = Record.Exception(() => new Settings(mockBaseDirectory));
-            Assert.NotNull(ex);
-            var tex = Assert.IsAssignableFrom<XmlException>(ex);
+                // Act & Assert
+                var ex = Record.Exception(() => new Settings(mockBaseDirectory));
+                Assert.NotNull(ex);
+                Assert.IsAssignableFrom<XmlException>(ex);
+            }
         }
 
         [Fact]
         public void UserSetting_CallingGetValuesWithNonExistantSectionReturnsEmpty()
         {
             // Arrange
-            const string configFile = "NuGet.Config";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
-            Settings settings = new Settings(mockBaseDirectory);
+            string configFile = "NuGet.Config";
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            var result = settings.GetSettingValues("DoesNotExisit");
+                // Act
+                var result = settings.GetSettingValues("DoesNotExisit");
 
-            // Assert 
-            Assert.Empty(result);
+                // Assert
+                Assert.Empty(result);
+            }
         }
 
         [Fact]
@@ -145,15 +158,17 @@ namespace NuGet.Configuration.Test
     </SectionName>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Act and Assert
-            Exception ex = Record.Exception(() => settings.GetSettingValues("SectionName"));
-            Assert.NotNull(ex);
-            var tex = Assert.IsAssignableFrom<InvalidDataException>(ex);
-            Assert.Equal(String.Format("Unable to parse config file '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)), ex.Message);
+                // Act and Assert
+                Exception ex = Record.Exception(() => settings.GetSettingValues("SectionName"));
+                Assert.NotNull(ex);
+                Assert.IsAssignableFrom<InvalidDataException>(ex);
+                Assert.Equal(String.Format("Unable to parse config file '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)), ex.Message);
+            }
         }
 
         [Fact]
@@ -169,15 +184,19 @@ namespace NuGet.Configuration.Test
 </activePackageSource>
 </configuration>";
             var nugetConfigPath = "NuGet.Config";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act and Assert
-            Exception ex = Record.Exception(() => settings.GetSettingValues("packageSources"));
-            Assert.NotNull(ex);
-            var tex = Assert.IsAssignableFrom<InvalidDataException>(ex);
-            Assert.Equal(String.Format("Unable to parse config file '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)), ex.Message);
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
+
+                // Act and Assert
+                Exception ex = Record.Exception(() => settings.GetSettingValues("packageSources"));
+                Assert.NotNull(ex);
+                Assert.IsAssignableFrom<InvalidDataException>(ex);
+                Assert.Equal(String.Format("Unable to parse config file '{0}'.", Path.Combine(mockBaseDirectory, nugetConfigPath)), ex.Message);
+            }
         }
 
         [Fact]
@@ -192,15 +211,18 @@ namespace NuGet.Configuration.Test
         <add key='key2' value='value2' />
     </SectionName>
 </configuration>";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            var result = settings.GetSettingValues("NotTheSectionName");
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Arrange 
-            Assert.Empty(result);
+                // Act
+                var result = settings.GetSettingValues("NotTheSectionName");
+
+                // Arrange
+                Assert.Empty(result);
+            }
         }
 
         [Fact]
@@ -215,15 +237,18 @@ namespace NuGet.Configuration.Test
         <add key='key2' value='value2' />
     </SectionName>
 </configuration>";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            var result = settings.GetValue("NotTheSectionName", "key1");
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Arrange 
-            Assert.Null(result);
+                // Act
+                var result = settings.GetValue("NotTheSectionName", "key1");
+
+                // Arrange
+                Assert.Null(result);
+            }
         }
 
         [Fact]
@@ -238,15 +263,18 @@ namespace NuGet.Configuration.Test
         <add key='key2' value='value2' />
     </SectionName>
 </configuration>";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            var result = settings.GetValue("SectionName", "key3");
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Assert 
-            Assert.Null(result);
+                // Act
+                var result = settings.GetValue("SectionName", "key3");
+
+                // Assert
+                Assert.Null(result);
+            }
         }
 
         [Fact]
@@ -261,16 +289,19 @@ namespace NuGet.Configuration.Test
         <add key='key2' value='value2' />
     </SectionName>
 </configuration>";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            var result = settings.GetSettingValues("SectionName");
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Assert 
-            Assert.NotNull(result);
-            Assert.Equal(2, result.Count);
+                // Act
+                var result = settings.GetSettingValues("SectionName");
+
+                // Assert
+                Assert.NotNull(result);
+                Assert.Equal(2, result.Count);
+            }
         }
 
         [Fact]
@@ -287,69 +318,80 @@ namespace NuGet.Configuration.Test
         <add key='key2' value='value2' />
     </SectionNameTwo>
 </configuration>";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            var result1 = settings.GetValue("SectionName", "key1");
-            var result2 = settings.GetValue("SectionNameTwo", "key2");
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Assert 
-            Assert.Equal("value1", result1);
-            Assert.Equal("value2", result2);
+                // Act
+                var result1 = settings.GetValue("SectionName", "key1");
+                var result2 = settings.GetValue("SectionNameTwo", "key2");
+
+                // Assert
+                Assert.Equal("value1", result1);
+                Assert.Equal("value2", result2);
+            }
         }
 
         [Fact]
         public void CallingSetValueWithEmptySectionNameThrowsException()
         {
             // Arrange
-            const string configFile = "NuGet.Config";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
-            Settings settings = new Settings(mockBaseDirectory);
+            string configFile = "NuGet.Config";
 
-            // Act & Assert
-            Exception ex = Record.Exception(() => settings.SetValue("", "SomeKey", "SomeValue"));
-            Assert.NotNull(ex);
-            var tex = Assert.IsAssignableFrom<ArgumentException>(ex);
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                Settings settings = new Settings(mockBaseDirectory);
+
+                // Act & Assert
+                Exception ex = Record.Exception(() => settings.SetValue("", "SomeKey", "SomeValue"));
+                Assert.NotNull(ex);
+                Assert.IsAssignableFrom<ArgumentException>(ex);
+            }
         }
 
         [Fact]
         public void CallingSetValueWithEmptyKeyThrowsException()
         {
             // Arrange
-            const string configFile = "NuGet.Config";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
-            Settings settings = new Settings(mockBaseDirectory);
+            string configFile = "NuGet.Config";
 
-            // Act & Assert
-            Exception ex = Record.Exception(() => settings.SetValue("SomeKey", "", "SomeValue"));
-            Assert.NotNull(ex);
-            var tex = Assert.IsAssignableFrom<ArgumentException>(ex);
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                Settings settings = new Settings(mockBaseDirectory);
+
+                // Act & Assert
+                Exception ex = Record.Exception(() => settings.SetValue("SomeKey", "", "SomeValue"));
+                Assert.NotNull(ex);
+                Assert.IsAssignableFrom<ArgumentException>(ex);
+            }
         }
 
         [Fact]
         public void CallingSetValueWillAddSectionIfItDoesNotExist()
         {
             // Arrange
-            const string configFile = "NuGet.Config";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            string configFile = "NuGet.Config";
+
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key"" value=""value"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(configFile, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            settings.SetValue("NewSectionName", "key", "value");
+                // Act
+                settings.SetValue("NewSectionName", "key", "value");
 
-            // Assert
-            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key"" value=""value"" />
@@ -358,113 +400,128 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value=""value"" />
   </NewSectionName>
 </configuration>";
-            Assert.Equal(result.Replace("\r\n", "\n"), File.ReadAllText(Path.Combine(mockBaseDirectory, configFile)).Replace("\r\n", "\n"));
+                Assert.Equal(result.Replace("\r\n", "\n"), File.ReadAllText(Path.Combine(mockBaseDirectory, configFile)).Replace("\r\n", "\n"));
+            }
         }
 
         [Fact]
         public void CallingSetValueWillAddToSectionIfItExist()
         {
             // Arrange
-            const string configFile = "NuGet.Config";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            string configFile = "NuGet.Config";
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key"" value=""value"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(configFile, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            settings.SetValue("SectionName", "keyTwo", "valueTwo");
+                // Act
+                settings.SetValue("SectionName", "keyTwo", "valueTwo");
 
-            // Assert
-            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key"" value=""value"" />
     <add key=""keyTwo"" value=""valueTwo"" />
   </SectionName>
 </configuration>";
-            Assert.Equal(result.Replace("\r\n", "\n"),
-                File.ReadAllText(Path.Combine(mockBaseDirectory, configFile)).Replace("\r\n", "\n"));
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, configFile)).Replace("\r\n", "\n"));
+            }
         }
 
         [Fact]
         public void CallingSetValueWillOverrideValueIfKeyExists()
         {
             // Arrange
-            const string configFile = "NuGet.Config";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            string configFile = "NuGet.Config";
+
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key"" value=""value"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(configFile, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            settings.SetValue("SectionName", "key", "NewValue");
+                // Act
+                settings.SetValue("SectionName", "key", "NewValue");
 
-            // Assert
-            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key"" value=""NewValue"" />
   </SectionName>
 </configuration>";
-            Assert.Equal(result.Replace("\r\n", "\n"),
-                File.ReadAllText(Path.Combine(mockBaseDirectory, configFile)).Replace("\r\n", "\n"));
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, configFile)).Replace("\r\n", "\n"));
+            }
         }
 
         [Fact]
         public void CallingSetValuesWithEmptySectionThrowsException()
         {
-            // Arrange 
+            // Arrange
             var values = new List<SettingValue>() { new SettingValue("key", "value", isMachineWide: false) };
-            const string configFile = "NuGet.Config";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
-            Settings settings = new Settings(mockBaseDirectory);
+            string configFile = "NuGet.Config";
 
-            // Act & Assert
-            Exception ex = Record.Exception(() => settings.SetValues("", values));
-            Assert.NotNull(ex);
-            var tex = Assert.IsAssignableFrom<ArgumentException>(ex);
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                Settings settings = new Settings(mockBaseDirectory);
+
+                // Act & Assert
+                Exception ex = Record.Exception(() => settings.SetValues("", values));
+                Assert.NotNull(ex);
+                Assert.IsAssignableFrom<ArgumentException>(ex);
+            }
         }
 
         [Fact]
         public void CallingSetValuesWithNullValuesThrowsException()
         {
-            // Arrange 
-            const string configFile = "NuGet.Config";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
-            Settings settings = new Settings(mockBaseDirectory);
+            // Arrange
+            string configFile = "NuGet.Config";
 
-            // Act & Assert
-            Exception ex = Record.Exception(() => settings.SetValues("Section", null));
-            Assert.NotNull(ex);
-            var tex = Assert.IsAssignableFrom<ArgumentNullException>(ex);
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                Settings settings = new Settings(mockBaseDirectory);
+
+                // Act & Assert
+                Exception ex = Record.Exception(() => settings.SetValues("Section", null));
+                Assert.NotNull(ex);
+                Assert.IsAssignableFrom<ArgumentNullException>(ex);
+            }
         }
 
         [Fact]
         public void CallingSetValuesWithEmptyKeyThrowsException()
         {
             // Arrange
-            const string configFile = "NuGet.Config";
+            string configFile = "NuGet.Config";
             var values = new[] { new SettingValue("", "value", isMachineWide: false) };
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act & Assert
-            Exception ex = Record.Exception(() => settings.SetValues("Section", values));
-            Assert.NotNull(ex);
-            var tex = Assert.IsAssignableFrom<ArgumentException>(ex);
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                Settings settings = new Settings(mockBaseDirectory);
+
+                // Act & Assert
+                Exception ex = Record.Exception(() => settings.SetValues("Section", values));
+                Assert.NotNull(ex);
+                Assert.IsAssignableFrom<ArgumentException>(ex);
+            }
         }
 
         [Fact]
@@ -479,15 +536,17 @@ namespace NuGet.Configuration.Test
   </SectionName>
 </configuration>";
             var values = new[] { new SettingValue("key", "value", isMachineWide: false) };
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            settings.SetValues("NewSectionName", values);
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Assert
-            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                // Act
+                settings.SetValues("NewSectionName", values);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key"" value=""value"" />
@@ -496,14 +555,15 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value=""value"" />
   </NewSectionName>
 </configuration>";
-            Assert.Equal(result.Replace("\r\n", "\n"),
-                File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
         }
 
         [Fact]
         public void CallingSetValuesWillAddToSectionIfItExist()
         {
-            // Arrange 
+            // Arrange
             var nugetConfigPath = "NuGet.Config";
             var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -512,23 +572,26 @@ namespace NuGet.Configuration.Test
   </SectionName>
 </configuration>";
             var values = new[] { new SettingValue("keyTwo", "valueTwo", isMachineWide: false) };
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            settings.SetValues("SectionName", values);
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Assert
-            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                // Act
+                settings.SetValues("SectionName", values);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key"" value=""value"" />
     <add key=""keyTwo"" value=""valueTwo"" />
   </SectionName>
 </configuration>";
-            Assert.Equal(result.Replace("\r\n", "\n"),
-                File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
         }
 
         [Fact]
@@ -544,22 +607,25 @@ namespace NuGet.Configuration.Test
   </SectionName>
 </configuration>";
             var values = new[] { new SettingValue("key", "NewValue", isMachineWide: false) };
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            settings.SetValues("SectionName", values);
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Assert
-            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                // Act
+                settings.SetValues("SectionName", values);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key"" value=""NewValue"" />
   </SectionName>
 </configuration>";
-            Assert.Equal(result.Replace("\r\n", "\n"),
-                File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
         }
 
         [Fact]
@@ -579,15 +645,17 @@ namespace NuGet.Configuration.Test
                     new SettingValue("key1", "Value1", isMachineWide: false),
                     new SettingValue("key2", "Value2", isMachineWide: false)
                 };
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            settings.SetValues("SectionName", values);
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Assert
-            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                // Act
+                settings.SetValues("SectionName", values);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key"" value=""Value"" />
@@ -595,8 +663,9 @@ namespace NuGet.Configuration.Test
     <add key=""key2"" value=""Value2"" />
   </SectionName>
 </configuration>";
-            Assert.Equal(result.Replace("\r\n", "\n"),
-                File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
         }
 
         [Fact]
@@ -612,15 +681,17 @@ namespace NuGet.Configuration.Test
                     new KeyValuePair<string, string>("key1", "Value1"),
                     new KeyValuePair<string, string>("key2", "Value2")
                 };
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            settings.SetNestedValues("SectionName", "MyKey", values);
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Assert
-            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                // Act
+                settings.SetNestedValues("SectionName", "MyKey", values);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <MyKey>
@@ -629,8 +700,9 @@ namespace NuGet.Configuration.Test
     </MyKey>
   </SectionName>
 </configuration>";
-            Assert.Equal(result.Replace("\r\n", "\n"),
-                File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
         }
 
         [Fact]
@@ -652,15 +724,17 @@ namespace NuGet.Configuration.Test
                     new KeyValuePair<string, string>("key3", "Value3"),
                     new KeyValuePair<string, string>("key4", "Value4")
                 };
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            settings.SetNestedValues("SectionName", "MyKey2", values);
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Assert
-            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                // Act
+                settings.SetNestedValues("SectionName", "MyKey2", values);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <MyKey>
@@ -673,8 +747,9 @@ namespace NuGet.Configuration.Test
     </MyKey2>
   </SectionName>
 </configuration>";
-            Assert.Equal(result.Replace("\r\n", "\n"),
-                File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
         }
 
         [Fact]
@@ -696,15 +771,17 @@ namespace NuGet.Configuration.Test
                     new KeyValuePair<string, string>("key3", "Value3"),
                     new KeyValuePair<string, string>("key4", "Value4")
                 };
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            settings.SetNestedValues("SectionName", "MyKey", values);
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Assert
-            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                // Act
+                settings.SetNestedValues("SectionName", "MyKey", values);
+
+                // Assert
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <MyKey>
@@ -715,38 +792,45 @@ namespace NuGet.Configuration.Test
     </MyKey>
   </SectionName>
 </configuration>";
-            Assert.Equal(result.Replace("\r\n", "\n"),
-                File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
         }
 
         [Fact]
         public void CallingDeleteValueWithEmptyKeyThrowsException()
         {
             // Arrange
-            const string configFile = "NuGet.Config";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
-            Settings settings = new Settings(mockBaseDirectory);
+            string configFile = "NuGet.Config";
 
-            // Act & Assert
-            Exception ex = Record.Exception(() => settings.DeleteValue("SomeSection", ""));
-            Assert.NotNull(ex);
-            var tex = Assert.IsAssignableFrom<ArgumentException>(ex);
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                Settings settings = new Settings(mockBaseDirectory);
+
+                // Act & Assert
+                Exception ex = Record.Exception(() => settings.DeleteValue("SomeSection", ""));
+                Assert.NotNull(ex);
+                Assert.IsAssignableFrom<ArgumentException>(ex);
+            }
         }
 
         [Fact]
         public void CallingDeleteValueWithEmptySectionThrowsException()
         {
             // Arrange
-            const string configFile = "NuGet.Config";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
-            Settings settings = new Settings(mockBaseDirectory);
+            string configFile = "NuGet.Config";
 
-            // Act & Assert
-            Exception ex = Record.Exception(() => settings.DeleteValue("", "SomeKey"));
-            Assert.NotNull(ex);
-            var tex = Assert.IsAssignableFrom<ArgumentException>(ex);
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                Settings settings = new Settings(mockBaseDirectory);
+
+                // Act & Assert
+                Exception ex = Record.Exception(() => settings.DeleteValue("", "SomeKey"));
+                Assert.NotNull(ex);
+                Assert.IsAssignableFrom<ArgumentException>(ex);
+            }
         }
 
         [Fact]
@@ -760,12 +844,15 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value="""" />
   </SectionName>
 </configuration>";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act & Assert
-            Assert.False(settings.DeleteValue("SectionDoesNotExists", "SomeKey"));
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
+
+                // Act & Assert
+                Assert.False(settings.DeleteValue("SectionDoesNotExists", "SomeKey"));
+            }
         }
 
         [Fact]
@@ -779,12 +866,15 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value="""" />
   </SectionName>
 </configuration>";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act & Assert
-            Assert.False(settings.DeleteValue("SectionName", "KeyDoesNotExist"));
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
+
+                // Act & Assert
+                Assert.False(settings.DeleteValue("SectionName", "KeyDoesNotExist"));
+            }
         }
 
         [Fact]
@@ -802,13 +892,15 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value=""value"" />
   </SectionName2>
 </configuration>";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act & Assert
-            Assert.True(settings.DeleteValue("SectionName", "DeleteMe"));
-            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
+
+                // Act & Assert
+                Assert.True(settings.DeleteValue("SectionName", "DeleteMe"));
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""keyNotToDelete"" value=""value"" />
@@ -817,23 +909,27 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value=""value"" />
   </SectionName2>
 </configuration>";
-            Assert.Equal(result.Replace("\r\n", "\n"),
-                File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
         }
 
         [Fact]
         public void CallingDeleteSectionWithEmptySectionThrowsException()
         {
             // Arrange
-            const string configFile = "NuGet.Config";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
-            Settings settings = new Settings(mockBaseDirectory);
+            string configFile = "NuGet.Config";
 
-            // Act & Assert
-            Exception ex = Record.Exception(() => settings.DeleteSection(""));
-            Assert.NotNull(ex);
-            var tex = Assert.IsAssignableFrom<ArgumentException>(ex);
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                Settings settings = new Settings(mockBaseDirectory);
+
+                // Act & Assert
+                Exception ex = Record.Exception(() => settings.DeleteSection(""));
+                Assert.NotNull(ex);
+                Assert.IsAssignableFrom<ArgumentException>(ex);
+            }
         }
 
         [Fact]
@@ -847,12 +943,15 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value="""" />
   </SectionName>
 </configuration>";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act & Assert
-            Assert.False(settings.DeleteSection("SectionDoesNotExists"));
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
+
+                // Act & Assert
+                Assert.False(settings.DeleteSection("SectionDoesNotExists"));
+            }
         }
 
         [Fact]
@@ -870,20 +969,23 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value=""value"" />
   </SectionName2>
 </configuration>";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act & Assert
-            Assert.True(settings.DeleteSection("SectionName"));
-            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
+
+                // Act & Assert
+                Assert.True(settings.DeleteSection("SectionName"));
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName2>
     <add key=""key"" value=""value"" />
   </SectionName2>
 </configuration>";
-            Assert.Equal(result.Replace("\r\n", "\n"),
-                File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+                Assert.Equal(result.Replace("\r\n", "\n"),
+                    File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath)).Replace("\r\n", "\n"));
+            }
         }
 
         [Fact]
@@ -897,34 +999,39 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value=""value"" />
   </SectionName>
 </configuration>";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            SettingsUtility.SetEncryptedValue(settings, "SectionName", "key", "NewValue");
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Assert
-            var content = File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath));
-            Assert.False(content.Contains("NewValue"));
+                // Act
+                SettingsUtility.SetEncryptedValue(settings, "SectionName", "key", "NewValue");
+
+                // Assert
+                var content = File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigPath));
+                Assert.False(content.Contains("NewValue"));
+            }
         }
 
         [Fact]
         public void SettingsUtility_GetEncryptedValue()
         {
             // Arrange
-            // Arrange
-            const string configFile = "NuGet.Config";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
-            Settings settings = new Settings(mockBaseDirectory);
-            SettingsUtility.SetEncryptedValue(settings, "SectionName", "key", "value");
+            string configFile = "NuGet.Config";
 
-            // Act
-            var result = SettingsUtility.GetDecryptedValue(settings, "SectionName", "key");
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                Settings settings = new Settings(mockBaseDirectory);
+                SettingsUtility.SetEncryptedValue(settings, "SectionName", "key", "value");
 
-            // Assert
-            Assert.Equal("value", result);
+                // Act
+                var result = SettingsUtility.GetDecryptedValue(settings, "SectionName", "key");
+
+                // Assert
+                Assert.Equal("value", result);
+            }
         }
 
         [Fact]
@@ -938,15 +1045,18 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value="""" />
   </SectionName>
 </configuration>";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            var result = SettingsUtility.GetDecryptedValue(settings, "SectionName", "key");
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Assert
-            Assert.Equal(String.Empty, result);
+                // Act
+                var result = SettingsUtility.GetDecryptedValue(settings, "SectionName", "key");
+
+                // Assert
+                Assert.Equal(String.Empty, result);
+            }
         }
 
         [Fact]
@@ -960,15 +1070,18 @@ namespace NuGet.Configuration.Test
     <add key=""key"" value="""" />
   </SectionName>
 </configuration>";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            var result = SettingsUtility.GetDecryptedValue(settings, "SectionName", "NoKeyByThatName");
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Assert
-            Assert.Null(result);
+                // Act
+                var result = SettingsUtility.GetDecryptedValue(settings, "SectionName", "NoKeyByThatName");
+
+                // Assert
+                Assert.Null(result);
+            }
         }
 
         [Fact]
@@ -984,17 +1097,20 @@ namespace NuGet.Configuration.Test
     <add key=""key2"" value=""bar"" />
   </SectionName>
 </configuration>";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            var result1 = settings.GetValue("SectionName", "Key1");
-            var result2 = settings.GetValue("SectionName", "Key2");
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Assert
-            Assert.Null(result1);
-            Assert.Equal("bar", result2);
+                // Act
+                var result1 = settings.GetValue("SectionName", "Key1");
+                var result2 = settings.GetValue("SectionName", "Key2");
+
+                // Assert
+                Assert.Null(result1);
+                Assert.Equal("bar", result2);
+            }
         }
 
         [Fact]
@@ -1010,17 +1126,20 @@ namespace NuGet.Configuration.Test
     <add key=""key2"" value=""bar"" additional2=""some-value"" someAttribute=""someAttributeValue"" />
   </SectionName>
 </configuration>";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            var settings = new Settings(mockBaseDirectory);
 
-            // Act
-            var result1 = settings.GetValue("SectionName", "Key1");
-            var result2 = settings.GetValue("SectionName", "Key2");
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory);
 
-            // Assert
-            Assert.Null(result1);
-            Assert.Equal("bar", result2);
+                // Act
+                var result1 = settings.GetValue("SectionName", "Key1");
+                var result2 = settings.GetValue("SectionName", "Key2");
+
+                // Assert
+                Assert.Null(result1);
+                Assert.Equal("bar", result2);
+            }
         }
 
         [Fact]
@@ -1038,15 +1157,18 @@ namespace NuGet.Configuration.Test
     <add key=""key4"" value=""value4"" />
   </SectionName>
 </configuration>";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            var result = settings.GetSettingValues("SectionName");
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Assert
-            AssertEqualCollections(result, new[] { "key3", "value3", "key4", "value4" });
+                // Act
+                var result = settings.GetSettingValues("SectionName");
+
+                // Assert
+                AssertEqualCollections(result, new[] { "key3", "value3", "key4", "value4" });
+            }
         }
 
         [Fact]
@@ -1064,23 +1186,25 @@ namespace NuGet.Configuration.Test
 
     <!-- values that are not relative paths -->
     <add key=""key4"" value=""c:\value2"" />
-    <add key=""key5"" value=""http://value3"" />    
+    <add key=""key5"" value=""http://value3"" />
     <add key=""key6"" value=""\\a\b\c"" />
     <add key=""key7"" value=""\a\b\c"" />
   </SectionName>
 </configuration>";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
-            Settings settings = new Settings(mockBaseDirectory);
 
-            // Act
-            var result = settings.GetSettingValues("SectionName", isPath: true);
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                Settings settings = new Settings(mockBaseDirectory);
 
-            // Assert
-            AssertEqualCollections(
-                result,
-                new[]
-                    {
+                // Act
+                var result = settings.GetSettingValues("SectionName", isPath: true);
+
+                // Assert
+                AssertEqualCollections(
+                    result,
+                    new[]
+                        {
                         "key1", String.Format(@"{0}\..\value1", mockBaseDirectory),
                         "key2", String.Format(@"{0}\a\b\c", mockBaseDirectory),
                         "key3", String.Format(@"{0}\.\a\b\c", mockBaseDirectory),
@@ -1088,49 +1212,52 @@ namespace NuGet.Configuration.Test
                         "key5", @"http://value3",
                         "key6", @"\\a\b\c",
                         "key7", @"\a\b\c"
-                    });
+                        });
+            }
         }
 
         [Fact]
         public void GetValuesMultipleConfFilesAdditive()
         {
             // Arrange
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var nugetConfigPath = "NuGet.Config";
-            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var nugetConfigPath = "NuGet.Config";
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key3"" value=""value3"" />
     <add key=""key4"" value=""value4"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
-            config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
+                config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key1"" value=""value1"" />
     <add key=""key2"" value=""value2"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
 
-            var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
+                var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
 
-            // Act
-            var result = settings.GetSettingValues("SectionName");
+                // Act
+                var result = settings.GetSettingValues("SectionName");
 
-            // Assert
-            AssertEqualCollections(result, new[] { "key1", "value1", "key2", "value2", "key3", "value3", "key4", "value4" });
+                // Assert
+                AssertEqualCollections(result, new[] { "key1", "value1", "key2", "value2", "key3", "value3", "key4", "value4" });
+            }
         }
 
         [Fact]
         public void GetValuesMultipleConfFilesClear()
         {
             // Arrange
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-
-            var nugetConfigPath = "NuGet.Config";
-            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var nugetConfigPath = "NuGet.Config";
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <clear /> <!-- i.e. ignore values from prior conf files -->
@@ -1138,33 +1265,34 @@ namespace NuGet.Configuration.Test
     <add key=""key4"" value=""value4"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
-            config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
+                config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key1"" value=""value1"" />
     <add key=""key2"" value=""value2"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
 
-            var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
+                var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
 
-            // Act
-            var result = settings.GetSettingValues("SectionName");
+                // Act
+                var result = settings.GetSettingValues("SectionName");
 
-            // Assert
-            AssertEqualCollections(result, new[] { "key3", "value3", "key4", "value4" });
+                // Assert
+                AssertEqualCollections(result, new[] { "key3", "value3", "key4", "value4" });
+            }
         }
 
         [Fact]
         public void GetSettingValuesMultipleConfFilesClear()
         {
             // Arrange
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-
-            var nugetConfigPath = "NuGet.Config";
-            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var nugetConfigPath = "NuGet.Config";
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <clear /> <!-- i.e. ignore values from prior conf files -->
@@ -1172,39 +1300,40 @@ namespace NuGet.Configuration.Test
     <add key=""key4"" value=""value4"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
-            config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
+                config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key1"" value=""value1"" />
     <add key=""key2"" value=""value2"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
 
-            var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
+                var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
 
-            // Act
-            var result = settings.GetSettingValues("SectionName");
+                // Act
+                var result = settings.GetSettingValues("SectionName");
 
-            // Assert
-            Assert.Equal<SettingValue>(
-                new[]
-                    {
+                // Assert
+                Assert.Equal<SettingValue>(
+                    new[]
+                        {
                         new SettingValue("key3", "value3", isMachineWide: false, priority: 0),
                         new SettingValue("key4", "value4", isMachineWide: false, priority: 0)
-                    },
-                result);
+                        },
+                    result);
+            }
         }
 
         [Fact]
         public void GetSettingValues_ReadsAttributeValues_FromElements()
         {
             // Arrange
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-
-            var nugetConfigPath = "NuGet.Config";
-            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var nugetConfigPath = "NuGet.Config";
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <clear />
@@ -1212,60 +1341,61 @@ namespace NuGet.Configuration.Test
     <add key=""key4"" value=""value4"" data-key4=""key4"" someAttr=""someAttrValue"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
-            config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
+                config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key1"" value=""value1"" />
     <add key=""key2"" value=""value2"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
 
-            var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
+                var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
 
-            // Act
-            var result = settings.GetSettingValues("SectionName");
+                // Act
+                var result = settings.GetSettingValues("SectionName");
 
-            // Assert
-            Assert.Collection(result,
-                setting =>
-                    {
-                        Assert.Equal("key3", setting.Key);
-                        Assert.Equal("value3", setting.Value);
-                        Assert.Collection(setting.AdditionalData,
-                            item =>
-                                {
-                                    Assert.Equal("data-key3", item.Key);
-                                    Assert.Equal("key3", item.Value);
-                                });
-                    },
-                setting =>
-                    {
-                        Assert.Equal("key4", setting.Key);
-                        Assert.Equal("value4", setting.Value);
-                        Assert.Collection(setting.AdditionalData,
-                            item =>
-                                {
-                                    Assert.Equal("data-key4", item.Key);
-                                    Assert.Equal("key4", item.Value);
-                                },
-                            item =>
-                                {
-                                    Assert.Equal("someAttr", item.Key);
-                                    Assert.Equal("someAttrValue", item.Value);
-                                });
-                    });
+                // Assert
+                Assert.Collection(result,
+                    setting =>
+                        {
+                            Assert.Equal("key3", setting.Key);
+                            Assert.Equal("value3", setting.Value);
+                            Assert.Collection(setting.AdditionalData,
+                                item =>
+                                    {
+                                        Assert.Equal("data-key3", item.Key);
+                                        Assert.Equal("key3", item.Value);
+                                    });
+                        },
+                    setting =>
+                        {
+                            Assert.Equal("key4", setting.Key);
+                            Assert.Equal("value4", setting.Value);
+                            Assert.Collection(setting.AdditionalData,
+                                item =>
+                                    {
+                                        Assert.Equal("data-key4", item.Key);
+                                        Assert.Equal("key4", item.Value);
+                                    },
+                                item =>
+                                    {
+                                        Assert.Equal("someAttr", item.Key);
+                                        Assert.Equal("someAttrValue", item.Value);
+                                    });
+                        });
+            }
         }
 
         [Fact]
         public void GetSettingValues_IgnoresAttributesFromClearedElements()
         {
             // Arrange
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-
-            var nugetConfigPath = "NuGet.Config";
-            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var nugetConfigPath = "NuGet.Config";
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <clear />
@@ -1273,239 +1403,247 @@ namespace NuGet.Configuration.Test
     <add key=""key4"" value=""value4"" data-key4=""key4"" someAttr=""someAttrValue"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
-            config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
+                config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key3"" value=""value3"" data-key3=""different-value"" not-inherited-attribute=""not-inherited"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
 
-            var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
+                var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
 
-            // Act
-            var result = settings.GetSettingValues("SectionName");
+                // Act
+                var result = settings.GetSettingValues("SectionName");
 
-            // Assert
-            Assert.Collection(result,
-                setting =>
-                    {
-                        Assert.Equal("key3", setting.Key);
-                        Assert.Equal("value3", setting.Value);
-                        Assert.Collection(setting.AdditionalData,
-                            item =>
-                                {
-                                    Assert.Equal("data-key3", item.Key);
-                                    Assert.Equal("key3", item.Value);
-                                });
-                    },
-                setting =>
-                    {
-                        Assert.Equal("key4", setting.Key);
-                        Assert.Equal("value4", setting.Value);
-                        Assert.Collection(setting.AdditionalData,
-                            item =>
-                                {
-                                    Assert.Equal("data-key4", item.Key);
-                                    Assert.Equal("key4", item.Value);
-                                },
-                            item =>
-                                {
-                                    Assert.Equal("someAttr", item.Key);
-                                    Assert.Equal("someAttrValue", item.Value);
-                                });
-                    });
+                // Assert
+                Assert.Collection(result,
+                    setting =>
+                        {
+                            Assert.Equal("key3", setting.Key);
+                            Assert.Equal("value3", setting.Value);
+                            Assert.Collection(setting.AdditionalData,
+                                item =>
+                                    {
+                                        Assert.Equal("data-key3", item.Key);
+                                        Assert.Equal("key3", item.Value);
+                                    });
+                        },
+                    setting =>
+                        {
+                            Assert.Equal("key4", setting.Key);
+                            Assert.Equal("value4", setting.Value);
+                            Assert.Collection(setting.AdditionalData,
+                                item =>
+                                    {
+                                        Assert.Equal("data-key4", item.Key);
+                                        Assert.Equal("key4", item.Value);
+                                    },
+                                item =>
+                                    {
+                                        Assert.Equal("someAttr", item.Key);
+                                        Assert.Equal("someAttrValue", item.Value);
+                                    });
+                        });
+            }
         }
 
         [Fact]
         public void SettingsValuesProvideOriginData()
         {
             // Arrange
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-
-            var nugetConfigPath = "NuGet.Config";
-            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var nugetConfigPath = "NuGet.Config";
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key1"" value=""value3"" />
     <add key=""key3"" value=""value4"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
-            config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
+                config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key1"" value=""value1"" />
     <add key=""key2"" value=""value2"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
 
-            // Act
-            var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
-            var values = settings.GetSettingValues("SectionName");
-            var key1Value = values.Where(s => s.Key.Equals("key1")).OrderByDescending(s => s.Priority).First();
-            var key2Value = values.Single(s => s.Key.Equals("key2"));
-            var key3Value = values.Single(s => s.Key.Equals("key3"));
-            var parentConfig = Path.Combine(mockBaseDirectory, "dir1", "NuGet.Config");
-            var childConfig = Path.Combine(mockBaseDirectory, "dir1", "dir2", "NuGet.Config");
+                // Act
+                var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
+                var values = settings.GetSettingValues("SectionName");
+                var key1Value = values.Where(s => s.Key.Equals("key1")).OrderByDescending(s => s.Priority).First();
+                var key2Value = values.Single(s => s.Key.Equals("key2"));
+                var key3Value = values.Single(s => s.Key.Equals("key3"));
+                var parentConfig = Path.Combine(mockBaseDirectory, "dir1", "NuGet.Config");
+                var childConfig = Path.Combine(mockBaseDirectory, "dir1", "dir2", "NuGet.Config");
 
-            // Assert
-            Assert.Equal(childConfig, ((Settings)key1Value.Origin).ConfigFilePath); // key1 was overidden, so it has a new origin!
-            Assert.Equal(parentConfig, ((Settings)key2Value.Origin).ConfigFilePath);
-            Assert.Equal(childConfig, ((Settings)key3Value.Origin).ConfigFilePath);
+                // Assert
+                Assert.Equal(childConfig, ((Settings)key1Value.Origin).ConfigFilePath); // key1 was overidden, so it has a new origin!
+                Assert.Equal(parentConfig, ((Settings)key2Value.Origin).ConfigFilePath);
+                Assert.Equal(childConfig, ((Settings)key3Value.Origin).ConfigFilePath);
+            }
         }
 
         [Fact]
         public void GetSingleValuesMultipleConfFiles()
         {
             // Arrange
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-
-            var nugetConfigPath = "NuGet.Config";
-            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var nugetConfigPath = "NuGet.Config";
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key3"" value=""value3"" />
     <add key=""key4"" value=""value4"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
-            config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
+                config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key1"" value=""value1"" />
     <add key=""key2"" value=""value2"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
 
-            var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
+                var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
 
-            // Assert
-            Assert.Equal("value4", settings.GetValue("SectionName", "key4"));
-            Assert.Equal("value3", settings.GetValue("SectionName", "key3"));
-            Assert.Equal("value2", settings.GetValue("SectionName", "key2"));
-            Assert.Equal("value1", settings.GetValue("SectionName", "key1"));
+                // Assert
+                Assert.Equal("value4", settings.GetValue("SectionName", "key4"));
+                Assert.Equal("value3", settings.GetValue("SectionName", "key3"));
+                Assert.Equal("value2", settings.GetValue("SectionName", "key2"));
+                Assert.Equal("value1", settings.GetValue("SectionName", "key1"));
+            }
         }
 
         [Fact]
         public void GetSingleValuesMultipleConfFilesWithDupes()
         {
             // Arrange
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-
-            var nugetConfigPath = "NuGet.Config";
-            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var nugetConfigPath = "NuGet.Config";
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key1"" value=""LastOneWins1"" />
     <add key=""key2"" value=""LastOneWins2"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
-            config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
+                config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key1"" value=""value1"" />
     <add key=""key2"" value=""value2"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
 
-            var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
+                var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
 
-            // Assert
-            Assert.Equal("LastOneWins2", settings.GetValue("SectionName", "key2"));
-            Assert.Equal("LastOneWins1", settings.GetValue("SectionName", "key1"));
+                // Assert
+                Assert.Equal("LastOneWins2", settings.GetValue("SectionName", "key2"));
+                Assert.Equal("LastOneWins1", settings.GetValue("SectionName", "key1"));
+            }
         }
 
         [Fact]
         public void GetSingleValuesMultipleConfFilesClear()
         {
             // Arrange
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-
-            var nugetConfigPath = "NuGet.Config";
-            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var nugetConfigPath = "NuGet.Config";
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <clear /> <!-- i.e. ignore values from prior conf files -->
     <add key=""key2"" value=""value2"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
-            config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
+                config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
-    <add key=""key1"" value=""value1"" />    
+    <add key=""key1"" value=""value1"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
 
-            var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
+                var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
 
-            // Assert
-            Assert.Equal("value2", settings.GetValue("SectionName", "key2"));
-            Assert.Equal(null, settings.GetValue("SectionName", "key1"));
+                // Assert
+                Assert.Equal("value2", settings.GetValue("SectionName", "key2"));
+                Assert.Equal(null, settings.GetValue("SectionName", "key1"));
+            }
         }
 
         [Fact]
         public void GetValueReturnsPathRelativeToConfigWhenPathIsNotRooted()
         {
             // Arrange
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""path-key"" value=""foo\bar"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile("nuget.config", mockBaseDirectory, config);
+                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", mockBaseDirectory, config);
 
-            var settings = new Settings(mockBaseDirectory, "nuget.config");
+                var settings = new Settings(mockBaseDirectory, "nuget.config");
 
-            // Act
-            string result = settings.GetValue("SectionName", "path-key", isPath: true);
+                // Act
+                string result = settings.GetValue("SectionName", "path-key", isPath: true);
 
-            // Assert
-            Assert.Equal(String.Format(@"{0}\foo\bar", mockBaseDirectory), result);
+                // Assert
+                Assert.Equal(String.Format(@"{0}\foo\bar", mockBaseDirectory), result);
+            }
         }
 
         [Fact]
         public void GetValuesWithUserSpecifiedDefaultConfigFile()
         {
             // Arrange
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-
-            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key3"" value=""value3"" />
     <add key=""key4"" value=""value4"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile("NuGet.Config", Path.Combine(mockBaseDirectory, "dir1"), config);
-            config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                ConfigurationFileTestUtility.CreateConfigurationFile("NuGet.Config", Path.Combine(mockBaseDirectory, "dir1"), config);
+                config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key1"" value=""value1"" />
     <add key=""key2"" value=""value2"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile("UserDefinedConfigFile.confg", Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
+                ConfigurationFileTestUtility.CreateConfigurationFile("UserDefinedConfigFile.confg", Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
 
-            var settings = Settings.LoadDefaultSettings(
-                Path.Combine(mockBaseDirectory, @"dir1\dir2"),
-                "UserDefinedConfigFile.confg",
-                null);
+                var settings = Settings.LoadDefaultSettings(
+                    Path.Combine(mockBaseDirectory, @"dir1\dir2"),
+                    "UserDefinedConfigFile.confg",
+                    null);
 
-            // Act
-            var result = settings.GetSettingValues("SectionName");
+                // Act
+                var result = settings.GetSettingValues("SectionName");
 
-            // Assert
-            AssertEqualCollections(result, new[] { "key1", "value1", "key2", "value2", "key3", "value3", "key4", "value4" });
+                // Assert
+                AssertEqualCollections(result, new[] { "key1", "value1", "key2", "value2", "key3", "value3", "key4", "value4" });
+            }
         }
 
         [Theory]
@@ -1515,66 +1653,72 @@ namespace NuGet.Configuration.Test
         public void GetValueReturnsPathWhenPathIsRooted(string value)
         {
             // Arrange
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var config = String.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var config = String.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""path-key"" value=""{0}"" />
   </SectionName>
 </configuration>", value);
-            TestFilesystemUtility.CreateConfigurationFile("nuget.config", mockBaseDirectory, config);
-            var settings = new Settings(mockBaseDirectory, "nuget.config");
+                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory, "nuget.config");
 
-            // Act
-            string result = settings.GetValue("SectionName", "path-key", isPath: true);
+                // Act
+                string result = settings.GetValue("SectionName", "path-key", isPath: true);
 
-            // Assert
-            Assert.Equal(value, result);
+                // Assert
+                Assert.Equal(value, result);
+            }
         }
 
         [Fact]
         public void GetValueReturnsPathRelativeToRootOfConfig()
         {
             // Arrange
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""path-key"" value=""\Blah"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile("nuget.config", mockBaseDirectory, config);
-            var settings = new Settings(mockBaseDirectory, "nuget.config");
+                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory, "nuget.config");
 
-            // Act
-            string result = settings.GetValue("SectionName", "path-key", isPath: true);
+                // Act
+                string result = settings.GetValue("SectionName", "path-key", isPath: true);
 
-            // Assert
-            Assert.Equal(String.Format(@"{0}Blah", Path.GetPathRoot(mockBaseDirectory)), result);
+                // Assert
+                Assert.Equal(String.Format(@"{0}Blah", Path.GetPathRoot(mockBaseDirectory)), result);
+            }
         }
 
         [Fact]
         public void GetValueResolvesRelativePaths()
         {
             // Arrange
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""path-key"" value=""..\Blah"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile("nuget.config", mockBaseDirectory, config);
-            var settings = new Settings(mockBaseDirectory, "nuget.config");
+                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", mockBaseDirectory, config);
+                var settings = new Settings(mockBaseDirectory, "nuget.config");
 
-            // Act
-            string result = settings.GetValue("SectionName", "path-key", isPath: true);
+                // Act
+                string result = settings.GetValue("SectionName", "path-key", isPath: true);
 
-            // Assert
-            Assert.Equal(String.Format(@"{0}\..\Blah", mockBaseDirectory), result);
+                // Assert
+                Assert.Equal(String.Format(@"{0}\..\Blah", mockBaseDirectory), result);
+            }
         }
 
-        // Checks that the correct files are read, in the right order, 
+        // Checks that the correct files are read, in the right order,
         // when laoding machine wide settings.
         [Fact]
         public void LoadMachineWideSettings()
@@ -1587,33 +1731,33 @@ namespace NuGet.Configuration.Test
   </SectionName>
 </configuration>";
 
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, @"NuGet\Config"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a3.xconfig", Path.Combine(mockBaseDirectory, @"NuGet\Config"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a3.xconfig", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a3.xconfig", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version\SKU"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version\SKU"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a3.xconfig", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version\SKU"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version\SKU\Dir"), fileContent);
 
-            TestFilesystemUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet"), fileContent);
-            TestFilesystemUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config"), fileContent);
-            TestFilesystemUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, @"NuGet\Config"), fileContent);
-            TestFilesystemUtility.CreateConfigurationFile("a3.xconfig", Path.Combine(mockBaseDirectory, @"NuGet\Config"), fileContent);
-            TestFilesystemUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE"), fileContent);
-            TestFilesystemUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE"), fileContent);
-            TestFilesystemUtility.CreateConfigurationFile("a3.xconfig", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE"), fileContent);
-            TestFilesystemUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version"), fileContent);
-            TestFilesystemUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version"), fileContent);
-            TestFilesystemUtility.CreateConfigurationFile("a3.xconfig", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version"), fileContent);
-            TestFilesystemUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version\SKU"), fileContent);
-            TestFilesystemUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version\SKU"), fileContent);
-            TestFilesystemUtility.CreateConfigurationFile("a3.xconfig", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version\SKU"), fileContent);
-            TestFilesystemUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version\SKU\Dir"), fileContent);
+                // Act
+                var settings = Settings.LoadMachineWideSettings(
+                    mockBaseDirectory, "IDE", "Version", "SKU", "TestDir");
 
-            // Act
-            var settings = Settings.LoadMachineWideSettings(
-                mockBaseDirectory, "IDE", "Version", "SKU", "TestDir");
-
-            // Assert
-            var files = settings.Select(s => s.ConfigFilePath).ToArray();
-            Assert.Equal(
-                files,
-                new string[]
-                    {
+                // Assert
+                var files = settings.Select(s => s.ConfigFilePath).ToArray();
+                Assert.Equal(
+                    files,
+                    new string[]
+                        {
                         String.Format(@"{0}\NuGet\Config\IDE\Version\SKU\a1.config", mockBaseDirectory),
                         String.Format(@"{0}\NuGet\Config\IDE\Version\SKU\a2.config", mockBaseDirectory),
                         String.Format(@"{0}\NuGet\Config\IDE\Version\a1.config", mockBaseDirectory),
@@ -1622,62 +1766,64 @@ namespace NuGet.Configuration.Test
                         String.Format(@"{0}\NuGet\Config\IDE\a2.config", mockBaseDirectory),
                         String.Format(@"{0}\NuGet\Config\a1.config", mockBaseDirectory),
                         String.Format(@"{0}\NuGet\Config\a2.config", mockBaseDirectory)
-                    });
+                        });
+            }
         }
 
         // Tests method GetValue() with machine wide settings.
         [Fact]
         public void GetValueWithMachineWideSettings()
         {
-            // Arrange            
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var fileContent1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            // Arrange
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var fileContent1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key1"" value=""value1"" />
     <add key=""key2"" value=""value2"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config"), fileContent1);
-            var fileContent2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config"), fileContent1);
+                var fileContent2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key2"" value=""value3"" />
     <add key=""key3"" value=""value4"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE"), fileContent2);
-            var fileContent3 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE"), fileContent2);
+                var fileContent3 = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key3"" value=""user"" />
   </SectionName>
 </configuration>";
-            TestFilesystemUtility.CreateConfigurationFile("user.config", mockBaseDirectory, fileContent3);
+                ConfigurationFileTestUtility.CreateConfigurationFile("user.config", mockBaseDirectory, fileContent3);
 
-            var m = new Mock<IMachineWideSettings>();
-            m.SetupGet(obj => obj.Settings).Returns(
-                Settings.LoadMachineWideSettings(mockBaseDirectory, "IDE", "Version", "SKU"));
+                var m = new Mock<IMachineWideSettings>();
+                m.SetupGet(obj => obj.Settings).Returns(
+                    Settings.LoadMachineWideSettings(mockBaseDirectory, "IDE", "Version", "SKU"));
 
-            // Act
-            var settings = Settings.LoadDefaultSettings(
-                mockBaseDirectory,
-                "user.config",
-                m.Object);
+                // Act
+                var settings = Settings.LoadDefaultSettings(
+                    mockBaseDirectory,
+                    "user.config",
+                    m.Object);
 
-            // Assert
-            var v = settings.GetValue("SectionName", "key1");
-            Assert.Equal("value1", v);
+                // Assert
+                var v = settings.GetValue("SectionName", "key1");
+                Assert.Equal("value1", v);
 
-            // the value in NuGet\Config\IDE\a1.config overrides the value in
-            // NuGet\Config\a1.config
-            v = settings.GetValue("SectionName", "key2");
-            Assert.Equal("value3", v);
+                // the value in NuGet\Config\IDE\a1.config overrides the value in
+                // NuGet\Config\a1.config
+                v = settings.GetValue("SectionName", "key2");
+                Assert.Equal("value3", v);
 
-            // the value in user.config overrides the value in NuGet\Config\IDE\a1.config
-            v = settings.GetValue("SectionName", "key3");
-            Assert.Equal("user", v);
-        }
+                // the value in user.config overrides the value in NuGet\Config\IDE\a1.config
+                v = settings.GetValue("SectionName", "key3");
+                Assert.Equal("user", v);
+            } }
 
         // Tests method SetValue() with machine wide settings.
         // Verifies that the user specific config file is modified, while machine
@@ -1686,60 +1832,61 @@ namespace NuGet.Configuration.Test
         public void SetValueWithMachineWideSettings()
         {
             // Arrange
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var a1Config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var a1Config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key1"" value=""value1"" />
   </SectionName>
 </configuration>".Replace("\r\n", "\n");
-            var a2Config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                var a2Config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key2"" value=""value2"" />
     <add key=""key3"" value=""value3"" />
   </SectionName>
 </configuration>".Replace("\r\n", "\n");
-            var userConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                var userConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key3"" value=""user"" />
   </SectionName>
 </configuration>".Replace("\r\n", "\n");
 
-            TestFilesystemUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config"), a1Config);
-            TestFilesystemUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE"), a2Config);
-            TestFilesystemUtility.CreateConfigurationFile("user.config", mockBaseDirectory, userConfig);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config"), a1Config);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE"), a2Config);
+                ConfigurationFileTestUtility.CreateConfigurationFile("user.config", mockBaseDirectory, userConfig);
 
-            var m = new Mock<IMachineWideSettings>();
-            m.SetupGet(obj => obj.Settings).Returns(
-                Settings.LoadMachineWideSettings(mockBaseDirectory, "IDE", "Version", "SKU"));
+                var m = new Mock<IMachineWideSettings>();
+                m.SetupGet(obj => obj.Settings).Returns(
+                    Settings.LoadMachineWideSettings(mockBaseDirectory, "IDE", "Version", "SKU"));
 
-            var settings = Settings.LoadDefaultSettings(
-                mockBaseDirectory,
-                "user.config",
-                m.Object);
+                var settings = Settings.LoadDefaultSettings(
+                    mockBaseDirectory,
+                    "user.config",
+                    m.Object);
 
-            // Act            
-            settings.SetValue("SectionName", "key1", "newValue");
+                // Act
+                settings.SetValue("SectionName", "key1", "newValue");
 
-            // Assert
-            var text = File.ReadAllText(Path.Combine(mockBaseDirectory, "user.config"));
-            var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                // Assert
+                var text = File.ReadAllText(Path.Combine(mockBaseDirectory, "user.config"));
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key3"" value=""user"" />
     <add key=""key1"" value=""newValue"" />
   </SectionName>
 </configuration>".Replace("\r\n", "\n");
-            Assert.Equal(result, text.Replace("\r\n", "\n"));
+                Assert.Equal(result, text.Replace("\r\n", "\n"));
 
-            text = File.ReadAllText(Path.Combine(mockBaseDirectory, @"NuGet\Config\a1.config"));
-            Assert.Equal(a1Config, text.Replace("\r\n", "\n"));
+                text = File.ReadAllText(Path.Combine(mockBaseDirectory, @"NuGet\Config\a1.config"));
+                Assert.Equal(a1Config, text.Replace("\r\n", "\n"));
 
-            text = File.ReadAllText(Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\a2.config"));
-            Assert.Equal(a2Config, text.Replace("\r\n", "\n"));
-        }
+                text = File.ReadAllText(Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\a2.config"));
+                Assert.Equal(a2Config, text.Replace("\r\n", "\n"));
+            } }
 
         // Tests that when configFileName is not null, the specified
         // file must exist.
@@ -1747,71 +1894,73 @@ namespace NuGet.Configuration.Test
         public void UserSpecifiedConfigFileMustExist()
         {
             // Arrange
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-
-            // Act and assert
-            Exception ex = Record.Exception(() => Settings.LoadDefaultSettings(
-                mockBaseDirectory,
-                configFileName: "user.config",
-                machineWideSettings: null));
-            Assert.NotNull(ex);
-            var tex = Assert.IsAssignableFrom<InvalidOperationException>(ex);
-            Assert.Equal(String.Format(@"File '{0}' does not exist.", Path.Combine(mockBaseDirectory, "user.config")), ex.Message);
-        }
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Act and assert
+                Exception ex = Record.Exception(() => Settings.LoadDefaultSettings(
+                    mockBaseDirectory,
+                    configFileName: "user.config",
+                    machineWideSettings: null));
+                Assert.NotNull(ex);
+                Assert.IsAssignableFrom<InvalidOperationException>(ex);
+                Assert.Equal(String.Format(@"File '{0}' does not exist.", Path.Combine(mockBaseDirectory, "user.config")), ex.Message);
+            } }
 
         // Tests the scenario where there are two user settings, both created
         // with the same machine wide settings.
         [Fact]
         public void GetValueFromTwoUserSettingsWithMachineWideSettings()
         {
-            // Arrange            
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var FileContent1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            // Arrange
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var FileContent1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key1"" value=""value1"" />
   </SectionName>
 </configuration>".Replace("\r\n", "\n");
-            var FileContent2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                var FileContent2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key3"" value=""user1"" />
   </SectionName>
 </configuration>".Replace("\r\n", "\n");
-            var FileContent3 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                var FileContent3 = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""key3"" value=""user2"" />
   </SectionName>
 </configuration>".Replace("\r\n", "\n");
-            TestFilesystemUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config"), FileContent1);
-            TestFilesystemUtility.CreateConfigurationFile("user1.config", mockBaseDirectory, FileContent2);
-            TestFilesystemUtility.CreateConfigurationFile("user2.config", mockBaseDirectory, FileContent3);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config"), FileContent1);
+                ConfigurationFileTestUtility.CreateConfigurationFile("user1.config", mockBaseDirectory, FileContent2);
+                ConfigurationFileTestUtility.CreateConfigurationFile("user2.config", mockBaseDirectory, FileContent3);
 
-            var m = new Mock<IMachineWideSettings>();
-            m.SetupGet(obj => obj.Settings).Returns(
-                Settings.LoadMachineWideSettings(mockBaseDirectory, "IDE", "Version", "SKU"));
+                var m = new Mock<IMachineWideSettings>();
+                m.SetupGet(obj => obj.Settings).Returns(
+                    Settings.LoadMachineWideSettings(mockBaseDirectory, "IDE", "Version", "SKU"));
 
-            // Act
-            var settings1 = Settings.LoadDefaultSettings(
-                mockBaseDirectory,
-                "user1.config",
-                m.Object);
-            var settings2 = Settings.LoadDefaultSettings(
-                mockBaseDirectory,
-                "user2.config",
-                m.Object);
+                // Act
+                var settings1 = Settings.LoadDefaultSettings(
+                    mockBaseDirectory,
+                    "user1.config",
+                    m.Object);
+                var settings2 = Settings.LoadDefaultSettings(
+                    mockBaseDirectory,
+                    "user2.config",
+                    m.Object);
 
-            // Assert
-            var v = settings1.GetValue("SectionName", "key3");
-            Assert.Equal("user1", v);
-            v = settings1.GetValue("SectionName", "key1");
-            Assert.Equal("value1", v);
+                // Assert
+                var v = settings1.GetValue("SectionName", "key3");
+                Assert.Equal("user1", v);
+                v = settings1.GetValue("SectionName", "key1");
+                Assert.Equal("value1", v);
 
-            v = settings2.GetValue("SectionName", "key3");
-            Assert.Equal("user2", v);
-            v = settings2.GetValue("SectionName", "key1");
-            Assert.Equal("value1", v);
+                v = settings2.GetValue("SectionName", "key3");
+                Assert.Equal("user2", v);
+                v = settings2.GetValue("SectionName", "key1");
+                Assert.Equal("value1", v);
+            }
         }
 
         [Fact]
@@ -1826,9 +1975,9 @@ namespace NuGet.Configuration.Test
 </configuration>";
 
             var nugetConfigPath = "NuGet.config";
-            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 Settings settings = new Settings(mockBaseDirectory);
 
                 // Act
@@ -1851,9 +2000,9 @@ namespace NuGet.Configuration.Test
 </configuration>";
 
             var nugetConfigPath = "NuGet.config";
-            using (var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                TestFilesystemUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 Settings settings = new Settings(mockBaseDirectory);
 
                 // Act

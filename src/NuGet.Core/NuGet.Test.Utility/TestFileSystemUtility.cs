@@ -5,15 +5,22 @@ namespace NuGet.Test.Utility
 {
     public class TestFileSystemUtility
     {
-        private static readonly string NuGetTestFolder =
+        public static readonly string NuGetTestFolder =
             Path.Combine(Environment.GetEnvironmentVariable("temp"), "NuGetTestFolder");
 
-        public static string CreateRandomTestFolder()
+        public static TestDirectory CreateRandomTestFolder()
         {
             var randomFolderName = Guid.NewGuid().ToString();
             var path = Path.Combine(NuGetTestFolder, randomFolderName);
+
+            if (Directory.Exists(path))
+            {
+                throw new InvalidOperationException("Guid collission");
+            }
+
             Directory.CreateDirectory(path);
-            return path;
+
+            return new TestDirectory(path);
         }
 
         public static void DeleteRandomTestFolders(params string[] randomTestPaths)

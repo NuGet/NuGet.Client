@@ -110,7 +110,7 @@ namespace NuGet.DependencyResolver
 
             if (!targetFramework.IsDesktop())
             {
-                // REVIEW: This isn't 100% correct since none *can* mean 
+                // REVIEW: This isn't 100% correct since none *can* mean
                 // any in theory, but in practice it means .NET full reference assembly
                 // If there's no supported target frameworks and we're not targeting
                 // the desktop framework then skip it.

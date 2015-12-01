@@ -3,8 +3,7 @@
     "Moq": "4.2.1507.118",
     "xunit": "2.0.0",
     "xunit.runner.visualstudio": "2.0.0",
-    "Test.Utility": "3.3.0"
-  },
+    "Test.Utility": "3.3.0-*"  },
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {

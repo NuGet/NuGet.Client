@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using NuGet.Common;
+using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
 
@@ -18,20 +19,20 @@ namespace NuGet.CommandLine.Test
 
             public TestInfo(string projectFileContent, string projectName = "proj1")
             {
-                ProjectDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+                ProjectDirectory = TestFileSystemUtility.CreateRandomTestFolder();
                 MSBuildDirectory = MsBuildUtility.GetMsbuildDirectory("14.0", null);
                 NuGetProjectContext = new TestNuGetProjectContext();
 
                 var projectFilePath = Path.Combine(ProjectDirectory, projectName + ".csproj");
                 File.WriteAllText(projectFilePath, projectFileContent);
 
-                MSBuildProjSystem 
+                MSBuildProjSystem
                     = new MSBuildProjectSystem(MSBuildDirectory, projectFilePath, NuGetProjectContext);
             }
 
             public void Dispose()
             {
-                TestFilesystemUtility.DeleteRandomTestFolders(ProjectDirectory);
+                TestFileSystemUtility.DeleteRandomTestFolders(ProjectDirectory);
             }
         }
 

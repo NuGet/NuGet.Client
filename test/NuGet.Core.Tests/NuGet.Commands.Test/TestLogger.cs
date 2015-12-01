@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 
 namespace NuGet.Commands.Test
 {
@@ -44,7 +45,7 @@ namespace NuGet.Commands.Test
             Messages.Enqueue(data);
             DumpMessage("WARN ", data);
         }
-        
+
         private void DumpMessage(string level, string data)
         {
             // NOTE(anurse): Uncomment this to help when debugging tests
