@@ -7724,7 +7724,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Adds a suffix to the generated version.
+        ///   Looks up a localized string similar to Appends a pre-release suffix to the internally generated version number..
         /// </summary>
         internal static string PackageCommandSuffixDescription {
             get {

@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -1858,7 +1859,7 @@ namespace Proj2
         public void PackCommand_VersionSuffixIsAssigned()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder();
 
             try
             {

@@ -5303,6 +5303,6 @@ nuget locals global-packages -list</value>
     <value>List the selected local resources or cache location(s).</value>
   </data>
   <data name="PackageCommandSuffixDescription" xml:space="preserve">
-    <value>Adds a suffix to the generated version</value>
+    <value>Appends a pre-release suffix to the internally generated version number.</value>
   </data>
 </root>
