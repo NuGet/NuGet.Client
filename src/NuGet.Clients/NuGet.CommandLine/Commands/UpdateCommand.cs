@@ -256,16 +256,21 @@ namespace NuGet.CommandLine
             {
                 foreach (var packageId in Id)
                 {
-                    var actions = await packageManager.PreviewUpdatePackagesAsync(
-                       packageId,
-                       nugetProject,
-                       resolutionContext,
-                       project.NuGetProjectContext,
-                       sourceRepositories,
-                       Enumerable.Empty<SourceRepository>(),
-                       CancellationToken.None);
+                    var installed = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
 
-                    projectActions.AddRange(actions);
+                    if (installed.Where(pr => pr.PackageIdentity.Id.Equals(packageId, StringComparison.OrdinalIgnoreCase)).Any())
+                    {
+                        var actions = await packageManager.PreviewUpdatePackagesAsync(
+                           packageId,
+                           nugetProject,
+                           resolutionContext,
+                           project.NuGetProjectContext,
+                           sourceRepositories,
+                           Enumerable.Empty<SourceRepository>(),
+                           CancellationToken.None);
+
+                        projectActions.AddRange(actions);
+                    }
                 }
             }
             else
