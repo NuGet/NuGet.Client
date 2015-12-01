@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 
-namespace NuGet.Test.Utility
+namespace NuGet.Configuration.Test
 {
     public class TestDirectory : IDisposable
     {
@@ -26,7 +26,7 @@ namespace NuGet.Test.Utility
             }
         }
 
-        public static implicit operator string (TestDirectory directory)
+        public static implicit operator string(TestDirectory directory)
         {
             return directory.Path;
         }

@@ -18,324 +18,315 @@ namespace Commands.Test
         public async Task PackageExpander_ExpandsPackage()
         {
             // Arrange
-            using (var package = TestPackages.GetNearestReferenceFilteringPackage())
+            var package = TestPackages.GetNearestReferenceFilteringPackage();
+
+            var version = new NuGetVersion(package.Version);
+            var identity = new PackageIdentity(package.Id, version);
+
+            var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+
+            var token = CancellationToken.None;
+            var logger = NullLogger.Instance;
+            var versionFolderPathContext = new VersionFolderPathContext(
+                identity,
+                packagesDir,
+                logger,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: false,
+                normalizeFileNames: false);
+
+            // Act
+            using (var stream = package.File.OpenRead())
             {
-                var version = new NuGetVersion(package.Version);
-                var identity = new PackageIdentity(package.Id, version);
-
-                var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
-
-                var token = CancellationToken.None;
-                var logger = NullLogger.Instance;
-                var versionFolderPathContext = new VersionFolderPathContext(
-                    identity,
-                    packagesDir,
-                    logger,
-                    fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
-                    normalizeFileNames: false);
-
-                // Act
-                using (var stream = package.File.OpenRead())
-                {
-                    await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
-                                                                   versionFolderPathContext,
-                                                                   token);
-                }
-
-                // Assert
-                var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
-
-                Assert.True(Directory.Exists(packageDir), packageDir + " does not exist");
-
-                var nupkgPath = Path.Combine(packageDir, package.Id + "." + package.Version + ".nupkg");
-                Assert.True(File.Exists(nupkgPath), nupkgPath + " does not exist");
-
-                var dllPath = Path.Combine(packageDir, "lib\\net40\\one.dll");
-                Assert.True(File.Exists(dllPath), dllPath + " does not exist");
+                await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
+                                                               versionFolderPathContext,
+                                                               token);
             }
+
+            // Assert
+            var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
+
+            Assert.True(Directory.Exists(packageDir), packageDir + " does not exist");
+
+            var nupkgPath = Path.Combine(packageDir, package.Id + "." + package.Version + ".nupkg");
+            Assert.True(File.Exists(nupkgPath), nupkgPath + " does not exist");
+
+            var dllPath = Path.Combine(packageDir, "lib\\net40\\one.dll");
+            Assert.True(File.Exists(dllPath), dllPath + " does not exist");
         }
 
         [Fact]
         public async Task PackageExpander_ExpandsPackage_WithNupkgCopy()
         {
             // Arrange
-            using (var package = TestPackages.GetPackageWithNupkgCopy())
+            var package = TestPackages.GetPackageWithNupkgCopy();
+
+            var version = new NuGetVersion(package.Version);
+            var identity = new PackageIdentity(package.Id, version);
+
+            var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+
+            var token = CancellationToken.None;
+            var logger = NullLogger.Instance;
+            var versionFolderPathContext = new VersionFolderPathContext(
+                identity,
+                packagesDir,
+                logger,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: false,
+                normalizeFileNames: false);
+
+            // Act
+            using (var stream = package.File.OpenRead())
             {
-
-                var version = new NuGetVersion(package.Version);
-                var identity = new PackageIdentity(package.Id, version);
-
-                var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
-
-                var token = CancellationToken.None;
-                var logger = NullLogger.Instance;
-                var versionFolderPathContext = new VersionFolderPathContext(
-                    identity,
-                    packagesDir,
-                    logger,
-                    fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
-                    normalizeFileNames: false);
-
-                // Act
-                using (var stream = package.File.OpenRead())
-                {
-                    await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
-                                                                   versionFolderPathContext,
-                                                                   token);
-                }
-
-                // Assert
-                var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
-
-                Assert.True(Directory.Exists(packageDir), packageDir + " does not exist");
-
-                var nupkgPath = Path.Combine(packageDir, package.Id + "." + package.Version + ".nupkg");
-                Assert.True(File.Exists(nupkgPath), nupkgPath + " does not exist");
-
-                Assert.Equal(1139, new FileInfo(nupkgPath).Length);
-
-                var dllPath = Path.Combine(packageDir, "lib\\net40\\one.dll");
-                Assert.True(File.Exists(dllPath), dllPath + " does not exist");
+                await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
+                                                               versionFolderPathContext,
+                                                               token);
             }
+
+            // Assert
+            var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
+
+            Assert.True(Directory.Exists(packageDir), packageDir + " does not exist");
+
+            var nupkgPath = Path.Combine(packageDir, package.Id + "." + package.Version + ".nupkg");
+            Assert.True(File.Exists(nupkgPath), nupkgPath + " does not exist");
+
+            Assert.Equal(1139, new FileInfo(nupkgPath).Length);
+
+            var dllPath = Path.Combine(packageDir, "lib\\net40\\one.dll");
+            Assert.True(File.Exists(dllPath), dllPath + " does not exist");
         }
 
         [Fact]
         public async Task PackageExpander_ExpandsPackage_SkipsIfShaIsThere()
         {
             // Arrange
-            using (var package = TestPackages.GetNearestReferenceFilteringPackage())
+            var package = TestPackages.GetNearestReferenceFilteringPackage();
+
+            var version = new NuGetVersion(package.Version);
+            var identity = new PackageIdentity(package.Id, version);
+
+            var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+
+            var token = CancellationToken.None;
+            var logger = NullLogger.Instance;
+            var versionFolderPathContext = new VersionFolderPathContext(
+                identity,
+                packagesDir,
+                logger,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: false,
+                normalizeFileNames: false);
+
+            var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
+
+            Directory.CreateDirectory(packageDir);
+
+            var nupkgPath = Path.Combine(packageDir, package.Id + "." + package.Version + ".nupkg");
+            var shaPath = nupkgPath + ".sha512";
+
+            File.WriteAllBytes(shaPath, new byte[] { });
+
+            Assert.True(File.Exists(shaPath));
+
+            // Act
+            using (var stream = package.File.OpenRead())
             {
-                var version = new NuGetVersion(package.Version);
-                var identity = new PackageIdentity(package.Id, version);
-
-                var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
-
-                var token = CancellationToken.None;
-                var logger = NullLogger.Instance;
-                var versionFolderPathContext = new VersionFolderPathContext(
-                    identity,
-                    packagesDir,
-                    logger,
-                    fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
-                    normalizeFileNames: false);
-
-                var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
-
-                Directory.CreateDirectory(packageDir);
-
-                var nupkgPath = Path.Combine(packageDir, package.Id + "." + package.Version + ".nupkg");
-                var shaPath = nupkgPath + ".sha512";
-
-                File.WriteAllBytes(shaPath, new byte[] { });
-
-                Assert.True(File.Exists(shaPath));
-
-                // Act
-                using (var stream = package.File.OpenRead())
-                {
-                    await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
-                                                                   versionFolderPathContext,
-                                                                   token);
-                }
-
-                // Assert
-                Assert.True(Directory.Exists(packageDir), packageDir + " does not exist");
-
-                Assert.False(File.Exists(nupkgPath), nupkgPath + " does not exist");
-
-                var dllPath = Path.Combine(packageDir, "lib\\net40\\one.dll");
-                Assert.False(File.Exists(dllPath), dllPath + " does not exist");
-
-                Assert.Equal(1, Directory.EnumerateFiles(packageDir).Count());
+                await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
+                                                               versionFolderPathContext,
+                                                               token);
             }
+
+            // Assert
+            Assert.True(Directory.Exists(packageDir), packageDir + " does not exist");
+
+            Assert.False(File.Exists(nupkgPath), nupkgPath + " does not exist");
+
+            var dllPath = Path.Combine(packageDir, "lib\\net40\\one.dll");
+            Assert.False(File.Exists(dllPath), dllPath + " does not exist");
+
+            Assert.Equal(1, Directory.EnumerateFiles(packageDir).Count());
         }
 
         [Fact]
         public async Task PackageExpander_CleansExtraFiles()
         {
             // Arrange
-            using (var package = TestPackages.GetNearestReferenceFilteringPackage())
+            var package = TestPackages.GetNearestReferenceFilteringPackage();
+
+            var version = new NuGetVersion(package.Version);
+            var identity = new PackageIdentity(package.Id, version);
+
+            var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+
+            var token = CancellationToken.None;
+            var logger = NullLogger.Instance;
+            var versionFolderPathContext = new VersionFolderPathContext(
+                identity,
+                packagesDir,
+                logger,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: false,
+                normalizeFileNames: false);
+
+            var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
+
+            var randomFile = Path.Combine(packageDir, package.Id + "." + package.Version + ".random");
+
+            Directory.CreateDirectory(packageDir);
+            File.WriteAllBytes(randomFile, new byte[] { });
+
+            var randomFolder = Path.Combine(packageDir, "random");
+            Directory.CreateDirectory(randomFolder);
+
+            Assert.True(File.Exists(randomFile), randomFile + " does not exist");
+            Assert.True(Directory.Exists(randomFolder));
+
+            // Act
+            using (var stream = package.File.OpenRead())
             {
-                var version = new NuGetVersion(package.Version);
-                var identity = new PackageIdentity(package.Id, version);
-
-                var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
-
-                var token = CancellationToken.None;
-                var logger = NullLogger.Instance;
-                var versionFolderPathContext = new VersionFolderPathContext(
-                    identity,
-                    packagesDir,
-                    logger,
-                    fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
-                    normalizeFileNames: false);
-
-                var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
-
-                var randomFile = Path.Combine(packageDir, package.Id + "." + package.Version + ".random");
-
-                Directory.CreateDirectory(packageDir);
-                File.WriteAllBytes(randomFile, new byte[] { });
-
-                var randomFolder = Path.Combine(packageDir, "random");
-                Directory.CreateDirectory(randomFolder);
-
-                Assert.True(File.Exists(randomFile), randomFile + " does not exist");
-                Assert.True(Directory.Exists(randomFolder));
-
-                // Act
-                using (var stream = package.File.OpenRead())
-                {
-                    await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
-                                                                   versionFolderPathContext,
-                                                                   token);
-                }
-
-                // Assert
-                Assert.True(Directory.Exists(packageDir), packageDir + " does not exist");
-
-                var filePath = Path.Combine(packageDir, package.Id + "." + package.Version + ".nupkg");
-                Assert.True(File.Exists(filePath), filePath + " does not exist");
-
-                var dllPath = Path.Combine(packageDir, "lib\\net40\\one.dll");
-                Assert.True(File.Exists(dllPath), dllPath + " does not exist");
-
-                Assert.False(File.Exists(randomFile), randomFile + " does exist");
-                Assert.False(Directory.Exists(randomFolder), randomFolder + " does exist");
+                await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
+                                                               versionFolderPathContext,
+                                                               token);
             }
+
+            // Assert
+            Assert.True(Directory.Exists(packageDir), packageDir + " does not exist");
+
+            var filePath = Path.Combine(packageDir, package.Id + "." + package.Version + ".nupkg");
+            Assert.True(File.Exists(filePath), filePath + " does not exist");
+
+            var dllPath = Path.Combine(packageDir, "lib\\net40\\one.dll");
+            Assert.True(File.Exists(dllPath), dllPath + " does not exist");
+
+            Assert.False(File.Exists(randomFile), randomFile + " does exist");
+            Assert.False(Directory.Exists(randomFolder), randomFolder + " does exist");
         }
 
         [Fact]
         public async Task PackageExpander_Recovers_WhenStreamIsCorrupt()
         {
             // Arrange
-            using (var package = TestPackages.GetNearestReferenceFilteringPackage())
+            var package = TestPackages.GetNearestReferenceFilteringPackage();
+
+            var version = new NuGetVersion(package.Version);
+            var identity = new PackageIdentity(package.Id, version);
+
+            var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+
+            var token = CancellationToken.None;
+            var logger = NullLogger.Instance;
+            var versionFolderPathContext = new VersionFolderPathContext(
+                identity,
+                packagesDir,
+                logger,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: false,
+                normalizeFileNames: false);
+
+            var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
+            Assert.False(Directory.Exists(packageDir), packageDir + " exist");
+
+            // Act
+            using (var stream = package.File.OpenRead())
             {
-
-                var version = new NuGetVersion(package.Version);
-                var identity = new PackageIdentity(package.Id, version);
-
-                var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
-
-                var token = CancellationToken.None;
-                var logger = NullLogger.Instance;
-                var versionFolderPathContext = new VersionFolderPathContext(
-                    identity,
-                    packagesDir,
-                    logger,
-                    fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
-                    normalizeFileNames: false);
-
-                var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
-                Assert.False(Directory.Exists(packageDir), packageDir + " exist");
-
-                // Act
-                using (var stream = package.File.OpenRead())
-                {
-                    await Assert.ThrowsAnyAsync<CorruptionException>(async () =>
-                        await NuGetPackageUtils.InstallFromSourceAsync(
-                           async (d) => await new CorruptStreamWrapper(stream).CopyToAsync(d),
-                           versionFolderPathContext,
-                           token));
-                }
-
-                Assert.True(Directory.Exists(packageDir), packageDir + " does not exist");
-
-                Assert.NotEmpty(Directory.EnumerateFiles(packageDir));
-
-                using (var stream = package.File.OpenRead())
-                {
-                    await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
-                                                                   versionFolderPathContext,
-                                                                   token);
-                }
-
-                // Assert
-                var filePath = Path.Combine(packageDir, package.Id + "." + package.Version + ".nupkg");
-                Assert.True(File.Exists(filePath), filePath + " does not exist");
-
-
-                Assert.Equal(1016, new FileInfo(filePath).Length);
-
-                var dllPath = Path.Combine(packageDir, "lib\\net40\\one.dll");
-                Assert.True(File.Exists(dllPath), dllPath + " does not exist");
+                await Assert.ThrowsAnyAsync<CorruptionException>(async () =>
+                    await NuGetPackageUtils.InstallFromSourceAsync(
+                       async (d) => await new CorruptStreamWrapper(stream).CopyToAsync(d),
+                       versionFolderPathContext,
+                       token));
             }
+
+            Assert.True(Directory.Exists(packageDir), packageDir + " does not exist");
+
+            Assert.NotEmpty(Directory.EnumerateFiles(packageDir));
+
+            using (var stream = package.File.OpenRead())
+            {
+                await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
+                                                               versionFolderPathContext,
+                                                               token);
+            }
+
+            // Assert
+            var filePath = Path.Combine(packageDir, package.Id + "." + package.Version + ".nupkg");
+            Assert.True(File.Exists(filePath), filePath + " does not exist");
+
+
+            Assert.Equal(1016, new FileInfo(filePath).Length);
+
+            var dllPath = Path.Combine(packageDir, "lib\\net40\\one.dll");
+            Assert.True(File.Exists(dllPath), dllPath + " does not exist");
         }
 
         [Fact]
         public async Task PackageExpander_Recovers_WhenFileIsLocked()
         {
             // Arrange
-            using (var package = TestPackages.GetNearestReferenceFilteringPackage())
+            var package = TestPackages.GetNearestReferenceFilteringPackage();
+
+            var version = new NuGetVersion(package.Version);
+            var identity = new PackageIdentity(package.Id, version);
+
+            var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
+
+            var token = CancellationToken.None;
+            var logger = NullLogger.Instance;
+            var versionFolderPathContext = new VersionFolderPathContext(
+                identity,
+                packagesDir,
+                logger,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: false,
+                normalizeFileNames: false);
+
+            var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
+            Assert.False(Directory.Exists(packageDir), packageDir + " exist");
+
+            string filePathToLock = Path.Combine(packageDir, "lib\\net40\\two.dll");
+
+            // Act
+            using (var stream = package.File.OpenRead())
             {
+                var fileLocker = new FileLockedStreamWrapper(stream, filePathToLock);
 
-                var version = new NuGetVersion(package.Version);
-                var identity = new PackageIdentity(package.Id, version);
+                await Assert.ThrowsAnyAsync<IOException>(async () =>
+                    await NuGetPackageUtils.InstallFromSourceAsync(
+                       async (d) => await fileLocker.CopyToAsync(d),
+                       versionFolderPathContext,
+                       token));
 
-                var packagesDir = TestFileSystemUtility.CreateRandomTestFolder();
-
-                var token = CancellationToken.None;
-                var logger = NullLogger.Instance;
-                var versionFolderPathContext = new VersionFolderPathContext(
-                    identity,
-                    packagesDir,
-                    logger,
-                    fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
-                    normalizeFileNames: false);
-
-                var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
-                Assert.False(Directory.Exists(packageDir), packageDir + " exist");
-
-                string filePathToLock = Path.Combine(packageDir, "lib\\net40\\two.dll");
-
-                // Act
-                using (var stream = package.File.OpenRead())
-                {
-                    var fileLocker = new FileLockedStreamWrapper(stream, filePathToLock);
-
-                    await Assert.ThrowsAnyAsync<IOException>(async () =>
-                        await NuGetPackageUtils.InstallFromSourceAsync(
-                           async (d) => await fileLocker.CopyToAsync(d),
-                           versionFolderPathContext,
-                           token));
-
-                    fileLocker.Release();
-                }
-
-                Assert.True(Directory.Exists(packageDir), packageDir + " does not exist");
-
-                Assert.NotEmpty(Directory.EnumerateFiles(packageDir));
-                Assert.True(File.Exists(filePathToLock));
-
-                Assert.Equal("Locked", File.ReadAllText(filePathToLock));
-
-                using (var stream = package.File.OpenRead())
-                {
-                    await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
-                                                                   versionFolderPathContext,
-                                                                   token);
-                }
-
-                // Assert
-                var filePath = Path.Combine(packageDir, package.Id + "." + package.Version + ".nupkg");
-                Assert.True(File.Exists(filePath), filePath + " does not exist");
-
-                Assert.Equal(1016, new FileInfo(filePath).Length);
-
-                var dllPath = Path.Combine(packageDir, "lib\\net40\\one.dll");
-                Assert.True(File.Exists(dllPath), dllPath + " does not exist");
-
-                Assert.True(File.Exists(filePathToLock));
-
-                // Make sure the actual file from the zip was extracted
-                Assert.Equal(new byte[] { 0 }, File.ReadAllBytes(filePathToLock));
+                fileLocker.Release();
             }
+
+            Assert.True(Directory.Exists(packageDir), packageDir + " does not exist");
+
+            Assert.NotEmpty(Directory.EnumerateFiles(packageDir));
+            Assert.True(File.Exists(filePathToLock));
+
+            Assert.Equal("Locked", File.ReadAllText(filePathToLock));
+
+            using (var stream = package.File.OpenRead())
+            {
+                await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
+                                                               versionFolderPathContext,
+                                                               token);
+            }
+
+            // Assert
+            var filePath = Path.Combine(packageDir, package.Id + "." + package.Version + ".nupkg");
+            Assert.True(File.Exists(filePath), filePath + " does not exist");
+
+            Assert.Equal(1016, new FileInfo(filePath).Length);
+
+            var dllPath = Path.Combine(packageDir, "lib\\net40\\one.dll");
+            Assert.True(File.Exists(dllPath), dllPath + " does not exist");
+
+            Assert.True(File.Exists(filePathToLock));
+
+            // Make sure the actual file from the zip was extracted
+            Assert.Equal(new byte[] { 0 }, File.ReadAllBytes(filePathToLock));
         }
 
         [Fact]
@@ -343,20 +334,20 @@ namespace Commands.Test
         {
             // Arrange
             var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
+            var packageFileInfo = TestPackages.GetLegacyTestPackage();
+            var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder();
+            var versionFolderPathContext = new VersionFolderPathContext(
+                package,
+                packagesDirectory,
+                NullLogger.Instance,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: false,
+                normalizeFileNames: false);
 
-            using (var packageFileInfo = TestPackages.GetLegacyTestPackage())
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            try
             {
-                var versionFolderPathContext = new VersionFolderPathContext(
-                    package,
-                    packagesDirectory,
-                    NullLogger.Instance,
-                    fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
-                    normalizeFileNames: false);
-
                 // Act
-                using (var packageFileStream = File.OpenRead(packageFileInfo))
+                using (var packageFileStream = packageFileInfo.OpenRead())
                 {
                     await NuGetPackageUtils.InstallFromSourceAsync(
                         stream => packageFileStream.CopyToAsync(stream),
@@ -367,7 +358,6 @@ namespace Commands.Test
                 // Assert
                 var packageIdDirectory = Path.Combine(packagesDirectory, package.Id);
                 var packageVersionDirectory = Path.Combine(packageIdDirectory, package.Version.ToNormalizedString());
-
                 Assert.True(Directory.Exists(packageIdDirectory));
                 Assert.True(Directory.Exists(packageVersionDirectory));
                 Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg")));
@@ -376,6 +366,10 @@ namespace Commands.Test
 
                 Assert.True(File.Exists(Path.Combine(packageVersionDirectory, @"lib", "test.dll")));
             }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
         }
 
         [Fact]
@@ -383,20 +377,20 @@ namespace Commands.Test
         {
             // Arrange
             var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
+            var packageFileInfo = TestPackages.GetLegacyTestPackage();
+            var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder();
+            var versionFolderPathContext = new VersionFolderPathContext(
+                package,
+                packagesDirectory,
+                NullLogger.Instance,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: true,
+                normalizeFileNames: false);
 
-            using (var packageFileInfo = TestPackages.GetLegacyTestPackage())
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            try
             {
-                var versionFolderPathContext = new VersionFolderPathContext(
-                    package,
-                    packagesDirectory,
-                    NullLogger.Instance,
-                    fixNuspecIdCasing: false,
-                    extractNuspecOnly: true,
-                    normalizeFileNames: false);
-
                 // Act
-                using (var packageFileStream = File.OpenRead(packageFileInfo))
+                using (var packageFileStream = packageFileInfo.OpenRead())
                 {
                     await NuGetPackageUtils.InstallFromSourceAsync(
                         stream => packageFileStream.CopyToAsync(stream),
@@ -415,6 +409,10 @@ namespace Commands.Test
 
                 Assert.False(File.Exists(Path.Combine(packageVersionDirectory, @"lib", "test.dll")));
             }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
         }
 
         [Fact]
@@ -422,19 +420,20 @@ namespace Commands.Test
         {
             // Arrange
             var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
-            using (var packageFile = TestPackages.GetLegacyTestPackage())
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var versionFolderPathContext = new VersionFolderPathContext(
-                    package,
-                    packagesDirectory,
-                    NullLogger.Instance,
-                    fixNuspecIdCasing: false,
-                    extractNuspecOnly: true,
-                    normalizeFileNames: true);
+            var packageFileInfo = TestPackages.GetLegacyTestPackage();
+            var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder();
+            var versionFolderPathContext = new VersionFolderPathContext(
+                package,
+                packagesDirectory,
+                NullLogger.Instance,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: true,
+                normalizeFileNames: true);
 
+            try
+            {
                 // Act
-                using (var packageFileStream = File.OpenRead(packageFile))
+                using (var packageFileStream = packageFileInfo.OpenRead())
                 {
                     await NuGetPackageUtils.InstallFromSourceAsync(
                         stream => packageFileStream.CopyToAsync(stream),
@@ -457,6 +456,10 @@ namespace Commands.Test
                 var nuspecFile = Directory.EnumerateFiles(packageVersionDirectory, "*.nuspec").FirstOrDefault();
                 Assert.True(nuspecFile.EndsWith("packagea.nuspec", StringComparison.Ordinal));
             }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
         }
 
         [Fact]
@@ -464,22 +467,22 @@ namespace Commands.Test
         {
             // Arrange
             var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
+            var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder();
+            var packageFileInfo = TestPackages.GetPackageWithSHA512AtRoot(
+                packagesDirectory,
+                package.Id,
+                package.Version.ToNormalizedString());
 
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            var versionFolderPathContext = new VersionFolderPathContext(
+                package,
+                packagesDirectory,
+                NullLogger.Instance,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: false,
+                normalizeFileNames: true);
+
+            try
             {
-                var packageFileInfo = TestPackages.GetPackageWithSHA512AtRoot(
-                    packagesDirectory,
-                    package.Id,
-                    package.Version.ToNormalizedString());
-
-                var versionFolderPathContext = new VersionFolderPathContext(
-                    package,
-                    packagesDirectory,
-                    NullLogger.Instance,
-                    fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
-                    normalizeFileNames: true);
-
                 // Act
                 using (var packageFileStream = packageFileInfo.OpenRead())
                 {
@@ -513,6 +516,10 @@ namespace Commands.Test
                 Assert.True(File.Exists(csha512FileInfo.FullName));
                 Assert.Equal(0, csha512FileInfo.Length);
             }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
         }
 
         [Fact]
@@ -520,21 +527,22 @@ namespace Commands.Test
         {
             // Arrange
             var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder();
+            var packageFileInfo = TestPackages.GetPackageWithNupkgAtRoot(
+                packagesDirectory,
+                package.Id,
+                package.Version.ToNormalizedString());
+
+            var versionFolderPathContext = new VersionFolderPathContext(
+                package,
+                packagesDirectory,
+                NullLogger.Instance,
+                fixNuspecIdCasing: false,
+                extractNuspecOnly: false,
+                normalizeFileNames: true);
+
+            try
             {
-                var packageFileInfo = TestPackages.GetPackageWithNupkgAtRoot(
-                    packagesDirectory,
-                    package.Id,
-                    package.Version.ToNormalizedString());
-
-                var versionFolderPathContext = new VersionFolderPathContext(
-                    package,
-                    packagesDirectory,
-                    NullLogger.Instance,
-                    fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
-                    normalizeFileNames: true);
-
                 // Act
                 using (var packageFileStream = packageFileInfo.OpenRead())
                 {
@@ -562,6 +570,10 @@ namespace Commands.Test
                 var bnupkgFileInfo = new FileInfo(bnupkgPath);
                 Assert.True(File.Exists(bnupkgFileInfo.FullName));
                 Assert.Equal(0, bnupkgFileInfo.Length);
+            }
+            finally
+            {
+                TestFileSystemUtility.DeleteRandomTestFolders(packagesDirectory);
             }
         }
 

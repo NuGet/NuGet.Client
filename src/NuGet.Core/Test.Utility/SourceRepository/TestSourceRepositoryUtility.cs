@@ -7,7 +7,6 @@ using System.IO;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
-using NuGet.Test.Utility;
 
 namespace Test.Utility
 {
@@ -121,9 +120,9 @@ namespace Test.Utility
   </packageSources>
 </configuration>";
 
-        public static TestDirectory CreateAndGetSettingFilePath()
+        public static string CreateAndGetSettingFilePath()
         {
-            var tempFolder = TestFileSystemUtility.CreateRandomTestFolder();
+            var tempFolder = TestFilesystemUtility.CreateRandomTestFolder();
             var fileName = "nuget.config";
 
             File.WriteAllText(Path.Combine(tempFolder, fileName), TempPackageSourceContents);

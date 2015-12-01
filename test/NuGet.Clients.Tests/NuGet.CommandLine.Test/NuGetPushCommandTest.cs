@@ -4,8 +4,6 @@ using System.IO;
 using System.Net;
 using System.Security.Principal;
 using System.Text;
-using NuGet.ContentModel;
-using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
 
@@ -750,12 +748,12 @@ namespace NuGet.CommandLine.Test
 
                         if (credential.Equals("testuser:testpassword", StringComparison.OrdinalIgnoreCase))
                         {
-                            res.StatusCode = (int)HttpStatusCode.OK;
+                            res.StatusCode = (int) HttpStatusCode.OK;
                         }
                         else
                         {
                             res.AddHeader("WWW-Authenticate", "Basic ");
-                            res.StatusCode = (int)HttpStatusCode.Unauthorized;
+                            res.StatusCode = (int) HttpStatusCode.Unauthorized;
                         }
                     }));
                     server.Start();
@@ -926,12 +924,12 @@ namespace NuGet.CommandLine.Test
 
                         if (credential.StartsWith("testuser:", StringComparison.OrdinalIgnoreCase))
                         {
-                            res.StatusCode = (int)HttpStatusCode.OK;
+                            res.StatusCode = (int) HttpStatusCode.OK;
                         }
                         else
                         {
                             res.AddHeader("WWW-Authenticate", "Basic ");
-                            res.StatusCode = (int)HttpStatusCode.Unauthorized;
+                            res.StatusCode = (int) HttpStatusCode.Unauthorized;
                         }
                     }));
                     server.Start();
@@ -1137,8 +1135,9 @@ namespace NuGet.CommandLine.Test
         public void PushCommand_PushToServerV3()
         {
             var nugetexe = Util.GetNuGetExePath();
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            var packagesDirectory = TestFilesystemUtility.CreateRandomTestFolder();
 
+            try
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
@@ -1211,14 +1210,20 @@ namespace NuGet.CommandLine.Test
                     }
                 }
             }
+            finally
+            {
+                // Cleanup
+                TestFilesystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
         }
 
         [Fact]
         public void PushCommand_PushToServerV3_NoPushEndpoint()
         {
             var nugetexe = Util.GetNuGetExePath();
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            var packagesDirectory = TestFilesystemUtility.CreateRandomTestFolder();
 
+            try
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
@@ -1277,14 +1282,20 @@ namespace NuGet.CommandLine.Test
                     Assert.True(result.Item2.Contains(expectedOutput));
                 }
             }
+            finally
+            {
+                // Cleanup
+                TestFilesystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
         }
 
         [Fact]
         public void PushCommand_PushToServerV3_Unavailable()
         {
             var nugetexe = Util.GetNuGetExePath();
+            var packagesDirectory = TestFilesystemUtility.CreateRandomTestFolder();
 
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            try
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
@@ -1340,14 +1351,20 @@ namespace NuGet.CommandLine.Test
                         );
                 }
             }
+            finally
+            {
+                // Cleanup
+                TestFilesystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
         }
 
         [Fact]
         public void PushCommand_PushToServerV3_ApiKey()
         {
             var nugetexe = Util.GetNuGetExePath();
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            var packagesDirectory = TestFilesystemUtility.CreateRandomTestFolder();
 
+            try
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
@@ -1428,13 +1445,20 @@ namespace NuGet.CommandLine.Test
                     }
                 }
             }
+            finally
+            {
+                // Cleanup
+                TestFilesystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
         }
 
         [Fact]
         public void PushCommand_PushToServerV3_ApiKeyFromConfig()
         {
             var nugetexe = Util.GetNuGetExePath();
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", randomTestFolder);
@@ -1539,14 +1563,20 @@ namespace NuGet.CommandLine.Test
                     }
                 }
             }
+            finally
+            {
+                // Cleanup
+                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
+            }
         }
 
         [Fact]
         public void PushCommand_DefaultPushSource()
         {
             var nugetexe = Util.GetNuGetExePath();
-            using (var randomDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            var randomDirectory = TestFilesystemUtility.CreateRandomTestFolder();
 
+            try
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", randomDirectory);
@@ -1613,6 +1643,11 @@ namespace NuGet.CommandLine.Test
                     AssertFileEqual(packageFileName, outputFileName);
                 }
             }
+            finally
+            {
+                // Cleanup
+                TestFilesystemUtility.DeleteRandomTestFolders(randomDirectory);
+            }
         }
 
         [Fact]
@@ -1620,7 +1655,9 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
             var tempPath = Path.GetTempPath();
-            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
+
+            try
             {
                 // Arrange
                 Util.CreateDirectory(packageDirectory);
@@ -1696,6 +1733,11 @@ namespace NuGet.CommandLine.Test
                     AssertFileEqual(packageFileName, outputFileName);
                 }
             }
+            finally
+            {
+                // Cleanup
+                Util.DeleteDirectory(packageDirectory);
+            }
         }
 
         [Theory]
@@ -1703,8 +1745,9 @@ namespace NuGet.CommandLine.Test
         public void PushCommand_InvalidInput_NonSource(string invalidInput)
         {
             var nugetexe = Util.GetNuGetExePath();
+            var packagesDirectory = TestFilesystemUtility.CreateRandomTestFolder();
 
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            try
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
@@ -1737,6 +1780,10 @@ namespace NuGet.CommandLine.Test
                     "Expected error message not found in " + result.Item3
                     );
             }
+            finally
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
         }
 
         [Theory]
@@ -1746,9 +1793,9 @@ namespace NuGet.CommandLine.Test
         public void PushCommand_InvalidInput_V2HttpSource(string invalidInput)
         {
             var nugetexe = Util.GetNuGetExePath();
+            var packagesDirectory = TestFilesystemUtility.CreateRandomTestFolder();
 
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-
+            try
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
@@ -1779,6 +1826,10 @@ namespace NuGet.CommandLine.Test
                     "Expected error message not found in " + result.Item3
                     );
             }
+            finally
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
         }
 
         [Theory]
@@ -1786,7 +1837,9 @@ namespace NuGet.CommandLine.Test
         public void PushCommand_InvalidInput_V2_NonExistent(string invalidInput)
         {
             var nugetexe = Util.GetNuGetExePath();
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            var packagesDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+
+            try
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
@@ -1817,6 +1870,10 @@ namespace NuGet.CommandLine.Test
                     "Expected error message not found in " + result.Item3
                     );
             }
+            finally
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
         }
 
         [Theory]
@@ -1824,8 +1881,9 @@ namespace NuGet.CommandLine.Test
         public void PushCommand_InvalidInput_V3_NonExistent(string invalidInput)
         {
             var nugetexe = Util.GetNuGetExePath();
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            var packagesDirectory = TestFilesystemUtility.CreateRandomTestFolder();
 
+            try
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
@@ -1855,6 +1913,10 @@ namespace NuGet.CommandLine.Test
                     "Expected error message not found in " + result.Item3
                     );
             }
+            finally
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(packagesDirectory);
+            }
         }
 
         [Theory]
@@ -1862,8 +1924,9 @@ namespace NuGet.CommandLine.Test
         public void PushCommand_InvalidInput_V3_NotFound(string invalidInput)
         {
             var nugetexe = Util.GetNuGetExePath();
-            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            var packagesDirectory = TestFilesystemUtility.CreateRandomTestFolder();
 
+            try
             {
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packagesDirectory);
@@ -1892,6 +1955,10 @@ namespace NuGet.CommandLine.Test
                     result.Item3.Contains("Response status code does not indicate success: 400 (Bad Request)."),
                     "Expected error message not found in " + result.Item3
                     );
+            }
+            finally
+            {
+                TestFilesystemUtility.DeleteRandomTestFolders(packagesDirectory);
             }
         }
 

@@ -4,7 +4,6 @@ using System.IO;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
-using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
 
@@ -25,21 +24,19 @@ namespace NuGet.CommandLine.Test
             public TestInfo()
             {
                 NuGetExePath = Util.GetNuGetExePath();
-
-                WorkingPath = TestFileSystemUtility.CreateRandomTestFolder();
-
+                WorkingPath = TestFilesystemUtility.CreateRandomTestFolder();
                 Package = new PackageIdentity("AbCd", new NuGetVersion("1.0.0.0"));
             }
 
             public void Init()
             {
-                Init(TestFileSystemUtility.CreateRandomTestFolder());
+                Init(TestFilesystemUtility.CreateRandomTestFolder());
             }
 
             public void Init(string sourceParamFolder)
             {
-                var randomNupkgFolder = TestFileSystemUtility.CreateRandomTestFolder();
-                var testPackage = TestPackagesGroupedByFolder.GetLegacyTestPackage(
+                var randomNupkgFolder = TestFilesystemUtility.CreateRandomTestFolder();
+                var testPackage = TestPackages.GetLegacyTestPackage(
                     randomNupkgFolder,
                     Package.Id,
                     Package.Version.ToString());
@@ -49,7 +46,7 @@ namespace NuGet.CommandLine.Test
 
             public void Init(FileInfo testPackage)
             {
-                Init(TestFileSystemUtility.CreateRandomTestFolder(), testPackage);
+                Init(TestFilesystemUtility.CreateRandomTestFolder(), testPackage);
             }
 
             public void Init(string sourceParamFolder, FileInfo testPackage)
@@ -60,7 +57,7 @@ namespace NuGet.CommandLine.Test
 
             public void Dispose()
             {
-                TestFileSystemUtility.DeleteRandomTestFolders(
+                TestFilesystemUtility.DeleteRandomTestFolders(
                     SourceParamFolder,
                     RandomNupkgFolder,
                     WorkingPath);

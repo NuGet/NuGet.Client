@@ -13,8 +13,9 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v2;
+using NuGet.Protocol.Core.v3;
 using NuGet.Protocol.VisualStudio;
-using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -29,41 +30,42 @@ namespace NuGet.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
-                projectFolder.Create();
-                var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "testproj.project.json"));
+            var rootFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
+            projectFolder.Create();
+            var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "testproj.project.json"));
 
-                CreateConfigJson(projectConfig.FullName);
+            CreateConfigJson(projectConfig.FullName);
 
-                var sources = new List<SourceRepository>
+            var sources = new List<SourceRepository>
             {
                 Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
             };
 
-                var projectTargetFramework = NuGetFramework.Parse("uap10.0");
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
-                    new TestNuGetProjectContext());
-                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+            var projectTargetFramework = NuGetFramework.Parse("uap10.0");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
+                new TestNuGetProjectContext());
+            var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
 
-                var effectiveGlobalPackagesFolder =
-                    BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
-                        null,
-                        Configuration.NullSettings.Instance);
+            var effectiveGlobalPackagesFolder =
+                BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
+                    null,
+                    Configuration.NullSettings.Instance);
 
-                // Act
-                var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    Logging.NullLogger.Instance,
-                    sources,
-                    effectiveGlobalPackagesFolder,
-                    CancellationToken.None);
+            // Act
+            var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
+                Logging.NullLogger.Instance,
+                sources,
+                effectiveGlobalPackagesFolder,
+                CancellationToken.None);
 
-                // Assert
-                Assert.True(File.Exists(Path.Combine(projectFolder.FullName, "testproj.project.lock.json")));
-                Assert.True(result.Success);
-                Assert.False(File.Exists(Path.Combine(projectFolder.FullName, "project.lock.json")));
-            }
+            // Assert
+            Assert.True(File.Exists(Path.Combine(projectFolder.FullName, "testproj.project.lock.json")));
+            Assert.True(result.Success);
+            Assert.False(File.Exists(Path.Combine(projectFolder.FullName, "project.lock.json")));
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(rootFolder);
         }
 
         [Fact]
@@ -72,57 +74,58 @@ namespace NuGet.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var packagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            var packagesFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            var rootFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
+            projectFolder.Create();
+            var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+
+            CreateConfigJson(projectConfig.FullName);
+
+            var json = JObject.Parse(File.ReadAllText(projectConfig.FullName));
+
+            JsonConfigUtility.AddDependency(json, new NuGet.Packaging.Core.PackageDependency("nuget.versioning", VersionRange.Parse("1.0.7")));
+
+            using (var writer = new StreamWriter(projectConfig.FullName))
             {
-                var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
-                projectFolder.Create();
-                var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+                writer.Write(json.ToString());
+            }
 
-                CreateConfigJson(projectConfig.FullName);
-
-                var json = JObject.Parse(File.ReadAllText(projectConfig.FullName));
-
-                JsonConfigUtility.AddDependency(json, new NuGet.Packaging.Core.PackageDependency("nuget.versioning", VersionRange.Parse("1.0.7")));
-
-                using (var writer = new StreamWriter(projectConfig.FullName))
-                {
-                    writer.Write(json.ToString());
-                }
-
-                var sources = new List<SourceRepository>
+            var sources = new List<SourceRepository>
             {
                 Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
             };
 
-                var projectTargetFramework = NuGetFramework.Parse("uap10.0");
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+            var projectTargetFramework = NuGetFramework.Parse("uap10.0");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
 
-                var result = await BuildIntegratedRestoreUtility.RestoreAsync(
-                    project,
-                    Logging.NullLogger.Instance,
-                    sources,
-                    packagesFolder,
-                    CancellationToken.None);
+            var result = await BuildIntegratedRestoreUtility.RestoreAsync(
+                project,
+                Logging.NullLogger.Instance,
+                sources,
+                packagesFolder,
+                CancellationToken.None);
 
-                var projects = new List<BuildIntegratedNuGetProject>() { project };
+            var projects = new List<BuildIntegratedNuGetProject>() { project };
 
-                var resolver = new VersionFolderPathResolver(packagesFolder);
+            var resolver = new VersionFolderPathResolver(packagesFolder);
 
-                JsonConfigUtility.AddDependency(json, new NuGet.Packaging.Core.PackageDependency("nuget.core", VersionRange.Parse("2.8.3")));
+            JsonConfigUtility.AddDependency(json, new NuGet.Packaging.Core.PackageDependency("nuget.core", VersionRange.Parse("2.8.3")));
 
-                using (var writer = new StreamWriter(projectConfig.FullName))
-                {
-                    writer.Write(json.ToString());
-                }
-
-                // Act
-                var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver);
-
-                // Assert
-                Assert.True(b);
+            using (var writer = new StreamWriter(projectConfig.FullName))
+            {
+                writer.Write(json.ToString());
             }
+
+            // Act
+            var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver);
+
+            // Assert
+            Assert.True(b);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(rootFolder, packagesFolder);
         }
 
         [Fact]
@@ -131,57 +134,58 @@ namespace NuGet.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var packagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            var packagesFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            var rootFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
+            projectFolder.Create();
+            var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+
+            CreateConfigJson(projectConfig.FullName);
+
+            var json = JObject.Parse(File.ReadAllText(projectConfig.FullName));
+
+            JsonConfigUtility.AddDependency(json, new NuGet.Packaging.Core.PackageDependency("nuget.versioning", VersionRange.Parse("1.0.7")));
+
+            using (var writer = new StreamWriter(projectConfig.FullName))
             {
-                var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
-                projectFolder.Create();
-                var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+                writer.Write(json.ToString());
+            }
 
-                CreateConfigJson(projectConfig.FullName);
-
-                var json = JObject.Parse(File.ReadAllText(projectConfig.FullName));
-
-                JsonConfigUtility.AddDependency(json, new NuGet.Packaging.Core.PackageDependency("nuget.versioning", VersionRange.Parse("1.0.7")));
-
-                using (var writer = new StreamWriter(projectConfig.FullName))
-                {
-                    writer.Write(json.ToString());
-                }
-
-                var sources = new List<SourceRepository>
+            var sources = new List<SourceRepository>
             {
                 Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
             };
 
-                var projectTargetFramework = NuGetFramework.Parse("uap10.0");
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+            var projectTargetFramework = NuGetFramework.Parse("uap10.0");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
 
-                var result = await BuildIntegratedRestoreUtility.RestoreAsync(
-                    project,
-                    Logging.NullLogger.Instance,
-                    sources,
-                    packagesFolder,
-                    CancellationToken.None);
+            var result = await BuildIntegratedRestoreUtility.RestoreAsync(
+                project,
+                Logging.NullLogger.Instance,
+                sources,
+                packagesFolder,
+                CancellationToken.None);
 
-                var projects = new List<BuildIntegratedNuGetProject>() { project };
+            var projects = new List<BuildIntegratedNuGetProject>() { project };
 
-                var resolver = new VersionFolderPathResolver(packagesFolder);
+            var resolver = new VersionFolderPathResolver(packagesFolder);
 
-                var hashPath = resolver.GetHashPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
+            var hashPath = resolver.GetHashPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
 
-                using (var writer = new StreamWriter(hashPath))
-                {
-                    writer.Write("ANAWESOMELYWRONGHASH!!!");
-                }
-
-                // Act
-                var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver);
-
-                // Assert
-                Assert.True(b);
+            using (var writer = new StreamWriter(hashPath))
+            {
+                writer.Write("ANAWESOMELYWRONGHASH!!!");
             }
+
+            // Act
+            var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver);
+
+            // Assert
+            Assert.True(b);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(rootFolder, packagesFolder);
         }
 
         [Fact]
@@ -190,59 +194,60 @@ namespace NuGet.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var packagesFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            var packagesFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            var rootFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
+            projectFolder.Create();
+            var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+
+            CreateConfigJson(projectConfig.FullName);
+
+            var json = JObject.Parse(File.ReadAllText(projectConfig.FullName));
+
+            JsonConfigUtility.AddDependency(json, new NuGet.Packaging.Core.PackageDependency("nuget.versioning", VersionRange.Parse("1.0.7")));
+
+            using (var writer = new StreamWriter(projectConfig.FullName))
             {
-                var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
-                projectFolder.Create();
-                var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+                writer.Write(json.ToString());
+            }
 
-                CreateConfigJson(projectConfig.FullName);
-
-                var json = JObject.Parse(File.ReadAllText(projectConfig.FullName));
-
-                JsonConfigUtility.AddDependency(json, new NuGet.Packaging.Core.PackageDependency("nuget.versioning", VersionRange.Parse("1.0.7")));
-
-                using (var writer = new StreamWriter(projectConfig.FullName))
-                {
-                    writer.Write(json.ToString());
-                }
-
-                var sources = new List<SourceRepository>
+            var sources = new List<SourceRepository>
             {
                 Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
             };
 
-                var projectTargetFramework = NuGetFramework.Parse("uap10.0");
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+            var projectTargetFramework = NuGetFramework.Parse("uap10.0");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
 
-                var result = await BuildIntegratedRestoreUtility.RestoreAsync(
-                    project,
-                    Logging.NullLogger.Instance,
-                    sources,
-                    packagesFolder,
-                    CancellationToken.None);
+            var result = await BuildIntegratedRestoreUtility.RestoreAsync(
+                project,
+                Logging.NullLogger.Instance,
+                sources,
+                packagesFolder,
+                CancellationToken.None);
 
-                var projects = new List<BuildIntegratedNuGetProject>() { project };
+            var projects = new List<BuildIntegratedNuGetProject>() { project };
 
-                var resolver = new VersionFolderPathResolver(packagesFolder);
+            var resolver = new VersionFolderPathResolver(packagesFolder);
 
-                // Act
-                try
-                {
-                    Directory.Delete(resolver.GetInstallPath("nuget.versioning", NuGetVersion.Parse("1.0.7")), true);
-                }
-                catch
-                {
-                    // Ignore failures a file is open
-                }
-
-                var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver);
-
-                // Assert
-                Assert.True(b);
+            // Act
+            try
+            {
+                Directory.Delete(resolver.GetInstallPath("nuget.versioning", NuGetVersion.Parse("1.0.7")), true);
             }
+            catch
+            {
+                // Ignore failures a file is open
+            }
+
+            var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver);
+
+            // Assert
+            Assert.True(b);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(rootFolder, packagesFolder);
         }
 
         [Fact]
@@ -251,53 +256,54 @@ namespace NuGet.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            var rootFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
+            projectFolder.Create();
+            var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+
+            CreateConfigJson(projectConfig.FullName);
+
+            var json = JObject.Parse(File.ReadAllText(projectConfig.FullName));
+
+            json.Add("dependencies", JObject.Parse("{ \"nuget.versioning\": \"1.0.*\" }"));
+
+            using (var writer = new StreamWriter(projectConfig.FullName))
             {
-                var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
-                projectFolder.Create();
-                var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+                writer.Write(json.ToString());
+            }
 
-                CreateConfigJson(projectConfig.FullName);
-
-                var json = JObject.Parse(File.ReadAllText(projectConfig.FullName));
-
-                json.Add("dependencies", JObject.Parse("{ \"nuget.versioning\": \"1.0.*\" }"));
-
-                using (var writer = new StreamWriter(projectConfig.FullName))
-                {
-                    writer.Write(json.ToString());
-                }
-
-                var sources = new List<SourceRepository>
+            var sources = new List<SourceRepository>
             {
                 Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
             };
 
-                var projectTargetFramework = NuGetFramework.Parse("uap10.0");
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+            var projectTargetFramework = NuGetFramework.Parse("uap10.0");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
 
-                var effectiveGlobalPackagesFolder =
-                    BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
-                        null,
-                        Configuration.NullSettings.Instance);
+            var effectiveGlobalPackagesFolder =
+                BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
+                    null,
+                    Configuration.NullSettings.Instance);
 
-                var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    Logging.NullLogger.Instance,
-                    sources,
-                    effectiveGlobalPackagesFolder,
-                    CancellationToken.None);
+            var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
+                Logging.NullLogger.Instance,
+                sources,
+                effectiveGlobalPackagesFolder,
+                CancellationToken.None);
 
-                var projects = new List<BuildIntegratedNuGetProject>() { project };
+            var projects = new List<BuildIntegratedNuGetProject>() { project };
 
-                var resolver = new VersionFolderPathResolver(effectiveGlobalPackagesFolder);
+            var resolver = new VersionFolderPathResolver(effectiveGlobalPackagesFolder);
 
-                // Act
-                var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver);
+            // Act
+            var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver);
 
-                // Assert
-                Assert.True(b);
-            }
+            // Assert
+            Assert.True(b);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(rootFolder);
         }
 
         [Fact]
@@ -306,346 +312,355 @@ namespace NuGet.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            var rootFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
+            projectFolder.Create();
+            var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+
+            CreateConfigJson(projectConfig.FullName);
+
+            var json = JObject.Parse(File.ReadAllText(projectConfig.FullName));
+
+            JsonConfigUtility.AddDependency(json, new NuGet.Packaging.Core.PackageDependency("nuget.versioning", VersionRange.Parse("1.0.7")));
+
+            using (var writer = new StreamWriter(projectConfig.FullName))
             {
-                var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
-                projectFolder.Create();
-                var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+                writer.Write(json.ToString());
+            }
 
-                CreateConfigJson(projectConfig.FullName);
-
-                var json = JObject.Parse(File.ReadAllText(projectConfig.FullName));
-
-                JsonConfigUtility.AddDependency(json, new NuGet.Packaging.Core.PackageDependency("nuget.versioning", VersionRange.Parse("1.0.7")));
-
-                using (var writer = new StreamWriter(projectConfig.FullName))
-                {
-                    writer.Write(json.ToString());
-                }
-
-                var sources = new List<SourceRepository>
+            var sources = new List<SourceRepository>
             {
                 Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
             };
 
-                var projectTargetFramework = NuGetFramework.Parse("uap10.0");
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+            var projectTargetFramework = NuGetFramework.Parse("uap10.0");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+            var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
 
-                var effectiveGlobalPackagesFolder =
-                    BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
-                        null,
-                        Configuration.NullSettings.Instance);
+            var effectiveGlobalPackagesFolder =
+                BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
+                    null,
+                    Configuration.NullSettings.Instance);
 
-                var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    Logging.NullLogger.Instance,
-                    sources,
-                    effectiveGlobalPackagesFolder,
-                    CancellationToken.None);
+            var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
+                Logging.NullLogger.Instance,
+                sources,
+                effectiveGlobalPackagesFolder,
+                CancellationToken.None);
 
-                var projects = new List<BuildIntegratedNuGetProject>() { project };
+            var projects = new List<BuildIntegratedNuGetProject>() { project };
 
-                var resolver = new VersionFolderPathResolver(effectiveGlobalPackagesFolder);
+            var resolver = new VersionFolderPathResolver(effectiveGlobalPackagesFolder);
 
-                // Act
-                var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver);
+            // Act
+            var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver);
 
-                // Assert
-                Assert.False(b);
-            }
+            // Assert
+            Assert.False(b);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(rootFolder);
         }
 
         [Fact]
         public async Task BuildIntegratedRestoreUtility_CacheDiffersOnClosure()
         {
             // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath2 = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
-                var randomConfig2 = Path.Combine(randomProjectFolderPath2, "project.json");
-                CreateConfigJson(randomConfig);
-                CreateConfigJson(randomConfig2);
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+            var randomProjectFolderPath2 = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig2 = Path.Combine(randomProjectFolderPath2, "project.json");
+            CreateConfigJson(randomConfig);
+            CreateConfigJson(randomConfig2);
 
-                var projectTargetFramework = NuGetFramework.Parse("netcore50");
-                var testNuGetProjectContext = new TestNuGetProjectContext();
+            var projectTargetFramework = NuGetFramework.Parse("netcore50");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
 
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
-                    projectTargetFramework,
-                    testNuGetProjectContext,
-                    randomProjectFolderPath,
-                    "project1");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                projectTargetFramework,
+                testNuGetProjectContext,
+                randomProjectFolderPath,
+                "project1");
 
-                var project1 = new TestBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
-                project1.ProjectClosure = new List<BuildIntegratedProjectReference>()
+            var project1 = new TestBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+            project1.ProjectClosure = new List<BuildIntegratedProjectReference>()
             {
                 new BuildIntegratedProjectReference("a", "a/project.json", new string[] { "b/project.json" }),
                 new BuildIntegratedProjectReference("b", "b/project.json", new string[] { }),
             };
 
-                var msBuildNuGetProjectSystem2 = new TestMSBuildNuGetProjectSystem(
-                    projectTargetFramework,
-                    testNuGetProjectContext,
-                    randomProjectFolderPath2,
-                    "project2");
+            var msBuildNuGetProjectSystem2 = new TestMSBuildNuGetProjectSystem(
+                projectTargetFramework,
+                testNuGetProjectContext,
+                randomProjectFolderPath2,
+                "project2");
 
-                var project2 = new TestBuildIntegratedNuGetProject(randomConfig2, msBuildNuGetProjectSystem2);
-                project2.ProjectClosure = new List<BuildIntegratedProjectReference>() { };
+            var project2 = new TestBuildIntegratedNuGetProject(randomConfig2, msBuildNuGetProjectSystem2);
+            project2.ProjectClosure = new List<BuildIntegratedProjectReference>() { };
 
-                var projects = new List<BuildIntegratedNuGetProject>();
-                projects.Add(project1);
-                projects.Add(project2);
+            var projects = new List<BuildIntegratedNuGetProject>();
+            projects.Add(project1);
+            projects.Add(project2);
 
-                var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+            var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
 
-                var projects2 = new List<BuildIntegratedNuGetProject>();
-                project1.ProjectClosure = new List<BuildIntegratedProjectReference>() {
+            var projects2 = new List<BuildIntegratedNuGetProject>();
+            project1.ProjectClosure = new List<BuildIntegratedProjectReference>() {
                 new BuildIntegratedProjectReference("a", "a/project.json", new string[] { "d/project.json" }),
                 new BuildIntegratedProjectReference("d", "d/project.json", new string[] { }),
             };
 
-                projects2.Add(project1);
-                projects2.Add(project2);
-                var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects2);
+            projects2.Add(project1);
+            projects2.Add(project2);
+            var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects2);
 
-                // Act
-                var b = BuildIntegratedRestoreUtility.CacheHasChanges(cache, cache2);
+            // Act
+            var b = BuildIntegratedRestoreUtility.CacheHasChanges(cache, cache2);
 
-                // Assert
-                Assert.True(b);
-            }
+            // Assert
+            Assert.True(b);
+
+            // Clean up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomProjectFolderPath, randomProjectFolderPath2);
         }
 
         [Fact]
         public async Task CacheHasChanges_ReturnsTrue_IfSupportProfilesDiffer()
         {
             // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath2 = TestFileSystemUtility.CreateRandomTestFolder())
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+            var randomProjectFolderPath2 = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig2 = Path.Combine(randomProjectFolderPath2, "project.json");
+            var supports = new JObject
             {
-                var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
-                var randomConfig2 = Path.Combine(randomProjectFolderPath2, "project.json");
-                var supports = new JObject
+                ["uap.app"] = new JObject()
+            };
+            var configJson = new JObject
+            {
+                ["frameworks"] = new JObject
                 {
-                    ["uap.app"] = new JObject()
-                };
-                var configJson = new JObject
-                {
-                    ["frameworks"] = new JObject
-                    {
-                        ["uap10.0"] = new JObject()
-                    },
-                    ["supports"] = supports
-                };
+                    ["uap10.0"] = new JObject()
+                },
+                ["supports"] = supports
+            };
 
-                File.WriteAllText(randomConfig, configJson.ToString());
-                File.WriteAllText(randomConfig2, configJson.ToString());
+            File.WriteAllText(randomConfig, configJson.ToString());
+            File.WriteAllText(randomConfig2, configJson.ToString());
 
-                var projectTargetFramework = NuGetFramework.Parse("netcore50");
-                var testNuGetProjectContext = new TestNuGetProjectContext();
+            var projectTargetFramework = NuGetFramework.Parse("netcore50");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
 
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
-                    projectTargetFramework,
-                    testNuGetProjectContext,
-                    randomProjectFolderPath,
-                    "project1");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                projectTargetFramework,
+                testNuGetProjectContext,
+                randomProjectFolderPath,
+                "project1");
 
-                var project1 = new TestBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
-                project1.ProjectClosure = new List<BuildIntegratedProjectReference>()
+            var project1 = new TestBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+            project1.ProjectClosure = new List<BuildIntegratedProjectReference>()
             {
                 new BuildIntegratedProjectReference("a", "a/project.json", new string[] { "b/project.json" }),
                 new BuildIntegratedProjectReference("b", "b/project.json", new string[] { }),
             };
 
-                var msBuildNuGetProjectSystem2 = new TestMSBuildNuGetProjectSystem(
-                    projectTargetFramework,
-                    testNuGetProjectContext,
-                    randomProjectFolderPath2,
-                    "project2");
+            var msBuildNuGetProjectSystem2 = new TestMSBuildNuGetProjectSystem(
+                projectTargetFramework,
+                testNuGetProjectContext,
+                randomProjectFolderPath2,
+                "project2");
 
-                var project2 = new TestBuildIntegratedNuGetProject(randomConfig2, msBuildNuGetProjectSystem2);
-                project2.ProjectClosure = new List<BuildIntegratedProjectReference>() { };
+            var project2 = new TestBuildIntegratedNuGetProject(randomConfig2, msBuildNuGetProjectSystem2);
+            project2.ProjectClosure = new List<BuildIntegratedProjectReference>() { };
 
-                var projects = new List<BuildIntegratedNuGetProject>();
-                projects.Add(project1);
-                projects.Add(project2);
+            var projects = new List<BuildIntegratedNuGetProject>();
+            projects.Add(project1);
+            projects.Add(project2);
 
-                var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
-                supports["net46"] = new JObject();
-                File.WriteAllText(randomConfig, configJson.ToString());
-                var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+            var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+            supports["net46"] = new JObject();
+            File.WriteAllText(randomConfig, configJson.ToString());
+            var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
 
-                // Act 1
-                var result1 = BuildIntegratedRestoreUtility.CacheHasChanges(cache, cache2);
+            // Act 1
+            var result1 = BuildIntegratedRestoreUtility.CacheHasChanges(cache, cache2);
 
-                // Assert 1
-                Assert.True(result1);
+            // Assert 1
+            Assert.True(result1);
 
-                // Act 2
-                var cache3 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
-                var result2 = BuildIntegratedRestoreUtility.CacheHasChanges(cache2, cache3);
+            // Act 2
+            var cache3 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+            var result2 = BuildIntegratedRestoreUtility.CacheHasChanges(cache2, cache3);
 
-                // Assert 2
-                Assert.False(result2);
-            }
+            // Assert 2
+            Assert.False(result2);
+
+            // Clean up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomProjectFolderPath, randomProjectFolderPath2);
         }
 
         [Fact]
         public async Task BuildIntegratedRestoreUtility_CacheDiffersOnProjects()
         {
             // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath2 = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
-                var randomConfig2 = Path.Combine(randomProjectFolderPath2, "project.json");
-                CreateConfigJson(randomConfig);
-                CreateConfigJson(randomConfig2);
+            // Arrange
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+            var randomProjectFolderPath2 = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig2 = Path.Combine(randomProjectFolderPath2, "project.json");
+            CreateConfigJson(randomConfig);
+            CreateConfigJson(randomConfig2);
 
-                var projectTargetFramework = NuGetFramework.Parse("netcore50");
-                var testNuGetProjectContext = new TestNuGetProjectContext();
+            var projectTargetFramework = NuGetFramework.Parse("netcore50");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
 
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
-                    projectTargetFramework,
-                    testNuGetProjectContext,
-                    randomProjectFolderPath,
-                    "project1");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                projectTargetFramework,
+                testNuGetProjectContext,
+                randomProjectFolderPath,
+                "project1");
 
-                var project1 = new TestBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
-                project1.ProjectClosure = new List<BuildIntegratedProjectReference>()
+            var project1 = new TestBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+            project1.ProjectClosure = new List<BuildIntegratedProjectReference>()
             {
                 new BuildIntegratedProjectReference("a", "a/project.json", new string[] { "b/project.json" }),
                 new BuildIntegratedProjectReference("b", "b/project.json", new string[] { }),
             };
 
-                var msBuildNuGetProjectSystem2 = new TestMSBuildNuGetProjectSystem(
-                    projectTargetFramework,
-                    testNuGetProjectContext,
-                    randomProjectFolderPath2,
-                    "project2");
+            var msBuildNuGetProjectSystem2 = new TestMSBuildNuGetProjectSystem(
+                projectTargetFramework,
+                testNuGetProjectContext,
+                randomProjectFolderPath2,
+                "project2");
 
-                var project2 = new TestBuildIntegratedNuGetProject(randomConfig2, msBuildNuGetProjectSystem2);
-                project2.ProjectClosure = new List<BuildIntegratedProjectReference>() { };
+            var project2 = new TestBuildIntegratedNuGetProject(randomConfig2, msBuildNuGetProjectSystem2);
+            project2.ProjectClosure = new List<BuildIntegratedProjectReference>() { };
 
-                var projects = new List<BuildIntegratedNuGetProject>();
-                projects.Add(project1);
+            var projects = new List<BuildIntegratedNuGetProject>();
+            projects.Add(project1);
 
-                var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+            var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
 
-                // Add a new project to the second cache
-                projects.Add(project2);
-                var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+            // Add a new project to the second cache
+            projects.Add(project2);
+            var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
 
-                // Act
-                var b = BuildIntegratedRestoreUtility.CacheHasChanges(cache, cache2);
+            // Act
+            var b = BuildIntegratedRestoreUtility.CacheHasChanges(cache, cache2);
 
-                // Assert
-                Assert.True(b);
-            }
+            // Assert
+            Assert.True(b);
+
+            // Clean up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomProjectFolderPath, randomProjectFolderPath2);
         }
 
         [Fact]
         public async Task BuildIntegratedRestoreUtility_SameCache()
         {
             // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath2 = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
-                var randomConfig2 = Path.Combine(randomProjectFolderPath2, "project.json");
-                CreateConfigJson(randomConfig);
-                CreateConfigJson(randomConfig2);
+            // Arrange
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+            var randomProjectFolderPath2 = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig2 = Path.Combine(randomProjectFolderPath2, "project.json");
+            CreateConfigJson(randomConfig);
+            CreateConfigJson(randomConfig2);
 
-                var projectTargetFramework = NuGetFramework.Parse("netcore50");
-                var testNuGetProjectContext = new TestNuGetProjectContext();
+            var projectTargetFramework = NuGetFramework.Parse("netcore50");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
 
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
-                    projectTargetFramework,
-                    testNuGetProjectContext,
-                    randomProjectFolderPath,
-                    "project1");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                projectTargetFramework,
+                testNuGetProjectContext,
+                randomProjectFolderPath,
+                "project1");
 
-                var project1 = new TestBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
-                project1.ProjectClosure = new List<BuildIntegratedProjectReference>()
+            var project1 = new TestBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+            project1.ProjectClosure = new List<BuildIntegratedProjectReference>()
             {
                 new BuildIntegratedProjectReference("a", "a/project.json", new string[] { "b/project.json" }),
                 new BuildIntegratedProjectReference("b", "b/project.json", new string[] { }),
             };
 
-                var msBuildNuGetProjectSystem2 = new TestMSBuildNuGetProjectSystem(
-                    projectTargetFramework,
-                    testNuGetProjectContext,
-                    randomProjectFolderPath2,
-                    "project2");
+            var msBuildNuGetProjectSystem2 = new TestMSBuildNuGetProjectSystem(
+                projectTargetFramework,
+                testNuGetProjectContext,
+                randomProjectFolderPath2,
+                "project2");
 
-                var project2 = new TestBuildIntegratedNuGetProject(randomConfig2, msBuildNuGetProjectSystem2);
-                project2.ProjectClosure = new List<BuildIntegratedProjectReference>() { };
+            var project2 = new TestBuildIntegratedNuGetProject(randomConfig2, msBuildNuGetProjectSystem2);
+            project2.ProjectClosure = new List<BuildIntegratedProjectReference>() { };
 
-                var projects = new List<BuildIntegratedNuGetProject>();
-                projects.Add(project1);
-                projects.Add(project2);
+            var projects = new List<BuildIntegratedNuGetProject>();
+            projects.Add(project1);
+            projects.Add(project2);
 
-                var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
-                var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+            var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+            var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
 
-                // Act
-                var b = BuildIntegratedRestoreUtility.CacheHasChanges(cache, cache2);
+            // Act
+            var b = BuildIntegratedRestoreUtility.CacheHasChanges(cache, cache2);
 
-                // Assert
-                Assert.False(b);
-            }
+            // Assert
+            Assert.False(b);
+
+            // Clean up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomProjectFolderPath, randomProjectFolderPath2);
         }
 
         [Fact]
         public async Task BuildIntegratedRestoreUtility_CreateCache()
         {
             // Arrange
-            using (var randomProjectFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var randomProjectFolderPath2 = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
-                var randomConfig2 = Path.Combine(randomProjectFolderPath2, "project.json");
-                CreateConfigJson(randomConfig);
-                CreateConfigJson(randomConfig2);
+            // Arrange
+            var randomProjectFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig = Path.Combine(randomProjectFolderPath, "project.json");
+            var randomProjectFolderPath2 = TestFilesystemUtility.CreateRandomTestFolder();
+            var randomConfig2 = Path.Combine(randomProjectFolderPath2, "project.json");
+            CreateConfigJson(randomConfig);
+            CreateConfigJson(randomConfig2);
 
-                var projectTargetFramework = NuGetFramework.Parse("netcore50");
-                var testNuGetProjectContext = new TestNuGetProjectContext();
+            var projectTargetFramework = NuGetFramework.Parse("netcore50");
+            var testNuGetProjectContext = new TestNuGetProjectContext();
 
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
-                    projectTargetFramework,
-                    testNuGetProjectContext,
-                    randomProjectFolderPath,
-                    "project1");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
+                projectTargetFramework,
+                testNuGetProjectContext,
+                randomProjectFolderPath,
+                "project1");
 
-                var project1 = new TestBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
-                project1.ProjectClosure = new List<BuildIntegratedProjectReference>()
+            var project1 = new TestBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
+            project1.ProjectClosure = new List<BuildIntegratedProjectReference>()
             {
                 new BuildIntegratedProjectReference("a", "a/project.json", new string[] { "b/project.json" }),
                 new BuildIntegratedProjectReference("b", "b/project.json", new string[] { }),
             };
 
-                var msBuildNuGetProjectSystem2 = new TestMSBuildNuGetProjectSystem(
-                    projectTargetFramework,
-                    testNuGetProjectContext,
-                    randomProjectFolderPath2,
-                    "project2");
+            var msBuildNuGetProjectSystem2 = new TestMSBuildNuGetProjectSystem(
+                projectTargetFramework,
+                testNuGetProjectContext,
+                randomProjectFolderPath2,
+                "project2");
 
-                var project2 = new TestBuildIntegratedNuGetProject(randomConfig2, msBuildNuGetProjectSystem2);
-                project2.ProjectClosure = new List<BuildIntegratedProjectReference>() { };
+            var project2 = new TestBuildIntegratedNuGetProject(randomConfig2, msBuildNuGetProjectSystem2);
+            project2.ProjectClosure = new List<BuildIntegratedProjectReference>() { };
 
-                var projects = new List<BuildIntegratedNuGetProject>();
-                projects.Add(project1);
-                projects.Add(project2);
+            var projects = new List<BuildIntegratedNuGetProject>();
+            projects.Add(project1);
+            projects.Add(project2);
 
-                // Act
-                var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+            // Act
+            var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
 
-                // Assert
-                Assert.Equal(2, cache.Count);
-                Assert.Equal(2, cache["project1"].PackageSpecClosure.Count);
-                Assert.Equal(0, cache["project2"].PackageSpecClosure.Count);
-                Assert.Equal("a/project.json|b/project.json", string.Join("|", cache["project1"].PackageSpecClosure));
-            }
+            // Assert
+            Assert.Equal(2, cache.Count);
+            Assert.Equal(2, cache["project1"].PackageSpecClosure.Count);
+            Assert.Equal(0, cache["project2"].PackageSpecClosure.Count);
+            Assert.Equal("a/project.json|b/project.json", string.Join("|", cache["project1"].PackageSpecClosure));
+
+            // Clean up
+            TestFilesystemUtility.DeleteRandomTestFolders(randomProjectFolderPath, randomProjectFolderPath2);
         }
 
         [Fact]
@@ -654,40 +669,41 @@ namespace NuGet.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
-                projectFolder.Create();
-                var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+            var rootFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
+            projectFolder.Create();
+            var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
 
-                CreateConfigJson(projectConfig.FullName);
+            CreateConfigJson(projectConfig.FullName);
 
-                var sources = new List<SourceRepository>
+            var sources = new List<SourceRepository>
             {
                 Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
             };
 
-                var projectTargetFramework = NuGetFramework.Parse("uap10.0");
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
-                    new TestNuGetProjectContext());
-                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+            var projectTargetFramework = NuGetFramework.Parse("uap10.0");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
+                new TestNuGetProjectContext());
+            var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
 
-                var effectiveGlobalPackagesFolder =
-                    BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
-                        null,
-                        Configuration.NullSettings.Instance);
+            var effectiveGlobalPackagesFolder =
+                BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
+                    null,
+                    Configuration.NullSettings.Instance);
 
-                // Act
-                var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    Logging.NullLogger.Instance,
-                    sources,
-                    effectiveGlobalPackagesFolder,
-                    CancellationToken.None);
+            // Act
+            var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
+                Logging.NullLogger.Instance,
+                sources,
+                effectiveGlobalPackagesFolder,
+                CancellationToken.None);
 
-                // Assert
-                Assert.True(File.Exists(Path.Combine(projectFolder.FullName, "project.lock.json")));
-                Assert.True(result.Success);
-            }
+            // Assert
+            Assert.True(File.Exists(Path.Combine(projectFolder.FullName, "project.lock.json")));
+            Assert.True(result.Success);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(rootFolder);
         }
 
         [Fact]
@@ -696,54 +712,55 @@ namespace NuGet.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
-                projectFolder.Create();
-                var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
-                CreateConfigJson(projectConfig.FullName);
+            var rootFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
+            projectFolder.Create();
+            var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+            CreateConfigJson(projectConfig.FullName);
 
-                var sources = new List<SourceRepository>
+            var sources = new List<SourceRepository>
             {
                 Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
             };
 
-                var projectTargetFramework = NuGetFramework.Parse("uap10.0");
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
-                    new TestNuGetProjectContext());
-                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
+            var projectTargetFramework = NuGetFramework.Parse("uap10.0");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
+                new TestNuGetProjectContext());
+            var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
 
-                var effectiveGlobalPackagesFolder =
-                    BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
-                        null,
-                        Configuration.NullSettings.Instance);
+            var effectiveGlobalPackagesFolder =
+                BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
+                    null,
+                    Configuration.NullSettings.Instance);
 
-                var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    Logging.NullLogger.Instance,
-                    sources,
-                    effectiveGlobalPackagesFolder,
-                    CancellationToken.None);
+            var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
+                Logging.NullLogger.Instance,
+                sources,
+                effectiveGlobalPackagesFolder,
+                CancellationToken.None);
 
-                var format = new LockFileFormat();
+            var format = new LockFileFormat();
 
-                var path = Path.Combine(projectFolder.FullName, "project.lock.json");
+            var path = Path.Combine(projectFolder.FullName, "project.lock.json");
 
-                // Set the lock file to locked=true
-                var lockFile = result.LockFile;
-                lockFile.IsLocked = true;
-                format.Write(path, lockFile);
+            // Set the lock file to locked=true
+            var lockFile = result.LockFile;
+            lockFile.IsLocked = true;
+            format.Write(path, lockFile);
 
-                // Act
-                result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    Logging.NullLogger.Instance,
-                    sources,
-                    effectiveGlobalPackagesFolder,
-                    CancellationToken.None);
+            // Act
+            result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
+                Logging.NullLogger.Instance,
+                sources,
+                effectiveGlobalPackagesFolder,
+                CancellationToken.None);
 
-                // Assert
-                Assert.True(result.LockFile.IsLocked);
-                Assert.True(result.Success);
-            }
+            // Assert
+            Assert.True(result.LockFile.IsLocked);
+            Assert.True(result.Success);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(rootFolder);
         }
 
         [Fact]
@@ -752,66 +769,67 @@ namespace NuGet.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var rootFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var configFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var solutionFolderParent = TestFileSystemUtility.CreateRandomTestFolder())
+            var rootFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
+            projectFolder.Create();
+            var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+
+            File.WriteAllText(projectConfig.FullName, ProjectJsonWithPackage);
+
+            var sources = new List<SourceRepository>
             {
-                var projectFolder = new DirectoryInfo(Path.Combine(rootFolder, projectName));
-                projectFolder.Create();
-                var projectConfig = new FileInfo(Path.Combine(projectFolder.FullName, "project.json"));
+                Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
+            };
 
-                File.WriteAllText(projectConfig.FullName, ProjectJsonWithPackage);
+            var projectTargetFramework = NuGetFramework.Parse("uap10.0");
+            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
+                new TestNuGetProjectContext());
+            var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
 
-                var sources = new List<SourceRepository>
-                    {
-                        Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
-                    };
-
-                var projectTargetFramework = NuGetFramework.Parse("uap10.0");
-                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework,
-                    new TestNuGetProjectContext());
-                var project = new BuildIntegratedNuGetProject(projectConfig.FullName, msBuildNuGetProjectSystem);
-
-                var configContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            var configContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
 <config>
 <add key=""globalPackagesFolder"" value=""..\NuGetPackages"" />
 </config>
 </configuration>";
 
-                File.WriteAllText(Path.Combine(configFolder, "nuget.config"), configContents);
+            var configFolder = TestFilesystemUtility.CreateRandomTestFolder();
+            File.WriteAllText(Path.Combine(configFolder, "nuget.config"), configContents);
 
-                var settings = new Configuration.Settings(configFolder);
+            var settings = new Configuration.Settings(configFolder);
 
-                var solutionFolder = new DirectoryInfo(Path.Combine(solutionFolderParent, "solutionFolder"));
-                solutionFolder.Create();
+            var solutionFolderParent = TestFilesystemUtility.CreateRandomTestFolder();
+            var solutionFolder = new DirectoryInfo(Path.Combine(solutionFolderParent, "solutionFolder"));
+            solutionFolder.Create();
 
-                var effectiveGlobalPackagesFolder =
-                    BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
-                        solutionFolder.FullName,
-                        settings);
+            var effectiveGlobalPackagesFolder =
+                BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
+                    solutionFolder.FullName,
+                    settings);
 
-                // Act
-                var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    Logging.NullLogger.Instance,
-                    sources,
-                    effectiveGlobalPackagesFolder,
-                    CancellationToken.None);
+            // Act
+            var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
+                Logging.NullLogger.Instance,
+                sources,
+                effectiveGlobalPackagesFolder,
+                CancellationToken.None);
 
-                // Assert
-                Assert.True(File.Exists(Path.Combine(projectFolder.FullName, "project.lock.json")));
+            // Assert
+            Assert.True(File.Exists(Path.Combine(projectFolder.FullName, "project.lock.json")));
 
-                var packagesFolder = Path.Combine(solutionFolderParent, "NuGetPackages");
+            var packagesFolder = Path.Combine(solutionFolderParent, "NuGetPackages");
 
-                Assert.True(Directory.Exists(packagesFolder));
-                Assert.True(File.Exists(Path.Combine(
-                    packagesFolder,
-                    "EntityFramework",
-                    "5.0.0",
-                    "EntityFramework.5.0.0.nupkg")));
+            Assert.True(Directory.Exists(packagesFolder));
+            Assert.True(File.Exists(Path.Combine(
+                packagesFolder,
+                "EntityFramework",
+                "5.0.0",
+                "EntityFramework.5.0.0.nupkg")));
 
-                Assert.True(result.Success);
-            }
+            Assert.True(result.Success);
+
+            // Clean-up
+            TestFilesystemUtility.DeleteRandomTestFolders(rootFolder, configFolder, solutionFolderParent);
         }
 
         private static void CreateConfigJson(string path)

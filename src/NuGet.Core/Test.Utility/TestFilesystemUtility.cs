@@ -1,12 +1,16 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
 
-namespace NuGet.Test.Utility
+namespace Test.Utility
 {
-    public class TestFileSystemUtility
+    public static class TestFilesystemUtility
     {
-        private static readonly string NuGetTestFolder =
-            Path.Combine(Environment.GetEnvironmentVariable("temp"), "NuGetTestFolder");
+        private static readonly string NuGetTestFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "NuGetTestFolder");
 
         public static string CreateRandomTestFolder()
         {
