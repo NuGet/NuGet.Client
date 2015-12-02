@@ -104,15 +104,20 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task UpdateCommand_Success_References_MultipleProjects()
         {
-            var packagesSourceDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var solutionDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var projectDirectory1 = Path.Combine(solutionDirectory, "proj1");
-            var projectDirectory2 = Path.Combine(solutionDirectory, "proj2");
-            var packagesDirectory = Path.Combine(solutionDirectory, "packages");
-            var workingPath = TestFilesystemUtility.CreateRandomTestFolder();
+            string packagesSourceDirectory = null;
+            string solutionDirectory = null;
+            string workingPath = null;
 
             try
             {
+                packagesSourceDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+                solutionDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+                workingPath = TestFilesystemUtility.CreateRandomTestFolder();
+
+                var projectDirectory1 = Path.Combine(solutionDirectory, "proj1");
+                var projectDirectory2 = Path.Combine(solutionDirectory, "proj2");
+                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
+
                 var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
                 var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
 
