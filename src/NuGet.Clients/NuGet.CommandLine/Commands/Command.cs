@@ -120,7 +120,12 @@ namespace NuGet.CommandLine
                 RepositoryFactory = new CommandLineRepositoryFactory(Console);
                 UserAgent.UserAgentString = UserAgent.CreateUserAgentString(CommandLineConstants.UserAgent);
 
-                ExecuteCommandAsync().Wait();
+                // Starts the asynchronous task on a thread-pool thread.
+                // Returns a proxy to the original task.
+                var task = Task.Run(() => ExecuteCommandAsync());
+
+                // Will block until the task is completed...
+                task.Wait();
             }
         }
 
