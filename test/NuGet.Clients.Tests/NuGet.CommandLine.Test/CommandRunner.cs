@@ -67,12 +67,13 @@ namespace NuGet.CommandLine.Test
                     if (!processExited)
                     {
                         p.Kill();
+                        throw new TimeoutException("nuget.exe timed out: " + psi.Arguments);
                     }
-                }
 
-                if (p.HasExited)
-                {
-                    exitCode = p.ExitCode;
+                    if (processExited)
+                    {
+                        exitCode = p.ExitCode;
+                    }
                 }
             }
 

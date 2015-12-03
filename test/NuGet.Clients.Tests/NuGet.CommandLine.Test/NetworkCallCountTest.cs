@@ -96,8 +96,7 @@ namespace NuGet.CommandLine.Test
 
                 string[] args = new string[] {
                     "restore",
-                    packagesConfigPath,
-                    "-DisableParallelProcessing"
+                    packagesConfigPath
                 };
 
                 // Act
@@ -119,6 +118,9 @@ namespace NuGet.CommandLine.Test
 
                 Assert.Equal(0, allPackages.Count());
 
+                // both v2 and v3 have the packages, it's possible that v2 may never be used if v3 always wins
+                // if v2 is never used there will not be a machine cache folder, which is okay. If it does exist
+                // make sure that there are no tmp files left behind.
                 Assert.Equal(0,
                     Directory.Exists(MachineCache.Default.Source) ?
                     Directory.GetFiles(MachineCache.Default.Source, "*.tmp").Count()
@@ -142,8 +144,6 @@ namespace NuGet.CommandLine.Test
                 var allRepo = Path.Combine(workingPath, "allRepo");
                 var packagesFolderPath = Path.Combine(workingPath, "packages");
 
-                MachineCache.Default.Clear();
-                Assert.Equal(0, Directory.GetFiles(MachineCache.Default.Source, "*.tmp").Count());
 
                 Directory.CreateDirectory(allRepo);
                 Directory.CreateDirectory(repositoryPath);
@@ -233,8 +233,7 @@ namespace NuGet.CommandLine.Test
 
                 string[] args = new string[] {
                     "restore",
-                    packagesConfigPath,
-                    "-DisableParallelProcessing"
+                    packagesConfigPath
                 };
 
                 // Act
@@ -281,8 +280,6 @@ namespace NuGet.CommandLine.Test
                 var repositoryPath3 = Path.Combine(workingPath, "repo3");
                 var allRepo = Path.Combine(workingPath, "allRepo");
                 var packagesFolderPath = Path.Combine(workingPath, "packages");
-
-                MachineCache.Default.Clear();
 
                 Directory.CreateDirectory(workingPath);
                 Directory.CreateDirectory(allRepo);
@@ -366,8 +363,7 @@ namespace NuGet.CommandLine.Test
 
                 string[] args = new string[] {
                     "restore",
-                    packagesConfigPath,
-                    "-DisableParallelProcessing"
+                    packagesConfigPath
                 };
 
                 // Act
@@ -411,8 +407,6 @@ namespace NuGet.CommandLine.Test
                 var repositoryPath3 = Path.Combine(workingPath, "repo3");
                 var allRepo = Path.Combine(workingPath, "allRepo");
                 var packagesFolderPath = Path.Combine(workingPath, "packages");
-
-                MachineCache.Default.Clear();
 
                 Assert.Equal(0, Directory.GetFiles(MachineCache.Default.Source, "*.tmp").Count());
 
@@ -497,8 +491,7 @@ namespace NuGet.CommandLine.Test
 
                 string[] args = new string[] {
                     "restore",
-                    packagesConfigPath,
-                    "-DisableParallelProcessing"
+                    packagesConfigPath
                 };
 
                 // Act
@@ -587,9 +580,6 @@ namespace NuGet.CommandLine.Test
                     "detailed",
                     "-DisableParallelProcessing"
                 };
-
-                // Delete the entire machine cache
-                MachineCache.Default.Clear();
 
                 var task = Task.Run(() =>
                 {
@@ -683,9 +673,6 @@ namespace NuGet.CommandLine.Test
                     "detailed",
                     "-DisableParallelProcessing"
                 };
-
-                // Delete the entire machine cache
-                MachineCache.Default.Clear();
 
                 var task = Task.Run(() =>
                 {
@@ -1762,6 +1749,11 @@ namespace NuGet.CommandLine.Test
                     File.Delete(file);
                 }
             }
+        }
+
+        public NetworkCallCountTest()
+        {
+            ClearMachineCache();
         }
     }
 }

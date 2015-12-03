@@ -17,9 +17,8 @@ namespace NuGet.CommandLine.Test
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable")]
     public class MockServer : IDisposable
     {
-        private readonly HttpListener _listener;
-        private readonly RouteTable _get, _put, _delete;
-        private readonly PortReserver _portReserver;
+        public HttpListener Listener { get; }
+        private PortReserver PortReserver { get; }
 
         private Task _listenerTask;
         private bool _disposed = false;
@@ -29,44 +28,26 @@ namespace NuGet.CommandLine.Test
         /// </summary>
         public MockServer()
         {
-            _portReserver = new PortReserver();
+            PortReserver = new PortReserver();
 
-            _listener = new HttpListener();
-            _listener.Prefixes.Add(_portReserver.BaseUri);
-
-            _get = new RouteTable();
-            _put = new RouteTable();
-            _delete = new RouteTable();
+            Listener = new HttpListener();
+            Listener.Prefixes.Add(PortReserver.BaseUri);
         }
 
-        public RouteTable Get
-        {
-            get { return _get; }
-        }
+        public RouteTable Get { get; } = new RouteTable();
 
-        public RouteTable Put
-        {
-            get { return _put; }
-        }
+        public RouteTable Put { get; } = new RouteTable();
 
-        public RouteTable Delete
-        {
-            get { return _delete; }
-        }
+        public RouteTable Delete { get; } = new RouteTable();
 
-        public HttpListener Listener
-        {
-            get { return _listener; }
-        }
-
-        public string Uri { get { return _portReserver.BaseUri; } }
+        public string Uri { get { return PortReserver.BaseUri; } }
 
         /// <summary>
         /// Starts the mock server.
         /// </summary>
         public void Start()
         {
-            _listener.Start();
+            Listener.Start();
             _listenerTask = Task.Factory.StartNew(() => HandleRequest());
         }
 
@@ -75,7 +56,7 @@ namespace NuGet.CommandLine.Test
         /// </summary>
         public void Stop()
         {
-            _listener.Abort();
+            Listener.Abort();
 
             var task = _listenerTask;
             _listenerTask = null;
@@ -205,15 +186,15 @@ namespace NuGet.CommandLine.Test
                 RouteTable m = null;
                 if (request.HttpMethod == "GET")
                 {
-                    m = _get;
+                    m = Get;
                 }
                 else if (request.HttpMethod == "PUT")
                 {
-                    m = _put;
+                    m = Put;
                 }
                 else if (request.HttpMethod == "DELETE")
                 {
-                    m = _delete;
+                    m = Delete;
                 }
 
                 if (m == null)
@@ -267,7 +248,7 @@ namespace NuGet.CommandLine.Test
             {
                 try
                 {
-                    var context = _listener.GetContext();
+                    var context = Listener.GetContext();
                     GenerateResponse(context);
                 }
                 catch (ObjectDisposedException)
@@ -363,7 +344,7 @@ namespace NuGet.CommandLine.Test
                 Stop();
 
                 // Disposing the PortReserver
-                _portReserver.Dispose();
+                PortReserver.Dispose();
 
                 _disposed = true;
             }
