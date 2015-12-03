@@ -15,11 +15,11 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
                 var projectFilePath = Path.Combine(workingPath, "test.fsproj");
@@ -55,11 +55,11 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
                 var projectJsonPath = Path.Combine(workingPath, "project.json");
@@ -95,14 +95,14 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var projectDir1 = Path.Combine(workingPath, "test1");
                 var project1Path = Path.Combine(projectDir1, "test1.xproj");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(projectDir1);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(projectDir1);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
                 Util.CreateFile(projectDir1, "project.json",
@@ -122,13 +122,13 @@ namespace NuGet.CommandLine.Test
         </Project>");
 
                 string[] args = new string[] {
-                "restore",
-                project1Path,
-                "-Source",
-                repositoryPath,
-                "-solutionDir",
-                workingPath
-            };
+                    "restore",
+                    project1Path,
+                    "-Source",
+                    repositoryPath,
+                    "-solutionDir",
+                    workingPath
+                };
 
                 // Act
                 var r = CommandRunner.Run(
@@ -152,14 +152,14 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var projectDir1 = Path.Combine(workingPath, "test1");
                 var project1Path = Path.Combine(projectDir1, "test1.abcproj");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(projectDir1);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(projectDir1);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
                 Util.CreateFile(projectDir1, "project.json",
@@ -209,15 +209,15 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var projectDir1 = Path.Combine(workingPath, "test1");
                 var projectDir2 = Path.Combine(workingPath, "test2");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(projectDir1);
-                Util.CreateDirectory(projectDir2);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(projectDir1);
+                Directory.CreateDirectory(projectDir2);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
                 var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
@@ -323,15 +323,14 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var projectDir1 = Path.Combine(workingPath, "test1");
                 var projectDir2 = Path.Combine(workingPath, "test2");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(projectDir1);
-                Util.CreateDirectory(projectDir2);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(projectDir1);
+                Directory.CreateDirectory(projectDir2);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
                 Util.CreateFile(projectDir1, "project.json",
@@ -429,11 +428,11 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateTestPackage("packageA", "1.0.0-alpha", repositoryPath);
                 Util.CreateTestPackage("packageA", "1.0.0-beta-01", repositoryPath);
                 Util.CreateTestPackage("packageA", "1.0.0-beta-02", repositoryPath);
@@ -483,11 +482,11 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateTestPackage("packageA", "1.0.0", repositoryPath);
                 Util.CreateTestPackage("packageA", "2.0.0", repositoryPath);
                 Util.CreateTestPackage("packageA", "1.0.0-alpha", repositoryPath);
@@ -539,11 +538,11 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateTestPackage("packageA", "1.0.0", repositoryPath);
                 Util.CreateTestPackage("packageA", "1.0.9", repositoryPath);
                 Util.CreateTestPackage("packageA", "1.0.10", repositoryPath);
@@ -596,11 +595,11 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateTestPackage("packageA", "1.0.0", repositoryPath, "win8", "packageB", "1.0.0");
                 Util.CreateTestPackage("packageB", "1.0.0-beta", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.0.0-beta", repositoryPath);
@@ -652,11 +651,11 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateTestPackage("packageA", "1.0.0", repositoryPath, "win8", "packageC", "1.0.0");
                 Util.CreateTestPackage("packageB", "1.0.0-beta", repositoryPath, "win8", "packageC", "2.0.0-beta");
                 Util.CreateTestPackage("packageC", "1.0.0", repositoryPath);
@@ -708,11 +707,11 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateTestPackage("packageA", "1.0.0", repositoryPath, "win8", "packageC", "1.0.0");
                 Util.CreateTestPackage("packageB", "1.0.0", repositoryPath, "win8", "packageC", "[2.1.0]");
                 Util.CreateTestPackage("packageC", "3.0.0", repositoryPath);
@@ -764,11 +763,11 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateTestPackage("packageA", "1.0.0", repositoryPath, "win8", "packageC", "1.0.0");
                 Util.CreateTestPackage("packageB", "1.0.0-beta", repositoryPath, "win8", "packageC", "[2.0.0-beta]");
                 Util.CreateTestPackage("packageC", "3.0.0", repositoryPath);
@@ -820,13 +819,13 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var projectDir = Path.Combine(workingPath, "abc");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(projectDir);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(projectDir);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
                 var targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
 
@@ -939,11 +938,11 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
                 var targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
                 var targetA = Util.CreatePackageFile("build/uap/packageA.targets", targetContent);
@@ -1005,14 +1004,15 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-                var projectDir = Path.Combine(workingPath, "abc");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(projectDir);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var projectDir = Path.Combine(workingPath, "abc");
+
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(projectDir);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
                 var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
                 var targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
@@ -1104,12 +1104,12 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(repositoryPath);
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
                 var packageB = Util.CreateTestPackageBuilder("packageB", "2.2.0-beta-02");
 
@@ -1186,11 +1186,11 @@ namespace NuGet.CommandLine.Test
             {
                 string folderName = Path.GetFileName(workingPath);
 
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
                 var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
                 var packageB = Util.CreateTestPackageBuilder("packageB", "2.2.0-beta-02");
@@ -1259,11 +1259,11 @@ namespace NuGet.CommandLine.Test
             {
                 string folderName = Path.GetFileName(workingPath);
 
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
                 var packageA = Util.CreateTestPackageBuilder("packageA", "3.1.0");
 
@@ -1326,12 +1326,11 @@ namespace NuGet.CommandLine.Test
             {
                 string folderName = Path.GetFileName(workingPath);
 
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-                var currentDirectory = Directory.GetCurrentDirectory();
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
                 var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
                 var packageB = Util.CreateTestPackageBuilder("packageB", "2.2.0-beta-02");
@@ -1437,11 +1436,11 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
@@ -1502,11 +1501,11 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
 
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
                 Util.CreateConfigForGlobalPackagesFolder(workingPath);
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);

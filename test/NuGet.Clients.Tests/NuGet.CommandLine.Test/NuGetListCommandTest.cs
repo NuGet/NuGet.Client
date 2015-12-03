@@ -1,9 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
-using System.Text;
 using NuGet.Test.Utility;
-using Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -15,25 +13,26 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var repositoryPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            Util.CreateDirectory(repositoryPath);
-            Util.CreateTestPackage("testPackage1", "1.1.0", repositoryPath);
-            Util.CreateTestPackage("testPackage2", "2.0.0", repositoryPath);
 
-            string[] args = new string[] { "list", "-Source", repositoryPath };
+            using (var repositoryPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                Util.CreateTestPackage("testPackage1", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("testPackage2", "2.0.0", repositoryPath);
 
-            // Act
-            var result = CommandRunner.Run(
-                nugetexe,
-                Directory.GetCurrentDirectory(),
-                string.Join(" ", args),
-                waitForExit: true);
+                string[] args = new string[] { "list", "-Source", repositoryPath };
 
-            // Assert
-            Assert.Equal(0, result.Item1);
-            var output = result.Item2;
-            Assert.Equal("testPackage1 1.1.0\r\ntestPackage2 2.0.0\r\n", output);
+                // Act
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                var output = result.Item2;
+                Assert.Equal("testPackage1 1.1.0\r\ntestPackage2 2.0.0\r\n", output);
+            }
         }
 
         [Fact]
@@ -41,30 +40,31 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var repositoryPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            Util.CreateDirectory(repositoryPath);
-            Util.CreateTestPackage("testPackage1", "1.1.0", repositoryPath, new Uri("http://kaka"));
 
-            string[] args = new string[] { "list", "-Source", repositoryPath, "-verbosity", "detailed" };
+            using (var repositoryPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                Util.CreateTestPackage("testPackage1", "1.1.0", repositoryPath, new Uri("http://kaka"));
 
-            // Act
-            var r = CommandRunner.Run(
-                nugetexe,
-                Directory.GetCurrentDirectory(),
-                string.Join(" ", args),
-                waitForExit: true);
+                string[] args = new string[] { "list", "-Source", repositoryPath, "-verbosity", "detailed" };
 
-            // Assert
-            Assert.Equal(0, r.Item1);
-            var output = r.Item2;
-            string[] lines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    waitForExit: true);
 
-            Assert.Equal(4, lines.Length);
-            Assert.Equal("testPackage1", lines[0]);
-            Assert.Equal(" 1.1.0", lines[1]);
-            Assert.Equal(" desc of testPackage1 1.1.0", lines[2]);
-            Assert.Equal(" License url: http://kaka", lines[3]);
+                // Assert
+                Assert.Equal(0, r.Item1);
+                var output = r.Item2;
+                string[] lines = output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+
+                Assert.Equal(4, lines.Length);
+                Assert.Equal("testPackage1", lines[0]);
+                Assert.Equal(" 1.1.0", lines[1]);
+                Assert.Equal(" desc of testPackage1 1.1.0", lines[2]);
+                Assert.Equal(" License url: http://kaka", lines[3]);
+            }
         }
 
         [Fact]
@@ -72,17 +72,17 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var repositoryPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            Util.CreateDirectory(repositoryPath);
-            Util.CreateTestPackage("testPackage1", "1.1.0", repositoryPath);
-            Util.CreateTestPackage("testPackage2", "2.0.0", repositoryPath);
 
-            // create the config file
-            var configFile = Path.GetTempFileName();
-            Util.CreateFile(Path.GetDirectoryName(configFile), Path.GetFileName(configFile), "<configuration/>");
+            using (var repositoryPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                Util.CreateTestPackage("testPackage1", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("testPackage2", "2.0.0", repositoryPath);
 
-            string[] args = new string[] {
+                // create the config file
+                var configFile = Path.GetTempFileName();
+                Util.CreateFile(Path.GetDirectoryName(configFile), Path.GetFileName(configFile), "<configuration/>");
+
+                string[] args = new string[] {
                 "sources",
                 "Add",
                 "-Name",
@@ -92,23 +92,24 @@ namespace NuGet.CommandLine.Test
                 "-ConfigFile",
                 configFile
             };
-            int r = Program.Main(args);
-            Assert.Equal(0, r);
+                int r = Program.Main(args);
+                Assert.Equal(0, r);
 
-            // Act: execute the list command
-            args = new string[] { "list", "-Source", "test_source", "-ConfigFile", configFile };
+                // Act: execute the list command
+                args = new string[] { "list", "-Source", "test_source", "-ConfigFile", configFile };
 
-            var result = CommandRunner.Run(
-                nugetexe,
-                Directory.GetCurrentDirectory(),
-                string.Join(" ", args),
-                waitForExit: true);
-            File.Delete(configFile);
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    waitForExit: true);
+                File.Delete(configFile);
 
-            // Assert
-            Assert.Equal(0, result.Item1);
-            var output = result.Item2;
-            Assert.Equal("testPackage1 1.1.0\r\ntestPackage2 2.0.0\r\n", output);
+                // Assert
+                Assert.Equal(0, result.Item1);
+                var output = result.Item2;
+                Assert.Equal("testPackage1 1.1.0\r\ntestPackage2 2.0.0\r\n", output);
+            }
         }
 
         // Tests list command, with no other switches
@@ -116,13 +117,11 @@ namespace NuGet.CommandLine.Test
         public void ListCommand_Simple()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
 
-            try
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(packageDirectory);
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
                 var package1 = new ZipPackage(packageFileName1);
@@ -150,7 +149,7 @@ namespace NuGet.CommandLine.Test
                     var args = "list test -Source " + server.Uri + "nuget";
                     var result = CommandRunner.Run(
                         nugetexe,
-                        tempPath,
+                        randomTestFolder,
                         args,
                         waitForExit: true);
                     server.Stop();
@@ -168,11 +167,6 @@ namespace NuGet.CommandLine.Test
                     Assert.Contains("includePrerelease=false", searchRequest);
                 }
             }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(packageDirectory);
-            }
         }
 
         // Tests that list command only show listed packages
@@ -180,13 +174,11 @@ namespace NuGet.CommandLine.Test
         public void ListCommand_OnlyShowListed()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
 
-            try
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(packageDirectory);
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
                 var package1 = new ZipPackage(packageFileName1);
@@ -215,7 +207,7 @@ namespace NuGet.CommandLine.Test
                     var args = "list test -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        tempPath,
+                        randomTestFolder,
                         args,
                         waitForExit: true);
                     server.Stop();
@@ -236,11 +228,6 @@ namespace NuGet.CommandLine.Test
                     Assert.DoesNotContain("includeDelisted", searchRequest);
                 }
             }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(packageDirectory);
-            }
         }
 
         // Tests that list command show delisted packages
@@ -249,13 +236,11 @@ namespace NuGet.CommandLine.Test
         public void ListCommand_IncludeDelisted()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
 
-            try
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(packageDirectory);
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
                 var package1 = new ZipPackage(packageFileName1);
@@ -284,7 +269,7 @@ namespace NuGet.CommandLine.Test
                     var args = "list test -IncludeDelisted -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        tempPath,
+                        randomTestFolder,
                         args,
                         waitForExit: true);
                     server.Stop();
@@ -303,11 +288,6 @@ namespace NuGet.CommandLine.Test
                     Assert.Contains("includePrerelease=false", searchRequest);
                 }
             }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(packageDirectory);
-            }
         }
 
         // Tests that list command displays detailed package info when -Verbosity is detailed.
@@ -315,13 +295,11 @@ namespace NuGet.CommandLine.Test
         public void ListCommand_VerboseOutput()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
 
-            try
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(packageDirectory);
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
                 var package1 = new ZipPackage(packageFileName1);
@@ -349,7 +327,7 @@ namespace NuGet.CommandLine.Test
                     var args = "list test -Verbosity detailed -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        tempPath,
+                        randomTestFolder,
                         args,
                         waitForExit: true);
                     server.Stop();
@@ -366,11 +344,6 @@ namespace NuGet.CommandLine.Test
                     Assert.Contains("includePrerelease=false", searchRequest);
                 }
             }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(packageDirectory);
-            }
         }
 
         // Tests that when -AllVersions is specified, list command sends request
@@ -379,13 +352,11 @@ namespace NuGet.CommandLine.Test
         public void ListCommand_AllVersions()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
 
-            try
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(packageDirectory);
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
                 var package1 = new ZipPackage(packageFileName1);
@@ -413,7 +384,7 @@ namespace NuGet.CommandLine.Test
                     var args = "list test -AllVersions -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        tempPath,
+                        randomTestFolder,
                         args,
                         waitForExit: true);
                     server.Stop();
@@ -431,11 +402,6 @@ namespace NuGet.CommandLine.Test
                     Assert.Contains("includePrerelease=false", searchRequest);
                 }
             }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(packageDirectory);
-            }
         }
 
         // Test case when switch -Prerelease is specified
@@ -443,13 +409,11 @@ namespace NuGet.CommandLine.Test
         public void ListCommand_Prerelease()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
 
-            try
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(packageDirectory);
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
                 var package1 = new ZipPackage(packageFileName1);
@@ -477,7 +441,7 @@ namespace NuGet.CommandLine.Test
                     var args = "list test -Prerelease -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        tempPath,
+                        randomTestFolder,
                         args,
                         waitForExit: true);
                     server.Stop();
@@ -495,11 +459,6 @@ namespace NuGet.CommandLine.Test
                     Assert.Contains("includePrerelease=true", searchRequest);
                 }
             }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(packageDirectory);
-            }
         }
 
         // Test case when both switches -Prerelease and -AllVersions are specified
@@ -507,13 +466,11 @@ namespace NuGet.CommandLine.Test
         public void ListCommand_AllVersionsPrerelease()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
 
-            try
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(packageDirectory);
                 var packageFileName1 = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var packageFileName2 = Util.CreateTestPackage("testPackage2", "2.1", packageDirectory);
                 var package1 = new ZipPackage(packageFileName1);
@@ -541,7 +498,7 @@ namespace NuGet.CommandLine.Test
                     var args = "list test -AllVersions -Prerelease -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        tempPath,
+                        randomTestFolder,
                         args,
                         waitForExit: true);
                     server.Stop();
@@ -559,17 +516,13 @@ namespace NuGet.CommandLine.Test
                     Assert.Contains("includePrerelease=true", searchRequest);
                 }
             }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(packageDirectory);
-            }
         }
 
         [Fact]
         public void ListCommand_SimpleV3()
         {
             var nugetexe = Util.GetNuGetExePath();
+
             using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange

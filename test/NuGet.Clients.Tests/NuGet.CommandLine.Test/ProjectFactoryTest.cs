@@ -7,6 +7,7 @@ using System.Xml.Linq;
 using Microsoft.Build.Evaluation;
 using Moq;
 using NuGet.CommandLine.Test;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine
@@ -102,44 +103,32 @@ namespace NuGet.CommandLine
         {
             // Setup
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            try
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Directory.CreateDirectory(workingDirectory);
-                File.WriteAllText(Path.Combine(workingDirectory, "Assembly.nuspec"), GetNuspecContent());
-                File.WriteAllText(Path.Combine(workingDirectory, "Assembly.csproj"), GetProjectContent());
-                File.WriteAllText(Path.Combine(workingDirectory, "Source.cs"), GetSourceFileContent());
-                var projPath = Path.Combine(workingDirectory, "Assembly.csproj");
 
-                // Act 
+                var projPath = Path.Combine(workingDirectory, "Assembly.csproj");
+                File.WriteAllText(projPath, GetProjectContent());
+                File.WriteAllText(Path.Combine(workingDirectory, "Assembly.nuspec"), GetNuspecContent());
+                File.WriteAllText(Path.Combine(workingDirectory, "Source.cs"), GetSourceFileContent());
+
+                // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingDirectory,
                     "pack Assembly.csproj -build",
                     waitForExit: true);
+
+                // Assert
                 var package = new OptimizedZipPackage(Path.Combine(workingDirectory, "Assembly.1.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
 
-                // Assert
                 Assert.Equal(0, r.Item1);
                 Array.Sort(files);
                 Assert.Equal(files, new[] {
                     @"lib\net45\Assembly.dll",
                     @"lib\net45\Assembly.xml"
                 });
-            }
-            finally
-            {
-                // Teardown
-                try
-                {
-                    Directory.Delete(workingDirectory, true);
-                }
-                catch
-                {
-
-                }
             }
         }
 
@@ -148,11 +137,10 @@ namespace NuGet.CommandLine
         {
             // Setup
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            try
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Setup the projects
-                Directory.CreateDirectory(workingDirectory);
                 DummyProject link = new DummyProject("Link", Path.Combine(workingDirectory, "Link\\Link.csproj"));
                 DummyProject a = new DummyProject("A", Path.Combine(workingDirectory, "A\\A.csproj"));
                 DummyProject b = new DummyProject("B", Path.Combine(workingDirectory, "B\\B.csproj"));
@@ -162,7 +150,7 @@ namespace NuGet.CommandLine
                 a.WriteToFile();
                 b.WriteToFile();
 
-                // Act 
+                // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingDirectory,
@@ -182,18 +170,6 @@ namespace NuGet.CommandLine
                     @"lib\net45\Link.dll"
                 });
             }
-            finally
-            {
-                // Teardown
-                try
-                {
-                    Directory.Delete(workingDirectory, true);
-                }
-                catch
-                {
-
-                }
-            }
         }
 
         [Fact]
@@ -201,11 +177,10 @@ namespace NuGet.CommandLine
         {
             // Setup
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            try
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Setup the projects
-                Directory.CreateDirectory(workingDirectory);
                 DummyProject link = new DummyProject("Link", Path.Combine(workingDirectory, "Link\\Link.csproj"));
                 DummyProject a = new DummyProject("A", Path.Combine(workingDirectory, "A\\A.csproj"));
                 DummyProject b = new DummyProject("B", Path.Combine(workingDirectory, "B\\B.csproj"));
@@ -224,7 +199,7 @@ namespace NuGet.CommandLine
                 d.WriteToFile();
                 e.WriteToFile();
 
-                // Act 
+                // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingDirectory,
@@ -243,18 +218,6 @@ namespace NuGet.CommandLine
                     @"lib\net45\C.dll",
                     @"lib\net45\Link.dll"
                 });
-            }
-            finally
-            {
-                // Teardown
-                try
-                {
-                    Directory.Delete(workingDirectory, true);
-                }
-                catch
-                {
-
-                }
             }
         }
 
@@ -391,7 +354,7 @@ namespace Assembly
             public override string ToString()
             {
                 var itemGroup = new XElement(MSBuildNS + "ItemGroup");
-                foreach(var projectReferenceXElement in ProjectReferences)
+                foreach (var projectReferenceXElement in ProjectReferences)
                 {
                     itemGroup.Add(projectReferenceXElement);
                 }

@@ -32,14 +32,14 @@ namespace NuGet.CommandLine.Commands
                 || (Clear && List))
             {
                 // Using both -clear and -list command options, or neither one of them, is not supported.
-                // We use MinArgs = 0 even though the first argument is required, 
+                // We use MinArgs = 0 even though the first argument is required,
                 // to avoid throwing a command argument validation exception and
                 // immediately show usage help for this command instead.
                 HelpCommand.ViewHelpForCommand(CommandAttribute.CommandName);
 
                 return Task.FromResult(0);
             }
-            
+
             var localResourceName = GetLocalResourceName(Arguments[0]);
 
             if (Clear)
@@ -228,10 +228,10 @@ namespace NuGet.CommandLine.Commands
 
                 // Deletes the specified directory and any subdirectories and files in the directory.
                 // When deleting a directory that contains a reparse point, such as a symbolic link or a mount point:
-                // * If the reparse point is a directory, such as a mount point, 
-                //   it is unmounted and the mount point is deleted. 
-                //   This method does not recurse through the reparse point. 
-                // * If the reparse point is a symbolic link to a file, 
+                // * If the reparse point is a directory, such as a mount point,
+                //   it is unmounted and the mount point is deleted.
+                //   This method does not recurse through the reparse point.
+                // * If the reparse point is a symbolic link to a file,
                 //   the reparse point is deleted and not the target of the symbolic link.
                 Directory.Delete(folderPath, recursive: true);
 

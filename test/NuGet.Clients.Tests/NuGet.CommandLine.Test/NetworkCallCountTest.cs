@@ -1399,46 +1399,44 @@ namespace NuGet.CommandLine.Test
         {
             var workingPath = TestFileSystemUtility.CreateRandomTestFolder();
 
-            var repositoryPath = Path.Combine(workingPath, "repo");
+            try
+            {
+                var repositoryPath = Path.Combine(workingPath, "repo");
 
-            var proj1Dir = Path.Combine(workingPath, "proj1");
-            var proj2Dir = Path.Combine(workingPath, "proj2");
-            var proj3Dir = Path.Combine(workingPath, "proj3");
-            var proj4Dir = Path.Combine(workingPath, "proj4");
+                var proj1Dir = Path.Combine(workingPath, "proj1");
+                var proj2Dir = Path.Combine(workingPath, "proj2");
+                var proj3Dir = Path.Combine(workingPath, "proj3");
+                var proj4Dir = Path.Combine(workingPath, "proj4");
 
-            Util.CreateDirectory(repositoryPath);
-            Util.CreateDirectory(proj1Dir);
-            Util.CreateDirectory(proj2Dir);
-            Util.CreateDirectory(proj3Dir);
-            Util.CreateDirectory(proj4Dir);
-            Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
 
-            var packageA = Util.CreatePackage(repositoryPath, "packageA", "1.0.0");
-            var packageB = Util.CreatePackage(repositoryPath, "packageB", "1.0.0");
-            var packageC = Util.CreatePackage(repositoryPath, "packageC", "1.0.0");
+                var packageA = Util.CreatePackage(repositoryPath, "packageA", "1.0.0");
+                var packageB = Util.CreatePackage(repositoryPath, "packageB", "1.0.0");
+                var packageC = Util.CreatePackage(repositoryPath, "packageC", "1.0.0");
 
-            var packageD = Util.CreatePackage(repositoryPath, "packageD", "1.0.0");
-            var packageE = Util.CreatePackage(repositoryPath, "packageE", "1.0.0");
-            var packageF = Util.CreatePackage(repositoryPath, "packageF", "1.0.0");
+                var packageD = Util.CreatePackage(repositoryPath, "packageD", "1.0.0");
+                var packageE = Util.CreatePackage(repositoryPath, "packageE", "1.0.0");
+                var packageF = Util.CreatePackage(repositoryPath, "packageF", "1.0.0");
 
-            Util.CreateFile(
-               proj1Dir,
-               "packages.config",
-               @"<packages>
+                Util.CreateFile(
+                   proj1Dir,
+                   "packages.config",
+                   @"<packages>
                      <package id=""packageA"" version=""1.0.0"" />
                      <package id=""packageB"" version=""1.0.0"" />
                   </packages>");
 
-            Util.CreateFile(
-               proj2Dir,
-               "packages.config",
-               @"<packages>
+                Util.CreateFile(
+                   proj2Dir,
+                   "packages.config",
+                   @"<packages>
                      <package id=""packageC"" version=""1.0.0"" />
                      <package id=""packageB"" version=""1.0.0"" />
                   </packages>");
 
-            Util.CreateFile(proj3Dir, "project.json",
-                                            @"{
+                Util.CreateFile(proj3Dir, "project.json",
+                                                @"{
                                             'dependencies': {
                                                 'packageD': '1.0.0',
                                                 'packageE': '1.0.*'
@@ -1448,8 +1446,8 @@ namespace NuGet.CommandLine.Test
                                                     }
                                             }");
 
-            Util.CreateFile(proj4Dir, "project.json",
-                                            @"{
+                Util.CreateFile(proj4Dir, "project.json",
+                                                @"{
                                             'dependencies': {
                                                 'packageE': '1.0.0',
                                                 'packageF': '*'
@@ -1459,21 +1457,21 @@ namespace NuGet.CommandLine.Test
                                                     }
                                             }");
 
-            var projectContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                var projectContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
                                 <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
                                 xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
                 <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
                 </Project>";
 
-            Util.CreateFile(proj1Dir, "proj1.csproj", projectContent);
-            Util.CreateFile(proj2Dir, "proj2.csproj", projectContent);
-            Util.CreateFile(proj3Dir, "proj3.csproj", projectContent);
-            Util.CreateFile(proj4Dir, "proj4.csproj", projectContent);
+                Util.CreateFile(proj1Dir, "proj1.csproj", projectContent);
+                Util.CreateFile(proj2Dir, "proj2.csproj", projectContent);
+                Util.CreateFile(proj3Dir, "proj3.csproj", projectContent);
+                Util.CreateFile(proj4Dir, "proj4.csproj", projectContent);
 
-            var slnPath = Path.Combine(workingPath, "test.sln");
+                var slnPath = Path.Combine(workingPath, "test.sln");
 
-            Util.CreateFile(workingPath, "test.sln",
-                       @"
+                Util.CreateFile(workingPath, "test.sln",
+                           @"
                         Microsoft Visual Studio Solution File, Format Version 12.00
                         # Visual Studio 14
                         VisualStudioVersion = 14.0.23107.0
@@ -1506,6 +1504,12 @@ namespace NuGet.CommandLine.Test
                             EndGlobalSection
                         EndGlobal
                         ");
+            }
+            catch
+            {
+                workingPath.Dispose();
+                throw;
+            }
 
             return workingPath;
         }

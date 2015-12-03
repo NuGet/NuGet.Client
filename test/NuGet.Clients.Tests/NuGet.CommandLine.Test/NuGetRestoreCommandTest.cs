@@ -142,16 +142,12 @@ namespace NuGet.CommandLine.Test
         public void RestoreCommand_FromPackagesConfigFile()
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                Directory.CreateDirectory(repositoryPath);
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "packages.config",
@@ -163,14 +159,11 @@ namespace NuGet.CommandLine.Test
                 string[] args = new string[] { "restore", "-PackagesDirectory", "outputDir", "-Source", repositoryPath };
 
                 // Act
-                var path = Environment.GetEnvironmentVariable("PATH");
-                Environment.SetEnvironmentVariable("PATH", null);
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
                     string.Join(" ", args),
                     waitForExit: true);
-                Environment.SetEnvironmentVariable("PATH", path);
 
                 // Assert
                 Assert.Equal(0, r.Item1);
@@ -178,11 +171,6 @@ namespace NuGet.CommandLine.Test
                 var packageFileB = Path.Combine(workingPath, @"outputDir\packageB.2.2.0\packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
-            }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
             }
         }
 
@@ -192,20 +180,17 @@ namespace NuGet.CommandLine.Test
         public void RestoreCommand_FromSolutionFile(string configFileName)
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var proj1Directory = Path.Combine(workingPath, "proj1");
-            var proj2Directory = Path.Combine(workingPath, "proj2");
-            var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(proj1Directory);
-                Util.CreateDirectory(proj2Directory);
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+                var proj2Directory = Path.Combine(workingPath, "proj2");
+
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(proj1Directory);
+                Directory.CreateDirectory(proj2Directory);
 
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
@@ -266,11 +251,6 @@ EndProject");
                 var packageFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
-            }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
             }
         }
 
@@ -350,20 +330,17 @@ EndProject");
         public void RestoreCommand_FromSolutionFileWithMsbuild12(string configFileName)
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var proj1Directory = Path.Combine(workingPath, "proj1");
-            var proj2Directory = Path.Combine(workingPath, "proj2");
-            var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(proj1Directory);
-                Util.CreateDirectory(proj2Directory);
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+                var proj2Directory = Path.Combine(workingPath, "proj2");
+
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(proj1Directory);
+                Directory.CreateDirectory(proj2Directory);
 
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
@@ -425,11 +402,6 @@ EndProject");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
-            }
         }
 
         [Theory]
@@ -438,20 +410,17 @@ EndProject");
         public void RestoreCommand_FromSolutionFileWithMsbuild14(string configFileName)
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var proj1Directory = Path.Combine(workingPath, "proj1");
-            var proj2Directory = Path.Combine(workingPath, "proj2");
-            var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(proj1Directory);
-                Util.CreateDirectory(proj2Directory);
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+                var proj2Directory = Path.Combine(workingPath, "proj2");
+
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(proj1Directory);
+                Directory.CreateDirectory(proj2Directory);
 
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
@@ -513,11 +482,6 @@ EndProject");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
-            }
         }
 
         // Tests that if the project file cannot be loaded, i.e. InvalidProjectFileException is thrown,
@@ -526,18 +490,15 @@ EndProject");
         public void RestoreCommand_ProjectCannotBeLoaded()
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var proj1Directory = Path.Combine(workingPath, "proj1");
-            var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(proj1Directory);
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(proj1Directory);
 
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
 
@@ -578,11 +539,6 @@ EndProject");
                 var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
             }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
-            }
         }
 
         // Tests that when -solutionDir is specified, the $(SolutionDir)\.nuget\NuGet.Config file
@@ -591,17 +547,14 @@ EndProject");
         public void RestoreCommand_FromPackagesConfigFileWithOptionSolutionDir()
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+
+                Directory.CreateDirectory(repositoryPath);
+
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "packages.config",
@@ -633,11 +586,6 @@ EndProject");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
-            }
         }
 
         // Tests that when package restore is enabled and -RequireConsent is specified,
@@ -649,20 +597,17 @@ EndProject");
         public void RestoreCommand_OptOutMessage(string configFileName)
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var proj1Directory = Path.Combine(workingPath, "proj1");
-            var proj2Directory = Path.Combine(workingPath, "proj2");
-            var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(proj1Directory);
-                Util.CreateDirectory(proj2Directory);
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+                var proj2Directory = Path.Combine(workingPath, "proj2");
+
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(proj1Directory);
+                Directory.CreateDirectory(proj2Directory);
 
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
@@ -737,11 +682,6 @@ EndProject");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
-            }
         }
 
         // Tests that when package restore is enabled and -RequireConsent is not specified,
@@ -750,20 +690,17 @@ EndProject");
         public void RestoreCommand_NoOptOutMessage()
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var proj1Directory = Path.Combine(workingPath, "proj1");
-            var proj2Directory = Path.Combine(workingPath, "proj2");
-            var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(proj1Directory);
-                Util.CreateDirectory(proj2Directory);
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+                var proj2Directory = Path.Combine(workingPath, "proj2");
+
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(proj1Directory);
+                Directory.CreateDirectory(proj2Directory);
 
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
@@ -838,11 +775,6 @@ EndProject");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
-            }
         }
 
         // Test that when a directory is passed to nuget.exe restore, and the directory contains
@@ -852,21 +784,19 @@ EndProject");
         [InlineData("packages.proj2.config")]
         public void RestoreCommand_OneSolutionFileInDirectory(string configFileName)
         {
-            // Arrange
-            var tempPath = Path.GetTempPath();
-            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var proj1Directory = Path.Combine(workingPath, "proj1");
-            var proj2Directory = Path.Combine(workingPath, "proj2");
-            var currentDirectory = Directory.GetCurrentDirectory();
+            // Arrang
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(proj1Directory);
-                Util.CreateDirectory(proj2Directory);
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+                var proj2Directory = Path.Combine(workingPath, "proj2");
+
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(proj1Directory);
+                Directory.CreateDirectory(proj2Directory);
 
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
@@ -917,7 +847,7 @@ EndProject");
                 // Act
                 var r = CommandRunner.Run(
                     nugetexe,
-                    tempPath,
+                    randomTestFolder,
                     "restore " + workingPath + " -Source " + repositoryPath,
                     waitForExit: true);
 
@@ -928,11 +858,6 @@ EndProject");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
-            }
         }
 
         // Test that when a directory is passed to nuget.exe restore, and the directory contains
@@ -941,20 +866,18 @@ EndProject");
         public void RestoreCommand_MutipleSolutionFilesInDirectory()
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var proj1Directory = Path.Combine(workingPath, "proj1");
-            var proj2Directory = Path.Combine(workingPath, "proj2");
-            var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(proj1Directory);
-                Util.CreateDirectory(proj2Directory);
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+                var proj2Directory = Path.Combine(workingPath, "proj2");
+
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(proj1Directory);
+                Directory.CreateDirectory(proj2Directory);
 
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
@@ -1013,7 +936,7 @@ EndProject");
                 // Act
                 var r = CommandRunner.Run(
                     nugetexe,
-                    tempPath,
+                    randomTestFolder,
                     "restore " + workingPath + " -Source " + repositoryPath,
                     waitForExit: true);
 
@@ -1025,11 +948,6 @@ EndProject");
                 Assert.False(File.Exists(packageFileA));
                 Assert.False(File.Exists(packageFileB));
             }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
-            }
         }
 
         // Test that when a directory is passed to nuget.exe restore, and the directory contains
@@ -1038,20 +956,18 @@ EndProject");
         public void RestoreCommand_NoSolutionFilesInDirectory()
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var proj1Directory = Path.Combine(workingPath, "proj1");
-            var proj2Directory = Path.Combine(workingPath, "proj2");
-            var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(proj1Directory);
-                Util.CreateDirectory(proj2Directory);
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+                var proj2Directory = Path.Combine(workingPath, "proj2");
+
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(proj1Directory);
+                Directory.CreateDirectory(proj2Directory);
 
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
@@ -1093,7 +1009,7 @@ EndProject");
                 // Act
                 var r = CommandRunner.Run(
                     nugetexe,
-                    tempPath,
+                    randomTestFolder,
                     "restore " + workingPath + " -Source " + repositoryPath,
                     waitForExit: true);
 
@@ -1105,11 +1021,6 @@ EndProject");
                 Assert.False(File.Exists(packageFileA));
                 Assert.False(File.Exists(packageFileB));
             }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
-            }
         }
 
         // Tests that package restore loads the correct config file when -ConfigFile
@@ -1118,18 +1029,15 @@ EndProject");
         public void RestoreCommand_ConfigFile()
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var proj1Directory = Path.Combine(workingPath, "proj1");
-            var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(proj1Directory);
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(proj1Directory);
 
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
 
@@ -1178,11 +1086,6 @@ EndProject");
                 var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
             }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
-            }
         }
 
         // Tests that when -PackageSaveMode is set to nuspec, the nuspec files, instead of
@@ -1191,20 +1094,17 @@ EndProject");
         public void RestoreCommand_PackageSaveModeNuspec()
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var proj1Directory = Path.Combine(workingPath, "proj1");
-            var proj2Directory = Path.Combine(workingPath, "proj2");
-            var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(proj1Directory);
-                Util.CreateDirectory(proj2Directory);
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+                var proj2Directory = Path.Combine(workingPath, "proj2");
+
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(proj1Directory);
+                Directory.CreateDirectory(proj2Directory);
 
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
@@ -1270,11 +1170,6 @@ EndProject");
                 Assert.True(File.Exists(nuspecFileA));
                 Assert.True(File.Exists(nuspecFileB));
             }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
-            }
         }
 
         // Tests restore from an http source.
@@ -1282,15 +1177,11 @@ EndProject");
         public void RestoreCommand_FromHttpSource()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var workingDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
 
-            try
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(packageDirectory);
-                Util.CreateDirectory(workingDirectory);
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
                 MachineCache.Default.RemovePackage(package);
@@ -1350,29 +1241,25 @@ EndProject");
                     Assert.True(packageDownloadIsCalled, "getPackageByVersionIsCalled");
                 }
             }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(packageDirectory);
-                Util.DeleteDirectory(workingDirectory);
-            }
         }
 
         [Fact]
         public void RestoreCommand_FromProjectJson_RelativeGlobalPackagesFolder()
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var basePath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                var workingPath = Path.Combine(basePath, "sub1", "sub2");
+
+                Directory.CreateDirectory(workingPath);
+
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "project.json",
@@ -1423,29 +1310,21 @@ EndProject");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(Path.Combine(workingPath, @"..\..\GlobalPackages2"));
-                Util.DeleteDirectory(workingPath);
-            }
         }
 
         [Fact]
         public void RestoreCommand_FromProjectJson_RelativeGlobalPackagesFolder_NoSolutionDirectory()
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var basePath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                var workingPath = Path.Combine(basePath, "sub1", "sub2");
+                var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "project.json",
@@ -1486,19 +1365,12 @@ EndProject");
                 var error = r.Item3;
                 Assert.True(error.Contains(NuGetResources.RestoreCommandCannotDetermineGlobalPackagesFolder));
             }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(Path.Combine(workingPath, @"..\..\GlobalPackages2"));
-                Util.DeleteDirectory(workingPath);
-            }
         }
 
         [Fact]
         public void RestoreCommand_InvalidPackagesConfigFile()
         {
             using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
-
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
@@ -1576,16 +1448,13 @@ EndProject";
         public void RestoreCommand_FromPackagesConfigFileFailed()
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                Directory.CreateDirectory(repositoryPath);
+
                 Util.CreateFile(workingPath, "packages.config",
 @"<packages>
   <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
@@ -1613,11 +1482,6 @@ EndProject";
                     StringComparison.OrdinalIgnoreCase) > -1);
                 Assert.True(r.Item3.IndexOf("Unable to find version '1.1.0' of package 'packageA'.",
                     StringComparison.OrdinalIgnoreCase) > -1);
-            }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
             }
         }
 
