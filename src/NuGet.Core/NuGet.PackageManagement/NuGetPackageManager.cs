@@ -772,6 +772,7 @@ namespace NuGet.PackageManagement
                 if (nuGetProjectActions.Count == 0)
                 {
                     nuGetProjectContext.Log(NuGet.ProjectManagement.MessageLevel.Info, Strings.ResolutionSuccessfulNoAction);
+                    nuGetProjectContext.Log(NuGet.ProjectManagement.MessageLevel.Info, Strings.NoUpdatesAvailable);
                 }
             }
             catch (InvalidOperationException)

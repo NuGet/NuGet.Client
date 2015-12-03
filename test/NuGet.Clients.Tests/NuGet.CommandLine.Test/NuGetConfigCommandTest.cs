@@ -180,7 +180,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void TestVerbosityQuiet_ShowsWarnings()
+        public void TestVerbosityQuiet_ShowsErrorsAndWarnings()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
@@ -199,7 +199,7 @@ namespace NuGet.CommandLine.Test
                 waitForExit: true);
 
             // Assert
-            Util.VerifyResultSuccess(result, "WARNING: Key 'nonExistentKey' not found.");
+            Assert.True(result.Item3.Contains("Key 'nonExistentKey' not found."));
         }
 
         private void AssertEqualCollections(IList<Configuration.SettingValue> actual, string[] expected)

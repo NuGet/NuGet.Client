@@ -212,7 +212,15 @@ namespace NuGet.PackageManagement {
                 return ResourceManager.GetString("NoNuGetProjectWithSpecifiedName", resourceCulture);
             }
         }
-        
+
+        internal static string NoUpdatesAvailable
+        {
+            get
+            {
+                return ResourceManager.GetString("NoUpdatesAvailable", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to NuGetProject does not have &apos;Name&apos; set in metadata. It should be set and it should be unique.
         /// </summary>
