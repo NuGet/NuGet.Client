@@ -16,6 +16,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -1812,9 +1813,10 @@ namespace NuGet.Test
                 // Act
                 await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
                     new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+
                 if (deletePackages)
                 {
-                    Directory.Delete(packagesFolderPath, recursive: true);
+                    TestFileSystemUtility.DeleteRandomTestFolder(packagesFolderPath);
                 }
 
                 // Assert

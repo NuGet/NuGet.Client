@@ -209,9 +209,9 @@ namespace NuGet.Test
                 }
 
                 var sources = new List<SourceRepository>
-            {
-                Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
-            };
+                {
+                    Repository.Factory.GetVisualStudio("https://www.nuget.org/api/v2/")
+                };
 
                 var projectTargetFramework = NuGetFramework.Parse("uap10.0");
                 var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
@@ -228,15 +228,10 @@ namespace NuGet.Test
 
                 var resolver = new VersionFolderPathResolver(packagesFolder);
 
+                var pathToDelete = resolver.GetInstallPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
+
                 // Act
-                try
-                {
-                    Directory.Delete(resolver.GetInstallPath("nuget.versioning", NuGetVersion.Parse("1.0.7")), true);
-                }
-                catch
-                {
-                    // Ignore failures a file is open
-                }
+                TestFileSystemUtility.DeleteRandomTestFolder(pathToDelete);
 
                 var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver);
 

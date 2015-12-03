@@ -214,6 +214,7 @@ namespace NuGet.CommandLine.Test
                 var projectDir2 = Path.Combine(workingPath, "test2");
                 var nugetexe = Util.GetNuGetExePath();
 
+                Directory.CreateDirectory(repositoryPath);
                 Directory.CreateDirectory(projectDir1);
                 Directory.CreateDirectory(projectDir2);
                 Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));

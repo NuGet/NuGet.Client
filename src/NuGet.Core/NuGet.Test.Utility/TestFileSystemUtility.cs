@@ -15,7 +15,7 @@ namespace NuGet.Test.Utility
 
             if (Directory.Exists(path))
             {
-                throw new InvalidOperationException("Guid collission");
+                throw new InvalidOperationException("Guid colission");
             }
 
             Directory.CreateDirectory(path);
@@ -29,12 +29,33 @@ namespace NuGet.Test.Utility
             {
                 if (Directory.Exists(randomTestPath))
                 {
+                    AssertNotTempPath(randomTestPath);
                     Directory.Delete(randomTestPath, recursive: true);
                 }
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
             }
             catch (Exception)
             {
                 // Ignore exception while deleting directories
+            }
+        }
+
+        public static void AssertNotTempPath(string path)
+        {
+            var expanded = Path.GetFullPath(path);
+            var expandedTempPath = Path.GetFullPath(Path.GetTempPath());
+
+            if (expanded.Equals(expandedTempPath, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Trying to delete the temp folder in a test");
+            }
+
+            if (expanded.Equals(Path.GetFullPath(NuGetTestFolder), StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Trying to delete the root test folder in a test");
             }
         }
     }

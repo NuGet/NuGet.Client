@@ -71,7 +71,7 @@ namespace NuGet.Test
                 Assert.Equal(0, missingPackagesFromSolutionList.Count);
 
                 // Delete packages folder
-                Directory.Delete(Path.Combine(testSolutionManager.SolutionDirectory, "packages"), recursive: true);
+                TestFileSystemUtility.DeleteRandomTestFolder(Path.Combine(testSolutionManager.SolutionDirectory, "packages"));
 
                 packagesFromSolution = (await packageRestoreManager.GetPackagesInSolutionAsync(testSolutionManager.SolutionDirectory, token));
 
@@ -153,7 +153,7 @@ namespace NuGet.Test
                 Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder(packageIdentity));
 
                 // Delete packages folder
-                Directory.Delete(Path.Combine(testSolutionManager.SolutionDirectory, "packages"), recursive: true);
+                TestFileSystemUtility.DeleteRandomTestFolder(Path.Combine(testSolutionManager.SolutionDirectory, "packages"));
 
                 Assert.False(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
 
@@ -214,7 +214,7 @@ namespace NuGet.Test
                 Assert.False(packagesMissing);
 
                 // Delete packages folder
-                Directory.Delete(Path.Combine(testSolutionManager.SolutionDirectory, "packages"), recursive: true);
+                TestFileSystemUtility.DeleteRandomTestFolder(Path.Combine(testSolutionManager.SolutionDirectory, "packages"));
 
                 // Act
                 await packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(testSolutionManager.SolutionDirectory, token);
@@ -260,7 +260,7 @@ namespace NuGet.Test
                 Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder(packageIdentity));
 
                 // Delete packages folder
-                Directory.Delete(Path.Combine(testSolutionManager.SolutionDirectory, "packages"), recursive: true);
+                TestFileSystemUtility.DeleteRandomTestFolder(Path.Combine(testSolutionManager.SolutionDirectory, "packages"));
 
                 Assert.False(nuGetPackageManager.PackageExistsInPackagesFolder((packageIdentity)));
 
@@ -348,7 +348,7 @@ namespace NuGet.Test
                 Assert.True(nuGetPackageManager.PackageExistsInPackagesFolder(jQueryValidation));
 
                 // Delete packages folder
-                Directory.Delete(Path.Combine(testSolutionManager.SolutionDirectory, "packages"), recursive: true);
+                TestFileSystemUtility.DeleteRandomTestFolder(Path.Combine(testSolutionManager.SolutionDirectory, "packages"));
 
                 Assert.False(nuGetPackageManager.PackageExistsInPackagesFolder(jQuery144));
                 Assert.False(nuGetPackageManager.PackageExistsInPackagesFolder(jQueryValidation));

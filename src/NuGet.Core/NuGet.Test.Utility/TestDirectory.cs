@@ -19,6 +19,8 @@ namespace NuGet.Test.Utility
         {
             try
             {
+                TestFileSystemUtility.AssertNotTempPath(Path);
+
                 Directory.Delete(Path, recursive: true);
             }
             catch

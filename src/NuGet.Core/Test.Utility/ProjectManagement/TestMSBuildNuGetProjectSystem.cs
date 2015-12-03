@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Test.Utility;
 
 namespace Test.Utility
 {
@@ -198,9 +199,10 @@ namespace Test.Utility
 
         public void DeleteDirectory(string path, bool recursive)
         {
-            // no-op
             var fullPath = Path.Combine(ProjectFullPath, path);
-            Directory.Delete(fullPath, recursive: false);
+
+            // this will delete recursive regadless of input, doesn't matter for testing
+            TestFileSystemUtility.DeleteRandomTestFolder(fullPath);
         }
 
         public IEnumerable<string> GetFiles(string path, string filter, bool recursive)
