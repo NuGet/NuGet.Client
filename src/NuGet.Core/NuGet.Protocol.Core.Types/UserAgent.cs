@@ -25,7 +25,7 @@ namespace NuGet.Protocol.Core.Types
 
         /// <summary>
         /// Create user agent string with template of "{0}/{1} ({2})", where {0} is client name,
-        /// {1} is NuGetClientVersion and {2} is OSVersion. {1} and {2} are automatically computed. 
+        /// {1} is NuGetClientVersion and {2} is OSVersion. {1} and {2} are automatically computed.
         /// </summary>
         /// <param name="client">Client name</param>
         /// <returns></returns>
@@ -34,6 +34,11 @@ namespace NuGet.Protocol.Core.Types
             if (client == null)
             {
                 throw new ArgumentNullException(nameof(client));
+            }
+
+            if (NuGetTestMode.Enabled)
+            {
+                client = NuGetTestMode.NuGetTestClientName;
             }
 
             return string.Format(
@@ -56,6 +61,11 @@ namespace NuGet.Protocol.Core.Types
             if (client == null)
             {
                 throw new ArgumentNullException(nameof(client));
+            }
+
+            if (NuGetTestMode.Enabled)
+            {
+                client = NuGetTestMode.NuGetTestClientName;
             }
 
             return string.Format(
@@ -137,6 +147,27 @@ namespace NuGet.Protocol.Core.Types
 #endif
             // TODO: return OSVersion for DNXCORE50.
             return osVersion;
+        }
+
+        private static class NuGetTestMode
+        {
+            private const string _testModeEnvironmentVariableName = "NuGetTestModeEnabled";
+            public const string NuGetTestClientName = "NuGet Test Client";
+
+            public static bool Enabled
+            {
+                get
+                {
+                    var testMode = Environment.GetEnvironmentVariable(_testModeEnvironmentVariableName);
+                    if (string.IsNullOrEmpty(testMode))
+                    {
+                        return false;
+                    }
+
+                    bool isEnabled;
+                    return bool.TryParse(testMode, out isEnabled) && isEnabled;
+                }
+            }
         }
     }
 }

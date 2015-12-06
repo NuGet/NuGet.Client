@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.CommandLine.Test
 {
@@ -20,7 +17,7 @@ namespace NuGet.CommandLine.Test
             int timeOutInMilliseconds = 60000,
            Action<StreamWriter> inputAction = null)
         {
-            ProcessStartInfo psi = new ProcessStartInfo(Path.GetFullPath(process), arguments)
+            var psi = new ProcessStartInfo(Path.GetFullPath(process), arguments)
             {
                 WorkingDirectory = Path.GetFullPath(workingDirectory),
                 UseShellExecute = false,
@@ -29,6 +26,7 @@ namespace NuGet.CommandLine.Test
                 RedirectStandardError = true,
                 RedirectStandardInput = inputAction != null
             };
+            psi.EnvironmentVariables["NuGetTestModeEnabled"] = "True";
 
             int exitCode = 1;
 

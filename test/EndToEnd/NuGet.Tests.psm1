@@ -31,6 +31,10 @@ if (!(Test-Path $nugetExePath))
     $nugetExePath = "$nugetRoot\test\EndToEnd\NuGet.exe"
 }
 
+# Enable NuGet Test Mode
+$env:NuGetTestModeEnabled = "True"
+
+
 $msbuildPath = Join-Path $env:windir Microsoft.NET\Framework\v4.0.30319\msbuild
 
 if ($dte.Version.SubString(0, 2) -eq "10")

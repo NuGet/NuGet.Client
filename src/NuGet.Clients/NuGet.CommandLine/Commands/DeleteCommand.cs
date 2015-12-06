@@ -34,7 +34,8 @@ namespace NuGet.CommandLine
 
             //If the user passed a source use it for the gallery location
             string source = SourceProvider.ResolveAndValidateSource(Source) ?? NuGetConstants.DefaultGalleryServerUrl;
-            var gallery = new PackageServer(source, CommandLineConstants.UserAgent);
+            var userAgent = NuGetTestMode.Enabled ? NuGetTestMode.NuGetTestClientName : CommandLineConstants.UserAgent;
+            var gallery = new PackageServer(source, userAgent);
             gallery.SendingRequest += (sender, e) =>
             {
                 if (Console.Verbosity == NuGet.Verbosity.Detailed)

@@ -129,8 +129,8 @@ namespace NuGet.CommandLine
                 if (String.IsNullOrEmpty(apiKey))
                 {
                     Console.WriteWarning(
-                        LocalizedResourceManager.GetString("Warning_SymbolServerNotConfigured"), 
-                        Path.GetFileName(symbolPackagePath), 
+                        LocalizedResourceManager.GetString("Warning_SymbolServerNotConfigured"),
+                        Path.GetFileName(symbolPackagePath),
                         LocalizedResourceManager.GetString("DefaultSymbolServer"));
                 }
                 PushPackage(symbolPackagePath, source, apiKey, timeout);
@@ -149,7 +149,8 @@ namespace NuGet.CommandLine
 
         private void PushPackage(string packagePath, string source, string apiKey, TimeSpan timeout)
         {
-            var packageServer = new PackageServer(source, CommandLineConstants.UserAgent);
+            var userAgent = NuGetTestMode.Enabled ? NuGetTestMode.NuGetTestClientName : CommandLineConstants.UserAgent;
+            var packageServer = new PackageServer(source, userAgent);
             packageServer.SendingRequest += (sender, e) =>
             {
                 Console.LogDebug(String.Format(CultureInfo.CurrentCulture, "{0} {1}", e.Request.Method, e.Request.RequestUri));
