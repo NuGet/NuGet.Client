@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -12,12 +13,10 @@ namespace NuGet.CommandLine.Test
         public void DeleteCommand_DeleteFromFileSystemSource()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var source = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            try
+
+            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                // Arrange            
-                Util.CreateDirectory(source);
+                // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", source);
                 Assert.True(File.Exists(packageFileName));
 
@@ -34,12 +33,6 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, r.Item1);
                 Assert.False(File.Exists(packageFileName));
-
-            }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(source);
             }
         }
 
@@ -49,34 +42,33 @@ namespace NuGet.CommandLine.Test
         public void DeleteCommand_DeleteFromFileSystemSourceUnixStyle()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var source = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            source = source.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-            try
+
+            using (var windowsSource = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                string source = ((string)windowsSource).Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
                 // Arrange
-                Util.CreateDirectory(source);
-                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", source);
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", windowsSource);
                 Assert.True(File.Exists(packageFileName));
 
                 // Act
                 string[] args = new string[] {
-                    "delete", "testPackage1", "1.1.0",
-                    "-Source", source, "-NonInteractive" };
+                    "delete",
+                    "testPackage1",
+                    "1.1.0",
+                    "-Source",
+                    source,
+                    "-NonInteractive" };
+
                 var r = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
-                    string.Join(" ", args),
+                    $"delete testPackage1 1.1.0 -Source {source} -NonInteractive",
                     waitForExit: true);
 
                 // Assert
                 Assert.Equal(0, r.Item1);
                 Assert.False(File.Exists(packageFileName));
-            }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(source);
             }
         }
 
@@ -84,7 +76,6 @@ namespace NuGet.CommandLine.Test
         public void DeleteCommand_DeleteFromHttpSource()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
 
             // Arrange
             using (var server = new MockServer())
@@ -102,6 +93,7 @@ namespace NuGet.CommandLine.Test
                 string[] args = new string[] {
                     "delete", "testPackage1", "1.1.0",
                     "-Source", server.Uri + "nuget", "-NonInteractive" };
+
                 var r = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
@@ -111,7 +103,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, r.Item1);
                 Assert.True(deleteRequestIsCalled);
-            }            
+            }
         }
     }
 }

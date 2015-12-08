@@ -34,28 +34,23 @@ namespace NuGet.Test.Utility
             <dependency id='{0}' version='{1}' />
         </dependencies>";
 
-
-
-        public class TestPackageInfo
-        {
-            public string Id { get; set; }
-            public string Version { get; set; }
-            public FileInfo File { get; set; }
-        }
-
         public static ZipArchive GetZip(FileInfo file)
         {
             return new ZipArchive(file.OpenRead());
         }
 
+        public static ZipArchive GetZip(string file)
+        {
+            return new ZipArchive(File.OpenRead(file));
+        }
+
         public static TestPackageInfo GetNearestReferenceFilteringPackage()
         {
-            var file = Path.GetTempFileName() + ".nupkg";
-            var result = new TestPackageInfo()
+            var file = new TempFile();
+            var result = new TestPackageInfo(file)
             {
                 Id = "RefPackage",
                 Version = "1.0.0",
-                File = new FileInfo(file),
             };
 
             using (var zip = new ZipArchive(File.Create(result.File.FullName), ZipArchiveMode.Create))
@@ -100,12 +95,11 @@ namespace NuGet.Test.Utility
 
         public static TestPackageInfo GetPackageWithNupkgCopy()
         {
-            var file = Path.GetTempFileName() + ".nupkg";
-            var result = new TestPackageInfo()
+            var file = new TempFile();
+            var result = new TestPackageInfo(file)
             {
                 Id = "RefPackage",
                 Version = "1.0.0",
-                File = new FileInfo(file),
             };
 
             using (var zip = new ZipArchive(File.Create(result.File.FullName), ZipArchiveMode.Create))
@@ -148,12 +142,11 @@ namespace NuGet.Test.Utility
             return result;
         }
 
-        public static FileInfo GetLegacyFolderPackage()
+        public static TempFile GetLegacyFolderPackage()
         {
-            var file = Path.GetTempFileName() + ".nupkg";
-            var result = new FileInfo(file);
+            var file = new TempFile();
 
-            using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
+            using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
                 zip.AddEntry("lib/a.dll", new byte[] { 0 });
                 zip.AddEntry("lib/35/b.dll", new byte[] { 0 });
@@ -175,15 +168,14 @@ namespace NuGet.Test.Utility
                             </package>", Encoding.UTF8);
             }
 
-            return result;
+            return file;
         }
 
-        public static FileInfo GetLegacyTestPackage()
+        public static TempFile GetLegacyTestPackage()
         {
-            var file = Path.GetTempFileName() + ".nupkg";
-            var result = new FileInfo(file);
+            var file = new TempFile();
 
-            using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
+            using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
                 zip.AddEntry("lib/test.dll", new byte[] { 0 });
                 zip.AddEntry("lib/net40/test40.dll", new byte[] { 0 });
@@ -215,15 +207,14 @@ namespace NuGet.Test.Utility
                             </package>", Encoding.UTF8);
             }
 
-            return result;
+            return file;
         }
 
-        public static FileInfo GetLegacyTestPackageMinClient(string minClientVersion)
+        public static TempFile GetLegacyTestPackageMinClient(string minClientVersion)
         {
-            var file = Path.GetTempFileName() + ".nupkg";
-            var result = new FileInfo(file);
+            var file = new TempFile();
 
-            using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
+            using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
                 zip.AddEntry("lib/test.dll", new byte[] { 0 });
                 zip.AddEntry("lib/net40/test40.dll", new byte[] { 0 });
@@ -259,16 +250,15 @@ namespace NuGet.Test.Utility
 
                 zip.AddEntry("packageA.nuspec", nuspec, Encoding.UTF8);
 
-                return result;
+                return file;
             }
         }
 
-        public static FileInfo GetLibSubFolderPackage()
+        public static TempFile GetLibSubFolderPackage()
         {
-            var file = Path.GetTempFileName() + ".nupkg";
-            var result = new FileInfo(file);
+            var file = new TempFile();
 
-            using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
+            using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
                 zip.AddEntry("lib/net40/test40.dll", new byte[] { 0 });
                 zip.AddEntry("lib/net40/x86/testx86.dll", new byte[] { 0 });
@@ -298,15 +288,14 @@ namespace NuGet.Test.Utility
                             </package>", Encoding.UTF8);
             }
 
-            return result;
+            return file;
         }
 
-        public static FileInfo GetLibEmptyFolderPackage()
+        public static TempFile GetLibEmptyFolderPackage()
         {
-            var file = Path.GetTempFileName() + ".nupkg";
-            var result = new FileInfo(file);
+            var file = new TempFile();
 
-            using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
+            using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
                 zip.AddEntry("lib/net40/test40.dll", new byte[] { 0 });
                 zip.AddEntry("lib/net40/x86/testx86.dll", new byte[] { 0 });
@@ -339,15 +328,14 @@ namespace NuGet.Test.Utility
                             </package>", Encoding.UTF8);
             }
 
-            return result;
+            return file;
         }
 
-        public static FileInfo GetLegacyTestPackageWithReferenceGroups()
+        public static TempFile GetLegacyTestPackageWithReferenceGroups()
         {
-            var file = Path.GetTempFileName() + ".nupkg";
-            var result = new FileInfo(file);
+            var file = new TempFile();
 
-            using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
+            using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
                 zip.AddEntry("lib/test.dll", new byte[] { 0 });
                 zip.AddEntry("lib/net40/test40.dll", new byte[] { 0 });
@@ -391,15 +379,14 @@ namespace NuGet.Test.Utility
                             </package>", Encoding.UTF8);
             }
 
-            return result;
+            return file;
         }
 
-        public static FileInfo GetLegacyTestPackageWithPre25References()
+        public static TempFile GetLegacyTestPackageWithPre25References()
         {
-            var file = Path.GetTempFileName() + ".nupkg";
-            var result = new FileInfo(file);
+            var file = new TempFile();
 
-            using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
+            using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
                 zip.AddEntry("lib/test.dll", new byte[] { 0 });
                 zip.AddEntry("lib/testa.dll", new byte[] { 0 });
@@ -440,15 +427,14 @@ namespace NuGet.Test.Utility
                             </package>", Encoding.UTF8);
             }
 
-            return result;
+            return file;
         }
 
-        public static FileInfo GetLegacyContentPackage()
+        public static TempFile GetLegacyContentPackage()
         {
-            var file = Path.GetTempFileName() + ".nupkg";
-            var result = new FileInfo(file);
+            var file = new TempFile();
 
-            using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
+            using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
                 zip.AddEntry("content/Scripts/test.js", new byte[] { 0 });
                 zip.AddEntry("content/Scripts/test2.js", new byte[] { 0 });
@@ -468,15 +454,14 @@ namespace NuGet.Test.Utility
                             </package>", Encoding.UTF8);
             }
 
-            return result;
+            return file;
         }
 
-        public static FileInfo GetLegacyContentPackageWithFrameworks()
+        public static TempFile GetLegacyContentPackageWithFrameworks()
         {
-            var file = Path.GetTempFileName() + ".nupkg";
-            var result = new FileInfo(file);
+            var file = new TempFile();
 
-            using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
+            using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
                 zip.AddEntry("content/net40/Scripts/test.js", new byte[] { 0 });
                 zip.AddEntry("content/net45/Scripts/test2.js", new byte[] { 0 });
@@ -496,15 +481,14 @@ namespace NuGet.Test.Utility
                             </package>", Encoding.UTF8);
             }
 
-            return result;
+            return file;
         }
 
-        public static FileInfo GetLegacyContentPackageMixed()
+        public static TempFile GetLegacyContentPackageMixed()
         {
-            var file = Path.GetTempFileName() + ".nupkg";
-            var result = new FileInfo(file);
+            var file = new TempFile();
 
-            using (var zip = new ZipArchive(File.Create(result.FullName), ZipArchiveMode.Create))
+            using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
                 zip.AddEntry("content/Scripts/test.js", new byte[] { 0 });
                 zip.AddEntry("content/net40/Scripts/test2.js", new byte[] { 0 });
@@ -525,7 +509,7 @@ namespace NuGet.Test.Utility
                             </package>", Encoding.UTF8);
             }
 
-            return result;
+            return file;
         }
 
         public static Stream GetTestPackageWithContentXmlFile()
@@ -657,6 +641,50 @@ namespace NuGet.Test.Utility
                 string.Format(DependenciesStringFormat, "Owin", "1.0") : string.Empty;
             return string.Format(NuspecStringFormat, packageId, packageVersion,
                 string.Join(Environment.NewLine, frameworkAssemblyReferences, dependenciesString));
+        }
+
+        public class TempFile : IDisposable
+        {
+            private readonly string _filePath;
+
+            public TempFile()
+            {
+                string packagesFolder = Path.Combine(TestFileSystemUtility.NuGetTestFolder, "NuGetTestPackages");
+
+                Directory.CreateDirectory(packagesFolder);
+
+                int count = 0;
+                do
+                {
+                    _filePath = Path.Combine(packagesFolder, Path.GetRandomFileName() + ".nupkg");
+                    count++;
+                }
+                while (File.Exists(_filePath) && count < 3);
+
+                if (count == 3)
+                {
+                    throw new InvalidOperationException("Failed to create a random file.");
+                }
+            }
+
+            public static implicit operator string (TempFile f)
+            {
+                return f._filePath;
+            }
+
+            public void Dispose()
+            {
+                if (_filePath != null)
+                {
+                    try
+                    {
+                        File.Delete(_filePath);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
         }
     }
 }

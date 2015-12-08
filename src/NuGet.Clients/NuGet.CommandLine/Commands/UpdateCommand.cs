@@ -84,7 +84,7 @@ namespace NuGet.CommandLine
                 }
 
                 var projectSystem = new MSBuildProjectSystem(
-                    _msbuildDirectory, 
+                    _msbuildDirectory,
                     inputFile,
                     context);
                 await UpdatePackagesAsync(projectSystem, GetRepositoryPath(projectSystem.ProjectFullPath));
@@ -220,7 +220,7 @@ namespace NuGet.CommandLine
             {
                 packageSources.AddRange(availableSources);
             }
-            
+
             return packageSources;
         }
 

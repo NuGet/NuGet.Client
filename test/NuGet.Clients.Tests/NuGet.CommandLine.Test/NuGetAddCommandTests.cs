@@ -4,6 +4,7 @@ using System.IO;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
 
@@ -11,59 +12,6 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetAddCommandTests
     {
-        private class TestInfo : IDisposable
-        {
-            public string NuGetExePath { get; }
-            public string SourceParamFolder { get; set; }
-            public string RandomNupkgFolder { get { return Path.GetDirectoryName(RandomNupkgFilePath); } }
-            public PackageIdentity Package { get; }
-            public FileInfo TestPackage { get; set; }
-            public string RandomNupkgFilePath { get { return TestPackage.FullName; } }
-            public string WorkingPath { get; }
-
-            public TestInfo()
-            {
-                NuGetExePath = Util.GetNuGetExePath();
-                WorkingPath = TestFilesystemUtility.CreateRandomTestFolder();
-                Package = new PackageIdentity("AbCd", new NuGetVersion("1.0.0.0"));
-            }
-
-            public void Init()
-            {
-                Init(TestFilesystemUtility.CreateRandomTestFolder());
-            }
-
-            public void Init(string sourceParamFolder)
-            {
-                var randomNupkgFolder = TestFilesystemUtility.CreateRandomTestFolder();
-                var testPackage = TestPackages.GetLegacyTestPackage(
-                    randomNupkgFolder,
-                    Package.Id,
-                    Package.Version.ToString());
-
-                Init(sourceParamFolder, testPackage);
-            }
-
-            public void Init(FileInfo testPackage)
-            {
-                Init(TestFilesystemUtility.CreateRandomTestFolder(), testPackage);
-            }
-
-            public void Init(string sourceParamFolder, FileInfo testPackage)
-            {
-                SourceParamFolder = sourceParamFolder;
-                TestPackage = testPackage;
-            }
-
-            public void Dispose()
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(
-                    SourceParamFolder,
-                    RandomNupkgFolder,
-                    WorkingPath);
-            }
-        }
-
         [Fact]
         public void AddCommand_Fail_NoSourceSpecified()
         {
@@ -156,7 +104,10 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var testInfo = new TestInfo())
             {
-                var currentlyNonExistentPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+                var currentlyNonExistentPath = Path.Combine(Path.GetTempPath(),
+                                                            TestFileSystemUtility.NuGetTestFolder,
+                                                            Guid.NewGuid().ToString());
+
                 testInfo.Init(currentlyNonExistentPath);
 
                 var args = new string[]
@@ -312,7 +263,10 @@ namespace NuGet.CommandLine.Test
             {
                 testInfo.Init();
 
-                var nonExistentPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+                var nonExistentPath = Path.Combine(Path.GetTempPath(),
+                                            TestFileSystemUtility.NuGetTestFolder,
+                                            Guid.NewGuid().ToString());
+
                 var args = new string[]
                 {
                     "add",
@@ -376,9 +330,10 @@ namespace NuGet.CommandLine.Test
         public void AddCommand_Fail_NupkgPathIsNotANupkg()
         {
             // Arrange
+            using (var tempDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             using (var testInfo = new TestInfo())
             {
-                var testPackage = new FileInfo(Path.Combine(Path.GetTempPath(), Path.GetTempFileName()));
+                var testPackage = new FileInfo(Path.Combine(tempDirectory, Path.GetTempFileName()));
                 testInfo.Init(testPackage);
 
                 var args = new string[]
@@ -411,8 +366,10 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             using (var testInfo = new TestInfo())
+            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var testPackage = new FileInfo(Path.Combine(Path.GetTempPath(), Path.GetTempFileName()));
+                var testPackage = new FileInfo(Path.Combine(testFolder, Path.GetTempFileName()));
+
                 testInfo.Init(testPackage);
 
                 var args = new string[]
@@ -486,6 +443,60 @@ namespace NuGet.CommandLine.Test
                 Util.VerifyResultSuccess(result);
                 var listOfPackages = new List<PackageIdentity>() { testInfo.Package };
                 Util.VerifyExpandedLegacyTestPackagesExist(listOfPackages, testInfo.SourceParamFolder);
+            }
+        }
+
+        private class TestInfo : IDisposable
+        {
+            public string NuGetExePath { get; }
+            public string SourceParamFolder { get; set; }
+            public string RandomNupkgFolder { get { return Path.GetDirectoryName(RandomNupkgFilePath); } }
+            public PackageIdentity Package { get; }
+            public FileInfo TestPackage { get; set; }
+            public string RandomNupkgFilePath { get { return TestPackage.FullName; } }
+            public string WorkingPath { get; }
+
+            public TestInfo()
+            {
+                NuGetExePath = Util.GetNuGetExePath();
+
+                WorkingPath = TestFileSystemUtility.CreateRandomTestFolder();
+
+                Package = new PackageIdentity("AbCd", new NuGetVersion("1.0.0.0"));
+            }
+
+            public void Init()
+            {
+                Init(TestFileSystemUtility.CreateRandomTestFolder());
+            }
+
+            public void Init(string sourceParamFolder)
+            {
+                var randomNupkgFolder = TestFileSystemUtility.CreateRandomTestFolder();
+                var testPackage = TestPackagesGroupedByFolder.GetLegacyTestPackage(
+                    randomNupkgFolder,
+                    Package.Id,
+                    Package.Version.ToString());
+
+                Init(sourceParamFolder, testPackage);
+            }
+
+            public void Init(FileInfo testPackage)
+            {
+                Init(TestFileSystemUtility.CreateRandomTestFolder(), testPackage);
+            }
+
+            public void Init(string sourceParamFolder, FileInfo testPackage)
+            {
+                SourceParamFolder = sourceParamFolder;
+                TestPackage = testPackage;
+            }
+
+            public void Dispose()
+            {
+                TestFileSystemUtility.DeleteRandomTestFolder(SourceParamFolder);
+                TestFileSystemUtility.DeleteRandomTestFolder(RandomNupkgFolder);
+                TestFileSystemUtility.DeleteRandomTestFolder(WorkingPath);
             }
         }
     }

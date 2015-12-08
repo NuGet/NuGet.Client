@@ -10,22 +10,35 @@ using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.Test.Utility;
 
 namespace Test.Utility
 {
-    public class TestSolutionManager : ISolutionManager
+    public class TestSolutionManager : ISolutionManager, IDisposable
     {
-        public List<NuGetProject> NuGetProjects { get; set; }
+        public List<NuGetProject> NuGetProjects { get; set; } = new List<NuGetProject>();
+        public INuGetProjectContext NuGetProjectContext { get; set; } = new TestNuGetProjectContext();
 
         public string SolutionDirectory { get; }
 
         private const string PackagesFolder = "packages";
 
-        public TestSolutionManager(string solutionDirectory = null)
+        private TestDirectory _testDirectory;
+
+        public TestSolutionManager(bool foo)
         {
-            SolutionDirectory = string.IsNullOrEmpty(solutionDirectory) ? TestFilesystemUtility.CreateRandomTestFolder() : solutionDirectory;
-            NuGetProjects = new List<NuGetProject>();
-            NuGetProjectContext = new TestNuGetProjectContext();
+            _testDirectory = TestFileSystemUtility.CreateRandomTestFolder();
+            SolutionDirectory = _testDirectory;
+        }
+
+        public TestSolutionManager(string solutionDirectory)
+        {
+            if (solutionDirectory == null)
+            {
+                throw new ArgumentNullException(nameof(solutionDirectory));
+            }
+
+            SolutionDirectory = solutionDirectory;
         }
 
         public MSBuildNuGetProject AddNewMSBuildProject(string projectName = null, NuGetFramework projectTargetFramework = null, string packagesConfigName = null)
@@ -101,15 +114,6 @@ namespace Test.Utility
             }
         }
 
-
-        //public NuGetProject AddProjectKProject(string projectName)
-        //{
-        //    var testProjectKProject = new TestProjectKProject();
-        //    var nugetProject = new ProjectKNuGetProjectBase(testProjectKProject, projectName);
-        //    NuGetProjects.Add(nugetProject);
-        //    return nugetProject;
-        //}
-
         public NuGetProject DefaultNuGetProject
         {
             get { return NuGetProjects.FirstOrDefault(); }
@@ -148,8 +152,6 @@ namespace Test.Utility
             get { return IsSolutionOpen; }
         }
 
-        public INuGetProjectContext NuGetProjectContext { get; set; }
-
 #pragma warning disable 0067
         public event EventHandler<NuGetProjectEventArgs> NuGetProjectAdded;
 
@@ -173,6 +175,15 @@ namespace Test.Utility
             }
         }
 
+        public void Dispose()
+        {
+            var testDirectory = _testDirectory;
+            if (testDirectory != null)
+            {
+                testDirectory.Dispose();
+                _testDirectory = null;
+            }
+        }
 #pragma warning restore 0067
     }
 }

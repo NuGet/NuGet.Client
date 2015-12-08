@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
-using Test.Utility;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -14,17 +14,16 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_FromPackagesConfigFileWithExcludeVersion()
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var currentFolderName = Guid.NewGuid().ToString();
-            var workingPath = Path.Combine(tempPath, currentFolderName);
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var currentDirectory = Directory.GetCurrentDirectory();
-            var nugetexe = Util.GetNuGetExePath();
+            //var currentFolderName = Guid.NewGuid().ToString();
+            //var workingPath = Path.Combine(tempPath, currentFolderName);
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var nugetexe = Util.GetNuGetExePath();
+
+                Directory.CreateDirectory(repositoryPath);
+
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "packages.config",
@@ -33,25 +32,12 @@ namespace NuGet.CommandLine.Test
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
-                string[] args = new string[]
-                {
-                    "install",
-                    "-OutputDirectory",
-                    "outputDir",
-                    "-Source",
-                    repositoryPath,
-            "-ExcludeVersion"
-                };
-
                 // Act
-                var path = Environment.GetEnvironmentVariable("PATH");
-                Environment.SetEnvironmentVariable("PATH", null);
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
-                    string.Join(" ", args),
+                    $"install -OutputDirectory outputDir -Source {repositoryPath} -ExcludeVersion",
                     waitForExit: true);
-                Environment.SetEnvironmentVariable("PATH", path);
 
                 // Assert
                 Assert.Equal(0, r.Item1);
@@ -60,26 +46,15 @@ namespace NuGet.CommandLine.Test
                 Assert.True(Directory.Exists(packageADir));
                 Assert.True(Directory.Exists(packageBDir));
             }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
-            }
         }
 
         [Fact]
         public void InstallCommand_WithExcludeVersion()
         {
-            var tempPath = Path.GetTempPath();
-            var source = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var outputDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-
-            try
+            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var outputDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(source);
-                Util.CreateDirectory(outputDirectory);
-
                 var packageFileName = PackageCreater.CreatePackage(
                     "testPackage1", "1.1.0", source);
 
@@ -89,6 +64,7 @@ namespace NuGet.CommandLine.Test
                     "-OutputDirectory", outputDirectory,
                     "-Source", source,
                     "-ExcludeVersion" };
+
                 int r = Program.Main(args);
 
                 // Assert
@@ -100,33 +76,23 @@ namespace NuGet.CommandLine.Test
 
                 Assert.True(Directory.Exists(packageDir));
             }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(outputDirectory);
-                Util.DeleteDirectory(source);
-            }
         }
 
         [Fact]
         public void InstallCommand_FromPackagesConfigFile()
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var currentFolderName = Guid.NewGuid().ToString();
-            var workingPath = Path.Combine(tempPath, currentFolderName);
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+
+                Directory.CreateDirectory(repositoryPath);
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "packages.config",
-@"<packages>
+    @"<packages>
   <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
@@ -141,14 +107,11 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                var path = Environment.GetEnvironmentVariable("PATH");
-                Environment.SetEnvironmentVariable("PATH", null);
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
                     string.Join(" ", args),
                     waitForExit: true);
-                Environment.SetEnvironmentVariable("PATH", path);
 
                 // Assert
                 Assert.Equal(0, r.Item1);
@@ -157,33 +120,24 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
-            }
         }
 
         [Fact]
         public void InstallCommand_ShowsAlreadyInstalledMessageWhenAllPackagesArePresent()
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var currentFolderName = Guid.NewGuid().ToString();
-            var workingPath = Path.Combine(tempPath, currentFolderName);
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
-            var packagesConfig = Path.Combine(workingPath, "packages.config");
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var packagesConfig = Path.Combine(workingPath, "packages.config");
+
+                Directory.CreateDirectory(repositoryPath);
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "packages.config",
-@"<packages>
+    @"<packages>
   <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
@@ -199,14 +153,12 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                var path = Environment.GetEnvironmentVariable("PATH");
-                Environment.SetEnvironmentVariable("PATH", null);
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
                     string.Join(" ", args),
                     waitForExit: true);
-                
+
                 // Assert
                 Assert.Equal(0, r.Item1);
                 var packageFileA = Path.Combine(workingPath, @"outputDir\packageA.1.1.0\packageA.1.1.0.nupkg");
@@ -227,17 +179,10 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args2),
                     waitForExit: true);
 
-                Environment.SetEnvironmentVariable("PATH", path);
-
                 //Assert
                 var message = r1.Item2;
                 string alreadyInstalledMessage = String.Format("All packages listed in {0} are already installed.", packagesConfig);
                 Assert.Contains(alreadyInstalledMessage, message, StringComparison.OrdinalIgnoreCase);
-            }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
             }
         }
 
@@ -245,21 +190,19 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_FromPackagesConfigFile_SpecifyingSolutionDir()
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var currentFolderName = Guid.NewGuid().ToString();
-            var workingPath = Path.Combine(tempPath, currentFolderName);
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
             var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+
+                Directory.CreateDirectory(repositoryPath);
+
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "packages.config",
-@"<packages>
+    @"<packages>
   <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
@@ -276,14 +219,11 @@ namespace NuGet.CommandLine.Test
                 };
 
                 // Act
-                var path = Environment.GetEnvironmentVariable("PATH");
-                Environment.SetEnvironmentVariable("PATH", null);
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingPath,
                     string.Join(" ", args),
                     waitForExit: true);
-                Environment.SetEnvironmentVariable("PATH", path);
 
                 // Assert
                 Assert.Equal(0, r.Item1);
@@ -292,11 +232,6 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
-            }
         }
 
         [Fact]
@@ -304,21 +239,21 @@ namespace NuGet.CommandLine.Test
         {
             // Arrange
             var tempPath = Path.GetTempPath();
-            var currentFolderName = Guid.NewGuid().ToString();
-            var relativeFolderPath = $"..\\{currentFolderName}";
-            var workingPath = Path.Combine(tempPath, currentFolderName);
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
             var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
+                string folderName = Path.GetFileName(workingPath);
+
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var relativeFolderPath = $"..\\{folderName}";
+
+                Directory.CreateDirectory(repositoryPath);
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
                 Util.CreateFile(workingPath, "packages.config",
-@"<packages>
+    @"<packages>
   <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
@@ -350,26 +285,15 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
             }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
-            }
         }
 
         [Fact(Skip = "PackageSaveMode is not supported yet")]
         public void InstallCommand_PackageSaveModeNuspec()
         {
-            var tempPath = Path.GetTempPath();
-            var source = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var outputDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-
-            try
+            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var outputDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(source);
-                Util.CreateDirectory(outputDirectory);
-
                 var packageFileName = PackageCreater.CreatePackage(
                     "testPackage1", "1.1.0", source);
 
@@ -392,27 +316,15 @@ namespace NuGet.CommandLine.Test
                 var nupkgFiles = Directory.GetFiles(outputDirectory, "*.nupkg", SearchOption.AllDirectories);
                 Assert.Equal(0, nupkgFiles.Length);
             }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(outputDirectory);
-                Util.DeleteDirectory(source);
-            }
         }
 
         [Fact(Skip = "PackageSaveMode is not supported yet")]
         public void InstallCommand_PackageSaveModeNupkg()
         {
-            var tempPath = Path.GetTempPath();
-            var source = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var outputDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-
-            try
+            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var outputDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(source);
-                Util.CreateDirectory(outputDirectory);
-
                 var packageFileName = PackageCreater.CreatePackage(
                     "testPackage1", "1.1.0", source);
 
@@ -435,27 +347,15 @@ namespace NuGet.CommandLine.Test
                 var nuspecFiles = Directory.GetFiles(outputDirectory, "*.nuspec", SearchOption.AllDirectories);
                 Assert.Equal(0, nuspecFiles.Length);
             }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(outputDirectory);
-                Util.DeleteDirectory(source);
-            }
         }
 
         [Fact(Skip = "PackageSaveMode is not supported yet")]
         public void InstallCommand_PackageSaveModeNuspecNupkg()
         {
-            var tempPath = Path.GetTempPath();
-            var source = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var outputDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-
-            try
+            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var outputDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(source);
-                Util.CreateDirectory(outputDirectory);
-
                 var packageFileName = PackageCreater.CreatePackage(
                     "testPackage1", "1.1.0", source);
 
@@ -478,12 +378,6 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(nupkgFile));
                 Assert.True(File.Exists(nuspecFile));
             }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(outputDirectory);
-                Util.DeleteDirectory(source);
-            }
         }
 
         // Test that after a package is installed with -PackageSaveMode nuspec, nuget.exe
@@ -493,16 +387,11 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_PackageSaveModeNuspecReinstall()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var source = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var outputDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
 
-            try
+            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var outputDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(source);
-                Util.CreateDirectory(outputDirectory);
-
                 var packageFileName = PackageCreater.CreatePackage(
                     "testPackage1", "1.1.0", source);
 
@@ -528,28 +417,16 @@ namespace NuGet.CommandLine.Test
                     Environment.NewLine;
                 Assert.Equal(expectedOutput, output);
             }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(outputDirectory);
-                Util.DeleteDirectory(source);
-            }
         }
 
         // Test that PackageSaveMode specified in nuget.config file is used.
         [Fact(Skip = "PackageSaveMode is not supported yet")]
         public void InstallCommand_PackageSaveModeInConfigFile()
         {
-            var tempPath = Path.GetTempPath();
-            var source = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var outputDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-
-            try
+            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var outputDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(source);
-                Util.CreateDirectory(outputDirectory);
-
                 var packageFileName = Util.CreateTestPackage(
                     "testPackage1", "1.1.0", source);
 
@@ -580,12 +457,6 @@ namespace NuGet.CommandLine.Test
                 var nupkgFiles = Directory.GetFiles(outputDirectory, "*.nupkg", SearchOption.AllDirectories);
                 Assert.Equal(0, nupkgFiles.Length);
             }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(outputDirectory);
-                Util.DeleteDirectory(source);
-            }
         }
 
         // Tests that when package restore is enabled and -RequireConsent is specified,
@@ -596,18 +467,15 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_OptOutMessage(string configFileName)
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var proj1Directory = Path.Combine(workingPath, "proj1");
-            var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(proj1Directory);
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(proj1Directory);
 
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
@@ -634,7 +502,7 @@ namespace NuGet.CommandLine.Test
   </ItemGroup>
 </Project>");
                 Util.CreateFile(proj1Directory, configFileName,
-@"<packages>
+    @"<packages>
   <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
 </packages>");
                 // Act
@@ -652,11 +520,6 @@ namespace NuGet.CommandLine.Test
                     NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
                 Assert.Contains(optOutMessage.Replace("\r\n", "\n"), r.Item2.Replace("\r\n", "\n"));
             }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
-            }
         }
 
         // Tests that when package restore is enabled, but -RequireConsent is not specified,
@@ -667,18 +530,15 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_NoOptOutMessage(string configFileName)
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
-            var workingPath = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var repositoryPath = Path.Combine(workingPath, Guid.NewGuid().ToString());
-            var proj1Directory = Path.Combine(workingPath, "proj1");
-            var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingPath);
-                Util.CreateDirectory(repositoryPath);
-                Util.CreateDirectory(proj1Directory);
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(proj1Directory);
 
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
@@ -705,7 +565,7 @@ namespace NuGet.CommandLine.Test
   </ItemGroup>
 </Project>");
                 Util.CreateFile(proj1Directory, configFileName,
-@"<packages>
+    @"<packages>
   <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
 </packages>");
                 // Act
@@ -723,11 +583,6 @@ namespace NuGet.CommandLine.Test
                     NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
                 Assert.DoesNotContain(optOutMessage, r.Item2);
             }
-            finally
-            {
-                Directory.SetCurrentDirectory(currentDirectory);
-                Util.DeleteDirectory(workingPath);
-            }
         }
 
         // Tests that when no version is specified, nuget will query the server to get
@@ -736,15 +591,17 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_GetLastestReleaseVersion()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var workingDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(proj1Directory);
+
                 // Arrange
-                Util.CreateDirectory(packageDirectory);
-                Util.CreateDirectory(workingDirectory);
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package1 = new ZipPackage(packageFileName);
                 MachineCache.Default.RemovePackage(package1);
@@ -760,7 +617,7 @@ namespace NuGet.CommandLine.Test
                     var args = "install testPackage1 -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        workingDirectory,
+                        workingPath,
                         args,
                         waitForExit: true);
 
@@ -768,14 +625,8 @@ namespace NuGet.CommandLine.Test
                     Assert.Equal(0, r1.Item1);
 
                     // testPackage1 1.2.0 is installed
-                    Assert.True(Directory.Exists(Path.Combine(workingDirectory, "testPackage1.1.2.0")));
+                    Assert.True(Directory.Exists(Path.Combine(workingPath, "testPackage1.1.2.0")));
                 }
-            }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(packageDirectory);
-                Util.DeleteDirectory(workingDirectory);
             }
         }
 
@@ -785,15 +636,10 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_GetLastestPrereleaseVersion()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var workingDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                // Arrange
-                Util.CreateDirectory(packageDirectory);
-                Util.CreateDirectory(workingDirectory);
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package1 = new ZipPackage(packageFileName);
                 MachineCache.Default.RemovePackage(package1);
@@ -810,7 +656,7 @@ namespace NuGet.CommandLine.Test
                     var args = "install testPackage1 -Prerelease -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        workingDirectory,
+                        workingPath,
                         args,
                         waitForExit: true);
 
@@ -818,14 +664,8 @@ namespace NuGet.CommandLine.Test
                     Assert.Equal(0, r1.Item1);
 
                     // testPackage1 1.2.0-beta1 is installed
-                    Assert.True(Directory.Exists(Path.Combine(workingDirectory, "testPackage1.1.2.0-beta1")));
+                    Assert.True(Directory.Exists(Path.Combine(workingPath, "testPackage1.1.2.0-beta1")));
                 }
-            }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(packageDirectory);
-                Util.DeleteDirectory(workingDirectory);
             }
         }
 
@@ -835,15 +675,11 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_WithVersionSpecified()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var workingDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(packageDirectory);
-                Util.CreateDirectory(workingDirectory);
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
                 MachineCache.Default.RemovePackage(package);
@@ -884,7 +720,7 @@ namespace NuGet.CommandLine.Test
                     var args = "install testPackage1 -Version 1.1.0 -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        workingDirectory,
+                        workingPath,
                         args,
                         waitForExit: true);
 
@@ -894,12 +730,6 @@ namespace NuGet.CommandLine.Test
                     Assert.True(packageDownloadIsCalled);
                 }
             }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(packageDirectory);
-                Util.DeleteDirectory(workingDirectory);
-            }
         }
 
         // Tests that when -Version is specified, if the specified version cannot be found,
@@ -908,13 +738,10 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_WillTryNewVersionsByAppendingZeros()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var workingDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(workingDirectory);
 
                 // deleting testPackage1 from machine cache
                 var packages = MachineCache.Default.FindPackagesById("testPackage1");
@@ -941,7 +768,7 @@ namespace NuGet.CommandLine.Test
                     var args = "install testPackage1 -Version 1.1 -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        workingDirectory,
+                        workingPath,
                         args,
                         waitForExit: true);
 
@@ -954,11 +781,6 @@ namespace NuGet.CommandLine.Test
                     Assert.True(requests[2].EndsWith("Packages(Id='testPackage1',Version='1.1.0.0')"));
                 }
             }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(workingDirectory);
-            }
         }
 
         // Tests that nuget will NOT download package from http source if the package on the server
@@ -967,15 +789,15 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_WillUseCachedFile()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var workingDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+
                 // Arrange
-                Util.CreateDirectory(packageDirectory);
-                Util.CreateDirectory(workingDirectory);
+
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
                 MachineCache.Default.RemovePackage(package);
@@ -1027,7 +849,7 @@ namespace NuGet.CommandLine.Test
                     var args = "install testPackage1 -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        workingDirectory,
+                        workingPath,
                         args,
                         waitForExit: true);
 
@@ -1039,12 +861,6 @@ namespace NuGet.CommandLine.Test
                     Assert.False(packageDownloadIsCalled);
                 }
             }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(packageDirectory);
-                Util.DeleteDirectory(workingDirectory);
-            }
         }
 
         // Tests that nuget will download package from http source if the package on the server
@@ -1053,15 +869,14 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_DownloadPackageWhenHashChanges()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var packageDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var workingDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
 
-            try
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(packageDirectory);
-                Util.CreateDirectory(workingDirectory);
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var proj1Directory = Path.Combine(workingPath, "proj1");
+
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
                 MachineCache.Default.RemovePackage(package);
@@ -1118,7 +933,7 @@ namespace NuGet.CommandLine.Test
                     var args = "install testPackage1 -Source " + server.Uri + "nuget";
                     var r1 = CommandRunner.Run(
                         nugetexe,
-                        workingDirectory,
+                        workingPath,
                         args,
                         waitForExit: true);
 
@@ -1130,12 +945,6 @@ namespace NuGet.CommandLine.Test
                     Assert.True(packageDownloadIsCalled);
                 }
             }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(packageDirectory);
-                Util.DeleteDirectory(workingDirectory);
-            }
         }
 
         // Tests that when both the normal package and the symbol package exist in a local repository,
@@ -1144,16 +953,11 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_PreferNonSymbolPackage()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var source = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var outputDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
 
-            try
+            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var outputDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(source);
-                Util.CreateDirectory(outputDirectory);
-
                 var packageFileName = PackageCreater.CreatePackage(
                     "testPackage1", "1.1.0", source);
                 var symbolPackageFileName = PackageCreater.CreateSymbolPackage(
@@ -1183,28 +987,17 @@ namespace NuGet.CommandLine.Test
                     @"testPackage1.1.1.0\symbol.txt");
                 Assert.False(File.Exists(symbolTxtFile));
             }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(outputDirectory);
-                Util.DeleteDirectory(source);
-            }
         }
 
         [Fact]
         public void InstallCommand_DependencyResolutionFailure()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var tempPath = Path.GetTempPath();
-            var source = Path.Combine(tempPath, Guid.NewGuid().ToString());
-            var outputDirectory = Path.Combine(tempPath, Guid.NewGuid().ToString());
 
-            try
+            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var outputDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(source);
-                Util.CreateDirectory(outputDirectory);
-
                 var packageFileName = PackageCreater.CreatePackage(
                     "testPackage1", "1.1.0", source,
                     (builder) =>
@@ -1232,12 +1025,6 @@ namespace NuGet.CommandLine.Test
                 Assert.NotEqual(0, r.Item1);
                 Assert.Contains("Unable to resolve dependency 'non_existing'", r.Item3);
             }
-            finally
-            {
-                // Cleanup
-                Util.DeleteDirectory(outputDirectory);
-                Util.DeleteDirectory(source);
-            }
         }
 
         // Tests that when credential is saved in the config file, it will be passed
@@ -1247,11 +1034,11 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_AuthenticatedV3WithCredentialSavedInConfig()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            bool credentialsPassedToRegistrationEndPoint = false;
 
-            try
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                bool credentialsPassedToRegistrationEndPoint = false;
+
                 // Server setup
                 using (var serverV3 = new MockServer())
                 {
@@ -1317,7 +1104,7 @@ namespace NuGet.CommandLine.Test
 
                     // create the config file with credentials saved
                     var config = string.Format(
-@"<configuration>
+    @"<configuration>
   <packageSources>
     <add key='test' value='{0}' />
   </packageSources>
@@ -1352,20 +1139,13 @@ namespace NuGet.CommandLine.Test
                     Assert.True(credentialsPassedToRegistrationEndPoint);
                 }
             }
-            finally
-            {
-                // Cleanup
-                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
-            }
         }
 
         [Fact]
         public void TestInstallWhenNoFeedAvailable()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var randomTestFolder = TestFilesystemUtility.CreateRandomTestFolder();
-
-            try
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Create an empty config file and pass it as -ConfigFile switch.
                 // This imitates the scenario where there is a machine without a default nuget.config under %APPDATA%
@@ -1397,10 +1177,6 @@ namespace NuGet.CommandLine.Test
                     "Newtonsoft.Json.7.0.1.nupkg");
 
                 Assert.True(File.Exists(expectedPath), "nuget.exe did not install Newtonsoft.Json.7.0.1");
-            }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(randomTestFolder);
             }
         }
     }

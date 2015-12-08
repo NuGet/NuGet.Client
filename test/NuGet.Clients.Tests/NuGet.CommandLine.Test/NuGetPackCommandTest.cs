@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -16,13 +17,10 @@ namespace NuGet.CommandLine.Test
         public void PackCommand_IncludeExcludePackageFromNuspec()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            try
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(workingDirectory);
-
                 Util.CreateFile(
                     Path.Combine(workingDirectory, "contentFiles/any/any"),
                     "image.jpg",
@@ -84,22 +82,16 @@ namespace NuGet.CommandLine.Test
 </dependencies>".Replace("\r\n", "\n"), actual);
                 }
             }
-            finally
-            {
-                Directory.Delete(workingDirectory, true);
-            }
         }
 
         [Fact]
         public void PackCommand_PackRuntimesRefNativeNoWarnings()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            try
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(workingDirectory);
 
                 Util.CreateFile(
                     Path.Combine(workingDirectory, "ref/uap10.0"),
@@ -163,23 +155,16 @@ namespace NuGet.CommandLine.Test
 
                 Assert.False(r.Item2.Contains("Assembly outside lib folder"));
             }
-            finally
-            {
-                Directory.Delete(workingDirectory, true);
-            }
         }
 
         [Fact]
         public void PackCommand_PackAnalyzers()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            try
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(workingDirectory);
-
                 Util.CreateFile(
                     Path.Combine(workingDirectory, "analyzers/cs/code"),
                     "a.dll",
@@ -224,23 +209,16 @@ namespace NuGet.CommandLine.Test
 
                 Assert.False(r.Item2.Contains("Assembly outside lib folder"));
             }
-            finally
-            {
-                Directory.Delete(workingDirectory, true);
-            }
         }
 
         [Fact]
         public void PackCommand_ContentV2PackageFromNuspec()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            try
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(workingDirectory);
-
                 Util.CreateFile(
                     Path.Combine(workingDirectory, "contentFiles/any/any"),
                     "image.jpg",
@@ -309,10 +287,6 @@ namespace NuGet.CommandLine.Test
                         node.ToString().Replace("\r\n", "\n"));
                 }
             }
-            finally
-            {
-                Directory.Delete(workingDirectory, true);
-            }
         }
 
         // Test that when creating a package from project file, referenced projects
@@ -321,15 +295,11 @@ namespace NuGet.CommandLine.Test
         public void PackCommand_WithProjectReferences()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            try
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingDirectory);
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var proj2Directory = Path.Combine(workingDirectory, "proj2");
-                Util.CreateDirectory(proj1Directory);
-                Util.CreateDirectory(proj2Directory);
 
                 // create project 1
                 Util.CreateFile(
@@ -420,10 +390,6 @@ namespace Proj2
                         @"lib\net40\proj2.dll"
                     });
             }
-            finally
-            {
-                Directory.Delete(workingDirectory, true);
-            }
         }
 
         // Test creating symbol package with -IncludeReferencedProject.
@@ -431,15 +397,11 @@ namespace Proj2
         public void PackCommand_WithProjectReferencesSymbols()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            try
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingDirectory);
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var proj2Directory = Path.Combine(workingDirectory, "proj2");
-                Util.CreateDirectory(proj1Directory);
-                Util.CreateDirectory(proj2Directory);
 
                 // create project 1
                 Util.CreateFile(
@@ -534,10 +496,6 @@ namespace Proj2
                         @"src\proj2\proj2_file1.cs",
                     });
             }
-            finally
-            {
-                Directory.Delete(workingDirectory, true);
-            }
         }
 
         // Test that when creating a package from project file, a referenced project that
@@ -546,12 +504,10 @@ namespace Proj2
         public void PackCommand_ReferencedProjectWithNuspecFile()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            try
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(workingDirectory);
 
                 // create test projects. There are 7 projects, with the following
                 // dependency relationships:
@@ -618,6 +574,7 @@ namespace Proj2
 
                 // Act
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
+
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
@@ -651,10 +608,6 @@ namespace Proj2
                     },
                     new PackageDepencyComparer());
             }
-            finally
-            {
-                Directory.Delete(workingDirectory, true);
-            }
         }
 
         // Same test as PackCommand_ReferencedProjectWithNuspecFile, but with -MSBuidVersion
@@ -663,12 +616,9 @@ namespace Proj2
         public void PackCommand_ReferencedProjectWithNuspecFileWithMsbuild14()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-
-            try
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(workingDirectory);
 
                 // create test projects. There are 7 projects, with the following
                 // dependency relationships:
@@ -768,10 +718,6 @@ namespace Proj2
                     },
                     new PackageDepencyComparer());
             }
-            finally
-            {
-                Directory.Delete(workingDirectory, true);
-            }
         }
 
         // Test that when creating a package from project file, a referenced project that
@@ -783,12 +729,9 @@ namespace Proj2
             const string prefixTokenValue = "fooBar";
 
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-
-            try
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(workingDirectory);
 
                 // create test projects. There are 7 projects, with the following
                 // dependency relationships:
@@ -816,6 +759,7 @@ namespace Proj2
                 CreateTestProject(workingDirectory, "proj5", null);
                 CreateTestProject(workingDirectory, "proj6", null);
                 CreateTestProject(workingDirectory, "proj7", null);
+
                 Util.CreateFile(
                     Path.Combine(workingDirectory, "proj2"),
                     "proj2.nuspec",
@@ -876,10 +820,6 @@ namespace Proj2
                     }.OrderBy(d => d.ToString()),
                     new PackageDepencyComparer());
             }
-            finally
-            {
-                Directory.Delete(workingDirectory, true);
-            }
         }
 
         // Test that recognized tokens such as $id$ in the nuspec file of the
@@ -888,12 +828,10 @@ namespace Proj2
         public void PackCommand_NuspecFileWithTokens()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            try
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(workingDirectory);
 
                 CreateTestProject(workingDirectory, "proj1",
                     new string[] {
@@ -950,10 +888,6 @@ namespace Proj2
                     },
                     new PackageDepencyComparer());
             }
-            finally
-            {
-                Directory.Delete(workingDirectory, true);
-            }
         }
 
         // Test that option -IncludeReferencedProjects works correctly for the case
@@ -963,12 +897,10 @@ namespace Proj2
         public void PackCommand_ProjectReferencedByMultipleProjects()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            try
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(workingDirectory);
 
                 // create test project, with the following dependency relationships:
                 // proj1 depends on proj2, proj3
@@ -1007,10 +939,6 @@ namespace Proj2
                         @"lib\net40\proj3.dll"
                     });
             }
-            finally
-            {
-                Directory.Delete(workingDirectory, true);
-            }
         }
 
         // Test that when creating a package from project A, the output of a referenced project
@@ -1020,12 +948,10 @@ namespace Proj2
         public void PackCommand_ReferencedProjectWithDifferentTarget()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            try
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(workingDirectory);
 
                 CreateTestProject(workingDirectory, "proj1",
                     new string[] {
@@ -1055,36 +981,25 @@ namespace Proj2
                         @"lib\net40\proj2.dll"
                     });
             }
-            finally
-            {
-                Directory.Delete(workingDirectory, true);
-            }
         }
 
         // Test that when -IncludeReferencedProjects is not specified,
         // pack command will not try to look for the output files of the
         // referenced projects.
-        [Fact(Skip = "This test failed on dev10 build with mysterious errors. Will reenable it once the cause is figured out")]
         public void PackCommand_IncludeReferencedProjectsOff()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            var oldCurrentDirectory = Directory.GetCurrentDirectory();
 
-            try
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingDirectory);
-                Directory.SetCurrentDirectory(workingDirectory);
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var proj2Directory = Path.Combine(workingDirectory, "proj2");
-                Util.CreateDirectory(proj1Directory);
-                Util.CreateDirectory(proj2Directory);
 
                 // create project 1
                 Util.CreateFile(
                     proj1Directory,
                     "proj1.csproj",
-@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+  @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -1163,6 +1078,7 @@ namespace Proj2
                 var msbuild = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.Windows),
                     @"Microsoft.NET\Framework\v4.0.30319\msbuild.exe");
+
                 var r = CommandRunner.Run(
                     msbuild,
                     proj2Directory,
@@ -1181,17 +1097,13 @@ namespace Proj2
                 var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
+
                 Assert.Equal(
                     files,
                     new string[]
                     {
                         @"lib\net40\proj2.dll"
                     });
-            }
-            finally
-            {
-                Directory.SetCurrentDirectory(oldCurrentDirectory);
-                Directory.Delete(workingDirectory, true);
             }
         }
 
@@ -1202,15 +1114,11 @@ namespace Proj2
         public void PackCommand_PropertiesAppliedToReferencedProjects()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            try
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingDirectory);
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var proj2Directory = Path.Combine(workingDirectory, "proj2");
-                Util.CreateDirectory(proj1Directory);
-                Util.CreateDirectory(proj2Directory);
 
                 // create project 1
                 Util.CreateFile(
@@ -1317,10 +1225,6 @@ namespace Proj2
                         @"lib\net40\proj2.dll"
                     });
             }
-            finally
-            {
-                Directory.Delete(workingDirectory, true);
-            }
         }
 
         // Test that exclude masks starting with '**' work also
@@ -1329,17 +1233,12 @@ namespace Proj2
         public void PackCommand_ExcludesFilesOutsideRoot()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            var projDirectory = Path.Combine(workingDirectory, "package");
-            var otherDirectory = Path.Combine(workingDirectory, "other");
-
-            try
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                Util.CreateDirectory(workingDirectory);
-                Util.CreateDirectory(projDirectory);
-                Util.CreateDirectory(otherDirectory);
+                var projDirectory = Path.Combine(workingDirectory, "package");
+                var otherDirectory = Path.Combine(workingDirectory, "other");
 
                 Util.CreateFile(projDirectory, "include.me", "some text");
                 Util.CreateFile(projDirectory, "exclude.me", "some text");
@@ -1382,10 +1281,6 @@ namespace Proj2
                         @"Content\package\include.me"
                     });
             }
-            finally
-            {
-                Directory.Delete(workingDirectory, true);
-            }
         }
 
         // Test that NuGet packages of the project are added as dependencies
@@ -1395,15 +1290,13 @@ namespace Proj2
         public void PackCommand_PackagesAddedAsDependencies(string packagesConfigFileName)
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            try
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingDirectory);
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var packagesFolder = Path.Combine(proj1Directory, "packages");
-                Util.CreateDirectory(proj1Directory);
-                Util.CreateDirectory(packagesFolder);
+
+                Directory.CreateDirectory(packagesFolder);
 
                 // create project 1
                 Util.CreateFile(
@@ -1477,10 +1370,6 @@ namespace Proj1
                 Assert.Equal("testPackage1", dependency.Id);
                 Assert.Equal("1.1.0", dependency.VersionSpec.ToString());
             }
-            finally
-            {
-                Directory.Delete(workingDirectory, true);
-            }
         }
 
         // Test that nuget displays warnings when dependency version is not specified
@@ -1489,13 +1378,10 @@ namespace Proj1
         public void PackCommand_WarningDependencyVersionNotSpecified()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            try
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingDirectory);
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
-                Util.CreateDirectory(proj1Directory);
 
                 // create project 1
                 Util.CreateFile(
@@ -1583,10 +1469,6 @@ namespace Proj1
                 Assert.Contains("Description: The version of dependency 'json' is not specified.", r.Item2);
                 Assert.Contains("Solution: Specifiy the version of dependency and rebuild your package.", r.Item2);
             }
-            finally
-            {
-                Directory.Delete(workingDirectory, true);
-            }
         }
 
         // Tests that with -MSBuildVersion set to 14, a projec using C# 6.0 features (nameof in this test)
@@ -1595,15 +1477,13 @@ namespace Proj1
         public void PackCommand_WithMsBuild14()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            try
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+
             {
-                Util.CreateDirectory(workingDirectory);
+
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var proj2Directory = Path.Combine(workingDirectory, "proj2");
-                Util.CreateDirectory(proj1Directory);
-                Util.CreateDirectory(proj2Directory);
 
                 // create project 1
                 Util.CreateFile(
@@ -1697,6 +1577,7 @@ namespace Proj2
                     proj2Directory,
                     @"pack proj2.csproj -build -IncludeReferencedProjects -p Config=Release -msbuildversion 14",
                     waitForExit: true);
+
                 Assert.Equal(0, r.Item1);
 
                 // Assert
@@ -1716,26 +1597,18 @@ namespace Proj2
                         @"lib\net40\proj2.dll"
                     });
             }
-            finally
-            {
-                Directory.Delete(workingDirectory, true);
-            }
-        }        
+        }
 
         // Tests that pack works with -MSBuildVersion set to 12
         [Fact]
         public void PackCommand_WithMsBuild12()
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            try
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                Util.CreateDirectory(workingDirectory);
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var proj2Directory = Path.Combine(workingDirectory, "proj2");
-                Util.CreateDirectory(proj1Directory);
-                Util.CreateDirectory(proj2Directory);
 
                 // create project 1
                 Util.CreateFile(
@@ -1848,10 +1721,6 @@ namespace Proj2
                         @"lib\net40\proj2.dll"
                     });
             }
-            finally
-            {
-                Directory.Delete(workingDirectory, true);
-            }
         }
 
         /// <summary>
@@ -1874,7 +1743,7 @@ namespace Proj2
             string version = "0.0.0.0")
         {
             var projectDirectory = Path.Combine(baseDirectory, projectName);
-            Util.CreateDirectory(projectDirectory);
+            Directory.CreateDirectory(projectDirectory);
 
             string reference = string.Empty;
             if (referencedProject != null && referencedProject.Length > 0)

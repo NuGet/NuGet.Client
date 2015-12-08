@@ -5,37 +5,54 @@ namespace NuGet.Test.Utility
 {
     public class TestFileSystemUtility
     {
-        private static readonly string NuGetTestFolder =
+        public static readonly string NuGetTestFolder =
             Path.Combine(Environment.GetEnvironmentVariable("temp"), "NuGetTestFolder");
 
-        public static string CreateRandomTestFolder()
+        public static TestDirectory CreateRandomTestFolder()
         {
             var randomFolderName = Guid.NewGuid().ToString();
             var path = Path.Combine(NuGetTestFolder, randomFolderName);
-            Directory.CreateDirectory(path);
-            return path;
-        }
 
-        public static void DeleteRandomTestFolders(params string[] randomTestPaths)
-        {
-            foreach (var randomTestPath in randomTestPaths)
+            if (Directory.Exists(path))
             {
-                DeleteRandomTestFolder(randomTestPath);
+                throw new InvalidOperationException("Guid colission");
             }
+
+            Directory.CreateDirectory(path);
+
+            return new TestDirectory(path);
         }
 
-        private static void DeleteRandomTestFolder(string randomTestPath)
+        public static void DeleteRandomTestFolder(string randomTestPath)
         {
-            try
+            if (Directory.Exists(randomTestPath))
             {
-                if (Directory.Exists(randomTestPath))
+                AssertNotTempPath(randomTestPath);
+
+                try
                 {
                     Directory.Delete(randomTestPath, recursive: true);
                 }
+                catch
+                {
+                }
+
             }
-            catch (Exception)
+        }
+
+        public static void AssertNotTempPath(string path)
+        {
+            var expanded = Path.GetFullPath(path);
+            var expandedTempPath = Path.GetFullPath(Path.GetTempPath());
+
+            if (expanded.Equals(expandedTempPath, StringComparison.OrdinalIgnoreCase))
             {
-                // Ignore exception while deleting directories
+                throw new InvalidOperationException("Trying to delete the temp folder in a test");
+            }
+
+            if (expanded.Equals(Path.GetFullPath(NuGetTestFolder), StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("Trying to delete the root test folder in a test");
             }
         }
     }

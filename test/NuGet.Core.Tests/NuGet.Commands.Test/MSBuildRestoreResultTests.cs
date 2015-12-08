@@ -13,8 +13,7 @@ namespace NuGet.Commands.Test
         public void MSBuildRestoreResult_ReplaceWithUserProfileMacro()
         {
             // Arrange
-            var randomProjectDirectory = TestFileSystemUtility.CreateRandomTestFolder();
-            try
+            using (var randomProjectDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var projectName = "testproject";
                 var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(NullSettings.Instance);
@@ -39,7 +38,7 @@ namespace NuGet.Commands.Test
 
                     // Act
                     msBuildRestoreResult.Commit(Logging.NullLogger.Instance);
-                    
+
                     Assert.True(File.Exists(targetsPath));
                     var xml = XDocument.Load(targetsPath);
                     var ns = XNamespace.Get("http://schemas.microsoft.com/developer/msbuild/2003");
@@ -51,10 +50,6 @@ namespace NuGet.Commands.Test
                     var expected = Path.Combine(@"$(UserProfile)", ".nuget", "packages") + Path.DirectorySeparatorChar;
                     Assert.Equal(expected, element.Value);
                 }
-            }
-            finally
-            {
-                TestFileSystemUtility.DeleteRandomTestFolders(randomProjectDirectory);
             }
         }
     }

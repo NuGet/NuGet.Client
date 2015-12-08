@@ -16,6 +16,7 @@ using Test.Utility;
 using Xunit;
 using NuGet.Protocol.Core.Types;
 using Xunit.Abstractions;
+using NuGet.Test.Utility;
 
 namespace NuGet.Test
 {
@@ -31,32 +32,31 @@ namespace NuGet.Test
         private async Task<IEnumerable<NuGetProjectAction>> PacManCleanInstall(SourceRepositoryProvider sourceRepositoryProvider, PackageIdentity target)
         {
             // Arrange
-            var testSolutionManager = new TestSolutionManager();
-            var testSettings = new Configuration.NullSettings();
-            var token = CancellationToken.None;
-            var deleteOnRestartManger = new TestDeleteOnRestartManager();
-            var nuGetPackageManager = new NuGetPackageManager(
-                sourceRepositoryProvider,
-                testSettings,
-                testSolutionManager,
-                deleteOnRestartManger);
-            var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
+            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var randomPackagesConfigFolderPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var testSettings = new Configuration.NullSettings();
+                var token = CancellationToken.None;
+                var deleteOnRestartManger = new TestDeleteOnRestartManager();
+                var nuGetPackageManager = new NuGetPackageManager(
+                    sourceRepositoryProvider,
+                    testSettings,
+                    testSolutionManager,
+                    deleteOnRestartManger);
+                var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(testSolutionManager, testSettings);
 
-            var randomPackagesConfigFolderPath = TestFilesystemUtility.CreateRandomTestFolder();
-            var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
+                var randomPackagesConfigPath = Path.Combine(randomPackagesConfigFolderPath, "packages.config");
 
-            var projectTargetFramework = NuGetFramework.Parse("net45");
-            var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
-            var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigFolderPath);
+                var projectTargetFramework = NuGetFramework.Parse("net45");
+                var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(projectTargetFramework, new TestNuGetProjectContext());
+                var msBuildNuGetProject = new MSBuildNuGetProject(msBuildNuGetProjectSystem, packagesFolderPath, randomPackagesConfigFolderPath);
 
-            // Act
-            var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(msBuildNuGetProject, target,
-                new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
+                // Act
+                var nugetProjectActions = await nuGetPackageManager.PreviewInstallPackageAsync(msBuildNuGetProject, target,
+                    new ResolutionContext(), new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
 
-            // Clean-up
-            TestFilesystemUtility.DeleteRandomTestFolders(testSolutionManager.SolutionDirectory, randomPackagesConfigFolderPath);
-
-            return nugetProjectActions;
+                return nugetProjectActions;
+            }
         }
 
         private bool Compare(IEnumerable<NuGetProjectAction> x, IEnumerable<NuGetProjectAction> y)

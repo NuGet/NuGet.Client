@@ -9,6 +9,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -20,14 +21,13 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public async Task UpdateCommand_Success_References()
         {
-            var packagesSourceDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var solutionDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var projectDirectory = Path.Combine(solutionDirectory, "proj1");
-            var packagesDirectory = Path.Combine(solutionDirectory, "packages");
-            var workingPath = TestFilesystemUtility.CreateRandomTestFolder();
-
-            try
+            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                var projectDirectory = Path.Combine(solutionDirectory, "proj1");
+                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
+
                 var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
                 var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
 
@@ -95,25 +95,16 @@ namespace NuGet.CommandLine.Test
                 Assert.False(content.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
                 Assert.True(content.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
             }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(solutionDirectory, workingPath, packagesSourceDirectory);
-            }
         }
 
         [Fact]
         public async Task UpdateCommand_Success_References_MultipleProjects()
         {
-            string packagesSourceDirectory = null;
-            string solutionDirectory = null;
-            string workingPath = null;
 
-            try
+            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                packagesSourceDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-                solutionDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-                workingPath = TestFilesystemUtility.CreateRandomTestFolder();
-
                 var projectDirectory1 = Path.Combine(solutionDirectory, "proj1");
                 var projectDirectory2 = Path.Combine(solutionDirectory, "proj2");
                 var packagesDirectory = Path.Combine(solutionDirectory, "packages");
@@ -188,7 +179,7 @@ namespace NuGet.CommandLine.Test
                         downloadResult,
                         testNuGetProjectContext,
                         CancellationToken.None);
-               }
+                }
 
                 using (var stream = File.OpenRead(b1Package))
                 {
@@ -233,23 +224,18 @@ namespace NuGet.CommandLine.Test
                 Assert.False(content2.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
                 Assert.False(content2.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
             }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(solutionDirectory, workingPath, packagesSourceDirectory);
-            }
         }
 
         [Fact]
         public async Task UpdateCommand_Success_NOPrerelease()
         {
-            var packagesSourceDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var solutionDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var projectDirectory = Path.Combine(solutionDirectory, "proj1");
-            var packagesDirectory = Path.Combine(solutionDirectory, "packages");
-            var workingPath = TestFilesystemUtility.CreateRandomTestFolder();
-
-            try
+            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                var projectDirectory = Path.Combine(solutionDirectory, "proj1");
+                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
+
                 var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
                 var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0-beta"));
 
@@ -316,23 +302,18 @@ namespace NuGet.CommandLine.Test
                 var content = File.ReadAllText(projectFile);
                 Assert.False(content.Contains(@"<HintPath>..\packages\A.2.0.0-beta\lib\net45\file.dll</HintPath>"));
             }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(solutionDirectory, workingPath, packagesSourceDirectory);
-            }
         }
 
         [Fact]
         public async Task UpdateCommand_Success_Prerelease()
         {
-            var packagesSourceDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var solutionDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var projectDirectory = Path.Combine(solutionDirectory, "proj1");
-            var packagesDirectory = Path.Combine(solutionDirectory, "packages");
-            var workingPath = TestFilesystemUtility.CreateRandomTestFolder();
-
-            try
+            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                var projectDirectory = Path.Combine(solutionDirectory, "proj1");
+                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
+
                 var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
                 var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0-beta"));
 
@@ -401,23 +382,18 @@ namespace NuGet.CommandLine.Test
                 Assert.False(content.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
                 Assert.True(content.Contains(@"<HintPath>..\packages\A.2.0.0-beta\lib\net45\file.dll</HintPath>"));
             }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(solutionDirectory, workingPath, packagesSourceDirectory);
-            }
         }
 
         [Fact]
         public async Task UpdateCommand_Success_ProjectFile_References()
         {
-            var packagesSourceDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var solutionDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var projectDirectory = Path.Combine(solutionDirectory, "proj1");
-            var packagesDirectory = Path.Combine(solutionDirectory, "packages");
-            var workingPath = TestFilesystemUtility.CreateRandomTestFolder();
-
-            try
+            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                var projectDirectory = Path.Combine(solutionDirectory, "proj1");
+                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
+
                 var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
                 var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
 
@@ -485,23 +461,18 @@ namespace NuGet.CommandLine.Test
                 Assert.False(content.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
                 Assert.True(content.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
             }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(solutionDirectory, workingPath, packagesSourceDirectory);
-            }
         }
 
         [Fact]
         public async Task UpdateCommand_Success_PackagesConfig_References()
         {
-            var packagesSourceDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var solutionDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var projectDirectory = Path.Combine(solutionDirectory, "proj1");
-            var packagesDirectory = Path.Combine(solutionDirectory, "packages");
-            var workingPath = TestFilesystemUtility.CreateRandomTestFolder();
-
-            try
+            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                var projectDirectory = Path.Combine(solutionDirectory, "proj1");
+                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
+
                 var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
                 var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
 
@@ -570,24 +541,19 @@ namespace NuGet.CommandLine.Test
                 Assert.False(content.Contains(@"<HintPath>..\packages\A.1.0.0\lib\net45\file.dll</HintPath>"));
                 Assert.True(content.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\file.dll</HintPath>"));
             }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(solutionDirectory, workingPath, packagesSourceDirectory);
-            }
         }
 
         [Fact]
         public async Task UpdateCommand_Success_ContentFiles()
         {
             // Arrange
-            var packagesSourceDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var solutionDirectory = TestFilesystemUtility.CreateRandomTestFolder();
-            var projectDirectory = Path.Combine(solutionDirectory, "proj1");
-            var packagesDirectory = Path.Combine(solutionDirectory, "packages");
-            var workingPath = TestFilesystemUtility.CreateRandomTestFolder();
-
-            try
+            using (var packagesSourceDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var solutionDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                var projectDirectory = Path.Combine(solutionDirectory, "proj1");
+                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
+
                 var a1 = new PackageIdentity("A", new NuGetVersion("1.0.0"));
                 var a2 = new PackageIdentity("A", new NuGetVersion("2.0.0"));
 
@@ -687,10 +653,6 @@ namespace NuGet.CommandLine.Test
                     Assert.Equal(1, packages.Count);
                     Assert.Equal(a2, packages[0].PackageIdentity);
                 }
-            }
-            finally
-            {
-                TestFilesystemUtility.DeleteRandomTestFolders(solutionDirectory, workingPath, packagesSourceDirectory);
             }
         }
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -49,10 +50,14 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void ConfigCommand_ChangeUserDefinedConfigFile()
         {
-            var configFile = Path.GetTempFileName();
-            Util.CreateFile(Path.GetDirectoryName(configFile), Path.GetFileName(configFile), "<configuration/>");
-            try
+            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                // Arrange
+                var configFile = Path.Combine(testFolder, Path.GetTempFileName());
+                Util.CreateFile(Path.GetDirectoryName(configFile),
+                    Path.GetFileName(configFile),
+                    "<configuration/>");
+
                 string[] args = new string[] {
                     "config",
                     "-Set",
@@ -65,6 +70,7 @@ namespace NuGet.CommandLine.Test
                     configFile
                 };
 
+                // Act
                 int result = Program.Main(args);
 
                 // Assert
@@ -85,22 +91,20 @@ namespace NuGet.CommandLine.Test
                         @"domain\user"
                     });
             }
-            finally
-            {
-                // cleanup
-                File.Delete(configFile);
-            }
         }
 
 
         [Fact(Skip="Expected to fail until plugins loaded as extensions fix is in")]
         public void ConfigCommand_MisconfiguredPluginCredentialProviderDoesNotBlockConfigCommand()
         {
-            var configFile = Path.GetTempFileName();
-            var missingPluginProvider = Path.Combine(Path.GetTempPath(), "PluginDoesNotExist.exe");
-            Util.CreateFile(Path.GetDirectoryName(configFile), Path.GetFileName(configFile), "<configuration/>");
-            try
+            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                var configFile = Path.Combine(testFolder, Path.GetTempFileName());
+                var missingPluginProvider = Path.Combine(Path.GetTempPath(), "PluginDoesNotExist.exe");
+
+                Util.CreateFile(Path.GetDirectoryName(configFile),
+                                Path.GetFileName(configFile), "<configuration/>");
+
                 string[] args = new string[] {
                     "config",
                     "-Set",
@@ -118,23 +122,21 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(0, result);
                 Assert.Equal(0, result2);
             }
-            finally
-            {
-                // cleanup
-                File.Delete(configFile);
-            }
         }
 
         [Fact]
         public void ConfigCommand_GetValueWithAsPathOption()
         {
-            // Arrange
-            var nugetexe = Util.GetNuGetExePath();
-            var configFile = Path.GetTempFileName();
-            Util.CreateFile(Path.GetDirectoryName(configFile), Path.GetFileName(configFile), "<configuration/>");
-
-            try
+            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                // Arrange
+                var nugetexe = Util.GetNuGetExePath();
+                var configFile = Path.Combine(testFolder, Path.GetTempFileName());
+
+                Util.CreateFile(Path.GetDirectoryName(configFile),
+                                Path.GetFileName(configFile),
+                                "<configuration/>");
+
                 string[] args = new string[] {
                     "config",
                     "-Set",
@@ -142,6 +144,7 @@ namespace NuGet.CommandLine.Test
                     "-ConfigFile",
                     configFile
                 };
+
                 var result = CommandRunner.Run(
                     nugetexe,
                     Directory.GetCurrentDirectory(),
@@ -170,12 +173,8 @@ namespace NuGet.CommandLine.Test
 
                 var expectedValue = Path.Combine(Path.GetDirectoryName(configFile), "Value1")
                     + Environment.NewLine;
+
                 Assert.Equal(expectedValue, output);
-            }
-            finally
-            {
-                // cleanup
-                File.Delete(configFile);
             }
         }
 

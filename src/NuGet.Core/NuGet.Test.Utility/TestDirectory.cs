@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 
-namespace NuGet.Configuration.Test
+namespace NuGet.Test.Utility
 {
     public class TestDirectory : IDisposable
     {
@@ -17,6 +17,8 @@ namespace NuGet.Configuration.Test
 
         public void Dispose()
         {
+            TestFileSystemUtility.AssertNotTempPath(Path);
+
             try
             {
                 Directory.Delete(Path, recursive: true);
@@ -26,7 +28,7 @@ namespace NuGet.Configuration.Test
             }
         }
 
-        public static implicit operator string(TestDirectory directory)
+        public static implicit operator string (TestDirectory directory)
         {
             return directory.Path;
         }

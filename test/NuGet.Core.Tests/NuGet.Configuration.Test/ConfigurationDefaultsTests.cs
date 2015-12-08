@@ -1,12 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using NuGet.Configuration.Test;
+using System.Xml;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Configuration
@@ -32,31 +32,30 @@ namespace NuGet.Configuration
             var feed1 = "http://contoso.com/packages/";
             var feed2 = "http://wwww.somerandomURL.com/";
 
-            string nugetConfigFileFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var nugetConfigFile = "NuGetDefaults.config";
-            var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
-            File.Create(nugetConfigFilePath).Close();
+            using (var nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var nugetConfigFile = "NuGetDefaults.config";
+                var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
+                File.Create(nugetConfigFilePath).Close();
 
-            var enabledReplacement = @"<add key='" + name1 + "' value='" + feed1 + "' />";
+                var enabledReplacement = @"<add key='" + name1 + "' value='" + feed1 + "' />";
 
-            enabledReplacement = enabledReplacement + @"<add key='" + name2 + "' value='" + feed2 + "' />";
-            var disabledReplacement = string.Empty;
-            var defaultPushSource = "<add key='DefaultPushSource' value='" + feed2 + "' />";
-            File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement, defaultPushSource));
+                enabledReplacement = enabledReplacement + @"<add key='" + name2 + "' value='" + feed2 + "' />";
+                var disabledReplacement = string.Empty;
+                var defaultPushSource = "<add key='DefaultPushSource' value='" + feed2 + "' />";
+                File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement, defaultPushSource));
 
-            //Act
-            ConfigurationDefaults configDefaults = new ConfigurationDefaults(nugetConfigFileFolder, nugetConfigFile);
-            IEnumerable<PackageSource> defaultSourcesFromConfigFile = configDefaults.DefaultPackageSources;
-            string packageRestore = configDefaults.DefaultPackageRestoreConsent;
-            string packagePushSource = configDefaults.DefaultPushSource;
+                //Act
+                ConfigurationDefaults configDefaults = new ConfigurationDefaults(nugetConfigFileFolder, nugetConfigFile);
+                IEnumerable<PackageSource> defaultSourcesFromConfigFile = configDefaults.DefaultPackageSources;
+                string packageRestore = configDefaults.DefaultPackageRestoreConsent;
+                string packagePushSource = configDefaults.DefaultPushSource;
 
-            //Assert
-            VerifyPackageSource(defaultSourcesFromConfigFile, 2, new string[] { name1, name2 }, new string[] { feed1, feed2 });
-            Assert.Equal(feed2, packagePushSource);
-            Assert.Equal("true", packageRestore.ToLowerInvariant());
-
-            //Clean up
-            TestFilesystemUtility.DeleteRandomTestFolders(nugetConfigFileFolder);
+                //Assert
+                VerifyPackageSource(defaultSourcesFromConfigFile, 2, new string[] { name1, name2 }, new string[] { feed1, feed2 });
+                Assert.Equal(feed2, packagePushSource);
+                Assert.Equal("true", packageRestore.ToLowerInvariant());
+            }
         }
 
         [Fact]
@@ -68,26 +67,23 @@ namespace NuGet.Configuration
             var feed1 = "http://contoso.com/packages/";
             var feed2 = "http://wwww.somerandomURL.com/";
 
-            string nugetConfigFileFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var nugetConfigFile = "NuGetDefaults.config";
-            var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
-            File.Create(nugetConfigFilePath).Close();
-
-            var enabledReplacement = @"<add key='" + name1 + "' value='" + feed1;
-
-            enabledReplacement = enabledReplacement + @"<add key='" + name2 + "' value='" + feed2;
-            var disabledReplacement = string.Empty;
-            var defaultPushSource = "<add key='DefaultPushSource' value='" + feed2 + "' />";
-            File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement, defaultPushSource));
-
-            //Act & Assert
-            try
+            using (var nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                ConfigurationDefaults configDefaults = new ConfigurationDefaults(nugetConfigFileFolder, nugetConfigFile);
-            }
-            catch (Exception e)
-            {
-                Assert.True("XmlException" == e.GetType().Name);
+                var nugetConfigFile = "NuGetDefaults.config";
+                var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
+                File.Create(nugetConfigFilePath).Close();
+
+                var enabledReplacement = @"<add key='" + name1 + "' value='" + feed1;
+
+                enabledReplacement = enabledReplacement + @"<add key='" + name2 + "' value='" + feed2;
+                var disabledReplacement = string.Empty;
+                var defaultPushSource = "<add key='DefaultPushSource' value='" + feed2 + "' />";
+                File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement, defaultPushSource));
+
+                Assert.Throws<XmlException>(() =>
+                {
+                    ConfigurationDefaults configDefaults = new ConfigurationDefaults(nugetConfigFileFolder, nugetConfigFile);
+                });
             }
         }
 
@@ -95,16 +91,18 @@ namespace NuGet.Configuration
         public void GetDefaultPushSourceReturnsNull()
         {
             //Arrange
-            string nugetConfigFileFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var nugetConfigFile = "NuGetDefaults.config";
-            var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
-            File.Create(nugetConfigFilePath).Close();
+            using (var nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var nugetConfigFile = "NuGetDefaults.config";
+                var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
+                File.Create(nugetConfigFilePath).Close();
 
-            var configurationDefaultsContent = @"<configuration></configuration>";
-            File.WriteAllText(nugetConfigFilePath, configurationDefaultsContent);
+                var configurationDefaultsContent = @"<configuration></configuration>";
+                File.WriteAllText(nugetConfigFilePath, configurationDefaultsContent);
 
-            ConfigurationDefaults configDefaults = new ConfigurationDefaults(nugetConfigFileFolder, nugetConfigFile);
-            Assert.Null(configDefaults.DefaultPushSource);
+                ConfigurationDefaults configDefaults = new ConfigurationDefaults(nugetConfigFileFolder, nugetConfigFile);
+                Assert.Null(configDefaults.DefaultPushSource);
+            }
         }
 
         [Fact]
@@ -160,16 +158,18 @@ namespace NuGet.Configuration
         public void GetDefaultPackageSourcesReturnsEmptyList()
         {
             //Arrange
-            string nugetConfigFileFolder = TestFilesystemUtility.CreateRandomTestFolder();
-            var nugetConfigFile = "NuGetDefaults.config";
-            var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
-            File.Create(nugetConfigFilePath).Close();
+            using (var nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var nugetConfigFile = "NuGetDefaults.config";
+                var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
+                File.Create(nugetConfigFilePath).Close();
 
-            var configurationDefaultsContent = @"<configuration></configuration>";
-            File.WriteAllText(nugetConfigFilePath, configurationDefaultsContent);
+                var configurationDefaultsContent = @"<configuration></configuration>";
+                File.WriteAllText(nugetConfigFilePath, configurationDefaultsContent);
 
-            ConfigurationDefaults configDefaults = new ConfigurationDefaults(nugetConfigFileFolder, nugetConfigFile);
-            Assert.True(configDefaults.DefaultPackageSources.ToList().Count == 0);
+                ConfigurationDefaults configDefaults = new ConfigurationDefaults(nugetConfigFileFolder, nugetConfigFile);
+                Assert.True(configDefaults.DefaultPackageSources.ToList().Count == 0);
+            }
         }
 
         private string CreateNuGetConfigContent(string enabledReplacement = "", string disabledReplacement = "", string defaultPushSource = "")
@@ -220,7 +220,7 @@ namespace NuGet.Configuration
         private ConfigurationDefaults GetConfigurationDefaults(string configurationDefaultsContent)
         {
             var configurationDefaultsPath = "NuGetDefaults.config";
-            var mockBaseDirectory = TestFilesystemUtility.CreateRandomTestFolder();
+            var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder();
             Directory.CreateDirectory(mockBaseDirectory);
 
             using (var file = File.Create(Path.Combine(mockBaseDirectory, configurationDefaultsPath)))

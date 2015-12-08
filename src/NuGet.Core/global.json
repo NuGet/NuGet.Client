@@ -1,6 +1,7 @@
 {
-  "projects": [
-    "NuGet.Core",
-    "../../lib"
-  ]
+    "projects": [
+        "NuGet.Core",
+        "../../lib"
+    ],
+    "sdk": {"version": "1.0.0-beta7" }
 }

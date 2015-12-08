@@ -276,118 +276,123 @@ namespace NuGet.Packaging.Test
         public void PackagesConfigWriter_CreateEmptyFile()
         {
             // Arrange
-            var path = Path.Combine(Path.GetTempPath() + "packages.config");
-            var stream = File.Create(path);
-
-            // Act
-            using (PackagesConfigWriter writer = new PackagesConfigWriter(stream, true))
+            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                var path = Path.Combine(testFolder + "packages.config");
+
+                // Act
+                using (var stream = File.Create(path))
+                using (var writer = new PackagesConfigWriter(stream, true))
+                {
+                }
+
                 // Assert
-                Assert.NotNull(writer);
+                var xml = XDocument.Load(path);
+
+                Assert.NotNull(xml);
             }
-
-            // Assert
-            stream.Seek(0, SeekOrigin.Begin);
-
-            var xml = XDocument.Load(stream);
-
-            Assert.NotNull(xml);
         }
 
         [Fact]
         public void PackagesConfigWriter_OpenExistingFile()
         {
             // Arrange
-            var folderPath = TestFileSystemUtility.CreateRandomTestFolder();
-            var filePath = Path.Combine(folderPath, "packages.config");
-
-            using (var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
+            using (var folderPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                using (var fileWriter = new StreamWriter(fileStream))
+                var filePath = Path.Combine(folderPath, "packages.config");
+
+                using (var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
                 {
-                    string content = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<packages>
-        <package id = ""packageA"" version = ""1.0.0"" targetFramework = ""win81"" userInstalled = ""true"" protocolVersion = ""V2"" />
-        <package id = ""Microsoft.ApplicationInsights.PersistenceChannel"" version = ""0.14.3-build00177"" targetFramework = ""win81"" />
-        <package id = ""Microsoft.ApplicationInsights.WindowsApps"" version = ""0.14.3-build00177"" targetFramework = ""win81"" />
-        <package id = ""Microsoft.Diagnostics.Tracing.EventSource.Redist"" version = ""1.1.16-beta"" targetFramework = ""win81"" />
-        <package id = ""System.Numerics.Vectors"" version = ""4.0.0"" targetFramework = ""win81"" />
-</packages>";
+                    using (var fileWriter = new StreamWriter(fileStream))
+                    {
+                        string content = @"<?xml version=""1.0"" encoding=""utf-8""?>
+    <packages>
+            <package id = ""packageA"" version = ""1.0.0"" targetFramework = ""win81"" userInstalled = ""true"" protocolVersion = ""V2"" />
+            <package id = ""Microsoft.ApplicationInsights.PersistenceChannel"" version = ""0.14.3-build00177"" targetFramework = ""win81"" />
+            <package id = ""Microsoft.ApplicationInsights.WindowsApps"" version = ""0.14.3-build00177"" targetFramework = ""win81"" />
+            <package id = ""Microsoft.Diagnostics.Tracing.EventSource.Redist"" version = ""1.1.16-beta"" targetFramework = ""win81"" />
+            <package id = ""System.Numerics.Vectors"" version = ""4.0.0"" targetFramework = ""win81"" />
+    </packages>";
 
-                    fileWriter.Write(content);
+                        fileWriter.Write(content);
+                    }
                 }
+
+                var stream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite);
+
+                using (PackagesConfigWriter writer = new PackagesConfigWriter(stream, false))
+                {
+                    // Act
+                    var packageIdentityA1 = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
+                    var packageReferenceA1 = new PackageReference(packageIdentityA1, NuGetFramework.Parse("win81"),
+                        userInstalled: true, developmentDependency: false, requireReinstallation: false);
+
+                    var packageIdentityA2 = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.1"));
+                    var packageReferenceA2 = new PackageReference(packageIdentityA2, NuGetFramework.Parse("net45"));
+
+                    writer.UpdatePackageEntry(packageReferenceA1, packageReferenceA2);
+                }
+
+                // Assert
+                stream.Seek(0, SeekOrigin.Begin);
+
+                var xml = XDocument.Load(stream);
+
+                // Assert
+                Assert.Equal("utf-8", xml.Declaration.Encoding);
+
+                var packageNode = xml.Descendants(PackagesConfig.PackageNodeName).FirstOrDefault();
+                Assert.Equal(packageNode.ToString(), "<package id=\"packageA\" version=\"1.0.1\" targetFramework=\"net45\" userInstalled=\"true\" protocolVersion=\"V2\" />");
             }
-
-            var stream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite);
-
-            using (PackagesConfigWriter writer = new PackagesConfigWriter(stream, false))
-            {
-                // Act
-                var packageIdentityA1 = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
-                var packageReferenceA1 = new PackageReference(packageIdentityA1, NuGetFramework.Parse("win81"),
-                    userInstalled: true, developmentDependency: false, requireReinstallation: false);
-
-                var packageIdentityA2 = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.1"));
-                var packageReferenceA2 = new PackageReference(packageIdentityA2, NuGetFramework.Parse("net45"));
-
-                writer.UpdatePackageEntry(packageReferenceA1, packageReferenceA2);
-            }
-
-            // Assert
-            stream.Seek(0, SeekOrigin.Begin);
-
-            var xml = XDocument.Load(stream);
-
-            // Assert
-            Assert.Equal("utf-8", xml.Declaration.Encoding);
-
-            var packageNode = xml.Descendants(PackagesConfig.PackageNodeName).FirstOrDefault();
-            Assert.Equal(packageNode.ToString(), "<package id=\"packageA\" version=\"1.0.1\" targetFramework=\"net45\" userInstalled=\"true\" protocolVersion=\"V2\" />");
         }
 
         [Fact]
         public void PackagesConfigWriter_ThrowOnMalformedPackagesConfigXml()
         {
             // Arrange
-            var folderPath = TestFileSystemUtility.CreateRandomTestFolder();
-            var filePath = Path.Combine(folderPath, "packages.config");
-
-            using (var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
+            using (var folderPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                using (var fileWriter = new StreamWriter(fileStream))
+                var filePath = Path.Combine(folderPath, "packages.config");
+
+                using (var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
                 {
-                    string content = @"<?xml version=""1.0"" encoding=""utf-8""?>";
+                    using (var fileWriter = new StreamWriter(fileStream))
+                    {
+                        string content = @"<?xml version=""1.0"" encoding=""utf-8""?>";
 
-                    fileWriter.Write(content);
+                        fileWriter.Write(content);
+                    }
                 }
-            }
 
-            Assert.Throws<PackagesConfigWriterException>(() => new PackagesConfigWriter(filePath, false));
+                Assert.Throws<PackagesConfigWriterException>(() => new PackagesConfigWriter(filePath, false));
+            }
         }
 
         [Fact]
         public void PackagesConfigWriter_ThrowOnMissingPackagesNode()
         {
             // Arrange
-            var folderPath = TestFileSystemUtility.CreateRandomTestFolder();
-            var filePath = Path.Combine(folderPath, "packages.config");
-
-            using (var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
+            using (var folderPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                using (var fileWriter = new StreamWriter(fileStream))
+                var filePath = Path.Combine(folderPath, "packages.config");
+
+                using (var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
                 {
-                    string content = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-</configuration> ";
+                    using (var fileWriter = new StreamWriter(fileStream))
+                    {
+                        string content = @"<?xml version=""1.0"" encoding=""utf-8""?>
+    <configuration>
+    </configuration> ";
 
-                    fileWriter.Write(content);
+                        fileWriter.Write(content);
+                    }
                 }
-            }
 
-            using (PackagesConfigWriter writer = new PackagesConfigWriter(filePath, false))
-            {
-                // Assert
-                Assert.Throws<PackagesConfigWriterException>(() => writer.AddPackageEntry("packageA", NuGetVersion.Parse("2.0.1"), NuGetFramework.Parse("net4")));
+                using (PackagesConfigWriter writer = new PackagesConfigWriter(filePath, false))
+                {
+                    // Assert
+                    Assert.Throws<PackagesConfigWriterException>(() => writer.AddPackageEntry("packageA", NuGetVersion.Parse("2.0.1"), NuGetFramework.Parse("net4")));
+                }
             }
         }
 
@@ -395,34 +400,36 @@ namespace NuGet.Packaging.Test
         public void PackagesConfigWriter_NoOldPackagesConfigFileLeftOnDisk()
         {
             // Arrange
-            var folderPath = TestFileSystemUtility.CreateRandomTestFolder();
-            var directoryInfo = Directory.CreateDirectory(folderPath);
-            var filePath = Path.Combine(folderPath, "packages.config");
-
-            using (var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
+            using (var folderPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                using (var fileWriter = new StreamWriter(fileStream))
+                var directoryInfo = new DirectoryInfo(folderPath);
+                var filePath = Path.Combine(folderPath, "packages.config");
+
+                using (var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write))
                 {
-                    string content = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<packages>
-        <package id = ""packageA"" version = ""1.0.0"" targetFramework = ""win81"" userInstalled = ""true"" protocolVersion = ""V2"" />
-</packages>";
+                    using (var fileWriter = new StreamWriter(fileStream))
+                    {
+                        string content = @"<?xml version=""1.0"" encoding=""utf-8""?>
+    <packages>
+            <package id = ""packageA"" version = ""1.0.0"" targetFramework = ""win81"" userInstalled = ""true"" protocolVersion = ""V2"" />
+    </packages>";
 
-                    fileWriter.Write(content);
+                        fileWriter.Write(content);
+                    }
                 }
+
+                using (PackagesConfigWriter writer = new PackagesConfigWriter(filePath, false))
+                {
+                    // Act
+                    writer.AddPackageEntry("packageB", NuGetVersion.Parse("2.0.1"), NuGetFramework.Parse("net4"));
+                }
+
+                // Assert
+                var packagesConfigFiles = directoryInfo.GetFiles().
+                    Where(p => p.Name.ToLowerInvariant().Contains("packages.config"));
+
+                Assert.Equal(1, packagesConfigFiles.Count());
             }
-
-            using (PackagesConfigWriter writer = new PackagesConfigWriter(filePath, false))
-            {
-                // Act
-                writer.AddPackageEntry("packageB", NuGetVersion.Parse("2.0.1"), NuGetFramework.Parse("net4"));
-            }
-
-            // Assert
-            var packagesConfigFiles = directoryInfo.GetFiles().
-                Where(p => p.Name.ToLowerInvariant().Contains("packages.config"));
-
-            Assert.Equal(1, packagesConfigFiles.Count());
         }
     }
 }

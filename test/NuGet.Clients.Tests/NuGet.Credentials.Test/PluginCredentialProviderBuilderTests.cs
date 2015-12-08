@@ -44,14 +44,13 @@ namespace NuGet.Credentials.Test
             }
         }
 
-        static PluginCredentialProviderBuilderTests()
+        public PluginCredentialProviderBuilderTests()
         {
-            TestFilesBase = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(TestFilesBase);
-            File.CreateText(Path.Combine(TestFilesBase, "FakePlugin.exe"));
+//            TestFilesBase = TestFileSystemUtility.CreateRandomTestFolder();
+//            File.CreateText(Path.Combine(TestFilesBase, "FakePlugin.exe"));
         }
 
-        public static string TestFilesBase { get; set; }
+//        public string TestFilesBase { get; set; }
 
         [Fact]
         public void WhenNoPlugins_ThenEmptyList()
