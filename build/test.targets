@@ -8,10 +8,10 @@
 	</ItemGroup>
 	<WriteLinesToFile
 		File="$(TargetDir)$(AssemblyName).dll.config"
-		Lines="@(Line)"			
+		Lines="@(Line)"
 		Overwrite="true"
 		/>
 		<Message Text="Running tests for $(TargetDir)$(AssemblyName).dll" Importance="high" />
-		<xunit Assemblies="$(TargetDir)$(AssemblyName).dll" />
+		<xunit Assemblies="$(TargetDir)$(AssemblyName).dll" DiagnosticMessages="true" Reporter="verbose" />
 </Target>
 </Project>

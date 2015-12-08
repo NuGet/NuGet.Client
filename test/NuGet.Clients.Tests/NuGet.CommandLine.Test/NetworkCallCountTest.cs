@@ -408,8 +408,6 @@ namespace NuGet.CommandLine.Test
                 var allRepo = Path.Combine(workingPath, "allRepo");
                 var packagesFolderPath = Path.Combine(workingPath, "packages");
 
-                Assert.Equal(0, Directory.GetFiles(MachineCache.Default.Source, "*.tmp").Count());
-
                 Directory.CreateDirectory(allRepo);
                 Directory.CreateDirectory(repositoryPath);
                 Directory.CreateDirectory(repositoryPath2);

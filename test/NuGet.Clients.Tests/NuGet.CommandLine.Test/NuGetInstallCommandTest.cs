@@ -3,13 +3,20 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
     public class NuGetInstallCommandTest
     {
+        public NuGetInstallCommandTest()
+        {
+            MachineCache.Default.Clear();
+        }
+
         [Fact]
         public void InstallCommand_FromPackagesConfigFileWithExcludeVersion()
         {
@@ -49,7 +56,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void InstallCommand_WithExcludeVersion()
+        public async Task InstallCommand_WithExcludeVersion()
         {
             using (var source = TestFileSystemUtility.CreateRandomTestFolder())
             using (var outputDirectory = TestFileSystemUtility.CreateRandomTestFolder())
@@ -65,7 +72,7 @@ namespace NuGet.CommandLine.Test
                     "-Source", source,
                     "-ExcludeVersion" };
 
-                int r = Program.Main(args);
+                int r = await Task.Run(() => Program.Main(args));
 
                 // Assert
                 Assert.Equal(0, r);
