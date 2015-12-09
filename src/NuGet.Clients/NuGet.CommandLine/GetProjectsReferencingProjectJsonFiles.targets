@@ -18,7 +18,8 @@
 
         <!-- Filter out project references that specify ReferenceOutputAssembly=false -->
         <ItemGroup>
-          <ValidProjectInputForNuGet Include="@(ProjectReference)" Condition=" %(ProjectReference.ReferenceOutputAssembly) != 'false' " />
+          <ValidProjectInputForNuGet Include="@(ProjectReference)" 
+              Condition=" %(ProjectReference.ReferenceOutputAssembly) != 'false' AND %(ProjectReference.ReferenceOutputAssembly) != 'off' AND %(ProjectReference.ReferenceOutputAssembly) != '0'" />
         </ItemGroup>
 
         <MSBuild
