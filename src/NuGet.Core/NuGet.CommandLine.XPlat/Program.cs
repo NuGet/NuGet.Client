@@ -17,9 +17,9 @@ namespace NuGet.CommandLine.XPlat
 {
     public class Program
     {
-        private ILogger _log;
+        private static ILogger _log;
 
-        public int Main(string[] args)
+        public static int Main(string[] args)
         {
 #if DEBUG
             if (args.Contains("--debug"))
@@ -33,7 +33,7 @@ namespace NuGet.CommandLine.XPlat
             app.Name = "nuget3";
             app.FullName = Strings.App_FullName;
             app.HelpOption("-h|--help");
-            app.VersionOption("--version", GetType().GetTypeInfo().Assembly.GetName().Version.ToString());
+            app.VersionOption("--version", typeof(Program).GetTypeInfo().Assembly.GetName().Version.ToString());
 
             var verbosity = app.Option("-v|--verbosity <verbosity>", Strings.Switch_Verbosity, CommandOptionType.SingleValue);
 
