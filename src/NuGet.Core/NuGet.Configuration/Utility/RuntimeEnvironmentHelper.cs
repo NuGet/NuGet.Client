@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 
 namespace NuGet.Configuration
 {
@@ -7,14 +6,21 @@ namespace NuGet.Configuration
     {
         private static Lazy<bool> _isMono = new Lazy<bool>(() => Type.GetType("Mono.Runtime") != null);
 
-        // Checking the OS environment variable is most complete way to check this on dnxcore currently.
-        private static Lazy<bool> _isWindows = new Lazy<bool>(() => 
-            Environment.GetEnvironmentVariable("OS")?
-            .Equals("WINDOWS_NT", StringComparison.OrdinalIgnoreCase) ?? false);
-
-        public static bool IsWindows
-        {
-            get { return _isWindows.Value; }
+        public static bool IsWindows {
+            get
+            {
+#if DNXCORE50
+                // This API does work on full framework but it requires a newer nuget client (RID aware)
+                if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+                {
+                    return true;
+                }
+                
+                return false;
+#else
+                return Environment.OSVersion.Platform == PlatformID.Win32NT;
+#endif
+            }
         }
 
         public static bool IsMono
