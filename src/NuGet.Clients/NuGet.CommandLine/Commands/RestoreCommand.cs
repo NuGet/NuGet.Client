@@ -27,6 +27,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "RestoreCommandRequireConsent")]
         public bool RequireConsent { get; set; }
 
+        [Option(typeof(NuGetCommand), "RestoreCommandP2PTimeOut")]
+        public int Project2ProjectTimeOut { get; set; }
+
         [Option(typeof(NuGetCommand), "RestoreCommandPackagesDirectory", AltName = "OutputDirectory")]
         public string PackagesDirectory { get; set; }
 
@@ -130,7 +133,7 @@ namespace NuGet.CommandLine
                     success &= task.Result;
                     tasks.Remove(task);
                 }
-                while (tasks.Count > 0 ||  currentFileIndex < restoreCount);
+                while (tasks.Count > 0 || currentFileIndex < restoreCount);
             }
 
             if (!success)
@@ -575,9 +578,25 @@ namespace NuGet.CommandLine
 
             if (projectsWithPotentialP2PReferences.Length > 0)
             {
+                int scaleTimeout;
+
+                if (Project2ProjectTimeOut > 0)
+                {
+                    scaleTimeout = Project2ProjectTimeOut * 1000;
+                }
+                else
+                {
+                    scaleTimeout = MsBuildUtility.MsBuildWaitTime *
+                        Math.Max(10, projectsWithPotentialP2PReferences.Length / 2) / 10;
+                }
+
+                Console.LogVerbose($"MSBuild P2P timeout [ms]: {scaleTimeout}");
+
                 var referencesLookup = MsBuildUtility.GetProjectReferences(
                     _msbuildDirectory,
-                    projectsWithPotentialP2PReferences);
+                    projectsWithPotentialP2PReferences,
+                    scaleTimeout);
+
                 packageRestoreInputs.ProjectReferenceLookup = referencesLookup;
             }
 

@@ -5302,4 +5302,7 @@ nuget locals global-packages -list</value>
   <data name="LocalsCommandListDescription" xml:space="preserve">
     <value>List the selected local resources or cache location(s).</value>
   </data>
+  <data name="RestoreCommandP2PTimeOut" xml:space="preserve">
+    <value>Timeout in seconds for resolving project to project references.</value>
+  </data>
 </root>

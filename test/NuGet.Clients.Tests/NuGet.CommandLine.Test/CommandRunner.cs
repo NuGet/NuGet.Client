@@ -9,7 +9,7 @@ namespace NuGet.CommandLine.Test
     {
         // Item1 of the returned tuple is the exit code. Item2 is the standard output, and Item3
         // is the error output.
-        public static Tuple<int, string, string> Run(
+        public static CommandRunnerResult Run(
             string process,
             string workingDirectory,
             string arguments,
@@ -77,7 +77,7 @@ namespace NuGet.CommandLine.Test
                 }
             }
 
-            return Tuple.Create(exitCode, output.ToString(), errors.ToString());
+            return new CommandRunnerResult(exitCode, output.ToString(), errors.ToString());
         }
     }
 }

@@ -301,7 +301,7 @@ namespace NuGet.CommandLine.Test
             return Path.GetDirectoryName(GetTestablePluginPath());
         }
 
-        public static bool IsSuccess(Tuple<int, string, string> result)
+        public static bool IsSuccess(CommandRunnerResult result)
         {
             return result.Item1 == 0;
         }
@@ -578,7 +578,7 @@ Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj1"",
 EndProject";
         }
 
-        public static void VerifyResultSuccess(Tuple<int, string, string> result, string expectedOutputMessage = null)
+        public static void VerifyResultSuccess(CommandRunnerResult result, string expectedOutputMessage = null)
         {
             Assert.True(
                 result.Item1 == 0,
@@ -592,7 +592,8 @@ EndProject";
             }
         }
 
-        public static void VerifyResultFailure(Tuple<int, string, string> result, string expectedErrorMessage)
+        public static void VerifyResultFailure(CommandRunnerResult result,
+                                               string expectedErrorMessage)
         {
             Assert.True(
                 result.Item1 != 0,

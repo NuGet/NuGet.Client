@@ -56,6 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommandRunner.cs" />
+    <Compile Include="CommandRunnerResult.cs" />
     <Compile Include="DefaultConfigurationFilePreserver.cs" />
     <Compile Include="MockServer.cs" />
     <Compile Include="MockServerResource.Designer.cs">

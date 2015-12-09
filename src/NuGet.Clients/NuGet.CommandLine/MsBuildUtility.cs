@@ -16,7 +16,7 @@ namespace NuGet.CommandLine
 {
     public static class MsBuildUtility
     {
-        private const int MsBuildWaitTime = 5 * 60 * 1000; // 5 minutes in milliseconds
+        internal const int MsBuildWaitTime = 2 * 60 * 1000; // 2 minutes in milliseconds
 
         private const string GetProjectReferencesTarget =
             "NuGet.CommandLine.GetProjectsReferencingProjectJsonFiles.targets";
@@ -41,9 +41,11 @@ namespace NuGet.CommandLine
         /// </summary>
         public static Dictionary<string, HashSet<string>> GetProjectReferences(
             string msbuildDirectory,
-            string[] projectPaths)
+            string[] projectPaths,
+            int timeOut)
         {
             string msbuildPath = Path.Combine(msbuildDirectory, "msbuild.exe");
+
             if (!File.Exists(msbuildPath))
             {
                 throw new CommandLineException(
@@ -53,10 +55,9 @@ namespace NuGet.CommandLine
                         msbuildPath));
             }
 
-            var tempDirectory = Path.GetTempPath();
-            using (var entryPointTargetPath = new TempFile(tempDirectory, ".targets"))
-            using (var customAfterBuildTargetPath = new TempFile(tempDirectory, ".targets"))
-            using (var resultsPath = new TempFile(tempDirectory, ".result"))
+            using (var entryPointTargetPath = new TempFile(".targets"))
+            using (var customAfterBuildTargetPath = new TempFile(".targets"))
+            using (var resultsPath = new TempFile(".result"))
             {
                 ExtractResource(GetProjectReferencesEntryPointTarget, entryPointTargetPath);
                 ExtractResource(GetProjectReferencesTarget, customAfterBuildTargetPath);
@@ -92,7 +93,7 @@ namespace NuGet.CommandLine
 
                 using (var process = Process.Start(processStartInfo))
                 {
-                    var finished = process.WaitForExit(MsBuildWaitTime);
+                    var finished = process.WaitForExit(timeOut);
 
                     if (!finished)
                     {
@@ -242,7 +243,7 @@ namespace NuGet.CommandLine
             {
                 UseShellExecute = false,
                 FileName = "msbuild.exe",
-                Arguments = "/version",
+                Arguments = "/version /nologo",
                 RedirectStandardOutput = true
             };
 
@@ -250,17 +251,13 @@ namespace NuGet.CommandLine
             {
                 using (var process = Process.Start(processStartInfo))
                 {
-                    process.WaitForExit(10 * 1000);
+                    process.WaitForExit(MsBuildWaitTime);
 
                     if (process.ExitCode == 0)
                     {
                         var output = process.StandardOutput.ReadToEnd();
 
-                        // The output of msbuid /version with MSBuild 14 is:
-                        //
-                        // Microsoft (R) Build Engine version 14.0.23107.0
-                        // Copyright(C) Microsoft Corporation. All rights reserved.
-                        //
+                        // The output of msbuid /version /nologo with MSBuild 12 & 14 is something like:
                         // 14.0.23107.0
                         var lines = output.Split(
                             new[] { Environment.NewLine },
@@ -268,6 +265,7 @@ namespace NuGet.CommandLine
 
                         var versionString = lines.LastOrDefault(
                             line => !string.IsNullOrWhiteSpace(line));
+
                         Version version;
                         if (Version.TryParse(versionString, out version))
                         {
@@ -487,27 +485,25 @@ namespace NuGet.CommandLine
             private readonly string _filePath;
 
             /// <summary>
-            /// Constructor. It creates an empty temp file under directory <paramref name="directory"/>, with
+            /// Constructor. It creates an empty temp file under the temp directory / NuGet, with
             /// extension <paramref name="extension"/>.
             /// </summary>
-            /// <param name="directory">The directory where the temp file is created.</param>
             /// <param name="extension">The extension of the temp file.</param>
-            public TempFile(string directory, string extension)
+            public TempFile(string extension)
             {
-                if (string.IsNullOrEmpty(directory))
-                {
-                    throw new ArgumentNullException(nameof(directory));
-                }
-
                 if (string.IsNullOrEmpty(extension))
                 {
                     throw new ArgumentNullException(nameof(extension));
                 }
 
+                var tempDirectory = Path.Combine(Path.GetTempPath(), "NuGet");
+
+                Directory.CreateDirectory(tempDirectory);
+
                 int count = 0;
                 do
                 {
-                    _filePath = Path.Combine(directory, Path.GetRandomFileName() + extension);
+                    _filePath = Path.Combine(tempDirectory, Path.GetRandomFileName() + extension);
 
                     if (!File.Exists(_filePath))
                     {
@@ -530,7 +526,8 @@ namespace NuGet.CommandLine
                 }
                 while (count < 3);
 
-                throw new InvalidOperationException("Failed to create a random file.");
+                throw new InvalidOperationException(
+                    LocalizedResourceManager.GetString(nameof(NuGetResources.Error_FailedToCreateRandomFileForP2P)));
             }
 
             public static implicit operator string(TempFile f)
