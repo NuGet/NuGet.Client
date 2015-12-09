@@ -121,7 +121,7 @@ namespace NuGet.CommandLine.Test
                 var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
 
                 var format = new LockFileFormat();
-                var lockFile1 = format.Read(test2Lock.FullName);
+                var lockFile1 = format.Read(test1Lock.FullName);
                 var lockFile2 = format.Read(test2Lock.FullName);
 
                 var a1 = lockFile1.Libraries

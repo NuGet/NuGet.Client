@@ -16,8 +16,13 @@
                 Condition=" '$(MSBuildProjectFullPath)' != '$(EntryPointProject)' " />
         </ItemGroup>
 
+        <!-- Filter out project references that specify ReferenceOutputAssembly=false -->
+        <ItemGroup>
+          <ValidProjectInputForNuGet Include="@(ProjectReference)" Condition=" %(ProjectReference.ReferenceOutputAssembly) != 'false' " />
+        </ItemGroup>
+
         <MSBuild
-          Projects="@(ProjectReference)"
+          Projects="@(ValidProjectInputForNuGet)"
           Targets="_NuGet_GetProjectsReferencingProjectJsonInternal"
           BuildInParallel="$(BuildInParallel)"
           Properties="
