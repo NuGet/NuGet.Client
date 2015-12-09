@@ -143,7 +143,7 @@ namespace NuGet.CommandLine.Test
         {
             using (var projectCollection = new ProjectCollection())
             {
-                // Arrange 
+                // Arrange
                 var toolsetV14 = new Toolset(
                     "14.0", "v14path",
                     projectCollection: projectCollection,
@@ -178,7 +178,7 @@ namespace NuGet.CommandLine.Test
         {
             using (var projectCollection = new ProjectCollection())
             {
-                // Arrange 
+                // Arrange
                 var toolsetV14 = new Toolset(
                     "14.0", "v14path",
                     projectCollection: projectCollection,
@@ -207,10 +207,10 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        
+
         [Theory]
 
-        // Tests that, when userVersion cannot be parsed into Version, string comparison is used 
+        // Tests that, when userVersion cannot be parsed into Version, string comparison is used
         // to match toolset.
         [InlineData("Foo4.0", "foo4path")]
 
@@ -220,7 +220,7 @@ namespace NuGet.CommandLine.Test
         {
             using (var projectCollection = new ProjectCollection())
             {
-                // Arrange 
+                // Arrange
                 var toolsetV14 = new Toolset(
                     "14.0", "v14path",
                     projectCollection: projectCollection,
@@ -251,7 +251,7 @@ namespace NuGet.CommandLine.Test
 
         [Theory]
 
-        // Tests that, when userVersion cannot be parsed into Version, string comparison is used 
+        // Tests that, when userVersion cannot be parsed into Version, string comparison is used
         // to match toolset and ".0" is not appended during matching.
         [InlineData("Foo4")]
 
@@ -266,7 +266,7 @@ namespace NuGet.CommandLine.Test
         {
             using (var projectCollection = new ProjectCollection())
             {
-                // Arrange 
+                // Arrange
                 var toolsetV14 = new Toolset(
                     "14.0", "v14path",
                     projectCollection: projectCollection,

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Xunit;
@@ -9,6 +10,220 @@ namespace NuGet.CommandLine.Test
 {
     public class RestoreProjectJsonTest
     {
+        [Fact]
+        public void RestoreProjectJson_RestoreFromSlnWithCsproj()
+        {
+            // Arrange
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var projectDir1 = Path.Combine(workingPath, "test1");
+                var nugetexe = Util.GetNuGetExePath();
+
+                Directory.CreateDirectory(projectDir1);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+                Util.CreateFile(projectDir1, "project.json",
+                                                @"{
+                                                    'dependencies': {
+                                                    },
+                                                    'frameworks': {
+                                                                'uap10.0': { }
+                                                            }
+                                                    }");
+
+                Util.CreateFile(projectDir1, "test1.csproj",
+                        @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
+                                        xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+                            <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
+                        </Project>");
+
+                var slnPath = Path.Combine(workingPath, "xyz.sln");
+
+                Util.CreateFile(workingPath, "xyz.sln",
+                           @"
+                        Microsoft Visual Studio Solution File, Format Version 12.00
+                        # Visual Studio 14
+                        VisualStudioVersion = 14.0.23107.0
+                        MinimumVisualStudioVersion = 10.0.40219.1
+                        Project(""{AAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test1"", ""test1\test1.csproj"", ""{AA6279C1-B5EE-4C6B-9FA3-A794CE195136}""
+                        EndProject
+                        Global
+                            GlobalSection(SolutionConfigurationPlatforms) = preSolution
+                                Debug|Any CPU = Debug|Any CPU
+                                Release|Any CPU = Release|Any CPU
+                            EndGlobalSection
+                            GlobalSection(ProjectConfigurationPlatforms) = postSolution
+                                {AA6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                                {AA6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                            EndGlobalSection
+                            GlobalSection(SolutionProperties) = preSolution
+                                HideSolutionNode = FALSE
+                            EndGlobalSection
+                        EndGlobal
+                        ");
+
+                string[] args = new string[] {
+                    "restore",
+                    "-Source",
+                    repositoryPath,
+                    "-solutionDir",
+                    workingPath,
+                    slnPath
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                Assert.True(test1Lock.Exists);
+            }
+        }
+
+        [Theory]
+        [InlineData(null, 1, 2 * 60 * 1000)]
+        [InlineData(null, 2, 2 * 60 * 1000)]
+        [InlineData(null, 40, 4 * 60 * 1000)]
+        [InlineData(null, 30, 3 * 60 * 1000)]
+        [InlineData("0", 1, 2 * 60 * 1000)]
+        [InlineData("-1", 1, 2 * 60 * 1000)]
+        [InlineData("1", 1, 1000)]
+        [InlineData("1", 2, 1000)]
+        public void RestoreProjectJson_P2PTimeouts(string timeout, int projectCount, int expectedTimeOut)
+        {
+            // Arrange
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                Func<int, string> getProjectDir = (int i) => Path.Combine(workingPath, "test" + i);
+
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var nugetexe = Util.GetNuGetExePath();
+
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+                for (int i = 1; i <= projectCount; i++)
+                {
+                    string projectDir = getProjectDir(i);
+
+                    Directory.CreateDirectory(projectDir);
+
+                    Util.CreateFile(projectDir, "project.json",
+                                                    @"{
+                                                    'dependencies': {
+                                                    },
+                                                    'frameworks': {
+                                                                'uap10.0': { }
+                                                            }
+                                                    }");
+
+                    Util.CreateFile(projectDir, $"test{i}.csproj",
+                            @"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
+                                        xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+                            <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
+                        </Project>");
+                }
+
+                var slnPath = Path.Combine(workingPath, "xyz.sln");
+
+                var sln = new StringBuilder();
+
+                sln.AppendLine(@"
+                        Microsoft Visual Studio Solution File, Format Version 12.00
+                        # Visual Studio 14
+                        VisualStudioVersion = 14.0.23107.0
+                        MinimumVisualStudioVersion = 10.0.40219.1");
+
+                var guids = new string[projectCount + 1];
+
+                for (int i = 1; i <= projectCount; i++)
+                {
+                    guids[i] = Guid.NewGuid().ToString().ToUpper();
+                    var projGuid = guids[i];
+
+                    sln.AppendLine(
+@"                        Project(""{" + Guid.NewGuid().ToString().ToUpper() + @"}"") = ""test" + i +
+                            @""", ""test" + i + @"\test" + i + @".csproj"", ""{" + projGuid + @"}""
+                        EndProject");
+                }
+
+                sln.AppendLine(
+@"                        Global
+                            GlobalSection(SolutionConfigurationPlatforms) = preSolution
+                                Debug|Any CPU = Debug|Any CPU
+                                Release|Any CPU = Release|Any CPU
+                            EndGlobalSection
+                            GlobalSection(ProjectConfigurationPlatforms) = postSolution");
+
+                for (int i = 0; i < projectCount; i++)
+                {
+                    sln.AppendLine($"                                {guids[i]}.Debug|Any CPU.ActiveCfg = Debug|Any CPU");
+                    sln.AppendLine($"                                {guids[i]}.Debug|Any CPU.Build.0 = Debug|Any CPU");
+                }
+
+                sln.AppendLine(@"                            EndGlobalSection
+                            GlobalSection(SolutionProperties) = preSolution
+                                HideSolutionNode = FALSE
+                            EndGlobalSection
+                        EndGlobal");
+
+                var solution = sln.ToString();
+
+                Util.CreateFile(workingPath, "xyz.sln", solution);
+
+                string args;
+
+                if (timeout == null)
+                {
+                    args = $"restore -verbosity detailed -Source {repositoryPath} -solutionDir {workingPath} {slnPath}";
+                }
+                else
+                {
+                    args = $"restore -verbosity detailed -Source {repositoryPath} -solutionDir {workingPath} -Project2ProjectTimeOut {timeout} {slnPath}";
+                }
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    args,
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + Environment.NewLine + r.Item3);
+
+                var lines = r.Item2.Split(
+                                new[] { Environment.NewLine },
+                                StringSplitOptions.RemoveEmptyEntries);
+
+                var prefix = "MSBuild P2P timeout [ms]: ";
+
+                var timeoutLineResult = lines.Where(line => line.Contains(prefix)).SingleOrDefault();
+
+                Assert.NotNull(timeoutLineResult);
+
+                var timeoutResult = timeoutLineResult.Substring(timeoutLineResult.IndexOf(prefix) + prefix.Length);
+                Assert.Equal(expectedTimeOut, int.Parse(timeoutResult));
+
+                for (int i = 1; i < projectCount + 1; i++)
+                {
+                    var test1Lock = new FileInfo(Path.Combine(getProjectDir(i), "project.lock.json"));
+
+                    Assert.True(test1Lock.Exists);
+                }
+            }
+        }
+
         [Fact]
         public void RestoreProjectJson_RestoreProjectFileNotFound()
         {

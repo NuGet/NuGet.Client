@@ -9955,6 +9955,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Timeout in seconds for resolving project to project references..
+        /// </summary>
+        internal static string RestoreCommandP2PTimeOut {
+            get {
+                return ResourceManager.GetString("RestoreCommandP2PTimeOut", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies the packages folder..
         /// </summary>
         internal static string RestoreCommandPackagesDirectory {

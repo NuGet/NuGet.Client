@@ -18,6 +18,8 @@ namespace NuGet.CommandLine.Test
         [InlineData("sources")]
         [InlineData("spec")]
         [InlineData("update")]
+        [InlineData("init")]
+        [InlineData("add")]
         public void HelpCommand_HelpMessage(string command)
         {
             // Arrange
@@ -31,7 +33,7 @@ namespace NuGet.CommandLine.Test
                 waitForExit: true);
 
             // Assert
-            Assert.Equal(0, r.Item1);
+            Assert.True(0 == r.Item1, r.Item2 + Environment.NewLine + r.Item3);
         }
 
         // Tests that -ConfigFile is not included in the help message
