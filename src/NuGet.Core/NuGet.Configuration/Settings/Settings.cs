@@ -218,42 +218,33 @@ namespace NuGet.Configuration
             Settings appDataSettings = null;
             if (configFileName == null)
             {
-                // load %AppData%\NuGet\NuGet.config
-#if !DNXCORE50
-                var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-#else
-                string appDataPath = Environment.GetEnvironmentVariable("AppData");
-#endif
-                if (!String.IsNullOrEmpty(appDataPath))
+                var userSettingsDir = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+                var defaultSettingsFilePath = Path.Combine(userSettingsDir, DefaultSettingsFileName);
+
+                if (!File.Exists(defaultSettingsFilePath) && machineWideSettings != null)
                 {
-                    var defaultSettingsFilePath = Path.Combine(
-                        appDataPath, "NuGet", DefaultSettingsFileName);
 
-                    if (!File.Exists(defaultSettingsFilePath) && machineWideSettings != null)
+                    // Since defaultSettingsFilePath is a full path, so it doesn't matter what value is
+                    // used as root for the PhysicalFileSystem.
+                    appDataSettings = ReadSettings(
+                    root,
+                    defaultSettingsFilePath);
+
+                    // Disable machinewide sources to improve perf
+                    var disabledSources = new List<SettingValue>();
+                    foreach (var setting in machineWideSettings.Settings)
                     {
-
-                        // Since defaultSettingsFilePath is a full path, so it doesn't matter what value is
-                        // used as root for the PhysicalFileSystem.
-                        appDataSettings = ReadSettings(
-                        root,
-                        defaultSettingsFilePath);
-
-                        // Disable machinewide sources to improve perf
-                        var disabledSources = new List<SettingValue>();
-                        foreach (var setting in machineWideSettings.Settings)
+                        var values = setting.GetSettingValues(ConfigurationContants.PackageSources, isPath: true);
+                        foreach (var value in values)
                         {
-                            var values = setting.GetSettingValues(ConfigurationContants.PackageSources, isPath: true);
-                            foreach (var value in values)
-                            {
-                                disabledSources.Add(new SettingValue(value.Key, "true", origin: setting, isMachineWide: true, priority: 0));
-                            }
+                            disabledSources.Add(new SettingValue(value.Key, "true", origin: setting, isMachineWide: true, priority: 0));
                         }
-                        appDataSettings.UpdateSections(ConfigurationContants.DisabledPackageSources, disabledSources);
                     }
-                    else
-                    {
-                        appDataSettings = ReadSettings(root, defaultSettingsFilePath);
-                    }
+                    appDataSettings.UpdateSections(ConfigurationContants.DisabledPackageSources, disabledSources);
+                }
+                else
+                {
+                    appDataSettings = ReadSettings(root, defaultSettingsFilePath);
                 }
             }
             else
@@ -971,25 +962,75 @@ namespace NuGet.Configuration
             ExecuteSynchronized(() => FileSystemUtility.AddFile(ConfigFilePath, ConfigXDocument.Save));
         }
 
+#if DNXCORE50
+        private static Mutex _globalMutex = new Mutex(initiallyOwned: false);
+
         /// <summary>
         /// Wrap all IO operations on setting files with this function to avoid file-in-use errors
         /// </summary>
         private void ExecuteSynchronized(Action ioOperation)
         {
-            var configFilePath = ConfigFilePath;
-
-            var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
-
-            var task = ConcurrencyUtilities.ExecuteWithFileLocked(configFilePath, token =>
+            if (RuntimeEnvironmentHelper.IsWindows)
             {
-                ioOperation();
-                return Task.FromResult(0);
-            },
-            cts.Token).ConfigureAwait(false);
-
-            task.GetAwaiter().GetResult();
+                ExecuteSynchronizedCore(ioOperation);
+                return;
+            }
+            else
+            {
+                // Cross-plat CoreCLR doesn't support named lock, so we fall back to
+                // process-local synchronization in this case
+                var owner = false;
+                try
+                {
+                    owner = _globalMutex.WaitOne(TimeSpan.FromMinutes(1));
+                    ioOperation();
+                }
+                finally
+                {
+                    if (owner)
+                    {
+                        _globalMutex.ReleaseMutex();
+                    }
+                }
+            }
         }
-        
+#else
+        /// <summary>
+        /// Wrap all IO operations on setting files with this function to avoid file-in-use errors
+        /// </summary>
+        private void ExecuteSynchronized(Action ioOperation)
+        {
+            ExecuteSynchronizedCore(ioOperation);
+        }
+#endif
+        private void ExecuteSynchronizedCore(Action ioOperation)
+        {
+            var fileName = ConfigFilePath;
+
+            // Global: ensure mutex is honored across TS sessions 
+            using (var mutex = new Mutex(false, $"Global\\{EncryptionUtility.GenerateUniqueToken(fileName)}"))
+            {
+                var owner = false;
+                try
+                {
+                    // operations on NuGet.config should be very short lived
+                    owner = mutex.WaitOne(TimeSpan.FromMinutes(1));
+                    // decision here is to proceed even if we were not able to get mutex ownership
+                    // and let the potential IO errors bubble up. Reasoning is that failure to get
+                    // ownership probably means faulty hardware and in this case it's better to report
+                    // back than hang
+                    ioOperation();
+                }
+                finally
+                {
+                    if (owner)
+                    {
+                        mutex.ReleaseMutex();
+                    }
+                }
+            }
+        }
+
         // Compare two config file path, return true if two path are the same.
         private static bool ConfigPathComparer(string path1, string path2)
         {
