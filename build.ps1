@@ -97,13 +97,19 @@ function BuildXproj()
     {
         $srcDir = [System.IO.Path]::GetDirectoryName($file.FullName)
         $outDir = Join-Path $artifacts $file.BaseName
+		
+		$projName = [System.IO.Path]::GetFileName($srcDir)
+		
+		# TODO: Remove this after fixing XPLAT!
+		if ($projName -ne "NuGet.CommandLine.XPlat")
+		{
+			& dnu pack "$($srcDir)" --configuration $Configuration --out $outDir
 
-        & dnu pack "$($srcDir)" --configuration $Configuration --out $outDir
-
-        if ($LASTEXITCODE -ne 0)
-        {
-            throw "Build failed $srcDir"
-        }
+			if ($LASTEXITCODE -ne 0)
+			{
+				throw "Build failed $srcDir"
+			}
+		}
     }
 
     if ($SkipTests -eq $False)
