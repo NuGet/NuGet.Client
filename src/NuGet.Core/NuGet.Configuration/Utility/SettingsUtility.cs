@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using NuGet.Common;
 
 namespace NuGet.Configuration
 {
@@ -12,7 +13,7 @@ namespace NuGet.Configuration
         public const string GlobalPackagesFolderKey = "globalPackagesFolder";
         public const string GlobalPackagesFolderEnvironmentKey = "NUGET_PACKAGES";
         public const string RepositoryPathKey = "repositoryPath";
-        public static readonly string DefaultGlobalPackagesFolderPath = Path.Combine(".nuget", "packages") + Path.DirectorySeparatorChar;
+        public static readonly string DefaultGlobalPackagesFolderPath = "packages" + Path.DirectorySeparatorChar;
 
         public static string GetRepositoryPath(ISettings settings)
         {
@@ -147,18 +148,7 @@ namespace NuGet.Configuration
                 return path;
             }
 
-#if !DNXCORE50
-            // On Kudu this might return null
-            var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-            if (string.IsNullOrEmpty(userProfile))
-            {
-                userProfile = Environment.GetEnvironmentVariable("UserProfile");
-            }
-#else
-            var userProfile = Environment.GetEnvironmentVariable("UserProfile");
-#endif
-            path = Path.Combine(userProfile, DefaultGlobalPackagesFolderPath);
+            path = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.NuGetHome), DefaultGlobalPackagesFolderPath);
 
             return path;
         }
@@ -169,13 +159,8 @@ namespace NuGet.Configuration
             {
                 throw new ArgumentNullException(nameof(settings));
             }
-#if !DNXCORE50
-            var localAppDataFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-#else
-            var localAppDataFolderPath = Environment.GetEnvironmentVariable("LocalAppData");
-#endif
-            var path = Path.Combine(localAppDataFolderPath, "NuGet", "v3-cache");
-            return path;
+            
+            return NuGetEnvironment.GetFolderPath(NuGetFolderPath.HttpCacheDirectory);
         }
     }
 }

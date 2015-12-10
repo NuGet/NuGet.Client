@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,55 +10,44 @@ using System.Threading.Tasks;
 namespace NuGet.Common
 {
     internal static class ConcurrencyUtilities
-    {
-        internal static async Task<TVal> ExecuteWithFileLocked<TVal>(string filePath,
-            Func<CancellationToken, Task<TVal>> action,
-            CancellationToken token)
+    {   
+        public async static Task<T> ExecuteWithFileLocked<T>(string filePath, Func<CancellationToken, Task<T>> action, CancellationToken token)
         {
-            TVal result = default(TVal);
-
-            var name = FilePathToLockName(filePath);
-
-            using (var lockStart = new SemaphoreSlim(initialCount: 0, maxCount: 1))
-            using (var lockEnd = new SemaphoreSlim(initialCount: 0, maxCount: 1))
-            using (var lockOperation = new SemaphoreSlim(initialCount:0, maxCount: 1))
+            bool completed = false;
+            while (!completed && !token.IsCancellationRequested)
             {
-                // We are creating threads below, instead of simply using a ThreadPool thread using Task.Run,
-                // in order to avoid ThreadPool exhaustion. By using Task.Run here, we will have to reduce
-                // the maximum number of Tasks the caller can create by a factor of 2
-                // This gives us both the performance we desire and does not cause ThreadPool exhaustion
-                var threadStart = new ThreadStart(() => HandleMutex(name, lockStart, lockEnd, lockOperation, token));
-
-                var thread = new Thread(threadStart)
-                {
-                    Name = "Mutex+" + name
-                };
-
-                thread.Start();
-
-                try
-                {
-                    await lockStart.WaitAsync(token);
-
-                    token.ThrowIfCancellationRequested();
-
-                    result = await action(token);
-                }
-                finally
+                var createdNew = false;
+                using (var fileLock = SemaphoreWrapper.Create(name: FilePathToLockName(filePath),
+                    createdNew: out createdNew))
                 {
                     try
                     {
-                        lockEnd.Release();
-                    }
-                    catch
-                    {
-                    }
+                        // If this lock is already acquired by another process, wait until we can acquire it
+                        if (!createdNew)
+                        {
+                            var signaled = fileLock.WaitOne(TimeSpan.FromSeconds(5));
+                            if (!signaled)
+                            {
+                                // Timeout and retry
+                                continue;
+                            }
+                        }
 
-                    await lockOperation.WaitAsync();
+                        completed = true;
+                        return await action(token);
+                    }
+                    finally
+                    {
+                        if (completed)
+                        {
+                            fileLock.Release();
+                        }
+                    }
                 }
             }
 
-            return result;
+            // should never get here
+            throw new TaskCanceledException($"Failed to acquire semaphore for file: {filePath}");
         }
 
         private static void HandleMutex(string name,
@@ -68,38 +58,31 @@ namespace NuGet.Common
         {
             try
             {
-                using (var mutex = new Mutex(initiallyOwned: false, name: name))
+                bool createdNew;
+                using (var fileLock = SemaphoreWrapper.Create(name, out createdNew))
                 {
                     while (!token.IsCancellationRequested)
                     {
-                        try
+
+                        if (fileLock.WaitOne(TimeSpan.FromSeconds(1)))
                         {
-                            if (mutex.WaitOne(1000))
+                            try
+                            {
+                                lockStart.Release();
+                            }
+                            finally
                             {
                                 try
                                 {
-                                    lockStart.Release();
+                                    lockEnd.Wait();
                                 }
                                 finally
                                 {
-                                    try
-                                    {
-                                        lockEnd.Wait();
-                                    }
-                                    finally
-                                    {
-                                        mutex.ReleaseMutex();
-                                    }
+                                    fileLock.Release();
                                 }
-
-                                break;
                             }
 
-                            // The mutex is not released. Loop continues
-                        }
-                        catch (AbandonedMutexException)
-                        {
-                            // The mutex was abandoned, possibly because the process holding the mutex was killed.
+                            break;
                         }
                     }
                 }
@@ -117,6 +100,101 @@ namespace NuGet.Common
             // when the file doesn't exist. So we need a conversion from a file path
             // to a unique lock name.
             return filePath.Replace(Path.DirectorySeparatorChar, '_');
+        }
+        
+        private class SemaphoreWrapper : IDisposable
+        {
+#if DNXCORE50
+            private static Dictionary<string, SemaphoreWrapper> _nameWrapper =
+                new Dictionary<string, SemaphoreWrapper>();
+                
+            private readonly string _name;
+            private volatile int _refCount = 0;
+#endif
+
+            private readonly Semaphore _semaphore;
+
+            public static SemaphoreWrapper Create(string name, out bool createdNew)
+            {
+                return Create(0, 1, name, out createdNew);
+            }
+            
+            public static SemaphoreWrapper Create(int initialCount, int maximumCount, string name, out bool createdNew)
+            {
+#if DNXCORE50
+                if (RuntimeEnvironmentHelper.IsWindows)
+                {
+                    return new SemaphoreWrapper(new Semaphore(initialCount, maximumCount, name, out createdNew));
+                }
+                else
+                {
+                    var createdNewLocal = false;
+                    SemaphoreWrapper wrapper;
+
+                    lock (_nameWrapper)
+                    {
+                        
+                        if (!_nameWrapper.TryGetValue(name, out wrapper))
+                        {
+                            createdNewLocal = true;
+                            wrapper = new SemaphoreWrapper(new Semaphore(initialCount, maximumCount), name);
+                            _nameWrapper[name] = wrapper;
+                        }
+                        wrapper._refCount++;
+                    }
+
+                    // C# doesn't allow assigning value to an out parameter directly in lambda expression
+                    createdNew = createdNewLocal;
+                    return wrapper;
+                }
+#else
+
+                return new SemaphoreWrapper(new Semaphore(initialCount, maximumCount, name, out createdNew));
+#endif
+            }
+
+            private SemaphoreWrapper(Semaphore semaphore, string name = null)
+            {
+                _semaphore = semaphore;
+#if DNXCORE50
+                _name = name;
+#endif
+            }
+
+            public bool WaitOne(TimeSpan timeout)
+            {
+                return _semaphore.WaitOne(timeout);
+            }
+
+            public int Release()
+            {
+                return _semaphore.Release();
+            }
+
+            public void Dispose()
+            {
+#if DNXCORE50
+                if (RuntimeEnvironmentHelper.IsWindows)
+                {
+                    _semaphore.Dispose();
+                }
+                else
+                {
+                    lock (_nameWrapper)
+                    {
+                        _refCount--;
+                        if (_refCount == 0)
+                        {
+                            _nameWrapper.Remove(_name);
+                            _semaphore.Dispose();
+                        }
+                    }
+
+                }
+#else
+                _semaphore.Dispose();
+#endif
+            }
         }
     }
 }
