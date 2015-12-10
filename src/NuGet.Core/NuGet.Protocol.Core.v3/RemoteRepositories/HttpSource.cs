@@ -235,13 +235,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             var baseFolderName = RemoveInvalidFileNameChars(ComputeHash(_baseUri.OriginalString));
             var baseFileName = RemoveInvalidFileNameChars(cacheKey) + ".dat";
             var cacheAgeLimit = context.MaxAge;
-
-#if NET45
-            var localAppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-#else
-            var localAppDataFolder = Environment.GetEnvironmentVariable("LocalAppData");
-#endif
-            var cacheFolder = Path.Combine(localAppDataFolder, "NuGet", "v3-cache", baseFolderName);
+            var cacheFolder =  Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.HttpCacheDirectory), baseFolderName);
             var cacheFile = Path.Combine(cacheFolder, baseFileName);
 
             if (!Directory.Exists(cacheFolder)
