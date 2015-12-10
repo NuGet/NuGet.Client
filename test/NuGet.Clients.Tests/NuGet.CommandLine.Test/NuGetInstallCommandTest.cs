@@ -245,7 +245,6 @@ namespace NuGet.CommandLine.Test
         public void InstallCommand_FromPackagesConfigFile_SpecifyingRelativeSolutionDir()
         {
             // Arrange
-            var tempPath = Path.GetTempPath();
             var currentDirectory = Directory.GetCurrentDirectory();
             var nugetexe = Util.GetNuGetExePath();
 

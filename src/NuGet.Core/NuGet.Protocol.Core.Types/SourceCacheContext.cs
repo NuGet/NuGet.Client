@@ -95,7 +95,7 @@ namespace NuGet.Protocol.Core.Types
             return timeSpan;
         }
 
-        public string GeneratedTempFolder { get; } = Path.Combine(Path.GetTempPath(), "NuGetTempCache", _tempFolderGuid);
+        public string GeneratedTempFolder { get; } = Path.Combine(Path.GetTempPath(), "NuGet", "TempCache", _tempFolderGuid);
 
         public void Dispose()
         {

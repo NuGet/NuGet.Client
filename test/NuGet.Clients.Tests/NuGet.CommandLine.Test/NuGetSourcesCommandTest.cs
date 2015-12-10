@@ -139,13 +139,11 @@ namespace NuGet.CommandLine.Test
         public void SourcesCommandTest_AddWithUserNamePassword_UserDefinedConfigFile()
         {
             // Arrange
-            var nugetexe = Util.GetNuGetExePath();
-            var configFilePath = Path.GetTempFileName();
-            File.Delete(configFilePath);
-            try
+            using (var configFileDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var configFileDirectory = Path.GetDirectoryName(configFilePath);
-                var configFileName = Path.GetFileName(configFilePath);
+                var nugetexe = Util.GetNuGetExePath();
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
 
                 Util.CreateFile(configFileDirectory, configFileName,
                     @"
@@ -171,7 +169,7 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var result = CommandRunner.Run(
                     nugetexe,
-                    Directory.GetCurrentDirectory(),
+                    configFileDirectory,
                     string.Join(" ", args),
                     true);
 
@@ -195,13 +193,6 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal("Password", credentials[1].Key);
                 var password = Configuration.EncryptionUtility.DecryptString(credentials[1].Value);
                 Assert.Equal("test_password", password);
-            }
-            finally
-            {
-                if (File.Exists(configFilePath))
-                {
-                    File.Delete(configFilePath);
-                }
             }
         }
 

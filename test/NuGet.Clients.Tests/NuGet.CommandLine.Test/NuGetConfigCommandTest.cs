@@ -53,7 +53,7 @@ namespace NuGet.CommandLine.Test
             using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                var configFile = Path.Combine(testFolder, Path.GetTempFileName());
+                var configFile = Path.Combine(testFolder, "file.tmp");
                 Util.CreateFile(Path.GetDirectoryName(configFile),
                     Path.GetFileName(configFile),
                     "<configuration/>");
@@ -99,7 +99,7 @@ namespace NuGet.CommandLine.Test
         {
             using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var configFile = Path.Combine(testFolder, Path.GetTempFileName());
+                var configFile = Path.Combine(testFolder, "file.tmp");
                 var missingPluginProvider = Path.Combine(Path.GetTempPath(), "PluginDoesNotExist.exe");
 
                 Util.CreateFile(Path.GetDirectoryName(configFile),
@@ -131,7 +131,7 @@ namespace NuGet.CommandLine.Test
             {
                 // Arrange
                 var nugetexe = Util.GetNuGetExePath();
-                var configFile = Path.Combine(testFolder, Path.GetTempFileName());
+                var configFile = Path.Combine(testFolder, "file.tmp");
 
                 Util.CreateFile(Path.GetDirectoryName(configFile),
                                 Path.GetFileName(configFile),

@@ -42,8 +42,8 @@ namespace NuGet.Test.Utility
 
         public static void AssertNotTempPath(string path)
         {
-            var expanded = Path.GetFullPath(path);
-            var expandedTempPath = Path.GetFullPath(Path.GetTempPath());
+            var expanded = Path.GetFullPath(path).TrimEnd(new char[] { '\\', '/' });
+            var expandedTempPath = Path.GetFullPath(Path.GetTempPath()).TrimEnd(new char[] { '\\', '/' });
 
             if (expanded.Equals(expandedTempPath, StringComparison.OrdinalIgnoreCase))
             {

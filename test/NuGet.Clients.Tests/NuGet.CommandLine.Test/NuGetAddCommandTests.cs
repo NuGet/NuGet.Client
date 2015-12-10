@@ -333,7 +333,13 @@ namespace NuGet.CommandLine.Test
             using (var tempDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             using (var testInfo = new TestInfo())
             {
-                var testPackage = new FileInfo(Path.Combine(tempDirectory, Path.GetTempFileName()));
+                var testPackage = new FileInfo(Path.Combine(tempDirectory, "invalidFile.tmp"));
+
+                using (StreamWriter writer = new StreamWriter(testPackage.FullName))
+                {
+                    writer.WriteLine("bad data");
+                }
+
                 testInfo.Init(testPackage);
 
                 var args = new string[]
@@ -368,7 +374,12 @@ namespace NuGet.CommandLine.Test
             using (var testInfo = new TestInfo())
             using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var testPackage = new FileInfo(Path.Combine(testFolder, Path.GetTempFileName()));
+                var testPackage = new FileInfo(Path.Combine(testFolder, "bad.nupkg"));
+
+                using (StreamWriter writer = new StreamWriter(testPackage.FullName))
+                {
+                    writer.WriteLine("bad data");
+                }
 
                 testInfo.Init(testPackage);
 

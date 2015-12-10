@@ -73,14 +73,15 @@ namespace NuGet.CommandLine.Test
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
+            using (var randomFolder = TestFileSystemUtility.CreateRandomTestFolder())
             using (var repositoryPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 Util.CreateTestPackage("testPackage1", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("testPackage2", "2.0.0", repositoryPath);
 
                 // create the config file
-                var configFile = Path.GetTempFileName();
-                Util.CreateFile(Path.GetDirectoryName(configFile), Path.GetFileName(configFile), "<configuration/>");
+                Util.CreateFile(randomFolder, "nuget.config", "<configuration/>");
+                var configFile = Path.Combine(randomFolder, "nuget.config");
 
                 string[] args = new string[] {
                 "sources",
@@ -90,7 +91,7 @@ namespace NuGet.CommandLine.Test
                 "-Source",
                 repositoryPath,
                 "-ConfigFile",
-                configFile
+                Path.Combine(randomFolder, "nuget.config")
             };
                 int r = Program.Main(args);
                 Assert.Equal(0, r);
@@ -103,7 +104,6 @@ namespace NuGet.CommandLine.Test
                     Directory.GetCurrentDirectory(),
                     string.Join(" ", args),
                     waitForExit: true);
-                File.Delete(configFile);
 
                 // Assert
                 Assert.Equal(0, result.Item1);

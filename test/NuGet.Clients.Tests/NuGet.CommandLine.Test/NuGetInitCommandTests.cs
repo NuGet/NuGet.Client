@@ -419,12 +419,12 @@ namespace NuGet.CommandLine.Test
                 var packages = testInfo.AddPackagesToSource();
 
                 // Add an invalid package. Following calls add an invalid package to SourceFeed.
-                var tempFile = Path.GetTempFileName();
                 var invalidPackageIdentity = new PackageIdentity("Invalid", new NuGetVersion("1.0.0"));
                 var invalidPackageFile = Path.Combine(
                     testInfo.SourceFeed,
                     invalidPackageIdentity.Id + "." + invalidPackageIdentity.Version.ToString() + ".nupkg");
-                File.Move(tempFile, invalidPackageFile);
+
+                File.WriteAllText(invalidPackageFile, string.Empty);
 
                 var args = new string[]
                 {
