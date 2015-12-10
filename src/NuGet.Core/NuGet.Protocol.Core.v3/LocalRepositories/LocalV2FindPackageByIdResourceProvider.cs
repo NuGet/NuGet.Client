@@ -31,20 +31,18 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
             INuGetResource resource = null;
 
             Uri uri;
-            if (!Uri.TryCreate(source.PackageSource.Source, UriKind.Absolute, out uri)
-                ||
-                !uri.IsFile)
+            if (!Uri.TryCreate(source.PackageSource.Source, UriKind.Absolute, out uri) || uri.IsFile)
             {
-                return Task.FromResult(Tuple.Create(false, resource));
+                if (!LocalV2FindPackageByIdResource.GetNupkgFiles(source.PackageSource.Source, id: string.Empty).Any())
+                {
+                    return Task.FromResult(Tuple.Create(false, resource));
+                }
+                
+                resource = new LocalV2FindPackageByIdResource(source.PackageSource, _packageInfoCache);
+                return Task.FromResult(Tuple.Create(true, resource));
             }
 
-            if (!LocalV2FindPackageByIdResource.GetNupkgFiles(source.PackageSource.Source, id: string.Empty).Any())
-            {
-                return Task.FromResult(Tuple.Create(false, resource));
-            }
-
-            resource = new LocalV2FindPackageByIdResource(source.PackageSource, _packageInfoCache);
-            return Task.FromResult(Tuple.Create(true, resource));
+            return Task.FromResult(Tuple.Create(false, resource));
         }
     }
 }
