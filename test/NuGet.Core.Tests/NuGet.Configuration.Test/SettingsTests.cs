@@ -2024,7 +2024,7 @@ namespace NuGet.Configuration.Test
 #else
             var userProfile = Environment.GetEnvironmentVariable("UserProfile");
 #endif
-            var expectedPath = Path.Combine(userProfile, SettingsUtility.DefaultGlobalPackagesFolderPath);
+            var expectedPath = Path.Combine(userProfile, ".nuget", SettingsUtility.DefaultGlobalPackagesFolderPath);
 
             // Act
             var globalPackagesFolderPath = SettingsUtility.GetGlobalPackagesFolder(new NullSettings());
