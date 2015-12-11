@@ -1,6 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using EnvDTE;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,12 +16,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using EnvDTE;
-using Microsoft.VisualStudio.Shell;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.ProjectManagement;
-using NuGet.ProjectManagement.Projects;
 using VSLangProj;
 using VSLangProj80;
 using EnvDTEProject = EnvDTE.Project;
@@ -80,6 +82,8 @@ namespace NuGet.PackageManagement.VisualStudio
             var rootProjectName = await EnvDTEProjectUtility.GetCustomUniqueNameAsync(EnvDTEProject);
             uniqueProjects.Add(rootProjectName);
 
+            var itemsFactory = ServiceLocator.GetInstance<IVsEnumHierarchyItemsFactory>();
+
             // continue walking all project references until we run out
             while (toProcess.Count > 0)
             {
@@ -126,6 +130,9 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
                 }
 
+                // Verify ReferenceOutputAssembly
+                var excludedProjects = await GetExcludedReferences(project, itemsFactory);
+
                 var projectUniqueName = await EnvDTEProjectUtility.GetCustomUniqueNameAsync(project);
                 var childReferences = new List<string>();
                 var hasMissingReferences = false;
@@ -150,13 +157,17 @@ namespace NuGet.PackageManagement.VisualStudio
                             var childName =
                                 await EnvDTEProjectUtility.GetCustomUniqueNameAsync(childReference.SourceProject);
 
-                            childReferences.Add(childName);
-
-                            // avoid looping by checking if we already have this project
-                            if (!uniqueProjects.Contains(childName))
+                            // Skip projects which have ReferenceOutputAssembly=false
+                            if (!excludedProjects.Contains(childName, StringComparer.OrdinalIgnoreCase))
                             {
-                                toProcess.Enqueue(childReference.SourceProject);
-                                uniqueProjects.Add(childName);
+                                childReferences.Add(childName);
+
+                                // avoid looping by checking if we already have this project
+                                if (!uniqueProjects.Contains(childName))
+                                {
+                                    toProcess.Enqueue(childReference.SourceProject);
+                                    uniqueProjects.Add(childName);
+                                }
                             }
                         }
                         else
@@ -284,6 +295,73 @@ namespace NuGet.PackageManagement.VisualStudio
                     yield return reference;
                 }
             }
+        }
+
+        /// <summary>
+        /// Get the unique names of all references which have ReferenceOutputAssembly set to false.
+        /// </summary>
+        private static async Task<List<string>> GetExcludedReferences(
+            EnvDTEProject project,
+            IVsEnumHierarchyItemsFactory itemsFactory)
+        {
+            var excludedReferences = new List<string>();
+
+            var hierarchy = VsHierarchyUtility.ToVsHierarchy(project);
+
+            // Get all items in the hierarchy, this includes project references, files, and everything else.
+            IEnumHierarchyItems items;
+            if (ErrorHandler.Succeeded(itemsFactory.EnumHierarchyItems(
+                hierarchy,
+                (uint)__VSEHI.VSEHI_Leaf,
+                (uint)VSConstants.VSITEMID.Root,
+                out items)))
+            {
+                var buildPropertyStorage = (IVsBuildPropertyStorage)hierarchy;
+
+                // Loop through all items
+                uint fetched;
+                VSITEMSELECTION[] item = new VSITEMSELECTION[1];
+                while (ErrorHandler.Succeeded(items.Next(1, item, out fetched)) && fetched == 1)
+                {
+                    // Check if the item has ReferenceOutputAssembly. This will
+                    // return null for the vast majority of items.
+                    string value;
+                    if (ErrorHandler.Succeeded(buildPropertyStorage.GetItemAttribute(
+                            item[0].itemid,
+                            "ReferenceOutputAssembly",
+                            out value))
+                        && value != null)
+                    {
+                        // We only need to go farther if the flag exists and is not true
+                        if (!string.Equals(value, Boolean.TrueString, StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Get the DTE Project reference for the item id. This checks for nulls incase this is 
+                            // somehow not a project reference that had the ReferenceOutputAssembly flag.
+                            object childObject;
+                            if (ErrorHandler.Succeeded(hierarchy.GetProperty(
+                                item[0].itemid,
+                                (int)__VSHPROPID.VSHPROPID_ExtObject,
+                                out childObject)))
+                            {
+                                // 1. Verify that this is a project reference
+                                // 2. Check that it is valid and resolved
+                                // 3. Follow the reference to the DTE project and get the unique name
+                                var reference = childObject as Reference3;
+
+                                if (reference != null && reference.Resolved && reference.SourceProject != null)
+                                {
+                                    var childUniqueName = await EnvDTEProjectUtility
+                                        .GetCustomUniqueNameAsync(reference.SourceProject);
+
+                                    excludedReferences.Add(childUniqueName);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return excludedReferences;
         }
     }
 }
