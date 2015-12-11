@@ -6,7 +6,8 @@ namespace NuGet.Common
     {
         private static Lazy<bool> _isMono = new Lazy<bool>(() => Type.GetType("Mono.Runtime") != null);
 
-        public static bool IsWindows {
+        public static bool IsWindows
+        {
             get
             {
 #if DNXCORE50
@@ -18,7 +19,8 @@ namespace NuGet.Common
                 
                 return false;
 #else
-                return Environment.OSVersion.Platform == PlatformID.Win32NT;
+                var platform = (int)Environment.OSVersion.Platform;
+                return (platform != 4) && (platform != 6) && (platform != 128);
 #endif
             }
         }
