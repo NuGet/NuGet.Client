@@ -4,9 +4,9 @@ param (
     [string]$BuildNumber,
     [switch]$SkipTests,
     [switch]$SkipRestore,
-	[switch]$CleanCache,
-	[switch]$SkipILMerge,
-	[switch]$DelaySign,
+    [switch]$CleanCache,
+    [switch]$SkipILMerge,
+    [switch]$DelaySign,
     [string]$MSPFXPath,
     [string]$NuGetPFXPath,
     [switch]$SkipXProj,
@@ -33,40 +33,40 @@ function RestoreXProj($file)
 ## Clean the machine level cache from all package
 function CleanCache()
 {
-	Write-Host Removing DNX packages
+    Write-Host Removing DNX packages
 
-	if (Test-Path $env:userprofile\.dnx\packages)
-	{
-		rm -r $env:userprofile\.dnx\packages -Force
-	}
+    if (Test-Path $env:userprofile\.dnx\packages)
+    {
+        rm -r $env:userprofile\.dnx\packages -Force
+    }
 
-	Write-Host Removing .NUGET packages
+    Write-Host Removing .NUGET packages
 
-	if (Test-Path $env:userprofile\.nuget\packages)
-	{
-		rm -r $env:userprofile\.nuget\packages -Force
-	}
+    if (Test-Path $env:userprofile\.nuget\packages)
+    {
+        rm -r $env:userprofile\.nuget\packages -Force
+    }
 
-	Write-Host Removing DNU cache
+    Write-Host Removing DNU cache
 
-	if (Test-Path $env:localappdata\dnu\cache)
-	{
-		rm -r $env:localappdata\dnu\cache -Force
-	}
+    if (Test-Path $env:localappdata\dnu\cache)
+    {
+        rm -r $env:localappdata\dnu\cache -Force
+    }
 
-	Write-Host Removing NuGet web cache
+    Write-Host Removing NuGet web cache
 
-	if (Test-Path $env:localappdata\NuGet\v3-cache)
-	{
-		rm -r $env:localappdata\NuGet\v3-cache -Force
-	}
+    if (Test-Path $env:localappdata\NuGet\v3-cache)
+    {
+        rm -r $env:localappdata\NuGet\v3-cache -Force
+    }
 
-	Write-Host Removing NuGet machine cache
+    Write-Host Removing NuGet machine cache
 
-	if (Test-Path $env:localappdata\NuGet\Cache)
-	{
-		rm -r $env:localappdata\NuGet\Cache -Force
-	}
+    if (Test-Path $env:localappdata\NuGet\Cache)
+    {
+        rm -r $env:localappdata\NuGet\Cache -Force
+    }
 }
 
 ## Building XProj projects
@@ -83,6 +83,9 @@ function BuildXproj()
 
     if ($SkipRestore -eq $False)
     {
+        # Restore in parallel first to speed things up
+        & dnu restore "src\NuGet.Core" --parallel --ignore-failed-sources -s "https://www.myget.org/F/nuget-volatile/api/v3/index.json" -s "https://api.nuget.org/v3/index.json"
+
         Write-Host "Restoring XProj packages"
         foreach ($file in (Get-ChildItem "src" -rec -Filter "*.xproj"))
         {
@@ -97,19 +100,23 @@ function BuildXproj()
     {
         $srcDir = [System.IO.Path]::GetDirectoryName($file.FullName)
         $outDir = Join-Path $artifacts $file.BaseName
-		
-		$projName = [System.IO.Path]::GetFileName($srcDir)
-		
-		# TODO: Remove this after fixing XPLAT!
-		if ($projName -ne "NuGet.CommandLine.XPlat")
-		{
-			& dnu pack "$($srcDir)" --configuration $Configuration --out $outDir
+        
+        $projName = [System.IO.Path]::GetFileName($srcDir)
+        
+        # TODO: Remove this after fixing XPLAT!
+        if ($projName -ne "NuGet.CommandLine.XPlat")
+        {
+            Write-Host "" 
+            Write-Host "dnu pack $($srcDir) --configuration $Configuration --out $outDir"
+            Write-Host ""
 
-			if ($LASTEXITCODE -ne 0)
-			{
-				throw "Build failed $srcDir"
-			}
-		}
+            & dnu pack "$($srcDir)" --configuration $Configuration --out $outDir
+
+            if ($LASTEXITCODE -ne 0)
+            {
+                throw "Build failed $srcDir"
+            }
+        }
     }
 
     if ($SkipTests -eq $False)
@@ -125,6 +132,10 @@ function BuildXproj()
             Remove-Item Env:\DNX_BUILD_DELAY_SIGN
         }
 
+        # Restore in parallel to speed things up
+        & dnu restore "test\NuGet.Core.Tests" --parallel --ignore-failed-sources -s "https://www.myget.org/F/nuget-volatile/api/v3/index.json" -s "https://api.nuget.org/v3/index.json"
+
+        # Restore projects individually
         foreach ($file in (Get-ChildItem "test\NuGet.Core.Tests" -rec -filter "*.xproj"))
         {
             RestoreXProj($file)
@@ -265,7 +276,7 @@ $env:DNX_FEED="https://www.nuget.org/api/v2"
 
 if($CleanCache)
 {
-	CleanCache
+    CleanCache
 }
 
 # enable delay signed build
@@ -288,7 +299,7 @@ if ($DelaySign)
     }
 }
 
-$SemanticVersionDate = "2015-10-8"
+$SemanticVersionDate = "2015-11-30"
 
 if(!$BuildNumber)
 {
