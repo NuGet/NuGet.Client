@@ -7,8 +7,10 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using NuGet.Common;
 
 namespace NuGet.Configuration
 {
@@ -976,28 +978,16 @@ namespace NuGet.Configuration
         {
             var configFilePath = ConfigFilePath;
 
-            // Global: ensure mutex is honored across TS sessions
-            using (var mutex = new Mutex(false, "Global\\" + EncryptionUtility.GenerateUniqueToken(configFilePath)))
+            var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+
+            var task = ConcurrencyUtilities.ExecuteWithFileLocked(configFilePath, token =>
             {
-                var owner = false;
-                try
-                {
-                    // operations on NuGet.config should be very short lived
-                    owner = mutex.WaitOne(TimeSpan.FromMinutes(1));
-                    // decision here is to proceed even if we were not able to get mutex ownership
-                    // and let the potential IO errors bubble up. Reasoning is that failure to get
-                    // ownership probably means faulty hardware and in this case it's better to report
-                    // back than stop responding
-                    ioOperation();
-                }
-                finally
-                {
-                    if (owner)
-                    {
-                        mutex.ReleaseMutex();
-                    }
-                }
-            }
+                ioOperation();
+                return Task.FromResult(0);
+            },
+            cts.Token).ConfigureAwait(false);
+
+            task.GetAwaiter().GetResult();
         }
         
         // Compare two config file path, return true if two path are the same.
