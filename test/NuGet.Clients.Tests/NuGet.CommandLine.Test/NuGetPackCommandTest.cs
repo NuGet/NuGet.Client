@@ -890,6 +890,48 @@ namespace Proj2
             }
         }
 
+        [Theory]
+        [InlineData("")]
+        [InlineData(@"\\")]
+        [InlineData("\\.")]
+        // [InlineData("\\")] This suffix is not expected to work see https://github.com/NuGet/home/issues/1817
+        public void PackCommand_OutputDirectorySuffixes(string suffix)
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                CreateTestProject(workingDirectory, "proj1", new string[] { });
+
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+                var outputDirectory = Path.Combine(workingDirectory, "path with spaces") + suffix;
+
+                Directory.CreateDirectory(outputDirectory);
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    $"pack proj1.csproj -build -IncludeReferencedProjects -outputDirectory \"{outputDirectory}\"",
+                    waitForExit: true);
+
+                Assert.True(0 == r.Item1, r.Item2 + Environment.NewLine + r.Item3);
+
+                // Assert
+                var package = new OptimizedZipPackage(Path.Combine(outputDirectory, "proj1.0.0.0.0.nupkg"));
+
+                var files = package.GetFiles().Select(f => f.Path).ToArray();
+
+                Assert.Equal(
+                    files,
+                    new string[]
+                    {
+                        @"lib\net40\proj1.dll"
+                    });
+            }
+        }
+
         // Test that option -IncludeReferencedProjects works correctly for the case
         // where the same project is referenced by multiple projects in the
         // reference hierarchy.
@@ -1729,7 +1771,7 @@ namespace Proj2
             var nugetexe = Util.GetNuGetExePath();
             using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                // Arrange                    
+                // Arrange
                 CreateTestProject(workingDirectory, "proj1", null);
 
                 // Act
