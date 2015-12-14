@@ -10,19 +10,22 @@ param (
     [string]$MSPFXPath,
     [string]$NuGetPFXPath,
     [switch]$SkipXProj,
-    [switch]$SkipSubModules
+    [switch]$SkipSubModules,
+    [switch]$SkipCSProj
 )
+
+. .\build\common.ps1
 
 ###Functions###
 
-function RestoreXProj($file)
+function RestoreXProj($xprojFilePath)
 {
-    $xprojDir = [System.IO.Path]::GetDirectoryName($file.FullName)
-    $projectJsonFile = [System.IO.Path]::Combine($xprojDir, "project.json")
+    $xprojDir = Split-Path $xprojFilePath -Parent
+    $projectJsonFile = Join-Path $xprojDir 'project.json'
 
-    Write-Host "Restoring $projectJsonFile"
-    Write-Host "dnu restore '$projectJsonFile' -s https://www.myget.org/F/nuget-volatile/api/v3/index.json -s https://api.nuget.org/v3/index.json"
-    & dnu restore "$($projectJsonFile)" -s https://www.myget.org/F/nuget-volatile/api/v3/index.json -s https://api.nuget.org/v3/index.json
+    Trace-Log "Restoring $projectJsonFile"
+    Trace-Log "dnu restore '$projectJsonFile' -s https://www.myget.org/F/nuget-volatile/api/v3/index.json -s https://api.nuget.org/v3/index.json"
+    & dnu restore ""$projectJsonFile"" -s https://www.myget.org/F/nuget-volatile/api/v3/index.json -s https://api.nuget.org/v3/index.json
 
     if ($LASTEXITCODE -ne 0)
     {
@@ -33,35 +36,35 @@ function RestoreXProj($file)
 ## Clean the machine level cache from all package
 function CleanCache()
 {
-    Write-Host Removing DNX packages
+    Trace-Log Removing DNX packages
 
     if (Test-Path $env:userprofile\.dnx\packages)
     {
         rm -r $env:userprofile\.dnx\packages -Force
     }
 
-    Write-Host Removing .NUGET packages
+    Trace-Log Removing .NUGET packages
 
     if (Test-Path $env:userprofile\.nuget\packages)
     {
         rm -r $env:userprofile\.nuget\packages -Force
     }
 
-    Write-Host Removing DNU cache
+    Trace-Log Removing DNU cache
 
     if (Test-Path $env:localappdata\dnu\cache)
     {
         rm -r $env:localappdata\dnu\cache -Force
     }
 
-    Write-Host Removing NuGet web cache
+    Trace-Log Removing NuGet web cache
 
     if (Test-Path $env:localappdata\NuGet\v3-cache)
     {
         rm -r $env:localappdata\NuGet\v3-cache -Force
     }
 
-    Write-Host Removing NuGet machine cache
+    Trace-Log Removing NuGet machine cache
 
     if (Test-Path $env:localappdata\NuGet\Cache)
     {
@@ -81,45 +84,39 @@ function BuildXproj()
     # Setting the DNX AssemblyFileVersion
     $env:DNX_ASSEMBLY_FILE_VERSION=$BuildNumber
 
-    if ($SkipRestore -eq $False)
+    $xprojects = Get-ChildItem src -rec -Filter '*.xproj' |`
+        %{ $_.FullName } |`
+        ?{ -not $_.Contains('NuGet.CommandLine.XPlat') } # TODO: Remove this after fixing XPLAT!
+
+    if (-not $SkipRestore)
     {
         # Restore in parallel first to speed things up
         & dnu restore "src\NuGet.Core" --parallel --ignore-failed-sources -s "https://www.myget.org/F/nuget-volatile/api/v3/index.json" -s "https://api.nuget.org/v3/index.json"
 
-        Write-Host "Restoring XProj packages"
-        foreach ($file in (Get-ChildItem "src" -rec -Filter "*.xproj"))
-        {
-            RestoreXProj($file)
-        }
+        Trace-Log "Restoring XProj packages"
+        $xprojects | %{ RestoreXProj $_ }
     }
 
-    $artifactsSrc = Join-Path $artifacts "src\NuGet.Core"
-    $artifactsTest = Join-Path $artifacts "test"
-
-    foreach ($file in (Get-ChildItem "src" -rec -Filter "*.xproj"))
+    foreach ($projectFile in $xprojects)
     {
-        $srcDir = [System.IO.Path]::GetDirectoryName($file.FullName)
-        $outDir = Join-Path $artifacts $file.BaseName
-        
-        $projName = [System.IO.Path]::GetFileName($srcDir)
-        
-        # TODO: Remove this after fixing XPLAT!
-        if ($projName -ne "NuGet.CommandLine.XPlat")
+        $xprojDir = Split-Path $projectFile -Parent
+        $projectJsonFile = Join-Path $xprojDir 'project.json'
+        $projectName= Split-Path $xprojDir -Leaf
+
+        $outDir = Join-Path $artifacts $projectName
+        Trace-Log ""
+        Trace-Log "dnu pack ""${xprojDir}"" --configuration $Configuration --out $outDir"
+        Trace-Log ""
+
+        & dnu pack ""${xprojDir}"" --configuration $Configuration --out $outDir
+
+        if ($LASTEXITCODE -ne 0)
         {
-            Write-Host "" 
-            Write-Host "dnu pack $($srcDir) --configuration $Configuration --out $outDir"
-            Write-Host ""
-
-            & dnu pack "$($srcDir)" --configuration $Configuration --out $outDir
-
-            if ($LASTEXITCODE -ne 0)
-            {
-                throw "Build failed $srcDir"
-            }
+            throw "Build failed $ProjectName"
         }
     }
 
-    if ($SkipTests -eq $False)
+    if (-not $SkipTests)
     {
         # Test assemblies should not be signed
         if (Test-Path Env:\DNX_BUILD_KEY_FILE)
@@ -132,19 +129,18 @@ function BuildXproj()
             Remove-Item Env:\DNX_BUILD_DELAY_SIGN
         }
 
+        $xtests = Get-ChildItem test\NuGet.Core.Tests -rec -Filter '*.xproj' | %{ $_.FullName }
+
         # Restore in parallel to speed things up
         & dnu restore "test\NuGet.Core.Tests" --parallel --ignore-failed-sources -s "https://www.myget.org/F/nuget-volatile/api/v3/index.json" -s "https://api.nuget.org/v3/index.json"
 
         # Restore projects individually
-        foreach ($file in (Get-ChildItem "test\NuGet.Core.Tests" -rec -filter "*.xproj"))
-        {
-            RestoreXProj($file)
-        }
+        $xtests | %{ RestoreXProj $_ }
 
-        foreach ($file in (Get-ChildItem "test\NuGet.Core.Tests" -rec -Filter "*.xproj"))
+        foreach ($projectFile in $xtests)
         {
-            $srcDir = [System.IO.Path]::GetDirectoryName($file.FullName)
-            Write-Host "Running tests in $srcDir"
+            $srcDir = Split-Path $projectFile -Parent
+            Trace-Log "Running tests in $srcDir"
 
             pushd $srcDir
             & dnx test
@@ -158,7 +154,7 @@ function BuildXproj()
     }
 
     ## Copying nupkgs
-    Write-Host "Copying the packages to" $artifactsPackages
+    Trace-Log "Copying the packages to $nupkgsDir"
     Get-ChildItem $artifacts\*.nupkg -Recurse | % { Move-Item $_ $nupkgsDir }
 }
 
@@ -181,7 +177,7 @@ function BuildCSproj()
         throw "NuGet.Clients.sln Build failed "
     }
 
-    Write-Host "Copying the Vsix to $artifacts"
+    Trace-Log "Copying the Vsix to $artifacts"
     $visxLocation = Join-Path $artifacts "$Configuration\NuGet.Clients\VsExtension"
     Copy-Item $visxLocation\NuGet.Tools.vsix $artifacts
 }
@@ -192,7 +188,7 @@ function ILMergeNuGet()
 
     pushd $nugetArtifictFolder
 
-    Write-Output "Creating the ilmerged nuget.exe"
+    Trace-Log "Creating the ilmerged nuget.exe"
     & $ILMerge NuGet.exe NuGet.Client.dll NuGet.Commands.dll NuGet.Configuration.dll NuGet.ContentModel.dll NuGet.Core.dll NuGet.Credentials.dll NuGet.DependencyResolver.Core.dll NuGet.DependencyResolver.dll NuGet.Frameworks.dll NuGet.LibraryModel.dll NuGet.Logging.dll NuGet.PackageManagement.dll NuGet.Packaging.Core.dll NuGet.Packaging.Core.Types.dll NuGet.Packaging.dll NuGet.ProjectManagement.dll NuGet.ProjectModel.dll NuGet.Protocol.Core.Types.dll NuGet.Protocol.Core.v2.dll NuGet.Protocol.Core.v3.dll NuGet.Repositories.dll NuGet.Resolver.dll NuGet.RuntimeModel.dll NuGet.Versioning.dll Microsoft.Web.XmlTransform.dll Newtonsoft.Json.dll /log:mergelog.txt /out:$artifacts\NuGet.exe
 
     if ($LASTEXITCODE -ne 0)
@@ -217,19 +213,19 @@ $nupkgsDir = Join-Path $executingScriptDirectory "nupkgs"
 $artifacts = Join-Path $executingScriptDirectory "artifacts"
 $startTime = [DateTime]::UtcNow
 
-Write-Host "Build started at " $startTime
-Write-Host
+Trace-Log "Build started at $startTime"
+Trace-Log
 
 if ($SkipSubModules -eq $False)
 {
     if ((Test-Path -Path "submodules/FileSystem/src") -eq $False)
     {
-        Write-Host "Updating and initializing submodules"
+        Trace-Log "Updating and initializing submodules"
         & git submodule update --init
     }
     else
     {
-        Write-Host "Updating submodules"
+        Trace-Log "Updating submodules"
         & git submodule update
     }
 }
@@ -237,39 +233,39 @@ if ($SkipSubModules -eq $False)
 # Download NuGet.exe if missing
 if ((Test-Path $nugetExe) -eq $False)
 {
-    Write-Host "Downloading nuget.exe"
+    Trace-Log "Downloading nuget.exe"
     wget https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe -OutFile $nugetExe
 }
 
 # Restoring tools required for build
 if ($SkipRestore -eq $False)
 {
-    Write-Host "Restoring tools"
+    Trace-Log "Restoring tools"
     & $nugetExe restore .nuget\packages.config -SolutionDirectory .
 }
 
 ## Validating DNVM installed and install it if missing
 if ((Test-Path $dnvmLoc) -eq $False)
 {
-    Write-Host "Downloading DNVM"
+    Trace-Log "Downloading DNVM"
     &{$Branch='dev';iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.ps1'))}
 }
 
 ## Clean artifacts and nupkgs folder
 if (Test-Path $nupkgsDir)
 {
-    Write-Host "Cleaning nupkgs folder"
+    Trace-Log "Cleaning nupkgs folder"
     Remove-Item $nupkgsDir\*.nupkg
 }
 
 if( Test-Path $artifacts)
 {
-    Write-Host "Cleaning the artifacts folder"
+    Trace-Log "Cleaning the artifacts folder"
     Remove-Item $artifacts\*.* -Recurse
 }
 
 ## Make sure the needed DNX runtimes ex
-Write-Host "Validating the correct DNX runtime set"
+Trace-Log "Validating the correct DNX runtime set"
 $env:DNX_FEED="https://www.nuget.org/api/v2"
 & dnvm install 1.0.0-rc1-update1 -runtime CoreCLR -arch x86
 & dnvm install 1.0.0-rc1-update1 -runtime CLR -arch x86 -alias default
@@ -284,17 +280,17 @@ if ($DelaySign)
 {
     if (Test-Path $MSPFXPath)
     {
-        Write-Host "Setting NuGet.Core solution to delay sign using $MSPFXPath"
+        Trace-Log "Setting NuGet.Core solution to delay sign using $MSPFXPath"
         $env:DNX_BUILD_KEY_FILE=$MSPFXPath
         $env:DNX_BUILD_DELAY_SIGN=$true
     }
 
     if (Test-Path $NuGetPFXPath)
     {
-        Write-Host "Setting NuGet.Clients solution to delay sign using $NuGetPFXPath"
+        Trace-Log "Setting NuGet.Clients solution to delay sign using $NuGetPFXPath"
         $env:NUGET_PFX_PATH= $NuGetPFXPath
 
-        Write-Host "Using the Microsoft Key for NuGet Command line $MSPFXPath"
+        Trace-Log "Using the Microsoft Key for NuGet Command line $MSPFXPath"
         $env:MS_PFX_PATH=$MSPFXPath
     }
 }
@@ -319,9 +315,12 @@ if(!$SkipXProj)
 }
 
 ## Building the Tooling solution
-BuildCSproj
+if (-not $SkipCSproj)
+{
+    BuildCSproj
+}
 
-if ($SkipILMerge -eq $False)
+if (-not $SkipILMerge)
 {
     ## Merging the NuGet.exe
     ILMergeNuGet
@@ -331,9 +330,9 @@ if ($SkipILMerge -eq $False)
 $endTime = [DateTime]::UtcNow
 $diff = [math]::Round(($endTime - $startTime).TotalMinutes, 4)
 
-Write-Host
-Write-Host "Build ended at " $endTime
-Write-Host "Build took " $diff "(mins)"
-Write-Host
+Trace-Log
+Trace-Log "Build ended at $endTime"
+Trace-Log "Build took $diff minutes"
+Trace-Log
 
 popd
