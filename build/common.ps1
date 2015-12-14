@@ -1,4 +1,4 @@
-Function Trace-Log($TraceMessage){
+Function Trace-Log($TraceMessage = ''){
     Write-Host "[$(Trace-Time)]`t$TraceMessage" -ForegroundColor Cyan
 }
 

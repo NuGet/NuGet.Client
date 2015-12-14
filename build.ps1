@@ -1,7 +1,11 @@
+[CmdletBinding(DefaultParameterSetName='RegularBuild')]
 param (
-    [ValidateSet("debug", "release")][string]$Configuration="debug",
-    [ValidateSet("Release","rtm", "rc", "beta", "local")][string]$ReleaseLabel="local",
+    [ValidateSet("debug", "release")]
+    [string]$Configuration="debug",
+    [ValidateSet("Release","rtm", "rc", "beta", "local")]
+    [string]$ReleaseLabel="local",
     [string]$BuildNumber,
+    [Parameter(ParameterSetName='RegularBuild')]
     [switch]$SkipTests,
     [switch]$SkipRestore,
     [switch]$CleanCache,
@@ -11,27 +15,16 @@ param (
     [string]$NuGetPFXPath,
     [switch]$SkipXProj,
     [switch]$SkipSubModules,
-    [switch]$SkipCSProj
+    [switch]$SkipCSProj,
+    [Parameter(ParameterSetName='FastBuild')]
+    [switch]$Fast
 )
+
+$RunTests = (-not $SkipTests) -and (-not $Fast)
 
 . .\build\common.ps1
 
 ###Functions###
-
-function RestoreXProj($xprojFilePath)
-{
-    $xprojDir = Split-Path $xprojFilePath -Parent
-    $projectJsonFile = Join-Path $xprojDir 'project.json'
-
-    Trace-Log "Restoring $projectJsonFile"
-    Trace-Log "dnu restore '$projectJsonFile' -s https://www.myget.org/F/nuget-volatile/api/v3/index.json -s https://api.nuget.org/v3/index.json"
-    & dnu restore ""$projectJsonFile"" -s https://www.myget.org/F/nuget-volatile/api/v3/index.json -s https://api.nuget.org/v3/index.json
-
-    if ($LASTEXITCODE -ne 0)
-    {
-        throw "Restore failed $projectJsonFile"
-    }
-}
 
 ## Clean the machine level cache from all package
 function CleanCache()
@@ -72,6 +65,44 @@ function CleanCache()
     }
 }
 
+# Restore projects individually
+Function Restore-XProj {
+    param(
+        [parameter(ValueFromPipeline=$True)]
+        [string[]]$xprojDir
+    )
+    Process {
+        $projectJsonFile = Join-Path $xprojDir 'project.json'
+        $opts = @('restore', $projectJsonFile, '-s', 'https://www.myget.org/F/nuget-volatile/api/v3/index.json', '-s', 'https://api.nuget.org/v3/index.json')
+
+        Trace-Log "Restoring $projectJsonFile"
+        Trace-Log "dnu $opts"
+        & dnu $opts
+
+        if ($LASTEXITCODE -ne 0)
+        {
+            throw "Restore failed $projectJsonFile"
+        }
+    }
+}
+
+# Restore in parallel first to speed things up
+Function Restore-XProjFast {
+    param(
+        [string]$xprojDir
+    )
+    $opts = @('restore', $xprojDir, '--parallel', '--ignore-failed-sources', '-s', 'https://www.myget.org/F/nuget-volatile/api/v3/index.json', '-s', 'https://api.nuget.org/v3/index.json')
+
+    Trace-Log "Restoring $xprojDir"
+    Trace-Log "dnu $opts"
+    & dnu $opts
+
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "Restore failed $xprojDir"
+    }
+}
+
 ## Building XProj projects
 function BuildXproj()
 {
@@ -85,38 +116,36 @@ function BuildXproj()
     $env:DNX_ASSEMBLY_FILE_VERSION=$BuildNumber
 
     $xprojects = Get-ChildItem src -rec -Filter '*.xproj' |`
-        %{ $_.FullName } |`
-        ?{ -not $_.Contains('NuGet.CommandLine.XPlat') } # TODO: Remove this after fixing XPLAT!
+        %{ Split-Path $_.FullName -Parent } |`
+        ?{ -not $_.EndsWith('NuGet.CommandLine.XPlat') } # TODO: Remove this after fixing XPLAT!
 
     if (-not $SkipRestore)
     {
-        # Restore in parallel first to speed things up
-        & dnu restore "src\NuGet.Core" --parallel --ignore-failed-sources -s "https://www.myget.org/F/nuget-volatile/api/v3/index.json" -s "https://api.nuget.org/v3/index.json"
-
-        Trace-Log "Restoring XProj packages"
-        $xprojects | %{ RestoreXProj $_ }
-    }
-
-    foreach ($projectFile in $xprojects)
-    {
-        $xprojDir = Split-Path $projectFile -Parent
-        $projectJsonFile = Join-Path $xprojDir 'project.json'
-        $projectName= Split-Path $xprojDir -Leaf
-
-        $outDir = Join-Path $artifacts $projectName
-        Trace-Log ""
-        Trace-Log "dnu pack ""${xprojDir}"" --configuration $Configuration --out $outDir"
-        Trace-Log ""
-
-        & dnu pack ""${xprojDir}"" --configuration $Configuration --out $outDir
-
-        if ($LASTEXITCODE -ne 0)
+        if ($Fast)
         {
-            throw "Build failed $ProjectName"
+            Restore-XProjFast src\NuGet.Core
+        }
+        else
+        {
+            Trace-Log 'Restoring XProj packages'
+            $xprojects | Restore-XProj
         }
     }
 
-    if (-not $SkipTests)
+    $opts = , 'pack'
+    $opts += $xprojects
+    $opts += @('--configuration', $Configuration, '--out', $artifacts)
+
+    Trace-Log
+    Trace-Log "dnu $opts"
+    &dnu $opts
+
+    if ($LASTEXITCODE -ne 0)
+    {
+        throw "Build failed $ProjectName"
+    }
+
+    if ($RunTests)
     {
         # Test assemblies should not be signed
         if (Test-Path Env:\DNX_BUILD_KEY_FILE)
@@ -129,17 +158,21 @@ function BuildXproj()
             Remove-Item Env:\DNX_BUILD_DELAY_SIGN
         }
 
-        $xtests = Get-ChildItem test\NuGet.Core.Tests -rec -Filter '*.xproj' | %{ $_.FullName }
+        $xtests = Get-ChildItem test\NuGet.Core.Tests -rec -Filter '*.xproj' |`
+            %{ Split-Path $_.FullName -Parent }
 
-        # Restore in parallel to speed things up
-        & dnu restore "test\NuGet.Core.Tests" --parallel --ignore-failed-sources -s "https://www.myget.org/F/nuget-volatile/api/v3/index.json" -s "https://api.nuget.org/v3/index.json"
-
-        # Restore projects individually
-        $xtests | %{ RestoreXProj $_ }
-
-        foreach ($projectFile in $xtests)
+        if ($Fast)
         {
-            $srcDir = Split-Path $projectFile -Parent
+            Restore-XProjFast test\NuGet.Core.Tests
+        }
+        else
+        {
+            Trace-Log 'Restoring XProj packages'
+            $xtests | Restore-XProj
+        }
+
+        foreach ($srcDir in $xtests)
+        {
             Trace-Log "Running tests in $srcDir"
 
             pushd $srcDir
@@ -154,7 +187,7 @@ function BuildXproj()
     }
 
     ## Copying nupkgs
-    Trace-Log "Copying the packages to $nupkgsDir"
+    Trace-Log "Moving the packages to $nupkgsDir"
     Get-ChildItem $artifacts\*.nupkg -Recurse | % { Move-Item $_ $nupkgsDir }
 }
 
@@ -170,7 +203,7 @@ function BuildCSproj()
     & $nugetExe restore -msbuildVersion 14 .\NuGet.Clients.sln
 
     # Build the solution
-    & $msbuildExe .\NuGet.Clients.sln "/p:Configuration=$Configuration;ReleaseLabel=$ReleaseLabel;BuildNumber=$BuildNumber;RunTests=!$SkipTests"
+    & $msbuildExe .\NuGet.Clients.sln "/p:Configuration=$Configuration;ReleaseLabel=$ReleaseLabel;BuildNumber=$BuildNumber;RunTests=$RunTests"
 
     if ($LASTEXITCODE -ne 0)
     {
@@ -320,7 +353,7 @@ if (-not $SkipCSproj)
     BuildCSproj
 }
 
-if (-not $SkipILMerge)
+if ((-not $SkipILMerge) -and (-not $SkipCSProj))
 {
     ## Merging the NuGet.exe
     ILMergeNuGet
