@@ -36,5 +36,7 @@ namespace NuGet.ProjectManagement
         public void ReportError(string message)
         {
         }
+
+        public NuGetProjectActionType ActionType { get; set; }
     }
 }

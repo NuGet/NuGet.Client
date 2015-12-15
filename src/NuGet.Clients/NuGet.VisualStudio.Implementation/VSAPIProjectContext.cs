@@ -60,5 +60,7 @@ namespace NuGet.VisualStudio
             // no-op
             Debug.Fail(message);
         }
+
+        public NuGetProjectActionType ActionType { get; set; }
     }
 }

@@ -3,26 +3,11 @@
 
 using System;
 using NuGet.Packaging.Core;
+using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
 {
-    /// <summary>
-    /// Enum for the type of NuGetProjectAction
-    /// </summary>
-    public enum NuGetProjectActionType
-    {
-        /// <summary>
-        /// Install
-        /// </summary>
-        Install,
-
-        /// <summary>
-        /// Uninstall
-        /// </summary>
-        Uninstall
-    }
-
     /// <summary>
     /// NuGetProjectAction
     /// </summary>

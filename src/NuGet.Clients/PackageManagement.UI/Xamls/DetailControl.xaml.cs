@@ -83,8 +83,7 @@ namespace NuGet.PackageManagement.UI
         private void ProjectUninstallButtonClicked(object sender, EventArgs e)
         {
             var model = (PackageDetailControlModel)DataContext;
-            var userAction = UserAction.CreateUnInstallAction(model.Id);
-
+            var userAction = UserAction.CreateUnInstallAction(model.Id);            
             ExecuteUserAction(userAction);
         }
 
@@ -130,6 +129,7 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.ForceRemove = model.Options.ForceRemove;
                     nugetUi.Projects = model.GetSelectedProjects(action);
                     nugetUi.DisplayPreviewWindow = model.Options.ShowPreviewWindow;
+                    nugetUi.ProgressWindow.ActionType = action.Action;
                 });
         }
 

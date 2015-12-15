@@ -42,6 +42,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 UpdateActiveSourceRepository(Source);
             }
+
+            ActionType = NuGetProjectActionType.Install;
         }
 
         protected override void ProcessRecordCore()

@@ -85,6 +85,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 Projects = new List<NuGetProject> { Project };
             }
+
+            ActionType = NuGetProjectActionType.Install;
         }
 
         protected override void ProcessRecordCore()

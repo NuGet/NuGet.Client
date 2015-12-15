@@ -32,6 +32,8 @@ namespace NuGet.ProjectManagement
         /// before the actions are executed.
         /// </summary>
         XDocument OriginalPackagesConfig { get; set; }
+
+        NuGetProjectActionType ActionType { get; set; }
     }
 
     /// <summary>
@@ -58,5 +60,21 @@ namespace NuGet.ProjectManagement
         /// Error
         /// </summary>
         Error
+    }
+
+    /// <summary>
+    /// Enum for the type of NuGetProjectAction
+    /// </summary>
+    public enum NuGetProjectActionType
+    {
+        /// <summary>
+        /// Install
+        /// </summary>
+        Install,
+
+        /// <summary>
+        /// Uninstall
+        /// </summary>
+        Uninstall
     }
 }
