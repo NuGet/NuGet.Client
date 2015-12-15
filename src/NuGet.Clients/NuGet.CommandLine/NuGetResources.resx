@@ -5703,7 +5703,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
     <value>The version of dependency '{0}' is not specified.</value>
   </data>
   <data name="Warning_UnspecifiedDependencyVersionSolution" xml:space="preserve">
-    <value>Specifiy the version of dependency and rebuild your package.</value>
+    <value>Specify the version of dependency and rebuild your package.</value>
   </data>
   <data name="Warning_UnspecifiedDependencyVersionTitle" xml:space="preserve">
     <value>Specify version of dependencies.</value>
