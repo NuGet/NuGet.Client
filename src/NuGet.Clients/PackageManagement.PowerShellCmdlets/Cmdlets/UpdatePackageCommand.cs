@@ -85,6 +85,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 Projects = new List<NuGetProject> { Project };
             }
+
+            if (Reinstall)
+            {
+                ActionType = NuGetActionType.Reinstall;
+            }
+            else
+            {
+                ActionType = NuGetActionType.Update;
+            }
         }
 
         protected override void ProcessRecordCore()

@@ -38,5 +38,7 @@ namespace NuGet.PackageManagement.UI
         public void ReportError(string message)
         {
         }
+
+        public NuGetActionType ActionType { get; set; }
     }
 }

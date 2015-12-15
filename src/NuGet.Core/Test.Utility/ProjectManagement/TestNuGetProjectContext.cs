@@ -43,6 +43,8 @@ namespace Test.Utility
         public void ReportError(string message)
         {
         }
+
+        public NuGetActionType ActionType { get; set; }
     }
 
     public class TestExecutionContext : ExecutionContext
