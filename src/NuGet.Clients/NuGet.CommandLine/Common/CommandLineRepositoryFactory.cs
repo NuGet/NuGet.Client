@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using NuGet.Protocol.Core.Types;
+
 namespace NuGet.Common
 {
     public class CommandLineRepositoryFactory : PackageRepositoryFactory
@@ -32,16 +34,7 @@ namespace NuGet.Common
                             "{0} {1}", args.Request.Method, args.Request.RequestUri);
                     }
 
-                    string userAgent;
-                    if (NuGetTestMode.Enabled)
-                    {
-                        userAgent = HttpUtility.CreateUserAgentString(NuGetTestMode.NuGetTestClientName);
-                    }
-                    else
-                    {
-                        userAgent = HttpUtility.CreateUserAgentString(CommandLineConstants.UserAgent);
-                    }
-
+                    var userAgent = UserAgent.CreateUserAgentString(CommandLineConstants.UserAgent);
                     HttpUtility.SetUserAgent(args.Request, userAgent);
                 };
             }

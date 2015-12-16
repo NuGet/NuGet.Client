@@ -149,7 +149,7 @@ namespace NuGet.CommandLine
 
         private void PushPackage(string packagePath, string source, string apiKey, TimeSpan timeout)
         {
-            var userAgent = NuGetTestMode.Enabled ? NuGetTestMode.NuGetTestClientName : CommandLineConstants.UserAgent;
+            var userAgent = UserAgent.CreateUserAgentString(CommandLineConstants.UserAgent);
             var packageServer = new PackageServer(source, userAgent);
             packageServer.SendingRequest += (sender, e) =>
             {
