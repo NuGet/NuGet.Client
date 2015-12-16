@@ -154,20 +154,20 @@ namespace NuGet.Protocol.Core.Types
             private const string _testModeEnvironmentVariableName = "NuGetTestModeEnabled";
             public const string NuGetTestClientName = "NuGet Test Client";
 
-            public static bool Enabled
+            static NuGetTestMode()
             {
-                get
+                // cached for the life-time of the app domain
+                var testMode = Environment.GetEnvironmentVariable(_testModeEnvironmentVariableName);
+                if (string.IsNullOrEmpty(testMode))
                 {
-                    var testMode = Environment.GetEnvironmentVariable(_testModeEnvironmentVariableName);
-                    if (string.IsNullOrEmpty(testMode))
-                    {
-                        return false;
-                    }
-
-                    bool isEnabled;
-                    return bool.TryParse(testMode, out isEnabled) && isEnabled;
+                    Enabled = false;
                 }
+
+                bool isEnabled;
+                Enabled = bool.TryParse(testMode, out isEnabled) && isEnabled;
             }
+
+            public static bool Enabled { get; }
         }
     }
 }
