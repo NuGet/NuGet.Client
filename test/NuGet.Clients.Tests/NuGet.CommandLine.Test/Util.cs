@@ -12,6 +12,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 

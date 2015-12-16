@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test

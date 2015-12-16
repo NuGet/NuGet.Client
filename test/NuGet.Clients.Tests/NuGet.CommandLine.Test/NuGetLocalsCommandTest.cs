@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Runtime.InteropServices.ComTypes;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.CommandLine.Test

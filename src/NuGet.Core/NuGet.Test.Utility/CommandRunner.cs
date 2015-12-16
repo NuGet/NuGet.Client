@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-namespace NuGet.CommandLine.Test
+namespace NuGet.Test.Utility
 {
     public class CommandRunner
     {
@@ -15,9 +15,10 @@ namespace NuGet.CommandLine.Test
             string arguments,
             bool waitForExit,
             int timeOutInMilliseconds = 60000,
-           Action<StreamWriter> inputAction = null)
+            Action<StreamWriter> inputAction = null,
+            bool shareProcessObject = false)
         {
-            ProcessStartInfo psi = new ProcessStartInfo(Path.GetFullPath(process), arguments)
+            var psi = new ProcessStartInfo(Path.GetFullPath(process), arguments)
             {
                 WorkingDirectory = Path.GetFullPath(workingDirectory),
                 UseShellExecute = false,
@@ -29,11 +30,15 @@ namespace NuGet.CommandLine.Test
 
             int exitCode = 1;
 
-            var output = new StringBuilder();
-            var errors = new StringBuilder();
+            var output = new LockedStringBuilder();
+            var errors = new LockedStringBuilder();
 
-            using (Process p = new Process())
+            Process p = null;
+
+            try
             {
+                p = new Process();
+
                 p.OutputDataReceived += (o, e) =>
                 {
                     if (e.Data != null)
@@ -67,7 +72,10 @@ namespace NuGet.CommandLine.Test
                     if (!processExited)
                     {
                         p.Kill();
-                        throw new TimeoutException("nuget.exe timed out: " + psi.Arguments);
+
+                        var processName = Path.GetFileName(process);
+
+                        throw new TimeoutException($"{processName} timed out: " + psi.Arguments);
                     }
 
                     if (processExited)
@@ -76,8 +84,15 @@ namespace NuGet.CommandLine.Test
                     }
                 }
             }
+            finally
+            {
+                if (!shareProcessObject)
+                {
+                    p.Dispose();
+                }
+            }
 
-            return new CommandRunnerResult(exitCode, output.ToString(), errors.ToString());
+            return new CommandRunnerResult(p, exitCode, output, errors);
         }
     }
 }
