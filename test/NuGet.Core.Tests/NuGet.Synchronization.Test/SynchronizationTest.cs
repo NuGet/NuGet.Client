@@ -16,7 +16,7 @@ namespace NuGet.Commands.Test
     {
         private int _value1 = 0;
         private int _value2 = 0;
-        private SemaphoreSlim _waitForEverStarted = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim _waitForEverStarted = new SemaphoreSlim(0, 1);
 
         [Fact]
         public async void ConcurrencyUtilityBlocksInProc()
@@ -35,7 +35,7 @@ namespace NuGet.Commands.Test
             // We should now be blocked, so the value returned from here should not be returned until the token is cancelled.
             tasks[1] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, CancellationToken.None);
 
-            Assert.False(tasks[0].IsCompleted);
+            Assert.False(tasks[0].IsCompleted, $"task status: {tasks[0].Status}");
 
             _value1 = 1;
 
@@ -50,11 +50,10 @@ namespace NuGet.Commands.Test
 
             tasks[3] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, CancellationToken.None);
 
-            await Task.WhenAll(tasks);
-
-            Task.WaitAll(tasks);
+            await tasks[3];
 
             // Assert
+            Assert.Equal(TaskStatus.Canceled, tasks[0].Status);
             Assert.Equal(1, tasks[1].Result);
             Assert.Equal(1, tasks[2].Result);
             Assert.Equal(2, tasks[3].Result);
@@ -258,41 +257,43 @@ namespace NuGet.Commands.Test
             await result.Writer.FlushAsync();
         }
 
-        private Task<int> WaitForever1(CancellationToken token)
+        private async Task<int> WaitForever1(CancellationToken token)
         {
             _waitForEverStarted.Release();
 
-            return Task.Run(() =>
+            Assert.NotEqual(token, CancellationToken.None);
+
+            return await Task.Run(async () =>
             {
-                Task.Delay(-1, token);
-                return 0;
+                await Task.Delay(-1, token);
+                return 123;
             });
         }
 
-        private Task<int> WaitForever(CancellationToken token)
+        private async Task<int> WaitForever(CancellationToken token)
         {
-            return Task.Run(() =>
+            return await Task.Run(() =>
             {
                 Task.Delay(-1, token);
                 return 0;
             });
         }
 
-        private Task<int> WaitForInt1(CancellationToken token)
+        private async Task<int> WaitForInt1(CancellationToken token)
         {
             int i = _value1;
 
-            return Task.Run(() =>
+            return await Task.Run(() =>
             {
                 return Task.FromResult(i);
             });
         }
 
-        private Task<int> WaitForInt2(CancellationToken token)
+        private async Task<int> WaitForInt2(CancellationToken token)
         {
             int i = _value2;
 
-            return Task.Run(() =>
+            return await Task.Run(() =>
             {
                 return Task.FromResult(i);
             });
