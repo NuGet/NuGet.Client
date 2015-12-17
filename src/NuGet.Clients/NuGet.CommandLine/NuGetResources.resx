@@ -6106,8 +6106,8 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="AddCommand_SourceNotProvided" xml:space="preserve">
     <value>'-Source' switch is not provided. nupkg gets added to the 'Source' and is mandatory.</value>
   </data>
-  <data name="LocalsCommand_CacheCleared" xml:space="preserve">
-    <value>Cache cleared.</value>
+  <data name="LocalsCommand_ClearedSuccessful" xml:space="preserve">
+    <value>Local resources cleared.</value>
   </data>
   <data name="LocalsCommand_ClearingNuGetCache" xml:space="preserve">
     <value>Clearing NuGet cache: {0}</value>
@@ -6118,8 +6118,8 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="LocalsCommand_ClearingNuGetHttpCache" xml:space="preserve">
     <value>Clearing NuGet HTTP cache: {0}</value>
   </data>
-  <data name="LocalsCommand_CacheClearFailed" xml:space="preserve">
-    <value>Cache clear failed: one or more errors occured.</value>
+  <data name="LocalsCommand_ClearFailed" xml:space="preserve">
+    <value>Clearing local resources failed: one or more errors occured.</value>
   </data>
   <data name="LocalsCommand_InvalidLocalResourceName" xml:space="preserve">
     <value>An invalid local resource name was provided. Please provide one of the following values: http-cache, packages-cache, global-packages, all.</value>
