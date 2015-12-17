@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.PlatformAbstractions;
@@ -9,7 +11,7 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
-    public class ConcurrencyTests
+    public class SynchronizationTests
     {
         private bool _waitForEverStarted = false;
 
@@ -26,12 +28,14 @@ namespace NuGet.Commands.Test
             var tasks = new Task<int>[4];
 
             // Act
-            tasks[0] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForever1, CancellationToken.None);
+            tasks[0] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForever1, cts.Token);
 
             while (!_waitForEverStarted) { } // spinwait
 
             // We should now be blocked, so the value returned from here should not be returned until the token is cancelled.
             tasks[1] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, CancellationToken.None);
+
+            Assert.False(tasks[0].IsCompleted);
 
             _value1 = 1;
 
@@ -39,6 +43,7 @@ namespace NuGet.Commands.Test
 
             cts.Cancel();
 
+            await tasks[1]; // let the first tasks pass
             await tasks[2]; // let the first tasks pass
 
             _value1 = 2;
@@ -66,40 +71,37 @@ namespace NuGet.Commands.Test
             var tasks = new Task<int>[3];
 
             // Act
-            var result = Run(fileId, shouldThrow: false, shareProcessObject: true, debug: false);
-
-            // Make sure the process is locked
-            while (!result.Item2.StartsWith("Locked"))
+            using (var sync = await Run(fileId, shouldThrow: false, shareProcessObject: true, debug: false))
             {
-                if (result.Process.HasExited)
+                var result = sync.Result;
+
+                await WaitForLockToEngage(sync);
+
+                _value1 = 0;
+
+                // We should now be blocked, so the value returned from here should not be returned until the process has terminated.
+                tasks[0] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, CancellationToken.None);
+
+                _value1 = 1;
+
+                tasks[1] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, CancellationToken.None);
+
+                Assert.False(result.Process.HasExited);
+
+                await ReleaseLock(sync);
+
+                using (result.Process)
                 {
-                    throw new InvalidOperationException("Process failed: " + result.Item3);
+                    if (!result.Process.WaitForExit(10000))
+                    {
+                        throw new TimeoutException("Process timed out.");
+                    }
                 }
 
-                Thread.Sleep(1);
+                var fileIdReturned = result.Item2.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)[0];
+
+                Assert.Equal(fileId, fileIdReturned.Trim());
             }
-
-            _value1 = 0;
-
-            // We should now be blocked, so the value returned from here should not be returned until the process has terminated.
-            tasks[0] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, CancellationToken.None);
-
-            _value1 = 1;
-
-            tasks[1] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, CancellationToken.None);
-
-            Assert.False(result.Process.HasExited);
-
-            using (result.Process)
-            {
-                if (!result.Process.WaitForExit(10000))
-                {
-                    throw new TimeoutException("Process timed out.");
-                }
-            }
-
-            var fileIdReturned = result.Item2.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)[1];
-            Assert.Equal(fileId, fileIdReturned.Trim());
 
             await tasks[0]; // let the first tasks pass
             await tasks[1]; // let the second tasks pass
@@ -160,7 +162,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public void CrashingCommand()
+        public async void CrashingCommand()
         {
             // Arrange
 
@@ -168,26 +170,43 @@ namespace NuGet.Commands.Test
             var dummyFileName = Guid.NewGuid().ToString();
 
             // Act && Assert
-            var r = Run(dummyFileName, shouldThrow: true);
-
-            // Verify that the process crashed
-            Assert.True(1 == r.Item1, $"Failed to crash: {r.Item2} {r.Item3}");
-            Assert.StartsWith("System.InvalidOperationException: Aborted", r.Item3);
-
-            // Try to acquire the lock again with the same file name
-            try
+            using (var run = (await Run(dummyFileName, shouldThrow: true, debug: false, shareProcessObject: true)))
             {
-                r = Run(dummyFileName, shouldThrow: false);
-            }
-            catch (TimeoutException)
-            {
-                Assert.True(false, "Failed to acquire the lock and timed out");
-            }
+                await WaitForLockToEngage(run);
 
-            Assert.True(0 == r.Item1, $"Failed To get lock: {r.Item2} {r.Item3}");
+                var r1 = run.Result;
+
+                await ReleaseLock(run);
+
+                var exited = r1.Process.WaitForExit(1000);
+
+                Assert.True(exited, "Timeout waiting for crashing process to exit.");
+
+                // Verify that the process crashed
+                Assert.True(0 != r1.Process.ExitCode, $"Failed to crash: {r1.Item2} {r1.Item3}");
+                Assert.True(2 == r1.Process.ExitCode, $"Unexpeceted exit code: {r1.Item2} {r1.Item3}");
+
+                Assert.Empty(r1.Item3);
+
+                // Try to acquire the lock again with the same file name
+                using (var run2 = await Run(dummyFileName, shouldThrow: false, shareProcessObject: true, debug: false))
+                {
+                    await WaitForLockToEngage(run2);
+
+                    var r2 = run2.Result;
+
+                    await ReleaseLock(run2);
+
+                    exited = r2.Process.WaitForExit(1000);
+
+                    Assert.True(exited, "Timeout waiting for second process to exit/failed to get lock.");
+
+                    Assert.True(0 == r2.Process.ExitCode, $"Failed To get lock: {r2.Item2} {r2.Item3}");
+                }
+            }
         }
 
-        private CommandRunnerResult Run(string fileName, bool shouldThrow, bool shareProcessObject = false, bool debug = false)
+        private async Task<SyncdRunResult> Run(string fileName, bool shouldThrow, bool shareProcessObject = false, bool debug = false)
         {
             var runtimePath = PlatformServices.Default.Runtime.RuntimePath;
             var dnxPath = Path.Combine(runtimePath, "dnx.exe");
@@ -202,16 +221,41 @@ namespace NuGet.Commands.Test
             // Use a dummy file name so the whole system doesn't get locked
             var dummyFileName = Guid.NewGuid().ToString();
 
+            var result = new SyncdRunResult();
+
+            result.Start();
+
             // Act && Assert
             var r = CommandRunner.Run(
                 dnxPath,
                 Directory.GetCurrentDirectory(),
-                $"-p \"{testAppPath}\" run {debugFlag} {fileName} {throwFlag}",
-                waitForExit: !shareProcessObject,
+                $"-p \"{testAppPath}\" run {debugFlag} {fileName} {result.Port} {throwFlag}",
+                waitForExit: false,
                 timeOutInMilliseconds: 100000,
+                inputAction: null,
                 shareProcessObject: shareProcessObject);
 
-            return r;
+            result.Result = r;
+
+            await result.Connect();
+
+            return result;
+        }
+
+        private async Task WaitForLockToEngage(SyncdRunResult result)
+        {
+            var data = await result.Reader.ReadLineAsync();
+
+            if (data.Trim() != "Locked")
+            {
+                throw new InvalidOperationException($"Unexpected output from process: {data}");
+            }
+        }
+
+        private async Task ReleaseLock(SyncdRunResult result)
+        {
+            await result.Writer.WriteLineAsync("Go");
+            await result.Writer.FlushAsync();
         }
 
         private Task<int> WaitForever1(CancellationToken token)
@@ -252,6 +296,53 @@ namespace NuGet.Commands.Test
             {
                 return Task.FromResult(i);
             });
+        }
+
+        private class SyncdRunResult : IDisposable
+        {
+            public CommandRunnerResult Result { get; set; }
+
+            private TcpListener Listener { get; set; }
+            private TcpClient Client { get; set; }
+            public StreamReader Reader { get; private set; }
+            public StreamWriter Writer { get; private set; }
+
+            public int Port { get; private set; }
+
+            public void Start()
+            {
+                Port = 2224;
+                bool done = false;
+                while (!done)
+                {
+                    try
+                    {
+                        Listener = new TcpListener(IPAddress.Loopback, Port);
+                        Listener.Start();
+                        done = true;
+                    }
+                    catch
+                    {
+                        Port++;
+                    }
+                }
+            }
+
+            public async Task Connect()
+            {
+                Client = await Listener.AcceptTcpClientAsync();
+
+                var stream = Client.GetStream();
+                Reader = new StreamReader(stream);
+                Writer = new StreamWriter(stream);
+            }
+
+            public void Dispose()
+            {
+                using (Client) { }
+
+                Listener.Stop();
+            }
         }
     }
 }

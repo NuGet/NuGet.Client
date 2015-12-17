@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -10,12 +12,14 @@ namespace SynchronizationTestApp
     public class Program
     {
         private static bool _reportStarted = false;
+        private static bool _shouldThrow = false;
+        private static int _port = 0;
 
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
             if (args.Length == 0)
             {
-                throw new InvalidOperationException("usage: [--debug] filename [-throw]");
+                throw new InvalidOperationException("usage: [--debug] filename port [-throw]");
             }
 
             if (args[0].Equals("--Debug"))
@@ -33,37 +37,54 @@ namespace SynchronizationTestApp
                 throw new InvalidOperationException("Pass a filename");
             }
 
-            bool shouldThrow = args.Length > 1 && args[1].Equals("-throw", StringComparison.Ordinal);
-            _reportStarted = !shouldThrow;
+            _port = int.Parse(args[1]);
 
-            var lockedTask = ConcurrencyUtilities.ExecuteWithFileLocked(filename, WaitAMinute, CancellationToken.None);
+            _shouldThrow = args.Length > 2 && args[2].Equals("-throw", StringComparison.Ordinal);
 
-            if (shouldThrow)
-            {
-                // make sure locking happens before we throw;
-                lockedTask.Wait(100);
+            _reportStarted = !_shouldThrow;
 
-                throw new InvalidOperationException("Aborted");
-            }
-            else
+            _client = new TcpClient();
+
+            var lockedTask = ConcurrencyUtilities.ExecuteWithFileLocked(filename, WaitInALock, CancellationToken.None);
+
+            try
             {
                 lockedTask.Wait();
             }
-
-            Console.WriteLine(filename);
-        }
-
-        public static Task<object> WaitAMinute(CancellationToken token)
-        {
-            if (_reportStarted)
+            catch (AggregateException)
             {
-                Console.WriteLine("Locked");
+                return 2;
             }
 
-            return Task.Run<object>(async () =>
+            Console.WriteLine(filename);
+
+            return 0;
+        }
+
+        static TcpClient _client;
+
+        public static Task<object> WaitInALock(CancellationToken token)
+        {
+            return Task.Run(async () =>
             {
-                await Task.Delay(TimeSpan.FromSeconds(5));
-                return null;
+                await _client.ConnectAsync("127.0.0.1", _port);
+
+                var stream = _client.GetStream();
+                var writer = new StreamWriter(stream);
+                var reader = new StreamReader(stream);
+
+                await writer.WriteLineAsync("Locked");
+                await writer.FlushAsync();
+
+                await reader.ReadLineAsync();
+
+                if (_shouldThrow)
+                {
+                    // Do a SO instead
+                    throw new InvalidOperationException("Aborted");
+                }
+
+                return new object();
             });
         }
     }
