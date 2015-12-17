@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.PlatformAbstractions;
 using NuGet.Common;
 using NuGet.Test.Utility;
+using SynchronizationTestApp;
 using Xunit;
 
 namespace NuGet.Commands.Test
 {
     public class SynchronizationTests
     {
-        private bool _waitForEverStarted = false;
-
         private int _value1 = 0;
         private int _value2 = 0;
+        private SemaphoreSlim _waitForEverStarted = new SemaphoreSlim(1, 1);
 
         [Fact]
         public async void ConcurrencyUtilityBlocksInProc()
@@ -30,7 +30,7 @@ namespace NuGet.Commands.Test
             // Act
             tasks[0] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForever1, cts.Token);
 
-            while (!_waitForEverStarted) { } // spinwait
+            await _waitForEverStarted.WaitAsync();
 
             // We should now be blocked, so the value returned from here should not be returned until the token is cancelled.
             tasks[1] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, CancellationToken.None);
@@ -71,7 +71,7 @@ namespace NuGet.Commands.Test
             var tasks = new Task<int>[3];
 
             // Act
-            using (var sync = await Run(fileId, shouldThrow: false, shareProcessObject: true, debug: false))
+            using (var sync = await Run(fileId, shouldAbandon: false, shareProcessObject: true, debug: false))
             {
                 var result = sync.Result;
 
@@ -170,7 +170,7 @@ namespace NuGet.Commands.Test
             var dummyFileName = Guid.NewGuid().ToString();
 
             // Act && Assert
-            using (var run = (await Run(dummyFileName, shouldThrow: true, debug: false, shareProcessObject: true)))
+            using (var run = (await Run(dummyFileName, shouldAbandon: true, debug: false, shareProcessObject: true)))
             {
                 await WaitForLockToEngage(run);
 
@@ -183,13 +183,13 @@ namespace NuGet.Commands.Test
                 Assert.True(exited, "Timeout waiting for crashing process to exit.");
 
                 // Verify that the process crashed
-                Assert.True(0 != r1.Process.ExitCode, $"Failed to crash: {r1.Item2} {r1.Item3}");
-                Assert.True(2 == r1.Process.ExitCode, $"Unexpeceted exit code: {r1.Item2} {r1.Item3}");
+                Assert.True(-1 == r1.Process.ExitCode,
+                    $"Failed to self kill, exitcode {r1.Process.ExitCode} {r1.Item2} {r1.Item3}");
 
                 Assert.Empty(r1.Item3);
 
                 // Try to acquire the lock again with the same file name
-                using (var run2 = await Run(dummyFileName, shouldThrow: false, shareProcessObject: true, debug: false))
+                using (var run2 = await Run(dummyFileName, shouldAbandon: false, shareProcessObject: true, debug: false))
                 {
                     await WaitForLockToEngage(run2);
 
@@ -206,7 +206,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        private async Task<SyncdRunResult> Run(string fileName, bool shouldThrow, bool shareProcessObject = false, bool debug = false)
+        private async Task<SyncdRunResult> Run(string fileName, bool shouldAbandon, bool shareProcessObject = false, bool debug = false)
         {
             var runtimePath = PlatformServices.Default.Runtime.RuntimePath;
             var dnxPath = Path.Combine(runtimePath, "dnx.exe");
@@ -215,8 +215,8 @@ namespace NuGet.Commands.Test
             var testAppName = nameof(SynchronizationTestApp);
             var testAppPath = Path.Combine(basePath, "src", "NuGet.Core", testAppName);
 
-            var throwFlag = shouldThrow ? "-throw" : string.Empty;
-            var debugFlag = debug ? "--Debug" : string.Empty;
+            var throwFlag = shouldAbandon ? Program.AbandonSwitch : string.Empty;
+            var debugFlag = debug ? Program.DebugSwitch : string.Empty;
 
             // Use a dummy file name so the whole system doesn't get locked
             var dummyFileName = Guid.NewGuid().ToString();
@@ -260,7 +260,7 @@ namespace NuGet.Commands.Test
 
         private Task<int> WaitForever1(CancellationToken token)
         {
-            _waitForEverStarted = true;
+            _waitForEverStarted.Release();
 
             return Task.Run(() =>
             {
