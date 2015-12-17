@@ -5803,20 +5803,20 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cache cleared..
+        ///   Looks up a localized string similar to Local resources cleared..
         /// </summary>
-        public static string LocalsCommand_CacheCleared {
+        public static string LocalsCommand_ClearedSuccessful {
             get {
-                return ResourceManager.GetString("LocalsCommand_CacheCleared", resourceCulture);
+                return ResourceManager.GetString("LocalsCommand_ClearedSuccessful", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cache clear failed: one or more errors occured..
+        ///   Looks up a localized string similar to Clearing local resources failed: one or more errors occured..
         /// </summary>
-        public static string LocalsCommand_CacheClearFailed {
+        public static string LocalsCommand_ClearFailed {
             get {
-                return ResourceManager.GetString("LocalsCommand_CacheClearFailed", resourceCulture);
+                return ResourceManager.GetString("LocalsCommand_ClearFailed", resourceCulture);
             }
         }
         

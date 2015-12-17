@@ -125,12 +125,12 @@ namespace NuGet.CommandLine.Commands
             if (!success)
             {
                 throw new CommandLineException(
-                    LocalizedResourceManager.GetString(nameof(NuGetResources.LocalsCommand_CacheClearFailed)));
+                    LocalizedResourceManager.GetString(nameof(NuGetResources.LocalsCommand_ClearFailed)));
             }
             else
             {
                 Console.WriteLine(
-                    LocalizedResourceManager.GetString(nameof(NuGetResources.LocalsCommand_CacheCleared)));
+                    LocalizedResourceManager.GetString(nameof(NuGetResources.LocalsCommand_ClearedSuccessful)));
             }
         }
 
