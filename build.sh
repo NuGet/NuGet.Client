@@ -6,11 +6,11 @@ if ! type dnvm > /dev/null 2>&1; then
 fi
 
 if ! type dnx > /dev/null 2>&1 || [ -z "$SKIP_DNX_INSTALL" ]; then
-    dnvm install 1.0.0-beta7 -runtime coreclr -alias default
-    dnvm install 1.0.0-beta7 -runtime mono -alias default
+    dnvm install 1.0.0-rc1-update1 -runtime coreclr -alias default
+    dnvm install 1.0.0-rc1-update1 -runtime mono -alias default
 fi
 
-dnvm use 1.0.0-beta7 -runtime coreclr
+dnvm use 1.0.0-rc1-update1 -runtime coreclr
 
 # init the repo
 
@@ -33,12 +33,12 @@ do
     fi
 
     echo "Running tests in $testProject on Mono"
-    dnvm use 1.0.0-beta7 -runtime mono
+    dnvm use 1.0.0-rc1-update1 -runtime mono
     dnx --project $testProject test -parallel none
 
     if grep -q dnxcore50 "$testProject"; then    
         echo "Running tests in $testProject on CoreCLR"
-        dnvm use 1.0.0-beta7 -runtime coreclr
+        dnvm use 1.0.0-rc1-update1 -runtime coreclr
         dnx --project $testProject test -parallel none
     else
         echo "Skipping the tests in $testProject on CoreCLR"
