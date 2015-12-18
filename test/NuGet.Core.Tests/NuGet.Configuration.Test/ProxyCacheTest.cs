@@ -1,14 +1,23 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if !DNXCORE50
 using System.Net;
 using Moq;
+#endif
 using Xunit;
 
 namespace NuGet.Configuration.Test
 {
     public class ProxyCacheTest
     {
+        [Fact(Skip = "Proxy feature is disabled on CoreCLR, need to enable and then all the tests below")]
+        public void ProxyTestsAreDisabledOnCoreClr()
+        {
+        }
+
+#if !DNXCORE50
+
         private static readonly string _password = EncryptionUtility.EncryptString("password");
 
         [Fact]
@@ -158,5 +167,6 @@ namespace NuGet.Configuration.Test
                 Assert.Equal(expected.Password, credentials.Password);
             }
         }
+#endif
     }
 }

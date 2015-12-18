@@ -988,6 +988,7 @@ namespace NuGet.Configuration.Test
             }
         }
 
+#if !DNXCORE50
         [Fact]
         public void SettingsUtility_SetEncryptedValue()
         {
@@ -1033,6 +1034,7 @@ namespace NuGet.Configuration.Test
                 Assert.Equal("value", result);
             }
         }
+#endif
 
         [Fact]
         public void SettingsUtility_GetDecryptedValueWithEmptyValueReturnsEmptyString()

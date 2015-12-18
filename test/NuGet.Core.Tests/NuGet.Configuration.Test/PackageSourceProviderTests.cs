@@ -111,7 +111,6 @@ namespace NuGet.Configuration.Test
             using (var nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.config");
-                File.Create(nugetConfigFilePath).Close();
 
                 var randomURL = "https://www.somerandomURL.com/";
                 var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + randomURL + "' />";
@@ -148,7 +147,6 @@ namespace NuGet.Configuration.Test
             using (var nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.config");
-                File.Create(nugetConfigFilePath).Close();
 
                 var randomURL = "https://www.somerandomURL.com/";
                 var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V3FeedUrl + "' />";
@@ -190,7 +188,6 @@ namespace NuGet.Configuration.Test
             using (var nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.config");
-                File.Create(nugetConfigFilePath).Close();
 
                 var enabledReplacement = @"<add key='anotherName' value='" + NuGetConstants.V3FeedUrl + "' />";
                 enabledReplacement = enabledReplacement + @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
@@ -233,7 +230,6 @@ namespace NuGet.Configuration.Test
             using (var nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.config");
-                File.Create(nugetConfigFilePath).Close();
 
                 var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V3FeedUrl + "' />";
                 enabledReplacement = enabledReplacement + @"<add key='anotherName' value='" + NuGetConstants.V2FeedUrl + "' />";
@@ -275,7 +271,6 @@ namespace NuGet.Configuration.Test
             using (var nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
-                File.Create(nugetConfigFilePath).Close();
 
                 var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
                 var disabledReplacement = string.Empty;
@@ -315,7 +310,6 @@ namespace NuGet.Configuration.Test
             using (var nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
-                File.Create(nugetConfigFilePath).Close();
 
                 var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
                 var disabledReplacement = string.Empty;
@@ -362,7 +356,6 @@ namespace NuGet.Configuration.Test
             using (var nugetConfigFileFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
-                File.Create(nugetConfigFilePath).Close();
 
                 var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
                 var fileContents = CreateNuGetConfigContent(enabledReplacement);
@@ -1549,6 +1542,7 @@ namespace NuGet.Configuration.Test
             Assert.Null(values[1].Password);
         }
 
+#if !DNXCORE50
         [Fact]
         public void LoadPackageSourcesReadsCredentialPairsFromSettings()
         {
@@ -1579,6 +1573,7 @@ namespace NuGet.Configuration.Test
             Assert.Equal("topsecret", values[1].Password);
             Assert.False(values[1].IsPasswordClearText);
         }
+#endif
 
         [Fact]
         public void LoadPackageSourcesReadsClearTextCredentialPairsFromSettings()
@@ -1793,6 +1788,7 @@ namespace NuGet.Configuration.Test
             settings.Verify();
         }
 
+#if !DNXCORE50
         [Fact]
         public void SavePackageSourcesSavesCredentials()
         {
@@ -1829,6 +1825,7 @@ namespace NuGet.Configuration.Test
             // Assert
             settings.Verify();
         }
+#endif
 
         [Fact]
         public void SavePackageSourcesSavesClearTextCredentials()

@@ -36,7 +36,6 @@ namespace NuGet.Configuration
             {
                 var nugetConfigFile = "NuGetDefaults.config";
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
-                File.Create(nugetConfigFilePath).Close();
 
                 var enabledReplacement = @"<add key='" + name1 + "' value='" + feed1 + "' />";
 
@@ -71,7 +70,6 @@ namespace NuGet.Configuration
             {
                 var nugetConfigFile = "NuGetDefaults.config";
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
-                File.Create(nugetConfigFilePath).Close();
 
                 var enabledReplacement = @"<add key='" + name1 + "' value='" + feed1;
 
@@ -95,7 +93,6 @@ namespace NuGet.Configuration
             {
                 var nugetConfigFile = "NuGetDefaults.config";
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
-                File.Create(nugetConfigFilePath).Close();
 
                 var configurationDefaultsContent = @"<configuration></configuration>";
                 File.WriteAllText(nugetConfigFilePath, configurationDefaultsContent);
@@ -162,7 +159,6 @@ namespace NuGet.Configuration
             {
                 var nugetConfigFile = "NuGetDefaults.config";
                 var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, nugetConfigFile);
-                File.Create(nugetConfigFilePath).Close();
 
                 var configurationDefaultsContent = @"<configuration></configuration>";
                 File.WriteAllText(nugetConfigFilePath, configurationDefaultsContent);

@@ -30,7 +30,7 @@ namespace NuGet.Configuration
 
         }
 #else
-        // It's not likely that http proxy settings are set in machine wide settings, 
+        // It's not likely that http proxy settings are set in machine wide settings,
         // so not passing machine wide settings to Settings.LoadDefaultSettings() should be fine.
         private static readonly Lazy<ProxyCache> _instance = new Lazy<ProxyCache>(() => new ProxyCache(Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null), new EnvironmentVariableWrapper()));
 
@@ -89,7 +89,7 @@ namespace NuGet.Configuration
             var host = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationContants.HostKey);
             if (!String.IsNullOrEmpty(host))
             {
-                // The host is the minimal value we need to assume a user configured proxy. 
+                // The host is the minimal value we need to assume a user configured proxy.
                 var webProxy = new WebProxy(host);
                 var userName = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationContants.UserKey);
                 var password = SettingsUtility.GetDecryptedValue(_settings, SettingsUtility.ConfigSection, ConfigurationContants.PasswordKey);
