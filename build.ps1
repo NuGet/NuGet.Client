@@ -28,6 +28,9 @@ $RunTests = (-not $SkipTests) -and (-not $Fast)
 
 Write-Host ("`r`n" * 3)
 Trace-Log ('=' * 60)
+Function BuildXproj() {
+        throw "Build failed $ProjectName"
+    }
 
 $startTime = [DateTime]::UtcNow
 if (-not $BuildNumber) {
