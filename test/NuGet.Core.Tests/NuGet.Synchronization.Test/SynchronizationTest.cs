@@ -129,11 +129,12 @@ namespace NuGet.Commands.Test
             var tasks = new Task<int>[4];
 
             // Act
-            tasks[0] = ConcurrencyUtilities.ExecuteWithFileLocked("x" + fileId, WaitForever, CancellationToken.None);
+            tasks[0] = ConcurrencyUtilities.ExecuteWithFileLocked("x" + fileId, WaitForever, cts.Token);
 
             _value2 = 0;
 
-            // We should now be blocked, so the value returned from here should not be returned until the token is cancelled.
+            // We should now be blocked, so the value returned from here should not be
+            // returned until the token is cancelled.
             tasks[1] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt2, CancellationToken.None);
 
             await tasks[1];
@@ -150,9 +151,10 @@ namespace NuGet.Commands.Test
 
             tasks[3] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt2, CancellationToken.None);
 
-            await Task.WhenAll(tasks);
+            await tasks[3];
 
-            Task.WaitAll(tasks);
+            await tasks[0];
+            await Task.WhenAll(tasks);
 
             // Assert
             Assert.Equal(0, tasks[1].Result);
@@ -285,18 +287,25 @@ namespace NuGet.Commands.Test
 
         private async Task<int> WaitForever(CancellationToken token)
         {
-            return await Task.Run(() =>
+            return await Task.Run(async () =>
             {
-                Task.Delay(-1, token);
+                try
+                {
+                    await Task.Delay(-1, token);
+                }
+                catch (TaskCanceledException)
+                {
+                }
+
                 return 0;
             });
         }
 
-        private async Task<int> WaitForInt1(CancellationToken token)
+        private Task<int> WaitForInt1(CancellationToken token)
         {
             int i = _value1;
 
-            return await Task.Run(() =>
+            return Task.Run(() =>
             {
                 return Task.FromResult(i);
             });

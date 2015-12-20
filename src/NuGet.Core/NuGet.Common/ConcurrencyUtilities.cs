@@ -10,44 +10,47 @@ using System.Threading.Tasks;
 namespace NuGet.Common
 {
     internal static class ConcurrencyUtilities
-    {   
+    {
         public async static Task<T> ExecuteWithFileLocked<T>(string filePath, Func<CancellationToken, Task<T>> action, CancellationToken token)
         {
-            bool completed = false;
-            while (!completed && !token.IsCancellationRequested)
+            return await Task.Run(async () =>
             {
-                var createdNew = false;
-                using (var fileLock = SemaphoreWrapper.Create(name: FilePathToLockName(filePath),
-                    createdNew: out createdNew))
+                bool completed = false;
+                while (!completed && !token.IsCancellationRequested)
                 {
-                    try
+                    var createdNew = false;
+                    using (var fileLock = SemaphoreWrapper.Create(name: FilePathToLockName(filePath),
+                        createdNew: out createdNew))
                     {
-                        // If this lock is already acquired by another process, wait until we can acquire it
-                        if (!createdNew)
+                        try
                         {
-                            var signaled = fileLock.WaitOne(TimeSpan.FromSeconds(5));
-                            if (!signaled)
+                            // If this lock is already acquired by another process, wait until we can acquire it
+                            if (!createdNew)
                             {
-                                // Timeout and retry
-                                continue;
+                                var signaled = fileLock.WaitOne(TimeSpan.FromSeconds(5));
+                                if (!signaled)
+                                {
+                                    // Timeout and retry
+                                    continue;
+                                }
                             }
-                        }
 
-                        completed = true;
-                        return await action(token);
-                    }
-                    finally
-                    {
-                        if (completed)
+                            completed = true;
+                            return await action(token);
+                        }
+                        finally
                         {
-                            fileLock.Release();
+                            if (completed)
+                            {
+                                fileLock.Release();
+                            }
                         }
                     }
                 }
-            }
 
-            // should never get here
-            throw new TaskCanceledException($"Failed to acquire semaphore for file: {filePath}");
+                // should never get here
+                throw new TaskCanceledException($"Failed to acquire semaphore for file: {filePath}");
+            });
         }
 
         private static void HandleMutex(string name,
@@ -101,13 +104,13 @@ namespace NuGet.Common
             // to a unique lock name.
             return filePath.Replace(Path.DirectorySeparatorChar, '_');
         }
-        
+
         private class SemaphoreWrapper : IDisposable
         {
 #if DNXCORE50
             private static Dictionary<string, SemaphoreWrapper> _nameWrapper =
                 new Dictionary<string, SemaphoreWrapper>();
-                
+
             private readonly string _name;
             private volatile int _refCount = 0;
 #endif
@@ -118,7 +121,7 @@ namespace NuGet.Common
             {
                 return Create(0, 1, name, out createdNew);
             }
-            
+
             public static SemaphoreWrapper Create(int initialCount, int maximumCount, string name, out bool createdNew)
             {
 #if DNXCORE50
@@ -133,7 +136,7 @@ namespace NuGet.Common
 
                     lock (_nameWrapper)
                     {
-                        
+
                         if (!_nameWrapper.TryGetValue(name, out wrapper))
                         {
                             createdNewLocal = true;
