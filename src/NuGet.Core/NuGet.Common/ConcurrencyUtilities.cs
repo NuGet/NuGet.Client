@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,46 +12,46 @@ namespace NuGet.Common
 {
     internal static class ConcurrencyUtilities
     {
-        public async static Task<T> ExecuteWithFileLocked<T>(string filePath, Func<CancellationToken, Task<T>> action, CancellationToken token)
+        public async static Task<T> ExecuteWithFileLocked<T>(string filePath,
+            Func<CancellationToken, Task<T>> action,
+            CancellationToken token)
         {
-            return await Task.Run(async () =>
-            {
-                bool completed = false;
-                while (!completed && !token.IsCancellationRequested)
-                {
-                    var createdNew = false;
-                    using (var fileLock = SemaphoreWrapper.Create(name: FilePathToLockName(filePath),
-                        createdNew: out createdNew))
-                    {
-                        try
-                        {
-                            // If this lock is already acquired by another process, wait until we can acquire it
-                            if (!createdNew)
-                            {
-                                var signaled = fileLock.WaitOne(TimeSpan.FromSeconds(5));
-                                if (!signaled)
-                                {
-                                    // Timeout and retry
-                                    continue;
-                                }
-                            }
+            var createdNew = false;
+            var signaled = false;
 
-                            completed = true;
-                            return await action(token);
-                        }
-                        finally
+            using (var fileLock = SemaphoreWrapper.Create(name: FilePathToLockName(filePath),
+                                                          createdNew: out createdNew))
+            {
+                try
+                {
+                    if (createdNew)
+                    {
+                        signaled = true;
+                    }
+                    else
+                    {
+                        // Acquire the token - but don't block the calling thread.
+                        await Task.Run(() =>
                         {
-                            if (completed)
+                            while (!token.IsCancellationRequested && !signaled)
                             {
-                                fileLock.Release();
+                                // If this lock is already acquired by another process, wait until we can acquire it
+                                signaled = fileLock.WaitOne(TimeSpan.FromMilliseconds(100));
                             }
-                        }
+                        });
+                    }
+
+                    Debug.Assert(signaled == true);
+                    return await action(token);
+                }
+                finally
+                {
+                    if (signaled)
+                    {
+                        fileLock.Release();
                     }
                 }
-
-                // should never get here
-                throw new TaskCanceledException($"Failed to acquire semaphore for file: {filePath}");
-            });
+            }
         }
 
         private static void HandleMutex(string name,
