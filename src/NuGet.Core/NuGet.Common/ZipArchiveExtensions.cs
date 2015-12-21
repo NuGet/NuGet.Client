@@ -88,13 +88,7 @@ namespace NuGet.Common
                         Directory.CreateDirectory(targetEntryPath);
                     }
 
-                    using (var entryStream = entry.Open())
-                    {
-                        using (var targetStream = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None))
-                        {
-                            entryStream.CopyTo(targetStream);
-                        }
-                    }
+                    ZipFileExtensions.ExtractToFile(entry, targetFile, /*overwrite*/true);
                 }
             }
         }

@@ -178,14 +178,7 @@ namespace NuGet.Packaging
             }
 
             // Nuspec found, extract and leave the rest
-            using (var entryStream = nuspecEntry.Open())
-            {
-                using (var targetStream
-                    = new FileStream(targetNuspec, FileMode.Create, FileAccess.Write, FileShare.None))
-                {
-                    entryStream.CopyTo(targetStream);
-                }
-            }
+            ZipFileExtensions.ExtractToFile(nuspecEntry, targetNuspec, /*overwrite*/true);
         }
 
         // DNU REFACTORING TODO: delete this temporary workaround after we have NuSpecFormatter.Read()
@@ -294,14 +287,7 @@ namespace NuGet.Packaging
                         Directory.CreateDirectory(targetEntryPath);
                     }
 
-                    using (var entryStream = entry.Open())
-                    {
-                        using (var targetStream
-                            = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None))
-                        {
-                            entryStream.CopyTo(targetStream);
-                        }
-                    }
+                    ZipFileExtensions.ExtractToFile(entry, targetFile, /*overwrite*/true);
                 }
             }
         }
