@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DefaultConfigurationFilePreserver.cs" />
+    <Compile Include="LocalResourceUtilsTest.cs" />
     <Compile Include="MockServer.cs" />
     <Compile Include="MockServerResource.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -66,6 +67,7 @@
     </Compile>
     <Compile Include="MSBuildProjectSystemTests.cs" />
     <Compile Include="MSBuildUtilityTest.cs" />
+    <Compile Include="NativeMethods.cs" />
     <Compile Include="NetworkCallCountTest.cs" />
     <Compile Include="NuGetAddCommandTests.cs" />
     <Compile Include="NuGetConfigCommandTest.cs" />

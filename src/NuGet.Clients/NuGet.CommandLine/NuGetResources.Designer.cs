@@ -5848,6 +5848,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to delete &apos;{0}&apos;..
+        /// </summary>
+        public static string LocalsCommand_FailedToDeletePath {
+            get {
+                return ResourceManager.GetString("LocalsCommand_FailedToDeletePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An invalid local resource name was provided. Please provide one of the following values: http-cache, packages-cache, global-packages, all..
         /// </summary>
         public static string LocalsCommand_InvalidLocalResourceName {
@@ -5862,6 +5871,15 @@ namespace NuGet.CommandLine {
         public static string LocalsCommand_LocalResourcePathNotSet {
             get {
                 return ResourceManager.GetString("LocalsCommand_LocalResourcePathNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Local resources partially cleared..
+        /// </summary>
+        public static string LocalsCommand_LocalsPartiallyCleared {
+            get {
+                return ResourceManager.GetString("LocalsCommand_LocalsPartiallyCleared", resourceCulture);
             }
         }
         

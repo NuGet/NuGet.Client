@@ -6136,4 +6136,10 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="Error_FailedToCreateRandomFileForP2P" xml:space="preserve">
     <value>Failed to create a temporary file while trying to get project to project references.</value>
   </data>
+  <data name="LocalsCommand_FailedToDeletePath" xml:space="preserve">
+    <value>Failed to delete '{0}'.</value>
+  </data>
+  <data name="LocalsCommand_LocalsPartiallyCleared" xml:space="preserve">
+    <value>Local resources partially cleared.</value>
+  </data>
 </root>
