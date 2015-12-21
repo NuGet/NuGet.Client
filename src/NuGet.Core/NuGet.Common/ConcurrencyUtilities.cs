@@ -41,7 +41,6 @@ namespace NuGet.Common
                         });
                     }
 
-                    Debug.Assert(signaled == true);
                     return await action(token);
                 }
                 finally
