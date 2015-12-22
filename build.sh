@@ -19,7 +19,7 @@ git submodule update
 
 # restore packages
 dnu restore
-dnu restore test/NuGet.Core.Client
+dnu restore test/NuGet.Core.Tests
 
 # run tests
 for testProject in `find test/NuGet.Core.Tests -type f -name project.json`
