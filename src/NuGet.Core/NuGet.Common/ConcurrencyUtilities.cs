@@ -27,12 +27,10 @@ namespace NuGet.Common
 
             while (true)
             {
-                FileStream fs;
+                FileStream fs = null;
                 try
                 {
                     fs = new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
-
-                    await fs.WriteAsync(bytes, 0, bytes.Length, token);
                 }
                 catch (DirectoryNotFoundException)
                 {
@@ -44,6 +42,14 @@ namespace NuGet.Common
 
                     await Task.Delay(10);
                     continue;
+                }
+
+                try
+                {
+                    await fs.WriteAsync(bytes, 0, bytes.Length, token);
+                }
+                catch
+                {
                 }
 
                 using (fs)
