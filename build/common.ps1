@@ -1,4 +1,9 @@
 ### Constants ###
+$ValidConfigurations = 'debug', 'release'
+$DefaultConfiguration = 'debug'
+$ValidReleaseLabels = 'Release','rtm', 'rc', 'beta', 'local'
+$DefaultReleaseLabel = 'local'
+
 $NuGetClientRoot = Split-Path -Path $PSScriptRoot -Parent
 $MSBuildExe = Join-Path ${env:ProgramFiles(x86)} 'MSBuild\14.0\Bin\msbuild.exe'
 $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
@@ -136,15 +141,13 @@ Function Enable-DelayedSigning($MSPFXPath, $NuGetPFXPath) {
     }
 }
 
-Function Get-BuildNumber {
-    param([string]$BuildNumber)
+Function Get-BuildNumber() {
     $SemanticVersionDate = '2015-11-30'
-    if(-not $BuildNumber) {
-        '{0:F0}' -f (((Get-Date) - (Get-Date $SemanticVersionDate)).TotalMinutes / 5)
-    }
-    else {
-        '{0:D4}' -f ([int]$BuildNumber)
-    }
+    [int](((Get-Date) - (Get-Date $SemanticVersionDate)).TotalMinutes / 5)
+}
+
+Function Format-BuildNumber([int]$BuildNumber) {
+    '{0:D4}' -f $BuildNumber
 }
 
 ## Cleans the machine level cache from all packages
@@ -194,8 +197,31 @@ Function Clear-Nupkgs() {
     }
 }
 
-Function Restore-SolutionPackages() {
-    & $NuGetExe restore "${NuGetClientRoot}\.nuget\packages.config" -SolutionDirectory $NuGetClientRoot 2>&1
+Function Restore-SolutionPackages{
+    [CmdletBinding()]
+    param(
+        [Alias('path')]
+        [string]$SolutionPath,
+        [ValidateSet(4, 12, 14)]
+        [int]$MSBuildVersion
+    )
+    $opts = , 'restore'
+    if (-not $SolutionPath) {
+        $opts += "${NuGetClientRoot}\.nuget\packages.config", '-SolutionDirectory', $NuGetClientRoot
+    }
+    else {
+        $opts += $SolutionPath
+    }
+    if ($MSBuildVersion) {
+        $opts += '-MSBuildVersion', $MSBuildVersion
+    }
+    if (-not $VerbosePreference) {
+        $opts += '-Verbosity', 'quiet'
+    }
+
+    Trace-Log "Restoring packages @""$NuGetClientRoot"""
+    Trace-Log "$NuGetExe $opts"
+    & $NuGetExe $opts 2>&1
     if (-not $?) {
         Error-Log "Restore failed @""$NuGetClientRoot"". Code: ${LASTEXITCODE}"
     }
@@ -203,18 +229,30 @@ Function Restore-SolutionPackages() {
 
 # Restore projects individually
 Function Restore-XProject {
+    [CmdletBinding()]
     param(
         [parameter(ValueFromPipeline=$True)]
-        [string[]]$XProjectLocation
+        [string[]]$XProjectLocation,
+        [switch]$V2
     )
     Process {
         $projectJsonFile = Join-Path $XProjectLocation 'project.json'
-        $opts = @('restore', $projectJsonFile, '-s', 'https://www.myget.org/F/nuget-volatile/api/v3/index.json', '-s', 'https://api.nuget.org/v3/index.json')
+        $opts = 'restore', $projectJsonFile
+        if (-not $V2) {
+            $opts += '-s', 'https://www.myget.org/F/nuget-volatile/api/v3/index.json'
+            $opts += '-s', 'https://api.nuget.org/v3/index.json'
+        }
+        else {
+            $opts += '-s', 'https://www.myget.org/F/nuget-volatile/api/v2/'
+            $opts += '-s', 'https://www.nuget.org/api/v2/'
+        }
+        if (-not $VerbosePreference) {
+            $opts += '--quiet'
+        }
 
         Trace-Log "Restoring packages @""$XProjectLocation"""
         Trace-Log "dnu $opts"
         & dnu $opts 2>&1
-
         if (-not $?) {
             Error-Log "Restore failed @""$XProjectLocation"". Code: $LASTEXITCODE"
         }
@@ -223,15 +261,20 @@ Function Restore-XProject {
 
 # Restore in parallel first to speed things up
 Function Restore-XProjectsFast {
+    [CmdletBinding()]
     param(
         [string]$XProjectsLocation
     )
-    $opts = @('restore', $XProjectsLocation, '--parallel', '--ignore-failed-sources', '-s', 'https://www.myget.org/F/nuget-volatile/api/v3/index.json', '-s', 'https://api.nuget.org/v3/index.json')
+    $opts = 'restore', $XProjectsLocation, '--parallel', '--ignore-failed-sources'
+    $opts += '-s', 'https://www.myget.org/F/nuget-volatile/api/v3/index.json'
+    $opts += '-s', 'https://api.nuget.org/v3/index.json'
+    if (-not $VerbosePreference) {
+        $opts += '--quiet'
+    }
 
     Trace-Log "Restoring packages @""$XProjectsLocation"""
     Trace-Log "dnu $opts"
     & dnu $opts 2>&1
-
     if (-not $?) {
         Error-Log "Restore failed @""$XProjectsLocation"". Code: $LASTEXITCODE"
     }
@@ -253,18 +296,21 @@ Function Restore-XProjects {
     }
     else {
         $xprojects = Find-XProjects $XProjectsLocation
-        $xprojects | Restore-XProject
+        $xprojects | Restore-XProject -Verbose
     }
 }
 
 Function Invoke-DnuPack {
+    [CmdletBinding()]
     param(
-        $XProjectsLocation,
-        $Configuration,
-        $ReleaseLabel,
-        $BuildNumber,
-        $Output
+        [string]$XProjectsLocation,
+        [string]$Configuration,
+        [string]$ReleaseLabel,
+        [int]$BuildNumber,
+        [string]$Output
     )
+    $BuildNumber = Format-BuildNumber $BuildNumber
+
     ## Setting the DNX build version
     if($ReleaseLabel -ne 'Release') {
         $env:DNX_BUILD_VERSION="${ReleaseLabel}-${BuildNumber}"
@@ -281,22 +327,25 @@ Function Invoke-DnuPack {
     if ($Output) {
         $opts += '--out', $Output
     }
+    if (-not $VerbosePreference) {
+        $opts += '--quiet'
+    }
 
     Trace-Log "dnu $opts"
     &dnu $opts 2>&1
-
     if (-not $?) {
         Error-Log "Pack failed @""$XProjectsLocation"". Code: $LASTEXITCODE"
     }
 }
 
 Function Build-CoreProjects {
+    [CmdletBinding()]
     param(
-        $Configuration,
-        $ReleaseLabel,
-        $BuildNumber,
-        $SkipRestore,
-        $Fast
+        [string]$Configuration = $DefaultConfiguration,
+        [string]$ReleaseLabel = $DefaultReleaseLabel,
+        [int]$BuildNumber = (Get-BuildNumber),
+        [switch]$SkipRestore,
+        [switch]$Fast
     )
     $XProjectsLocation = Join-Path $NuGetClientRoot src\NuGet.Core
 
@@ -304,7 +353,7 @@ Function Build-CoreProjects {
         Restore-XProjects $XProjectsLocation -Fast:$Fast
     }
 
-    Invoke-DnuPack $XProjectsLocation $Configuration $ReleaseLabel $BuildNumber $Artifacts
+    Invoke-DnuPack $XProjectsLocation $Configuration $ReleaseLabel $BuildNumber $Artifacts -Verbose:(-not $Fast)
 
     ## Moving nupkgs
     Trace-Log "Moving the packages to $Nupkgs"
@@ -312,9 +361,10 @@ Function Build-CoreProjects {
 }
 
 Function Test-CoreProjects {
+    [CmdletBinding()]
     param(
-        $SkipRestore,
-        $Fast
+        [switch]$SkipRestore,
+        [switch]$Fast
     )
     # Test assemblies should not be signed
     if (Test-Path Env:\DNX_BUILD_KEY_FILE) {
@@ -341,36 +391,37 @@ Function Test-CoreProjects {
 }
 
 Function Build-ClientsProjects {
+    [CmdletBinding()]
     param(
-        $Configuration,
-        $ReleaseLabel,
-        $BuildNumber,
-        $SkipRestore,
-        $Fast
+        [string]$Configuration = $DefaultConfiguration,
+        [string]$ReleaseLabel = $DefaultReleaseLabel,
+        [int]$BuildNumber = (Get-BuildNumber),
+        [switch]$SkipRestore,
+        [switch]$Fast
     )
     #Building the microsoft interop package for the test.utility
     $interopLib = Join-Path $NuGetClientRoot lib\Microsoft.VisualStudio.ProjectSystem.Interop
-
     if (-not $SkipRestore) {
-        & dnu restore $interopLib -s https://www.myget.org/F/nuget-volatile/api/v2/ -s https://www.nuget.org/api/v2/ 2>&1
+        Restore-XProject $interopLib -V2 -Verbose:(-not $Fast)
     }
-    Invoke-DnuPack $interopLib $Configuration $ReleaseLabel $BuildNumber
+    Invoke-DnuPack $interopLib $Configuration $ReleaseLabel $BuildNumber -Verbose:(-not $Fast)
     Get-ChildItem "$interopLib\*.nupkg" -Recurse | % { Move-Item $_ $Nupkgs -Force }
 
     $solutionPath = Join-Path $NuGetClientRoot NuGet.Clients.sln
     if (-not $SkipRestore) {
         # Restore packages for NuGet.Tooling solution
-        & $NuGetExe restore -msbuildVersion 14 $solutionPath 2>&1
+        Restore-SolutionPackages -path $solutionPath -MSBuildVersion 14 -Verbose:(-not $Fast)
     }
 
     # Build the solution
-    $opts = @($solutionPath, "/p:Configuration=$Configuration;ReleaseLabel=$ReleaseLabel;BuildNumber=$BuildNumber")
+    $opts = , $solutionPath
+    $opts += "/p:Configuration=$Configuration;ReleaseLabel=$ReleaseLabel;BuildNumber=$(Format-BuildNumber $BuildNumber)"
     if ($Fast) {
         $opts += '/verbosity:minimal'
     }
 
+    Trace-Log "$MSBuildExe $opts"
     & $MSBuildExe $opts
-
     if (-not $?) {
         Error-Log "Build of NuGet.Clients.sln failed. Code: $LASTEXITCODE"
     }
@@ -381,10 +432,9 @@ Function Build-ClientsProjects {
 }
 
 Function Test-ClientsProjects {
+    [CmdletBinding()]
     param(
-        $Configuration,
-        $ReleaseLabel,
-        $BuildNumber
+        [string]$Configuration = $DefaultConfiguration
     )
     $testProjectsLocation = Join-Path $NuGetClientRoot test\NuGet.Clients.Tests
     $testProjects = Get-ChildItem $testProjectsLocation -Recurse -Filter '*.csproj'`
@@ -392,8 +442,9 @@ Function Test-ClientsProjects {
         | ?{ -not $_.EndsWith('WebAppTest.csproj') }
 
     foreach($testProj in $testProjects) {
-        & $MSBuildExe $testProj /t:RunTests "/p:Configuration=$Configuration;ReleaseLabel=$ReleaseLabel;BuildNumber=$BuildNumber;RunTests=true"
-
+        $opts = $testProj, "/t:RunTests", "/p:Configuration=$Configuration;RunTests=true"
+        Trace-Log "$MSBuildExe $opts"
+        & $MSBuildExe $opts
         if (-not $?) {
             Error-Log "Tests failed @""$testProj"". Code: $LASTEXITCODE"
         }
@@ -401,7 +452,11 @@ Function Test-ClientsProjects {
 }
 
 # Merges the NuGet.exe
-Function Invoke-ILMerge($Configuration) {
+Function Invoke-ILMerge {
+    [CmdletBinding()]
+    param(
+        [string]$Configuration = $DefaultConfiguration
+    )
     $nugetArtifactsFolder = Join-Path $Artifacts "$Configuration\NuGet.Clients\NuGet.CommandLine"
     pushd $nugetArtifactsFolder
 

@@ -1,23 +1,23 @@
 [CmdletBinding(DefaultParameterSetName='RegularBuild')]
 param (
     [ValidateSet("debug", "release")]
-    [string]$Configuration="debug",
+    [string]$Configuration = 'debug',
     [ValidateSet("Release","rtm", "rc", "beta", "local")]
-    [string]$ReleaseLabel="local",
-    [string]$BuildNumber,
-    [Parameter(ParameterSetName='RegularBuild')]
-    [switch]$SkipTests,
+    [string]$ReleaseLabel = 'local',
+    [int]$BuildNumber,
     [switch]$SkipRestore,
     [switch]$CleanCache,
-    [Parameter(ParameterSetName='RegularBuild')]
-    [switch]$SkipILMerge,
     [switch]$DelaySign,
     [string]$MSPFXPath,
     [string]$NuGetPFXPath,
     [switch]$SkipXProj,
+    [switch]$SkipCSProj,
     [Parameter(ParameterSetName='RegularBuild')]
     [switch]$SkipSubModules,
-    [switch]$SkipCSProj,
+    [Parameter(ParameterSetName='RegularBuild')]
+    [switch]$SkipTests,
+    [Parameter(ParameterSetName='RegularBuild')]
+    [switch]$SkipILMerge,
     [Parameter(ParameterSetName='FastBuild')]
     [switch]$Fast
 )
@@ -29,8 +29,10 @@ $RunTests = (-not $SkipTests) -and (-not $Fast)
 Write-Host ("`r`n" * 3)
 Trace-Log ('=' * 60)
 
-$BuildNumber = Get-BuildNumber $BuildNumber
 $startTime = [DateTime]::UtcNow
+if (-not $BuildNumber) {
+    $BuildNumber = Get-BuildNumber
+}
 Trace-Log "Build #$BuildNumber started at $startTime"
 
 # Move to the script directory
@@ -54,7 +56,11 @@ Invoke-BuildStep 'Installing NuGet.exe' { Install-NuGet } `
     -ev +BuildErrors -ea $ErrorActionPreference
 
 # Restoring tools required for build
-Invoke-BuildStep 'Restoring solution packages' { Restore-SolutionPackages } -skip:$SkipRestore `
+Invoke-BuildStep 'Restoring solution packages' {
+        param($Fast) Restore-SolutionPackages -Verbose:(-not $Fast)
+    } `
+    -args $Fast `
+    -skip:$SkipRestore `
     -ev +BuildErrors -ea $ErrorActionPreference
 
 Invoke-BuildStep 'Installing runtime' { Install-DNVM; Install-DNX } `
@@ -93,10 +99,9 @@ Invoke-BuildStep 'Running NuGet.Core tests' {
     -ev +BuildErrors -ea $ErrorActionPreference
 
 Invoke-BuildStep 'Running NuGet.Clients tests' {
-        param($Configuration, $ReleaseLabel, $BuildNumber)
-        Test-ClientsProjects $Configuration $ReleaseLabel $BuildNumber
+        param($Configuration) Test-ClientsProjects $Configuration
     } `
-    -args $Configuration, $ReleaseLabel, $BuildNumber `
+    -args $Configuration `
     -skip:($SkipCSproj -or (-not $RunTests)) `
     -ev +BuildErrors -ea $ErrorActionPreference
 
