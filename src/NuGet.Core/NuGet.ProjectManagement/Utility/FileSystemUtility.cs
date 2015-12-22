@@ -37,6 +37,7 @@ namespace NuGet.ProjectManagement
             {
                 return root;
             }
+
             return Path.Combine(root, path);
         }
 
@@ -99,18 +100,30 @@ namespace NuGet.ProjectManagement
             }
         }
 
+        /// <summary>
+        /// Creates a file, and adds it to source control.
+        /// </summary>
+        /// <param name="root">Root folder.</param>
+        /// <param name="path">Relative path in the root folder.</param>
+        /// <param name="nuGetProjectContext">the project context.</param>
+        /// <returns>A writeable filestream.</returns>
         public static Stream CreateFile(string root, string path, INuGetProjectContext nuGetProjectContext)
         {
             return CreateFile(GetFullPath(root, path), nuGetProjectContext);
         }
 
+        /// <summary>
+        /// Creates a file, and adds it to source control.
+        /// </summary>
+        /// <param name="fullPath">Full path to the suggest file.</param>
+        /// <returns>A writeable filestream.</returns>
         public static Stream CreateFile(string fullPath, INuGetProjectContext nuGetProjectContext)
         {
-            if (string.IsNullOrEmpty(fullPath)
-                || string.IsNullOrEmpty(Path.GetFileName(fullPath)))
+            if (string.IsNullOrEmpty(Path.GetFileName(fullPath)))
             {
                 throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(fullPath));
             }
+
             // MakeWriteable(fullPath); SourceControlManager will do that
             var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
             if (sourceControlManager != null)
@@ -121,13 +134,18 @@ namespace NuGet.ProjectManagement
             return CreateFile(fullPath);
         }
 
+        /// <summary>
+        /// Creates a file, but doesn't add it to source control
+        /// </summary>
+        /// <param name="fullPath">Full path to the suggest file.</param>
+        /// <returns>A writeable filestream.</returns>
         public static Stream CreateFile(string fullPath)
         {
-            if (string.IsNullOrEmpty(fullPath)
-                || string.IsNullOrEmpty(Path.GetFileName(fullPath)))
+            if (string.IsNullOrEmpty(Path.GetFileName(fullPath)))
             {
                 throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(fullPath));
             }
+
             MakeWritable(fullPath);
             Directory.CreateDirectory(Path.GetDirectoryName(fullPath));
             return File.Create(fullPath);
