@@ -148,7 +148,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             try
             {
-                using (FileSystemUtility.CreateFile(packageDirectory + DeletionMarkerSuffix, projectContext))
+                // Use the overload that doesn't take the context, so the .deleteme file doesn't get added
+                // to source control. See https://github.com/NuGet/Home/issues/1720
+                using (FileSystemUtility.CreateFile(packageDirectory + DeletionMarkerSuffix))
                 {
                 }
             }
