@@ -1,23 +1,24 @@
 ﻿{
   "version": "3.4.0-*",
-  "shared": "*.cs",
-  "frameworks": {
-    "net45": {
-      "frameworkAssemblies": {
-        "System.IO.Compression": ""
-      }
-    },
-    "dnxcore50": {
-      "dependencies": {
-        "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-beta-23225",
-        "System.Collections": "4.0.0-beta-23109",
-        "System.IO.Compression": "4.0.0-beta-23109",
-        "System.IO.FileSystem": "4.0.0-beta-23109",
-        "System.IO.FileSystem.Primitives": "4.0.0-beta-23109",
-        "System.Runtime.Extensions": "4.0.10-beta-23109",
-        "System.Threading": "4.0.10-beta-23109",
-        "System.Threading.Thread": "4.0.0-beta-23109"
-      }
+    "shared": "*.cs",
+    "frameworks": {
+        "net45": {
+            "frameworkAssemblies": {
+                "System.IO.Compression": ""
+            }
+        },
+        "dnxcore50": {
+            "dependencies": {
+                "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-beta-23225",
+                "System.Collections": "4.0.0-beta-23109",
+                "System.IO.Compression": "4.0.0-beta-23109",
+                "System.IO.FileSystem": "4.0.0-beta-23109",
+                "System.IO.FileSystem.Primitives": "4.0.0-beta-23109",
+                "System.Runtime.Extensions": "4.0.10-beta-23109",
+                "System.Threading": "4.0.10-beta-23109",
+                "System.Threading.Thread": "4.0.0-beta-23109",
+                "System.Security.Cryptography.Cng": "4.0.0-beta-23516"
+            }
+        }
     }
-  }
 }

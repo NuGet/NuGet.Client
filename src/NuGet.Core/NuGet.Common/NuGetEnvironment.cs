@@ -46,6 +46,8 @@ namespace NuGet.Common
                         programFilesPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
                     }
                     return Path.Combine(programFilesPath, "MSBuild", "14.0", "Bin", "MSBuild.exe");
+                case NuGetFolderPath.Temp:
+                    return Path.Combine(Path.GetTempPath(), "NuGet");
                 default:
                     return null;
             }

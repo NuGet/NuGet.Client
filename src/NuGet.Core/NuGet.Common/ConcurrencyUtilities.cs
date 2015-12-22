@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,84 +17,74 @@ namespace NuGet.Common
             Func<CancellationToken, Task<T>> action,
             CancellationToken token)
         {
-            var createdNew = false;
-            var signaled = false;
-
-            using (var fileLock = SemaphoreWrapper.Create(name: FilePathToLockName(filePath),
-                                                          createdNew: out createdNew))
+            if (string.IsNullOrEmpty(filePath))
             {
+                throw new ArgumentNullException(nameof(filePath));
+            }
+
+            var lockPath = FileLockPath(filePath);
+            var bytes = Encoding.UTF8.GetBytes(filePath);
+
+            while (true)
+            {
+                FileStream fs;
                 try
                 {
-                    if (createdNew)
-                    {
-                        signaled = true;
-                    }
-                    else
-                    {
-                        // Acquire the token - but don't block the calling thread.
-                        await Task.Run(() =>
-                        {
-                            while (!token.IsCancellationRequested && !signaled)
-                            {
-                                // If this lock is already acquired by another process, wait until we can acquire it
-                                signaled = fileLock.WaitOne(TimeSpan.FromMilliseconds(100));
-                            }
-                        });
-                    }
+                    fs = new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
 
-                    return await action(token);
+                    await fs.WriteAsync(bytes, 0, bytes.Length, token);
                 }
-                finally
+                catch (DirectoryNotFoundException)
                 {
-                    if (signaled)
-                    {
-                        fileLock.Release();
-                    }
+                    throw;
+                }
+                catch (IOException)
+                {
+                    token.ThrowIfCancellationRequested();
+
+                    await Task.Delay(10);
+                    continue;
+                }
+
+                using (fs)
+                {
+                    return await action(token);
                 }
             }
         }
 
-        private static void HandleMutex(string name,
-            SemaphoreSlim lockStart,
-            SemaphoreSlim lockEnd,
-            SemaphoreSlim lockOperation,
-            CancellationToken token)
+        private static string _basePath;
+        private static string BasePath
         {
-            try
+            get
             {
-                bool createdNew;
-                using (var fileLock = SemaphoreWrapper.Create(name, out createdNew))
+                if (_basePath != null)
                 {
-                    while (!token.IsCancellationRequested)
-                    {
-
-                        if (fileLock.WaitOne(TimeSpan.FromSeconds(1)))
-                        {
-                            try
-                            {
-                                lockStart.Release();
-                            }
-                            finally
-                            {
-                                try
-                                {
-                                    lockEnd.Wait();
-                                }
-                                finally
-                                {
-                                    fileLock.Release();
-                                }
-                            }
-
-                            break;
-                        }
-                    }
+                    return _basePath;
                 }
+
+                if (RuntimeEnvironmentHelper.IsWindows)
+                {
+                    _basePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), "locks");
+                }
+                else
+                {
+                    _basePath = "/var/NuGet/locks/";
+                }
+
+                Directory.CreateDirectory(_basePath);
+
+                return _basePath;
             }
-            finally
-            {
-                lockOperation.Release();
-            }
+        }
+
+        private static string FileLockPath(string filePath)
+        {
+            // In case the directory was cleaned up, we can choose to fix it (at a cost of another roundtrip to disk
+            // or fail, starting with the more expensive path, and we might have to get rid of it if it becomes too hot.
+            Directory.CreateDirectory(BasePath);
+
+            return Path.Combine(BasePath, FilePathToLockName(filePath));
         }
 
         private static string FilePathToLockName(string filePath)
@@ -102,101 +93,37 @@ namespace NuGet.Common
             // the ctor of semaphore looks for the file and throws an IOException
             // when the file doesn't exist. So we need a conversion from a file path
             // to a unique lock name.
-            return filePath.Replace(Path.DirectorySeparatorChar, '_');
+            using (var sha = SHA1.Create())
+            {
+                var hash = sha.ComputeHash(Encoding.UTF32.GetBytes(filePath));
+
+                return ToHex(hash);
+            }
         }
 
-        private class SemaphoreWrapper : IDisposable
+        private static string ToHex(byte[] bytes)
         {
-#if DNXCORE50
-            private static Dictionary<string, SemaphoreWrapper> _nameWrapper =
-                new Dictionary<string, SemaphoreWrapper>();
+            char[] c = new char[bytes.Length * 2];
 
-            private readonly string _name;
-            private volatile int _refCount = 0;
-#endif
-
-            private readonly Semaphore _semaphore;
-
-            public static SemaphoreWrapper Create(string name, out bool createdNew)
+            for (int index = 0, outIndex = 0; index < bytes.Length; index++)
             {
-                return Create(0, 1, name, out createdNew);
+                c[outIndex++] = ToHexChar(bytes[index] >> 4);
+                c[outIndex++] = ToHexChar(bytes[index] & 0x0f);
             }
 
-            public static SemaphoreWrapper Create(int initialCount, int maximumCount, string name, out bool createdNew)
+            return new string(c);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static char ToHexChar(int input)
+        {
+            if (input > 9)
             {
-#if DNXCORE50
-                if (RuntimeEnvironmentHelper.IsWindows)
-                {
-                    return new SemaphoreWrapper(new Semaphore(initialCount, maximumCount, name, out createdNew));
-                }
-                else
-                {
-                    var createdNewLocal = false;
-                    SemaphoreWrapper wrapper;
-
-                    lock (_nameWrapper)
-                    {
-
-                        if (!_nameWrapper.TryGetValue(name, out wrapper))
-                        {
-                            createdNewLocal = true;
-                            wrapper = new SemaphoreWrapper(new Semaphore(initialCount, maximumCount), name);
-                            _nameWrapper[name] = wrapper;
-                        }
-                        wrapper._refCount++;
-                    }
-
-                    // C# doesn't allow assigning value to an out parameter directly in lambda expression
-                    createdNew = createdNewLocal;
-                    return wrapper;
-                }
-#else
-
-                return new SemaphoreWrapper(new Semaphore(initialCount, maximumCount, name, out createdNew));
-#endif
+                return (char)(input + 0x57);
             }
-
-            private SemaphoreWrapper(Semaphore semaphore, string name = null)
+            else
             {
-                _semaphore = semaphore;
-#if DNXCORE50
-                _name = name;
-#endif
-            }
-
-            public bool WaitOne(TimeSpan timeout)
-            {
-                return _semaphore.WaitOne(timeout);
-            }
-
-            public int Release()
-            {
-                return _semaphore.Release();
-            }
-
-            public void Dispose()
-            {
-#if DNXCORE50
-                if (RuntimeEnvironmentHelper.IsWindows)
-                {
-                    _semaphore.Dispose();
-                }
-                else
-                {
-                    lock (_nameWrapper)
-                    {
-                        _refCount--;
-                        if (_refCount == 0)
-                        {
-                            _nameWrapper.Remove(_name);
-                            _semaphore.Dispose();
-                        }
-                    }
-
-                }
-#else
-                _semaphore.Dispose();
-#endif
+                return (char)(input + 0x30);
             }
         }
     }

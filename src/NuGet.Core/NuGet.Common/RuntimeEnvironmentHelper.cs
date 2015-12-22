@@ -16,7 +16,7 @@ namespace NuGet.Common
                 {
                     return true;
                 }
-                
+
                 return false;
 #else
                 var platform = (int)Environment.OSVersion.Platform;

@@ -18,12 +18,16 @@ namespace NuGet.Commands.Test
         private int _value2 = 0;
         private SemaphoreSlim _waitForEverStarted = new SemaphoreSlim(0, 1);
 
+        private const int DefaultTimeOut = 5000;
+
         [Fact]
         public async void ConcurrencyUtilityBlocksInProc()
         {
             // Arrange
             string fileId = nameof(ConcurrencyUtilityBlocksInProc);
-            var cts = new CancellationTokenSource();
+
+            var timeout = new CancellationTokenSource(DefaultTimeOut * 2);
+            var cts = new CancellationTokenSource(DefaultTimeOut);
 
             var tasks = new Task<int>[4];
 
@@ -33,14 +37,15 @@ namespace NuGet.Commands.Test
             await _waitForEverStarted.WaitAsync();
 
             // We should now be blocked, so the value returned from here should not be returned until the token is cancelled.
-            tasks[1] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, CancellationToken.None);
+            tasks[1] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, timeout.Token);
 
             Assert.False(tasks[0].IsCompleted, $"task status: {tasks[0].Status}");
 
             _value1 = 1;
 
-            tasks[2] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, CancellationToken.None);
+            tasks[2] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, timeout.Token);
 
+            Assert.False(cts.Token.IsCancellationRequested);
             cts.Cancel();
 
             await tasks[1]; // let the first tasks pass
@@ -48,7 +53,7 @@ namespace NuGet.Commands.Test
 
             _value1 = 2;
 
-            tasks[3] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, CancellationToken.None);
+            tasks[3] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, timeout.Token);
 
             await tasks[3];
 
@@ -57,6 +62,8 @@ namespace NuGet.Commands.Test
             Assert.Equal(1, tasks[1].Result);
             Assert.Equal(1, tasks[2].Result);
             Assert.Equal(2, tasks[3].Result);
+
+            Assert.False(timeout.IsCancellationRequested);
         }
 
         [Fact]
@@ -65,12 +72,12 @@ namespace NuGet.Commands.Test
             // Arrange
             string fileId = Guid.NewGuid().ToString();
 
-            var cts = new CancellationTokenSource();
+            var timeout = new CancellationTokenSource(DefaultTimeOut);
 
             var tasks = new Task<int>[3];
 
             // Act
-            using (var sync = await Run(fileId, shouldAbandon: false, shareProcessObject: true, debug: false))
+            using (var sync = await Run(fileId, shouldAbandon: false, token: timeout.Token, shareProcessObject: true, debug: false))
             {
                 var result = sync.Result;
 
@@ -79,11 +86,11 @@ namespace NuGet.Commands.Test
                 _value1 = 0;
 
                 // We should now be blocked, so the value returned from here should not be returned until the process has terminated.
-                tasks[0] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, CancellationToken.None);
+                tasks[0] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, timeout.Token);
 
                 _value1 = 1;
 
-                tasks[1] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, CancellationToken.None);
+                tasks[1] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, timeout.Token);
 
                 Assert.False(result.Process.HasExited);
 
@@ -107,7 +114,7 @@ namespace NuGet.Commands.Test
 
             _value1 = 2;
 
-            tasks[2] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, CancellationToken.None);
+            tasks[2] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, timeout.Token);
 
             await Task.WhenAll(tasks);
 
@@ -117,6 +124,8 @@ namespace NuGet.Commands.Test
             Assert.Equal(1, tasks[0].Result);
             Assert.Equal(1, tasks[1].Result);
             Assert.Equal(2, tasks[2].Result);
+
+            Assert.False(timeout.IsCancellationRequested);
         }
 
         [Fact]
@@ -124,7 +133,9 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             string fileId = nameof(ConcurrencyUtilityDoesntBlocksInProc);
-            var cts = new CancellationTokenSource();
+
+            var timeout = new CancellationTokenSource(DefaultTimeOut * 2);
+            var cts = new CancellationTokenSource(DefaultTimeOut);
 
             var tasks = new Task<int>[4];
 
@@ -135,21 +146,22 @@ namespace NuGet.Commands.Test
 
             // We should now be blocked, so the value returned from here should not be
             // returned until the token is cancelled.
-            tasks[1] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt2, CancellationToken.None);
+            tasks[1] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt2, timeout.Token);
 
             await tasks[1];
 
             _value2 = 1;
 
-            tasks[2] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt2, CancellationToken.None);
+            tasks[2] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt2, timeout.Token);
 
             await tasks[2]; // let the first tasks pass we get a deadlock if there is a lock applied by the first task
 
+            Assert.False(cts.IsCancellationRequested);
             cts.Cancel();
 
             _value2 = 2;
 
-            tasks[3] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt2, CancellationToken.None);
+            tasks[3] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt2, timeout.Token);
 
             await tasks[3];
 
@@ -160,6 +172,8 @@ namespace NuGet.Commands.Test
             Assert.Equal(0, tasks[1].Result);
             Assert.Equal(1, tasks[2].Result);
             Assert.Equal(2, tasks[3].Result);
+
+            Assert.False(timeout.IsCancellationRequested);
         }
 
         [Fact]
@@ -170,8 +184,15 @@ namespace NuGet.Commands.Test
             // Use a dummy file name so the whole system doesn't get locked
             var dummyFileName = Guid.NewGuid().ToString();
 
+            var timeout = new CancellationTokenSource(DefaultTimeOut);
+
             // Act && Assert
-            using (var run = (await Run(dummyFileName, shouldAbandon: true, debug: false, shareProcessObject: true)))
+            using (var run = (await
+                Run(dummyFileName,
+                    shouldAbandon: true,
+                    token: timeout.Token,
+                    debug: false,
+                    shareProcessObject: true)))
             {
                 await WaitForLockToEngage(run);
 
@@ -203,7 +224,12 @@ namespace NuGet.Commands.Test
                 Assert.Empty(r1.Item3);
 
                 // Try to acquire the lock again with the same file name
-                using (var run2 = await Run(dummyFileName, shouldAbandon: false, shareProcessObject: true, debug: false))
+                using (var run2 = await
+                    Run(dummyFileName,
+                        shouldAbandon: false,
+                        token: timeout.Token,
+                        shareProcessObject: true,
+                        debug: false))
                 {
                     await WaitForLockToEngage(run2);
 
@@ -211,7 +237,7 @@ namespace NuGet.Commands.Test
 
                     await ReleaseLock(run2);
 
-                    exited = r2.Process.WaitForExit(1000);
+                    exited = r2.Process.WaitForExit(DefaultTimeOut);
 
                     Assert.True(exited, "Timeout waiting for second process to exit/failed to get lock.");
 
@@ -220,7 +246,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        private async Task<SyncdRunResult> Run(string fileName, bool shouldAbandon, bool shareProcessObject = false, bool debug = false)
+        private async Task<SyncdRunResult> Run(string fileName, bool shouldAbandon, CancellationToken token, bool shareProcessObject = false, bool debug = false)
         {
             var runtimePath = PlatformServices.Default.Runtime.RuntimePath;
             var dnxPath = Path.Combine(runtimePath, "dnx");
@@ -251,7 +277,7 @@ namespace NuGet.Commands.Test
 
             result.Result = r;
 
-            await result.Connect();
+            await result.Connect(token);
 
             return result;
         }
@@ -351,8 +377,10 @@ namespace NuGet.Commands.Test
                 }
             }
 
-            public async Task Connect()
+            public async Task Connect(CancellationToken ct)
             {
+                ct.Register(() => Listener.Stop());
+
                 Client = await Listener.AcceptTcpClientAsync();
 
                 var stream = Client.GetStream();
