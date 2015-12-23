@@ -303,6 +303,8 @@ namespace NuGet.Packaging
                         }
                     }
                 }
+
+                File.SetLastWriteTimeUtc(targetFile, entry.LastWriteTime.UtcDateTime);
             }
         }
     }

@@ -565,6 +565,49 @@ namespace Commands.Test
             }
         }
 
+        [Fact]
+        public async Task Test_ExtractionHonorsFileTimestamp()
+        {
+            // Arrange
+            var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
+            var entryModifiedTime = new DateTimeOffset(1985, 11, 20, 12, 0, 0, TimeSpan.FromHours(-7.0)).DateTime;
+            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                    packagesDirectory,
+                    package.Id,
+                    package.Version.ToNormalizedString(),
+                    entryModifiedTime,
+                    "lib/net45/A.dll");
+
+                var versionFolderPathContext = new VersionFolderPathContext(
+                    package,
+                    packagesDirectory,
+                    NullLogger.Instance,
+                    fixNuspecIdCasing: false,
+                    extractNuspecOnly: false,
+                    normalizeFileNames: true);
+
+                // Act
+                using (var packageFileStream = packageFileInfo.OpenRead())
+                {
+                    await NuGetPackageUtils.InstallFromSourceAsync(
+                        stream => packageFileStream.CopyToAsync(stream),
+                        versionFolderPathContext,
+                        CancellationToken.None);
+                }
+
+                // Assert
+                var packageVersionDirectory = Path.Combine(packagesDirectory, package.Id.ToLowerInvariant(), package.Version.ToNormalizedString());
+                AssertDirectoryExists(packageVersionDirectory);
+
+                var dllPath = Path.Combine(packageVersionDirectory, "lib", "net45", "A.dll");
+                var dllFileInfo = new FileInfo(dllPath);
+                AssertFileExists(dllFileInfo.FullName);
+                Assert.Equal(entryModifiedTime, dllFileInfo.LastWriteTime);
+            }
+        }
+
         private static void AssertDirectoryExists(string path, string message = null)
         {
             Assert.True(Directory.Exists(path), message);
