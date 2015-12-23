@@ -418,6 +418,19 @@ namespace NuGet.CommandLine.Test
             doc.Save(existingConfig);
         }
 
+        public static void CreateNuGetConfig(string workingPath, List<string> sources, string packagesPath)
+        {
+            CreateNuGetConfig(workingPath, sources);
+            var existingConfig = Path.Combine(workingPath, "NuGet.Config");
+
+            var doc = XDocument.Load(existingConfig);
+            var config = doc.Descendants(XName.Get("config")).FirstOrDefault();
+            var repositoryPath = config.Descendants().First(x => x.Name == "add" && x.Attribute("key").Value == "repositoryPath").Attribute("value");
+            repositoryPath.SetValue(packagesPath);
+
+            doc.Save(existingConfig);
+        }
+
         /// <summary>
         /// Create a simple package with a lib folder. This package should install everywhere.
         /// The package will be removed from the machine cache upon creation
