@@ -107,6 +107,15 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
+        /// A short legacy version range compatible with NuGet 2.8.3.
+        /// Ex: 1.0.0
+        /// </summary>
+        public virtual string ToLegacyShortString()
+        {
+            return ToString("T", new VersionRangeFormatter());
+        }
+
+        /// <summary>
         /// Format the version range with an IFormatProvider
         /// </summary>
         public string ToString(string format, IFormatProvider formatProvider)

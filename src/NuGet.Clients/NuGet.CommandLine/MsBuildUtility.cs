@@ -29,6 +29,7 @@ namespace NuGet.CommandLine
             ".csproj",
             ".vbproj",
             ".fsproj",
+            ".xproj"
         };
 
         public static bool IsMsBuildBasedProject(string projectFullPath)
@@ -39,7 +40,7 @@ namespace NuGet.CommandLine
         /// <summary>
         /// Returns the closure of project references for projects specified in <paramref name="projectPaths"/>.
         /// </summary>
-        public static Dictionary<string, HashSet<string>> GetProjectReferences(
+        public static ProjectReferenceCache GetProjectReferences(
             string msbuildDirectory,
             string[] projectPaths,
             int timeOut)
@@ -55,6 +56,8 @@ namespace NuGet.CommandLine
                         msbuildPath));
             }
 
+            var nugetExePath = Assembly.GetEntryAssembly().Location;
+
             using (var entryPointTargetPath = new TempFile(".targets"))
             using (var customAfterBuildTargetPath = new TempFile(".targets"))
             using (var resultsPath = new TempFile(".result"))
@@ -66,6 +69,9 @@ namespace NuGet.CommandLine
                     "/t:NuGet_GetProjectsReferencingProjectJson " +
                     "/nologo /nr:false /v:q " +
                     "/p:BuildProjectReferences=false");
+
+                argumentBuilder.Append(" /p:NuGetTasksAssemblyPath=");
+                AppendQuoted(argumentBuilder, nugetExePath);
 
                 argumentBuilder.Append(" /p:NuGetCustomAfterBuildTargetPath=");
                 AppendQuoted(argumentBuilder, customAfterBuildTargetPath);
@@ -119,30 +125,14 @@ namespace NuGet.CommandLine
                     }
                 }
 
-                var lookup = new Dictionary<string, HashSet<string>>(
-                    projectPaths.Length,
-                    StringComparer.OrdinalIgnoreCase);
+                var lines = new string[0];
+
                 if (File.Exists(resultsPath))
                 {
-                    HashSet<string> referencedProjects = null;
-                    foreach (var line in File.ReadAllLines(resultsPath))
-                    {
-                        if (line.StartsWith("#:", StringComparison.Ordinal))
-                        {
-                            // First entry for each project grouping is of the format "#:ProjectPath".
-                            // We'll use this as a delimiter to start a new grouping.
-                            referencedProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                            lookup[line.Substring(2)] = referencedProjects;
-                        }
-                        else
-                        {
-                            Debug.Assert(referencedProjects != null);
-                            referencedProjects.Add(line);
-                        }
-                    }
+                    lines = File.ReadAllLines(resultsPath);
                 }
 
-                return lookup;
+                return new ProjectReferenceCache(lines);
             }
         }
 

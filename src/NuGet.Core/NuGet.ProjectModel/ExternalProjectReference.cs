@@ -16,9 +16,14 @@ namespace NuGet.ProjectModel
         /// Represents a reference to a project produced by an external build system, such as msbuild.
         /// </summary>
         /// <param name="uniqueName">unique project name or full path</param>
-        /// <param name="packageSpecPath">project.json path</param>
+        /// <param name="packageSpec">project.json file or null if none exists</param>
+        /// <param name="msbuildProjectPath">project file if one exists</param>
         /// <param name="projectReferences">unique names of the referenced projects</param>
-        public ExternalProjectReference(string uniqueName, string packageSpecPath, IEnumerable<string> projectReferences)
+        public ExternalProjectReference(
+            string uniqueName, 
+            PackageSpec packageSpec,
+            string msbuildProjectPath,
+            IEnumerable<string> projectReferences)
         {
             if (uniqueName == null)
             {
@@ -31,7 +36,8 @@ namespace NuGet.ProjectModel
             }
 
             UniqueName = uniqueName;
-            PackageSpecPath = packageSpecPath;
+            PackageSpec = packageSpec;
+            MSBuildProjectPath = msbuildProjectPath;
             ExternalProjectReferences = projectReferences.ToList();
         }
 
@@ -41,13 +47,18 @@ namespace NuGet.ProjectModel
         public string UniqueName { get; }
 
         /// <summary>
-        /// The path to the nuget.json file representing the NuGet dependencies of the project
+        /// The path to the project.json file representing the NuGet dependencies of the project
         /// </summary>
-        public string PackageSpecPath { get; }
+        public PackageSpec PackageSpec { get; }
 
         /// <summary>
-        /// A list of other external projects this project references
+        /// A list of other external projects this project references. Uses the UniqueName.
         /// </summary>
         public IReadOnlyList<string> ExternalProjectReferences { get; }
+
+        /// <summary>
+        /// Path to msbuild project file. Ex: xproj, csproj
+        /// </summary>
+        public string MSBuildProjectPath { get; }
     }
 }

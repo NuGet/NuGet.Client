@@ -138,10 +138,14 @@ namespace NuGet.CommandLine.XPlat
                                 {
                                     foreach (var externalReference in externalProjects)
                                     {
+                                        var dirName = Path.GetDirectoryName(externalReference);
+                                        var specPath = Path.Combine(dirName, PackageSpec.PackageSpecFileName);
+
                                         request.ExternalProjects.Add(
                                             new ExternalProjectReference(
                                                 externalReference,
-                                                Path.Combine(Path.GetDirectoryName(externalReference), PackageSpec.PackageSpecFileName),
+                                                JsonPackageSpecReader.GetPackageSpec(externalReference, specPath),
+                                                msbuildProjectPath: null,
                                                 projectReferences: Enumerable.Empty<string>()));
                                     }
                                 }

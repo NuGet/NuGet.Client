@@ -497,9 +497,8 @@ namespace NuGet.CommandLine.Test
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
 
                 // Assert
-                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
-                Assert.False(test1Lock.Exists);
-                Assert.Contains("error parsing solution file", r.Item3, StringComparison.OrdinalIgnoreCase);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(test1Lock.Exists);
             }
         }
 
@@ -776,7 +775,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 Assert.True(test1Lock.Exists);
-                Assert.False(test2Lock.Exists);
+                Assert.True(test2Lock.Exists);
             }
         }
 

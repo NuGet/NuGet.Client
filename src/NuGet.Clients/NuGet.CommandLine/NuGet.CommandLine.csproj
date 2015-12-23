@@ -35,8 +35,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <EmbeddedResource Include="GetProjectsReferencingProjectJsonFiles.targets" />
-    <EmbeddedResource Include="GetProjectsReferencingProjectJsonFilesEntryPoint.targets" />
+    <EmbeddedResource Include="GetProjectsReferencingProjectJsonFiles.targets">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GetProjectsReferencingProjectJsonFilesEntryPoint.targets">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnalysisResources.Designer.cs">
@@ -102,6 +106,7 @@
     <Compile Include="ExtensionLocator.cs" />
     <Compile Include="FileConflictAction.cs" />
     <Compile Include="ICommandManager.cs" />
+    <Compile Include="MSBuildTasks\ProjectReferencesTask.cs" />
     <Compile Include="MsBuildUtility.cs" />
     <Compile Include="NuGetCommand.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -118,6 +123,7 @@
     <Compile Include="PackageServer.cs" />
     <Compile Include="PackageSourceBuilder.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="ProjectReferenceCache.cs" />
     <Compile Include="Rules\DefaultPackageRuleSet.cs" />
     <Compile Include="Rules\InitScriptNotUnderToolsRule.cs" />
     <Compile Include="Rules\InvalidFrameworkFolderRule.cs" />
@@ -150,6 +156,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.Build, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Build.Framework, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />

@@ -209,9 +209,9 @@ namespace NuGet.ProjectManagement
         {
             return new ExternalProjectReference(
                 reference.Name,
-                reference.PackageSpecPath,
-                reference.ExternalProjectReferences.Where(externalReference =>
-                    !externalReference.Equals(reference.Name, StringComparison.OrdinalIgnoreCase)));
+                reference.PackageSpec,
+                reference.MSBuildProjectPath,
+                reference.ExternalProjectReferences);
         }
 
         public static IReadOnlyList<PackageIdentity> GetOrderedProjectDependencies(

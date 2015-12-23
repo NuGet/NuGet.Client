@@ -29,14 +29,14 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static async Task<RestoreResult> RestoreAsync(
             BuildIntegratedNuGetProject project,
-            Logging.ILogger logger,
+            BuildIntegratedProjectReferenceContext context,
             IEnumerable<SourceRepository> sources,
             string effectiveGlobalPackagesFolder,
             CancellationToken token)
         {
             return await RestoreAsync(
                 project,
-                logger,
+                context,
                 sources,
                 effectiveGlobalPackagesFolder,
                 c => { },
@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static async Task<RestoreResult> RestoreAsync(
             BuildIntegratedNuGetProject project,
-            Logging.ILogger logger,
+            BuildIntegratedProjectReferenceContext context,
             IEnumerable<SourceRepository> sources,
             string effectiveGlobalPackagesFolder,
             Action<SourceCacheContext> cacheContextModifier,
@@ -58,7 +58,7 @@ namespace NuGet.PackageManagement
             var result = await RestoreAsync(
                 project,
                 project.PackageSpec,
-                logger,
+                context,
                 sources,
                 effectiveGlobalPackagesFolder,
                 cacheContextModifier,
@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement
             token.ThrowIfCancellationRequested();
 
             // Write out the lock file and msbuild files
-            result.Commit(logger);
+            result.Commit(context.Logger);
 
             return result;
         }
@@ -79,13 +79,14 @@ namespace NuGet.PackageManagement
         internal static async Task<RestoreResult> RestoreAsync(
             BuildIntegratedNuGetProject project,
             PackageSpec packageSpec,
-            Logging.ILogger logger,
+            BuildIntegratedProjectReferenceContext context,
             IEnumerable<SourceRepository> sources,
             string effectiveGlobalPackagesFolder,
             Action<SourceCacheContext> cacheContextModifier,
             CancellationToken token)
         {
             // Restoring packages
+            var logger = context.Logger;
             logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                 Strings.BuildIntegratedPackageRestoreStarted,
                 project.ProjectName));
@@ -105,9 +106,8 @@ namespace NuGet.PackageManagement
                 request.ExistingLockFile = GetLockFile(lockFilePath, logger);
 
                 // Find the full closure of project.json files and referenced projects
-                var projectReferences = await project.GetProjectReferenceClosureAsync(logger);
+                var projectReferences = await project.GetProjectReferenceClosureAsync(context);
                 request.ExternalProjects = projectReferences
-                    .Where(reference => !string.IsNullOrEmpty(reference.PackageSpecPath))
                     .Select(reference => BuildIntegratedProjectUtility.ConvertProjectReference(reference))
                     .ToList();
 
@@ -169,7 +169,9 @@ namespace NuGet.PackageManagement
         /// The cache entry contains the project and the closure of project.json files.
         /// </summary>
         public static async Task<Dictionary<string, BuildIntegratedProjectCacheEntry>>
-            CreateBuildIntegratedProjectStateCache(IReadOnlyList<BuildIntegratedNuGetProject> projects)
+            CreateBuildIntegratedProjectStateCache(
+                IReadOnlyList<BuildIntegratedNuGetProject> projects,
+                BuildIntegratedProjectReferenceContext context)
         {
             var cache = new Dictionary<string, BuildIntegratedProjectCacheEntry>();
 
@@ -177,13 +179,37 @@ namespace NuGet.PackageManagement
             foreach (var project in projects)
             {
                 // Get all project.json file paths in the closure
-                var closure = await project.GetProjectReferenceClosureAsync();
-                var files = closure.Select(reference => reference.PackageSpecPath).ToList();
+                var closure = await project.GetProjectReferenceClosureAsync(context);
+
+                var files = new List<string>();
+
+                foreach (var reference in closure)
+                {
+                    if (!string.IsNullOrEmpty(reference.MSBuildProjectPath))
+                    {
+                        files.Add(reference.MSBuildProjectPath);
+                    }
+
+                    if (reference.PackageSpec != null)
+                    {
+                        Debug.Assert(reference.PackageSpec.FilePath != null, "Empty project.json path");
+                        files.Add(reference.PackageSpec.FilePath);
+                    }
+                }
+
+                var supportsProfiles = Enumerable.Empty<string>();
+
+                if (project.PackageSpec != null)
+                {
+                    supportsProfiles = project.PackageSpec.RuntimeGraph.Supports.Keys
+                        .OrderBy(p => p, StringComparer.Ordinal)
+                        .ToArray();
+                }
 
                 var projectInfo = new BuildIntegratedProjectCacheEntry(
                     project.JsonConfigPath,
                     files,
-                    project.PackageSpec.RuntimeGraph.Supports.Keys.OrderBy(p => p, StringComparer.Ordinal).ToArray());
+                    supportsProfiles);
 
                 var uniqueName = project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
 
@@ -218,8 +244,8 @@ namespace NuGet.PackageManagement
                     return true;
                 }
 
-                if (!item.Value.PackageSpecClosure.OrderBy(s => s)
-                    .SequenceEqual(projectInfo.PackageSpecClosure.OrderBy(s => s)))
+                if (!item.Value.ReferenceClosure.OrderBy(s => s)
+                    .SequenceEqual(projectInfo.ReferenceClosure.OrderBy(s => s)))
                 {
                     // The project closure has changed
                     return true;
@@ -327,11 +353,12 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static async Task<IReadOnlyList<BuildIntegratedNuGetProject>> GetParentProjectsInClosure(
             ISolutionManager solutionManager,
-            BuildIntegratedNuGetProject target)
+            BuildIntegratedNuGetProject target,
+            BuildIntegratedProjectReferenceContext referenceContext)
         {
             var projects = solutionManager.GetNuGetProjects().OfType<BuildIntegratedNuGetProject>().ToList();
 
-            return await GetParentProjectsInClosure(projects, target);
+            return await GetParentProjectsInClosure(projects, target, referenceContext);
         }
 
         /// <summary>
@@ -339,7 +366,8 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static async Task<IReadOnlyList<BuildIntegratedNuGetProject>> GetParentProjectsInClosure(
             IReadOnlyList<BuildIntegratedNuGetProject> projects,
-            BuildIntegratedNuGetProject target)
+            BuildIntegratedNuGetProject target,
+            BuildIntegratedProjectReferenceContext referenceContext)
         {
             if (projects == null)
             {
@@ -360,13 +388,13 @@ namespace NuGet.PackageManagement
                 // do not count the target as a parent
                 if (!target.Equals(project))
                 {
-                    var closure = await project.GetProjectReferenceClosureAsync();
+                    var closure = await project.GetProjectReferenceClosureAsync(referenceContext);
 
                     // find all projects which have a child reference matching the same project.json path as the target
                     if (closure.Any(reference =>
-                        !string.IsNullOrEmpty(reference.PackageSpecPath) &&
+                        reference.PackageSpec != null &&
                         string.Equals(targetProjectJson,
-                            Path.GetFullPath(reference.PackageSpecPath),
+                            Path.GetFullPath(reference.PackageSpec.FilePath),
                             StringComparison.OrdinalIgnoreCase)))
                     {
                         parents.Add(project);

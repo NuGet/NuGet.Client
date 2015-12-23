@@ -108,6 +108,9 @@ namespace NuGet.Versioning
                 case 'D':
                     s = GetLegacyString(range);
                     break;
+                case 'T':
+                    s = GetLegacyShortString(range);
+                    break;
             }
 
             return s;
@@ -173,6 +176,35 @@ namespace NuGet.Versioning
             else
             {
                 s = GetNormalizedString(range);
+            }
+
+            return s;
+        }
+
+        /// <summary>
+        /// Creates a legacy short string that is compatible with NuGet 2.8.3
+        /// </summary>
+        private string GetLegacyShortString(VersionRangeBase range)
+        {
+            string s = null;
+
+            if (range.HasLowerBound
+                && range.IsMinInclusive
+                && !range.HasUpperBound)
+            {
+                s = string.Format(_versionFormatter, ZeroN, range.MinVersion);
+            }
+            else if (range.HasLowerAndUpperBounds
+                     && range.IsMinInclusive
+                     && range.IsMaxInclusive
+                     &&
+                     range.MinVersion.Equals(range.MaxVersion))
+            {
+                s = string.Format(_versionFormatter, "[{0:N}]", range.MinVersion);
+            }
+            else
+            {
+                s = GetLegacyString(range);
             }
 
             return s;

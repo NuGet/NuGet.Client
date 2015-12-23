@@ -15,6 +15,10 @@ namespace NuGet.ProjectModel
 
         public NuGetVersion Version { get; set; }
 
+        public string Type { get; set; }
+
+        public string Framework { get; set; }
+
         public IList<PackageDependency> Dependencies { get; set; } = new List<PackageDependency>();
 
         public IList<string> FrameworkAssemblies { get; set; } = new List<string>();
@@ -43,6 +47,8 @@ namespace NuGet.ProjectModel
 
             return string.Equals(Name, other.Name)
                 && VersionComparer.Default.Equals(Version, other.Version)
+                && string.Equals(Type, other.Type, StringComparison.Ordinal)
+                && string.Equals(Framework, other.Framework, StringComparison.Ordinal)
                 && Dependencies.OrderBy(dependency => dependency.Id, StringComparer.OrdinalIgnoreCase)
                     .SequenceEqual(other.Dependencies.OrderBy(dependency => dependency.Id, StringComparer.OrdinalIgnoreCase))
                 && FrameworkAssemblies.OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
@@ -70,6 +76,8 @@ namespace NuGet.ProjectModel
 
             combiner.AddObject(Name);
             combiner.AddObject(Version);
+            combiner.AddObject(Type);
+            combiner.AddObject(Framework);
 
             foreach (var dependency in Dependencies.OrderBy(dependency => dependency.Id, StringComparer.OrdinalIgnoreCase))
             {

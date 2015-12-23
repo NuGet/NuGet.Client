@@ -52,6 +52,7 @@ namespace NuGet.Commands
             // it has the correct casing that runtime needs during dependency resolution.
             lockFileLib.Name = correctedPackageName ?? package.Id;
             lockFileLib.Version = package.Version;
+            lockFileLib.Type = LibraryTypes.Package;
 
             IList<string> files;
             var contentItems = new ContentItemCollection();

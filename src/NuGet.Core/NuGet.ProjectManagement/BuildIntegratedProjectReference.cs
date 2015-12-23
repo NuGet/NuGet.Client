@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.ProjectModel;
 
 namespace NuGet.ProjectManagement
 {
@@ -16,24 +17,30 @@ namespace NuGet.ProjectManagement
         /// <summary>
         /// Represents a reference to a project produced by an external build system, such as msbuild.
         /// </summary>
-        /// <param name="name">unique project name or full path</param>
-        /// <param name="packageSpecPath">project.json path</param>
-        /// <param name="externalProjectReferences">unique names of the referenced projects</param>
-        public BuildIntegratedProjectReference(string name, string packageSpecPath, IEnumerable<string> externalProjectReferences)
+        /// <param name="uniqueName">unique project name or full path</param>
+        /// <param name="packageSpec">project.json file or null if none exists</param>
+        /// <param name="msbuildProjectPath">project file if one exists</param>
+        /// <param name="projectReferences">unique names of the referenced projects</param>
+        public BuildIntegratedProjectReference(
+            string uniqueName,
+            PackageSpec packageSpec,
+            string msbuildProjectPath,
+            IEnumerable<string> projectReferences)
         {
-            if (name == null)
+            if (uniqueName == null)
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ArgumentNullException(nameof(uniqueName));
             }
 
-            if (externalProjectReferences == null)
+            if (projectReferences == null)
             {
-                throw new ArgumentNullException(nameof(externalProjectReferences));
+                throw new ArgumentNullException(nameof(projectReferences));
             }
 
-            Name = name;
-            PackageSpecPath = packageSpecPath;
-            ExternalProjectReferences = externalProjectReferences.ToList();
+            Name = uniqueName;
+            PackageSpec = packageSpec;
+            MSBuildProjectPath = msbuildProjectPath;
+            ExternalProjectReferences = projectReferences.ToList();
         }
 
         /// <summary>
@@ -42,13 +49,18 @@ namespace NuGet.ProjectManagement
         public string Name { get; }
 
         /// <summary>
-        /// The path to the project.json file representing the NuGet dependencies of the project
+        /// project.json file
         /// </summary>
-        public string PackageSpecPath { get; }
+        public PackageSpec PackageSpec { get; }
 
         /// <summary>
-        /// A list of other external projects this project references
+        /// A list of other external projects this project references. Uses <see cref="Name"/>
         /// </summary>
         public IReadOnlyList<string> ExternalProjectReferences { get; }
+
+        /// <summary>
+        /// Path to msbuild project file. Ex: xproj, csproj
+        /// </summary>
+        public string MSBuildProjectPath { get; }
     }
 }

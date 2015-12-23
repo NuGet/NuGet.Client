@@ -54,7 +54,7 @@ namespace NuGet.Test
 
                 // Act
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    Logging.NullLogger.Instance,
+                    new BuildIntegratedProjectReferenceContext(),
                     sources,
                     effectiveGlobalPackagesFolder,
                     CancellationToken.None);
@@ -101,7 +101,7 @@ namespace NuGet.Test
 
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(
                     project,
-                    Logging.NullLogger.Instance,
+                    new BuildIntegratedProjectReferenceContext(),
                     sources,
                     packagesFolder,
                     CancellationToken.None);
@@ -160,7 +160,7 @@ namespace NuGet.Test
 
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(
                     project,
-                    Logging.NullLogger.Instance,
+                    new BuildIntegratedProjectReferenceContext(),
                     sources,
                     packagesFolder,
                     CancellationToken.None);
@@ -219,7 +219,7 @@ namespace NuGet.Test
 
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(
                     project,
-                    Logging.NullLogger.Instance,
+                    new BuildIntegratedProjectReferenceContext(),
                     sources,
                     packagesFolder,
                     CancellationToken.None);
@@ -278,7 +278,7 @@ namespace NuGet.Test
                         Configuration.NullSettings.Instance);
 
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    Logging.NullLogger.Instance,
+                    new BuildIntegratedProjectReferenceContext(),
                     sources,
                     effectiveGlobalPackagesFolder,
                     CancellationToken.None);
@@ -333,7 +333,7 @@ namespace NuGet.Test
                         Configuration.NullSettings.Instance);
 
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    Logging.NullLogger.Instance,
+                    new BuildIntegratedProjectReferenceContext(),
                     sources,
                     effectiveGlobalPackagesFolder,
                     CancellationToken.None);
@@ -374,8 +374,8 @@ namespace NuGet.Test
                 var project1 = new TestBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
                 project1.ProjectClosure = new List<BuildIntegratedProjectReference>()
             {
-                new BuildIntegratedProjectReference("a", "a/project.json", new string[] { "b/project.json" }),
-                new BuildIntegratedProjectReference("b", "b/project.json", new string[] { }),
+                CreateReference("a", "a/project.json", new string[] { "b/project.json" }),
+                CreateReference("b", "b/project.json", new string[] { }),
             };
 
                 var msBuildNuGetProjectSystem2 = new TestMSBuildNuGetProjectSystem(
@@ -391,17 +391,21 @@ namespace NuGet.Test
                 projects.Add(project1);
                 projects.Add(project2);
 
-                var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+                var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
+                    projects, 
+                    new BuildIntegratedProjectReferenceContext());
 
                 var projects2 = new List<BuildIntegratedNuGetProject>();
                 project1.ProjectClosure = new List<BuildIntegratedProjectReference>() {
-                new BuildIntegratedProjectReference("a", "a/project.json", new string[] { "d/project.json" }),
-                new BuildIntegratedProjectReference("d", "d/project.json", new string[] { }),
+                CreateReference("a", "a/project.json", new string[] { "d/project.json" }),
+                CreateReference("d", "d/project.json", new string[] { }),
             };
 
                 projects2.Add(project1);
                 projects2.Add(project2);
-                var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects2);
+                var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
+                    projects2,
+                    new BuildIntegratedProjectReferenceContext());
 
                 // Act
                 var b = BuildIntegratedRestoreUtility.CacheHasChanges(cache, cache2);
@@ -448,8 +452,8 @@ namespace NuGet.Test
                 var project1 = new TestBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
                 project1.ProjectClosure = new List<BuildIntegratedProjectReference>()
             {
-                new BuildIntegratedProjectReference("a", "a/project.json", new string[] { "b/project.json" }),
-                new BuildIntegratedProjectReference("b", "b/project.json", new string[] { }),
+                CreateReference("a", "a/project.json", new string[] { "b/project.json" }),
+                CreateReference("b", "b/project.json", new string[] { }),
             };
 
                 var msBuildNuGetProjectSystem2 = new TestMSBuildNuGetProjectSystem(
@@ -465,10 +469,15 @@ namespace NuGet.Test
                 projects.Add(project1);
                 projects.Add(project2);
 
-                var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+                var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
+                    projects,
+                    new BuildIntegratedProjectReferenceContext());
+
                 supports["net46"] = new JObject();
                 File.WriteAllText(randomConfig, configJson.ToString());
-                var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+                var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
+                    projects,
+                    new BuildIntegratedProjectReferenceContext());
 
                 // Act 1
                 var result1 = BuildIntegratedRestoreUtility.CacheHasChanges(cache, cache2);
@@ -477,7 +486,9 @@ namespace NuGet.Test
                 Assert.True(result1);
 
                 // Act 2
-                var cache3 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+                var cache3 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
+                    projects,
+                    new BuildIntegratedProjectReferenceContext());
                 var result2 = BuildIntegratedRestoreUtility.CacheHasChanges(cache2, cache3);
 
                 // Assert 2
@@ -509,8 +520,8 @@ namespace NuGet.Test
                 var project1 = new TestBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
                 project1.ProjectClosure = new List<BuildIntegratedProjectReference>()
             {
-                new BuildIntegratedProjectReference("a", "a/project.json", new string[] { "b/project.json" }),
-                new BuildIntegratedProjectReference("b", "b/project.json", new string[] { }),
+                CreateReference("a", "a/project.json", new string[] { "b/project.json" }),
+                CreateReference("b", "b/project.json", new string[] { }),
             };
 
                 var msBuildNuGetProjectSystem2 = new TestMSBuildNuGetProjectSystem(
@@ -525,11 +536,15 @@ namespace NuGet.Test
                 var projects = new List<BuildIntegratedNuGetProject>();
                 projects.Add(project1);
 
-                var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+                var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
+                    projects,
+                    new BuildIntegratedProjectReferenceContext());
 
                 // Add a new project to the second cache
                 projects.Add(project2);
-                var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+                var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
+                    projects,
+                    new BuildIntegratedProjectReferenceContext());
 
                 // Act
                 var b = BuildIntegratedRestoreUtility.CacheHasChanges(cache, cache2);
@@ -563,8 +578,8 @@ namespace NuGet.Test
                 var project1 = new TestBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
                 project1.ProjectClosure = new List<BuildIntegratedProjectReference>()
             {
-                new BuildIntegratedProjectReference("a", "a/project.json", new string[] { "b/project.json" }),
-                new BuildIntegratedProjectReference("b", "b/project.json", new string[] { }),
+                CreateReference("a", "a/project.json", new string[] { "b/project.json" }),
+                CreateReference("b", "b/project.json", new string[] { }),
             };
 
                 var msBuildNuGetProjectSystem2 = new TestMSBuildNuGetProjectSystem(
@@ -580,8 +595,12 @@ namespace NuGet.Test
                 projects.Add(project1);
                 projects.Add(project2);
 
-                var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
-                var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+                var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
+                    projects,
+                    new BuildIntegratedProjectReferenceContext());
+                var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
+                    projects,
+                    new BuildIntegratedProjectReferenceContext());
 
                 // Act
                 var b = BuildIntegratedRestoreUtility.CacheHasChanges(cache, cache2);
@@ -615,8 +634,8 @@ namespace NuGet.Test
                 var project1 = new TestBuildIntegratedNuGetProject(randomConfig, msBuildNuGetProjectSystem);
                 project1.ProjectClosure = new List<BuildIntegratedProjectReference>()
             {
-                new BuildIntegratedProjectReference("a", "a/project.json", new string[] { "b/project.json" }),
-                new BuildIntegratedProjectReference("b", "b/project.json", new string[] { }),
+                CreateReference("a", "a/project.json", new string[] { "b/project.json" }),
+                CreateReference("b", "b/project.json", new string[] { }),
             };
 
                 var msBuildNuGetProjectSystem2 = new TestMSBuildNuGetProjectSystem(
@@ -633,13 +652,15 @@ namespace NuGet.Test
                 projects.Add(project2);
 
                 // Act
-                var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+                var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
+                    projects,
+                    new BuildIntegratedProjectReferenceContext());
 
                 // Assert
                 Assert.Equal(2, cache.Count);
-                Assert.Equal(2, cache["project1"].PackageSpecClosure.Count);
-                Assert.Equal(0, cache["project2"].PackageSpecClosure.Count);
-                Assert.Equal("a/project.json|b/project.json", string.Join("|", cache["project1"].PackageSpecClosure));
+                Assert.Equal(2, cache["project1"].ReferenceClosure.Count);
+                Assert.Equal(0, cache["project2"].ReferenceClosure.Count);
+                Assert.Equal("a|b", string.Join("|", cache["project1"].ReferenceClosure));
             }
         }
 
@@ -674,7 +695,7 @@ namespace NuGet.Test
 
                 // Act
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    Logging.NullLogger.Instance,
+                    new BuildIntegratedProjectReferenceContext(),
                     sources,
                     effectiveGlobalPackagesFolder,
                     CancellationToken.None);
@@ -714,7 +735,7 @@ namespace NuGet.Test
                         Configuration.NullSettings.Instance);
 
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    Logging.NullLogger.Instance,
+                    new BuildIntegratedProjectReferenceContext(),
                     sources,
                     effectiveGlobalPackagesFolder,
                     CancellationToken.None);
@@ -730,7 +751,7 @@ namespace NuGet.Test
 
                 // Act
                 result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    Logging.NullLogger.Instance,
+                    new BuildIntegratedProjectReferenceContext(),
                     sources,
                     effectiveGlobalPackagesFolder,
                     CancellationToken.None);
@@ -788,7 +809,7 @@ namespace NuGet.Test
 
                 // Act
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    Logging.NullLogger.Instance,
+                    new BuildIntegratedProjectReferenceContext(),
                     sources,
                     effectiveGlobalPackagesFolder,
                     CancellationToken.None);
@@ -843,6 +864,20 @@ namespace NuGet.Test
             }
 }";
 
+        private static BuildIntegratedProjectReference CreateReference(
+            string name,
+            string path,
+            IEnumerable<string> references)
+        {
+            var spec = new PackageSpec(new JObject());
+            spec.FilePath = name;
+
+            return new BuildIntegratedProjectReference(
+                name,
+                spec,
+                msbuildProjectPath: null,
+                projectReferences: references);
+        }
 
         private class TestBuildIntegratedNuGetProject : BuildIntegratedNuGetProject
         {
@@ -854,7 +889,8 @@ namespace NuGet.Test
                 InternalMetadata.Add(NuGetProjectMetadataKeys.UniqueName, msbuildProjectSystem.ProjectName);
             }
 
-            public override Task<IReadOnlyList<BuildIntegratedProjectReference>> GetProjectReferenceClosureAsync(NuGet.Logging.ILogger logger)
+            public override Task<IReadOnlyList<BuildIntegratedProjectReference>> GetProjectReferenceClosureAsync(
+                BuildIntegratedProjectReferenceContext context)
             {
                 return Task.FromResult(ProjectClosure);
             }

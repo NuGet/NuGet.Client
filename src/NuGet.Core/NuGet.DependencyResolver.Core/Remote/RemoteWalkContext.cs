@@ -13,7 +13,7 @@ namespace NuGet.DependencyResolver
     {
         public RemoteWalkContext()
         {
-            ProjectLibraryProviders = new List<IRemoteDependencyProvider>();
+            ProjectLibraryProviders = new List<IDependencyProvider>();
             LocalLibraryProviders = new List<IRemoteDependencyProvider>();
             RemoteLibraryProviders = new List<IRemoteDependencyProvider>();
 
@@ -21,7 +21,7 @@ namespace NuGet.DependencyResolver
             PackageFileCache = new ConcurrentDictionary<PackageIdentity, IList<string>>(PackageIdentity.Comparer);
         }
 
-        public IList<IRemoteDependencyProvider> ProjectLibraryProviders { get; }
+        public IList<IDependencyProvider> ProjectLibraryProviders { get; }
         public IList<IRemoteDependencyProvider> LocalLibraryProviders { get; }
         public IList<IRemoteDependencyProvider> RemoteLibraryProviders { get; }
 

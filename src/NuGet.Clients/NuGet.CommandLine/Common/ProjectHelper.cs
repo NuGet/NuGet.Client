@@ -14,7 +14,8 @@ namespace NuGet.Common
             ".btproj",
             ".vcxproj",
             ".jsproj",
-            ".wixproj"
+            ".wixproj",
+            ".xproj"
         };
 
         public static HashSet<string> SupportedProjectExtensions
@@ -27,7 +28,6 @@ namespace NuGet.Common
 
         private static readonly HashSet<string> _unsupportedProjectExtensions 
             = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
-                ".xproj"
             };
 
         public static HashSet<string> UnsupportedProjectExtensions

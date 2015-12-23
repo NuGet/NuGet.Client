@@ -15,6 +15,70 @@ namespace NuGet.Commands.Test
 {
     public class UWPRestoreTests
     {
+        // Verify that a v1 lock file can be parsed without crashing.
+#if !DNXCORE50
+        [Fact]
+#else
+        [Fact(Skip="dnxcore50 does not support embedded resources")]
+#endif
+        public void UWPRestore_ReadV1LockFile()
+        {
+#if !DNXCORE50
+            // Arrange
+            var expectedStream = Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream("NuGet.Commands.Test.compiler.resources.uwpBlankAppV1.json");
+
+            LockFile lockFile = null;
+
+            using (var reader = new StreamReader(expectedStream))
+            {
+                var format = new LockFileFormat();
+
+                // Act
+                lockFile = format.Parse(reader.ReadToEnd(), "c:\\project.lock.json");
+            }
+
+            // Assert
+            Assert.NotNull(lockFile);
+#endif
+        }
+
+#if !DNXCORE50
+        [Fact]
+#else
+        [Fact(Skip="dnxcore50 does not support embedded resources")]
+#endif
+        public void UWPRestore_ReadLockFileRoundTrip()
+        {
+#if !DNXCORE50
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var expectedStream = Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream("NuGet.Commands.Test.compiler.resources.uwpBlankAppV2.json");
+
+                JObject json = null;
+                var format = new LockFileFormat();
+
+                using (var reader = new StreamReader(expectedStream))
+                {
+                    json = JObject.Parse(reader.ReadToEnd());
+                }
+
+                var path = Path.Combine(workingDir, "project.lock.json");
+
+                // Act
+                var lockFile = format.Parse(json.ToString(), path);
+
+                format.Write(path, lockFile);
+                var jsonOutput = JObject.Parse(File.ReadAllText(path));
+
+                // Assert
+                Assert.Equal(json.ToString(), jsonOutput.ToString());
+            }
+#endif
+        }
+
         [Fact]
         public async Task UWPRestore_VerifySatellitePackagesAreCompatibleInPCL()
         {
@@ -240,7 +304,7 @@ namespace NuGet.Commands.Test
 
 #if !DNXCORE50
                 var expectedStream = Assembly.GetExecutingAssembly()
-                    .GetManifestResourceStream("NuGet.Commands.Test.compiler.resources.uwpBlankApp.json");
+                    .GetManifestResourceStream("NuGet.Commands.Test.compiler.resources.uwpBlankAppV2.json");
 
                 JObject expectedJson = null;
 
@@ -257,6 +321,7 @@ namespace NuGet.Commands.Test
                 var lockFileJson = JObject.Parse(File.OpenText(request.LockFilePath).ReadToEnd());
 
                 // Assert
+                Assert.True(result.Success);
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);

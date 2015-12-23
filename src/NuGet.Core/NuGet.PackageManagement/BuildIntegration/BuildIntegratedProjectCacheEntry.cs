@@ -13,7 +13,7 @@ namespace NuGet.PackageManagement
     {
         public BuildIntegratedProjectCacheEntry(
             string projectConfigPath,
-            IEnumerable<string> packageSpecClosure,
+            IEnumerable<string> referenceClosure,
             IEnumerable<string> supportsProfiles)
         {
             if (projectConfigPath == null)
@@ -21,9 +21,9 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(projectConfigPath));
             }
 
-            if (packageSpecClosure == null)
+            if (referenceClosure == null)
             {
-                throw new ArgumentNullException(nameof(packageSpecClosure));
+                throw new ArgumentNullException(nameof(referenceClosure));
             }
 
             if (supportsProfiles == null)
@@ -32,7 +32,7 @@ namespace NuGet.PackageManagement
             }
 
             ProjectConfigPath = projectConfigPath;
-            PackageSpecClosure = new HashSet<string>(packageSpecClosure);
+            ReferenceClosure = new HashSet<string>(referenceClosure);
             SupportsProfiles = supportsProfiles;
         }
 
@@ -42,9 +42,9 @@ namespace NuGet.PackageManagement
         public string ProjectConfigPath { get; }
 
         /// <summary>
-        /// All project.json files in the closure.
+        /// All project.json files and msbuild references in the closure.
         /// </summary>
-        public HashSet<string> PackageSpecClosure { get; }
+        public HashSet<string> ReferenceClosure { get; }
 
         public IEnumerable<string> SupportsProfiles { get; }
     }

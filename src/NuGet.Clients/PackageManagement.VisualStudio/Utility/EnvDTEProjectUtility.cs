@@ -107,6 +107,46 @@ namespace NuGet.PackageManagement.VisualStudio
         #region Get "Project" Information
 
         /// <summary>
+        /// Returns the full path including the project file name.
+        /// </summary>
+        internal static string GetFullProjectPath(EnvDTEProject envDTEProject)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
+            Debug.Assert(envDTEProject != null);
+            if (IsUnloaded(envDTEProject))
+            {
+                // To get the directory of an unloaded project, we use the UniqueName property,
+                // which is the path of the project file relative to the solution directory.
+                var solutionDirectory = Path.GetDirectoryName(envDTEProject.DTE.Solution.FullName);
+                return Path.Combine(solutionDirectory, envDTEProject.UniqueName);
+            }
+
+            // FullPath
+            string fullPath = GetPropertyValue<string>(envDTEProject, "FullPath");
+
+            if (!String.IsNullOrEmpty(fullPath))
+            {
+                // Some Project System implementations (JS metro app) return the project 
+                // file as FullPath. We only need the parent directory
+                if (File.Exists(fullPath))
+                {
+                    return fullPath;
+                }
+            }
+
+            // FullName
+            if (!String.IsNullOrEmpty(envDTEProject.FullName))
+            {
+                return Path.GetFullPath(envDTEProject.FullName);
+            }
+
+            Debug.Fail("Unable to find the project path");
+
+            return null;
+        }
+
+        /// <summary>
         /// Returns the full path of the project directory.
         /// </summary>
         /// <param name="envDTEProject">The project.</param>

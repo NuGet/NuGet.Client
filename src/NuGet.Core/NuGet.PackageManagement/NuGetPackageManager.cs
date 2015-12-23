@@ -1664,6 +1664,7 @@ namespace NuGet.PackageManagement
             }
 
             var logger = new ProjectContextLogger(nuGetProjectContext);
+            var buildIntegratedContext = new BuildIntegratedProjectReferenceContext(logger);
 
             var effectiveGlobalPackagesFolder = BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
                                                     SolutionManager?.SolutionDirectory,
@@ -1688,7 +1689,7 @@ namespace NuGet.PackageManagement
                 var originalRestoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(
                     buildIntegratedProject,
                     originalPackageSpec,
-                    logger,
+                    buildIntegratedContext,
                     sources,
                     effectiveGlobalPackagesFolder,
                     cacheContextModifier,
@@ -1718,7 +1719,7 @@ namespace NuGet.PackageManagement
             // Restore based on the modified package spec. This operation does not write the lock file to disk.
             var restoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(buildIntegratedProject,
                 packageSpec,
-                logger,
+                buildIntegratedContext,
                 sources,
                 effectiveGlobalPackagesFolder,
                 cacheContextModifier,
@@ -1847,7 +1848,11 @@ namespace NuGet.PackageManagement
                 }
 
                 // Restore parent projects. These will be updated to include the transitive changes.
-                var parents = await BuildIntegratedRestoreUtility.GetParentProjectsInClosure(SolutionManager, buildIntegratedProject);
+                var referenceContext = new BuildIntegratedProjectReferenceContext(logger);
+                var parents = await BuildIntegratedRestoreUtility.GetParentProjectsInClosure(
+                    SolutionManager,
+                    buildIntegratedProject, 
+                    referenceContext);
 
                 var now = DateTime.UtcNow;
                 Action<SourceCacheContext> cacheContextModifier = c => c.ListMaxAge = now;
@@ -1857,7 +1862,7 @@ namespace NuGet.PackageManagement
                     // Restore and commit the lock file to disk regardless of the result
                     var parentResult = await BuildIntegratedRestoreUtility.RestoreAsync(
                         parent,
-                        logger,
+                        referenceContext,
                         projectAction.Sources,
                         effectiveGlobalPackagesFolder,
                         cacheContextModifier,

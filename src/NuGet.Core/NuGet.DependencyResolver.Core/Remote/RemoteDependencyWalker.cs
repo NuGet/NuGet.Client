@@ -319,7 +319,20 @@ namespace NuGet.DependencyResolver
                 return CreateUnresolvedMatch(libraryRange);
             }
 
-            var dependencies = await match.Provider.GetDependenciesAsync(match.Library, framework, cancellationToken);
+            IEnumerable<LibraryDependency> dependencies;
+
+            // For local matches such as projects get the dependencies from the LocalLibrary property.
+            var localMatch = match as LocalMatch;
+
+            if (localMatch != null)
+            {
+                dependencies = localMatch.LocalLibrary.Dependencies;
+            }
+            else
+            {
+                // Look up the dependencies from the source
+                dependencies = await match.Provider.GetDependenciesAsync(match.Library, framework, cancellationToken);
+            }
 
             return new GraphItem<RemoteResolveResult>(match.Library)
             {
@@ -470,8 +483,10 @@ namespace NuGet.DependencyResolver
             }
         }
 
-        public async Task<RemoteMatch> FindProjectMatch(string name, NuGetFramework framework, CancellationToken cancellationToken)
+        public Task<RemoteMatch> FindProjectMatch(string name, NuGetFramework framework, CancellationToken cancellationToken)
         {
+            RemoteMatch result = null;
+
             var libraryRange = new LibraryRange
             {
                 Name = name
@@ -479,14 +494,20 @@ namespace NuGet.DependencyResolver
 
             foreach (var provider in _context.ProjectLibraryProviders)
             {
-                var match = await provider.FindLibraryAsync(libraryRange, framework, cancellationToken);
+                var match = provider.GetLibrary(libraryRange, framework);
                 if (match != null)
                 {
-                    return new RemoteMatch { Library = match, Provider = provider };
+                    result = new LocalMatch {
+                        LocalLibrary = match,
+                        Library = match.Identity,
+                        LocalProvider = provider,
+                        Provider = new LocalDependencyProvider(provider),
+                        Path = match.Path,
+                    };
                 }
             }
 
-            return null;
+            return Task.FromResult<RemoteMatch>(result);
         }
 
         private async Task<RemoteMatch> FindLibraryByVersion(LibraryRange libraryRange, NuGetFramework framework, IEnumerable<IRemoteDependencyProvider> providers, CancellationToken token)
