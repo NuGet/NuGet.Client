@@ -486,7 +486,7 @@ namespace NuGet.CommandLine
                     throw new ArgumentNullException(nameof(extension));
                 }
 
-                var tempDirectory = Path.Combine(Path.GetTempPath(), "NuGet");
+                var tempDirectory = Path.Combine(Path.GetTempPath(), "NuGet-Scratch");
 
                 Directory.CreateDirectory(tempDirectory);
 
