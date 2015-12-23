@@ -5,12 +5,13 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace NuGet.Test.Utility
 {
     public static class ZipExtensions
     {
-        public static void AddEntry(this ZipArchive archive, string path, byte[] data)
+        public static ZipArchiveEntry AddEntry(this ZipArchive archive, string path, byte[] data)
         {
             var entry = archive.CreateEntry(path);
 
@@ -18,17 +19,46 @@ namespace NuGet.Test.Utility
             {
                 stream.Write(data, 0, data.Length);
             }
+
+            return entry;
         }
 
-        public static void AddEntry(this ZipArchive archive, string path, string value, Encoding encoding)
+        public static async Task<ZipArchiveEntry> AddEntryAsync(this ZipArchive archive, string path, byte[] data)
         {
             var entry = archive.CreateEntry(path);
 
             using (var stream = entry.Open())
             {
-                var data = encoding.GetBytes(value);
+                await stream.WriteAsync(data, 0, data.Length);
+            }
+
+            return entry;
+        }
+
+        public static ZipArchiveEntry AddEntry(this ZipArchive archive, string path, string value, Encoding encoding = null)
+        {
+            var entry = archive.CreateEntry(path);
+
+            using (var stream = entry.Open())
+            {
+                var data = (encoding ?? Encoding.UTF8).GetBytes(value);
                 stream.Write(data, 0, data.Length);
             }
+
+            return entry;
+        }
+
+        public static async Task<ZipArchiveEntry> AddEntryAsync(this ZipArchive archive, string path, string value, Encoding encoding = null)
+        {
+            var entry = archive.CreateEntry(path);
+
+            using (var stream = entry.Open())
+            {
+                var data = (encoding ?? Encoding.UTF8).GetBytes(value);
+                await stream.WriteAsync(data, 0, data.Length);
+            }
+
+            return entry;
         }
 
         public static void ExtractAll(this ZipArchive archive, string targetPath)

@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace NuGet.Test.Utility
 {
@@ -34,6 +36,8 @@ namespace NuGet.Test.Utility
             <dependency id='{0}' version='{1}' />
         </dependencies>";
 
+        private static readonly byte[] ZeroContent = new byte[] { 0 };
+
         public static ZipArchive GetZip(FileInfo file)
         {
             return new ZipArchive(file.OpenRead());
@@ -55,12 +59,12 @@ namespace NuGet.Test.Utility
 
             using (var zip = new ZipArchive(File.Create(result.File.FullName), ZipArchiveMode.Create))
             {
-                zip.AddEntry("lib/net40/one.dll", new byte[] { 0 });
-                zip.AddEntry("lib/net40/three.dll", new byte[] { 0 });
-                zip.AddEntry("lib/net40/two.dll", new byte[] { 0 });
+                zip.AddEntry("lib/net40/one.dll", ZeroContent);
+                zip.AddEntry("lib/net40/three.dll", ZeroContent);
+                zip.AddEntry("lib/net40/two.dll", ZeroContent);
 
-                zip.AddEntry("lib/sl40/a.dll", new byte[] { 0 });
-                zip.AddEntry("lib/sl40/b.dll", new byte[] { 0 });
+                zip.AddEntry("lib/sl40/a.dll", ZeroContent);
+                zip.AddEntry("lib/sl40/b.dll", ZeroContent);
 
                 zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                                       <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
@@ -104,13 +108,13 @@ namespace NuGet.Test.Utility
 
             using (var zip = new ZipArchive(File.Create(result.File.FullName), ZipArchiveMode.Create))
             {
-                zip.AddEntry(result.Id + "." + result.Version + ".nupkg", new byte[] { 0 });
-                zip.AddEntry("lib/net40/one.dll", new byte[] { 0 });
-                zip.AddEntry("lib/net40/three.dll", new byte[] { 0 });
-                zip.AddEntry("lib/net40/two.dll", new byte[] { 0 });
+                zip.AddEntry(result.Id + "." + result.Version + ".nupkg", ZeroContent);
+                zip.AddEntry("lib/net40/one.dll", ZeroContent);
+                zip.AddEntry("lib/net40/three.dll", ZeroContent);
+                zip.AddEntry("lib/net40/two.dll", ZeroContent);
 
-                zip.AddEntry("lib/sl40/a.dll", new byte[] { 0 });
-                zip.AddEntry("lib/sl40/b.dll", new byte[] { 0 });
+                zip.AddEntry("lib/sl40/a.dll", ZeroContent);
+                zip.AddEntry("lib/sl40/b.dll", ZeroContent);
 
                 zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                                       <package xmlns=""http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd"">
@@ -148,11 +152,11 @@ namespace NuGet.Test.Utility
 
             using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
-                zip.AddEntry("lib/a.dll", new byte[] { 0 });
-                zip.AddEntry("lib/35/b.dll", new byte[] { 0 });
-                zip.AddEntry("lib/40/test40.dll", new byte[] { 0 });
-                zip.AddEntry("lib/40/x86/testx86.dll", new byte[] { 0 });
-                zip.AddEntry("lib/45/a.dll", new byte[] { 0 });
+                zip.AddEntry("lib/a.dll", ZeroContent);
+                zip.AddEntry("lib/35/b.dll", ZeroContent);
+                zip.AddEntry("lib/40/test40.dll", ZeroContent);
+                zip.AddEntry("lib/40/x86/testx86.dll", ZeroContent);
+                zip.AddEntry("lib/45/a.dll", ZeroContent);
 
                 zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
@@ -177,10 +181,10 @@ namespace NuGet.Test.Utility
 
             using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
-                zip.AddEntry("lib/test.dll", new byte[] { 0 });
-                zip.AddEntry("lib/net40/test40.dll", new byte[] { 0 });
-                zip.AddEntry("lib/net40/test40b.dll", new byte[] { 0 });
-                zip.AddEntry("lib/net45/test45.dll", new byte[] { 0 });
+                zip.AddEntry("lib/test.dll", ZeroContent);
+                zip.AddEntry("lib/net40/test40.dll", ZeroContent);
+                zip.AddEntry("lib/net40/test40b.dll", ZeroContent);
+                zip.AddEntry("lib/net45/test45.dll", ZeroContent);
 
                 zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
@@ -216,10 +220,10 @@ namespace NuGet.Test.Utility
 
             using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
-                zip.AddEntry("lib/test.dll", new byte[] { 0 });
-                zip.AddEntry("lib/net40/test40.dll", new byte[] { 0 });
-                zip.AddEntry("lib/net40/test40b.dll", new byte[] { 0 });
-                zip.AddEntry("lib/net45/test45.dll", new byte[] { 0 });
+                zip.AddEntry("lib/test.dll", ZeroContent);
+                zip.AddEntry("lib/net40/test40.dll", ZeroContent);
+                zip.AddEntry("lib/net40/test40b.dll", ZeroContent);
+                zip.AddEntry("lib/net45/test45.dll", ZeroContent);
 
                 var nuspec = string.Format(
                     CultureInfo.InvariantCulture,
@@ -260,8 +264,8 @@ namespace NuGet.Test.Utility
 
             using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
-                zip.AddEntry("lib/net40/test40.dll", new byte[] { 0 });
-                zip.AddEntry("lib/net40/x86/testx86.dll", new byte[] { 0 });
+                zip.AddEntry("lib/net40/test40.dll", ZeroContent);
+                zip.AddEntry("lib/net40/x86/testx86.dll", ZeroContent);
 
                 zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
@@ -297,11 +301,11 @@ namespace NuGet.Test.Utility
 
             using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
-                zip.AddEntry("lib/net40/test40.dll", new byte[] { 0 });
-                zip.AddEntry("lib/net40/x86/testx86.dll", new byte[] { 0 });
-                zip.AddEntry("lib/a.dll", new byte[] { 0 });
-                zip.AddEntry("lib/x86/b.dll", new byte[] { 0 });
-                zip.AddEntry("lib/net45/_._", new byte[] { 0 });
+                zip.AddEntry("lib/net40/test40.dll", ZeroContent);
+                zip.AddEntry("lib/net40/x86/testx86.dll", ZeroContent);
+                zip.AddEntry("lib/a.dll", ZeroContent);
+                zip.AddEntry("lib/x86/b.dll", ZeroContent);
+                zip.AddEntry("lib/net45/_._", ZeroContent);
 
                 zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
@@ -337,10 +341,10 @@ namespace NuGet.Test.Utility
 
             using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
-                zip.AddEntry("lib/test.dll", new byte[] { 0 });
-                zip.AddEntry("lib/net40/test40.dll", new byte[] { 0 });
-                zip.AddEntry("lib/net40/test40b.dll", new byte[] { 0 });
-                zip.AddEntry("lib/net45/test45.dll", new byte[] { 0 });
+                zip.AddEntry("lib/test.dll", ZeroContent);
+                zip.AddEntry("lib/net40/test40.dll", ZeroContent);
+                zip.AddEntry("lib/net40/test40b.dll", ZeroContent);
+                zip.AddEntry("lib/net45/test45.dll", ZeroContent);
 
                 zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
@@ -388,12 +392,12 @@ namespace NuGet.Test.Utility
 
             using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
-                zip.AddEntry("lib/test.dll", new byte[] { 0 });
-                zip.AddEntry("lib/testa.dll", new byte[] { 0 });
-                zip.AddEntry("lib/net40/test.dll", new byte[] { 0 });
-                zip.AddEntry("lib/net40/testb.dll", new byte[] { 0 });
-                zip.AddEntry("lib/net45/test45.dll", new byte[] { 0 });
-                zip.AddEntry("lib/net451/test.dll", new byte[] { 0 });
+                zip.AddEntry("lib/test.dll", ZeroContent);
+                zip.AddEntry("lib/testa.dll", ZeroContent);
+                zip.AddEntry("lib/net40/test.dll", ZeroContent);
+                zip.AddEntry("lib/net40/testb.dll", ZeroContent);
+                zip.AddEntry("lib/net45/test45.dll", ZeroContent);
+                zip.AddEntry("lib/net451/test.dll", ZeroContent);
 
                 zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
@@ -436,9 +440,9 @@ namespace NuGet.Test.Utility
 
             using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
-                zip.AddEntry("content/Scripts/test.js", new byte[] { 0 });
-                zip.AddEntry("content/Scripts/test2.js", new byte[] { 0 });
-                zip.AddEntry("content/Scripts/test3.js", new byte[] { 0 });
+                zip.AddEntry("content/Scripts/test.js", ZeroContent);
+                zip.AddEntry("content/Scripts/test2.js", ZeroContent);
+                zip.AddEntry("content/Scripts/test3.js", ZeroContent);
 
                 zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
@@ -463,9 +467,9 @@ namespace NuGet.Test.Utility
 
             using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
-                zip.AddEntry("content/net40/Scripts/test.js", new byte[] { 0 });
-                zip.AddEntry("content/net45/Scripts/test2.js", new byte[] { 0 });
-                zip.AddEntry("content/net451/Scripts/test3.js", new byte[] { 0 });
+                zip.AddEntry("content/net40/Scripts/test.js", ZeroContent);
+                zip.AddEntry("content/net45/Scripts/test2.js", ZeroContent);
+                zip.AddEntry("content/net451/Scripts/test3.js", ZeroContent);
 
                 zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
@@ -490,10 +494,10 @@ namespace NuGet.Test.Utility
 
             using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
             {
-                zip.AddEntry("content/Scripts/test.js", new byte[] { 0 });
-                zip.AddEntry("content/net40/Scripts/test2.js", new byte[] { 0 });
-                zip.AddEntry("content/net40/Scripts/testb.js", new byte[] { 0 });
-                zip.AddEntry("content/net45/Scripts/test3.js", new byte[] { 0 });
+                zip.AddEntry("content/Scripts/test.js", ZeroContent);
+                zip.AddEntry("content/net40/Scripts/test2.js", ZeroContent);
+                zip.AddEntry("content/net40/Scripts/testb.js", ZeroContent);
+                zip.AddEntry("content/net45/Scripts/test3.js", ZeroContent);
 
                 zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
@@ -518,9 +522,9 @@ namespace NuGet.Test.Utility
 
             using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
             {
-                zip.AddEntry("lib/a.dll", new byte[] { 0 });
-                zip.AddEntry("[Content_Types].xml", new byte[] { 0 });
-                zip.AddEntry("content/[Content_Types].xml", new byte[] { 0 });
+                zip.AddEntry("lib/a.dll", ZeroContent);
+                zip.AddEntry("[Content_Types].xml", ZeroContent);
+                zip.AddEntry("content/[Content_Types].xml", ZeroContent);
 
                 zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
@@ -539,70 +543,70 @@ namespace NuGet.Test.Utility
             return stream;
         }
 
-        public static FileInfo GetPackageWithSHA512AtRoot(string path, string packageId, string packageVersion)
+        public static async Task<FileInfo> GetPackageWithSHA512AtRoot(string path, string packageId, string packageVersion)
         {
-            return GeneratePackage(path, packageId, packageVersion,
-                new[]
-                {
-                     "lib/net45/A.dll",
-                     "lib/net45/B.sha512",
-                     packageId + "." + packageVersion + ".nupkg.sha512",
-                     "C.sha512",
-                });
+            return await GeneratePackageAsync(path, packageId, packageVersion, DateTimeOffset.UtcNow.LocalDateTime,
+                "lib/net45/A.dll",
+                "lib/net45/B.sha512",
+                $"{packageId}.${packageVersion}.nupkg.sha512",
+                "C.sha512");
         }
 
-        public static FileInfo GetPackageWithNupkgAtRoot(string path, string packageId, string packageVersion)
+        public static async Task<FileInfo> GetPackageWithNupkgAtRoot(string path, string packageId, string packageVersion)
         {
-            return GeneratePackage(path, packageId, packageVersion,
-                new[]
-                {
-                     "lib/net45/A.dll",
-                     "lib/net45/B.nupkg",
-                     packageId + "." + packageVersion + ".nupkg",
-                });
+            return await GeneratePackageAsync(path, packageId, packageVersion, DateTimeOffset.UtcNow.LocalDateTime,
+                "lib/net45/A.dll",
+                "lib/net45/B.nupkg",
+                $"{packageId}.{packageVersion}.nupkg");
         }
 
-        private static FileInfo GeneratePackage(
+        public static async Task<FileInfo> GeneratePackageAsync(
             string path,
             string packageId,
             string packageVersion,
-            string[] zipEntries)
+            DateTime entryModifiedTime,
+            params string[] zipEntries)
         {
-            var zipContents = Enumerable.Repeat(string.Empty, zipEntries.Length).ToArray();
-            return GeneratePackage(
+            return await GeneratePackageAsync(
                 path,
                 packageId,
                 packageVersion,
+                entryModifiedTime,
                 zipEntries,
-                zipContents,
-                frameworkAssemblies: false,
-                dependencies: false);
+                zipContents: Enumerable.Repeat(string.Empty, zipEntries.Count()));
         }
 
-        private static FileInfo GeneratePackage(
+        public static async Task<FileInfo> GeneratePackageAsync(
             string path,
             string packageId,
             string packageVersion,
-            string[] zipEntries,
-            string[] zipContents,
-            bool frameworkAssemblies,
-            bool dependencies)
+            DateTime entryModifiedTime,
+            IEnumerable<string> zipEntries,
+            IEnumerable<string> zipContents,
+            bool frameworkAssemblies = false,
+            bool dependencies = false)
         {
-            if (zipEntries == null || zipContents == null || zipEntries.Length != zipContents.Length)
+            if (zipEntries == null)
             {
-                throw new Exception("TEST Exception: zipEntries and zipContents should be non-null and" +
-                    "zipEntries.Length should be equal to zipContents.Length");
+                throw new ArgumentNullException(nameof(zipEntries));
             }
+            if (zipContents == null)
+            {
+                throw new ArgumentNullException(nameof(zipContents));
+            }
+            if (zipEntries.Count() != zipContents.Count())
+            {
+                throw new ArgumentException("TEST Exception: zipEntries.Length should be equal to zipContents.Length");
+            }
+
             var fileInfo = GetFileInfo(path, packageId, packageVersion);
 
-            using (var zip = new ZipArchive(File.Create(fileInfo.FullName), ZipArchiveMode.Create))
+            using (var zip = new ZipArchive(File.Create(fileInfo.FullName), ZipArchiveMode.Update))
             {
-                for (int i = 0; i < zipEntries.Length; i++)
-                {
-                    zip.AddEntry(zipEntries[i], zipContents[i], Encoding.UTF8);
-                }
-
-                SetSimpleNuspec(zip, packageId, packageVersion, frameworkAssemblies, dependencies);
+                var tasks = zipEntries.Zip(zipContents, async (entry, content) => await zip.AddEntryAsync(entry, content));
+                var entries = await Task.WhenAll(tasks);
+                entries.ToList().ForEach(entry => entry.LastWriteTime = entryModifiedTime);
+                await SetSimpleNuspecAsync(zip, packageId, packageVersion, frameworkAssemblies, dependencies);
             }
 
             return fileInfo;
@@ -616,17 +620,15 @@ namespace NuGet.Test.Utility
             return fileInfo;
         }
 
-        public static void SetSimpleNuspec(ZipArchive zip,
+        public static async Task<ZipArchiveEntry> SetSimpleNuspecAsync(ZipArchive zip,
             string packageId,
             string packageVersion,
             bool frameworkAssemblies,
             bool dependencies)
         {
-            zip.AddEntry(packageId + ".nuspec", GetSimpleNuspecString(packageId,
-                packageVersion,
-                frameworkAssemblies,
-                dependencies),
-                Encoding.UTF8);
+            return await zip.AddEntryAsync(
+                $"{packageId}.nuspec",
+                GetSimpleNuspecString(packageId, packageVersion, frameworkAssemblies, dependencies));
         }
 
         private static string GetSimpleNuspecString(string packageId,
@@ -667,7 +669,7 @@ namespace NuGet.Test.Utility
                 }
             }
 
-            public static implicit operator string (TempFile f)
+            public static implicit operator string(TempFile f)
             {
                 return f._filePath;
             }

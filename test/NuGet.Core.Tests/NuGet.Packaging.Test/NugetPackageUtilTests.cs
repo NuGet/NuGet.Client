@@ -46,7 +46,7 @@ namespace Commands.Test
                 // Assert
                 var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
 
-                Assert.True(Directory.Exists(packageDir), packageDir + " does not exist");
+                AssertDirectoryExists(packageDir, packageDir + " does not exist");
 
                 var nupkgPath = Path.Combine(packageDir, package.Id + "." + package.Version + ".nupkg");
                 Assert.True(File.Exists(nupkgPath), nupkgPath + " does not exist");
@@ -89,7 +89,7 @@ namespace Commands.Test
                 // Assert
                 var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
 
-                Assert.True(Directory.Exists(packageDir), packageDir + " does not exist");
+                AssertDirectoryExists(packageDir, packageDir + " does not exist");
 
                 var nupkgPath = Path.Combine(packageDir, package.Id + "." + package.Version + ".nupkg");
                 Assert.True(File.Exists(nupkgPath), nupkgPath + " does not exist");
@@ -142,7 +142,7 @@ namespace Commands.Test
                 }
 
                 // Assert
-                Assert.True(Directory.Exists(packageDir), packageDir + " does not exist");
+                AssertDirectoryExists(packageDir, packageDir + " does not exist");
 
                 Assert.False(File.Exists(nupkgPath), nupkgPath + " does not exist");
 
@@ -185,7 +185,7 @@ namespace Commands.Test
                 Directory.CreateDirectory(randomFolder);
 
                 Assert.True(File.Exists(randomFile), randomFile + " does not exist");
-                Assert.True(Directory.Exists(randomFolder));
+                AssertDirectoryExists(randomFolder);
 
                 // Act
                 using (var stream = package.File.OpenRead())
@@ -196,7 +196,7 @@ namespace Commands.Test
                 }
 
                 // Assert
-                Assert.True(Directory.Exists(packageDir), packageDir + " does not exist");
+                AssertDirectoryExists(packageDir, packageDir + " does not exist");
 
                 var filePath = Path.Combine(packageDir, package.Id + "." + package.Version + ".nupkg");
                 Assert.True(File.Exists(filePath), filePath + " does not exist");
@@ -244,7 +244,7 @@ namespace Commands.Test
                            token));
                 }
 
-                Assert.True(Directory.Exists(packageDir), packageDir + " does not exist");
+                AssertDirectoryExists(packageDir, packageDir + " does not exist");
 
                 Assert.NotEmpty(Directory.EnumerateFiles(packageDir));
 
@@ -308,7 +308,7 @@ namespace Commands.Test
                     fileLocker.Release();
                 }
 
-                Assert.True(Directory.Exists(packageDir), packageDir + " does not exist");
+                AssertDirectoryExists(packageDir, packageDir + " does not exist");
 
                 Assert.NotEmpty(Directory.EnumerateFiles(packageDir));
                 Assert.True(File.Exists(filePathToLock));
@@ -368,13 +368,13 @@ namespace Commands.Test
                 var packageIdDirectory = Path.Combine(packagesDirectory, package.Id);
                 var packageVersionDirectory = Path.Combine(packageIdDirectory, package.Version.ToNormalizedString());
 
-                Assert.True(Directory.Exists(packageIdDirectory));
-                Assert.True(Directory.Exists(packageVersionDirectory));
-                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg")));
-                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.nuspec")));
-                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg.sha512")));
+                AssertDirectoryExists(packageIdDirectory);
+                AssertDirectoryExists(packageVersionDirectory);
+                AssertFileExists(packageVersionDirectory, "packageA.2.0.3.nupkg");
+                AssertFileExists(packageVersionDirectory, "packageA.nuspec");
+                AssertFileExists(packageVersionDirectory, "packageA.2.0.3.nupkg.sha512");
 
-                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, @"lib", "test.dll")));
+                AssertFileExists(packageVersionDirectory, @"lib", "test.dll");
             }
         }
 
@@ -407,11 +407,11 @@ namespace Commands.Test
                 // Assert
                 var packageIdDirectory = Path.Combine(packagesDirectory, package.Id);
                 var packageVersionDirectory = Path.Combine(packageIdDirectory, package.Version.ToNormalizedString());
-                Assert.True(Directory.Exists(packageIdDirectory));
-                Assert.True(Directory.Exists(packageVersionDirectory));
-                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg")));
-                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.nuspec")));
-                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg.sha512")));
+                AssertDirectoryExists(packageIdDirectory);
+                AssertDirectoryExists(packageVersionDirectory);
+                AssertFileExists(packageVersionDirectory, "packageA.2.0.3.nupkg");
+                AssertFileExists(packageVersionDirectory, "packageA.nuspec");
+                AssertFileExists(packageVersionDirectory, "packageA.2.0.3.nupkg.sha512");
 
                 Assert.False(File.Exists(Path.Combine(packageVersionDirectory, @"lib", "test.dll")));
             }
@@ -445,11 +445,11 @@ namespace Commands.Test
                 // Assert
                 var packageIdDirectory = Path.Combine(packagesDirectory, package.Id.ToLowerInvariant());
                 var packageVersionDirectory = Path.Combine(packageIdDirectory, package.Version.ToNormalizedString());
-                Assert.True(Directory.Exists(packageIdDirectory));
-                Assert.True(Directory.Exists(packageVersionDirectory));
-                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg")));
-                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.nuspec")));
-                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg.sha512")));
+                AssertDirectoryExists(packageIdDirectory);
+                AssertDirectoryExists(packageVersionDirectory);
+                AssertFileExists(packageVersionDirectory, "packageA.2.0.3.nupkg");
+                AssertFileExists(packageVersionDirectory, "packageA.nuspec");
+                AssertFileExists(packageVersionDirectory, "packageA.2.0.3.nupkg.sha512");
 
                 Assert.False(File.Exists(Path.Combine(packageVersionDirectory, @"lib", "test.dll")));
 
@@ -467,7 +467,7 @@ namespace Commands.Test
 
             using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var packageFileInfo = TestPackages.GetPackageWithSHA512AtRoot(
+                var packageFileInfo = await TestPackages.GetPackageWithSHA512AtRoot(
                     packagesDirectory,
                     package.Id,
                     package.Version.ToNormalizedString());
@@ -492,11 +492,11 @@ namespace Commands.Test
                 // Assert
                 var packageIdDirectory = Path.Combine(packagesDirectory, package.Id.ToLowerInvariant());
                 var packageVersionDirectory = Path.Combine(packageIdDirectory, package.Version.ToNormalizedString());
-                Assert.True(Directory.Exists(packageIdDirectory));
-                Assert.True(Directory.Exists(packageVersionDirectory));
-                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg")));
-                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.nuspec")));
-                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, @"lib", "net45", "A.dll")));
+                AssertDirectoryExists(packageIdDirectory);
+                AssertDirectoryExists(packageVersionDirectory);
+                AssertFileExists(packageVersionDirectory, "packageA.2.0.3.nupkg");
+                AssertFileExists(packageVersionDirectory, "packageA.nuspec");
+                AssertFileExists(packageVersionDirectory, @"lib", "net45", "A.dll");
 
                 var hashPath = Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg.sha512");
                 var hashFileInfo = new FileInfo(hashPath);
@@ -522,7 +522,7 @@ namespace Commands.Test
             var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
             using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var packageFileInfo = TestPackages.GetPackageWithNupkgAtRoot(
+                var packageFileInfo = await TestPackages.GetPackageWithNupkgAtRoot(
                     packagesDirectory,
                     package.Id,
                     package.Version.ToNormalizedString());
@@ -547,11 +547,11 @@ namespace Commands.Test
                 // Assert
                 var packageIdDirectory = Path.Combine(packagesDirectory, package.Id.ToLowerInvariant());
                 var packageVersionDirectory = Path.Combine(packageIdDirectory, package.Version.ToNormalizedString());
-                Assert.True(Directory.Exists(packageIdDirectory));
-                Assert.True(Directory.Exists(packageVersionDirectory));
-                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg")));
-                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, "packageA.nuspec")));
-                Assert.True(File.Exists(Path.Combine(packageVersionDirectory, @"lib", "net45", "A.dll")));
+                AssertDirectoryExists(packageIdDirectory);
+                AssertDirectoryExists(packageVersionDirectory);
+                AssertFileExists(packageVersionDirectory, "packageA.2.0.3.nupkg");
+                AssertFileExists(packageVersionDirectory, "packageA.nuspec");
+                AssertFileExists(packageVersionDirectory, @"lib", "net45", "A.dll");
 
                 var nupkgPath = Path.Combine(packageVersionDirectory, "packageA.2.0.3.nupkg");
                 var nupkgFileInfo = new FileInfo(nupkgPath);
@@ -563,6 +563,16 @@ namespace Commands.Test
                 Assert.True(File.Exists(bnupkgFileInfo.FullName));
                 Assert.Equal(0, bnupkgFileInfo.Length);
             }
+        }
+
+        private static void AssertDirectoryExists(string path, string message = null)
+        {
+            Assert.True(Directory.Exists(path), message);
+        }
+
+        private static void AssertFileExists(params string[] paths)
+        {
+            Assert.True(File.Exists(Path.Combine(paths)));
         }
 
         private class StreamWrapperBase : Stream
