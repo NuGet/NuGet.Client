@@ -2040,20 +2040,11 @@ namespace NuGet.Test
 
                 var resolutionContext = new ResolutionContext(DependencyBehavior.Lowest, includePrelease: true, includeUnlisted: true, versionConstraints: VersionConstraints.None);
 
-                Exception exception = null;
-                try
-                {
-                    // Act
-                    await nuGetPackageManager.InstallPackageAsync(msBuildNuGetProject, packageIdentity,
-                        resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token);
-                }
-                catch (Exception ex)
-                {
-                    exception = ex;
-                }
+                // Act
+                var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                    async () => await nuGetPackageManager.InstallPackageAsync(
+                        msBuildNuGetProject, packageIdentity, resolutionContext, new TestNuGetProjectContext(), sourceRepositoryProvider.GetRepositories().First(), null, token));
 
-                Assert.NotNull(exception);
-                Assert.True(exception is InvalidOperationException);
                 var errorMessage = string.Format(CultureInfo.CurrentCulture,
                     Strings.UnableToFindCompatibleItems, packageIdentity.Id + " " + packageIdentity.Version.ToNormalizedString(), msBuildNuGetProject.MSBuildNuGetProjectSystem.TargetFramework);
                 Assert.Equal(errorMessage, exception.Message);

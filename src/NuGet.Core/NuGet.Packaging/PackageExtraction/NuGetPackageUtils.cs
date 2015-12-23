@@ -302,9 +302,9 @@ namespace NuGet.Packaging
                             entryStream.CopyTo(targetStream);
                         }
                     }
-                }
 
-                File.SetLastWriteTimeUtc(targetFile, entry.LastWriteTime.UtcDateTime);
+                    File.SetLastWriteTimeUtc(targetFile, entry.LastWriteTime.UtcDateTime);
+                }
             }
         }
     }
