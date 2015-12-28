@@ -470,5 +470,20 @@ namespace NuGet.Packaging.Test
                 }
             }
         }
+
+        [Fact]
+        public void PackageReader_SupportedFrameworksForInvalidPortableFrameworkThrows()
+        {
+            using (var packageFile = TestPackages.GetLegacyTestPackageWithInvalidPortableFrameworkFolderName())
+            {
+                var zip = TestPackages.GetZip(packageFile);
+
+                using (PackageReader reader = new PackageReader(zip))
+                {
+                    Assert.Throws<FrameworkException>(
+                        () => reader.GetSupportedFrameworks());
+                }
+            }
+        }
     }
 }

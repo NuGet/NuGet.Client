@@ -318,5 +318,16 @@ namespace NuGet.Test
         {
             Assert.Equal("Profile259", NuGetFramework.Parse(framework).Profile);
         }
+
+        [Theory]
+        [InlineData(".NETPortable,Version=v0.0,Profile=win+net-cf")]
+        [InlineData("portable-win+net-cf")]
+        [InlineData(".NETPortable,Version=v0.0,Profile=net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS")]
+        [InlineData("portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS")]
+        public void NuGetFramework_PortableWithInnerPortableProfileFails(string framework)
+        {
+            Assert.Throws<FrameworkException>(
+                () => NuGetFramework.Parse(framework));
+        }
     }
 }

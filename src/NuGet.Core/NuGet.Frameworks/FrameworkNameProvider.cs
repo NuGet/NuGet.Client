@@ -439,7 +439,15 @@ namespace NuGet.Frameworks
             var result = new List<NuGetFramework>();
             foreach (var name in shortNames)
             {
-                result.Add(NuGetFramework.Parse(name, this));
+                var framework = NuGetFramework.Parse(name, this);
+                if (framework.HasProfile)
+                {
+                    // Frameworks within the portable profile are not allowed
+                    // to have profiles themselves #1869
+                    throw new FrameworkException(Strings.InvalidPortableFrameworks);
+                }
+
+                result.Add(framework);
             }
 
             frameworks = result;
