@@ -434,6 +434,33 @@ namespace NuGet.Test.Utility
             return file;
         }
 
+        public static TempFile GetLegacyTestPackageWithInvalidPortableFrameworkFolderName()
+        {
+            var file = new TempFile();
+
+            using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
+            {
+                zip.AddEntry("lib/test.dll", ZeroContent);
+                zip.AddEntry("lib/net45/test45.dll", ZeroContent);
+                zip.AddEntry("lib/portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS/test.dll", ZeroContent);
+
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                            <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
+                              <metadata>
+                                <id>packageA</id>
+                                <version>2.0.3</version>
+                                <authors>Author1, author2</authors>
+                                <description>Sample description</description>
+                                <language>en-US</language>
+                                <projectUrl>http://www.nuget.org/</projectUrl>
+                                <licenseUrl>http://www.nuget.org/license</licenseUrl>
+                              </metadata>
+                            </package>", Encoding.UTF8);
+            }
+
+            return file;
+        }
+
         public static TempFile GetLegacyContentPackage()
         {
             var file = new TempFile();
