@@ -34,12 +34,12 @@ namespace NuGet.Packaging
             }
             if (packageSaveMode.HasFlag(PackageSaveModes.Nuspec))
             {
-                return !ExcludePaths.Any(p => packageFileName.StartsWith(p, StringComparison.OrdinalIgnoreCase)) && 
+                return !ExcludePaths.Any(p => packageFileName.StartsWith(p, StringComparison.OrdinalIgnoreCase)) &&
                     !ExcludeExtension.Any(p => packageFileName.EndsWith(p, StringComparison.OrdinalIgnoreCase));
             }
             else
             {
-                return !IsManifest(packageFileName) && !ExcludePaths.Any(p => packageFileName.StartsWith(p, StringComparison.OrdinalIgnoreCase)) && 
+                return !IsManifest(packageFileName) && !ExcludePaths.Any(p => packageFileName.StartsWith(p, StringComparison.OrdinalIgnoreCase)) &&
                     !ExcludeExtension.Any(p => packageFileName.EndsWith(p, StringComparison.OrdinalIgnoreCase));
             }
         }
@@ -142,39 +142,28 @@ namespace NuGet.Packaging
             return false;
         }
 
-        public static Task<IEnumerable<ZipFilePair>> GetPackageFiles(IEnumerable<ZipArchiveEntry> packageFiles, string packageDirectory,
-            PackageSaveModes packageSaveMode, CancellationToken token)
+        public static IEnumerable<ZipFilePair> EnumeratePackageFiles(IEnumerable<ZipArchiveEntry> packageEntries, string packageDirectory,
+            PackageSaveModes packageSaveMode)
         {
-            var effectivePackageFiles = new List<ZipFilePair>();
-            foreach (var entry in packageFiles)
+            foreach (var entry in packageEntries)
             {
                 var path = ZipArchiveHelper.UnescapePath(entry.FullName);
 
                 if (IsPackageFile(path, packageSaveMode))
                 {
                     var packageFileFullPath = Path.Combine(packageDirectory, path);
-                    effectivePackageFiles.Add(new ZipFilePair(packageFileFullPath, entry));
+                    yield return new ZipFilePair(packageFileFullPath, entry);
                 }
             }
-
-            return Task.FromResult<IEnumerable<ZipFilePair>>(effectivePackageFiles);
         }
 
         public static IEnumerable<ZipFilePair> GetInstalledPackageFiles(IEnumerable<ZipFilePair> packageFiles)
         {
-            var installedPackageFiles = new List<ZipFilePair>();
-            foreach (var packageFile in packageFiles)
-            {
-                if (packageFile != null
+            return packageFiles.Where(packageFile =>
+                    packageFile != null
                     && packageFile.Item1 != null
                     && packageFile.Item2 != null
-                    && File.Exists(packageFile.Item1))
-                {
-                    installedPackageFiles.Add(packageFile);
-                }
-            }
-
-            return installedPackageFiles;
+                    && File.Exists(packageFile.Item1));
         }
 
         /// <summary>
@@ -186,49 +175,66 @@ namespace NuGet.Packaging
         /// <param name="packageSaveMode"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public static async Task<IEnumerable<ZipFilePair>> GetInstalledPackageFiles(Stream packageStream,
+        public static IEnumerable<ZipFilePair> GetInstalledPackageFiles(Stream packageStream,
             PackageIdentity packageIdentity,
             PackagePathResolver packagePathResolver,
-            PackageSaveModes packageSaveMode,
-            CancellationToken token)
+            PackageSaveModes packageSaveMode)
         {
-            var installedPackageFiles = new List<ZipFilePair>();
+            var installedPackageFiles = Enumerable.Empty<ZipFilePair>();
             var packageDirectory = packagePathResolver.GetInstalledPath(packageIdentity);
             if (!String.IsNullOrEmpty(packageDirectory))
             {
                 var zipArchive = new ZipArchive(packageStream);
-                var packageFiles = await GetPackageFiles(zipArchive.Entries, packageDirectory, packageSaveMode, token);
-                installedPackageFiles.AddRange(GetInstalledPackageFiles(packageFiles));
+                var packageFiles = EnumeratePackageFiles(zipArchive.Entries, packageDirectory, packageSaveMode);
+                installedPackageFiles = GetInstalledPackageFiles(packageFiles);
             }
 
-            return installedPackageFiles;
+            return installedPackageFiles.ToList();
         }
 
-        public static async Task<Tuple<string, IEnumerable<ZipFilePair>>> GetInstalledSatelliteFiles(Stream packageStream,
+        public static Tuple<string, IEnumerable<ZipFilePair>> GetInstalledSatelliteFiles(Stream packageStream,
             PackageIdentity packageIdentity,
             PackagePathResolver packagePathResolver,
-            PackageSaveModes packageSaveMode,
-            CancellationToken token)
+            PackageSaveModes packageSaveMode)
         {
-            var installedSatelliteFiles = new List<ZipFilePair>();
+            var installedSatelliteFiles = Enumerable.Empty<ZipFilePair>();
             string language;
             string runtimePackageDirectory;
             IEnumerable<ZipArchiveEntry> satelliteFileEntries;
             if (GetSatelliteFiles(packageStream, packageIdentity, packagePathResolver, out language, out runtimePackageDirectory, out satelliteFileEntries))
             {
-                var satelliteFiles = await GetPackageFiles(satelliteFileEntries, runtimePackageDirectory, packageSaveMode, token);
-                installedSatelliteFiles.AddRange(GetInstalledPackageFiles(satelliteFiles));
+                var satelliteFiles = EnumeratePackageFiles(satelliteFileEntries, runtimePackageDirectory, packageSaveMode);
+                installedSatelliteFiles = GetInstalledPackageFiles(satelliteFiles);
             }
 
-            return new Tuple<string, IEnumerable<ZipFilePair>>(runtimePackageDirectory, installedSatelliteFiles);
+            return new Tuple<string, IEnumerable<ZipFilePair>>(runtimePackageDirectory, installedSatelliteFiles.ToList());
         }
 
-        internal static async Task<string> CreatePackageFile(string packageFileFullPath, Stream inputStream, CancellationToken token)
+        internal static async Task<string> CreatePackageFileAsync(string packageFileFullPath, ZipArchiveEntry entry, CancellationToken token)
         {
-            var directory = Path.GetDirectoryName(packageFileFullPath);
-            if (!Directory.Exists(directory))
+            using (var inputStream = entry.Open())
             {
-                Directory.CreateDirectory(directory);
+                await CreatePackageFileAsync(packageFileFullPath, inputStream, token);
+            }
+
+            File.SetLastWriteTimeUtc(packageFileFullPath, entry.LastWriteTime.UtcDateTime);
+
+            return packageFileFullPath;
+        }
+
+        internal static async Task<string> CreatePackageFileAsync(string packageFileFullPath, Stream inputStream, CancellationToken token)
+        {
+            if (Path.GetFileName(packageFileFullPath).Length == 0)
+            {
+                Directory.CreateDirectory(packageFileFullPath);
+            }
+            else
+            {
+                var directory = Path.GetDirectoryName(packageFileFullPath);
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
             }
 
             if (File.Exists(packageFileFullPath))
@@ -237,26 +243,23 @@ namespace NuGet.Packaging
                 return packageFileFullPath;
             }
 
-            using (Stream outputStream = File.Create(packageFileFullPath))
+            using (Stream outputStream = new FileStream(packageFileFullPath, FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                await inputStream.CopyToAsync(outputStream);
+                await inputStream.CopyToAsync(outputStream, 4096, token);
             }
 
             return packageFileFullPath;
         }
 
-        internal static async Task<IEnumerable<string>> CreatePackageFiles(IEnumerable<ZipArchiveEntry> packageFiles, string packageDirectory,
+        internal static async Task<IEnumerable<string>> CreatePackageFilesAsync(IEnumerable<ZipArchiveEntry> packageEntries, string packageDirectory,
             PackageSaveModes packageSaveMode, CancellationToken token)
         {
-            var effectivePackageFiles = await GetPackageFiles(packageFiles, packageDirectory, packageSaveMode, token);
+            var effectivePackageFiles = EnumeratePackageFiles(packageEntries, packageDirectory, packageSaveMode);
             foreach (var effectivePackageFile in effectivePackageFiles)
             {
                 var packageFileFullPath = effectivePackageFile.Item1;
                 var entry = effectivePackageFile.Item2;
-                using (var inputStream = entry.Open())
-                {
-                    await CreatePackageFile(packageFileFullPath, inputStream, token);
-                }
+                await CreatePackageFileAsync(packageFileFullPath, entry, token);
             }
 
             return effectivePackageFiles.Select(pf => pf.Item1);

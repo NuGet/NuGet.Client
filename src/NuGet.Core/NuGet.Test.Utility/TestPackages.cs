@@ -614,7 +614,7 @@ namespace NuGet.Test.Utility
 
         private static FileInfo GetFileInfo(string path, string packageId, string packageVersion)
         {
-            var file = Path.Combine(path, Guid.NewGuid() + ".nupkg");
+            var file = Path.Combine(path, $"{packageId}.{packageVersion}.nupkg");
             var fileInfo = new FileInfo(file);
 
             return fileInfo;

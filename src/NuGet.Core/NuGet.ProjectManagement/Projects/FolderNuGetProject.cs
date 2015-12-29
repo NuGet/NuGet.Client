@@ -164,7 +164,7 @@ namespace NuGet.ProjectManagement
             return PackagePathResolver.GetInstalledPath(packageIdentity) ?? string.Empty;
         }
 
-        public async Task<bool> DeletePackage(PackageIdentity packageIdentity,
+        public Task<bool> DeletePackage(PackageIdentity packageIdentity,
             INuGetProjectContext nuGetProjectContext,
             CancellationToken token)
         {
@@ -174,7 +174,7 @@ namespace NuGet.ProjectManagement
                 var packageDirectoryPath = Path.GetDirectoryName(packageFilePath);
                 using (var packageStream = File.OpenRead(packageFilePath))
                 {
-                    var installedSatelliteFilesPair = await PackageHelper.GetInstalledSatelliteFiles(packageStream, packageIdentity, PackagePathResolver, PackageSaveMode, token);
+                    var installedSatelliteFilesPair = PackageHelper.GetInstalledSatelliteFiles(packageStream, packageIdentity, PackagePathResolver, PackageSaveMode);
                     var runtimePackageDirectory = installedSatelliteFilesPair.Item1;
                     var installedSatelliteFiles = installedSatelliteFilesPair.Item2;
                     if (!string.IsNullOrEmpty(runtimePackageDirectory))
@@ -192,7 +192,7 @@ namespace NuGet.ProjectManagement
                     }
 
                     // Get all the package files before deleting the package file
-                    var installedPackageFiles = await PackageHelper.GetInstalledPackageFiles(packageStream, packageIdentity, PackagePathResolver, PackageSaveMode, token);
+                    var installedPackageFiles = PackageHelper.GetInstalledPackageFiles(packageStream, packageIdentity, PackagePathResolver, PackageSaveMode);
 
                     try
                     {
@@ -221,7 +221,7 @@ namespace NuGet.ProjectManagement
                 }
             }
 
-            return true;
+            return Task.FromResult(true);
         }
     }
 }

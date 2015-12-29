@@ -114,7 +114,7 @@ namespace NuGet.Packaging
                                 {
                                     var nupkgFileName = Path.GetFileName(targetNupkg);
                                     var hashFileName = Path.GetFileName(hashPath);
-                                    ExtractFiles(archive, targetPath, nupkgFileName, hashFileName);
+                                    await ExtractFilesAsync(archive, targetPath, nupkgFileName, hashFileName);
                                 }
                             }
                         }
@@ -252,7 +252,7 @@ namespace NuGet.Packaging
             return true;
         }
 
-        private static void ExtractFiles(ZipArchive archive,
+        private static async Task ExtractFilesAsync(ZipArchive archive,
             string targetPath,
             string nupkgFileName,
             string hashFileName)
@@ -282,29 +282,7 @@ namespace NuGet.Packaging
                     continue;
                 }
 
-                if (Path.GetFileName(targetFile).Length == 0)
-                {
-                    Directory.CreateDirectory(targetFile);
-                }
-                else
-                {
-                    var targetEntryPath = Path.GetDirectoryName(targetFile);
-                    if (!Directory.Exists(targetEntryPath))
-                    {
-                        Directory.CreateDirectory(targetEntryPath);
-                    }
-
-                    using (var entryStream = entry.Open())
-                    {
-                        using (var targetStream
-                            = new FileStream(targetFile, FileMode.Create, FileAccess.Write, FileShare.None))
-                        {
-                            entryStream.CopyTo(targetStream);
-                        }
-                    }
-
-                    File.SetLastWriteTimeUtc(targetFile, entry.LastWriteTime.UtcDateTime);
-                }
+                await PackageHelper.CreatePackageFileAsync(targetFile, entry, CancellationToken.None);
             }
         }
     }

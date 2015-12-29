@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
-using ZipFilePair = System.Tuple<string, System.IO.Compression.ZipArchiveEntry>;
 
 namespace NuGet.Packaging
 {
@@ -50,7 +49,7 @@ namespace NuGet.Packaging
             var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentityFromNuspec));
             var packageDirectory = packageDirectoryInfo.FullName;
 
-            filesAdded.AddRange(await PackageHelper.CreatePackageFiles(zipArchive.Entries, packageDirectory, packageSaveMode, token));
+            filesAdded.AddRange(await PackageHelper.CreatePackageFilesAsync(zipArchive.Entries, packageDirectory, packageSaveMode, token));
 
             var nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentityFromNuspec));
             if (packageSaveMode.HasFlag(PackageSaveModes.Nupkg))
@@ -59,7 +58,7 @@ namespace NuGet.Packaging
                 // Since all the packages are already created, the package stream is likely positioned at its end
                 // Reset it to the nupkgStartPosition
                 packageStream.Seek(nupkgStartPosition, SeekOrigin.Begin);
-                filesAdded.Add(await PackageHelper.CreatePackageFile(nupkgFilePath, packageStream, token));
+                filesAdded.Add(await PackageHelper.CreatePackageFileAsync(nupkgFilePath, packageStream, token));
             }
 
             // Now, copy satellite files unless requested to not copy them
@@ -105,7 +104,7 @@ namespace NuGet.Packaging
             if (zipPackageReader != null)
             {
                 // For zip files, use the ZipArchive directly
-                var files = await PackageHelper.CreatePackageFiles(
+                var files = await PackageHelper.CreatePackageFilesAsync(
                     zipPackageReader.ZipArchive.Entries, 
                     packageDirectory, 
                     packageSaveMode, 
@@ -151,7 +150,7 @@ namespace NuGet.Packaging
                     packageStream.Position = 0;
                 }
 
-                filesAdded.Add(await PackageHelper.CreatePackageFile(nupkgFilePath, packageStream, token));
+                filesAdded.Add(await PackageHelper.CreatePackageFileAsync(nupkgFilePath, packageStream, token));
             }
 
             // Now, copy satellite files unless requested to not copy them
@@ -197,7 +196,7 @@ namespace NuGet.Packaging
                     if (PackageHelper.GetSatelliteFiles(packageStream, packageIdentity, packagePathResolver, out language, out runtimePackageDirectory, out satelliteFiles))
                     {
                         // Now, add all the satellite files collected from the package to the runtime package folder(s)
-                        satelliteFilesCopied = await PackageHelper.CreatePackageFiles(satelliteFiles, runtimePackageDirectory, packageSaveMode, token);
+                        satelliteFilesCopied = await PackageHelper.CreatePackageFilesAsync(satelliteFiles, runtimePackageDirectory, packageSaveMode, token);
                     }
                 }
             }

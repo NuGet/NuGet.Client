@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
+using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;
@@ -1918,6 +1920,48 @@ EndProject";
                 // Assert
                 Assert.False(0 == r.Item1, r.Item2 + " " + r.Item3);
                 Assert.Contains("There are duplicate packages: packageA.1.0.0, packageA.3.0.0", r.Item3);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_PreservesPackageFilesTimestamps()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var repositoryPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var entryModifiedTime = new DateTimeOffset(1985, 11, 20, 12, 0, 0, TimeSpan.FromHours(-7.0)).DateTime;
+
+                var packageFileFullPath = Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                using (var zip = new ZipArchive(File.Open(packageFileFullPath, FileMode.Open, FileAccess.ReadWrite), ZipArchiveMode.Update))
+                {
+                    var entry = await zip.AddEntryAsync("lib/net45/A.dll", string.Empty);
+                    entry.LastWriteTime = entryModifiedTime;
+                }
+
+                Util.CreateFile(workingPath, "packages.config",
+@"<packages>
+  <package id=""packageA"" version=""1.1.0"" targetFramework=""net45"" />
+</packages>");
+
+                string[] args = new string[] { "restore", "-PackagesDirectory", "outputDir", "-Source", repositoryPath };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+
+                var dllPath = Path.Combine(workingPath, "outputDir", "packageA.1.1.0", "lib", "net45", "A.dll");
+                var dllFileInfo = new FileInfo(dllPath);
+                Assert.True(File.Exists(dllFileInfo.FullName));
+                Assert.Equal(entryModifiedTime, dllFileInfo.LastWriteTime);
             }
         }
     }
