@@ -3005,7 +3005,7 @@ namespace NuGet.Test
 
                 Assert.NotNull(exception);
                 Assert.True(exception is InvalidOperationException);
-                Assert.Equal("Package 'Newtonsoft.Json.7.0.1' already exists in project 'TestProjectName'", exception.Message);
+                Assert.Equal("Package 'Newtonsoft.Json.8.0.1' already exists in project 'TestProjectName'", exception.Message);
             }
         }
 
