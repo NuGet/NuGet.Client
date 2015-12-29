@@ -243,9 +243,10 @@ namespace NuGet.Packaging
                 return packageFileFullPath;
             }
 
-            using (Stream outputStream = new FileStream(packageFileFullPath, FileMode.Create, FileAccess.Write, FileShare.None))
+            const int DefaultBufferSize = 4096;
+            using (var outputStream = File.Create(packageFileFullPath, DefaultBufferSize, FileOptions.Asynchronous))
             {
-                await inputStream.CopyToAsync(outputStream, 4096, token);
+                await inputStream.CopyToAsync(outputStream, DefaultBufferSize, token);
             }
 
             return packageFileFullPath;
