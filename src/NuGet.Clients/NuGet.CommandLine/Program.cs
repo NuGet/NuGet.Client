@@ -33,9 +33,9 @@ namespace NuGet.CommandLine
         public static int Main(string[] args)
         {
 #if DEBUG
-            if (args.Contains("--debug"))
+            if (args.Contains("--debug", StringComparer.OrdinalIgnoreCase))
             {
-                args = args.Skip(1).ToArray();
+                args = args.Where(arg => !string.Equals(arg, "--debug", StringComparison.OrdinalIgnoreCase)).ToArray();
                 System.Diagnostics.Debugger.Launch();
             }
 #endif
