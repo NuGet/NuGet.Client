@@ -50,13 +50,13 @@ namespace NuGet.PackageManagement
         /// To construct a NuGetPackageManager that does not need a SolutionManager like NuGet.exe
         /// </summary>
 
-	public NuGetPackageManager(
-            ISourceRepositoryProvider sourceRepositoryProvider,
-            Configuration.ISettings settings,
-            string packagesFolderPath) 
- : this(sourceRepositoryProvider, settings, packagesFolderPath, excludeVersion: false)  
- {
-}
+        public NuGetPackageManager(
+                ISourceRepositoryProvider sourceRepositoryProvider,
+                Configuration.ISettings settings,
+                string packagesFolderPath)
+     : this(sourceRepositoryProvider, settings, packagesFolderPath, excludeVersion: false)
+        {
+        }
 
         public NuGetPackageManager(
             ISourceRepositoryProvider sourceRepositoryProvider,
@@ -88,21 +88,21 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// To construct a NuGetPackageManager with a mandatory SolutionManager lke VS
         /// </summary>
-	public NuGetPackageManager(
-            ISourceRepositoryProvider sourceRepositoryProvider,
-            Configuration.ISettings settings,
-            ISolutionManager solutionManager,
-            IDeleteOnRestartManager deleteOnRestartManager)
-	: this(sourceRepositoryProvider, settings, solutionManager, deleteOnRestartManager, excludeVersion: false)
-{
-}
+        public NuGetPackageManager(
+                ISourceRepositoryProvider sourceRepositoryProvider,
+                Configuration.ISettings settings,
+                ISolutionManager solutionManager,
+                IDeleteOnRestartManager deleteOnRestartManager)
+        : this(sourceRepositoryProvider, settings, solutionManager, deleteOnRestartManager, excludeVersion: false)
+        {
+        }
 
         public NuGetPackageManager(
             ISourceRepositoryProvider sourceRepositoryProvider,
             Configuration.ISettings settings,
             ISolutionManager solutionManager,
             IDeleteOnRestartManager deleteOnRestartManager,
-	    bool excludeVersion)
+            bool excludeVersion)
         {
             if (sourceRepositoryProvider == null)
             {
@@ -911,7 +911,10 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// A walk through the dependencies to collect the additional package identities that are involved in the current set of packages to be installed
         /// </summary>
-        private static void CollectDependencies(HashSet<string> result, string id, IEnumerable<PackageIdentity> packages, IEnumerable<SourcePackageDependencyInfo> available, int depth)
+        private static void CollectDependencies(HashSet<string> result,
+            string id,
+            IEnumerable<PackageIdentity> packages,
+            IEnumerable<SourcePackageDependencyInfo> available, int depth)
         {
             // we want the exact PackageIdentity for this id
             var packageIdentity = packages.FirstOrDefault(p => p.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
@@ -921,7 +924,7 @@ namespace NuGet.PackageManagement
             }
 
             // now look up the dependencies of this exact package identity
-            var sourceDepInfo = available.SingleOrDefault(p => PackageComparer.Equals(p, packageIdentity));
+            var sourceDepInfo = available.SingleOrDefault(p => packageIdentity.Equals(p));
             if (sourceDepInfo == null)
             {
                 throw new ArgumentException("available");
