@@ -121,7 +121,7 @@
     <value>Another NuGetProject with the same name '{0}' exists in solution</value>
   </data>
   <data name="AttemptingToGatherDependencyInfo" xml:space="preserve">
-    <value>Attempting to gather dependencies information for package '{0}' with respect to project '{1}', targeting '{2}'</value>
+    <value>Attempting to gather dependency information for package '{0}' with respect to project '{1}', targeting '{2}'</value>
   </data>
   <data name="AttemptingToResolveDependencies" xml:space="preserve">
     <value>Attempting to resolve dependencies for package '{0}' with DependencyBehavior '{1}'</value>
@@ -187,7 +187,7 @@
     <value>Uninstall is not supported when SolutionManager is not available</value>
   </data>
   <data name="UnableToGatherDependencyInfo" xml:space="preserve">
-    <value>Unable to gather dependencies information for package '{0}'</value>
+    <value>Unable to gather dependency information for package '{0}'</value>
   </data>
   <data name="UnableToResolveDependencyInfo" xml:space="preserve">
     <value>Unable to resolve dependencies for package '{0}' with DependencyBehavior '{1}'</value>
@@ -199,10 +199,10 @@
     <value>Unable to find version '{1}' of package '{0}'.</value>
   </data>
   <data name="AttemptingToGatherDependencyInfoForMultiplePackages" xml:space="preserve">
-    <value>Attempting to gather dependencies information for multiple packages with respect to project '{0}', targeting '{1}'</value>
+    <value>Attempting to gather dependency information for multiple packages with respect to project '{0}', targeting '{1}'</value>
   </data>
   <data name="AttemptingToResolveDependenciesForMultiplePackages" xml:space="preserve">
-    <value>Attempting to resolve dependencies for multiple packages</value>
+    <value>Attempting to resolve dependencies for multiple packages.</value>
   </data>
   <data name="OneOrMorePackagesNotFound" xml:space="preserve">
     <value>One or more packages not found</value>
@@ -211,7 +211,7 @@
     <value>Resolving actions install multiple packages</value>
   </data>
   <data name="UnableToGatherDependencyInfoForMultiplePackages" xml:space="preserve">
-    <value>Unable to gather dependencies information for multiple packages</value>
+    <value>Unable to gather dependency information for multiple packages</value>
   </data>
   <data name="UnableToResolveDependencyInfoForMultiplePackages" xml:space="preserve">
     <value>Unable to resolve dependencies for multiple packages</value>
