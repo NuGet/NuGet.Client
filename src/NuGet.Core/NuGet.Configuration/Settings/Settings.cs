@@ -372,7 +372,17 @@ namespace NuGet.Configuration
                 curr = curr._next;
             }
 
-            return ret;
+            return ApplyEnvironmentTransform(ret);
+        }
+
+        private string ApplyEnvironmentTransform(string configValue)
+        {
+            if (string.IsNullOrEmpty(configValue))
+            { 
+                return configValue;
+            }
+
+            return Environment.ExpandEnvironmentVariables(configValue);
         }
 
         public IList<SettingValue> GetSettingValues(string section, bool isPath = false)
@@ -389,6 +399,8 @@ namespace NuGet.Configuration
                 curr.PopulateValues(section, settingValues, isPath);
                 curr = curr._next;
             }
+
+            settingValues.ForEach(settingValue => settingValue.Value = ApplyEnvironmentTransform(settingValue.Value));
 
             return settingValues.AsReadOnly();
         }

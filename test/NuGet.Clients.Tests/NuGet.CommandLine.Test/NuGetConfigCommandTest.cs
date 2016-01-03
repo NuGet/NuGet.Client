@@ -201,6 +201,50 @@ namespace NuGet.CommandLine.Test
             Assert.True(result.Item3.Contains("Key 'nonExistentKey' not found."));
         }
 
+        [Fact]
+        public void ConfigCommand_EvaluatesEnvironmentalVariables()
+        {
+            using (var testFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var nugetexe = Util.GetNuGetExePath();
+                var configFile = Path.Combine(testFolder, "NuGet.config");
+                var envValue = Guid.NewGuid().ToString();
+                var expectedValue = envValue + @"\two" + Environment.NewLine;
+
+                Util.CreateFile(Path.GetDirectoryName(configFile),
+                                Path.GetFileName(configFile),
+                                @"
+<configuration>
+    <config>
+        <add key='repositoryPath' value='%RP_ENV_VAR%\two' />
+    </config>
+</configuration>
+");
+
+                string[] args = new string[] {
+                    "config",
+                    "repositoryPath"
+                };
+
+                // Act
+                Environment.SetEnvironmentVariable("RP_ENV_VAR", envValue);
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    testFolder,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                var output = result.Item2;
+                Environment.SetEnvironmentVariable("RP_ENV_VAR", string.Empty);
+
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                Assert.Equal(expectedValue, output);
+            }
+        }
+
         private void AssertEqualCollections(IList<Configuration.SettingValue> actual, string[] expected)
         {
             Assert.Equal(actual.Count, expected.Length / 2);
