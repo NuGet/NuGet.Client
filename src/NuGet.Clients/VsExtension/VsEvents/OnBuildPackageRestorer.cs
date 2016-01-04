@@ -633,7 +633,8 @@ namespace NuGetVSExtension
 
                 if (!packages.Any())
                 {
-                    if (!isSolutionAvailable)
+                    if (!isSolutionAvailable 
+                        && GetProjectFolderPath().Any(p => CheckPackagesConfig(p.ProjectPath, p.ProjectName)))
                     {
                         MessageHelper.ShowError(_errorListProvider,
                             TaskErrorCategory.Error,
@@ -832,6 +833,46 @@ namespace NuGetVSExtension
                 return (int)value;
             }
             return 0;
+        }
+
+        private IEnumerable<ProjectInfo> GetProjectFolderPath()
+        {
+            var projects = _dte.Solution.Projects;
+            foreach (var item in projects)
+            {
+                var project = item as Project;
+
+                if (project != null)
+                {
+                    yield return new ProjectInfo(EnvDTEProjectUtility.GetFullPath(project), project.Name);
+                }
+            }
+        }
+
+        private bool CheckPackagesConfig(string folderPath, string projectName)
+        {
+            if (folderPath == null)
+            {
+                return false;
+            }
+            else
+            {
+                return File.Exists(Path.Combine(folderPath, "packages.config"))
+                    || File.Exists(Path.Combine(folderPath, "packages." + projectName + ".config"));
+            }
+        }
+
+        private class ProjectInfo
+        {
+            public string ProjectPath { get; }
+
+            public string ProjectName { get; }
+
+            public ProjectInfo(string projectPath, string projectName)
+            {
+                ProjectPath = projectPath;
+                ProjectName = projectName;
+            }
         }
 
         public void Dispose()
