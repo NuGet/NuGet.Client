@@ -75,7 +75,7 @@ namespace NuGet.PackageManagement
             Assert.NotNull(exception);
         }
 
-        [Fact(Skip = "Skipped since it is flaky. Tracked by issue https://github.com/NuGet/Home/issues/1525")]
+        [Fact]
         public async Task TestDownloadPackage_InV2()
         {
             // Arrange
