@@ -74,6 +74,6 @@ namespace NuGetVSExtension
 
         public XDocument OriginalPackagesConfig { get; set; }
 
-        public NuGetProjectActionType ActionType { get; set; }
+        public NuGetActionType ActionType { get; set; }
     }
 }

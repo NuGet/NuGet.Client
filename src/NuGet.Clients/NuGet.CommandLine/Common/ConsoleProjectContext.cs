@@ -50,6 +50,6 @@ namespace NuGet.CommandLine
             return ProjectManagement.FileConflictAction.IgnoreAll;
         }
 
-        public NuGetProjectActionType ActionType { get; set; }
+        public NuGetActionType ActionType { get; set; }
     }
 }

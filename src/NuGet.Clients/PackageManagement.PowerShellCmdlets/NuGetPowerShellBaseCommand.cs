@@ -983,7 +983,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             // no-op
         }
 
-        public NuGetProjectActionType ActionType { get; set; }
+        public NuGetActionType ActionType { get; set; }
     }
 
     public class ProgressRecordCollection : KeyedCollection<int, ProgressRecord>

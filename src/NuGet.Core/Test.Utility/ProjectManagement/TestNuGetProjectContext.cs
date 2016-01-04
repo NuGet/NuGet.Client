@@ -44,7 +44,7 @@ namespace Test.Utility
         {
         }
 
-        public NuGetProjectActionType ActionType { get; set; }
+        public NuGetActionType ActionType { get; set; }
     }
 
     public class TestExecutionContext : ExecutionContext

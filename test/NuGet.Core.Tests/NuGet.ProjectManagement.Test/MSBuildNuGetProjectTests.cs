@@ -906,7 +906,7 @@ namespace ProjectManagement.Test
             using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
-                testNuGetProjectContext.ActionType = NuGetProjectActionType.Install;
+                testNuGetProjectContext.ActionType = NuGetActionType.Install;
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
             }
 
@@ -924,7 +924,7 @@ namespace ProjectManagement.Test
                 "build\\net45\\packageA.targets"), msBuildNuGetProjectSystem.Imports.First());
 
             // Main Act
-            testNuGetProjectContext.ActionType = NuGetProjectActionType.Uninstall;
+            testNuGetProjectContext.ActionType = NuGetActionType.Uninstall;
             await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
 
             // Assert
@@ -1025,7 +1025,7 @@ namespace ProjectManagement.Test
             using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
-                testNuGetProjectContext.ActionType = NuGetProjectActionType.Install;
+                testNuGetProjectContext.ActionType = NuGetActionType.Install;
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
             }
 
@@ -1046,7 +1046,7 @@ namespace ProjectManagement.Test
             Assert.Equal(1, msBuildNuGetProjectSystem.ScriptsExecuted[keys[1]]);
 
             // Main Act
-            testNuGetProjectContext.ActionType = NuGetProjectActionType.Uninstall;
+            testNuGetProjectContext.ActionType = NuGetActionType.Uninstall;
             await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
 
             // Assert
@@ -1149,7 +1149,7 @@ namespace ProjectManagement.Test
             using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
-                testNuGetProjectContext.ActionType = NuGetProjectActionType.Install;
+                testNuGetProjectContext.ActionType = NuGetActionType.Install;
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
             }
 
@@ -1164,7 +1164,7 @@ namespace ProjectManagement.Test
             Assert.True(File.Exists(Path.Combine(msBuildNuGetProject.FolderNuGetProject.GetInstalledPath(packageIdentity),
                 "tools\\tool.exe")));
 
-            testNuGetProjectContext.ActionType = NuGetProjectActionType.Uninstall;
+            testNuGetProjectContext.ActionType = NuGetActionType.Uninstall;
             await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
 
             Assert.False(File.Exists(randomPackagesConfigPath));
@@ -1549,7 +1549,7 @@ namespace ProjectManagement.Test
             using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
-                testNuGetProjectContext.ActionType = NuGetProjectActionType.Install;
+                testNuGetProjectContext.ActionType = NuGetActionType.Install;
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
             }
 
@@ -1571,7 +1571,7 @@ namespace ProjectManagement.Test
 
             // Act
             // Uninstall the last package using the same msbuild project
-            testNuGetProjectContext.ActionType = NuGetProjectActionType.Uninstall;
+            testNuGetProjectContext.ActionType = NuGetActionType.Uninstall;
             await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
 
             // Check that there are no packages returned by PackagesConfigProject
@@ -1614,7 +1614,7 @@ namespace ProjectManagement.Test
             using (var packageStream = GetDownloadResourceResult(packageFileInfo))
             {
                 // Act
-                testNuGetProjectContext.ActionType = NuGetProjectActionType.Install;
+                testNuGetProjectContext.ActionType = NuGetActionType.Install;
                 await msBuildNuGetProject.InstallPackageAsync(packageIdentity, packageStream, testNuGetProjectContext, token);
             }
 
@@ -1636,7 +1636,7 @@ namespace ProjectManagement.Test
 
             // Act
             // Uninstall the last package using the same msbuild project
-            testNuGetProjectContext.ActionType = NuGetProjectActionType.Uninstall;
+            testNuGetProjectContext.ActionType = NuGetActionType.Uninstall;
             await msBuildNuGetProject.UninstallPackageAsync(packageIdentity, testNuGetProjectContext, token);
 
             // Check that there are no packages returned by PackagesConfigProject

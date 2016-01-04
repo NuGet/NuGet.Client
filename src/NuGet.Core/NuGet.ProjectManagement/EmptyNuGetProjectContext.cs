@@ -37,6 +37,6 @@ namespace NuGet.ProjectManagement
         {
         }
 
-        public NuGetProjectActionType ActionType { get; set; }
+        public NuGetActionType ActionType { get; set; }
     }
 }

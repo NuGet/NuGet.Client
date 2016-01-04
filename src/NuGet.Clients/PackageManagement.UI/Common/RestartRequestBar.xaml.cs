@@ -33,7 +33,7 @@ namespace NuGet.PackageManagement.UI
 
         public XDocument OriginalPackagesConfig { get; set; }
 
-        public NuGetProjectActionType ActionType { get; set; }
+        public NuGetActionType ActionType { get; set; }
 
         public RestartRequestBar(IDeleteOnRestartManager deleteOnRestartManager, IVsShell4 vsRestarter)
         {

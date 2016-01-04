@@ -61,6 +61,6 @@ namespace NuGet.VisualStudio
             Debug.Fail(message);
         }
 
-        public NuGetProjectActionType ActionType { get; set; }
+        public NuGetActionType ActionType { get; set; }
     }
 }

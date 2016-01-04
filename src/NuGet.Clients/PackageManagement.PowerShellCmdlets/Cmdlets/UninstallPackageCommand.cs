@@ -49,7 +49,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             CheckSolutionState();
             GetNuGetProject(ProjectName);
             ThreadHelper.JoinableTaskFactory.Run(CheckMissingPackagesAsync);
-            ActionType = NuGetProjectActionType.Uninstall;
+            ActionType = NuGetActionType.Uninstall;
         }
 
         protected override void ProcessRecordCore()

@@ -985,10 +985,10 @@ namespace NuGet.PackageManagement.UI
                         CancellationToken.None);
                 },
 
-                nugetUi => SetOptions(nugetUi, NuGetProjectActionType.Uninstall));
+                nugetUi => SetOptions(nugetUi, NuGetActionType.Uninstall));
         }
 
-        private void SetOptions(NuGetUI nugetUi, NuGetProjectActionType actionType)
+        private void SetOptions(NuGetUI nugetUi, NuGetActionType actionType)
         {
             var options = _detailModel.Options;
 
@@ -1023,7 +1023,7 @@ namespace NuGet.PackageManagement.UI
                         CancellationToken.None);
                 },
 
-                nugetUi => SetOptions(nugetUi, NuGetProjectActionType.Install));
+                nugetUi => SetOptions(nugetUi, NuGetActionType.Install));
         }
 
         private void PackageList_UpdateButtonClicked(object sender, EventArgs e)
@@ -1052,7 +1052,7 @@ namespace NuGet.PackageManagement.UI
                         this,
                         CancellationToken.None);
                 },
-               nugetUi => SetOptions(nugetUi, NuGetProjectActionType.Install));
+               nugetUi => SetOptions(nugetUi, NuGetActionType.Update));
         }
     }
 }

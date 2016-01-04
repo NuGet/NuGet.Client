@@ -39,6 +39,6 @@ namespace NuGet.PackageManagement.UI
         {
         }
 
-        public NuGetProjectActionType ActionType { get; set; }
+        public NuGetActionType ActionType { get; set; }
     }
 }

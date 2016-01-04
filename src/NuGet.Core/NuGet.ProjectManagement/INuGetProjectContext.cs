@@ -33,7 +33,7 @@ namespace NuGet.ProjectManagement
         /// </summary>
         XDocument OriginalPackagesConfig { get; set; }
 
-        NuGetProjectActionType ActionType { get; set; }
+        NuGetActionType ActionType { get; set; }
     }
 
     /// <summary>
@@ -63,9 +63,9 @@ namespace NuGet.ProjectManagement
     }
 
     /// <summary>
-    /// Enum for the type of NuGetProjectAction
+    /// Enum for the type of NuGetAction
     /// </summary>
-    public enum NuGetProjectActionType
+    public enum NuGetActionType
     {
         /// <summary>
         /// Install
@@ -75,6 +75,21 @@ namespace NuGet.ProjectManagement
         /// <summary>
         /// Uninstall
         /// </summary>
-        Uninstall
+        Uninstall,
+        
+        /// <summary>
+        /// Reinstall
+        /// </summary>
+        Reinstall,
+        
+        /// <summary>
+        /// Update
+        /// </summary>
+        Update,
+        
+        /// <summary>
+        /// UpdateAll
+        /// </summary>
+        UpdateAll
     }
 }
