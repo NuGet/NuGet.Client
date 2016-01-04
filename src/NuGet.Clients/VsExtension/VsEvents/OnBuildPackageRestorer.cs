@@ -157,6 +157,11 @@ namespace NuGetVSExtension
         {
             try
             {
+                // check packages.config or project.json file exist, if not, skip restore
+                if (!GetProjectFolderPath().Where(p => CheckPackagesConfig(p.Item1, p.Item2)).Any())
+                {
+                    return;
+                }
                 if (Action == vsBuildAction.vsBuildActionClean)
                 {
                     // Clear the project.json restore cache on clean to ensure that the next build restores again
@@ -817,6 +822,35 @@ namespace NuGetVSExtension
                 return (int)value;
             }
             return 0;
+        }
+
+        private IEnumerable<Tuple<string, string>> GetProjectFolderPath()
+        {
+            var projects = _dte.Solution.Projects;
+            foreach (var item in projects)
+            {
+                var project = item as Project;
+
+                if (project != null)
+                {
+                    yield return new Tuple<string, string>(EnvDTEProjectUtility.GetFullPath(project), project.Name);
+                }
+            }
+        }
+
+        private bool CheckPackagesConfig(string folderPath, string projectName)
+        {
+            if (folderPath == null)
+            {
+                return false;
+            }
+            else
+            {
+                return File.Exists(Path.Combine(folderPath, "packages.config"))
+                    || File.Exists(Path.Combine(folderPath, "project.json"))
+                    || File.Exists(Path.Combine(folderPath, "packages." + projectName + ".config"));
+
+            }
         }
 
         public void Dispose()
