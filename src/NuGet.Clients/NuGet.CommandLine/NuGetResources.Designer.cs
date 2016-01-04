@@ -5848,7 +5848,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to delete {0}.
+        ///   Looks up a localized string similar to Failed to delete &apos;{0}&apos;..
         /// </summary>
         public static string LocalsCommand_FailedToDeletePath {
             get {
