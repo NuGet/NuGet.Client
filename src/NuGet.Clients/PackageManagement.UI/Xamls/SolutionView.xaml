@@ -184,7 +184,7 @@
             <GridViewColumn.CellTemplate>
               <DataTemplate>
                 <CheckBox
-                  AutomationProperties.AutomationId="ProjectCheckBox"
+                  AutomationProperties.AutomationId="{Binding ProjectName, Mode=OneWay, StringFormat='ProjectCheckBox_{0}'}"
                   IsChecked="{Binding IsSelected}" />
               </DataTemplate>
             </GridViewColumn.CellTemplate>
