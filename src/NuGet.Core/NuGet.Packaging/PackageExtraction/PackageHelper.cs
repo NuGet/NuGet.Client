@@ -217,7 +217,11 @@ namespace NuGet.Packaging
                 await CreatePackageFileAsync(packageFileFullPath, inputStream, token);
             }
 
-            File.SetLastWriteTimeUtc(packageFileFullPath, entry.LastWriteTime.UtcDateTime);
+            var attr = File.GetAttributes(packageFileFullPath);
+            if (!attr.HasFlag(FileAttributes.Directory))
+            {
+                File.SetLastWriteTimeUtc(packageFileFullPath, entry.LastWriteTime.UtcDateTime);
+            }
 
             return packageFileFullPath;
         }
@@ -227,14 +231,13 @@ namespace NuGet.Packaging
             if (Path.GetFileName(packageFileFullPath).Length == 0)
             {
                 Directory.CreateDirectory(packageFileFullPath);
+                return packageFileFullPath;
             }
-            else
+
+            var directory = Path.GetDirectoryName(packageFileFullPath);
+            if (!Directory.Exists(directory))
             {
-                var directory = Path.GetDirectoryName(packageFileFullPath);
-                if (!Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
+                Directory.CreateDirectory(directory);
             }
 
             if (File.Exists(packageFileFullPath))
