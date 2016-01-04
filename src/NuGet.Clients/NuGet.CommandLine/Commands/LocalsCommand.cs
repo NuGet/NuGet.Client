@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 
@@ -254,10 +255,12 @@ namespace NuGet.CommandLine.Commands
             {
                 SafeDeleteDirectoryTree(folderPath);
             }
-            catch
+            catch (PathTooLongException)
             {
-                // Report any other exception, or the above exceptions after a failed retry attempt.
-                // the Directory.Delete method may not be able to delete it.
+                failedDeletes.Add(folderPath);
+            }
+            catch (UnauthorizedAccessException)
+            {
                 failedDeletes.Add(folderPath);
             }
         }
@@ -283,12 +286,7 @@ namespace NuGet.CommandLine.Commands
             {
                 // Try once more.
                 // The directory may be in use by another process and cause an IOException.
-                Directory.Delete(folderPath, recursive: true);
-            }
-            catch
-            {
-                // Try once more.
-                // This may just be caused by another process not timely releasing the file handle.
+                Thread.Sleep(500);
                 Directory.Delete(folderPath, recursive: true);
             }
         }
@@ -315,14 +313,24 @@ namespace NuGet.CommandLine.Commands
                     var attributes = File.GetAttributes(filePath);
                     if (attributes.HasFlag(FileAttributes.ReadOnly))
                     {
+                        // Remove the readonly flag when set.
                         attributes &= ~FileAttributes.ReadOnly;
                         File.SetAttributes(filePath, attributes);
                     }
 
                     File.Delete(filePath);
                 }
-                catch
+                catch (PathTooLongException)
                 {
+                    failedDeletes.Add(filePath);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    failedDeletes.Add(filePath);
+                }
+                catch (IOException)
+                {
+                    // The file is being used by another process.
                     failedDeletes.Add(filePath);
                 }
             }
