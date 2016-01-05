@@ -182,8 +182,21 @@ namespace NuGet.Commands.Test
                 Assert.True(exited, "Timeout waiting for crashing process to exit.");
 
                 // Verify that the process crashed
-                Assert.True(-1 == r1.Process.ExitCode,
-                    $"Failed to self kill, exitcode {r1.Process.ExitCode} {r1.Item2} {r1.Item3}");
+                if (PlatformServices.Default.Runtime.OperatingSystem.Equals("windows", StringComparison.OrdinalIgnoreCase))
+                {
+                    Assert.True(-1 == r1.Process.ExitCode,
+                        $"Failed to self kill, exitcode {r1.Process.ExitCode} {r1.Item2} {r1.Item3}");
+                }
+                else if (PlatformServices.Default.Runtime.OperatingSystem.Equals("linux", StringComparison.OrdinalIgnoreCase))
+                {
+                    Assert.True(137 == r1.Process.ExitCode,
+                        $"Failed to self kill, exitcode {r1.Process.ExitCode} {r1.Item2} {r1.Item3}");
+                }
+                else if (PlatformServices.Default.Runtime.OperatingSystem.Equals("mac", StringComparison.OrdinalIgnoreCase))
+                {
+                    Assert.True(146 == r1.Process.ExitCode,
+                        $"Failed to self kill, exitcode {r1.Process.ExitCode} {r1.Item2} {r1.Item3}");
+                }
 
                 Assert.Empty(r1.Item3);
 
@@ -208,7 +221,7 @@ namespace NuGet.Commands.Test
         private async Task<SyncdRunResult> Run(string fileName, bool shouldAbandon, bool shareProcessObject = false, bool debug = false)
         {
             var runtimePath = PlatformServices.Default.Runtime.RuntimePath;
-            var dnxPath = Path.Combine(runtimePath, "dnx.exe");
+            var dnxPath = Path.Combine(runtimePath, "dnx");
             var appPath = PlatformServices.Default.Application.ApplicationBasePath;
             var basePath = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(appPath)));
             var testAppName = nameof(SynchronizationTestApp);
