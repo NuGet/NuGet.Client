@@ -23,7 +23,7 @@ namespace NuGet.Packaging
             var filesAdded = new List<string>();
             if (packageStream == null)
             {
-                throw new ArgumentNullException("packageStream");
+                throw new ArgumentNullException(nameof(packageStream));
             }
 
             if (!packageStream.CanSeek)
@@ -33,12 +33,12 @@ namespace NuGet.Packaging
 
             if (packagePathResolver == null)
             {
-                throw new ArgumentNullException("packagePathResolver");
+                throw new ArgumentNullException(nameof(packagePathResolver));
             }
 
             if (packageExtractionContext == null)
             {
-                packageExtractionContext = new PackageExtractionContext();
+                throw new ArgumentNullException(nameof(packageExtractionContext));
             }
 
             var packageSaveMode = packageExtractionContext.PackageSaveMode;
@@ -93,7 +93,7 @@ namespace NuGet.Packaging
 
             if (packageExtractionContext == null)
             {
-                packageExtractionContext = new PackageExtractionContext();
+                throw new ArgumentNullException(nameof(packageExtractionContext));
             }
 
             var packageSaveMode = packageExtractionContext.PackageSaveMode;
@@ -161,7 +161,7 @@ namespace NuGet.Packaging
             }
 
             // Now, copy satellite files unless requested to not copy them
-            if ( packageExtractionContext.CopySatelliteFiles)
+            if (packageExtractionContext.CopySatelliteFiles)
             {
                 PackageIdentity runtimeIdentity;
                 string packageLanguage;

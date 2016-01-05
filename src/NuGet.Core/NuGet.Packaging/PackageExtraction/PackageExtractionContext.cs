@@ -8,7 +8,7 @@ namespace NuGet.Packaging
 {
     public class PackageExtractionContext
     {
-        public bool CopySatelliteFiles { get; set; }
+        public bool CopySatelliteFiles { get; set; } = true;
 
         /// <summary>
         /// If True package folder paths will use the non-normalized version path,
@@ -16,14 +16,9 @@ namespace NuGet.Packaging
         /// </summary>
         public bool UseLegacyPackageInstallPath { get; set; }
 
-        public PackageSaveModes PackageSaveMode { get; set; }
+        public PackageSaveModes PackageSaveMode { get; set; } = PackageSaveModes.Nupkg;
 
-        public PackageExtractionContext()
-        {
-            CopySatelliteFiles = true;
-            UseLegacyPackageInstallPath = false;
-            PackageSaveMode = PackageSaveModes.Nupkg;
-        }
+        public PackageExtractionContext() { }
     }
 
     [Flags]
