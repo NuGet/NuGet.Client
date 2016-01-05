@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -234,6 +235,8 @@ namespace NuGet.Protocol.Core.v2
                 try
                 {
                     repository.PackageDownloader.ProgressAvailable += progressHandler;
+
+                    Logger.Instance.LogVerbose($"  GET: {downloadUri}");
                     repository.PackageDownloader.DownloadPackage(downloadClient, packageName, stream);
                 }
                 catch (OperationCanceledException)

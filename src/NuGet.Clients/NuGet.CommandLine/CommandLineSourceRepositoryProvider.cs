@@ -15,7 +15,7 @@ namespace NuGet.CommandLine
         private readonly List<SourceRepository> _repositories = new List<SourceRepository>();
 
         // There should only be one instance of the source repository for each package source.
-        private static ConcurrentDictionary<Configuration.PackageSource, SourceRepository> _sources
+        private static readonly ConcurrentDictionary<Configuration.PackageSource, SourceRepository> _sources
             = new ConcurrentDictionary<Configuration.PackageSource, SourceRepository>();
 
         public CommandLineSourceRepositoryProvider(Configuration.IPackageSourceProvider packageSourceProvider)
