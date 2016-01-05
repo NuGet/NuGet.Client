@@ -97,6 +97,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             UpdateCanInstallAndCanUninstall();
+            AutoSelectProjects();
         }
 
         private NuGetVersion GetInstalledVersion(NuGetProject project, string packageId)
@@ -408,6 +409,35 @@ namespace NuGet.PackageManagement.UI
                         _packageManagerProviders,
                         Id,
                         p.NuGetProject);
+                }
+            }
+        }
+
+        // auto select projects based on the current tab and currently selected package
+        private void AutoSelectProjects()
+        {
+            if (_filter == Filter.Consolidate ||
+                _filter == Filter.UpdatesAvailable)
+            {
+                foreach (var project in _projects)
+                {
+                    project.IsSelected = project.InstalledVersion != null;
+                }
+            }
+        }
+
+        public override void OnFilterChanged(Filter? previousFilter, Filter currentFilter)
+        {
+            base.OnFilterChanged(previousFilter, currentFilter);
+
+            // clear selection if filter is changed from Consolidate/UpdateAvailable
+            // to Browse/Install.
+            if ((previousFilter == Filter.Consolidate || previousFilter == Filter.UpdatesAvailable) &&
+                (_filter == Filter.All || _filter == Filter.Installed))
+            {
+                foreach (var project in _projects)
+                {
+                    project.IsSelected = false;
                 }
             }
         }

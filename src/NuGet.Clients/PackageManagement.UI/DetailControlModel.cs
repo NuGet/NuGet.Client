@@ -83,6 +83,11 @@ namespace NuGet.PackageManagement.UI
         {
         }
 
+        public virtual void OnFilterChanged(Filter? previousFilter, Filter currentFilter)
+        {
+            _filter = currentFilter;
+        }
+
         /// <summary>
         /// Get all installed packages across all projects (distinct)
         /// </summary>
