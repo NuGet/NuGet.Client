@@ -162,6 +162,7 @@
       Grid.Row="1"
       x:Name="_projectList"
       Margin="0,8,0,0"
+      ScrollViewer.VerticalScrollBarVisibility="Visible"
       ItemsSource="{Binding Projects}"
       Background="{DynamicResource {x:Static local:Brushes.ListPaneBackground}}"
       Foreground="{DynamicResource {x:Static local:Brushes.UIText}}" >

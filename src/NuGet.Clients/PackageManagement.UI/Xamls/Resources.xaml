@@ -44,6 +44,10 @@
     x:Key="Font155PercentSizeConverter" />
   <Tools:VersionToStringConverter
     x:Key="VersionToStringConverter" />
+  <Tools:ProjectAndSolutionViewHeightConverter
+    x:Key="ProjectAndSolutionViewHeightConverter" />
+  <Tools:ProjectAndSolutionViewMinHeightConverter
+    x:Key="ProjectAndSolutionViewMinHeightConverter"/>
 
   <DataTemplate
     DataType="{x:Type Tools:PackageDependencyMetadata}">

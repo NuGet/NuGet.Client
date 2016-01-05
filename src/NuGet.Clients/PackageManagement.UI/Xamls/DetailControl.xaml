@@ -34,7 +34,8 @@
         <RowDefinition
           Height="Auto" />
         <RowDefinition
-          Height="Auto" />
+          Height="{Binding Path=IsSolution, Converter={StaticResource ProjectAndSolutionViewHeightConverter}}" 
+          MinHeight="{Binding Path=IsSolution, Converter={StaticResource ProjectAndSolutionViewMinHeightConverter}}" />
         <RowDefinition
           Height="Auto" />
         <RowDefinition
@@ -71,7 +72,7 @@
         UninstallButtonClicked="ProjectUninstallButtonClicked"
         Visibility="{Binding Path=IsSolution, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" />
 
-      <!-- solutin view when in solution package manager -->
+      <!-- solution view when in solution package manager -->
       <Tools:SolutionView
         AutomationProperties.AutomationId="SolutionView"
         x:Name="_solutionView"
@@ -81,9 +82,21 @@
         UninstallButtonClicked="SolutionUninstallButtonClicked"
         Visibility="{Binding Path=IsSolution,Converter={StaticResource BooleanToVisibilityConverter}}" />
 
+      <!-- the splitter is shown when in solution package manager -->
+      <GridSplitter
+        Grid.Row="2"
+        Height="4"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Top"
+        Margin="-24,0,-7,0"
+        Visibility="{Binding Path=IsSolution,Converter={StaticResource BooleanToVisibilityConverter}}"
+        Background="{DynamicResource {x:Static Tools:Brushes.SplitterBackgroundKey}}"
+        BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+        BorderThickness="0,1" />
+      
       <!-- options -->
       <Border
-        Grid.Row="2"
+        Grid.Row="3"
         Margin="0,11,0,0"
         BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
         BorderThickness="0,1,0,1">
@@ -94,7 +107,7 @@
       </Border>
 
       <Tools:PackageMetadataControl
-        Grid.Row="3"
+        Grid.Row="4"
         Margin="0,12,0,0"
         DataContext="{Binding PackageMetadata}" />
     </Grid>
