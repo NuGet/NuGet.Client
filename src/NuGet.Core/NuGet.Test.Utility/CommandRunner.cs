@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 
 namespace NuGet.Test.Utility
 {
@@ -27,7 +26,12 @@ namespace NuGet.Test.Utility
                 RedirectStandardError = true,
                 RedirectStandardInput = inputAction != null
             };
+
+#if !DNXCORE50
             psi.EnvironmentVariables["NuGetTestModeEnabled"] = "True";
+#else
+            psi.Environment["NuGetTestModeEnabled"] = "True";
+#endif
 
             int exitCode = 1;
 
