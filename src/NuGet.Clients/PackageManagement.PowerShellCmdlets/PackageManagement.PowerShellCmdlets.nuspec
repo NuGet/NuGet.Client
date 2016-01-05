@@ -7,8 +7,8 @@
     <authors>NuGet</authors>
     <copyright>Copyright .NET Foundation. All rights reserved.</copyright>
     <owners>NuGet</owners>
-    <projectUrl>https://github.com/NuGet/NuGet.PackageManagement/</projectUrl>
-    <licenseUrl>http://www.microsoft.com/web/webpi/eula/nuget_release_eula.htm</licenseUrl>
+    <projectUrl>https://github.com/NuGet/NuGet.Client/</projectUrl>
+    <licenseUrl>https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>NuGet's PowerShell Cmdlets for the Visual Studio client</description>
     <dependencies>
