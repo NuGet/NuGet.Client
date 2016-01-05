@@ -21,10 +21,10 @@ namespace NuGet.Test.Utility
                                 <version>{1}</version>
                                 <authors>Author1, author2</authors>
                                 <description>Sample description</description>
-                                <language>en-US</language>
+                                <language>{2}</language>
                                 <projectUrl>http://www.nuget.org/</projectUrl>
                                 <licenseUrl>http://www.nuget.org/license</licenseUrl>
-                                {2}
+                                {3}
                               </metadata>
                             </package>";
 
@@ -560,6 +560,34 @@ namespace NuGet.Test.Utility
                 $"{packageId}.{packageVersion}.nupkg");
         }
 
+        public static async Task<FileInfo> GetRuntimePackageAsync(
+            string path,
+            string packageId,
+            string packageVersion)
+        {
+           return await GeneratePackageAsync(
+               path,
+               packageId,
+               packageVersion,
+               DateTimeOffset.UtcNow.LocalDateTime,
+               "lib/net45/A.dll");
+        }
+
+        public static async Task<FileInfo> GetSatellitePackageAsync(
+            string path,
+            string runtimePackageId,
+            string packageVersion,
+            string language)
+        {
+            return await GeneratePackageAsync(
+                path,
+                runtimePackageId + "." + language,
+                packageVersion,
+                language,
+                DateTimeOffset.UtcNow.LocalDateTime,
+                Path.Combine("lib/net45", language, runtimePackageId + ".resources.dll"));
+        }
+
         public static async Task<FileInfo> GeneratePackageAsync(
             string path,
             string packageId,
@@ -571,6 +599,24 @@ namespace NuGet.Test.Utility
                 path,
                 packageId,
                 packageVersion,
+                "en-US",
+                entryModifiedTime,
+                zipEntries);
+        }
+
+        public static async Task<FileInfo> GeneratePackageAsync(
+            string path,
+            string packageId,
+            string packageVersion,
+            string language,
+            DateTime entryModifiedTime,
+            params string[] zipEntries)
+        {
+            return await GeneratePackageAsync(
+                path,
+                packageId,
+                packageVersion,
+                language,
                 entryModifiedTime,
                 zipEntries,
                 zipContents: Enumerable.Repeat(string.Empty, zipEntries.Count()));
@@ -580,6 +626,7 @@ namespace NuGet.Test.Utility
             string path,
             string packageId,
             string packageVersion,
+            string language,
             DateTime entryModifiedTime,
             IEnumerable<string> zipEntries,
             IEnumerable<string> zipContents,
@@ -603,10 +650,17 @@ namespace NuGet.Test.Utility
 
             using (var zip = new ZipArchive(File.Create(fileInfo.FullName), ZipArchiveMode.Update))
             {
-                var tasks = zipEntries.Zip(zipContents, async (entry, content) => await zip.AddEntryAsync(entry, content));
+                var tasks
+                    = zipEntries.Zip(zipContents, async (entry, content) => await zip.AddEntryAsync(entry, content));
                 var entries = await Task.WhenAll(tasks);
                 entries.ToList().ForEach(entry => entry.LastWriteTime = entryModifiedTime);
-                await SetSimpleNuspecAsync(zip, packageId, packageVersion, frameworkAssemblies, dependencies);
+                await SetSimpleNuspecAsync(
+                    zip,
+                    packageId,
+                    packageVersion,
+                    language,
+                    frameworkAssemblies,
+                    dependencies);
             }
 
             return fileInfo;
@@ -623,25 +677,40 @@ namespace NuGet.Test.Utility
         public static async Task<ZipArchiveEntry> SetSimpleNuspecAsync(ZipArchive zip,
             string packageId,
             string packageVersion,
+            string language,
             bool frameworkAssemblies,
             bool dependencies)
         {
             return await zip.AddEntryAsync(
                 $"{packageId}.nuspec",
-                GetSimpleNuspecString(packageId, packageVersion, frameworkAssemblies, dependencies));
+                GetSimpleNuspecString(packageId, packageVersion, language, frameworkAssemblies, dependencies));
         }
 
         private static string GetSimpleNuspecString(string packageId,
             string packageVersion,
+            string language,
             bool frameworkAssemblies,
             bool dependencies)
         {
             var frameworkAssemblyReferences = frameworkAssemblies ?
                 string.Format(FrameworkAssembliesStringFormat, "System.Xml", "net45") : string.Empty;
 
-            var dependenciesString = dependencies ?
-                string.Format(DependenciesStringFormat, "Owin", "1.0") : string.Empty;
-            return string.Format(NuspecStringFormat, packageId, packageVersion,
+            string dependenciesString;
+            if (language == "en-US")
+            {
+                dependenciesString = dependencies ?
+                    string.Format(DependenciesStringFormat, "Owin", "1.0") : string.Empty;
+            }
+            else
+            {
+                // Since language is not english, it should be a satellite package
+                // Set the runtime package as a dependency
+                dependenciesString = string.Format(DependenciesStringFormat,
+                    packageId.Substring(0, packageId.Length - 1 - language.Length),
+                    "[" + packageVersion + "]");
+            }
+
+            return string.Format(NuspecStringFormat, packageId, packageVersion, language,
                 string.Join(Environment.NewLine, frameworkAssemblyReferences, dependenciesString));
         }
 

@@ -8,7 +8,6 @@ namespace NuGet.Packaging
 {
     public class PackageExtractionContext
     {
-        // TODO: Move PackagePathResolver into this context as well
         public bool CopySatelliteFiles { get; set; }
 
         /// <summary>
@@ -17,10 +16,13 @@ namespace NuGet.Packaging
         /// </summary>
         public bool UseLegacyPackageInstallPath { get; set; }
 
+        public PackageSaveModes PackageSaveMode { get; set; }
+
         public PackageExtractionContext()
         {
-            CopySatelliteFiles = false;
+            CopySatelliteFiles = true;
             UseLegacyPackageInstallPath = false;
+            PackageSaveMode = PackageSaveModes.Nupkg;
         }
     }
 
