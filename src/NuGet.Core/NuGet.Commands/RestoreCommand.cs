@@ -39,6 +39,23 @@ namespace NuGet.Commands
 
         public RestoreCommand(ILogger logger, RestoreRequest request)
         {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            // Validate the lock file version requested
+            if (request.LockFileVersion < 1 || request.LockFileVersion > LockFileFormat.Version)
+            {
+                Debug.Fail($"Lock file version {_request.LockFileVersion} is not supported.");
+                throw new ArgumentOutOfRangeException(nameof(_request.LockFileVersion));
+            }
+
             _log = logger;
             _request = request;
         }
@@ -58,7 +75,7 @@ namespace NuGet.Commands
             bool relockFile = false;
             if (_request.ExistingLockFile != null
                 && _request.ExistingLockFile.IsLocked
-                && !_request.ExistingLockFile.IsValidForPackageSpec(_request.Project))
+                && !_request.ExistingLockFile.IsValidForPackageSpec(_request.Project, _request.LockFileVersion))
             {
                 // The lock file was locked, but the project.json is out of date
                 relockFile = true;
@@ -132,6 +149,12 @@ namespace NuGet.Commands
 
             // Generate Targets/Props files
             var msbuild = RestoreMSBuildFiles(_request.Project, graphs, localRepository, context);
+
+            // If the request is for a v1 lock file then downgrade it and remove all v2 properties
+            if (_request.LockFileVersion == 1)
+            {
+                DowngradeLockFileToV1(lockFile);
+            }
 
             return new RestoreResult(
                 _success,
@@ -525,6 +548,8 @@ namespace NuGet.Commands
             RemoteWalkContext context)
         {
             var lockFile = new LockFile();
+            lockFile.Version = _request.LockFileVersion;
+
             var resolver = new VersionFolderPathResolver(repository.RepositoryRoot);
             var previousLibraries = previousLockFile?.Libraries.ToDictionary(l => Tuple.Create(l.Name, l.Version));
 
@@ -766,6 +791,43 @@ namespace NuGet.Commands
             }
 
             return lockFile;
+        }
+
+        private void DowngradeLockFileToV1(LockFile lockFile)
+        {
+            // Remove projects from the library section
+            var libraryProjects = lockFile.Libraries.Where(lib => lib.Type == LibraryTypes.Project).ToArray();
+
+            foreach (var library in libraryProjects)
+            {
+                lockFile.Libraries.Remove(library);
+            }
+
+            // Remove projects from the targets section
+            foreach (var target in lockFile.Targets)
+            {
+                var targetProjects = target.Libraries.Where(lib => lib.Type == LibraryTypes.Project).ToArray();
+
+                foreach (var library in targetProjects)
+                {
+                    target.Libraries.Remove(library);
+                }
+            }
+
+            // For libraries types convert the first letter to uppercase
+            foreach (var library in lockFile.Libraries)
+            {
+                if (!string.IsNullOrEmpty(library.Type))
+                {
+                    library.Type = library.Type.First().ToString().ToUpper() + library.Type.Substring(1);
+                }
+            }
+
+            foreach (var library in lockFile.Targets.SelectMany(target => target.Libraries))
+            {
+                // Null out all target types, these did not exist in v1
+                library.Type = null;
+            }
         }
 
         private static PackageDependency GetDependencyVersionRange(LibraryDependency dependency)

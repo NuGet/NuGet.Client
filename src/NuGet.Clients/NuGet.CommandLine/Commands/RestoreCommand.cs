@@ -243,6 +243,8 @@ namespace NuGet.CommandLine
                     repositories,
                     packagesDirectory: null);
 
+                request.LockFileVersion = LockFileVersionUtility.GetVersion();
+
                 request.PackagesDirectory = packagesDir;
 
                 if (DisableParallelProcessing)

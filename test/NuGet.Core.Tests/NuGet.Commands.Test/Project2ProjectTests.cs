@@ -278,7 +278,7 @@ namespace NuGet.Commands.Test
 
                 Assert.Equal(1, project2Target.Dependencies.Count);
                 Assert.Equal("project3", project2Target.Dependencies.Single().Id);
-                Assert.Equal("1.0.0", project2Target.Dependencies.Single().VersionRange.OriginalString);
+                Assert.Equal("1.0.0", project2Target.Dependencies.Single().VersionRange.ToLegacyShortString());
 
                 Assert.Equal(0, project3Target.Dependencies.Count);
 
@@ -387,7 +387,7 @@ namespace NuGet.Commands.Test
 
                 Assert.Equal(1, project2Target.Dependencies.Count);
                 Assert.Equal("project3", project2Target.Dependencies.Single().Id);
-                Assert.Equal("1.0.0", project2Target.Dependencies.Single().VersionRange.OriginalString);
+                Assert.Equal("1.0.0", project2Target.Dependencies.Single().VersionRange.ToLegacyShortString());
 
                 Assert.Equal(0, project3Target.Dependencies.Count);
 
@@ -514,12 +514,103 @@ namespace NuGet.Commands.Test
 
                 Assert.Equal(1, project2Target.Dependencies.Count);
                 Assert.Equal("project3", project2Target.Dependencies.Single().Id);
-                Assert.Equal("1.0.0--", project2Target.Dependencies.Single().VersionRange.OriginalString);
+                Assert.Equal("1.0.0--", project2Target.Dependencies.Single().VersionRange.ToLegacyShortString());
 
                 Assert.Equal(0, project3Target.Dependencies.Count);
 
                 Assert.Equal(".NETFramework,Version=v4.5", project2Target.Framework);
                 Assert.Equal(".NETFramework,Version=v4.5", project3Target.Framework);
+            }
+        }
+
+        [Fact]
+        public async Task Project2Project_VerifyProjectsNoAddedForV1()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            var project1Json = @"
+            {
+                ""version"": ""1.0.0"",
+                ""dependencies"": {
+                    ""project2"": ""1.0.0-*"",
+                },
+                ""frameworks"": {
+                    ""net45"": {}
+                }
+            }";
+
+            var project2Json = @"
+            {
+                ""version"": ""1.0.0"",
+                ""dependencies"": {
+                    ""project3"": ""1.0.0-*"",
+                },
+                ""frameworks"": {
+                    ""net45"": {}
+                }
+            }";
+
+            var project3Json = @"
+            {
+                ""version"": ""1.0.0"",
+                ""dependencies"": {
+                },
+                ""frameworks"": {
+                    ""net45"": {}
+                }
+            }";
+
+            var globalJson = @"
+            {
+                ""projects"": [
+                    ""projects""
+                ]
+            }";
+
+            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                var project2 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project2"));
+                var project3 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project3"));
+                project1.Create();
+                project2.Create();
+                project3.Create();
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+                File.WriteAllText(Path.Combine(project2.FullName, "project.json"), project2Json);
+                File.WriteAllText(Path.Combine(project3.FullName, "project.json"), project3Json);
+                File.WriteAllText(Path.Combine(workingDir, "global.json"), globalJson);
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project1.xproj"), string.Empty);
+                File.WriteAllText(Path.Combine(project2.FullName, "project2.xproj"), string.Empty);
+                File.WriteAllText(Path.Combine(project3.FullName, "project3.xproj"), string.Empty);
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+
+                var specPath2 = Path.Combine(project2.FullName, "project.json");
+                var specPath3 = Path.Combine(project3.FullName, "project.json");
+
+                var request = new RestoreRequest(spec, sources, packagesDir);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+                request.LockFileVersion = 1;
+                var format = new LockFileFormat();
+
+                // Act
+                var logger = new TestLogger();
+                var command = new RestoreCommand(logger, request);
+                var result = await command.ExecuteAsync();
+                result.Commit(logger);
+
+                var lockFile = format.Read(request.LockFilePath, logger);
+
+                // Assert
+                Assert.True(result.Success);
+                Assert.Equal(0, lockFile.Libraries.Count);
+                Assert.Equal(0, lockFile.Targets[0].Libraries.Count);
             }
         }
     }

@@ -282,8 +282,7 @@ Function Restore-XProjectsFast {
 
 Function Find-XProjects($XProjectsLocation) {
     Get-ChildItem $XProjectsLocation -Recurse -Filter '*.xproj' |`
-        %{ Split-Path $_.FullName -Parent } |`
-        ?{ -not $_.EndsWith('NuGet.CommandLine.XPlat') } # TODO: Remove this after fixing XPLAT!
+        %{ Split-Path $_.FullName -Parent }
 }
 
 Function Restore-XProjects {

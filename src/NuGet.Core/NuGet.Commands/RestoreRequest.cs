@@ -98,6 +98,12 @@ namespace NuGet.Commands
         /// </summary>
         public ISet<FrameworkRuntimePair> CompatibilityProfiles { get; }
 
+        /// <summary>
+        /// Lock file version format to output.
+        /// </summary>
+        /// <remarks>This defaults to the latest version.</remarks>
+        public int LockFileVersion { get; set; } = LockFileFormat.Version;
+
         public void Dispose()
         {
             CacheContext.Dispose();

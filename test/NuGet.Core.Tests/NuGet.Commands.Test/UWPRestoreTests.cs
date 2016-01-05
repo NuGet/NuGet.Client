@@ -333,6 +333,78 @@ namespace NuGet.Commands.Test
             }
         }
 
+        // Verify that File > New Project > Blank UWP App can restore without errors or warnings.
+        [Fact]
+        public async Task UWPRestore_BlankUWPAppV1()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://api.nuget.org/v3/index.json"));
+
+            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var configJson = JObject.Parse(@"{
+                  ""dependencies"": {
+                    ""Microsoft.NETCore.UniversalWindowsPlatform"": ""5.0.0""
+                  },
+                  ""frameworks"": {
+                    ""uap10.0"": {}
+                  },
+                  ""runtimes"": {
+                    ""win10-arm"": {},
+                    ""win10-arm-aot"": {},
+                    ""win10-x86"": {},
+                    ""win10-x86-aot"": {},
+                    ""win10-x64"": {},
+                    ""win10-x64-aot"": {}
+                  }
+                }");
+
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+                var request = new RestoreRequest(spec, sources, packagesDir);
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                // Set the lock file version to v1 to force a downgrade
+                request.LockFileVersion = 1;
+
+                var lockFileFormat = new LockFileFormat();
+                var logger = new TestLogger();
+                var command = new RestoreCommand(logger, request);
+
+#if !DNXCORE50
+                var expectedStream = Assembly.GetExecutingAssembly()
+                    .GetManifestResourceStream("NuGet.Commands.Test.compiler.resources.uwpBlankAppV1.json");
+
+                JObject expectedJson = null;
+
+                using (var reader = new StreamReader(expectedStream))
+                {
+                    expectedJson = JObject.Parse(reader.ReadToEnd());
+                }
+#endif
+
+                // Act
+                var result = await command.ExecuteAsync();
+                result.Commit(logger);
+
+                var lockFileJson = JObject.Parse(File.OpenText(request.LockFilePath).ReadToEnd());
+
+                // Assert
+                Assert.True(result.Success);
+                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+                Assert.Equal(0, logger.Errors);
+                Assert.Equal(0, logger.Warnings);
+                Assert.Equal(118, result.GetAllInstalled().Count);
+
+#if !DNXCORE50
+                Assert.Equal(expectedJson.ToString(), lockFileJson.ToString());
+#endif
+            }
+        }
+
         // Verify that File > New Project > Class Library (Portable) can restore without errors or warnings.
         [Fact]
         public async Task UWPRestore_ModernPCL()

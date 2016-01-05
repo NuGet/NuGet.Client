@@ -94,6 +94,7 @@ namespace NuGet.PackageManagement
             using (var request = new RestoreRequest(packageSpec, sources, effectiveGlobalPackagesFolder))
             {
                 request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
+                request.LockFileVersion = LockFileVersionUtility.GetVersion();
 
                 if (cacheContextModifier != null)
                 {

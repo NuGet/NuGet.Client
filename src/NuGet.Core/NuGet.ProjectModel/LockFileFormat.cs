@@ -172,7 +172,7 @@ namespace NuGet.ProjectModel
         {
             var json = new JObject();
             json[LockedProperty] = new JValue(lockFile.IsLocked);
-            json[VersionProperty] = new JValue(Version);
+            json[VersionProperty] = new JValue(lockFile.Version);
             json[TargetsProperty] = WriteObject(lockFile.Targets, WriteTarget);
             json[LibrariesProperty] = WriteObject(lockFile.Libraries, WriteLibrary);
             json[ProjectFileDependencyGroupsProperty] = WriteObject(lockFile.ProjectFileDependencyGroups, WriteProjectFileDependencyGroup);
@@ -288,7 +288,10 @@ namespace NuGet.ProjectModel
         {
             var json = new JObject();
 
-            json[TypeProperty] = library.Type;
+            if (library.Type != null)
+            {
+                json[TypeProperty] = library.Type;
+            }
 
             if (library.Framework != null)
             {
@@ -388,7 +391,7 @@ namespace NuGet.ProjectModel
         {
             return new JProperty(
                 item.Id,
-                WriteString(item.VersionRange?.ToLegacyShortString()));
+                WriteString(item.VersionRange?.ToLegacyString()));
         }
 
         private static LockFileItem ReadFileItem(string property, JToken json)

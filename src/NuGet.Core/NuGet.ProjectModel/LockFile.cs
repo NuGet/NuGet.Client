@@ -22,7 +22,12 @@ namespace NuGet.ProjectModel
 
         public bool IsValidForPackageSpec(PackageSpec spec)
         {
-            if (Version != LockFileFormat.Version)
+            return IsValidForPackageSpec(spec, Version);
+        }
+
+        public bool IsValidForPackageSpec(PackageSpec spec, int requestLockFileVersion)
+        {
+            if (Version != requestLockFileVersion)
             {
                 return false;
             }

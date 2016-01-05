@@ -102,10 +102,9 @@ namespace NuGet.ProjectModel.Test
   ""targets"": {
                 "".NETPlatform,Version=v5.0"": {
                     ""System.Runtime/4.0.20-beta-22927"": {
-                        ""type"": null,
-        ""dependencies"": {
-                            ""Frob"": ""4.0.20""
-        },
+                        ""dependencies"": {
+                            ""Frob"": ""[4.0.20, )""
+                        },
         ""compile"": {
                             ""ref/dotnet/System.Runtime.dll"": {
                             }
