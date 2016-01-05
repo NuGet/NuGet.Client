@@ -33,20 +33,11 @@ namespace NuGet.Protocol.Core.v3
         /// <returns>The first URL from the resource, with the URI template applied.</returns>
         public Uri GetReportAbuseUrl(string id, NuGetVersion version)
         {
-            try
-            {
-                var uriString = _uriTemplate
-                   .Replace("{id}", id)
-                   .Replace("{version}", version.ToNormalizedString());
+            var uriString = _uriTemplate
+               .Replace("{id}", id)
+               .Replace("{version}", version.ToNormalizedString());
 
-                return new Uri(uriString);
-            }
-            catch (UriFormatException)
-            {
-                // fallback to default nuget.org ReportAbuse Uri
-                return new Uri(string.Format(CultureInfo.InvariantCulture,
-                    $"https://www.nuget.org/packages/{id}/{version.ToNormalizedString()}/ReportAbuse"));
-            }
+            return new Uri(uriString);
         }
 
         private static bool IsValidUriTemplate(string uriTemplate)
