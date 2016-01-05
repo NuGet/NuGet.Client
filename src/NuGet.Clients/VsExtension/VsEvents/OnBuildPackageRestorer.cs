@@ -158,7 +158,7 @@ namespace NuGetVSExtension
             try
             {
                 // check packages.config or project.json file exist, if not, skip restore
-                if (!GetProjectFolderPath().Where(p => CheckPackagesConfig(p.Item1, p.Item2)).Any())
+                if (!GetProjectFolderPath().Where(p => CheckPackagesConfig(p.ProjectPath, p.ProjectName)).Any())
                 {
                     return;
                 }
@@ -824,7 +824,7 @@ namespace NuGetVSExtension
             return 0;
         }
 
-        private IEnumerable<Tuple<string, string>> GetProjectFolderPath()
+        private IEnumerable<projectInfo> GetProjectFolderPath()
         {
             var projects = _dte.Solution.Projects;
             foreach (var item in projects)
@@ -833,7 +833,7 @@ namespace NuGetVSExtension
 
                 if (project != null)
                 {
-                    yield return new Tuple<string, string>(EnvDTEProjectUtility.GetFullPath(project), project.Name);
+                    yield return new projectInfo(EnvDTEProjectUtility.GetFullPath(project), project.Name);
                 }
             }
         }
@@ -848,8 +848,21 @@ namespace NuGetVSExtension
             {
                 return File.Exists(Path.Combine(folderPath, "packages.config"))
                     || File.Exists(Path.Combine(folderPath, "project.json"))
-                    || File.Exists(Path.Combine(folderPath, "packages." + projectName + ".config"));
+                    || File.Exists(Path.Combine(folderPath, "packages." + projectName + ".config"))
+                    || File.Exists(Path.Combine(folderPath, projectName + ".project.json"));
+            }
+        }
 
+        private class projectInfo
+        {
+            public string ProjectPath { get; }
+
+            public string ProjectName { get; }
+
+            public projectInfo(string projectPath, string projectName)
+            {
+                ProjectPath = projectPath;
+                ProjectName = projectName;
             }
         }
 
