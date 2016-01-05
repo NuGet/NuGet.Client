@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# export env variable
+export temp="$HOME/temp"
+
 # install dnx
 if ! type dnvm > /dev/null 2>&1; then
     source ~/.dnx/dnvm/dnvm.sh
