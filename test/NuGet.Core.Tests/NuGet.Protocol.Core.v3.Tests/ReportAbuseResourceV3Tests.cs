@@ -23,7 +23,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         public void GetReportAbuseUrlReplacesIdAndVersionTokensInUriTemplateWhenAvailable()
         {
             const string uriTemplate = "https://test.nuget.org/ReportAbuse/{id}/{version}";
-            const string expectedResult = "https://test.nuget.org/packages/TestPackage/1.0.0/ReportAbuse";
+            const string expectedResult = "https://test.nuget.org/ReportAbuse/TestPackage/1.0.0";
             var resource = new ReportAbuseResourceV3(uriTemplate);
 
             var actual = resource.GetReportAbuseUrl("TestPackage", NuGetVersion.Parse("1.0.0"));
