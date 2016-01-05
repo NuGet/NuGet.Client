@@ -391,6 +391,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             UpdateInstalledVersions();
+            AutoSelectProjects();
 
             // update alternative package managers
             if (_packageManagerProviders.Any())
@@ -408,6 +409,34 @@ namespace NuGet.PackageManagement.UI
                         _packageManagerProviders,
                         Id,
                         p.NuGetProject);
+                }
+            }
+        }
+
+        // auto select projects based on the current tab and currently selected package
+        private void AutoSelectProjects()
+        {
+            if (_filter == Filter.Consolidate ||
+                _filter == Filter.UpdatesAvailable)
+            {
+                foreach (var project in _projects)
+                {
+                    project.IsSelected = project.InstalledVersion != null;
+                }
+            }
+        }
+
+        public override void OnFilterChanged(Filter filter)
+        {
+            base.OnFilterChanged(filter);
+
+            // clear selection if filter is changed to browse or install
+            if (_filter == Filter.All ||
+                _filter == Filter.Installed)
+            {
+                foreach (var project in _projects)
+                {
+                    project.IsSelected = false;
                 }
             }
         }

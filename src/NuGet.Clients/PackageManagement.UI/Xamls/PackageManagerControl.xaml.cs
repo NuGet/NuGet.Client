@@ -677,6 +677,8 @@ namespace NuGet.PackageManagement.UI
             {
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == Filter.UpdatesAvailable;
                 SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+
+                _detailModel.OnFilterChanged(_topPanel.Filter);
             }
         }
 
