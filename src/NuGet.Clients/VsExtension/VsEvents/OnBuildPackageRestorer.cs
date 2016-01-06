@@ -433,7 +433,12 @@ namespace NuGetVSExtension
                 var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(Settings);
                 var pathResolver = new VersionFolderPathResolver(globalPackagesFolder);
 
-                if (BuildIntegratedRestoreUtility.IsRestoreRequired(projects, pathResolver))
+                var restoreRequired = await BuildIntegratedRestoreUtility.IsRestoreRequired(
+                    projects, 
+                    pathResolver, 
+                    referenceContext);
+
+                if (restoreRequired)
                 {
                     // The project.json file does not match the lock file
                     return true;

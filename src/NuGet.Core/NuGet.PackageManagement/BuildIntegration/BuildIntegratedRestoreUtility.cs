@@ -94,7 +94,7 @@ namespace NuGet.PackageManagement
             using (var request = new RestoreRequest(packageSpec, sources, effectiveGlobalPackagesFolder))
             {
                 request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
-                request.LockFileVersion = LockFileVersionUtility.GetVersion();
+                request.LockFileVersion = await GetLockFileVersion(project, context);
 
                 if (cacheContextModifier != null)
                 {
@@ -269,9 +269,10 @@ namespace NuGet.PackageManagement
         /// If a full restore is required this will return false.
         /// </summary>
         /// <remarks>Floating versions and project.json files with supports require a full restore.</remarks>
-        public static bool IsRestoreRequired(
+        public static async Task<bool> IsRestoreRequired(
             IReadOnlyList<BuildIntegratedNuGetProject> projects,
-            VersionFolderPathResolver pathResolver)
+            VersionFolderPathResolver pathResolver,
+            BuildIntegratedProjectReferenceContext referenceContext)
         {
             var hashesChecked = new HashSet<string>();
 
@@ -312,7 +313,9 @@ namespace NuGet.PackageManagement
                 var lockFileFormat = new LockFileFormat();
                 var lockFile = lockFileFormat.Read(lockFilePath);
 
-                if (!lockFile.IsValidForPackageSpec(packageSpec))
+                var lockFileVersion = await GetLockFileVersion(project, referenceContext);
+
+                if (!lockFile.IsValidForPackageSpec(packageSpec, lockFileVersion))
                 {
                     // The project.json file has been changed and the lock file needs to be updated.
                     return true;
@@ -424,5 +427,55 @@ namespace NuGet.PackageManagement
 
             return lockFile;
         }
+
+        /// <summary>
+        /// If the project is non-xproj and has no xproj references it may fallback to v1.
+        /// </summary>
+        public static async Task<int> GetLockFileVersion(
+            NuGetProject project,
+            BuildIntegratedProjectReferenceContext referenceContext)
+        {
+            var lockFileVersion = LockFileFormat.Version;
+
+            var buildProject = project as BuildIntegratedNuGetProject;
+
+            if (buildProject != null)
+            {
+                var references = await buildProject.GetProjectReferenceClosureAsync(referenceContext);
+
+                if (references.Count > 0 
+                    && !references.Any(reference =>
+                    reference.MSBuildProjectPath?.EndsWith(XProjUtility.XProjExtension) == true))
+                {
+                    // This is allowed to downgrade to v1
+                    // If using the older version of MSBuild and p2ps are added to the lock file
+                    // then this will break.
+                    lockFileVersion = 1;
+                }
+            }
+
+            // Override the lock file version using the env variable
+            if (_lockFileVersion == -1)
+            {
+                _lockFileVersion = 0;
+
+                int envValue;
+                if (Int32.TryParse(Environment.GetEnvironmentVariable("NUGET_LOCKFILE_VERSION"), out envValue))
+                {
+                    _lockFileVersion = envValue;
+                }
+            }
+
+            if (_lockFileVersion > 0)
+            {
+                lockFileVersion = _lockFileVersion;
+            }
+
+            return lockFileVersion;
+        }
+
+        // -1 unchecked
+        // 0 checked but not set
+        private static int _lockFileVersion = -1;
     }
 }

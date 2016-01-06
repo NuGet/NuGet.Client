@@ -102,6 +102,7 @@ namespace NuGet.ProjectModel.Test
   ""targets"": {
                 "".NETPlatform,Version=v5.0"": {
                     ""System.Runtime/4.0.20-beta-22927"": {
+                        ""type"": ""package"",
                         ""dependencies"": {
                             ""Frob"": ""[4.0.20, )""
                         },
@@ -139,7 +140,8 @@ namespace NuGet.ProjectModel.Test
             var targetLib = new LockFileTargetLibrary()
             {
                 Name = "System.Runtime",
-                Version = NuGetVersion.Parse("4.0.20-beta-22927")
+                Version = NuGetVersion.Parse("4.0.20-beta-22927"),
+                Type = LibraryTypes.Package
             };
             targetLib.Dependencies.Add(new NuGet.Packaging.Core.PackageDependency("Frob",
                 new VersionRange(NuGetVersion.Parse("4.0.20"))));

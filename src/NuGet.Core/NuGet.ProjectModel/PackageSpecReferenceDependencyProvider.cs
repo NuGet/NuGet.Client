@@ -280,9 +280,16 @@ namespace NuGet.ProjectModel
                 {
                     var tfmFolder = targetFrameworkInfo.FrameworkName.GetShortFolderName();
 
+                    // Projects under solution folders will have names such as src\\MyProject
+                    // For the purpose of finding the output assembly just take the last part of the name
+                    var projectName = packageSpec.Name.Split(
+                        new char[] { '/', '\\' },
+                        StringSplitOptions.RemoveEmptyEntries)
+                        .Last();
+
                     // Currently the assembly name cannot be changed for xproj, we can construct the path to where
                     // the output should be.
-                    var asset = $"{tfmFolder}/{packageSpec.Name}.dll";
+                    var asset = $"{tfmFolder}/{projectName}.dll";
                     library[KnownLibraryProperties.CompileAsset] = asset;
                     library[KnownLibraryProperties.RuntimeAsset] = asset;
                 }

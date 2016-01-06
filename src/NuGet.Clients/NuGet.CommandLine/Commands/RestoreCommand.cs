@@ -243,8 +243,6 @@ namespace NuGet.CommandLine
                     repositories,
                     packagesDirectory: null);
 
-                request.LockFileVersion = LockFileVersionUtility.GetVersion();
-
                 request.PackagesDirectory = packagesDir;
 
                 if (DisableParallelProcessing)
@@ -269,6 +267,18 @@ namespace NuGet.CommandLine
                 // Find all external references
                 var childReferences = projectReferences.GetReferences(inputPath);
                 request.ExternalProjects.AddRange(childReferences);
+
+                // Determine which lock file version to use
+                request.LockFileVersion = LockFileFormat.Version;
+
+                if (childReferences.Count > 0
+                    && inputFileName?.EndsWith(XProjUtility.XProjExtension) == false
+                    && !childReferences.Any(child => 
+                    child.MSBuildProjectPath?.EndsWith(XProjUtility.XProjExtension) == true))
+                {
+                    // Fallback to v1 for non-xprojs with p2ps
+                    request.LockFileVersion = 1;
+                }
 
                 // Check if we can restore based on the nuget.config settings
                 CheckRequireConsent();

@@ -117,8 +117,10 @@ namespace NuGet.Test
                     writer.Write(json.ToString());
                 }
 
+                var context = new BuildIntegratedProjectReferenceContext();
+
                 // Act
-                var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver);
+                var b = await BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver, context);
 
                 // Assert
                 Assert.True(b);
@@ -176,8 +178,10 @@ namespace NuGet.Test
                     writer.Write("ANAWESOMELYWRONGHASH!!!");
                 }
 
+                var context = new BuildIntegratedProjectReferenceContext();
+
                 // Act
-                var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver);
+                var b = await BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver, context);
 
                 // Assert
                 Assert.True(b);
@@ -230,10 +234,12 @@ namespace NuGet.Test
 
                 var pathToDelete = resolver.GetInstallPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
 
+                var context = new BuildIntegratedProjectReferenceContext();
+
                 // Act
                 TestFileSystemUtility.DeleteRandomTestFolder(pathToDelete);
 
-                var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver);
+                var b = await BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver, context);
 
                 // Assert
                 Assert.True(b);
@@ -287,15 +293,17 @@ namespace NuGet.Test
 
                 var resolver = new VersionFolderPathResolver(effectiveGlobalPackagesFolder);
 
+                var context = new BuildIntegratedProjectReferenceContext();
+
                 // Act
-                var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver);
+                var b = await BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver, context);
 
                 // Assert
                 Assert.True(b);
             }
         }
 
-        [Fact(Skip ="Disabled due to lock file version conflicts, renable this before update2")]
+        [Fact]
         public async Task BuildIntegratedRestoreUtility_IsRestoreRequiredWithNoChanges()
         {
             // Arrange
@@ -342,8 +350,10 @@ namespace NuGet.Test
 
                 var resolver = new VersionFolderPathResolver(effectiveGlobalPackagesFolder);
 
+                var context = new BuildIntegratedProjectReferenceContext();
+
                 // Act
-                var b = BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver);
+                var b = await BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver, context);
 
                 // Assert
                 Assert.False(b);
