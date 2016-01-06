@@ -270,7 +270,7 @@ namespace NuGet.Packaging.Test
             using (var packageFile = TestPackages.GetLegacyTestPackage())
             {
                 using (var zip = new ZipArchive(File.OpenRead(packageFile)))
-                using (var zipReader = new PackageReader(zip))
+                using (var zipReader = new PackageArchiveReader(zip))
                 {
 
                     var folder = Path.Combine(Path.GetDirectoryName(packageFile), Guid.NewGuid().ToString());

@@ -7,7 +7,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 
-namespace NuGet.Packaging.Core
+namespace NuGet.Packaging
 {
     /// <summary>
     /// Nupkg reading helper methods

@@ -154,7 +154,7 @@ namespace NuGet.PackageManagement
             {
                 downloadResourceResult.PackageStream.Seek(0, SeekOrigin.Begin);
                 var zipArchive = new ZipArchive(downloadResourceResult.PackageStream);
-                var packageReader = new PackageReader(zipArchive);
+                var packageReader = new PackageArchiveReader(zipArchive);
                 downloadResourceResult.PackageStream.Seek(0, SeekOrigin.Begin);
                 downloadResourceResult = new DownloadResourceResult(downloadResourceResult.PackageStream, packageReader);
             }

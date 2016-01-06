@@ -4439,7 +4439,7 @@ namespace NuGet.Test
                 throw new NotImplementedException();
             }
 
-            protected override IEnumerable<string> GetFiles(string folder)
+            public override IEnumerable<string> GetFiles(string folder)
             {
                 throw new NotImplementedException();
             }

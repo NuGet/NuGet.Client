@@ -46,7 +46,7 @@ namespace NuGet.Packaging
             var nupkgStartPosition = packageStream.Position;
             var zipArchive = new ZipArchive(packageStream);
 
-            var packageReader = new PackageReader(zipArchive);
+            var packageReader = new PackageArchiveReader(zipArchive);
 
             var packageIdentityFromNuspec = packageReader.GetIdentity();
 
@@ -75,7 +75,7 @@ namespace NuGet.Packaging
         }
 
         public static async Task<IEnumerable<string>> ExtractPackageAsync(
-            PackageReaderBase packageReader,
+            IPackageCoreReader packageReader,
             Stream packageStream,
             PackagePathResolver packagePathResolver,
             PackageExtractionContext packageExtractionContext,
@@ -106,7 +106,7 @@ namespace NuGet.Packaging
             var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentityFromNuspec));
             var packageDirectory = packageDirectoryInfo.FullName;
 
-            var zipPackageReader = packageReader as PackageReader;
+            var zipPackageReader = packageReader as PackageArchiveReader;
 
             if (zipPackageReader != null)
             {

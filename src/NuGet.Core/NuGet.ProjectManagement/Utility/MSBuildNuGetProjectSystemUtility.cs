@@ -106,7 +106,7 @@ namespace NuGet.ProjectManagement
         }
 
         internal static void AddFiles(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem,
-            PackageReaderBase packageReader,
+            IPackageCoreReader packageReader,
             FrameworkSpecificGroup frameworkSpecificGroup,
             IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers)
         {
@@ -243,7 +243,7 @@ namespace NuGet.ProjectManagement
                                     using (var otherPackageStream = File.OpenRead(otherPackagePath))
                                     {
                                         var otherPackageZipArchive = new ZipArchive(otherPackageStream);
-                                        var otherPackageZipReader = new PackageReader(otherPackageZipArchive);
+                                        var otherPackageZipReader = new PackageArchiveReader(otherPackageZipArchive);
 
                                         // use the project framework to find the group that would have been installed
                                         var mostCompatibleContentFilesGroup = GetMostCompatibleGroup(

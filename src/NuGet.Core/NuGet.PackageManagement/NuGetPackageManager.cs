@@ -2265,7 +2265,7 @@ namespace NuGet.PackageManagement
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
-            Justification = "Disposing the PackageReader will dispose the backing stream that we want to leave open.")]
+            Justification = "Disposing the PackageArchiveReader will dispose the backing stream that we want to leave open.")]
         private static void EnsurePackageCompatibility(DownloadResourceResult downloadResourceResult, PackageIdentity packageIdentity)
         {
             NuGetVersion packageMinClientVersion;
@@ -2278,7 +2278,7 @@ namespace NuGet.PackageManagement
             else
             {
                 var packageZipArchive = new ZipArchive(downloadResourceResult.PackageStream, ZipArchiveMode.Read, leaveOpen: true);
-                var packageReader = new PackageReader(packageZipArchive);
+                var packageReader = new PackageArchiveReader(packageZipArchive);
                 var nuspecReader = new NuspecReader(packageReader.GetNuspec());
                 packageMinClientVersion = nuspecReader.GetMinClientVersion();
                 packageType = nuspecReader.GetPackageType();

@@ -18,7 +18,7 @@ namespace NuGet.Packaging.Test
             using (var packageStream = TestPackages.GetTestPackageWithContentXmlFile())
             using (var root = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                using (var packageReader = new PackageReader(packageStream))
+                using (var packageReader = new PackageArchiveReader(packageStream))
                 {
                     var packagePath = Path.Combine(root, "packageA.2.0.3");
 

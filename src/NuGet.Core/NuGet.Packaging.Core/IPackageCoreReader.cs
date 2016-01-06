@@ -12,7 +12,7 @@ namespace NuGet.Packaging.Core
     /// Basic package reader that provides the identity, min client version, and file access.
     /// </summary>
     /// <remarks>Higher level concepts used for normal development nupkgs should go at a higher level</remarks>
-    public interface IPackageReaderCore : IDisposable
+    public interface IPackageCoreReader : IDisposable
     {
         /// <summary>
         /// Identity of the package
@@ -40,6 +40,13 @@ namespace NuGet.Packaging.Core
         /// All files in the nupkg
         /// </summary>
         IEnumerable<string> GetFiles();
+
+        /// <summary>
+        /// Files in a folder
+        /// </summary>
+        /// <param name="folder">Folder path</param>
+        /// <returns>A collection of files under specified folder</returns>
+        IEnumerable<string> GetFiles(string folder);
 
         /// <summary>
         /// Nuspec stream

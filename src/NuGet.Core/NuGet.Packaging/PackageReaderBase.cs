@@ -8,16 +8,17 @@ using System.IO;
 using System.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.Packaging
 {
     /// <summary>
     /// Abstract class that both the zip and folder package readers extend
-    /// This class contains the path convetions for both zip and folder readers
+    /// This class contains the path conventions for both zip and folder readers
     /// </summary>
-    public abstract class PackageReaderBase : PackageReaderCoreBase
+    public abstract class PackageReaderBase : IPackageCoreReader, IPackageContentReader
     {
-        private NuspecReader _nuspec;
+        private NuspecReader _nuspecReader;
         private readonly IFrameworkNameProvider _frameworkProvider;
         private readonly IFrameworkCompatibilityProvider _compatibilityProvider;
 
@@ -52,6 +53,86 @@ namespace NuGet.Packaging
             _compatibilityProvider = compatibilityProvider;
         }
 
+        #region IPackageCoreReader implementation
+
+        public abstract Stream GetStream(string path);
+
+        public abstract IEnumerable<string> GetFiles();
+
+        public abstract IEnumerable<string> GetFiles(string folder);
+
+        public virtual PackageIdentity GetIdentity()
+        {
+            return NuspecReader.GetIdentity();
+        }
+
+        public virtual NuGetVersion GetMinClientVersion()
+        {
+            return NuspecReader.GetMinClientVersion();
+        }
+
+        public virtual PackageType GetPackageType() => NuspecReader.GetPackageType();
+
+        public virtual Stream GetNuspec()
+        {
+            // This is the default implementation. It is overridden and optimized in
+            // PackageArchiveReader and PackageFolderReader.
+
+            // Find all nuspecs in the root folder.
+            var nuspecPaths = GetFiles().Where(entryPath => IsRoot(entryPath)
+                && entryPath.EndsWith(PackagingCoreConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (nuspecPaths.Count == 0)
+            {
+                throw new PackagingException(Strings.MissingNuspec);
+            }
+            else if (nuspecPaths.Count > 1)
+            {
+                throw new PackagingException(Strings.MultipleNuspecFiles);
+            }
+
+            return GetStream(nuspecPaths.Single());
+        }
+
+        /// <summary>
+        /// Internal low level nuspec reader
+        /// </summary>
+        private NuspecReader NuspecReader
+        {
+            get
+            {
+                if (_nuspecReader == null)
+                {
+                    _nuspecReader = new NuspecReader(GetNuspec());
+                }
+
+                return _nuspecReader;
+            }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            // do nothing here
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private static readonly char[] Slashes = new char[] { '/', '\\' };
+        private static bool IsRoot(string path)
+        {
+            // True if the path contains no directory slashes.
+            return path.IndexOfAny(Slashes) == -1;
+        }
+
+        #endregion
+
+        #region IPackageContentReader implementation
+
         /// <summary>
         /// Frameworks mentioned in the package.
         /// </summary>
@@ -74,7 +155,7 @@ namespace NuGet.Packaging
 
         public IEnumerable<FrameworkSpecificGroup> GetFrameworkItems()
         {
-            return Nuspec.GetFrameworkReferenceGroups();
+            return NuspecReader.GetFrameworkReferenceGroups();
         }
 
         public IEnumerable<FrameworkSpecificGroup> GetBuildItems()
@@ -131,7 +212,7 @@ namespace NuGet.Packaging
 
         public IEnumerable<PackageDependencyGroup> GetPackageDependencies()
         {
-            return Nuspec.GetDependencyGroups();
+            return NuspecReader.GetDependencyGroups();
         }
 
         public IEnumerable<FrameworkSpecificGroup> GetLibItems()
@@ -169,7 +250,7 @@ namespace NuGet.Packaging
 
         public IEnumerable<FrameworkSpecificGroup> GetReferenceItems()
         {
-            var referenceGroups = Nuspec.GetReferenceGroups();
+            var referenceGroups = NuspecReader.GetReferenceGroups();
             var fileGroups = new List<FrameworkSpecificGroup>();
 
             // filter out non reference assemblies
@@ -237,25 +318,7 @@ namespace NuGet.Packaging
 
         public bool GetDevelopmentDependency()
         {
-            return Nuspec.GetDevelopmentDependency();
-        }
-
-        protected override sealed NuspecCoreReaderBase NuspecCore
-        {
-            get { return Nuspec; }
-        }
-
-        protected virtual NuspecReader Nuspec
-        {
-            get
-            {
-                if (_nuspec == null)
-                {
-                    _nuspec = new NuspecReader(GetNuspec());
-                }
-
-                return _nuspec;
-            }
+            return NuspecReader.GetDevelopmentDependency();
         }
 
         protected IEnumerable<FrameworkSpecificGroup> GetFileGroups(string folder)
@@ -289,29 +352,6 @@ namespace NuGet.Packaging
             yield break;
         }
 
-        /// <summary>
-        /// Return property values for the given key. Case-sensitive.
-        /// </summary>
-        private static IEnumerable<string> GetPropertyValues(IEnumerable<KeyValuePair<string, string>> properties, string key)
-        {
-            if (properties == null)
-            {
-                return Enumerable.Empty<string>();
-            }
-
-            if (!String.IsNullOrEmpty(key))
-            {
-                return properties.Select(p => p.Value);
-            }
-
-            return properties.Where(p => StringComparer.Ordinal.Equals(p.Key, key)).Select(p => p.Value);
-        }
-
-        private static string GetFileName(string path)
-        {
-            return path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
-        }
-
         private NuGetFramework GetFrameworkFromPath(string path, bool allowSubFolders = false)
         {
             var framework = NuGetFramework.AnyFramework;
@@ -336,6 +376,6 @@ namespace NuGet.Packaging
             return framework;
         }
 
-        protected abstract IEnumerable<string> GetFiles(string folder);
+        #endregion
     }
 }

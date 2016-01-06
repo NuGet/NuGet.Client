@@ -63,7 +63,7 @@ namespace NuGet.Commands
             {
                 using (var nupkgStream = File.OpenRead(package.ZipPath))
                 {
-                    var packageReader = new PackageReader(nupkgStream);
+                    var packageReader = new PackageArchiveReader(nupkgStream);
                     if (Path.DirectorySeparatorChar != '/')
                     {
                         files = packageReader

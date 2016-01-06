@@ -720,7 +720,7 @@ namespace NuGet.Commands
                             Framework = projectFramework,
 
                             // Find all dependencies which would be in the nuspec
-                            // If there is no 
+                            // If there is no
                             Dependencies = graphItem.Data.Dependencies
                                 .Where(
                                     d => d.LibraryRange.TypeConstraint == null

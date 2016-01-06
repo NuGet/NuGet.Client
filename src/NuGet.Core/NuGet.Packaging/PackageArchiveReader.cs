@@ -14,7 +14,7 @@ namespace NuGet.Packaging
     /// <summary>
     /// Reads a development nupkg
     /// </summary>
-    public class PackageReader : PackageReaderBase
+    public class PackageArchiveReader : PackageReaderBase
     {
         private readonly ZipArchive _zip;
 
@@ -22,7 +22,7 @@ namespace NuGet.Packaging
         /// Nupkg package reader
         /// </summary>
         /// <param name="stream">Nupkg data stream.</param>
-        public PackageReader(Stream stream)
+        public PackageArchiveReader(Stream stream)
             : this(stream, false, DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
         {
         }
@@ -33,7 +33,7 @@ namespace NuGet.Packaging
         /// <param name="stream">Nupkg data stream.</param>
         /// <param name="frameworkProvider">Framework mapping provider for NuGetFramework parsing.</param>
         /// <param name="compatibilityProvider">Framework compatibility provider.</param>
-        public PackageReader(Stream stream, IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
+        public PackageArchiveReader(Stream stream, IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
             : this(stream, false)
         {
         }
@@ -43,7 +43,7 @@ namespace NuGet.Packaging
         /// </summary>
         /// <param name="stream">Nupkg data stream.</param>
         /// <param name="leaveStreamOpen">If true the nupkg stream will not be closed by the zip reader.</param>
-        public PackageReader(Stream stream, bool leaveStreamOpen)
+        public PackageArchiveReader(Stream stream, bool leaveStreamOpen)
             : this(new ZipArchive(stream, ZipArchiveMode.Read, leaveStreamOpen), DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
         {
         }
@@ -55,7 +55,7 @@ namespace NuGet.Packaging
         /// <param name="leaveStreamOpen">leave nupkg stream open</param>
         /// <param name="frameworkProvider">Framework mapping provider for NuGetFramework parsing.</param>
         /// <param name="compatibilityProvider">Framework compatibility provider.</param>
-        public PackageReader(Stream stream, bool leaveStreamOpen, IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
+        public PackageArchiveReader(Stream stream, bool leaveStreamOpen, IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
             : this(new ZipArchive(stream, ZipArchiveMode.Read, leaveStreamOpen), frameworkProvider, compatibilityProvider)
         {
         }
@@ -64,7 +64,7 @@ namespace NuGet.Packaging
         /// Nupkg package reader
         /// </summary>
         /// <param name="zipArchive">ZipArchive containing the nupkg data.</param>
-        public PackageReader(ZipArchive zipArchive)
+        public PackageArchiveReader(ZipArchive zipArchive)
             : this(zipArchive, DefaultFrameworkNameProvider.Instance, DefaultCompatibilityProvider.Instance)
         {
         }
@@ -75,7 +75,7 @@ namespace NuGet.Packaging
         /// <param name="zipArchive">ZipArchive containing the nupkg data.</param>
         /// <param name="frameworkProvider">Framework mapping provider for NuGetFramework parsing.</param>
         /// <param name="compatibilityProvider">Framework compatibility provider.</param>
-        public PackageReader(ZipArchive zipArchive, IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
+        public PackageArchiveReader(ZipArchive zipArchive, IFrameworkNameProvider frameworkProvider, IFrameworkCompatibilityProvider compatibilityProvider)
             : base(frameworkProvider, compatibilityProvider)
         {
             if (zipArchive == null)
@@ -91,7 +91,7 @@ namespace NuGet.Packaging
             return ZipArchiveHelper.GetFiles(_zip);
         }
 
-        protected override IEnumerable<string> GetFiles(string folder)
+        public override IEnumerable<string> GetFiles(string folder)
         {
             return GetFiles().Where(f => f.StartsWith(folder + "/", StringComparison.OrdinalIgnoreCase));
         }

@@ -103,7 +103,7 @@ namespace NuGet.Packaging
             out string language, out string runtimePackageDirectory, out IEnumerable<ZipArchiveEntry> satelliteFiles)
         {
             var zipArchive = new ZipArchive(packageStream);
-            var packageReader = new PackageReader(zipArchive);
+            var packageReader = new PackageArchiveReader(zipArchive);
             var nuspecReader = new NuspecReader(packageReader.GetNuspec());
 
             PackageIdentity runtimePackageIdentity = null;

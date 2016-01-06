@@ -87,7 +87,7 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
 
                 using (var stream = nupkgInfo.OpenRead())
                 {
-                    var packageReader = new PackageReader(stream);
+                    var packageReader = new PackageArchiveReader(stream);
                     NuspecReader reader;
                     try
                     {

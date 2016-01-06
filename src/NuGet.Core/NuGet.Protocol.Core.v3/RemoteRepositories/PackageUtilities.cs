@@ -24,7 +24,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             {
                 try
                 {
-                    using (var reader = new PackageReader(nupkgStream, leaveStreamOpen: true))
+                    using (var reader = new PackageArchiveReader(nupkgStream, leaveStreamOpen: true))
                     {
                         return new NuspecReader(reader.GetNuspec());
                     }
