@@ -157,11 +157,6 @@ namespace NuGetVSExtension
         {
             try
             {
-                // check packages.config or project.json file exist, if not, skip restore
-                if (!GetProjectFolderPath().Where(p => CheckPackagesConfig(p.ProjectPath, p.ProjectName)).Any())
-                {
-                    return;
-                }
                 if (Action == vsBuildAction.vsBuildActionClean)
                 {
                     // Clear the project.json restore cache on clean to ensure that the next build restores again
@@ -623,7 +618,8 @@ namespace NuGetVSExtension
 
                 if (!packages.Any())
                 {
-                    if (!isSolutionAvailable)
+                    if (!isSolutionAvailable 
+                        && GetProjectFolderPath().Any(p => CheckPackagesConfig(p.ProjectPath, p.ProjectName)))
                     {
                         MessageHelper.ShowError(_errorListProvider,
                             TaskErrorCategory.Error,
@@ -847,9 +843,7 @@ namespace NuGetVSExtension
             else
             {
                 return File.Exists(Path.Combine(folderPath, "packages.config"))
-                    || File.Exists(Path.Combine(folderPath, "project.json"))
-                    || File.Exists(Path.Combine(folderPath, "packages." + projectName + ".config"))
-                    || File.Exists(Path.Combine(folderPath, projectName + ".project.json"));
+                    || File.Exists(Path.Combine(folderPath, "packages." + projectName + ".config"));
             }
         }
 
