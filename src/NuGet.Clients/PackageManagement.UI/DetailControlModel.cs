@@ -83,9 +83,9 @@ namespace NuGet.PackageManagement.UI
         {
         }
 
-        public virtual void OnFilterChanged(Filter filter)
+        public virtual void OnFilterChanged(Filter? previousFilter, Filter currentFilter)
         {
-            _filter = filter;
+            _filter = currentFilter;
         }
 
         /// <summary>

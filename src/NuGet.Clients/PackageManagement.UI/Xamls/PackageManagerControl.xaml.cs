@@ -671,14 +671,14 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void Filter_SelectionChanged(object sender, EventArgs e)
+        private void Filter_SelectionChanged(object sender, FilterChangedEventArgs e)
         {
             if (_initialized)
             {
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == Filter.UpdatesAvailable;
                 SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
 
-                _detailModel.OnFilterChanged(_topPanel.Filter);
+                _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
             }
         }
 

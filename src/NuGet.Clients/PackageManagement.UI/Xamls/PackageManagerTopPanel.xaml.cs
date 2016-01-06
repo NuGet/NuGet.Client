@@ -145,14 +145,15 @@ namespace NuGet.PackageManagement.UI
                 _selectedFilter.Selected = false;
             }
 
+            var previousFilter = _selectedFilter;
             _selectedFilter = selectedFilter;
             if (FilterChanged != null)
             {
-                FilterChanged(this, EventArgs.Empty);
+                FilterChanged(this, new FilterChangedEventArgs(previousFilter?.Filter));
             }
         }
 
-        public event EventHandler<EventArgs> FilterChanged;
+        public event EventHandler<FilterChangedEventArgs> FilterChanged;
 
         public event EventHandler<EventArgs> SettingsButtonClicked;
 
@@ -198,6 +199,19 @@ namespace NuGet.PackageManagement.UI
             }
 
             _selectedFilter.Selected = true;
+        }
+    }
+
+    public class FilterChangedEventArgs : EventArgs
+    {
+        public Filter? PreviousFilter
+        {
+            get;
+        }
+
+        public FilterChangedEventArgs(Filter? previousFilter)
+        {
+            PreviousFilter = previousFilter;
         }
     }
 }

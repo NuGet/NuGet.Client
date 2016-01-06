@@ -426,13 +426,14 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public override void OnFilterChanged(Filter filter)
+        public override void OnFilterChanged(Filter? previousFilter, Filter currentFilter)
         {
-            base.OnFilterChanged(filter);
+            base.OnFilterChanged(previousFilter, currentFilter);
 
-            // clear selection if filter is changed to browse or install
-            if (_filter == Filter.All ||
-                _filter == Filter.Installed)
+            // clear selection if filter is changed from Consolidate/UpdateAvailable
+            // to Browse/Install.
+            if ((previousFilter == Filter.Consolidate || previousFilter == Filter.UpdatesAvailable) &&
+                (_filter == Filter.All || _filter == Filter.Installed))
             {
                 foreach (var project in _projects)
                 {
