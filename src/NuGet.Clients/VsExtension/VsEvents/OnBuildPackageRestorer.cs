@@ -820,7 +820,7 @@ namespace NuGetVSExtension
             return 0;
         }
 
-        private IEnumerable<projectInfo> GetProjectFolderPath()
+        private IEnumerable<ProjectInfo> GetProjectFolderPath()
         {
             var projects = _dte.Solution.Projects;
             foreach (var item in projects)
@@ -829,7 +829,7 @@ namespace NuGetVSExtension
 
                 if (project != null)
                 {
-                    yield return new projectInfo(EnvDTEProjectUtility.GetFullPath(project), project.Name);
+                    yield return new ProjectInfo(EnvDTEProjectUtility.GetFullPath(project), project.Name);
                 }
             }
         }
@@ -847,13 +847,13 @@ namespace NuGetVSExtension
             }
         }
 
-        private class projectInfo
+        private class ProjectInfo
         {
             public string ProjectPath { get; }
 
             public string ProjectName { get; }
 
-            public projectInfo(string projectPath, string projectName)
+            public ProjectInfo(string projectPath, string projectName)
             {
                 ProjectPath = projectPath;
                 ProjectName = projectName;
