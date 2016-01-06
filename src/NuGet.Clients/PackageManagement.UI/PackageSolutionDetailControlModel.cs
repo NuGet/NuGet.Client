@@ -97,6 +97,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             UpdateCanInstallAndCanUninstall();
+            AutoSelectProjects();
         }
 
         private NuGetVersion GetInstalledVersion(NuGetProject project, string packageId)
@@ -391,7 +392,6 @@ namespace NuGet.PackageManagement.UI
             }
 
             UpdateInstalledVersions();
-            AutoSelectProjects();
 
             // update alternative package managers
             if (_packageManagerProviders.Any())
