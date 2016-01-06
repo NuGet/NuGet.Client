@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using Newtonsoft.Json.Linq;
+using NuGet.Configuration;
+using NuGet.ProjectModel;
+using NuGet.Test.Utility;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
-using NuGet.Configuration;
-using NuGet.ProjectModel;
-using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Commands.Test
@@ -16,17 +14,11 @@ namespace NuGet.Commands.Test
     public class UWPRestoreTests
     {
         // Verify that a v1 lock file can be parsed without crashing.
-#if !DNXCORE50
         [Fact]
-#else
-        [Fact(Skip="dnxcore50 does not support embedded resources")]
-#endif
         public void UWPRestore_ReadV1LockFile()
         {
-#if !DNXCORE50
             // Arrange
-            var expectedStream = Assembly.GetExecutingAssembly()
-                .GetManifestResourceStream("NuGet.Commands.Test.compiler.resources.uwpBlankAppV1.json");
+            var expectedStream = GetResource("NuGet.Commands.Test.compiler.resources.uwpBlankAppV1.json");
 
             LockFile lockFile = null;
 
@@ -40,22 +32,15 @@ namespace NuGet.Commands.Test
 
             // Assert
             Assert.NotNull(lockFile);
-#endif
         }
 
-#if !DNXCORE50
         [Fact]
-#else
-        [Fact(Skip="dnxcore50 does not support embedded resources")]
-#endif
         public void UWPRestore_ReadLockFileRoundTrip()
         {
-#if !DNXCORE50
             using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                var expectedStream = Assembly.GetExecutingAssembly()
-                .GetManifestResourceStream("NuGet.Commands.Test.compiler.resources.uwpBlankAppV2.json");
+                var expectedStream = GetResource("NuGet.Commands.Test.compiler.resources.uwpBlankAppV2.json");
 
                 JObject json = null;
                 var format = new LockFileFormat();
@@ -76,7 +61,6 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.Equal(json.ToString(), jsonOutput.ToString());
             }
-#endif
         }
 
         [Fact]
@@ -302,9 +286,7 @@ namespace NuGet.Commands.Test
                 var logger = new TestLogger();
                 var command = new RestoreCommand(logger, request);
 
-#if !DNXCORE50
-                var expectedStream = Assembly.GetExecutingAssembly()
-                    .GetManifestResourceStream("NuGet.Commands.Test.compiler.resources.uwpBlankAppV2.json");
+                var expectedStream = GetResource("NuGet.Commands.Test.compiler.resources.uwpBlankAppV2.json");
 
                 JObject expectedJson = null;
 
@@ -312,7 +294,6 @@ namespace NuGet.Commands.Test
                 {
                     expectedJson = JObject.Parse(reader.ReadToEnd());
                 }
-#endif
 
                 // Act
                 var result = await command.ExecuteAsync();
@@ -374,9 +355,7 @@ namespace NuGet.Commands.Test
                 var logger = new TestLogger();
                 var command = new RestoreCommand(logger, request);
 
-#if !DNXCORE50
-                var expectedStream = Assembly.GetExecutingAssembly()
-                    .GetManifestResourceStream("NuGet.Commands.Test.compiler.resources.uwpBlankAppV1.json");
+                var expectedStream = GetResource("NuGet.Commands.Test.compiler.resources.uwpBlankAppV1.json");
 
                 JObject expectedJson = null;
 
@@ -384,7 +363,6 @@ namespace NuGet.Commands.Test
                 {
                     expectedJson = JObject.Parse(reader.ReadToEnd());
                 }
-#endif
 
                 // Act
                 var result = await command.ExecuteAsync();
@@ -399,9 +377,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(118, result.GetAllInstalled().Count);
 
-#if !DNXCORE50
                 Assert.Equal(expectedJson.ToString(), lockFileJson.ToString());
-#endif
             }
         }
 
@@ -511,6 +487,11 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(140, result.GetAllInstalled().Count);
             }
+        }
+
+        private Stream GetResource(string name)
+        {
+            return GetType().GetTypeInfo().Assembly.GetManifestResourceStream(name);
         }
     }
 }

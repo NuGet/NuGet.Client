@@ -124,6 +124,16 @@ Function Install-DNX() {
     & dnvm install 1.0.0-rc1-update1 -runtime CLR -arch x86 -alias default 2>&1
 }
 
+Function Set-DNXCLR() {
+    Trace-Log 'Setting DNX to CLR x86'
+    & dnvm use 1.0.0-rc1-update1 -runtime CLR -arch x86 2>&1
+}
+
+Function Set-DNXCoreCLR() {
+    Trace-Log 'Setting DNX to CoreCLR x86'
+    & dnvm use 1.0.0-rc1-update1 -runtime CoreCLR -arch x86 2>&1
+}
+
 # Enables delay signed build
 Function Enable-DelayedSigning($MSPFXPath, $NuGetPFXPath) {
     if (Test-Path $MSPFXPath) {
@@ -383,8 +393,31 @@ Function Test-CoreProjects {
     $xtests = Find-XProjects $XProjectsLocation
     foreach ($xtestLocation in $xtests) {
         Trace-Log "Running tests in ""$xtestLocation"""
+
         pushd $xtestLocation
+
+        # Run tests for Core CLR
+
+        $xtestProjectJson = Join-Path $xtestLocation "project.json"
+
+        # Check if dnxcore50 exists in the project.json file
+        if (Get-Content $($xtestProjectJson) | Select-String "dnxcore50") {
+            Set-DNXCoreCLR
+            & dnx test 2>&1
+
+            if (-not $?) {
+                Error-Log "Tests failed @""$xtestLocation"" on CoreCLR. Code: $LASTEXITCODE"
+            }
+        }
+
+        # Run tests for CLR
+        Set-DNXCLR
         & dnx test 2>&1
+
+        if (-not $?) {
+            Error-Log "Tests failed @""$xtestLocation"" on CLR. Code: $LASTEXITCODE"
+        }
+
         popd
     }
 }

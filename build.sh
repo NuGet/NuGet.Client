@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+while true ; do
+    case "$1" in
+        -c|--clear-cache) CLEAR_CACHE=1 ; shift ;;
+        --) shift ; break ;;
+        *) shift ; break ;;
+    esac
+done
+
 # install dnx
 if ! type dnvm > /dev/null 2>&1; then
     source ~/.dnx/dnvm/dnvm.sh
@@ -16,6 +24,16 @@ dnvm use 1.0.0-rc1-update1 -runtime coreclr
 
 git submodule init
 git submodule update
+
+# clear caches
+if [ "$CLEAR_CACHE" == "1" ]
+then
+    echo "Clearing the dnu cache folder"
+    rm -r -f ~/.local/share/dnu/cache/*
+
+    echo "Clearing the dnx packages folder"
+    rm -r -f ~/.dnx/packages/*
+fi
 
 # restore packages
 dnu restore

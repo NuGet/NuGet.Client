@@ -129,7 +129,7 @@ namespace NuGet.Commands.Test
                 project2.Create();
 
                 File.WriteAllText(Path.Combine(project1.FullName, "project.json"), projectJson);
-                File.WriteAllText(Path.Combine(project2.FullName, "project.json"), projectJson);
+                File.WriteAllText(Path.Combine(project2.FullName, "project.json"), project2Json);
 
                 File.WriteAllText(Path.Combine(project1.FullName, "project1.csproj"), string.Empty);
                 File.WriteAllText(Path.Combine(project2.FullName, "project2.xproj"), string.Empty);

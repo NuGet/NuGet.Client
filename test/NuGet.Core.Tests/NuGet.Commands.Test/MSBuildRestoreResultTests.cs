@@ -1,6 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using Microsoft.Extensions.PlatformAbstractions;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;
@@ -46,8 +48,16 @@ namespace NuGet.Commands.Test
                     Assert.Single(elements);
 
                     var element = elements.Single();
+                    string expected = null;
 
-                    var expected = Path.Combine(@"$(UserProfile)", ".nuget", "packages") + Path.DirectorySeparatorChar;
+                    if (PlatformServices.Default.Runtime.OperatingSystem.Equals("windows", StringComparison.OrdinalIgnoreCase))
+                    {
+                        expected = Path.Combine(@"$(UserProfile)", ".nuget", "packages") + Path.DirectorySeparatorChar;
+                    }
+                    else
+                    {
+                        expected = Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".nuget", "packages") + Path.DirectorySeparatorChar;
+                    }
                     Assert.Equal(expected, element.Value);
                 }
             }

@@ -316,7 +316,7 @@ namespace NuGet.Configuration.Test
                 var activeReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
                 File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement, activeReplacement));
 
-                Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
+                Settings settings = new Settings(nugetConfigFileFolder, "nuget.Config");
                 PackageSourceProvider before = new PackageSourceProvider(settings);
                 Assert.Equal(NuGetConstants.FeedName, before.ActivePackageSourceName);
 
@@ -438,7 +438,7 @@ namespace NuGet.Configuration.Test
                     await stream.WriteAsync(bytes, 0, configContent.Length);
                 }
 
-                Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
+                Settings settings = new Settings(nugetConfigFileFolder, "nuget.Config");
                 PackageSourceProvider psp = new PackageSourceProvider(settings);
 
                 var sources = psp.LoadPackageSources().ToList();
@@ -908,7 +908,7 @@ namespace NuGet.Configuration.Test
     <add key=""key2"" value=""https://test.org/2"" />
   </packageSources>
 </configuration>";
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1","dir2"), config);
                 config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
@@ -918,7 +918,7 @@ namespace NuGet.Configuration.Test
 </configuration>";
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
 
-                var rootPath = Path.Combine(Path.Combine(mockBaseDirectory, @"dir1\dir2"), Path.GetRandomFileName());
+                var rootPath = Path.Combine(Path.Combine(mockBaseDirectory, "dir1","dir2"), Path.GetRandomFileName());
                 var settings = Settings.LoadDefaultSettings(rootPath,
                     configFileName: null,
                     machineWideSettings: null,
@@ -942,7 +942,7 @@ namespace NuGet.Configuration.Test
     <add key=""test3"" value=""https://test3.net"" />
   </packageSources>
 </configuration>".Replace("\r\n", "\n"),
-                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, @"dir1\dir2\NuGet.config")).Replace("\r\n", "\n"));
+                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "dir1","dir2","NuGet.Config")).Replace("\r\n", "\n"));
 
                 Assert.Equal(
                      @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -952,7 +952,7 @@ namespace NuGet.Configuration.Test
     <clear />
   </packageSources>
 </configuration>".Replace("\r\n", "\n"),
-                  File.ReadAllText(Path.Combine(mockBaseDirectory.Path, @"dir1\NuGet.config")).Replace("\r\n", "\n"));
+                  File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "dir1","NuGet.Config")).Replace("\r\n", "\n"));
             }
         }
 
@@ -1944,11 +1944,11 @@ namespace NuGet.Configuration.Test
         <add key='a' value='http://a' />
     </packageSources>
 </configuration>";
-                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, @"a\b"), configContent2);
-                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, @"a\b\c"), configContent1);
+                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, "a","b"), configContent2);
+                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, "a","b","c"), configContent1);
 
                 var settings = Settings.LoadDefaultSettings(
-                    Path.Combine(mockBaseDirectory, @"a\b\c"),
+                    Path.Combine(mockBaseDirectory, "a", "b", "c"),
                     configFileName: null,
                     machineWideSettings: null,
                     loadAppDataSettings: false);

@@ -115,7 +115,8 @@ namespace NuGet.Commands
             foreach (var macroName in MacroCandidates)
             {
                 string macroValue = Environment.GetEnvironmentVariable(macroName);
-                if (path.StartsWith(macroValue, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(macroValue) 
+                    && path.StartsWith(macroValue, StringComparison.OrdinalIgnoreCase))
                 {
                     path = $"$({macroName})" + $"{path.Substring(macroValue.Length)}";
                 }

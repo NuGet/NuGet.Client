@@ -18,7 +18,7 @@ namespace NuGet.Commands.Test
         private int _value2 = 0;
         private SemaphoreSlim _waitForEverStarted = new SemaphoreSlim(0, 1);
 
-        private const int DefaultTimeOut = 5000;
+        private readonly int DefaultTimeOut = (int)TimeSpan.FromMinutes(5).TotalMilliseconds;
 
         [Fact]
         public async void ConcurrencyUtilityBlocksInProc()

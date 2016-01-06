@@ -69,14 +69,7 @@ namespace NuGet.Common
                     return _basePath;
                 }
 
-                if (RuntimeEnvironmentHelper.IsWindows)
-                {
-                    _basePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), "locks");
-                }
-                else
-                {
-                    _basePath = "/var/NuGet/locks/";
-                }
+                _basePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), "locks");
 
                 Directory.CreateDirectory(_basePath);
 
