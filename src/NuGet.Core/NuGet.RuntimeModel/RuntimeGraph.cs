@@ -168,11 +168,11 @@ namespace NuGet.RuntimeModel
             }
 
             var runtimesEqual = Runtimes
-               .OrderBy(pair => pair.Key)
-               .SequenceEqual(other.Runtimes.OrderBy(pair => pair.Key));
+               .OrderBy(pair => pair.Key, StringComparer.Ordinal)
+               .SequenceEqual(other.Runtimes.OrderBy(pair => pair.Key, StringComparer.Ordinal));
             var supportsEqual = Supports
-               .OrderBy(pair => pair.Key)
-               .SequenceEqual(other.Supports.OrderBy(pair => pair.Key));
+               .OrderBy(pair => pair.Key, StringComparer.Ordinal)
+               .SequenceEqual(other.Supports.OrderBy(pair => pair.Key, StringComparer.Ordinal));
             return runtimesEqual && supportsEqual;
         }
 

@@ -558,7 +558,7 @@ namespace NuGet.Commands
                 string.Empty,
                 project.Dependencies
                     .Select(group => group.LibraryRange.ToLockFileDependencyGroupString())
-                    .OrderBy(group => group)));
+                    .OrderBy(group => group, StringComparer.Ordinal)));
 
             foreach (var frameworkInfo in project.TargetFrameworks
                                             .OrderBy(framework => framework.FrameworkName.ToString(),
@@ -568,11 +568,12 @@ namespace NuGet.Commands
                     frameworkInfo.FrameworkName.ToString(),
                     frameworkInfo.Dependencies
                         .Select(x => x.LibraryRange.ToLockFileDependencyGroupString())
-                        .OrderBy(dependency => dependency)));
+                        .OrderBy(dependency => dependency, StringComparer.Ordinal)));
             }
 
             // Record all libraries used
-            foreach (var item in targetGraphs.SelectMany(g => g.Flattened).Distinct().OrderBy(x => x.Data.Match.Library))
+            foreach (var item in targetGraphs.SelectMany(g => g.Flattened).Distinct()
+                .OrderBy(x => x.Data.Match.Library))
             {
                 var library = item.Data.Match.Library;
 
@@ -850,10 +851,10 @@ namespace NuGet.Commands
             using (var packageReader = new PackageReader(File.OpenRead(package.ZipPath)))
             {
                 // Get package files, excluding directory entries and OPC files
+                // This is sorted before it is written out
                 lockFileLib.Files = packageReader
                     .GetFiles()
                     .Where(file => IsAllowedLibraryFile(file))
-                    .OrderBy(file => file, StringComparer.Ordinal)
                     .ToList();
             }
 

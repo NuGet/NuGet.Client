@@ -34,8 +34,8 @@ namespace NuGet.RuntimeModel
             }
 
             var dependenciesEqual = Dependencies
-                .OrderBy(p => p.Key)
-                .SequenceEqual(other.Dependencies.OrderBy(p => p.Key));
+                .OrderBy(p => p.Key, StringComparer.Ordinal)
+                .SequenceEqual(other.Dependencies.OrderBy(p => p.Key, StringComparer.Ordinal));
 
             return string.Equals(other.Id, Id, StringComparison.Ordinal) &&
                    dependenciesEqual;

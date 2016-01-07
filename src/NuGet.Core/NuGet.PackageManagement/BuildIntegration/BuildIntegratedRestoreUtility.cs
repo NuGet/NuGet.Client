@@ -245,8 +245,8 @@ namespace NuGet.PackageManagement
                     return true;
                 }
 
-                if (!item.Value.ReferenceClosure.OrderBy(s => s)
-                    .SequenceEqual(projectInfo.ReferenceClosure.OrderBy(s => s)))
+                if (!item.Value.ReferenceClosure.OrderBy(s => s, StringComparer.Ordinal)
+                    .SequenceEqual(projectInfo.ReferenceClosure.OrderBy(s => s, StringComparer.Ordinal)))
                 {
                     // The project closure has changed
                     return true;
@@ -407,7 +407,7 @@ namespace NuGet.PackageManagement
             }
 
             // sort parents by name to make this more deterministic during restores
-            return parents.OrderBy(parent => parent.ProjectName).ToList();
+            return parents.OrderBy(parent => parent.ProjectName, StringComparer.Ordinal).ToList();
         }
 
         /// <summary>

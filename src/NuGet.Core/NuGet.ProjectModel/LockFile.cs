@@ -43,12 +43,14 @@ namespace NuGet.ProjectModel
             foreach (var group in ProjectFileDependencyGroups)
             {
                 IOrderedEnumerable<string> actualDependencies;
-                var expectedDependencies = group.Dependencies.OrderBy(x => x);
+                var expectedDependencies = group.Dependencies.OrderBy(x => x, StringComparer.Ordinal);
 
                 // If the framework name is empty, the associated dependencies are shared by all frameworks
                 if (string.IsNullOrEmpty(group.FrameworkName))
                 {
-                    actualDependencies = spec.Dependencies.Select(x => x.LibraryRange.ToLockFileDependencyGroupString()).OrderBy(x => x);
+                    actualDependencies = spec.Dependencies
+                        .Select(x => x.LibraryRange.ToLockFileDependencyGroupString())
+                        .OrderBy(x => x, StringComparer.Ordinal);
                 }
                 else
                 {
@@ -60,7 +62,10 @@ namespace NuGet.ProjectModel
                         return false;
                     }
 
-                    actualDependencies = framework.Dependencies.Select(d => d.LibraryRange.ToLockFileDependencyGroupString()).OrderBy(x => x);
+                    actualDependencies = framework
+                        .Dependencies
+                        .Select(d => d.LibraryRange.ToLockFileDependencyGroupString())
+                        .OrderBy(x => x, StringComparer.Ordinal);
                 }
 
                 if (!actualDependencies.SequenceEqual(expectedDependencies))
@@ -132,7 +137,7 @@ namespace NuGet.ProjectModel
                 combiner.AddObject(item);
             }
 
-            foreach (var item in Targets.OrderBy(target => target.Name))
+            foreach (var item in Targets.OrderBy(target => target.Name, StringComparer.OrdinalIgnoreCase))
             {
                 combiner.AddObject(item);
             }

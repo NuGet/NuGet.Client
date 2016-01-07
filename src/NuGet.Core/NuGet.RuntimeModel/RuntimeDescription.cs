@@ -45,11 +45,11 @@ namespace NuGet.RuntimeModel
             }
 
             var inheritedRuntimesEqual = InheritedRuntimes
-                .OrderBy(s => s)
-                .SequenceEqual(other.InheritedRuntimes.OrderBy(s => s));
+                .OrderBy(s => s, StringComparer.Ordinal)
+                .SequenceEqual(other.InheritedRuntimes.OrderBy(s => s, StringComparer.Ordinal));
             var dependencySetsEqual = RuntimeDependencySets
-                .OrderBy(p => p.Key)
-                .SequenceEqual(other.RuntimeDependencySets.OrderBy(p => p.Key));
+                .OrderBy(p => p.Key, StringComparer.Ordinal)
+                .SequenceEqual(other.RuntimeDependencySets.OrderBy(p => p.Key, StringComparer.Ordinal));
 
             return
                 string.Equals(other.RuntimeIdentifier, RuntimeIdentifier, StringComparison.Ordinal) &&
