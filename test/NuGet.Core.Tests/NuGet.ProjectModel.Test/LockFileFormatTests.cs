@@ -104,7 +104,7 @@ namespace NuGet.ProjectModel.Test
                     ""System.Runtime/4.0.20-beta-22927"": {
                         ""type"": ""package"",
                         ""dependencies"": {
-                            ""Frob"": ""[4.0.20, )""
+                            ""Frob"": ""4.0.20""
                         },
         ""compile"": {
                             ""ref/dotnet/System.Runtime.dll"": {

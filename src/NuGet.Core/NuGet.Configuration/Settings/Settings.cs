@@ -290,7 +290,7 @@ namespace NuGet.Configuration
             }
 
             var settingFiles = new List<Settings>();
-            var basePath = @"NuGet\Config";
+            var basePath = Path.Combine("NuGet","Config");
             var combinedPath = Path.Combine(paths);
 
             while (true)

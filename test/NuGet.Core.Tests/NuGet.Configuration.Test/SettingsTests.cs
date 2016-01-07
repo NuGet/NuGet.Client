@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using Microsoft.Extensions.PlatformAbstractions;
 using Moq;
 using NuGet.Test.Utility;
 using Xunit;
@@ -1207,9 +1208,9 @@ namespace NuGet.Configuration.Test
                     result,
                     new[]
                         {
-                        "key1", String.Format(@"{0}\..\value1", mockBaseDirectory),
-                        "key2", String.Format(@"{0}\a\b\c", mockBaseDirectory),
-                        "key3", String.Format(@"{0}\.\a\b\c", mockBaseDirectory),
+                        "key1", Path.Combine(mockBaseDirectory, @"..\value1"),
+                        "key2", Path.Combine(mockBaseDirectory, @"a\b\c"),
+                        "key3", Path.Combine(mockBaseDirectory, @".\a\b\c"),
                         "key4", @"c:\value2",
                         "key5", @"http://value3",
                         "key6", @"\\a\b\c",
@@ -1232,7 +1233,7 @@ namespace NuGet.Configuration.Test
     <add key=""key4"" value=""value4"" />
   </SectionName>
 </configuration>";
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1","dir2"), config);
                 config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
@@ -1242,7 +1243,7 @@ namespace NuGet.Configuration.Test
 </configuration>";
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
 
-                var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
+                var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, "dir1","dir2"), null, null);
 
                 // Act
                 var result = settings.GetSettingValues("SectionName");
@@ -1505,7 +1506,7 @@ namespace NuGet.Configuration.Test
     <add key=""key4"" value=""value4"" />
   </SectionName>
 </configuration>";
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1","dir2"), config);
                 config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
@@ -1515,7 +1516,7 @@ namespace NuGet.Configuration.Test
 </configuration>";
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
 
-                var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
+                var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, "dir1","dir2"), null, null);
 
                 // Assert
                 Assert.Equal("value4", settings.GetValue("SectionName", "key4"));
@@ -1608,7 +1609,7 @@ namespace NuGet.Configuration.Test
                 string result = settings.GetValue("SectionName", "path-key", isPath: true);
 
                 // Assert
-                Assert.Equal(String.Format(@"{0}\foo\bar", mockBaseDirectory), result);
+                Assert.Equal(Path.Combine(mockBaseDirectory, @"foo\bar"), result);
             }
         }
 
@@ -1633,10 +1634,10 @@ namespace NuGet.Configuration.Test
     <add key=""key2"" value=""value2"" />
   </SectionName>
 </configuration>";
-                ConfigurationFileTestUtility.CreateConfigurationFile("UserDefinedConfigFile.confg", Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
+                ConfigurationFileTestUtility.CreateConfigurationFile("UserDefinedConfigFile.confg", Path.Combine(mockBaseDirectory, "dir1","dir2"), config);
 
                 var settings = Settings.LoadDefaultSettings(
-                    Path.Combine(mockBaseDirectory, @"dir1\dir2"),
+                    Path.Combine(mockBaseDirectory, "dir1","dir2"),
                     "UserDefinedConfigFile.confg",
                     null);
 
@@ -1693,7 +1694,7 @@ namespace NuGet.Configuration.Test
                 string result = settings.GetValue("SectionName", "path-key", isPath: true);
 
                 // Assert
-                Assert.Equal(String.Format(@"{0}Blah", Path.GetPathRoot(mockBaseDirectory)), result);
+                Assert.Equal(Path.Combine(Path.GetPathRoot(mockBaseDirectory), "Blah"), result);
             }
         }
 
@@ -1716,7 +1717,7 @@ namespace NuGet.Configuration.Test
                 string result = settings.GetValue("SectionName", "path-key", isPath: true);
 
                 // Assert
-                Assert.Equal(String.Format(@"{0}\..\Blah", mockBaseDirectory), result);
+                Assert.Equal(Path.Combine(mockBaseDirectory, @"..\Blah"), result);
             }
         }
 
@@ -1786,7 +1787,7 @@ namespace NuGet.Configuration.Test
     <add key=""key2"" value=""value2"" />
   </SectionName>
 </configuration>";
-                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config"), fileContent1);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "NuGet","Config"), fileContent1);
                 var fileContent2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
@@ -1794,7 +1795,7 @@ namespace NuGet.Configuration.Test
     <add key=""key3"" value=""value4"" />
   </SectionName>
 </configuration>";
-                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE"), fileContent2);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "NuGet","Config","IDE"), fileContent2);
                 var fileContent3 = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
@@ -1856,8 +1857,8 @@ namespace NuGet.Configuration.Test
   </SectionName>
 </configuration>".Replace("\r\n", "\n");
 
-                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config"), a1Config);
-                ConfigurationFileTestUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE"), a2Config);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "NuGet","Config"), a1Config);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, "NuGet","Config","IDE"), a2Config);
                 ConfigurationFileTestUtility.CreateConfigurationFile("user.config", mockBaseDirectory, userConfig);
 
                 var m = new Mock<IMachineWideSettings>();
@@ -1883,10 +1884,10 @@ namespace NuGet.Configuration.Test
 </configuration>".Replace("\r\n", "\n");
                 Assert.Equal(result, text.Replace("\r\n", "\n"));
 
-                text = File.ReadAllText(Path.Combine(mockBaseDirectory, @"NuGet\Config\a1.config"));
+                text = File.ReadAllText(Path.Combine(mockBaseDirectory, "NuGet","Config","a1.config"));
                 Assert.Equal(a1Config, text.Replace("\r\n", "\n"));
 
-                text = File.ReadAllText(Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\a2.config"));
+                text = File.ReadAllText(Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","a2.config"));
                 Assert.Equal(a2Config, text.Replace("\r\n", "\n"));
             } }
 
@@ -2022,7 +2023,15 @@ namespace NuGet.Configuration.Test
 #if !DNXCORE50
             var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 #else
-            var userProfile = Environment.GetEnvironmentVariable("UserProfile");
+            string userProfile = null;
+            if (PlatformServices.Default.Runtime.OperatingSystem.Equals("windows", StringComparison.OrdinalIgnoreCase))
+            {
+                userProfile = Environment.GetEnvironmentVariable("UserProfile");
+            }
+            else
+            {
+                userProfile = Environment.GetEnvironmentVariable("HOME");
+            }
 #endif
             var expectedPath = Path.Combine(userProfile, ".nuget", SettingsUtility.DefaultGlobalPackagesFolderPath);
 

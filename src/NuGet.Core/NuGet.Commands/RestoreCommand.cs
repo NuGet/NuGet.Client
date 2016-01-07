@@ -561,7 +561,8 @@ namespace NuGet.Commands
                     .OrderBy(group => group)));
 
             foreach (var frameworkInfo in project.TargetFrameworks
-                                            .OrderBy(framework => framework.FrameworkName.ToString()))
+                                            .OrderBy(framework => framework.FrameworkName.ToString(),
+                                                StringComparer.Ordinal))
             {
                 lockFile.ProjectFileDependencyGroups.Add(new ProjectFileDependencyGroup(
                     frameworkInfo.FrameworkName.ToString(),
@@ -665,8 +666,8 @@ namespace NuGet.Commands
 
             // Add the targets
             foreach (var targetGraph in targetGraphs
-                .OrderBy(graph => graph.Framework.ToString())
-                .ThenBy(graph => graph.RuntimeIdentifier))
+                .OrderBy(graph => graph.Framework.ToString(), StringComparer.Ordinal)
+                .ThenBy(graph => graph.RuntimeIdentifier, StringComparer.Ordinal))
             {
                 var target = new LockFileTarget();
                 target.TargetFramework = targetGraph.Framework;
@@ -843,20 +844,42 @@ namespace NuGet.Commands
             // it has the correct casing that runtime needs during dependency resolution.
             lockFileLib.Name = correctedPackageName ?? package.Id;
             lockFileLib.Version = package.Version;
-            lockFileLib.Type = LibraryTypes.Package; // Right now, lock file libraries are always packages
+            lockFileLib.Type = LibraryTypes.Package;
             lockFileLib.Sha512 = sha512;
 
-            using (var nupkgStream = File.OpenRead(package.ZipPath))
+            using (var packageReader = new PackageReader(File.OpenRead(package.ZipPath)))
             {
-                nupkgStream.Seek(0, SeekOrigin.Begin);
-
-                var packageReader = new PackageReader(nupkgStream);
-
-                // Get package files, excluding directory entries
-                lockFileLib.Files = packageReader.GetFiles().Where(x => !x.EndsWith("/")).ToList();
+                // Get package files, excluding directory entries and OPC files
+                lockFileLib.Files = packageReader
+                    .GetFiles()
+                    .Where(file => IsAllowedLibraryFile(file))
+                    .OrderBy(file => file, StringComparer.Ordinal)
+                    .ToList();
             }
 
             return lockFileLib;
+        }
+
+        /// <summary>
+        /// True if the file should be added to the lock file library
+        /// Fale if it is an OPC file or empty directory
+        /// </summary>
+        private static bool IsAllowedLibraryFile(string path)
+        {
+            switch (path)
+            {
+                case "_rels/.rels":
+                case "[Content_Types].xml":
+                    return false;
+            }
+
+            if (path.EndsWith("/", StringComparison.Ordinal)
+                || path.EndsWith(".psmdcp", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private Task<RestoreTargetGraph> WalkDependenciesAsync(LibraryRange projectRange,
