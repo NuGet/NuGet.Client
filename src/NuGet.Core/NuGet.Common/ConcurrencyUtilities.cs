@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -23,7 +24,7 @@ namespace NuGet.Common
             }
 
             var lockPath = FileLockPath(filePath);
-            var bytes = Encoding.UTF8.GetBytes(filePath);
+            var bytes = Encoding.UTF8.GetBytes($"{ProcessId}{Environment.NewLine}{filePath}{Environment.NewLine}");
 
             while (true)
             {
@@ -69,7 +70,16 @@ namespace NuGet.Common
                     return _basePath;
                 }
 
-                _basePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), "locks");
+                _basePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), "lock");
+
+                //if (RuntimeEnvironmentHelper.IsWindows || !Directory.Exists("/var/lock/"))
+                //{
+                //    _basePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), "lock");
+                //}
+                //else
+                //{
+                //    _basePath = "/var/lock/nuget/";
+                //}
 
                 Directory.CreateDirectory(_basePath);
 
@@ -123,6 +133,20 @@ namespace NuGet.Common
             else
             {
                 return (char)(input + 0x30);
+            }
+        }
+
+        private static int _processId = -1;
+        private static int ProcessId
+        {
+            get
+            {
+                if (_processId < 0)
+                {
+                    _processId = Process.GetCurrentProcess().Id;
+                }
+
+                return _processId;
             }
         }
     }
