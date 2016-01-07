@@ -103,7 +103,7 @@ namespace NuGet.Protocol.Core.v3
                 extractNuspecOnly: false,
                 normalizeFileNames: false);
 
-            await NuGetPackageUtils.InstallFromSourceAsync(
+            await PackageExtractor.InstallFromSourceAsync(
                 stream => packageStream.CopyToAsync(stream),
                 versionFolderPathContext,
                 token: token);

@@ -133,7 +133,7 @@ namespace NuGet.CommandLine
             {
                 try
                 {
-                    var packageReader = new PackageReader(packageStream);
+                    var packageReader = new PackageArchiveReader(packageStream);
                     var packageIdentity = packageReader.GetIdentity();
 
                     bool isValidPackage;

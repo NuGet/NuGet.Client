@@ -87,7 +87,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     Path.Combine(_installPath, Id + "." + Version + PackagingCoreConstants.NupkgExtension));
                 if (nupkg.Exists)
                 {
-                    var reader = new PackageReader(nupkg.OpenRead());
+                    var reader = new PackageArchiveReader(nupkg.OpenRead());
                     var referenceItems = reader.GetReferenceItems();
                     var files = NuGetFrameworkUtility.GetNearest<FrameworkSpecificGroup>(referenceItems,
                                                                                          NuGetFramework.AnyFramework);
@@ -101,7 +101,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return result;
         }
 
-        private PackageReader GetPackageReader(string installPath)
+        private PackageReaderBase GetPackageReader(string installPath)
         {
             if (Directory.Exists(_installPath))
             {
@@ -109,7 +109,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         Path.Combine(_installPath, Id + "." + Version + PackagingCoreConstants.NupkgExtension));
                 if (nupkg.Exists)
                 {
-                    return new PackageReader(nupkg.OpenRead());
+                    return new PackageArchiveReader(nupkg.OpenRead());
                 }
             }
 

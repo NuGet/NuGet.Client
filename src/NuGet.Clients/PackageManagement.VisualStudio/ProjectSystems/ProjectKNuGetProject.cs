@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             packageStream.Seek(0, SeekOrigin.Begin);
             var zipArchive = new ZipArchive(packageStream);
-            PackageReader packageReader = new PackageReader(zipArchive);
+            var packageReader = new PackageArchiveReader(zipArchive);
             var packageSupportedFrameworks = packageReader.GetSupportedFrameworks();
             var projectFrameworks = _project.GetSupportedFrameworksAsync(token)
                 .Result
@@ -141,8 +141,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     var fileName = item as string;
                     using (var fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read))
                     {
-                        var zipArchive = new ZipArchive(fileStream);
-                        var packageReader = new PackageReader(zipArchive);
+                        var packageReader = new PackageArchiveReader(fileStream);
                         identity = packageReader.GetIdentity();
                     }
                 }

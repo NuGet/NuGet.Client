@@ -108,7 +108,7 @@ namespace NuGet.ProjectManagement
             }
 
             var packageSaveMode = GetPackageSaveMode(nuGetProjectContext);
-            if (packageSaveMode.HasFlag(PackageSaveModes.Nupkg))
+            if (packageSaveMode.HasFlag(PackageSaveMode.Nupkg))
             {
                 var packageFilePath = GetInstalledPackageFilePath(packageIdentity);
                 if (File.Exists(packageFilePath))
@@ -175,10 +175,8 @@ namespace NuGet.ProjectManagement
                 {
                     var installedSatelliteFilesPair = PackageHelper.GetInstalledSatelliteFiles(
                         packageStream,
-                        packageIdentity,
                         PackagePathResolver,
                         GetPackageSaveMode(nuGetProjectContext));
-
                     var runtimePackageDirectory = installedSatelliteFilesPair.Item1;
                     var installedSatelliteFiles = installedSatelliteFilesPair.Item2;
                     if (!string.IsNullOrEmpty(runtimePackageDirectory))

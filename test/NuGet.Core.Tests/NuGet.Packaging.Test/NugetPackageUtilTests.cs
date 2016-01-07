@@ -38,7 +38,7 @@ namespace Commands.Test
                 // Act
                 using (var stream = package.File.OpenRead())
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
+                    await PackageExtractor.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
                                                                    versionFolderPathContext,
                                                                    token);
                 }
@@ -81,7 +81,7 @@ namespace Commands.Test
                 // Act
                 using (var stream = package.File.OpenRead())
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
+                    await PackageExtractor.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
                                                                    versionFolderPathContext,
                                                                    token);
                 }
@@ -136,7 +136,7 @@ namespace Commands.Test
                 // Act
                 using (var stream = package.File.OpenRead())
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
+                    await PackageExtractor.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
                                                                    versionFolderPathContext,
                                                                    token);
                 }
@@ -190,7 +190,7 @@ namespace Commands.Test
                 // Act
                 using (var stream = package.File.OpenRead())
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
+                    await PackageExtractor.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
                                                                    versionFolderPathContext,
                                                                    token);
                 }
@@ -238,7 +238,7 @@ namespace Commands.Test
                 using (var stream = package.File.OpenRead())
                 {
                     await Assert.ThrowsAnyAsync<CorruptionException>(async () =>
-                        await NuGetPackageUtils.InstallFromSourceAsync(
+                        await PackageExtractor.InstallFromSourceAsync(
                            async (d) => await new CorruptStreamWrapper(stream).CopyToAsync(d),
                            versionFolderPathContext,
                            token));
@@ -250,7 +250,7 @@ namespace Commands.Test
 
                 using (var stream = package.File.OpenRead())
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
+                    await PackageExtractor.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
                                                                    versionFolderPathContext,
                                                                    token);
                 }
@@ -300,7 +300,7 @@ namespace Commands.Test
                     var fileLocker = new FileLockedStreamWrapper(stream, filePathToLock);
 
                     await Assert.ThrowsAnyAsync<IOException>(async () =>
-                        await NuGetPackageUtils.InstallFromSourceAsync(
+                        await PackageExtractor.InstallFromSourceAsync(
                            async (d) => await fileLocker.CopyToAsync(d),
                            versionFolderPathContext,
                            token));
@@ -317,7 +317,7 @@ namespace Commands.Test
 
                 using (var stream = package.File.OpenRead())
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
+                    await PackageExtractor.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
                                                                    versionFolderPathContext,
                                                                    token);
                 }
@@ -358,7 +358,7 @@ namespace Commands.Test
                 // Act
                 using (var packageFileStream = File.OpenRead(packageFileInfo))
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(
+                    await PackageExtractor.InstallFromSourceAsync(
                         stream => packageFileStream.CopyToAsync(stream),
                         versionFolderPathContext,
                         CancellationToken.None);
@@ -398,7 +398,7 @@ namespace Commands.Test
                 // Act
                 using (var packageFileStream = File.OpenRead(packageFileInfo))
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(
+                    await PackageExtractor.InstallFromSourceAsync(
                         stream => packageFileStream.CopyToAsync(stream),
                         versionFolderPathContext,
                         CancellationToken.None);
@@ -436,7 +436,7 @@ namespace Commands.Test
                 // Act
                 using (var packageFileStream = File.OpenRead(packageFile))
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(
+                    await PackageExtractor.InstallFromSourceAsync(
                         stream => packageFileStream.CopyToAsync(stream),
                         versionFolderPathContext,
                         CancellationToken.None);
@@ -483,7 +483,7 @@ namespace Commands.Test
                 // Act
                 using (var packageFileStream = packageFileInfo.OpenRead())
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(
+                    await PackageExtractor.InstallFromSourceAsync(
                         stream => packageFileStream.CopyToAsync(stream),
                         versionFolderPathContext,
                         CancellationToken.None);
@@ -538,7 +538,7 @@ namespace Commands.Test
                 // Act
                 using (var packageFileStream = packageFileInfo.OpenRead())
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(
+                    await PackageExtractor.InstallFromSourceAsync(
                         stream => packageFileStream.CopyToAsync(stream),
                         versionFolderPathContext,
                         CancellationToken.None);
@@ -591,7 +591,7 @@ namespace Commands.Test
                 // Act
                 using (var packageFileStream = packageFileInfo.OpenRead())
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(
+                    await PackageExtractor.InstallFromSourceAsync(
                         stream => packageFileStream.CopyToAsync(stream),
                         versionFolderPathContext,
                         CancellationToken.None);

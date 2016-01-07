@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using ZipFilePair = System.Tuple<string, System.IO.Compression.ZipArchiveEntry>;
+using NuGet.Packaging;
 
 namespace NuGet.ProjectManagement
 {
@@ -246,22 +246,16 @@ namespace NuGet.ProjectManagement
         {
             var filesToDelete = new List<string>();
 
-            foreach (var packageFile in packageFiles)
+            foreach (var packageFile in packageFiles.Where(e => e.IsInstalled()))
             {
-                if (packageFile != null
-                    && packageFile.Item1 != null
-                    && packageFile.Item2 != null
-                    && File.Exists(packageFile.Item1))
+                if (ContentEquals(packageFile.FileFullPath, packageFile.PackageEntry.Open))
                 {
-                    if (ContentEquals(packageFile.Item1, packageFile.Item2.Open))
-                    {
-                        MakeWritable(packageFile.Item1);
-                        filesToDelete.Add(packageFile.Item1);
-                    }
-                    else
-                    {
-                        nuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_FileModified, packageFile.Item1);
-                    }
+                    MakeWritable(packageFile.FileFullPath);
+                    filesToDelete.Add(packageFile.FileFullPath);
+                }
+                else
+                {
+                    nuGetProjectContext.Log(MessageLevel.Warning, Strings.Warning_FileModified, packageFile.FileFullPath);
                 }
             }
 

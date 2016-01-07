@@ -1142,7 +1142,7 @@ namespace NuGet.Commands
                 extractNuspecOnly: false,
                 normalizeFileNames: false);
 
-            await NuGetPackageUtils.InstallFromSourceAsync(
+            await PackageExtractor.InstallFromSourceAsync(
                 stream => installItem.Provider.CopyToAsync(installItem.Library, stream, token),
                 versionFolderPathContext,
                 token);

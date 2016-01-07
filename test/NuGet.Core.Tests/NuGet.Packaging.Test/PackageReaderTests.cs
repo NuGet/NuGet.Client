@@ -74,20 +74,12 @@ namespace NuGet.Packaging.Test
                 }
 
                 var reader = new PackageArchiveReader(stream);
-                var threwPackagingException = false;
 
                 // Act
-                try
-                {
-                    var nuspec = reader.GetNuspec();
-                }
-                catch (PackagingException)
-                {
-                    threwPackagingException = true;
-                }
+                var exception = Assert.Throws<PackagingException>(() => reader.GetNuspec());
 
                 // Assert
-                Assert.True(threwPackagingException);
+                Assert.Equal("Nuspec file does not exist in package.", exception.Message);
             }
         }
 
@@ -105,20 +97,12 @@ namespace NuGet.Packaging.Test
                 }
 
                 var reader = new PackageArchiveReader(stream);
-                var threwPackagingException = false;
 
                 // Act
-                try
-                {
-                    var nuspec = reader.GetNuspec();
-                }
-                catch (PackagingException)
-                {
-                    threwPackagingException = true;
-                }
+                var exception = Assert.Throws<PackagingException>(() => reader.GetNuspec());
 
                 // Assert
-                Assert.True(threwPackagingException);
+                Assert.Equal("Package contains multiple nuspec files.", exception.Message);
             }
         }
 
@@ -134,20 +118,12 @@ namespace NuGet.Packaging.Test
                 }
 
                 var reader = new PackageArchiveReader(stream);
-                var threwPackagingException = false;
 
                 // Act
-                try
-                {
-                    var nuspec = reader.GetNuspec();
-                }
-                catch (PackagingException)
-                {
-                    threwPackagingException = true;
-                }
+                var exception = Assert.Throws<PackagingException>(() => reader.GetNuspec());
 
                 // Assert
-                Assert.True(threwPackagingException);
+                Assert.Equal("Nuspec file does not exist in package.", exception.Message);
             }
         }
 
@@ -168,20 +144,12 @@ namespace NuGet.Packaging.Test
                 }
 
                 var reader = new PackageArchiveReader(stream);
-                var threwPackagingException = false;
 
                 // Act
-                try
-                {
-                    var nuspec = reader.GetNuspec();
-                }
-                catch (PackagingException)
-                {
-                    threwPackagingException = true;
-                }
+                var exception = Assert.Throws<PackagingException>(() => reader.GetNuspec());
 
                 // Assert
-                Assert.True(threwPackagingException);
+                Assert.Equal("Nuspec file does not exist in package.", exception.Message);
             }
         }
 

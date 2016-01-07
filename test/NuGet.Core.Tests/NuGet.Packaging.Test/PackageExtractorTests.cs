@@ -30,8 +30,8 @@ namespace NuGet.Packaging.Test
                                                                      CancellationToken.None);
 
                     // Assert
-                    Assert.False(files.Contains(Path.Combine(packagePath + "[Content_Types].xml")));
-                    Assert.True(files.Contains(Path.Combine(packagePath, "content/[Content_Types].xml")));
+                    Assert.DoesNotContain(Path.Combine(packagePath + "[Content_Types].xml"), files);
+                    Assert.Contains(Path.Combine(packagePath, "content\\[Content_Types].xml"), files);
                 }
             }
         }

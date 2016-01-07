@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
-using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging
 {
@@ -18,7 +17,7 @@ namespace NuGet.Packaging
     /// </summary>
     public class PackageArchiveReader : PackageReaderBase
     {
-        private readonly ZipArchive _zip;
+        private readonly ZipArchive _zipArchive;
 
         /// <summary>
         /// Nupkg package reader
@@ -85,12 +84,12 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException(nameof(zipArchive));
             }
 
-            _zip = zipArchive;
+            _zipArchive = zipArchive;
         }
 
         public override IEnumerable<string> GetFiles()
         {
-            return ZipArchiveHelper.GetFiles(_zip);
+            return _zipArchive.GetFiles();
         }
 
         public override IEnumerable<string> GetFiles(string folder)
@@ -101,10 +100,10 @@ namespace NuGet.Packaging
         public override Stream GetStream(string path)
         {
             Stream stream = null;
-            path = Uri.EscapeDataString(path.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-            if (!String.IsNullOrEmpty(path))
+            path = path.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            if (!string.IsNullOrEmpty(path))
             {
-                stream = ZipArchiveHelper.OpenFile(_zip, path);
+                stream = _zipArchive.OpenFile(path);
             }
 
             return stream;
@@ -112,33 +111,7 @@ namespace NuGet.Packaging
 
         public override Stream GetNuspec()
         {
-            // Find all nuspec files in the root folder of the zip.
-            var nuspecEntries = ZipArchive.Entries.Where(entry =>
-                entry.Name.Length == entry.FullName.Length
-                    && entry.Name.EndsWith(PackagingCoreConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase))
-                .ToArray();
-
-            if (nuspecEntries.Length == 0)
-            {
-                throw new PackagingException(Strings.MissingNuspec);
-            }
-            else if (nuspecEntries.Length > 1)
-            {
-                throw new PackagingException(Strings.MultipleNuspecFiles);
-            }
-
-            return nuspecEntries[0].Open();
-        }
-
-        /// <summary>
-        /// Underlying zip archive
-        /// </summary>
-        internal ZipArchive ZipArchive
-        {
-            get
-            {
-                return _zip;
-            }
+            return GetStream(this.GetNuspecFile());
         }
 
         protected override void Dispose(bool disposing)
@@ -147,7 +120,7 @@ namespace NuGet.Packaging
 
             if (disposing)
             {
-                _zip.Dispose();
+                _zipArchive.Dispose();
             }
         }
 
@@ -159,12 +132,53 @@ namespace NuGet.Packaging
             {
                 token.ThrowIfCancellationRequested();
 
-                var entry = ZipArchiveHelper.GetEntry(_zip, packageFile);
-                var targetPath = Path.Combine(destination, packageFile);
-                filesCopied.Add(await PackageHelper.CreatePackageFileAsync(targetPath, entry, token));
+                var entry = GetEntry(packageFile);
+
+                var packageFileName = entry.FullName;
+                // An entry in a ZipArchive could start with a '/' based on how it is zipped
+                // Remove it if present
+                if (packageFileName.StartsWith("/", StringComparison.Ordinal))
+                {
+                    packageFileName = packageFileName.Substring(1);
+                }
+
+                // ZipArchive always has forward slashes in them. By replacing them with DirectorySeparatorChar;
+                // in windows, we get the windows-style path
+                packageFileName = Uri.UnescapeDataString(packageFileName.Replace('/', Path.DirectorySeparatorChar));
+
+                var targetFilePath = Path.Combine(destination, packageFileName);
+                if (!targetFilePath.StartsWith(destination, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var copiedFile = await entry.SaveAsFileAsync(targetFilePath, token);
+                filesCopied.Add(copiedFile);
             }
 
             return filesCopied;
+        }
+
+        public async Task<string> ExtractFileAsync(string packageFile, string targetFilePath, CancellationToken token)
+        {
+            var entry = GetEntry(packageFile);
+            var copiedFile = await entry.SaveAsFileAsync(targetFilePath, token);
+            return copiedFile;
+        }
+
+        private ZipArchiveEntry GetEntry(string packageFile)
+        {
+            return _zipArchive.LookupEntry(packageFile);
+        }
+
+        public IEnumerable<ZipFilePair> EnumeratePackageEntries(IEnumerable<string> packageFiles, string packageDirectory)
+        {
+            foreach (var packageFile in packageFiles)
+            {
+                var packageFileFullPath = Path.Combine(packageDirectory, packageFile);
+                var entry = GetEntry(packageFile);
+                yield return new ZipFilePair(packageFileFullPath, entry);
+            }
         }
     }
 }
