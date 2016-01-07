@@ -53,7 +53,17 @@ namespace NuGet.Common
             {
                 try
                 {
-                    return System.Console.WindowWidth;
+                    var width = System.Console.WindowWidth;
+                    if (width > 0)
+                    {
+                        return width;
+                    }
+                    else
+                    {
+                        // This happens when redirecting output to a file, on
+                        // Linux and OS X (running with Mono).
+                        return 80;
+                    }
                 }
                 catch (IOException)
                 {
