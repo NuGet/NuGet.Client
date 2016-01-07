@@ -86,6 +86,7 @@ namespace NuGet.ProjectManagement
             // 2. Call PackageExtractor to extract the package into the root directory of this FileSystemNuGetProject
             downloadResourceResult.PackageStream.Seek(0, SeekOrigin.Begin);
             var addedPackageFilesList = new List<string>();
+
             if (downloadResourceResult.PackageReader != null)
             {
                 addedPackageFilesList.AddRange(
@@ -93,7 +94,7 @@ namespace NuGet.ProjectManagement
                         downloadResourceResult.PackageReader,
                         downloadResourceResult.PackageStream,
                         PackagePathResolver,
-                        nuGetProjectContext.PackageExtractionContext,
+                        nuGetProjectContext.PackageExtractionContext ?? new PackageExtractionContext(),
                         token));
             }
             else
@@ -102,7 +103,7 @@ namespace NuGet.ProjectManagement
                     await PackageExtractor.ExtractPackageAsync(
                         downloadResourceResult.PackageStream,
                         PackagePathResolver,
-                        nuGetProjectContext.PackageExtractionContext,
+                        nuGetProjectContext.PackageExtractionContext ?? new PackageExtractionContext(),
                         token));
             }
 

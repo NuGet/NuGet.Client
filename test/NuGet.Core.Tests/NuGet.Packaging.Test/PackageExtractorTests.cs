@@ -26,8 +26,8 @@ namespace NuGet.Packaging.Test
                     var files = await PackageExtractor.ExtractPackageAsync(packageReader,
                                                                      packageStream,
                                                                      new PackagePathResolver(root),
-                                                                     packageExtractionContext: null,
-                                                                     token: CancellationToken.None);
+                                                                     new PackageExtractionContext(),
+                                                                     CancellationToken.None);
 
                     // Assert
                     Assert.False(files.Contains(Path.Combine(packagePath + "[Content_Types].xml")));
@@ -57,8 +57,8 @@ namespace NuGet.Packaging.Test
                         var files = await PackageExtractor.ExtractPackageAsync(folderReader,
                                                                          stream,
                                                                          new PackagePathResolver(root),
-                                                                         packageExtractionContext: null,
-                                                                         token: CancellationToken.None);
+                                                                         new PackageExtractionContext(),
+                                                                         CancellationToken.None);
 
                         // Assert
                         Assert.Equal(1, files.Where(p => p.EndsWith(".nupkg")).Count());
@@ -172,16 +172,18 @@ namespace NuGet.Packaging.Test
                 using (var packageStream = File.OpenRead(packageFileInfo.FullName))
                 using (var satellitePackageStream = File.OpenRead(satellitePackageInfo.FullName))
                 {
+                    var packageExtractionContext = new PackageExtractionContext();
+
                     // Act
                     var packageFiles = await PackageExtractor.ExtractPackageAsync(packageStream,
                                                                      new PackagePathResolver(root),
-                                                                     packageExtractionContext: null,
-                                                                     token: CancellationToken.None);
+                                                                     packageExtractionContext,
+                                                                     CancellationToken.None);
 
                     var satellitePackageFiles = await PackageExtractor.ExtractPackageAsync(satellitePackageStream,
                                                                      new PackagePathResolver(root),
-                                                                     packageExtractionContext: null,
-                                                                     token: CancellationToken.None);
+                                                                     packageExtractionContext,
+                                                                     CancellationToken.None);
 
                     var pathToAFrDllInSatellitePackage
                         = Path.Combine(root, "A.fr.2.0.3", "lib", "net45", "fr", "A.resources.dll");
