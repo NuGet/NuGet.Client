@@ -82,6 +82,7 @@
     <Compile Include="Common\IConsole.cs" />
     <Compile Include="Common\IMSBuildProjectSystem.cs" />
     <Compile Include="Common\LocalizedResourceManager.cs" />
+    <Compile Include="Common\LocalResourceUtils.cs" />
     <Compile Include="Common\MSBuildProjectSystem.cs" />
     <Compile Include="Common\MSBuildUser.cs" />
     <Compile Include="Common\PackageExtractor.cs" />
