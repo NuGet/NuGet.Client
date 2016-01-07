@@ -814,15 +814,6 @@ namespace NuGet.Commands
                 }
             }
 
-            // For libraries types convert the first letter to uppercase
-            foreach (var library in lockFile.Libraries)
-            {
-                if (!string.IsNullOrEmpty(library.Type))
-                {
-                    library.Type = library.Type.First().ToString().ToUpper() + library.Type.Substring(1);
-                }
-            }
-
             foreach (var library in lockFile.Targets.SelectMany(target => target.Libraries))
             {
                 // Null out all target types, these did not exist in v1

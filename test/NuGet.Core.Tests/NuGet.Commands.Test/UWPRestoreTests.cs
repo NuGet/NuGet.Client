@@ -18,7 +18,7 @@ namespace NuGet.Commands.Test
         public void UWPRestore_ReadV1LockFile()
         {
             // Arrange
-            var expectedStream = GetResource("NuGet.Commands.Test.compiler.resources.uwpBlankAppV1.json");
+            var expectedStream = GetResource("NuGet.Commands.Test.compiler.resources.uwpBlankAppV1Original.json");
 
             LockFile lockFile = null;
 
@@ -308,9 +308,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(118, result.GetAllInstalled().Count);
 
-#if !DNXCORE50
                 Assert.Equal(expectedJson.ToString(), lockFileJson.ToString());
-#endif
             }
         }
 

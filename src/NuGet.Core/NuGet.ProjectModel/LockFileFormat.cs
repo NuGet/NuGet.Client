@@ -391,7 +391,7 @@ namespace NuGet.ProjectModel
         {
             return new JProperty(
                 item.Id,
-                WriteString(item.VersionRange?.ToLegacyString()));
+                WriteString(item.VersionRange?.ToLegacyShortString()));
         }
 
         private static LockFileItem ReadFileItem(string property, JToken json)
