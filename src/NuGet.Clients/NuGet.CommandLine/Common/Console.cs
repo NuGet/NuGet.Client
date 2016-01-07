@@ -57,7 +57,9 @@ namespace NuGet.Common
                     if (width > 0)
                     {
                         return width;
-                    } else {
+                    }
+                    else
+                    {
                         return int.MaxValue;
                     }
                 }
