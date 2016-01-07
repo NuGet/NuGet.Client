@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using NuGet.Versioning;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace NuGet.Packaging.Core
 {
@@ -52,5 +54,7 @@ namespace NuGet.Packaging.Core
         /// Nuspec stream
         /// </summary>
         Stream GetNuspec();
+
+        Task<IEnumerable<string>> CopyFilesAsync(string destination, IEnumerable<string> packageFiles, CancellationToken token);
     }
 }

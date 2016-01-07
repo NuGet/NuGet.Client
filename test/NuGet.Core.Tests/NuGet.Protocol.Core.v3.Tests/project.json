@@ -1,4 +1,4 @@
-﻿{
+{
   "dependencies": {
     "NuGet.Protocol.Core.v3": "3.4.0-*",
     "NuGet.Protocol.Test.Utility": "1.0.0-*",

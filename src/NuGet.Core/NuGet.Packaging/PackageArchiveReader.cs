@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 
@@ -147,6 +149,22 @@ namespace NuGet.Packaging
             {
                 _zip.Dispose();
             }
+        }
+
+        public override async Task<IEnumerable<string>> CopyFilesAsync(string destination, IEnumerable<string> packageFiles, CancellationToken token)
+        {
+            var filesCopied = new List<string>();
+
+            foreach (var packageFile in packageFiles)
+            {
+                token.ThrowIfCancellationRequested();
+
+                var entry = ZipArchiveHelper.GetEntry(_zip, packageFile);
+                var targetPath = Path.Combine(destination, packageFile);
+                filesCopied.Add(await PackageHelper.CreatePackageFileAsync(targetPath, entry, token));
+            }
+
+            return filesCopied;
         }
     }
 }

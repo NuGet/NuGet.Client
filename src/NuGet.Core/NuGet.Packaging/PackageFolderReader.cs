@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 
@@ -81,6 +83,11 @@ namespace NuGet.Packaging
         /// </summary>
         public override Stream GetStream(string path)
         {
+            return GetFile(path).OpenRead();
+        }
+
+        private FileInfo GetFile(string path)
+        {
             var file = new FileInfo(Path.Combine(_root.FullName, path));
 
             if (!file.FullName.StartsWith(_root.FullName, StringComparison.OrdinalIgnoreCase))
@@ -89,7 +96,7 @@ namespace NuGet.Packaging
                 throw new FileNotFoundException(path);
             }
 
-            return file.OpenRead();
+            return file;
         }
 
         public override IEnumerable<string> GetFiles()
@@ -146,6 +153,33 @@ namespace NuGet.Packaging
             var parts = parents.Select(d => d.Name).Concat(new string[] { file.Name });
 
             return String.Join("/", parts);
+        }
+
+        public override async Task<IEnumerable<string>> CopyFilesAsync(string destination, IEnumerable<string> packageFiles, CancellationToken token)
+        {
+            var filesCopied = new List<string>();
+
+            foreach (var packageFile in packageFiles)
+            {
+                token.ThrowIfCancellationRequested();
+
+                var sourceFile = GetFile(packageFile);
+
+                var targetPath = Path.Combine(destination, packageFile);
+                Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
+
+                using (var sourceStream = sourceFile.OpenRead())
+                using (var targetStream = new FileStream(targetPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 1024, useAsync: true))
+                {
+                    await sourceStream.CopyToAsync(targetStream);
+                }
+
+                File.SetLastWriteTimeUtc(targetPath, sourceFile.LastWriteTimeUtc);
+
+                filesCopied.Add(targetPath);
+            }
+
+            return filesCopied;
         }
     }
 }

@@ -20,6 +20,7 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
+using Moq;
 
 namespace NuGet.Test
 {
@@ -4423,38 +4424,6 @@ namespace NuGet.Test
             }
         }
 
-        private class TestPackageReader : PackageReaderBase
-        {
-            public TestPackageReader()
-                : base(new FrameworkNameProvider(new[] { DefaultFrameworkMappings.Instance }, new[] { DefaultPortableFrameworkMappings.Instance }))
-            {
-            }
-
-            public override PackageIdentity GetIdentity() => new PackageIdentity("ManagedCodeConventions", NuGetVersion.Parse("1.0.0"));
-
-            public override NuGetVersion GetMinClientVersion() => new NuGetVersion(2, 0, 0);
-
-            public override IEnumerable<string> GetFiles()
-            {
-                throw new NotImplementedException();
-            }
-
-            public override IEnumerable<string> GetFiles(string folder)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override Stream GetStream(string path)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override PackageType GetPackageType()
-            {
-                return new PackageType("Managed", new Version(2, 0));
-            }
-        }
-
         private class TestDownloadResource : DownloadResource
         {
             public override Task<DownloadResourceResult> GetDownloadResourceResultAsync(
@@ -4462,7 +4431,24 @@ namespace NuGet.Test
                 Configuration.ISettings settings,
                 CancellationToken token)
             {
-                return Task.FromResult(new DownloadResourceResult(Stream.Null, new TestPackageReader()));
+                var packageReader = new Mock<PackageReaderBase>(
+                    new FrameworkNameProvider(new[] { DefaultFrameworkMappings.Instance },
+                    new[] { DefaultPortableFrameworkMappings.Instance }))
+                {
+                    CallBase = true
+                };
+
+                packageReader
+                    .Setup(p => p.GetIdentity())
+                    .Returns(new PackageIdentity("ManagedCodeConventions", NuGetVersion.Parse("1.0.0")));
+                packageReader
+                    .Setup(p => p.GetMinClientVersion())
+                    .Returns(new NuGetVersion(2, 0, 0));
+                packageReader
+                    .Setup(p => p.GetPackageType())
+                    .Returns(new PackageType("Managed", new Version(2, 0)));
+
+                return Task.FromResult(new DownloadResourceResult(Stream.Null, packageReader.Object));
             }
         }
 

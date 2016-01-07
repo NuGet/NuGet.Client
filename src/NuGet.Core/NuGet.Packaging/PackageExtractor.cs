@@ -106,40 +106,8 @@ namespace NuGet.Packaging
             var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentityFromNuspec));
             var packageDirectory = packageDirectoryInfo.FullName;
 
-            var zipPackageReader = packageReader as PackageArchiveReader;
-
-            if (zipPackageReader != null)
-            {
-                // For zip files, use the ZipArchive directly
-                var files = await PackageHelper.CreatePackageFilesAsync(
-                    zipPackageReader.ZipArchive.Entries, 
-                    packageDirectory, 
-                    packageSaveMode, 
-                    token);
-
-                filesAdded.AddRange(files);
-            }
-            else
-            {
-                // Folder readers
-                foreach (var file in packageReader.GetFiles().Where(file => PackageHelper.IsPackageFile(file, packageSaveMode)))
-                {
-                    token.ThrowIfCancellationRequested();
-
-                    var targetPath = Path.Combine(packageDirectory, file);
-                    Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
-
-                    using (var sourceStream = packageReader.GetStream(file))
-                    {
-                        using (var targetStream = new FileStream(targetPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 1024, useAsync: true))
-                        {
-                            await sourceStream.CopyToAsync(targetStream);
-                        }
-                    }
-
-                    filesAdded.Add(targetPath);
-                }
-            }
+            var packageFiles = packageReader.GetPackageFiles(packageSaveMode);
+            filesAdded.AddRange(await packageReader.CopyFilesAsync(packageDirectory, packageFiles, token));
 
             var nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentityFromNuspec));
             if (packageSaveMode.HasFlag(PackageSaveModes.Nupkg))

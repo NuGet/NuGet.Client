@@ -1,4 +1,4 @@
-﻿{
+{
     "dependencies": {
         "NuGet.Configuration": "3.4.0-*",
         "xunit": "2.1.0",
@@ -10,9 +10,9 @@
     },
     "frameworks": {
         "dnx451": {
-            "dependencies": {
-                "Moq": "4.2.1409.1722"
-            }
+          "dependencies": {
+            "Moq": "4.2.1510.2205"
+          }
         },
         "dnxcore50": {
             "dependencies": {

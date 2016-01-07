@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -60,6 +62,8 @@ namespace NuGet.Packaging
         public abstract IEnumerable<string> GetFiles();
 
         public abstract IEnumerable<string> GetFiles(string folder);
+
+        public abstract Task<IEnumerable<string>> CopyFilesAsync(string destination, IEnumerable<string> packageFiles, CancellationToken token);
 
         public virtual PackageIdentity GetIdentity()
         {
