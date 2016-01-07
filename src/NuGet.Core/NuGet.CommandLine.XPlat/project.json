@@ -8,6 +8,10 @@
   "dependencies": {
     "Microsoft.NETCore.Platforms": "1.0.1-beta-*",
     "NuGet.Commands": "3.4.0-*",
+    "NuGet.Common": {
+      "version": "3.4.0-*",
+      "type": "build"
+    },
     "System.Runtime.Serialization.Primitives": "4.0.0",
     "Microsoft.Framework.CommandLineUtils": {
       "version": "1.0.0-*",

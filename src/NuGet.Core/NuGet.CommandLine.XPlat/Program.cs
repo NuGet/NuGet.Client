@@ -6,9 +6,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using Microsoft.Framework.Runtime.Common.CommandLine;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Logging;
 using NuGet.ProjectModel;
@@ -25,7 +27,7 @@ namespace NuGet.CommandLine.XPlat
             if (args.Contains("--debug"))
             {
                 args = args.Skip(1).ToArray();
-                System.Diagnostics.Debugger.Launch();
+                Debugger.Launch();
             }
 #endif
 
@@ -39,6 +41,19 @@ namespace NuGet.CommandLine.XPlat
 
             // Set up logging
             _log = new CommandOutputLogger(verbosity);
+
+#if !DNXCORE50
+            // Increase the maximum number of connections per server.
+            if (!RuntimeEnvironmentHelper.IsMono)
+            {
+                ServicePointManager.DefaultConnectionLimit = 64;
+            }
+            else
+            {
+                // Keep mono limited to a single download to avoid issues.
+                ServicePointManager.DefaultConnectionLimit = 1;
+            }
+#endif
 
             app.Command("restore", restore =>
                 {
