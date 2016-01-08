@@ -155,7 +155,7 @@ namespace NuGet.Packaging
             return String.Join("/", parts);
         }
 
-        public override async Task<IEnumerable<string>> CopyFilesAsync(string destination, IEnumerable<string> packageFiles, CancellationToken token)
+        public override Task<IEnumerable<string>> CopyFilesAsync(string destination, IEnumerable<string> packageFiles, CancellationToken token)
         {
             var filesCopied = new List<string>();
 
@@ -168,18 +168,13 @@ namespace NuGet.Packaging
                 var targetPath = Path.Combine(destination, packageFile);
                 Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
 
-                using (var sourceStream = sourceFile.OpenRead())
-                using (var targetStream = new FileStream(targetPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 1024, useAsync: true))
-                {
-                    await sourceStream.CopyToAsync(targetStream);
-                }
-
+                sourceFile.CopyTo(targetPath, overwrite: true);
                 File.SetLastWriteTimeUtc(targetPath, sourceFile.LastWriteTimeUtc);
 
                 filesCopied.Add(targetPath);
             }
 
-            return filesCopied;
+            return Task.FromResult< IEnumerable<string>>(filesCopied);
         }
     }
 }
