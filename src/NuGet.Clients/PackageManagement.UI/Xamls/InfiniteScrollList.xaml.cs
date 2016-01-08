@@ -421,5 +421,16 @@ namespace NuGet.PackageManagement.UI
                 UpdateButtonClicked(this, EventArgs.Empty);
             }
         }
+
+        private void List_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            // toggle the selection state when user presses the space bar
+            var package = _list.SelectedItem as PackageItemListViewModel;
+            if (package != null && e.Key == System.Windows.Input.Key.Space)
+            {
+                package.Selected = !package.Selected;
+                e.Handled = true;
+            }
+        }
     }
 }

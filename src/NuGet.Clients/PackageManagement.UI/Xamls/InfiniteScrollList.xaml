@@ -301,6 +301,7 @@
     </Border>
     <ListBox
       x:Name="_list"
+      PreviewKeyUp="List_PreviewKeyUp"
       Grid.Row="1"
       Background="{DynamicResource {x:Static resx:Brushes.ListPaneBackground}}"
       Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
