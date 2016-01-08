@@ -14,7 +14,7 @@
       "type": "build"
     },
     "System.Runtime.Serialization.Primitives": "4.0.0",
-    "Microsoft.Framework.CommandLineUtils": {
+    "Microsoft.Extensions.CommandLineUtils.Sources": {
       "version": "1.0.0-*",
       "type": "build"
     }
