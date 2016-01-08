@@ -54,6 +54,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 NuGetVSConstants.DxJsProjectTypeGuid,
                 NuGetVSConstants.DeploymentProjectTypeGuid,
                 NuGetVSConstants.CosmosProjectTypeGuid,
+                NuGetVSConstants.ManagementPackProjectTypeGuid,
             };
 
         private static readonly HashSet<string> UnsupportedProjectCapabilities = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -607,6 +608,13 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
 
                 return String.Format(CultureInfo.InvariantCulture, "{0}, Version={1}", platformIdentifier, platformVersion);
+            }
+
+            if (IsManagementPackProject(envDTEProject))
+            {
+                // The MP project does not have a TargetFrameworkMoniker property set. 
+                // We hard-code the return value to SCMPInfra.
+                return "SCMPInfra, Version=0.0";
             }
 
             if (IsNativeProject(envDTEProject))
@@ -1164,6 +1172,13 @@ namespace NuGet.PackageManagement.VisualStudio
             Debug.Assert(ThreadHelper.CheckAccess());
 
             return envDTEProject != null && NuGetVSConstants.JsProjectTypeGuid.Equals(envDTEProject.Kind, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool IsManagementPackProject(EnvDTEProject envDTEProject)
+        {
+            Debug.Assert(ThreadHelper.CheckAccess());
+
+            return envDTEProject != null && NuGetVSConstants.ManagementPackProjectTypeGuid.Equals(envDTEProject.Kind, StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsXnaWindowsPhoneProject(EnvDTEProject envDTEProject)
