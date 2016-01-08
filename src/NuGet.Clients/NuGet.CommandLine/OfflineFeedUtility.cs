@@ -133,7 +133,7 @@ namespace NuGet.CommandLine
             {
                 try
                 {
-                    var packageReader = new PackageArchiveReader(packageStream);
+                    var packageReader = new PackageArchiveReader(packageStream, leaveStreamOpen: true);
                     var packageIdentity = packageReader.GetIdentity();
 
                     bool isValidPackage;
@@ -184,7 +184,7 @@ namespace NuGet.CommandLine
                             extractNuspecOnly: !offlineFeedAddContext.Expand,
                             normalizeFileNames: true);
 
-                        await NuGetPackageUtils.InstallFromSourceAsync(
+                        await PackageExtractor.InstallFromSourceAsync(
                             stream => packageStream.CopyToAsync(stream),
                             versionFolderPathContext,
                             token);

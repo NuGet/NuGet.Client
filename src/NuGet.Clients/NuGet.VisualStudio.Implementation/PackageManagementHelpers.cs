@@ -59,8 +59,7 @@ namespace NuGet.VisualStudio
                 // installPath is the nupkg path
                 FileInfo file = new FileInfo(nupkgPath);
                 installPath = file.Directory.FullName;
-                var reader = new PackageArchiveReader(file.OpenRead());
-
+                using (var reader = new PackageArchiveReader(file.OpenRead()))
                 using (var nuspecStream = reader.GetNuspec())
                 {
                     NuspecReader nuspec = new NuspecReader(nuspecStream);

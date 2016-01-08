@@ -17,22 +17,19 @@ namespace NuGet.Packaging.Test
             // Arrange
             using (var packageStream = TestPackages.GetTestPackageWithContentXmlFile())
             using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var packageReader = new PackageArchiveReader(packageStream))
             {
-                using (var packageReader = new PackageArchiveReader(packageStream))
-                {
-                    var packagePath = Path.Combine(root, "packageA.2.0.3");
+                var packagePath = Path.Combine(root, "packageA.2.0.3");
 
-                    // Act
-                    var files = await PackageExtractor.ExtractPackageAsync(packageReader,
-                                                                     packageStream,
-                                                                     new PackagePathResolver(root),
-                                                                     new PackageExtractionContext(),
-                                                                     CancellationToken.None);
-
-                    // Assert
-                    Assert.DoesNotContain(Path.Combine(packagePath + "[Content_Types].xml"), files);
-                    Assert.Contains(Path.Combine(packagePath, "content\\[Content_Types].xml"), files);
-                }
+                // Act
+                var files = await PackageExtractor.ExtractPackageAsync(packageReader,
+                                                                 packageStream,
+                                                                 new PackagePathResolver(root),
+                                                                 new PackageExtractionContext(),
+                                                                 CancellationToken.None);
+                // Assert
+                Assert.DoesNotContain(Path.Combine(packagePath + "[Content_Types].xml"), files);
+                Assert.Contains(Path.Combine(packagePath, "content\\[Content_Types].xml"), files);
             }
         }
 
@@ -82,7 +79,7 @@ namespace NuGet.Packaging.Test
                     zipFile.ExtractAll(packageFolder);
 
                     var packageExtractionContext = new PackageExtractionContext();
-                    packageExtractionContext.PackageSaveMode = PackageSaveModes.Nupkg;
+                    packageExtractionContext.PackageSaveMode = PackageSaveMode.Nupkg;
 
                     // Act
                     var files = await PackageExtractor.ExtractPackageAsync(folderReader,
@@ -113,7 +110,7 @@ namespace NuGet.Packaging.Test
                     zipFile.ExtractAll(packageFolder);
 
                     var packageExtractionContext = new PackageExtractionContext();
-                    packageExtractionContext.PackageSaveMode = PackageSaveModes.Nuspec;
+                    packageExtractionContext.PackageSaveMode = PackageSaveMode.Nuspec;
 
                     // Act
                     var files = await PackageExtractor.ExtractPackageAsync(folderReader,
@@ -144,7 +141,7 @@ namespace NuGet.Packaging.Test
                     zipFile.ExtractAll(packageFolder);
 
                     var packageExtractionContext = new PackageExtractionContext();
-                    packageExtractionContext.PackageSaveMode = PackageSaveModes.Nuspec | PackageSaveModes.Nupkg;
+                    packageExtractionContext.PackageSaveMode = PackageSaveMode.Nuspec | PackageSaveMode.Nupkg;
 
                     // Act
                     var files = await PackageExtractor.ExtractPackageAsync(folderReader,

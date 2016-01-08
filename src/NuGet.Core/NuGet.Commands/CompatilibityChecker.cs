@@ -177,10 +177,8 @@ namespace NuGet.Commands
                 // Collect the file list if necessary
                 if (files == null)
                 {
-                    using (var nupkgStream = File.OpenRead(package.ZipPath))
+                    using (var packageReader = new PackageArchiveReader(package.ZipPath))
                     {
-                        var packageReader = new PackageArchiveReader(nupkgStream);
-
                         if (Path.DirectorySeparatorChar != '/')
                         {
                             files = packageReader

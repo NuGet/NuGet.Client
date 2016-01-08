@@ -134,16 +134,16 @@ namespace NuGet.Packaging
         /// <param name="token"></param>
         /// <returns></returns>
         public static IEnumerable<ZipFilePair> GetInstalledPackageFiles(
-            Stream packageStream,
+            PackageArchiveReader packageReader,
             PackageIdentity packageIdentity,
             PackagePathResolver packagePathResolver,
             PackageSaveMode packageSaveMode)
         {
             var installedPackageFiles = Enumerable.Empty<ZipFilePair>();
+
             var packageDirectory = packagePathResolver.GetInstalledPath(packageIdentity);
             if (!string.IsNullOrEmpty(packageDirectory))
             {
-                var packageReader = new PackageArchiveReader(packageStream);
                 var packageFiles = packageReader.GetPackageFiles(packageSaveMode);
                 var entries = packageReader.EnumeratePackageEntries(packageFiles, packageDirectory);
                 installedPackageFiles = entries.Where(e => e.IsInstalled());
@@ -153,13 +153,12 @@ namespace NuGet.Packaging
         }
 
         public static Tuple<string, IEnumerable<ZipFilePair>> GetInstalledSatelliteFiles(
-            Stream packageStream,
+            PackageArchiveReader packageReader,
             PackagePathResolver packagePathResolver,
             PackageSaveMode packageSaveMode)
         {
             var installedSatelliteFiles = Enumerable.Empty<ZipFilePair>();
             string runtimePackageDirectory;
-            var packageReader = new PackageArchiveReader(packageStream);
             var satelliteFiles = GetSatelliteFiles(packageReader, packagePathResolver, out runtimePackageDirectory);
             if (satelliteFiles.Any())
             {

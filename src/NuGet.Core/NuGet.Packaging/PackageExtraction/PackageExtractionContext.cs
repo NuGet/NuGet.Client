@@ -13,6 +13,6 @@ namespace NuGet.Packaging
         /// </summary>
         public bool UseLegacyPackageInstallPath { get; set; }
 
-        public PackageSaveModes PackageSaveMode { get; set; } = PackageSaveModes.Nupkg;
+        public PackageSaveMode PackageSaveMode { get; set; } = PackageSaveMode.Nupkg;
     }
 }

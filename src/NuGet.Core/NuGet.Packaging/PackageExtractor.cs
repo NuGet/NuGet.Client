@@ -48,30 +48,31 @@ namespace NuGet.Packaging
             var filesAdded = new List<string>();
 
             var nupkgStartPosition = packageStream.Position;
-            var packageReader = new PackageArchiveReader(packageStream);
-
-            var packageIdentityFromNuspec = packageReader.GetIdentity();
-
-            var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentityFromNuspec));
-            var packageDirectory = packageDirectoryInfo.FullName;
-
-            var packageFiles = packageReader.GetPackageFiles(packageSaveMode);
-            filesAdded.AddRange(await packageReader.CopyFilesAsync(packageDirectory, packageFiles, token));
-
-            var nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentityFromNuspec));
-            if (packageSaveMode.HasFlag(PackageSaveMode.Nupkg))
+            using (var packageReader = new PackageArchiveReader(packageStream, leaveStreamOpen: true))
             {
-                // During package extraction, nupkg is the last file to be created
-                // Since all the packages are already created, the package stream is likely positioned at its end
-                // Reset it to the nupkgStartPosition
-                packageStream.Seek(nupkgStartPosition, SeekOrigin.Begin);
-                filesAdded.Add(await packageStream.CopyToFileAsync(nupkgFilePath, token));
-            }
+                var packageIdentityFromNuspec = packageReader.GetIdentity();
 
-            // Now, copy satellite files unless requested to not copy them
-            if (packageExtractionContext.CopySatelliteFiles)
-            {
-                filesAdded.AddRange(await CopySatelliteFilesAsync(packageReader, packagePathResolver, packageSaveMode, token));
+                var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentityFromNuspec));
+                var packageDirectory = packageDirectoryInfo.FullName;
+
+                var packageFiles = packageReader.GetPackageFiles(packageSaveMode);
+                filesAdded.AddRange(await packageReader.CopyFilesAsync(packageDirectory, packageFiles, token));
+
+                var nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentityFromNuspec));
+                if (packageSaveMode.HasFlag(PackageSaveMode.Nupkg))
+                {
+                    // During package extraction, nupkg is the last file to be created
+                    // Since all the packages are already created, the package stream is likely positioned at its end
+                    // Reset it to the nupkgStartPosition
+                    packageStream.Seek(nupkgStartPosition, SeekOrigin.Begin);
+                    filesAdded.Add(await packageStream.CopyToFileAsync(nupkgFilePath, token));
+                }
+
+                // Now, copy satellite files unless requested to not copy them
+                if (packageExtractionContext.CopySatelliteFiles)
+                {
+                    filesAdded.AddRange(await CopySatelliteFilesAsync(packageReader, packagePathResolver, packageSaveMode, token));
+                }
             }
 
             return filesAdded;
@@ -373,9 +374,8 @@ namespace NuGet.Packaging
             var nupkgFilePath = packagePathResolver.GetInstalledPackageFilePath(packageIdentity);
             if (File.Exists(nupkgFilePath))
             {
-                using (var packageStream = File.OpenRead(nupkgFilePath))
+                using (var packageReader = new PackageArchiveReader(nupkgFilePath))
                 {
-                    var packageReader = new PackageArchiveReader(packageStream);
                     return await CopySatelliteFilesAsync(packageReader, packagePathResolver, packageSaveMode, token);
                 }
             }

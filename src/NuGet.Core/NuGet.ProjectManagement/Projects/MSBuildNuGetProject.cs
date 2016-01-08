@@ -155,12 +155,7 @@ namespace NuGet.ProjectManagement
 
             // Step-2: Create PackageArchiveReader using the PackageStream and obtain the various item groups
             downloadResourceResult.PackageStream.Seek(0, SeekOrigin.Begin);
-            var packageReader = downloadResourceResult.PackageReader;
-            if (packageReader == null)
-            {
-                var zipArchive = new ZipArchive(downloadResourceResult.PackageStream);
-                packageReader = new PackageArchiveReader(zipArchive);
-            }
+            var packageReader = downloadResourceResult.PackageReader ?? new PackageArchiveReader(downloadResourceResult.PackageStream, leaveStreamOpen: true);
 
             var libItemGroups = packageReader.GetLibItems();
             var referenceItemGroups = packageReader.GetReferenceItems();

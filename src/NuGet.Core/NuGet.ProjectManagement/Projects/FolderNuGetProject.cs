@@ -171,10 +171,10 @@ namespace NuGet.ProjectManagement
             if (File.Exists(packageFilePath))
             {
                 var packageDirectoryPath = Path.GetDirectoryName(packageFilePath);
-                using (var packageStream = File.OpenRead(packageFilePath))
+                using (var packageReader = new PackageArchiveReader(packageFilePath))
                 {
                     var installedSatelliteFilesPair = PackageHelper.GetInstalledSatelliteFiles(
-                        packageStream,
+                        packageReader,
                         PackagePathResolver,
                         GetPackageSaveMode(nuGetProjectContext));
                     var runtimePackageDirectory = installedSatelliteFilesPair.Item1;
@@ -195,7 +195,7 @@ namespace NuGet.ProjectManagement
 
                     // Get all the package files before deleting the package file
                     var installedPackageFiles = PackageHelper.GetInstalledPackageFiles(
-                        packageStream,
+                        packageReader,
                         packageIdentity,
                         PackagePathResolver,
                         GetPackageSaveMode(nuGetProjectContext));
@@ -230,9 +230,9 @@ namespace NuGet.ProjectManagement
             return Task.FromResult(true);
         }
 
-        private PackageSaveModes GetPackageSaveMode(INuGetProjectContext nuGetProjectContext)
+        private PackageSaveMode GetPackageSaveMode(INuGetProjectContext nuGetProjectContext)
         {
-            return nuGetProjectContext.PackageExtractionContext?.PackageSaveMode ?? PackageSaveModes.Nupkg;
+            return nuGetProjectContext.PackageExtractionContext?.PackageSaveMode ?? PackageSaveMode.Nupkg;
         }
     }
 }

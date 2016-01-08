@@ -87,6 +87,17 @@ namespace NuGet.Packaging
             _zipArchive = zipArchive;
         }
 
+        public PackageArchiveReader(string filePath, IFrameworkNameProvider frameworkProvider = null, IFrameworkCompatibilityProvider compatibilityProvider = null)
+            : base(frameworkProvider ?? DefaultFrameworkNameProvider.Instance, compatibilityProvider ?? DefaultCompatibilityProvider.Instance)
+        {
+            if (filePath == null)
+            {
+                throw new ArgumentNullException(nameof(filePath));
+            }
+
+            _zipArchive = new ZipArchive(File.OpenRead(filePath), ZipArchiveMode.Read);
+        }
+
         public override IEnumerable<string> GetFiles()
         {
             return _zipArchive.GetFiles();

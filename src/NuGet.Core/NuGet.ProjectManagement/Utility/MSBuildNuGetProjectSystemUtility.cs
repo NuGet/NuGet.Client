@@ -240,11 +240,8 @@ namespace NuGet.ProjectManagement
                                 var matchingFiles = new List<InternalZipFileInfo>();
                                 foreach (var otherPackagePath in otherPackagesPath)
                                 {
-                                    using (var otherPackageStream = File.OpenRead(otherPackagePath))
+                                    using (var otherPackageZipReader = new PackageArchiveReader(otherPackagePath))
                                     {
-                                        var otherPackageZipArchive = new ZipArchive(otherPackageStream);
-                                        var otherPackageZipReader = new PackageArchiveReader(otherPackageZipArchive);
-
                                         // use the project framework to find the group that would have been installed
                                         var mostCompatibleContentFilesGroup = GetMostCompatibleGroup(
                                             projectFramework,

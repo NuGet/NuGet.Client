@@ -108,8 +108,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             try
             {
-                using (var packageStream = File.OpenRead(packageFilePath))
-                using (var packageReader = new PackageArchiveReader(packageStream))
+                using (var packageReader = new PackageArchiveReader(packageFilePath))
                 {
                     var libItemGroups = packageReader.GetLibItems();
                     var referenceItemGroups = packageReader.GetReferenceItems();

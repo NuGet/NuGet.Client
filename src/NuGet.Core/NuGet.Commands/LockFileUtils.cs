@@ -61,9 +61,8 @@ namespace NuGet.Commands
             // If the previous LockFileLibrary was given, use that to find the file list. Otherwise read the nupkg.
             if (library == null)
             {
-                using (var nupkgStream = File.OpenRead(package.ZipPath))
+                using (var packageReader = new PackageArchiveReader(package.ZipPath))
                 {
-                    var packageReader = new PackageArchiveReader(nupkgStream);
                     if (Path.DirectorySeparatorChar != '/')
                     {
                         files = packageReader
