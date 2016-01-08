@@ -4,10 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Framework.Runtime.Common.CommandLine;
 using NuGet.Commands;
 using NuGet.Common;
@@ -69,11 +71,18 @@ namespace NuGet.CommandLine.XPlat
                         CommandOptionType.SingleValue);
                     var parallel = restore.Option(
                         "-p|--parallel <noneOrNumberOfParallelTasks>",
-                        Strings.FormatRestore_Switch_Parallel_Description(RestoreRequest.DefaultDegreeOfConcurrency),
+                        string.Format(
+                            CultureInfo.CurrentCulture, 
+                            Strings.Restore_Switch_Parallel_Description, 
+                            RestoreRequest.DefaultDegreeOfConcurrency),
                         CommandOptionType.SingleValue);
                     var fallBack = restore.Option(
                         "-f|--fallbacksource <FEED>",
                         Strings.Restore_Switch_Fallback_Description,
+                        CommandOptionType.MultipleValue);
+                    var runtime = restore.Option(
+                        "--runtime <RID>",
+                        Strings.Restore_Switch_Runtime_Description,
                         CommandOptionType.MultipleValue);
                     var projectFile = restore.Argument(
                         "[project]",
@@ -81,55 +90,72 @@ namespace NuGet.CommandLine.XPlat
 
                     restore.OnExecute(async () =>
                         {
-                        // Figure out the project directory
-                        IEnumerable<string> externalProjects = null;
+                            // Figure out the project directory
+                            IEnumerable<string> externalProjects = null;
 
-                        PackageSpec project;
-                        var projectPath = Path.GetFullPath(projectFile.Value ?? ".");
-                        if (string.Equals(PackageSpec.PackageSpecFileName, Path.GetFileName(projectPath), StringComparison.OrdinalIgnoreCase))
-                        {
-                            _log.LogVerbose(Strings.FormatLog_ReadingProject(projectFile.Value));
-                            projectPath = Path.GetDirectoryName(projectPath);
-                            project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(projectFile.Value), Path.GetFileName(projectPath), projectFile.Value);
-                        }
-                        else if (MsBuildUtility.IsMsBuildBasedProject(projectPath))
-                        {
+                            PackageSpec project;
+                            var projectPath = Path.GetFullPath(projectFile.Value ?? ".");
+                            if (string.Equals(PackageSpec.PackageSpecFileName, Path.GetFileName(projectPath), StringComparison.OrdinalIgnoreCase))
+                            {
+                                _log.LogVerbose(string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.Log_ReadingProject,
+                                    projectFile.Value));
+
+                                projectPath = Path.GetDirectoryName(projectPath);
+                                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(projectFile.Value), Path.GetFileName(projectPath), projectFile.Value);
+                            }
+                            else if (MsBuildUtility.IsMsBuildBasedProject(projectPath))
+                            {
 #if DNXCORE50
                                 throw new NotSupportedException();
 #else
-                            externalProjects = MsBuildUtility.GetProjectReferences(projectPath);
+                                // TODO: This only finds the top level dependencies, the rest are found through folders?
+                                externalProjects = MsBuildUtility.GetProjectReferences(projectPath);
 
-                            var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(projectPath));
-                            var packageSpecFile = Path.Combine(projectDirectory, PackageSpec.PackageSpecFileName);
-                            project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(packageSpecFile), projectPath, projectFile.Value);
-                            _log.LogVerbose(Strings.FormatLog_ReadingProject(projectFile.Value));
+                                var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(projectPath));
+                                var packageSpecFile = Path.Combine(projectDirectory, PackageSpec.PackageSpecFileName);
+                                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(packageSpecFile), projectPath, projectFile.Value);
+                                _log.LogVerbose(string.Format(
+                                    CultureInfo.CurrentCulture, 
+                                    Strings.Log_ReadingProject, projectFile.Value));
 #endif
-                        }
-                        else
-                        {
-                            var file = Path.Combine(projectPath, PackageSpec.PackageSpecFileName);
+                            }
+                            else
+                            {
+                                var file = Path.Combine(projectPath, PackageSpec.PackageSpecFileName);
 
-                            _log.LogVerbose(Strings.FormatLog_ReadingProject(file));
-                            project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(file), Path.GetFileName(projectPath), file);
-                        }
-                        _log.LogVerbose(Strings.FormatLog_LoadedProject(project.Name, project.FilePath));
+                                _log.LogVerbose(string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.Log_ReadingProject,
+                                    file));
 
-                        // Resolve the root directory
-                        var rootDirectory = PackageSpecResolver.ResolveRootDirectory(projectPath);
-                        _log.LogVerbose(Strings.FormatLog_FoundProjectRoot(rootDirectory));
+                                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(file), Path.GetFileName(projectPath), file);
+                            }
+                            _log.LogVerbose(string.Format(
+                                    CultureInfo.CurrentCulture, 
+                                    Strings.Log_LoadedProject,
+                                    project.Name, project.FilePath));
 
-                        var packageSources = sources.Values.Select(s => new PackageSource(s));
-                        var settings = Settings.LoadDefaultSettings(projectPath,
-                            configFileName: null,
-                            machineWideSettings: null);
-                        if (!packageSources.Any())
-                        {
-                            var packageSourceProvider = new PackageSourceProvider(settings);
-                            packageSources = packageSourceProvider.LoadPackageSources();
-                        }
+                            // Resolve the root directory
+                            var rootDirectory = PackageSpecResolver.ResolveRootDirectory(projectPath);
+                            _log.LogVerbose(string.Format(
+                                CultureInfo.CurrentCulture, 
+                                Strings.Log_FoundProjectRoot, 
+                                rootDirectory));
 
-                        packageSources = packageSources.Concat(
-                            fallBack.Values.Select(s => new PackageSource(s)));
+                            var packageSources = sources.Values.Select(s => new PackageSource(s));
+                            var settings = Settings.LoadDefaultSettings(projectPath,
+                                configFileName: null,
+                                machineWideSettings: null);
+                            if (!packageSources.Any())
+                            {
+                                var packageSourceProvider = new PackageSourceProvider(settings);
+                                packageSources = packageSourceProvider.LoadPackageSources();
+                            }
+
+                            packageSources = packageSources.Concat(
+                                fallBack.Values.Select(s => new PackageSource(s)));
 
                             using (var request = new RestoreRequest(
                                 project,
@@ -147,7 +173,10 @@ namespace NuGet.CommandLine.XPlat
                                 }
 
                                 // Resolve the packages directory
-                                _log.LogVerbose(Strings.FormatLog_UsingPackagesDirectory(request.PackagesDirectory));
+                                _log.LogVerbose(string.Format(
+                                    CultureInfo.CurrentCulture, 
+                                    Strings.Log_UsingPackagesDirectory, 
+                                    request.PackagesDirectory));
 
                                 if (externalProjects != null)
                                 {
@@ -164,6 +193,15 @@ namespace NuGet.CommandLine.XPlat
                                                 projectReferences: Enumerable.Empty<string>()));
                                     }
                                 }
+
+                                // Runtime ids
+                                request.RequestedRuntimes.UnionWith(runtime.Values);
+
+                                var runtimeEnvironment = PlatformServices.Default.Runtime;
+
+                                var defaultRuntimes = RequestRuntimeUtility.GetDefaultRestoreRuntimes(
+                                    runtimeEnvironment.OperatingSystem,
+                                    runtimeEnvironment.GetRuntimeOsName());
 
                                 // Run the restore
                                 if (parallel.HasValue())
@@ -184,7 +222,10 @@ namespace NuGet.CommandLine.XPlat
                                 }
                                 else
                                 {
-                                    _log.LogInformation(Strings.FormatLog_RunningParallelRestore(request.MaxDegreeOfConcurrency));
+                                    _log.LogInformation(string.Format(
+                                        CultureInfo.CurrentCulture,
+                                        Strings.Log_RunningParallelRestore,
+                                        request.MaxDegreeOfConcurrency));
                                 }
                                 var command = new RestoreCommand(_log, request);
                                 var sw = Stopwatch.StartNew();
@@ -198,12 +239,19 @@ namespace NuGet.CommandLine.XPlat
 
                                 if (result.Success)
                                 {
-                                    _log.LogInformation(Strings.FormatLog_RestoreComplete(sw.ElapsedMilliseconds));
+                                    _log.LogInformation(string.Format(
+                                        CultureInfo.CurrentCulture, 
+                                        Strings.Log_RestoreComplete, 
+                                        sw.ElapsedMilliseconds));
                                     return 0;
                                 }
                                 else
                                 {
-                                    _log.LogInformation(Strings.FormatLog_RestoreFailed(sw.ElapsedMilliseconds));
+                                    _log.LogInformation(string.Format(
+                                        CultureInfo.CurrentCulture,
+                                        Strings.Log_RestoreFailed, 
+                                        sw.ElapsedMilliseconds));
+
                                     return 1;
                                 }
                             }

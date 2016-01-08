@@ -104,6 +104,20 @@ namespace NuGet.Commands
         /// <remarks>This defaults to the latest version.</remarks>
         public int LockFileVersion { get; set; } = LockFileFormat.Version;
 
+        /// <summary>
+        /// These Runtime Ids will be added to the graph in addition to the runtimes contained
+        /// in project.json under runtimes.
+        /// </summary>
+        /// <remarks>RIDs are case sensitive.</remarks>
+        public ISet<string> RequestedRuntimes { get; } = new SortedSet<string>(StringComparer.Ordinal);
+
+        /// <summary>
+        /// These Runtime Ids will be used if <see cref="RequestedRuntimes"/> and the project runtimes
+        /// are both empty.
+        /// </summary>
+        /// <remarks>RIDs are case sensitive.</remarks>
+        public ISet<string> FallbackRuntimes { get; } = new SortedSet<string>(StringComparer.Ordinal);
+
         public void Dispose()
         {
             CacheContext.Dispose();

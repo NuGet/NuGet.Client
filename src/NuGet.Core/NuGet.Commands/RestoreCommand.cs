@@ -246,7 +246,9 @@ namespace NuGet.Commands
                 // We care about TFM only and null RID for compilation purposes
                 projectFrameworkRuntimePairs.Add(new FrameworkRuntimePair(framework.FrameworkName, null));
 
-                foreach (var runtimeId in _request.Project.RuntimeGraph.Runtimes.Keys)
+                var runtimeIds = RequestRuntimeUtility.GetRestoreRuntimes(_request);
+
+                foreach (var runtimeId in runtimeIds)
                 {
                     projectFrameworkRuntimePairs.Add(new FrameworkRuntimePair(framework.FrameworkName, runtimeId));
                 }
@@ -848,7 +850,7 @@ namespace NuGet.Commands
             lockFileLib.Type = LibraryTypes.Package;
             lockFileLib.Sha512 = sha512;
 
-            using (var packageReader = new PackageReader(File.OpenRead(package.ZipPath)))
+            using (var packageReader = new PackageFolderReader(package.ExpandedPath))
             {
                 // Get package files, excluding directory entries and OPC files
                 // This is sorted before it is written out
