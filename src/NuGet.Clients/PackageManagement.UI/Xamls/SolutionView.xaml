@@ -163,6 +163,7 @@
       x:Name="_projectList"
       Margin="0,8,0,0"
       ScrollViewer.VerticalScrollBarVisibility="Visible"
+      PreviewKeyUp="ProjectList_PreviewKeyUp"
       ItemsSource="{Binding Projects}"
       Background="{DynamicResource {x:Static local:Brushes.ListPaneBackground}}"
       Foreground="{DynamicResource {x:Static local:Brushes.UIText}}" >
