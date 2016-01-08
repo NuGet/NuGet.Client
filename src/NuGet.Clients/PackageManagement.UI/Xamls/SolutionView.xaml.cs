@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Linq;
 using NuGet.Versioning;
+using System.Windows.Input;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -197,6 +198,17 @@ namespace NuGet.PackageManagement.UI
 
             // this width adjustment is only done once.
             _projectList.SizeChanged -= ListView_SizeChanged;
+        }
+
+        private void ProjectList_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            // toggle the selection state when user presses the space bar
+            var packageInstallationInfo = _projectList.SelectedItem as PackageInstallationInfo;
+            if (packageInstallationInfo != null && e.Key == Key.Space)
+            {
+                packageInstallationInfo.IsSelected = !packageInstallationInfo.IsSelected;
+                e.Handled = true;
+            }
         }
     }
 }

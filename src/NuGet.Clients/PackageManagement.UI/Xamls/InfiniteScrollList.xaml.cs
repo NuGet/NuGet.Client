@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using Mvs = Microsoft.VisualStudio.Shell;
 using Resx = NuGet.PackageManagement.UI;
@@ -419,6 +420,17 @@ namespace NuGet.PackageManagement.UI
             if (UpdateButtonClicked != null && AnySelected())
             {
                 UpdateButtonClicked(this, EventArgs.Empty);
+            }
+        }
+
+        private void List_PreviewKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            // toggle the selection state when user presses the space bar
+            var package = _list.SelectedItem as PackageItemListViewModel;
+            if (package != null && e.Key == Key.Space)
+            {
+                package.Selected = !package.Selected;
+                e.Handled = true;
             }
         }
     }
