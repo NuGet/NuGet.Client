@@ -60,6 +60,8 @@ namespace NuGet.Common
                     }
                     else
                     {
+                        // This happens when redirecting output to a file, on
+                        // Linux and OS X (running with Mono).
                         return int.MaxValue;
                     }
                 }
