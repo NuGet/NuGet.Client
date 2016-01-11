@@ -3,7 +3,7 @@
 
 namespace NuGet.Common
 {
-    internal enum NuGetFolderPath
+    public enum NuGetFolderPath
     {
         MachineWideSettingsBaseDirectory,
         MachineWideConfigDirectory,

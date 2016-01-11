@@ -1,7 +1,7 @@
 ﻿{
   "version": "3.4.0-*",
   "dependencies": {
-    "NuGet.Common": {
+    "NuGet.Shared": {
       "type": "build",
       "version": "3.4.0-*"
     },

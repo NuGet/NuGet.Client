@@ -7,7 +7,7 @@
   "dependencies": {
     "Microsoft.Web.Xdt": "2.1.1",
     "NuGet.ProjectModel": "3.4.0-*",
-    "NuGet.Common": {
+    "NuGet.Shared": {
       "version": "3.4.0-*",
       "type": "build"
     }

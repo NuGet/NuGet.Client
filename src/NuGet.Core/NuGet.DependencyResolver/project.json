@@ -7,7 +7,7 @@
     "NuGet.Packaging": "3.4.0-*",
     "NuGet.Protocol.Core.v3": "3.4.0-*",
     "NuGet.DependencyResolver.Core": "3.4.0-*",
-    "NuGet.Common": {
+    "NuGet.Shared": {
       "type": "build",
       "version": "3.4.0-*"
     }

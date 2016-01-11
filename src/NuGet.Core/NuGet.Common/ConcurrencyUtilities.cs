@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.Common
 {
-    internal static class ConcurrencyUtilities
+    public static class ConcurrencyUtilities
     {
         public async static Task<T> ExecuteWithFileLocked<T>(string filePath,
             Func<CancellationToken, Task<T>> action,

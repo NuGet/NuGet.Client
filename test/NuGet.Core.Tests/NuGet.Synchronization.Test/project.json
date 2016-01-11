@@ -2,7 +2,7 @@
     "version": "3.4.0-*",
     "dependencies": {
         "Microsoft.NETCore.Platforms": "1.0.1-beta-23516",
-        "NuGet.Common": {
+        "NuGet.Shared": {
             "version": "3.4.0-*",
             "type": "build"
         },

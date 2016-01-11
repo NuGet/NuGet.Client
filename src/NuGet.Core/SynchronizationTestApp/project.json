@@ -10,12 +10,13 @@
         "emitEntryPoint": true
     },
 
-    "dependencies": {
-        "NuGet.Common": {
-            "version": "3.4.0-*",
-            "type": "build"
-        }
-    },
+  "dependencies": {
+    "NuGet.Common": "3.4.0-*",
+    "NuGet.Shared": {
+      "version": "3.4.0-*",
+      "type": "build"
+    }
+  },
 
     "commands": {
         "SynchronizationTestApp": "SynchronizationTestApp"

@@ -9,7 +9,7 @@
     "NuGet.Protocol.Core.v3": "3.4.0-*",
     "NuGet.Repositories": "3.4.0-*",
     "NuGet.RuntimeModel": "3.4.0-*",
-    "NuGet.Common": {
+    "NuGet.Shared": {
       "type": "build",
       "version": "3.4.0-*"
     }

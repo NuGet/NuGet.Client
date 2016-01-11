@@ -9,7 +9,7 @@
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-rc2-16530",
     "Microsoft.NETCore.Platforms": "1.0.1-beta-*",
     "NuGet.Commands": "3.4.0-*",
-    "NuGet.Common": {
+    "NuGet.Shared": {
       "version": "3.4.0-*",
       "type": "build"
     },

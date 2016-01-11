@@ -5,7 +5,7 @@
   },
   "dependencies": {
     "Newtonsoft.Json": "6.0.4",
-    "NuGet.Common": {
+    "NuGet.Shared": {
       "type": "build",
       "version": "3.4.0-*"
     },

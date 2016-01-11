@@ -23,7 +23,7 @@
     "NuGet.Configuration": "3.4.0-*",
     "NuGet.DependencyResolver": "3.4.0-*",
     "NuGet.RuntimeModel": "3.4.0-*",
-    "NuGet.Common": {
+    "NuGet.Shared": {
       "version": "3.4.0-*",
       "type": "build"
     }

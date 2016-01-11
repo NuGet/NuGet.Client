@@ -2,7 +2,7 @@
 
 namespace NuGet.Common
 {
-    internal static class RuntimeEnvironmentHelper
+    public static class RuntimeEnvironmentHelper
     {
         private static Lazy<bool> _isMono = new Lazy<bool>(() => Type.GetType("Mono.Runtime") != null);
 

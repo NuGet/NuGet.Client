@@ -6,7 +6,7 @@ using System.IO;
 
 namespace NuGet.Common
 {
-    internal static class NuGetEnvironment
+    public static class NuGetEnvironment
     {
         public static string GetFolderPath(NuGetFolderPath folder)
         {

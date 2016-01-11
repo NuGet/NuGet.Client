@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using NuGet.Common;
+using NuGet.Shared;
 
 namespace NuGet.RuntimeModel
 {

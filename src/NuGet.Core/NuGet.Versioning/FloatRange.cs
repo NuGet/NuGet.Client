@@ -3,7 +3,7 @@
 
 using System;
 using System.Globalization;
-using NuGet.Common;
+using NuGet.Shared;
 
 namespace NuGet.Versioning
 {
