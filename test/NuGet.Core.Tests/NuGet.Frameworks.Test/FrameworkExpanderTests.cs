@@ -64,14 +64,23 @@ namespace NuGet.Test
             NuGetFramework framework = NuGetFramework.Parse("net45");
 
             FrameworkExpander expander = new FrameworkExpander();
-            var expanded = expander.Expand(framework).ToArray();
+            var expanded = expander
+                .Expand(framework)
+                .OrderBy(n => n.ToString())
+                .ThenBy(n => n.Version)
+                .ToArray();
 
-            Assert.Equal(5, expanded.Length);
+            Assert.Equal(8, expanded.Length);
             Assert.Equal(".NETFramework,Version=v4.5,Profile=Client", expanded[0].ToString());
             Assert.Equal(".NETFramework,Version=v4.5,Profile=Full", expanded[1].ToString());
-            Assert.Equal(".NETPlatform,Version=v5.0", expanded[2].ToString()); // dotnet5
-            Assert.Equal(".NETPlatform,Version=v5.2", expanded[3].ToString());
-            Assert.Equal(".NETPlatform,Version=v5.0", expanded[4].ToString());  // dotnet
+            Assert.Equal(".NETPlatform,Version=v5.0", expanded[2].ToString()); // dotnet
+            Assert.Equal(new Version(0, 0, 0, 0), expanded[2].Version);
+            Assert.Equal(".NETPlatform,Version=v5.0", expanded[3].ToString()); // dotnet5
+            Assert.Equal(new Version(5, 0, 0, 0), expanded[3].Version);
+            Assert.Equal(".NETPlatform,Version=v5.1", expanded[4].ToString());
+            Assert.Equal(".NETPlatform,Version=v5.2", expanded[5].ToString());
+            Assert.Equal(".NETStandard,Version=v1.0", expanded[6].ToString());
+            Assert.Equal(".NETStandard,Version=v1.1", expanded[7].ToString());
         }
 
         [Fact]
@@ -80,9 +89,26 @@ namespace NuGet.Test
             NuGetFramework framework = NuGetFramework.Parse("win");
 
             FrameworkExpander expander = new FrameworkExpander();
-            var expanded = expander.Expand(framework).ToArray();
+            var expanded = expander
+                .Expand(framework)
+                .OrderBy(n => n.ToString())
+                .ThenBy(n => n.Version)
+                .ToArray();
 
-            Assert.Equal<int>(8, expanded.Length);
+            Assert.Equal(11, expanded.Length);
+            Assert.Equal(".NETCore,Version=v0.0", expanded[0].ToString());
+            Assert.Equal(".NETCore,Version=v4.5", expanded[1].ToString());
+            Assert.Equal(".NETPlatform,Version=v5.0", expanded[2].ToString()); // dotnet
+            Assert.Equal(new Version(0, 0, 0, 0), expanded[2].Version);
+            Assert.Equal(".NETPlatform,Version=v5.0", expanded[3].ToString()); // dotnet5
+            Assert.Equal(new Version(5, 0, 0, 0), expanded[3].Version);
+            Assert.Equal(".NETPlatform,Version=v5.1", expanded[4].ToString());
+            Assert.Equal(".NETPlatform,Version=v5.2", expanded[5].ToString());
+            Assert.Equal(".NETStandard,Version=v1.0", expanded[6].ToString());
+            Assert.Equal(".NETStandard,Version=v1.1", expanded[7].ToString());
+            Assert.Equal("Windows,Version=v8.0", expanded[8].ToString());
+            Assert.Equal("WinRT,Version=v0.0", expanded[9].ToString());
+            Assert.Equal("WinRT,Version=v4.5", expanded[10].ToString());
         }
 
         [Fact]

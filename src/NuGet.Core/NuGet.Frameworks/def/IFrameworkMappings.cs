@@ -61,7 +61,13 @@ namespace NuGet.Frameworks
         /// equivalently compatible to a new framework.
         /// Example: UAP10.0 -> win81, wpa81
         /// </summary>
-        IEnumerable<string> FrameworkPrecedence { get; }
+        IEnumerable<string> NonPackageBasedFrameworkPrecedence { get; }
+
+        /// <summary>
+        /// Same as <see cref="NonPackageBasedFrameworkPrecedence"/> but is only referred to if all of the packages
+        /// in consideration are package based (determined by <see cref="NuGetFramework.IsPackageBased"/>).
+        /// </summary>
+        IEnumerable<string> PackageBasedFrameworkPrecedence { get; }
 
         /// <summary>
         /// Rewrite folder short names to the given value.

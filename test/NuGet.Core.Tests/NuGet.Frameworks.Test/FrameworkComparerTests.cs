@@ -11,7 +11,56 @@ namespace NuGet.Test
     public class FrameworkComparerTests
     {
         [Fact]
-        public void FrameworkComparer_FrameworkOrderingWithPreferredAndNormalSorting()
+        public void FrameworkComparer_OrderingMixedFrameworksTypes()
+        {
+            // Arrange
+            // non-package-based in the precedence list
+            var fw1 = NuGetFramework.Parse("net45");      
+            var fw2 = NuGetFramework.Parse("netcore451");
+            var fw3 = NuGetFramework.Parse("win81");
+            var fw4 = NuGetFramework.Parse("wpa81");
+            // non-package-based not in the precedence list
+            var fw5 = NuGetFramework.Parse("xamarinios");
+            var fw6 = NuGetFramework.Parse("sl5");
+            // package-based in the precedence list
+            var fw7 = NuGetFramework.Parse("netstandard1.1");
+            var fw8 = NuGetFramework.Parse("dotnet5.2");
+            // package-based not in the precedence list
+            var fw9 = NuGetFramework.Parse("dnxcore50");
+
+            var list = new List<NuGetFramework>
+            {
+                fw3,
+                fw6,
+                fw5,
+                fw9,
+                fw2,
+                fw4,
+                fw1,
+                fw7,
+                fw8,
+            };
+
+            // Act
+            list = list
+                .OrderBy(f => f, new FrameworkPrecedenceSorter(DefaultFrameworkNameProvider.Instance))
+                .ThenByDescending(f => f, new NuGetFrameworkSorter())
+                .ToList();
+
+            // Assert
+            Assert.Equal(fw1, list[0]);
+            Assert.Equal(fw2, list[1]);
+            Assert.Equal(fw3, list[2]);
+            Assert.Equal(fw4, list[3]);
+            Assert.Equal(fw5, list[4]);
+            Assert.Equal(fw6, list[5]);
+            Assert.Equal(fw7, list[6]);
+            Assert.Equal(fw8, list[7]);
+            Assert.Equal(fw9, list[8]);
+        }
+
+        [Fact]
+        public void FrameworkComparer_NonPackageBasedFrameworkPreferredAndNormalOrdering()
         {
             // Arrange
             var fw1 = NuGetFramework.Parse("net45");
@@ -25,24 +74,25 @@ namespace NuGet.Test
             var fw9 = NuGetFramework.Parse("sl4");
             var fw10 = NuGetFramework.Parse("sl3");
 
-            var list = new List<NuGetFramework>()
+            var list = new List<NuGetFramework>
             {
-                fw1,
                 fw3,
                 fw5,
+                fw10,
+                fw9,
                 fw2,
                 fw4,
+                fw1,
                 fw6,
                 fw7,
                 fw8,
-                fw9,
-                fw10,
             };
 
             // Act
-            list = list.OrderBy(f => f, new FrameworkPrecedenceSorter(DefaultFrameworkNameProvider.Instance))
-                       .ThenByDescending(f => f, new NuGetFrameworkSorter())
-                       .ToList();
+            list = list
+                .OrderBy(f => f, new FrameworkPrecedenceSorter(DefaultFrameworkNameProvider.Instance))
+                .ThenByDescending(f => f, new NuGetFrameworkSorter())
+                .ToList();
 
             // Assert
             Assert.Equal(fw1, list[0]);
@@ -58,28 +108,29 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public void FrameworkComparer_PreferredFrameworkOrdering()
+        public void FrameworkComparer_PackageBasedFrameworkPreferredAndNormalOrdering()
         {
             // Arrange
-            var fw1 = NuGetFramework.Parse("net45");
-            var fw2 = NuGetFramework.Parse("netcore45");
-            var fw3 = NuGetFramework.Parse("win81");
-            var fw4 = NuGetFramework.Parse("wpa81");
-            var fw5 = NuGetFramework.Parse("sl5");
+            var fw1 = NuGetFramework.Parse("netstandard1.1");
+            var fw2 = NuGetFramework.Parse("netstandard1.0");
+            var fw3 = NuGetFramework.Parse("dotnet5.2");
+            var fw4 = NuGetFramework.Parse("dotnet5.1");
+            var fw5 = NuGetFramework.Parse("dnxcore50");
 
-            var list = new List<NuGetFramework>()
+            var list = new List<NuGetFramework>
             {
-                fw1, 
                 fw3,
                 fw5,
-                fw2, 
+                fw2,
                 fw4,
+                fw1
             };
 
-            var comparer = new FrameworkPrecedenceSorter(DefaultFrameworkNameProvider.Instance);
-
             // Act
-            list.Sort(comparer);
+            list = list
+                .OrderBy(f => f, new FrameworkPrecedenceSorter(DefaultFrameworkNameProvider.Instance))
+                .ThenByDescending(f => f, new NuGetFrameworkSorter())
+                .ToList();
 
             // Assert
             Assert.Equal(fw1, list[0]);

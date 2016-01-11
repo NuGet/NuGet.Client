@@ -270,6 +270,8 @@ namespace NuGet.Frameworks
             {
                 return FrameworkConstants.FrameworkIdentifiers.NetPlatform
                     .Equals(Framework, StringComparison.OrdinalIgnoreCase)
+                    || FrameworkConstants.FrameworkIdentifiers.NetStandard
+                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
                     || FrameworkConstants.FrameworkIdentifiers.DnxCore
                     .Equals(Framework, StringComparison.OrdinalIgnoreCase);
             }
