@@ -12,8 +12,8 @@ namespace NuGet.Versioning
     /// </summary>
     public class VersionRangeFormatter : IFormatProvider, ICustomFormatter
     {
-        private const string LessThanOrEqualTo = "\u2264";
-        private const string GreaterThanOrEqualTo = "\u2265";
+        private const string LessThanOrEqualTo = "<=";
+        private const string GreaterThanOrEqualTo = ">=";
         private const string ZeroN = "{0:N}";
         private readonly VersionFormatter _versionFormatter;
 

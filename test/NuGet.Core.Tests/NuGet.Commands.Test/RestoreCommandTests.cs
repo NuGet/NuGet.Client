@@ -852,7 +852,7 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 Assert.Equal(3, logger.Warnings); // We'll get the warning for each runtime and for the runtime-less restore.
-                Assert.Contains("Dependency specified was Newtonsoft.Json (≥ 7.0.0) but ended up with Newtonsoft.Json 7.0.1.", logger.Messages);
+                Assert.Contains("Dependency specified was Newtonsoft.Json (>= 7.0.0) but ended up with Newtonsoft.Json 7.0.1.", logger.Messages);
             }
         }
 
