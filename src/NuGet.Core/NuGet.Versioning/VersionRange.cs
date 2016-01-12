@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NuGet.Versioning
 {
@@ -261,6 +262,79 @@ namespace NuGet.Versioning
 
             // Favor lower versions
             return current > considering;
+        }
+
+        /// <summary>
+        /// Removes the floating snapshot part of the minimum version if it exists.
+        /// Ex: 1.0.0-* -> 1.0.0
+        /// </summary>
+        public VersionRange ToNonSnapshotRange()
+        {
+            // For non-floating versions there is no change
+            var result = this;
+
+            if (IsFloating)
+            {
+                var minVersion = MinVersion;
+
+                if (Float.FloatBehavior == NuGetVersionFloatBehavior.Prerelease)
+                {
+                    minVersion = GetNonSnapshotVersion(minVersion);
+                }
+
+                // Drop the floating range from the new range regardless of the float type
+                result = new VersionRange(
+                    minVersion,
+                    IsMinInclusive,
+                    MaxVersion,
+                    IsMaxInclusive,
+                    IncludePrerelease);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Remove the snapshot version section of a version
+        /// </summary>
+        private static NuGetVersion GetNonSnapshotVersion(NuGetVersion version)
+        {
+            var nonSnapshotVersion = version;
+
+            var lastLabel = version.ReleaseLabels.LastOrDefault() ?? string.Empty;
+
+            if (lastLabel.EndsWith("-", StringComparison.Ordinal))
+            {
+                var fixedReleaseLabel = string.Empty;
+
+                if (lastLabel.EndsWith("--", StringComparison.Ordinal))
+                {
+                    // For labels such as rc1-* an additional - is added by nuget
+                    fixedReleaseLabel = lastLabel.Substring(0, lastLabel.Length - 2);
+                }
+                else
+                {
+                    // Remove the - for 1.0.0-* (1.0.0--)
+                    fixedReleaseLabel = lastLabel.Substring(0, lastLabel.Length - 1);
+                }
+
+                var fixedLabels = version.ReleaseLabels.Take(version.ReleaseLabels.Count() - 1).ToList();
+
+                if (!string.IsNullOrEmpty(fixedReleaseLabel))
+                {
+                    fixedLabels.Add(fixedReleaseLabel);
+                }
+
+                nonSnapshotVersion = new NuGetVersion(
+                    version.Major,
+                    version.Minor,
+                    version.Patch,
+                    version.Revision,
+                    fixedLabels,
+                    version.Metadata);
+            }
+
+            return nonSnapshotVersion;
         }
     }
 }

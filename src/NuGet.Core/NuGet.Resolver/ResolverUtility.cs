@@ -182,7 +182,7 @@ namespace NuGet.Resolver
             // The range may not exist, or may inclue all versions. For this reason we trim the string afterwards to remove extra spaces due to empty ranges
             var range = package.FindDependencyRange(dependencyId);
             var dependencyString = String.Format(CultureInfo.InvariantCulture, "{0} {1}", dependencyId,
-                range == null ? string.Empty : range.PrettyPrint()).Trim();
+                range == null ? string.Empty : range.ToNonSnapshotRange().PrettyPrint()).Trim();
 
             // A 1.0.0 dependency: B (= 1.5)
             return $"'{package.Id} {package.Version.ToNormalizedString()} {Strings.DependencyConstraint}: {dependencyString}'";
