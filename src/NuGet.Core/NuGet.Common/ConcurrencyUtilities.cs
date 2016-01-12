@@ -14,7 +14,7 @@ namespace NuGet.Common
 {
     public static class ConcurrencyUtilities
     {
-        private static readonly FileOptions _fileOptions = FileOptions.DeleteOnClose | FileOptions.Asynchronous;
+        private static readonly FileOptions _fileOptions = FileOptions.None;
 
         public async static Task<T> ExecuteWithFileLocked<T>(string filePath,
             Func<CancellationToken, Task<T>> action,
