@@ -47,7 +47,7 @@ namespace NuGet.Common
                     }
                     return Path.Combine(programFilesPath, "MSBuild", "14.0", "Bin", "MSBuild.exe");
                 case NuGetFolderPath.Temp:
-                    return Path.Combine(Path.GetTempPath(), "NuGet-Scratch");
+                    return Path.Combine(Path.GetTempPath(), "NuGetScratch");
                 default:
                     return null;
             }

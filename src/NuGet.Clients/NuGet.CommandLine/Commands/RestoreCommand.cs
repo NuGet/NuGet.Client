@@ -271,6 +271,10 @@ namespace NuGet.CommandLine
                 // Determine which lock file version to use
                 request.LockFileVersion = LockFileFormat.Version;
 
+                // MSBuild for VS2015U1 fails when projects are in the lock file since it treats them as packages.
+                // To work around that NuGet will downgrade the lock file if there are only csproj references.
+                // Projects with zero project references can go to v2, and projects with xproj references must be
+                // at least v2 to work.
                 if (childReferences.Count > 0
                     && inputFileName?.EndsWith(XProjUtility.XProjExtension) == false
                     && !childReferences.Any(child => 

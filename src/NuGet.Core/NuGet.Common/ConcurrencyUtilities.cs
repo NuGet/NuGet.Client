@@ -14,6 +14,8 @@ namespace NuGet.Common
 {
     public static class ConcurrencyUtilities
     {
+        private static readonly FileOptions _fileOptions = FileOptions.DeleteOnClose | FileOptions.Asynchronous;
+
         public async static Task<T> ExecuteWithFileLocked<T>(string filePath,
             Func<CancellationToken, Task<T>> action,
             CancellationToken token)
@@ -29,9 +31,18 @@ namespace NuGet.Common
             while (true)
             {
                 FileStream fs = null;
+
                 try
                 {
-                    fs = new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+                    // Only one caller will be able to get the file lock. Once the file is
+                    // disposed the lock will be removed and the file will be cleaned up.
+                    fs = new FileStream(
+                        lockPath,
+                        FileMode.OpenOrCreate,
+                        FileAccess.ReadWrite,
+                        FileShare.None,
+                        bufferSize: 512,
+                        options: _fileOptions);
                 }
                 catch (DirectoryNotFoundException)
                 {
@@ -45,16 +56,20 @@ namespace NuGet.Common
                     continue;
                 }
 
-                try
-                {
-                    await fs.WriteAsync(bytes, 0, bytes.Length, token);
-                }
-                catch
-                {
-                }
-
                 using (fs)
                 {
+                    try
+                    {
+                        await fs.WriteAsync(bytes, 0, bytes.Length, token);
+                        await fs.FlushAsync(token);
+                    }
+                    catch
+                    {
+                        // Ignore errors when writing out diagnostic details
+                        token.ThrowIfCancellationRequested();
+                    }
+
+                    // Run the critical section
                     return await action(token);
                 }
             }
@@ -71,15 +86,6 @@ namespace NuGet.Common
                 }
 
                 _basePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), "lock");
-
-                //if (RuntimeEnvironmentHelper.IsWindows || !Directory.Exists("/var/lock/"))
-                //{
-                //    _basePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), "lock");
-                //}
-                //else
-                //{
-                //    _basePath = "/var/lock/nuget/";
-                //}
 
                 Directory.CreateDirectory(_basePath);
 
