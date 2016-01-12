@@ -121,7 +121,11 @@ namespace NuGet.Commands
                     var downgraded = downgrade.DowngradedFrom;
                     var downgradedBy = downgrade.DowngradedTo;
 
-                    _log.LogWarning(Strings.FormatLog_DowngradeWarning(downgraded.Key.Name, downgraded.Key.VersionRange.MinVersion, downgradedBy.Key.VersionRange.MinVersion) + $" {Environment.NewLine} {downgraded.GetPath()} {Environment.NewLine} {downgradedBy.GetPath()}");
+                    // Not all dependencies have a min version, if one does not exist use 0.0.0
+                    var fromVersion = downgraded.Key.VersionRange.MinVersion ?? new NuGetVersion(0, 0, 0);
+                    var toVersion = downgradedBy.Key.VersionRange.MinVersion ?? new NuGetVersion(0, 0, 0);
+
+                    _log.LogWarning(Strings.FormatLog_DowngradeWarning(downgraded.Key.Name, fromVersion, toVersion) + $" {Environment.NewLine} {downgraded.GetPath()} {Environment.NewLine} {downgradedBy.GetPath()}");
                 }
             }
 
@@ -197,13 +201,13 @@ namespace NuGet.Commands
                     // Replace the project spec with the passed in package spec,
                     // for installs which are done in memory first this will be
                     // different from the one on disk
-                    updatedExternalProjects.RemoveAll(project => 
+                    updatedExternalProjects.RemoveAll(project =>
                         project.UniqueName.Equals(rootProject.UniqueName, StringComparison.Ordinal));
 
                     var updatedReference = new ExternalProjectReference(
-                        rootProject.UniqueName, 
-                        _request.Project, 
-                        rootProject.MSBuildProjectPath, 
+                        rootProject.UniqueName,
+                        _request.Project,
+                        rootProject.MSBuildProjectPath,
                         rootProject.ExternalProjectReferences);
 
                     updatedExternalProjects.Add(updatedReference);
@@ -448,7 +452,7 @@ namespace NuGet.Commands
                     foreach (var unresolved in graph.Unresolved)
                     {
                         _log.LogError(Strings.FormatLog_UnresolvedDependency(unresolved.Name,
-                            unresolved.VersionRange.PrettyPrint(),
+                            unresolved.VersionRange.ToNonSnapshotRange().PrettyPrint(),
                             graph.Name));
                     }
                 }
@@ -720,8 +724,8 @@ namespace NuGet.Commands
                             Dependencies = graphItem.Data.Dependencies
                                 .Where(
                                     d => d.LibraryRange.TypeConstraint == null
-                                    || d.LibraryRange.TypeConstraint == LibraryTypes.Package 
-                                    || d.LibraryRange.TypeConstraint == LibraryTypes.Project 
+                                    || d.LibraryRange.TypeConstraint == LibraryTypes.Package
+                                    || d.LibraryRange.TypeConstraint == LibraryTypes.Project
                                     || d.LibraryRange.TypeConstraint == LibraryTypes.ExternalProject)
                                 .Select(d => GetDependencyVersionRange(d))
                                 .ToList()
@@ -729,7 +733,7 @@ namespace NuGet.Commands
 
                         object compileAssetObject;
                         if (localMatch.LocalLibrary.Items.TryGetValue(
-                            KnownLibraryProperties.CompileAsset, 
+                            KnownLibraryProperties.CompileAsset,
                             out compileAssetObject))
                         {
                             var item = new LockFileItem((string)compileAssetObject);
@@ -828,11 +832,17 @@ namespace NuGet.Commands
         private static PackageDependency GetDependencyVersionRange(LibraryDependency dependency)
         {
             var range = dependency.LibraryRange.VersionRange;
-            
+
             if (range == null && dependency.LibraryRange.TypeConstraint == LibraryTypes.ExternalProject)
             {
                 // For csproj -> csproj type references where there is no range, use 1.0.0
                 range = VersionRange.Parse("1.0.0");
+            }
+            else
+            {
+                // For project dependencies drop the snapshot version.
+                // Ex: 1.0.0-* -> 1.0.0
+                range = range.ToNonSnapshotRange();
             }
 
             return new PackageDependency(dependency.Name, range);

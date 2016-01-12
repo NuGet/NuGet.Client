@@ -10,6 +10,29 @@ namespace NuGet.Versioning.Test
     public class VersionRangeTests
     {
         [Theory]
+        [InlineData("1.0.0", "1.0.0")]
+        [InlineData("1.0.0-beta", "1.0.0-beta")]
+        [InlineData("1.0.0-*", "1.0.0")]
+        [InlineData("2.0.0-*", "2.0.0")]
+        [InlineData("1.0.0-rc1-*", "1.0.0-rc1")]
+        [InlineData("1.0.0-5.1.*", "1.0.0-5.1.0")]
+        [InlineData("1.0.0-5.1.0-*", "1.0.0-5.1.0")]
+        [InlineData("1.0.*", "1.0.0")]
+        [InlineData("1.*", "1.0.0")]
+        [InlineData("*", "(, )")]
+        public void VersionRange_VerifyNonSnapshotVersion(string snapshot, string expected)
+        {
+            // Arrange
+            var range = VersionRange.Parse(snapshot);
+
+            // Act
+            var updated = range.ToNonSnapshotRange();
+
+            // Assert
+            Assert.Equal(expected, updated.ToLegacyShortString());
+        }
+
+        [Theory]
         [InlineData("[1.0.0]")]
         [InlineData("[1.0.0, 2.0.0]")]
         [InlineData("[1.0.0, 2.0.0]")]
