@@ -62,7 +62,7 @@ namespace NuGet.Common
                     {
                         // This happens when redirecting output to a file, on
                         // Linux and OS X (running with Mono).
-                        return int.MaxValue;
+                        return 80;
                     }
                 }
                 catch (IOException)
