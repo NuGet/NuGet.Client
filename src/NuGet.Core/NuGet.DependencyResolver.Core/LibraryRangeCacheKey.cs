@@ -3,10 +3,9 @@
 
 using System;
 using System.Globalization;
-using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Versioning;
+using NuGet.Shared;
 
 namespace NuGet.DependencyResolver
 {

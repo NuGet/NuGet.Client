@@ -17,6 +17,19 @@ namespace NuGet.ProjectModel
 {
     public class JsonPackageSpecReader
     {
+        /// <summary>
+        /// Load and parse a project.json file
+        /// </summary>
+        /// <param name="name">project name</param>
+        /// <param name="packageSpecPath">file path</param>
+        public static PackageSpec GetPackageSpec(string name, string packageSpecPath)
+        {
+            using (var stream = new FileStream(packageSpecPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                return GetPackageSpec(stream, name, packageSpecPath);
+            }
+        }
+
         public static PackageSpec GetPackageSpec(string json, string name, string packageSpecPath)
         {
             var ms = new MemoryStream(Encoding.UTF8.GetBytes(json));

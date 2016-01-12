@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq;
-using NuGet.Common;
-using NuGet.Frameworks;
+using NuGet.Shared;
 
 namespace NuGet.Frameworks
 {

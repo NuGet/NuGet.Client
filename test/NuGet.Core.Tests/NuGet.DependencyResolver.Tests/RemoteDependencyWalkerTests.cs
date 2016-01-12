@@ -852,7 +852,7 @@ namespace NuGet.DependencyResolver.Tests
 
             public TestPackage Package(string id, NuGetVersion version)
             {
-                var libraryIdentity = new LibraryIdentity { Name = id, Version = version, Type = "Package" };
+                var libraryIdentity = new LibraryIdentity { Name = id, Version = version, Type = LibraryTypes.Package };
 
                 List<LibraryDependency> dependencies;
                 if (!_graph.TryGetValue(libraryIdentity, out dependencies))

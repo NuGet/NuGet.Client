@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "NuGet.Versioning": "3.4.0-*",
-    "NuGet.Common": {
+    "NuGet.Shared": {
       "type": "build",
       "version": "3.4.0-*"
     }

@@ -35,7 +35,10 @@ namespace NuGet.Versioning.Test
             var versions = Parse(version);
 
             // Assert
-            versions.ForEach(v => { Assert.Equal(version, v.ToNormalizedString()); });
+            foreach (var v in versions)
+            {
+                Assert.Equal(version, v.ToNormalizedString());
+            }
         }
 
         [Theory]
@@ -49,7 +52,10 @@ namespace NuGet.Versioning.Test
             var versions = Parse(version);
 
             // Assert
-            versions.ForEach(v => { Assert.Equal(expected, v.Release); });
+            foreach (var v in versions)
+            {
+                Assert.Equal(expected, v.Release);
+            }
         }
 
         [Theory]
@@ -65,7 +71,10 @@ namespace NuGet.Versioning.Test
             var versions = Parse(version);
 
             // Assert
-            versions.ForEach(v => { Assert.Equal(expected, v.ReleaseLabels); });
+            foreach (var v in versions)
+            {
+                Assert.Equal(expected, v.ReleaseLabels);
+            }
         }
 
         [Theory]
@@ -81,7 +90,10 @@ namespace NuGet.Versioning.Test
             var versions = Parse(version);
 
             // Assert
-            versions.ForEach(v => { Assert.Equal(expected, v.IsPrerelease); });
+            foreach (var v in versions)
+            {
+                Assert.Equal(expected, v.IsPrerelease);
+            }
         }
 
         [Theory]
@@ -95,7 +107,10 @@ namespace NuGet.Versioning.Test
             var versions = Parse(version);
 
             // Assert
-            versions.ForEach(v => { Assert.Equal(expected, v.Metadata); });
+            foreach (var v in versions)
+            {
+                Assert.Equal(expected, v.Metadata);
+            }
         }
 
         [Theory]
@@ -112,7 +127,10 @@ namespace NuGet.Versioning.Test
             var versions = Parse(version);
 
             // Assert
-            versions.ForEach(v => { Assert.Equal(expected, v.HasMetadata); });
+            foreach (var v in versions)
+            {
+                Assert.Equal(expected, v.HasMetadata);
+            }
         }
 
         [Theory]
@@ -128,12 +146,12 @@ namespace NuGet.Versioning.Test
             var versions = Parse(version);
 
             // Assert
-            versions.ForEach(v =>
-                {
-                    Assert.Equal(major, v.Major);
-                    Assert.Equal(minor, v.Minor);
-                    Assert.Equal(patch, v.Patch);
-                });
+            foreach (var v in versions)
+            {
+                Assert.Equal(major, v.Major);
+                Assert.Equal(minor, v.Minor);
+                Assert.Equal(patch, v.Patch);
+            }
         }
 
         // All possible ways to parse a version from a string

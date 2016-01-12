@@ -1281,7 +1281,8 @@ EndProject");
                     repositoryPath,
                     "-solutionDir",
                     workingPath,
-                    "project.json"
+                    "project.json",
+                    "-verbosity detailed"
                 };
 
                 // Act
@@ -1292,7 +1293,7 @@ EndProject");
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
                 var packageFileA = Path.Combine(
                     workingPath,
                     @"..\..\GlobalPackages2\packageA\1.1.0\packageA.1.1.0.nupkg");

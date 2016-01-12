@@ -148,7 +148,7 @@
     <value>Using packages directory: {0}.</value>
   </data>
   <data name="Restore_Arg_ProjectName_Description" xml:space="preserve">
-    <value>The path to the project to restore for, either a project.json or the directory containing it. Defaults to the current directory.</value>
+    <value>List of projects and project folders to restore. Each value can be: a path to a project.json or global.json file, or a folder to recursively search for project.json files.</value>
   </data>
   <data name="Restore_Description" xml:space="preserve">
     <value>Restores packages for a project and writes a lock file.</value>
@@ -161,6 +161,9 @@
   </data>
   <data name="Restore_Switch_Parallel_Description" xml:space="preserve">
     <value>The number of concurrent tasks to use when restoring. Defaults to {0}; pass 'none' to run without concurrency.</value>
+  </data>
+  <data name="Restore_Switch_Runtime_Description" xml:space="preserve">
+    <value>List of runtime identifiers to restore for.</value>
   </data>
   <data name="Restore_Switch_Source_Description" xml:space="preserve">
     <value>Specifies a NuGet package source to use during the restore.</value>

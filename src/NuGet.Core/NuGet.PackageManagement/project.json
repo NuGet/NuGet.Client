@@ -9,7 +9,7 @@
     "NuGet.Commands": "3.4.0-*",
     "NuGet.Protocol.Core.v2": "3.4.0-*",
     "NuGet.Resolver": "3.4.0-*",
-    "NuGet.Common": {
+    "NuGet.Shared": {
       "version": "3.4.0-*",
       "type": "build"
     }

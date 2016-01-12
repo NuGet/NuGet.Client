@@ -1,20 +1,68 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using Newtonsoft.Json.Linq;
+using NuGet.Configuration;
+using NuGet.ProjectModel;
+using NuGet.Test.Utility;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
-using NuGet.Configuration;
-using NuGet.ProjectModel;
-using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Commands.Test
 {
     public class UWPRestoreTests
     {
+        // Verify that a v1 lock file can be parsed without crashing.
+        [Fact]
+        public void UWPRestore_ReadV1LockFile()
+        {
+            // Arrange
+            var expectedStream = GetResource("NuGet.Commands.Test.compiler.resources.uwpBlankAppV1Original.json");
+
+            LockFile lockFile = null;
+
+            using (var reader = new StreamReader(expectedStream))
+            {
+                var format = new LockFileFormat();
+
+                // Act
+                lockFile = format.Parse(reader.ReadToEnd(), "c:\\project.lock.json");
+            }
+
+            // Assert
+            Assert.NotNull(lockFile);
+        }
+
+        [Fact]
+        public void UWPRestore_ReadLockFileRoundTrip()
+        {
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var expectedStream = GetResource("NuGet.Commands.Test.compiler.resources.uwpBlankAppV2.json");
+
+                JObject json = null;
+                var format = new LockFileFormat();
+
+                using (var reader = new StreamReader(expectedStream))
+                {
+                    json = JObject.Parse(reader.ReadToEnd());
+                }
+
+                var path = Path.Combine(workingDir, "project.lock.json");
+
+                // Act
+                var lockFile = format.Parse(json.ToString(), path);
+
+                format.Write(path, lockFile);
+                var jsonOutput = JObject.Parse(File.ReadAllText(path));
+
+                // Assert
+                Assert.Equal(json.ToString(), jsonOutput.ToString());
+            }
+        }
+
         [Fact]
         public async Task UWPRestore_VerifySatellitePackagesAreCompatibleInPCL()
         {
@@ -238,9 +286,7 @@ namespace NuGet.Commands.Test
                 var logger = new TestLogger();
                 var command = new RestoreCommand(logger, request);
 
-#if !DNXCORE50
-                var expectedStream = Assembly.GetExecutingAssembly()
-                    .GetManifestResourceStream("NuGet.Commands.Test.compiler.resources.uwpBlankApp.json");
+                var expectedStream = GetResource("NuGet.Commands.Test.compiler.resources.uwpBlankAppV2.json");
 
                 JObject expectedJson = null;
 
@@ -248,7 +294,6 @@ namespace NuGet.Commands.Test
                 {
                     expectedJson = JObject.Parse(reader.ReadToEnd());
                 }
-#endif
 
                 // Act
                 var result = await command.ExecuteAsync();
@@ -257,14 +302,80 @@ namespace NuGet.Commands.Test
                 var lockFileJson = JObject.Parse(File.OpenText(request.LockFilePath).ReadToEnd());
 
                 // Assert
+                Assert.True(result.Success);
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(118, result.GetAllInstalled().Count);
 
-#if !DNXCORE50
                 Assert.Equal(expectedJson.ToString(), lockFileJson.ToString());
-#endif
+            }
+        }
+
+        // Verify that File > New Project > Blank UWP App can restore without errors or warnings.
+        [Fact]
+        public async Task UWPRestore_BlankUWPAppV1()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://api.nuget.org/v3/index.json"));
+
+            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var configJson = JObject.Parse(@"{
+                  ""dependencies"": {
+                    ""Microsoft.NETCore.UniversalWindowsPlatform"": ""5.0.0""
+                  },
+                  ""frameworks"": {
+                    ""uap10.0"": {}
+                  },
+                  ""runtimes"": {
+                    ""win10-arm"": {},
+                    ""win10-arm-aot"": {},
+                    ""win10-x86"": {},
+                    ""win10-x86-aot"": {},
+                    ""win10-x64"": {},
+                    ""win10-x64-aot"": {}
+                  }
+                }");
+
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+                var request = new RestoreRequest(spec, sources, packagesDir);
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                // Set the lock file version to v1 to force a downgrade
+                request.LockFileVersion = 1;
+
+                var lockFileFormat = new LockFileFormat();
+                var logger = new TestLogger();
+                var command = new RestoreCommand(logger, request);
+
+                var expectedStream = GetResource("NuGet.Commands.Test.compiler.resources.uwpBlankAppV1.json");
+
+                JObject expectedJson = null;
+
+                using (var reader = new StreamReader(expectedStream))
+                {
+                    expectedJson = JObject.Parse(reader.ReadToEnd());
+                }
+
+                // Act
+                var result = await command.ExecuteAsync();
+                result.Commit(logger);
+
+                var lockFileJson = JObject.Parse(File.OpenText(request.LockFilePath).ReadToEnd());
+
+                // Assert
+                Assert.True(result.Success);
+                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+                Assert.Equal(0, logger.Errors);
+                Assert.Equal(0, logger.Warnings);
+                Assert.Equal(118, result.GetAllInstalled().Count);
+
+                Assert.Equal(expectedJson.ToString(), lockFileJson.ToString());
             }
         }
 
@@ -374,6 +485,11 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(140, result.GetAllInstalled().Count);
             }
+        }
+
+        private Stream GetResource(string name)
+        {
+            return GetType().GetTypeInfo().Assembly.GetManifestResourceStream(name);
         }
     }
 }

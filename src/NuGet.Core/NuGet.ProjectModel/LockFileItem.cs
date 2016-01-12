@@ -34,8 +34,8 @@ namespace NuGet.ProjectModel
 
             if (string.Equals(Path, other.Path, StringComparison.OrdinalIgnoreCase))
             {
-                return Properties.OrderBy(pair => pair.Key)
-                    .SequenceEqual(other.Properties.OrderBy(pair => pair.Key));
+                return Properties.OrderBy(pair => pair.Key, StringComparer.Ordinal)
+                    .SequenceEqual(other.Properties.OrderBy(pair => pair.Key, StringComparer.Ordinal));
             }
 
             return false;
@@ -52,7 +52,7 @@ namespace NuGet.ProjectModel
 
             combiner.AddStringIgnoreCase(Path);
 
-            foreach (var pair in Properties.OrderBy(pair => pair.Key))
+            foreach (var pair in Properties.OrderBy(pair => pair.Key, StringComparer.Ordinal))
             {
                 combiner.AddObject(pair.Key);
                 combiner.AddObject(pair.Value);

@@ -323,8 +323,11 @@ namespace NuGetVSExtension
 
                 var enabledSources = SourceRepositoryProvider.GetRepositories();
 
+                // Cache p2ps discovered from DTE 
+                var referenceContext = new BuildIntegratedProjectReferenceContext(logger: this);
+
                 // No-op all project closures are up to date and all packages exist on disk.
-                if (await IsRestoreRequired(buildEnabledProjects, forceRestore))
+                if (await IsRestoreRequired(buildEnabledProjects, forceRestore, referenceContext))
                 {
                     var waitDialogFactory
                         = ServiceLocator.GetGlobalService<SVsThreadedWaitDialogFactory,
@@ -368,6 +371,7 @@ namespace NuGetVSExtension
                                         project,
                                         solutionDirectory,
                                         enabledSources,
+                                        referenceContext,
                                         Token);
                                 }
                                 catch (Exception ex)
@@ -400,14 +404,19 @@ namespace NuGetVSExtension
         /// where all packages are already on disk and no server requests are needed
         /// we can skip the restore after some validation checks.
         /// </summary>
-        private async Task<bool> IsRestoreRequired(List<BuildIntegratedProjectSystem> projects, bool forceRestore)
+        private async Task<bool> IsRestoreRequired(
+            List<BuildIntegratedProjectSystem> projects,
+            bool forceRestore,
+            BuildIntegratedProjectReferenceContext referenceContext)
         {
             try
             {
                 // Swap caches 
                 var oldCache = _buildIntegratedCache;
                 _buildIntegratedCache
-                    = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(projects);
+                    = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
+                        projects,
+                        referenceContext);
 
                 if (forceRestore)
                 {
@@ -424,7 +433,12 @@ namespace NuGetVSExtension
                 var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(Settings);
                 var pathResolver = new VersionFolderPathResolver(globalPackagesFolder);
 
-                if (BuildIntegratedRestoreUtility.IsRestoreRequired(projects, pathResolver))
+                var restoreRequired = await BuildIntegratedRestoreUtility.IsRestoreRequired(
+                    projects, 
+                    pathResolver, 
+                    referenceContext);
+
+                if (restoreRequired)
                 {
                     // The project.json file does not match the lock file
                     return true;
@@ -451,6 +465,7 @@ namespace NuGetVSExtension
             BuildIntegratedNuGetProject project,
             string solutionDirectory,
             IEnumerable<SourceRepository> enabledSources,
+            BuildIntegratedProjectReferenceContext context,
             CancellationToken token)
         {
             // Go off the UI thread to perform I/O operations
@@ -464,7 +479,7 @@ namespace NuGetVSExtension
 
             // Pass down the CancellationToken from the dialog
             var restoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                this,
+                context,
                 enabledSources,
                 effectiveGlobalPackagesFolder,
                 token);

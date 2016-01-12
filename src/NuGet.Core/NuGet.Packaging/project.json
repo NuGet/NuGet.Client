@@ -15,7 +15,8 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Common": {
+    "NuGet.Common": "3.4.0-*",
+    "NuGet.Shared": {
       "type": "build",
       "version": "3.4.0-*"
     },

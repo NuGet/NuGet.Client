@@ -29,14 +29,14 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static async Task<RestoreResult> RestoreAsync(
             BuildIntegratedNuGetProject project,
-            Logging.ILogger logger,
+            BuildIntegratedProjectReferenceContext context,
             IEnumerable<SourceRepository> sources,
             string effectiveGlobalPackagesFolder,
             CancellationToken token)
         {
             return await RestoreAsync(
                 project,
-                logger,
+                context,
                 sources,
                 effectiveGlobalPackagesFolder,
                 c => { },
@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static async Task<RestoreResult> RestoreAsync(
             BuildIntegratedNuGetProject project,
-            Logging.ILogger logger,
+            BuildIntegratedProjectReferenceContext context,
             IEnumerable<SourceRepository> sources,
             string effectiveGlobalPackagesFolder,
             Action<SourceCacheContext> cacheContextModifier,
@@ -58,7 +58,7 @@ namespace NuGet.PackageManagement
             var result = await RestoreAsync(
                 project,
                 project.PackageSpec,
-                logger,
+                context,
                 sources,
                 effectiveGlobalPackagesFolder,
                 cacheContextModifier,
@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement
             token.ThrowIfCancellationRequested();
 
             // Write out the lock file and msbuild files
-            result.Commit(logger);
+            result.Commit(context.Logger);
 
             return result;
         }
@@ -79,13 +79,14 @@ namespace NuGet.PackageManagement
         internal static async Task<RestoreResult> RestoreAsync(
             BuildIntegratedNuGetProject project,
             PackageSpec packageSpec,
-            Logging.ILogger logger,
+            BuildIntegratedProjectReferenceContext context,
             IEnumerable<SourceRepository> sources,
             string effectiveGlobalPackagesFolder,
             Action<SourceCacheContext> cacheContextModifier,
             CancellationToken token)
         {
             // Restoring packages
+            var logger = context.Logger;
             logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
                 Strings.BuildIntegratedPackageRestoreStarted,
                 project.ProjectName));
@@ -93,6 +94,7 @@ namespace NuGet.PackageManagement
             using (var request = new RestoreRequest(packageSpec, sources, effectiveGlobalPackagesFolder))
             {
                 request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
+                request.LockFileVersion = await GetLockFileVersion(project, context);
 
                 if (cacheContextModifier != null)
                 {
@@ -105,9 +107,8 @@ namespace NuGet.PackageManagement
                 request.ExistingLockFile = GetLockFile(lockFilePath, logger);
 
                 // Find the full closure of project.json files and referenced projects
-                var projectReferences = await project.GetProjectReferenceClosureAsync(logger);
+                var projectReferences = await project.GetProjectReferenceClosureAsync(context);
                 request.ExternalProjects = projectReferences
-                    .Where(reference => !string.IsNullOrEmpty(reference.PackageSpecPath))
                     .Select(reference => BuildIntegratedProjectUtility.ConvertProjectReference(reference))
                     .ToList();
 
@@ -169,7 +170,9 @@ namespace NuGet.PackageManagement
         /// The cache entry contains the project and the closure of project.json files.
         /// </summary>
         public static async Task<Dictionary<string, BuildIntegratedProjectCacheEntry>>
-            CreateBuildIntegratedProjectStateCache(IReadOnlyList<BuildIntegratedNuGetProject> projects)
+            CreateBuildIntegratedProjectStateCache(
+                IReadOnlyList<BuildIntegratedNuGetProject> projects,
+                BuildIntegratedProjectReferenceContext context)
         {
             var cache = new Dictionary<string, BuildIntegratedProjectCacheEntry>();
 
@@ -177,13 +180,37 @@ namespace NuGet.PackageManagement
             foreach (var project in projects)
             {
                 // Get all project.json file paths in the closure
-                var closure = await project.GetProjectReferenceClosureAsync();
-                var files = closure.Select(reference => reference.PackageSpecPath).ToList();
+                var closure = await project.GetProjectReferenceClosureAsync(context);
+
+                var files = new List<string>();
+
+                foreach (var reference in closure)
+                {
+                    if (!string.IsNullOrEmpty(reference.MSBuildProjectPath))
+                    {
+                        files.Add(reference.MSBuildProjectPath);
+                    }
+
+                    if (reference.PackageSpec != null)
+                    {
+                        Debug.Assert(reference.PackageSpec.FilePath != null, "Empty project.json path");
+                        files.Add(reference.PackageSpec.FilePath);
+                    }
+                }
+
+                var supportsProfiles = Enumerable.Empty<string>();
+
+                if (project.PackageSpec != null)
+                {
+                    supportsProfiles = project.PackageSpec.RuntimeGraph.Supports.Keys
+                        .OrderBy(p => p, StringComparer.Ordinal)
+                        .ToArray();
+                }
 
                 var projectInfo = new BuildIntegratedProjectCacheEntry(
                     project.JsonConfigPath,
                     files,
-                    project.PackageSpec.RuntimeGraph.Supports.Keys.OrderBy(p => p, StringComparer.Ordinal).ToArray());
+                    supportsProfiles);
 
                 var uniqueName = project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
 
@@ -218,8 +245,8 @@ namespace NuGet.PackageManagement
                     return true;
                 }
 
-                if (!item.Value.PackageSpecClosure.OrderBy(s => s)
-                    .SequenceEqual(projectInfo.PackageSpecClosure.OrderBy(s => s)))
+                if (!item.Value.ReferenceClosure.OrderBy(s => s, StringComparer.Ordinal)
+                    .SequenceEqual(projectInfo.ReferenceClosure.OrderBy(s => s, StringComparer.Ordinal)))
                 {
                     // The project closure has changed
                     return true;
@@ -242,9 +269,10 @@ namespace NuGet.PackageManagement
         /// If a full restore is required this will return false.
         /// </summary>
         /// <remarks>Floating versions and project.json files with supports require a full restore.</remarks>
-        public static bool IsRestoreRequired(
+        public static async Task<bool> IsRestoreRequired(
             IReadOnlyList<BuildIntegratedNuGetProject> projects,
-            VersionFolderPathResolver pathResolver)
+            VersionFolderPathResolver pathResolver,
+            BuildIntegratedProjectReferenceContext referenceContext)
         {
             var hashesChecked = new HashSet<string>();
 
@@ -285,7 +313,9 @@ namespace NuGet.PackageManagement
                 var lockFileFormat = new LockFileFormat();
                 var lockFile = lockFileFormat.Read(lockFilePath);
 
-                if (!lockFile.IsValidForPackageSpec(packageSpec))
+                var lockFileVersion = await GetLockFileVersion(project, referenceContext);
+
+                if (!lockFile.IsValidForPackageSpec(packageSpec, lockFileVersion))
                 {
                     // The project.json file has been changed and the lock file needs to be updated.
                     return true;
@@ -327,11 +357,12 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static async Task<IReadOnlyList<BuildIntegratedNuGetProject>> GetParentProjectsInClosure(
             ISolutionManager solutionManager,
-            BuildIntegratedNuGetProject target)
+            BuildIntegratedNuGetProject target,
+            BuildIntegratedProjectReferenceContext referenceContext)
         {
             var projects = solutionManager.GetNuGetProjects().OfType<BuildIntegratedNuGetProject>().ToList();
 
-            return await GetParentProjectsInClosure(projects, target);
+            return await GetParentProjectsInClosure(projects, target, referenceContext);
         }
 
         /// <summary>
@@ -339,7 +370,8 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static async Task<IReadOnlyList<BuildIntegratedNuGetProject>> GetParentProjectsInClosure(
             IReadOnlyList<BuildIntegratedNuGetProject> projects,
-            BuildIntegratedNuGetProject target)
+            BuildIntegratedNuGetProject target,
+            BuildIntegratedProjectReferenceContext referenceContext)
         {
             if (projects == null)
             {
@@ -360,13 +392,13 @@ namespace NuGet.PackageManagement
                 // do not count the target as a parent
                 if (!target.Equals(project))
                 {
-                    var closure = await project.GetProjectReferenceClosureAsync();
+                    var closure = await project.GetProjectReferenceClosureAsync(referenceContext);
 
                     // find all projects which have a child reference matching the same project.json path as the target
                     if (closure.Any(reference =>
-                        !string.IsNullOrEmpty(reference.PackageSpecPath) &&
+                        reference.PackageSpec != null &&
                         string.Equals(targetProjectJson,
-                            Path.GetFullPath(reference.PackageSpecPath),
+                            Path.GetFullPath(reference.PackageSpec.FilePath),
                             StringComparison.OrdinalIgnoreCase)))
                     {
                         parents.Add(project);
@@ -375,7 +407,7 @@ namespace NuGet.PackageManagement
             }
 
             // sort parents by name to make this more deterministic during restores
-            return parents.OrderBy(parent => parent.ProjectName).ToList();
+            return parents.OrderBy(parent => parent.ProjectName, StringComparer.Ordinal).ToList();
         }
 
         /// <summary>
@@ -395,5 +427,55 @@ namespace NuGet.PackageManagement
 
             return lockFile;
         }
+
+        /// <summary>
+        /// If the project is non-xproj and has no xproj references it may fallback to v1.
+        /// </summary>
+        public static async Task<int> GetLockFileVersion(
+            NuGetProject project,
+            BuildIntegratedProjectReferenceContext referenceContext)
+        {
+            var lockFileVersion = LockFileFormat.Version;
+
+            var buildProject = project as BuildIntegratedNuGetProject;
+
+            if (buildProject != null)
+            {
+                var references = await buildProject.GetProjectReferenceClosureAsync(referenceContext);
+
+                if (references.Count > 0 
+                    && !references.Any(reference =>
+                    reference.MSBuildProjectPath?.EndsWith(XProjUtility.XProjExtension) == true))
+                {
+                    // This is allowed to downgrade to v1
+                    // If using the older version of MSBuild and p2ps are added to the lock file
+                    // then this will break.
+                    lockFileVersion = 1;
+                }
+            }
+
+            // Override the lock file version using the env variable
+            if (_lockFileVersion == -1)
+            {
+                _lockFileVersion = 0;
+
+                int envValue;
+                if (Int32.TryParse(Environment.GetEnvironmentVariable("NUGET_LOCKFILE_VERSION"), out envValue))
+                {
+                    _lockFileVersion = envValue;
+                }
+            }
+
+            if (_lockFileVersion > 0)
+            {
+                lockFileVersion = _lockFileVersion;
+            }
+
+            return lockFileVersion;
+        }
+
+        // -1 unchecked
+        // 0 checked but not set
+        private static int _lockFileVersion = -1;
     }
 }

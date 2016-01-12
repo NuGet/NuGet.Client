@@ -115,14 +115,12 @@ namespace NuGet.CommandLine
                     for (int i = 0; currentFileIndex < restoreCount && i < newTasks; i++, currentFileIndex++)
                     {
                         var file = restoreInputs.V3RestoreFiles[currentFileIndex];
-                        HashSet<string> projectReferences = null;
-                        restoreInputs.ProjectReferenceLookup?.TryGetValue(file, out projectReferences);
 
                         var newTask = PerformNuGetV3RestoreAsync(
                             packagesDir,
                             file,
                             packageSources,
-                            projectReferences,
+                            restoreInputs.ProjectReferenceLookup,
                             repositories);
 
                         tasks.Add(newTask);
@@ -184,7 +182,7 @@ namespace NuGet.CommandLine
             string packagesDir,
             string inputPath,
             IReadOnlyCollection<Configuration.PackageSource> packageSources,
-            HashSet<string> projectReferences,
+            ProjectReferenceCache projectReferences,
             SourceRepository[] repositories)
         {
             var inputFileName = Path.GetFileName(inputPath);
@@ -222,10 +220,14 @@ namespace NuGet.CommandLine
             {
                 Console.LogVerbose($"Reading project file {inputPath}");
 
-                packageSpec = JsonPackageSpecReader.GetPackageSpec(
-                    File.ReadAllText(projectJsonPath),
-                    projectName,
-                    projectJsonPath);
+                packageSpec = projectReferences.GetProjectJson(projectJsonPath);
+
+                if (packageSpec == null)
+                {
+                    packageSpec = JsonPackageSpecReader.GetPackageSpec(
+                        projectName,
+                        projectJsonPath);
+                }
 
                 Console.LogVerbose($"Loaded project {packageSpec.Name} from {packageSpec.FilePath}");
 
@@ -262,29 +264,23 @@ namespace NuGet.CommandLine
                 // Resolve the packages directory
                 Console.LogVerbose($"Using packages directory: {request.PackagesDirectory}");
 
-                if (projectReferences != null)
+                // Find all external references
+                var childReferences = projectReferences.GetReferences(inputPath);
+                request.ExternalProjects.AddRange(childReferences);
+
+                // Determine which lock file version to use
+                request.LockFileVersion = LockFileFormat.Version;
+
+                if (childReferences.Count > 0
+                    && inputFileName?.EndsWith(XProjUtility.XProjExtension) == false
+                    && !childReferences.Any(child => 
+                    child.MSBuildProjectPath?.EndsWith(XProjUtility.XProjExtension) == true))
                 {
-                    foreach (var projectReference in projectReferences)
-                    {
-                        var projectDir = Path.GetDirectoryName(projectReference);
-                        var projectReferenceName = Path.GetFileNameWithoutExtension(projectReference);
-
-                        var childProjectJson = BuildIntegratedProjectUtility.GetProjectConfigPath(
-                            projectDir,
-                            projectReferenceName);
-
-                        // Determine if this is a p2p reference with project.json
-                        if (File.Exists(childProjectJson))
-                        {
-                            request.ExternalProjects.Add(
-                                new ExternalProjectReference(
-                                    projectReference,
-                                    childProjectJson,
-                                    projectReferences: Enumerable.Empty<string>()));
-                        }
-                    }
+                    // Fallback to v1 for non-xprojs with p2ps
+                    request.LockFileVersion = 1;
                 }
 
+                // Check if we can restore based on the nuget.config settings
                 CheckRequireConsent();
 
                 // Run the restore
@@ -754,6 +750,11 @@ namespace NuGet.CommandLine
 
         private class PackageRestoreInputs
         {
+            public PackageRestoreInputs()
+            {
+                ProjectReferenceLookup = new ProjectReferenceCache(Enumerable.Empty<string>());
+            }
+
             public bool RestoringWithSolutionFile => !string.IsNullOrEmpty(DirectoryOfSolutionFile);
 
             public string DirectoryOfSolutionFile { get; set; }
@@ -762,7 +763,7 @@ namespace NuGet.CommandLine
 
             public List<string> V3RestoreFiles { get; } = new List<string>();
 
-            public Dictionary<string, HashSet<string>> ProjectReferenceLookup { get; set; }
+            public ProjectReferenceCache ProjectReferenceLookup { get; set; }
         }
     }
 }

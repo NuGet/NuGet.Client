@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -705,6 +706,41 @@ EndProject";
         public static string GetNupkgFileName(string normalizedId, string normalizedVersion)
         {
             return string.Format(NupkgFileFormat, normalizedId, normalizedVersion);
+        }
+
+        /// <summary>
+        /// Creates a junction point from the specified directory to the specified target directory.
+        /// </summary>
+        /// <remarks>Only works on NTFS.</remarks>
+        /// <param name="junctionPoint">The junction point path</param>
+        /// <param name="targetDirectoryPath">The target directory</param>
+        /// <param name="overwrite">If true overwrites an existing reparse point or empty directory</param>
+        /// <exception cref="IOException">
+        /// Thrown when the junction point could not be created or when
+        /// an existing directory was found and <paramref name="overwrite" /> if false
+        /// </exception>
+        public static void CreateJunctionPoint(string junctionPoint, string targetDirectoryPath, bool overwrite)
+        {
+            targetDirectoryPath = Path.GetFullPath(targetDirectoryPath);
+
+            if (!Directory.Exists(targetDirectoryPath))
+            {
+                throw new IOException("Target path does not exist or is not a directory.");
+            }
+
+            if (Directory.Exists(junctionPoint))
+            {
+                if (!overwrite)
+                {
+                    throw new IOException("Directory already exists and overwrite parameter is false.");
+                }
+            }
+            else
+            {
+                Directory.CreateDirectory(junctionPoint);
+            }
+
+            NativeMethods.CreateReparsePoint(junctionPoint, targetDirectoryPath);
         }
     }
 }

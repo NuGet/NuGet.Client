@@ -1,14 +1,20 @@
 ﻿{
   "version": "3.4.0-*",
-  "description": "Strawman command line application for NuGet 3 restore",
+  "description": "NuGet 3 restore for dotnet CLI, DNX, and UWP",
   "compilationOptions": {
     "emitEntryPoint": true,
     "warningsAsErrors": true
   },
   "dependencies": {
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-rc2-16530",
     "Microsoft.NETCore.Platforms": "1.0.1-beta-*",
     "NuGet.Commands": "3.4.0-*",
-    "Microsoft.Framework.CommandLineUtils": {
+    "NuGet.Shared": {
+      "version": "3.4.0-*",
+      "type": "build"
+    },
+    "System.Runtime.Serialization.Primitives": "4.0.0",
+    "Microsoft.Extensions.CommandLineUtils.Sources": {
       "version": "1.0.0-*",
       "type": "build"
     }
@@ -17,8 +23,15 @@
     "NuGet.CommandLine.XPlat": "NuGet.CommandLine.XPlat"
   },
   "frameworks": {
+    "dnx451": {
+      "frameworkAssemblies": {
+        "Microsoft.Build.Framework": "14.0.0",
+        "Microsoft.Build": "14.0.0"
+      }
+    },
     "dnxcore50": {
       "dependencies": {
+        "System.Threading.Tasks": "4.0.11-beta-23516",
         "System.Console": "4.0.0-beta-23409"
       }
     }

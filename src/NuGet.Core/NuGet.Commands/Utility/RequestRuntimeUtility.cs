@@ -1,0 +1,53 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using NuGet.ProjectModel;
+
+namespace NuGet.Commands
+{
+    public static class RequestRuntimeUtility
+    {
+        /// <summary>
+        /// Combines the project runtimes with the request.RequestedRuntimes.
+        /// If those are both empty FallbackRuntimes is returned.
+        /// </summary>
+        internal static ISet<string> GetRestoreRuntimes(RestoreRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            var runtimes = new SortedSet<string>(StringComparer.Ordinal);
+
+            runtimes.UnionWith(request.Project.RuntimeGraph.Runtimes.Keys);
+            runtimes.UnionWith(request.RequestedRuntimes);
+
+            if (runtimes.Count < 1)
+            {
+                runtimes.UnionWith(request.FallbackRuntimes);
+            }
+
+            return runtimes;
+        }
+
+        /// <summary>
+        /// Infer the runtimes from the current environment.
+        /// </summary>
+        public static IEnumerable<string> GetDefaultRestoreRuntimes(string os, string runtimeOsName)
+        {
+            if (string.Equals(os, "Windows", StringComparison.Ordinal))
+            {
+                // Restore the minimum version of Windows. If the user wants other runtimes, they need to opt-in
+                yield return "win7-x86";
+                yield return "win7-x64";
+            }
+            else
+            {
+                yield return runtimeOsName + "-x86"; // We do support x86 on Linux/Darwin via Mono
+                yield return runtimeOsName + "-x64";
+            }
+        }
+    }
+}

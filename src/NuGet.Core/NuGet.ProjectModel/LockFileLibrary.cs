@@ -22,6 +22,16 @@ namespace NuGet.ProjectModel
 
         public IList<string> Files { get; set; } = new List<string>();
 
+        /// <summary>
+        /// Relative path to the project.json file for projects
+        /// </summary>
+        public string Path { get; set; }
+
+        /// <summary>
+        /// Relative path to the msbuild project file. Ex: xproj, csproj
+        /// </summary>
+        public string MSBuildProject { get; set; }
+
         public bool Equals(LockFileLibrary other)
         {
             if (other == null)
@@ -36,6 +46,8 @@ namespace NuGet.ProjectModel
 
             if (string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase)
                 && string.Equals(Type, other.Type, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(Path, other.Path, StringComparison.Ordinal)
+                && string.Equals(Path, other.MSBuildProject, StringComparison.Ordinal)
                 && IsServiceable == other.IsServiceable
                 && Sha512 == other.Sha512
                 && Version == other.Version)
@@ -61,6 +73,8 @@ namespace NuGet.ProjectModel
             combiner.AddObject(Sha512);
             combiner.AddObject(IsServiceable);
             combiner.AddObject(Version);
+            combiner.AddObject(Path);
+            combiner.AddObject(MSBuildProject);
 
             foreach (var file in Files.OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
             {

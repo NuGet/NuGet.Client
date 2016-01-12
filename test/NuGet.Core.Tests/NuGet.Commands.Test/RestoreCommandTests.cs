@@ -13,6 +13,7 @@ using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
+using System.Security.Cryptography;
 
 namespace NuGet.Commands.Test
 {
@@ -154,7 +155,7 @@ namespace NuGet.Commands.Test
                 var logger = new TestLogger();
 
                 // Create left over nupkg to simulate a corrupted install
-                var nupkgFolder = Path.Combine(packagesDir, "NewtonSoft.json", "7.0.1");
+                var nupkgFolder = Path.Combine(packagesDir, "Newtonsoft.Json", "7.0.1");
                 var nupkgPath = Path.Combine(nupkgFolder, "Newtonsoft.Json.7.0.1.nupkg");
 
                 Directory.CreateDirectory(nupkgFolder);
@@ -449,37 +450,32 @@ namespace NuGet.Commands.Test
                 var logger = new TestLogger();
                 var command = new RestoreCommand(logger, request);
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
 
                 var lockFilePath = Path.Combine(projectDir, "project.lock.json");
 
-                var lastDate = File.GetLastWriteTimeUtc(lockFilePath);
+                // Change the lock file and write it out to disk
+                var modifiedLockFile = result.LockFile;
+                modifiedLockFile.Version = 1000;
 
-                // wait half a second to make sure the time difference can be picked up
-                await Task.Delay(500);
+                var lockFormat = new LockFileFormat();
+                lockFormat.Write(File.OpenWrite(lockFilePath), modifiedLockFile);
 
                 request = new RestoreRequest(spec, sources, packagesDir);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
-                var previousLockFile = result.LockFile;
-
                 // Act
-
-                // Modify the previous lock file so that they are not equal
-                previousLockFile.Version = 1000;
-
-                request.ExistingLockFile = previousLockFile;
+                request.ExistingLockFile = modifiedLockFile;
 
                 command = new RestoreCommand(logger, request);
                 result = await command.ExecuteAsync();
                 result.Commit(logger);
 
-                var currentDate = File.GetLastWriteTimeUtc(lockFilePath);
+                var lockFileFromDisk = lockFormat.Read(lockFilePath);
 
                 // Assert
-                // The file should be written out
-                Assert.NotEqual(lastDate, currentDate);
+                // The file should be written out and the version should be updated
+                Assert.Equal(LockFileFormat.Version, lockFileFromDisk.Version);
             }
         }
 
@@ -510,9 +506,11 @@ namespace NuGet.Commands.Test
 
                 var lockFilePath = Path.Combine(projectDir, "project.lock.json");
 
-                // Act
-                var lastDate = File.GetLastWriteTime(lockFilePath);
+                // Add white space to the end of the file
+                var whitespace = $"{Environment.NewLine}{Environment.NewLine}{Environment.NewLine}";
+                File.AppendAllText(lockFilePath, whitespace);
 
+                // Act
                 request = new RestoreRequest(spec, sources, packagesDir);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
@@ -521,17 +519,13 @@ namespace NuGet.Commands.Test
 
                 command = new RestoreCommand(logger, request);
                 result = await command.ExecuteAsync();
-
-                // wait half a second to make sure the time difference can be picked up
-                await Task.Delay(500);
-
                 result.Commit(logger, true);
 
-                var currentDate = File.GetLastWriteTime(lockFilePath);
+                var output = File.ReadAllText(lockFilePath);
 
                 // Assert
-                // The file should be written out
-                Assert.NotEqual(lastDate, currentDate);
+                // The file should committed and it should clear the whitespace
+                Assert.False(output.EndsWith(whitespace, StringComparison.OrdinalIgnoreCase));
             }
         }
 

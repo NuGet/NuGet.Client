@@ -171,7 +171,7 @@ namespace NuGet.DependencyResolver
                         }
 
                         // HACK(anurse): Reference nodes win all battles.
-                        if (node.Item.Key.Type == "Reference")
+                        if (node.Item.Key.Type == LibraryTypes.Reference)
                         {
                             tracker.Lock(node.Item);
                         }

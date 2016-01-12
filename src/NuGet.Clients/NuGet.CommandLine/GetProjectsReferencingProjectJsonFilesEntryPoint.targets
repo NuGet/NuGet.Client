@@ -10,7 +10,8 @@
             Properties="
                 %(_MSBuildProjectReferenceExistent.SetConfiguration);
                 %(_MSBuildProjectReferenceExistent.SetPlatform);
-                CustomAfterMicrosoftCommonTargets=$(NuGetCustomAfterBuildTargetPath)"
+                CustomAfterMicrosoftCommonTargets=$(NuGetCustomAfterBuildTargetPath);
+                NuGetWriteEntryPoint=true"
             RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)">
          
             <Output

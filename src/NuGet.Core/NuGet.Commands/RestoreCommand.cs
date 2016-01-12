@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -38,6 +39,23 @@ namespace NuGet.Commands
 
         public RestoreCommand(ILogger logger, RestoreRequest request)
         {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            // Validate the lock file version requested
+            if (request.LockFileVersion < 1 || request.LockFileVersion > LockFileFormat.Version)
+            {
+                Debug.Fail($"Lock file version {_request.LockFileVersion} is not supported.");
+                throw new ArgumentOutOfRangeException(nameof(_request.LockFileVersion));
+            }
+
             _log = logger;
             _request = request;
         }
@@ -57,7 +75,7 @@ namespace NuGet.Commands
             bool relockFile = false;
             if (_request.ExistingLockFile != null
                 && _request.ExistingLockFile.IsLocked
-                && !_request.ExistingLockFile.IsValidForPackageSpec(_request.Project))
+                && !_request.ExistingLockFile.IsValidForPackageSpec(_request.Project, _request.LockFileVersion))
             {
                 // The lock file was locked, but the project.json is out of date
                 relockFile = true;
@@ -132,6 +150,12 @@ namespace NuGet.Commands
             // Generate Targets/Props files
             var msbuild = RestoreMSBuildFiles(_request.Project, graphs, localRepository, context);
 
+            // If the request is for a v1 lock file then downgrade it and remove all v2 properties
+            if (_request.LockFileVersion == 1)
+            {
+                DowngradeLockFileToV1(lockFile);
+            }
+
             return new RestoreResult(
                 _success,
                 graphs,
@@ -160,25 +184,39 @@ namespace NuGet.Commands
             var projectResolver = new PackageSpecResolver(_request.Project);
             var nugetRepository = Repository.Factory.GetCoreV3(_request.PackagesDirectory);
 
-            ExternalProjectReference externalProjectReference = null;
+            // External references
+            var updatedExternalProjects = new List<ExternalProjectReference>(_request.ExternalProjects);
+
             if (_request.ExternalProjects.Any())
             {
-                externalProjectReference = new ExternalProjectReference(
-                    _request.Project.Name,
-                    _request.Project.FilePath,
-                    _request.ExternalProjects.Select(p => p.UniqueName));
+                var rootProject = _request.ExternalProjects.SingleOrDefault(proj =>
+                     string.Equals(_request.Project.Name, proj.UniqueName, StringComparison.OrdinalIgnoreCase));
+
+                if (rootProject != null)
+                {
+                    // Replace the project spec with the passed in package spec,
+                    // for installs which are done in memory first this will be
+                    // different from the one on disk
+                    updatedExternalProjects.RemoveAll(project => 
+                        project.UniqueName.Equals(rootProject.UniqueName, StringComparison.Ordinal));
+
+                    var updatedReference = new ExternalProjectReference(
+                        rootProject.UniqueName, 
+                        _request.Project, 
+                        rootProject.MSBuildProjectPath, 
+                        rootProject.ExternalProjectReferences);
+
+                    updatedExternalProjects.Add(updatedReference);
+                }
+                else
+                {
+                    Debug.Fail("RestoreRequest.ExternaProjects contains references, but does not contain the top level references. Add the project we are restoring for.");
+                    throw new InvalidOperationException($"Missing external reference metadata for {_request.Project.Name}");
+                }
             }
 
             context.ProjectLibraryProviders.Add(
-                new LocalDependencyProvider(
-                    new PackageSpecReferenceDependencyProvider(projectResolver, externalProjectReference)));
-
-            if (_request.ExternalProjects != null)
-            {
-                context.ProjectLibraryProviders.Add(
-                    new LocalDependencyProvider(
-                        new ExternalProjectReferenceDependencyProvider(_request.ExternalProjects)));
-            }
+                    new PackageSpecReferenceDependencyProvider(projectResolver, updatedExternalProjects));
 
             context.LocalLibraryProviders.Add(
                 new SourceRepositoryDependencyProvider(nugetRepository, _log, _request.CacheContext));
@@ -208,7 +246,9 @@ namespace NuGet.Commands
                 // We care about TFM only and null RID for compilation purposes
                 projectFrameworkRuntimePairs.Add(new FrameworkRuntimePair(framework.FrameworkName, null));
 
-                foreach (var runtimeId in _request.Project.RuntimeGraph.Runtimes.Keys)
+                var runtimeIds = RequestRuntimeUtility.GetRestoreRuntimes(_request);
+
+                foreach (var runtimeId in runtimeIds)
                 {
                     projectFrameworkRuntimePairs.Add(new FrameworkRuntimePair(framework.FrameworkName, runtimeId));
                 }
@@ -510,6 +550,8 @@ namespace NuGet.Commands
             RemoteWalkContext context)
         {
             var lockFile = new LockFile();
+            lockFile.Version = _request.LockFileVersion;
+
             var resolver = new VersionFolderPathResolver(repository.RepositoryRoot);
             var previousLibraries = previousLockFile?.Libraries.ToDictionary(l => Tuple.Create(l.Name, l.Version));
 
@@ -518,57 +560,106 @@ namespace NuGet.Commands
                 string.Empty,
                 project.Dependencies
                     .Select(group => group.LibraryRange.ToLockFileDependencyGroupString())
-                    .OrderBy(group => group)));
+                    .OrderBy(group => group, StringComparer.Ordinal)));
 
             foreach (var frameworkInfo in project.TargetFrameworks
-                                            .OrderBy(framework => framework.FrameworkName.ToString()))
+                                            .OrderBy(framework => framework.FrameworkName.ToString(),
+                                                StringComparer.Ordinal))
             {
                 lockFile.ProjectFileDependencyGroups.Add(new ProjectFileDependencyGroup(
                     frameworkInfo.FrameworkName.ToString(),
                     frameworkInfo.Dependencies
                         .Select(x => x.LibraryRange.ToLockFileDependencyGroupString())
-                        .OrderBy(dependency => dependency)));
+                        .OrderBy(dependency => dependency, StringComparer.Ordinal)));
             }
 
             // Record all libraries used
-            foreach (var item in targetGraphs.SelectMany(g => g.Flattened).Distinct().OrderBy(x => x.Data.Match.Library))
+            foreach (var item in targetGraphs.SelectMany(g => g.Flattened).Distinct()
+                .OrderBy(x => x.Data.Match.Library))
             {
                 var library = item.Data.Match.Library;
-                var packageInfo = repository.FindPackagesById(library.Name)
-                    .FirstOrDefault(p => p.Version == library.Version);
 
-                if (packageInfo == null)
+                if (project.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase))
                 {
+                    // Do not include the project itself as a library.
                     continue;
                 }
 
-                var sha512 = File.ReadAllText(resolver.GetHashPath(packageInfo.Id, packageInfo.Version));
-
-                LockFileLibrary previousLibrary = null;
-                previousLibraries?.TryGetValue(Tuple.Create(library.Name, library.Version), out previousLibrary);
-
-                var lockFileLib = previousLibrary;
-
-                // If we have the same library in the lock file already, use that.
-                if (previousLibrary == null || previousLibrary.Sha512 != sha512)
+                if (library.Type == LibraryTypes.Project || library.Type == LibraryTypes.ExternalProject)
                 {
-                    lockFileLib = CreateLockFileLibrary(
-                        packageInfo,
-                        sha512,
-                        correctedPackageName: library.Name);
+                    // Project
+                    LocalMatch localMatch = (LocalMatch)item.Data.Match;
+
+                    var projectLib = new LockFileLibrary()
+                    {
+                        Name = library.Name,
+                        Version = library.Version,
+                        Type = LibraryTypes.Project,
+                    };
+
+                    // Set the relative path if a path exists
+                    // For projects without project.json this will be empty
+                    if (!string.IsNullOrEmpty(localMatch.LocalLibrary.Path))
+                    {
+                        projectLib.Path = PathUtility.GetRelativePath(
+                            project.FilePath,
+                            localMatch.LocalLibrary.Path,
+                            '/');
+                    }
+
+                    // The msbuild project path if it exists
+                    object msbuildPath;
+                    if (localMatch.LocalLibrary.Items.TryGetValue(KnownLibraryProperties.MSBuildProjectPath, out msbuildPath))
+                    {
+                        var msbuildRelativePath = PathUtility.GetRelativePath(
+                            project.FilePath,
+                            (string)msbuildPath,
+                            '/');
+
+                        projectLib.MSBuildProject = msbuildRelativePath;
+                    }
+
+                    lockFile.Libraries.Add(projectLib);
                 }
-                else if (Path.DirectorySeparatorChar != '/')
+                else
                 {
-                    // Fix slashes for content model patterns
-                    lockFileLib.Files = lockFileLib.Files
-                        .Select(p => p.Replace(Path.DirectorySeparatorChar, '/'))
-                        .ToList();
+                    // Packages
+                    var packageInfo = repository.FindPackagesById(library.Name)
+                        .FirstOrDefault(p => p.Version == library.Version);
+
+                    if (packageInfo == null)
+                    {
+                        continue;
+                    }
+
+                    var sha512 = File.ReadAllText(resolver.GetHashPath(packageInfo.Id, packageInfo.Version));
+
+                    LockFileLibrary previousLibrary = null;
+                    previousLibraries?.TryGetValue(Tuple.Create(library.Name, library.Version), out previousLibrary);
+
+                    var lockFileLib = previousLibrary;
+
+                    // If we have the same library in the lock file already, use that.
+                    if (previousLibrary == null || previousLibrary.Sha512 != sha512)
+                    {
+                        lockFileLib = CreateLockFileLibrary(
+                            packageInfo,
+                            sha512,
+                            correctedPackageName: library.Name);
+                    }
+                    else if (Path.DirectorySeparatorChar != '/')
+                    {
+                        // Fix slashes for content model patterns
+                        lockFileLib.Files = lockFileLib.Files
+                            .Select(p => p.Replace(Path.DirectorySeparatorChar, '/'))
+                            .ToList();
+                    }
+
+                    lockFile.Libraries.Add(lockFileLib);
+
+                    var packageIdentity = new PackageIdentity(lockFileLib.Name, lockFileLib.Version);
+                    context.PackageFileCache.TryAdd(packageIdentity, lockFileLib.Files);
                 }
-
-                lockFile.Libraries.Add(lockFileLib);
-
-                var packageIdentity = new PackageIdentity(lockFileLib.Name, lockFileLib.Version);
-                context.PackageFileCache.TryAdd(packageIdentity, lockFileLib.Files);
             }
 
             var libraries = lockFile.Libraries.ToDictionary(lib => Tuple.Create(lib.Name, lib.Version));
@@ -578,8 +669,8 @@ namespace NuGet.Commands
 
             // Add the targets
             foreach (var targetGraph in targetGraphs
-                .OrderBy(graph => graph.Framework.ToString())
-                .ThenBy(graph => graph.RuntimeIdentifier))
+                .OrderBy(graph => graph.Framework.ToString(), StringComparer.Ordinal)
+                .ThenBy(graph => graph.RuntimeIdentifier, StringComparer.Ordinal))
             {
                 var target = new LockFileTarget();
                 target.TargetFramework = targetGraph.Framework;
@@ -590,8 +681,66 @@ namespace NuGet.Commands
                 var fallbackFramework = target.TargetFramework as FallbackFramework;
                 var warnForImportsOnGraph = warnForImports && fallbackFramework != null;
 
-                foreach (var library in targetGraph.Flattened.Select(g => g.Key).OrderBy(x => x))
+                foreach (var graphItem in targetGraph.Flattened.OrderBy(x => x.Key))
                 {
+                    var library = graphItem.Key;
+
+                    if (library.Type == LibraryTypes.Project || library.Type == LibraryTypes.ExternalProject)
+                    {
+                        if (project.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Do not include the project itself as a library.
+                            continue;
+                        }
+
+                        var localMatch = (LocalMatch)graphItem.Data.Match;
+
+                        // Target framework information is optional and may not exist for csproj projects
+                        // that do not have a project.json file.
+                        string projectFramework = null;
+                        object frameworkInfoObject;
+                        if (localMatch.LocalLibrary.Items.TryGetValue(
+                            KnownLibraryProperties.TargetFrameworkInformation,
+                            out frameworkInfoObject))
+                        {
+                            var targetFrameworkInformation = (TargetFrameworkInformation)frameworkInfoObject;
+                            projectFramework = targetFrameworkInformation.FrameworkName?.DotNetFrameworkName;
+                        }
+
+                        // Create the target entry
+                        var lib = new LockFileTargetLibrary()
+                        {
+                            Name = library.Name,
+                            Version = library.Version,
+                            Type = LibraryTypes.Project,
+                            Framework = projectFramework,
+
+                            // Find all dependencies which would be in the nuspec
+                            // If there is no 
+                            Dependencies = graphItem.Data.Dependencies
+                                .Where(
+                                    d => d.LibraryRange.TypeConstraint == null
+                                    || d.LibraryRange.TypeConstraint == LibraryTypes.Package 
+                                    || d.LibraryRange.TypeConstraint == LibraryTypes.Project 
+                                    || d.LibraryRange.TypeConstraint == LibraryTypes.ExternalProject)
+                                .Select(d => GetDependencyVersionRange(d))
+                                .ToList()
+                        };
+
+                        object compileAssetObject;
+                        if (localMatch.LocalLibrary.Items.TryGetValue(
+                            KnownLibraryProperties.CompileAsset, 
+                            out compileAssetObject))
+                        {
+                            var item = new LockFileItem((string)compileAssetObject);
+                            lib.CompileTimeAssemblies.Add(item);
+                            lib.RuntimeAssemblies.Add(item);
+                        }
+
+                        target.Libraries.Add(lib);
+                        continue;
+                    }
+
                     var packageInfo = repository.FindPackagesById(library.Name)
                         .FirstOrDefault(p => p.Version == library.Version);
 
@@ -648,6 +797,47 @@ namespace NuGet.Commands
             return lockFile;
         }
 
+        private void DowngradeLockFileToV1(LockFile lockFile)
+        {
+            // Remove projects from the library section
+            var libraryProjects = lockFile.Libraries.Where(lib => lib.Type == LibraryTypes.Project).ToArray();
+
+            foreach (var library in libraryProjects)
+            {
+                lockFile.Libraries.Remove(library);
+            }
+
+            // Remove projects from the targets section
+            foreach (var target in lockFile.Targets)
+            {
+                var targetProjects = target.Libraries.Where(lib => lib.Type == LibraryTypes.Project).ToArray();
+
+                foreach (var library in targetProjects)
+                {
+                    target.Libraries.Remove(library);
+                }
+            }
+
+            foreach (var library in lockFile.Targets.SelectMany(target => target.Libraries))
+            {
+                // Null out all target types, these did not exist in v1
+                library.Type = null;
+            }
+        }
+
+        private static PackageDependency GetDependencyVersionRange(LibraryDependency dependency)
+        {
+            var range = dependency.LibraryRange.VersionRange;
+            
+            if (range == null && dependency.LibraryRange.TypeConstraint == LibraryTypes.ExternalProject)
+            {
+                // For csproj -> csproj type references where there is no range, use 1.0.0
+                range = VersionRange.Parse("1.0.0");
+            }
+
+            return new PackageDependency(dependency.Name, range);
+        }
+
         private LockFileLibrary CreateLockFileLibrary(LocalPackageInfo package, string sha512, string correctedPackageName)
         {
             var lockFileLib = new LockFileLibrary();
@@ -657,20 +847,42 @@ namespace NuGet.Commands
             // it has the correct casing that runtime needs during dependency resolution.
             lockFileLib.Name = correctedPackageName ?? package.Id;
             lockFileLib.Version = package.Version;
-            lockFileLib.Type = LibraryTypes.Package; // Right now, lock file libraries are always packages
+            lockFileLib.Type = LibraryTypes.Package;
             lockFileLib.Sha512 = sha512;
 
-            using (var nupkgStream = File.OpenRead(package.ZipPath))
+            using (var packageReader = new PackageFolderReader(package.ExpandedPath))
             {
-                nupkgStream.Seek(0, SeekOrigin.Begin);
-
-                var packageReader = new PackageReader(nupkgStream);
-
-                // Get package files, excluding directory entries
-                lockFileLib.Files = packageReader.GetFiles().Where(x => !x.EndsWith("/")).ToList();
+                // Get package files, excluding directory entries and OPC files
+                // This is sorted before it is written out
+                lockFileLib.Files = packageReader
+                    .GetFiles()
+                    .Where(file => IsAllowedLibraryFile(file))
+                    .ToList();
             }
 
             return lockFileLib;
+        }
+
+        /// <summary>
+        /// True if the file should be added to the lock file library
+        /// Fale if it is an OPC file or empty directory
+        /// </summary>
+        private static bool IsAllowedLibraryFile(string path)
+        {
+            switch (path)
+            {
+                case "_rels/.rels":
+                case "[Content_Types].xml":
+                    return false;
+            }
+
+            if (path.EndsWith("/", StringComparison.Ordinal)
+                || path.EndsWith(".psmdcp", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private Task<RestoreTargetGraph> WalkDependenciesAsync(LibraryRange projectRange,

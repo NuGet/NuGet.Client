@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 
 namespace NuGet.CommandLine.Commands
@@ -213,64 +214,29 @@ namespace NuGet.CommandLine.Commands
             }
         }
 
-        private static bool ClearCacheDirectory(string folderPath)
+        private bool ClearCacheDirectory(string folderPath)
         {
-            if (!Directory.Exists(folderPath))
-            {
-                // Non-issue.
-                return true;
-            }
+            // In order to get detailed error messages, we need to do recursion ourselves.
+            var failedDeletes = new List<string>();
+            LocalResourceUtils.DeleteDirectoryTree(folderPath, failedDeletes);
 
-            try
+            if (failedDeletes.Any())
             {
-                // When files or (sub)folders are readonly, the Directory.Delete method may not be able to delete it.
-                MakeFilesWritableInDirectoryTree(folderPath);
+                Console.WriteWarning(
+                    LocalizedResourceManager.GetString(nameof(NuGetResources.LocalsCommand_LocalsPartiallyCleared)));
 
-                // Deletes the specified directory and any subdirectories and files in the directory.
-                // When deleting a directory that contains a reparse point, such as a symbolic link or a mount point:
-                // * If the reparse point is a directory, such as a mount point,
-                //   it is unmounted and the mount point is deleted.
-                //   This method does not recurse through the reparse point.
-                // * If the reparse point is a symbolic link to a file,
-                //   the reparse point is deleted and not the target of the symbolic link.
-                Directory.Delete(folderPath, recursive: true);
+                foreach (var failedDelete in failedDeletes.OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
+                {
+                    Console.WriteWarning(
+                        LocalizedResourceManager.GetString(nameof(NuGetResources.LocalsCommand_FailedToDeletePath)),
+                        failedDelete);
+                }
 
-                return true;
-            }
-            catch (DirectoryNotFoundException)
-            {
-                // Should not happen, but it is a non-issue.
-                return true;
-            }
-            catch
-            {
-                // Report failure.
                 return false;
             }
-        }
-
-        private static void MakeFilesWritableInDirectoryTree(string folderPath)
-        {
-            // Using the default SearchOption.TopDirectoryOnly, as SearchOption.AllDirectories would also
-            // include reparse points such as mounted drives and symbolic links in the search.
-            foreach (var subFolderPath in Directory.EnumerateDirectories(folderPath))
+            else
             {
-                var directoryInfo = new DirectoryInfo(subFolderPath);
-                if (!directoryInfo.Attributes.HasFlag(FileAttributes.ReparsePoint))
-                {
-                    MakeFilesWritableInDirectoryTree(subFolderPath);
-                }
-            }
-
-            foreach (var file in Directory.EnumerateFiles(folderPath))
-            {
-                var filePath = Path.Combine(folderPath, Path.GetFileName(file));
-                var attributes = File.GetAttributes(filePath);
-                if (attributes.HasFlag(FileAttributes.ReadOnly))
-                {
-                    attributes &= ~FileAttributes.ReadOnly;
-                    File.SetAttributes(filePath, attributes);
-                }
+                return true;
             }
         }
 

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using NuGet.Common;
 
 namespace NuGet.Configuration
 {
@@ -19,12 +20,8 @@ namespace NuGet.Configuration
 
         private static ConfigurationDefaults InitializeInstance()
         {
-#if !DNXCORE50
-            var baseDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "NuGet");
-#else
-            var baseDirectory = Path.Combine(Environment.GetEnvironmentVariable("ProgramData"), "NuGet");
-#endif
-            return new ConfigurationDefaults(baseDirectory, ConfigurationContants.ConfigurationDefaultsFile);
+            var machineWideSettingsDir = NuGetEnvironment.GetFolderPath(NuGetFolderPath.MachineWideSettingsBaseDirectory);
+            return new ConfigurationDefaults(machineWideSettingsDir, ConfigurationContants.ConfigurationDefaultsFile);
         }
 
         // TODO: Make this internal again

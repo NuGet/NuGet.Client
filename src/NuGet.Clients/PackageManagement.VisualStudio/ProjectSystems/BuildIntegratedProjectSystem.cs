@@ -1,6 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
@@ -9,13 +16,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using NuGet.ProjectModel;
 using VSLangProj;
 using VSLangProj80;
 using EnvDTEProject = EnvDTE.Project;
@@ -64,8 +65,11 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         /// <remarks>This uses DTE and should be called from the UI thread.</remarks>
         public override async Task<IReadOnlyList<BuildIntegratedProjectReference>> GetProjectReferenceClosureAsync(
-            Logging.ILogger logger)
+            BuildIntegratedProjectReferenceContext context)
         {
+            var logger = context.Logger;
+            var cache = context.Cache;
+
             // DTE calls need to be done from the main thread
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -80,6 +84,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // keep track of found projects to avoid duplicates
             var uniqueProjects = new HashSet<string>();
             var rootProjectName = await EnvDTEProjectUtility.GetCustomUniqueNameAsync(EnvDTEProject);
+
             uniqueProjects.Add(rootProjectName);
 
             var itemsFactory = ServiceLocator.GetInstance<IVsEnumHierarchyItemsFactory>();
@@ -89,150 +94,252 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 var project = toProcess.Dequeue();
 
-                // Find projectName.project.json first
-                var projectName = project.Name;
-
-                var fileWithProjectName =
-                    BuildIntegratedProjectUtility.GetProjectConfigWithProjectName(projectName);
-
-                string jsonConfigItem = null;
-
-                // Loop through all root project items. Sub folders will not be part of this.
-                foreach (var filePath in project.ProjectItems.OfType<ProjectItem>()
-                    .Select(p => p.FileNames[1]))
-                {
-                    if (!BuildIntegratedProjectUtility.IsProjectConfig(filePath))
-                    {
-                        continue;
-                    }
-
-                    // The filename is also checked in BuildIntegratedProjectUtility.IsProjectConfig, if it
-                    // is invalid, it will return false above.
-                    var fileName = Path.GetFileName(filePath);
-
-                    // Check for projName.project.json
-                    if (string.Equals(
-                            fileWithProjectName,
-                            fileName,
-                            StringComparison.OrdinalIgnoreCase))
-                    {
-                        jsonConfigItem = filePath;
-                        break;
-                    }
-
-                    // Fallback to project.json if projName.project.json does not exist
-                    if (string.Equals(
-                            BuildIntegratedProjectUtility.ProjectConfigFileName,
-                            fileName,
-                            StringComparison.OrdinalIgnoreCase))
-                    {
-                        jsonConfigItem = filePath;
-                    }
-                }
-
-                // Verify ReferenceOutputAssembly
-                var excludedProjects = await GetExcludedReferences(project, itemsFactory);
-
+                // Find the unique name of the current project
                 var projectUniqueName = await EnvDTEProjectUtility.GetCustomUniqueNameAsync(project);
-                var childReferences = new List<string>();
-                var hasMissingReferences = false;
 
-                // find all references in the project
-                foreach (var childReference in GetProjectReferences(project))
+                IReadOnlyList<BuildIntegratedProjectReference> cacheReferences;
+                if (cache.TryGetValue(projectUniqueName, out cacheReferences))
                 {
-                    try
-                    {
-                        var reference3 = childReference as Reference3;
+                    // The cached value contains the entire closure, add it to the results and skip
+                    // all child references.
+                    results.AddRange(cacheReferences);
+                }
+                else
+                {
+                    // Find projectName.project.json first
+                    var projectName = project.Name;
 
-                        if (reference3 != null && !reference3.Resolved)
+                    var fileWithProjectName =
+                        BuildIntegratedProjectUtility.GetProjectConfigWithProjectName(projectName);
+
+                    string jsonConfigItem = null;
+
+                    // Loop through all root project items. Sub folders will not be part of this.
+                    jsonConfigItem = GetJsonConfigFromProject(project, fileWithProjectName);
+
+                    // Verify ReferenceOutputAssembly
+                    var excludedProjects = await GetExcludedReferences(project, itemsFactory);
+
+                    var childReferences = new List<string>();
+                    var hasMissingReferences = false;
+
+                    // find all references in the project
+                    foreach (var childReference in GetProjectReferences(project))
+                    {
+                        try
                         {
-                            // Skip missing references and show a warning
+                            var reference3 = childReference as Reference3;
+
+                            if (reference3 != null && !reference3.Resolved)
+                            {
+                                // Skip missing references and show a warning
+                                hasMissingReferences = true;
+                                continue;
+                            }
+
+                            // Skip missing references
+                            if (childReference.SourceProject != null)
+                            {
+                                var childName =
+                                    await EnvDTEProjectUtility.GetCustomUniqueNameAsync(childReference.SourceProject);
+
+                                // Skip projects which have ReferenceOutputAssembly=false
+                                if (!excludedProjects.Contains(childName, StringComparer.OrdinalIgnoreCase))
+                                {
+                                    childReferences.Add(childName);
+
+                                    // avoid looping by checking if we already have this project
+                                    if (!uniqueProjects.Contains(childName))
+                                    {
+                                        toProcess.Enqueue(childReference.SourceProject);
+                                        uniqueProjects.Add(childName);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // SDK references do not have a SourceProject or child references, 
+                                // but they can contain project.json files, and should be part of the closure
+                                // SDKs are not projects, only the project.json name is checked here
+
+                                var possibleSdkPath = childReference.Path;
+
+                                if (!string.IsNullOrEmpty(possibleSdkPath) && Directory.Exists(possibleSdkPath))
+                                {
+                                    var possibleProjectJson = Path.Combine(
+                                                                possibleSdkPath,
+                                                                BuildIntegratedProjectUtility.ProjectConfigFileName);
+
+                                    if (File.Exists(possibleProjectJson))
+                                    {
+                                        childReferences.Add(possibleProjectJson);
+
+                                        var projectSpec = JsonPackageSpecReader.GetPackageSpec(
+                                            childReference.Name,
+                                            possibleProjectJson);
+
+                                        // add the sdk to the results here
+                                        results.Add(new BuildIntegratedProjectReference(
+                                            possibleProjectJson,
+                                            projectSpec,
+                                            msbuildProjectPath: null,
+                                            projectReferences: Enumerable.Empty<string>()));
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // Exceptions are expected in some scenarios for native projects,
+                            // ignore them and show a warning
                             hasMissingReferences = true;
-                            continue;
-                        }
 
-                        // Skip missing references
-                        if (childReference.SourceProject != null)
-                        {
-                            var childName =
-                                await EnvDTEProjectUtility.GetCustomUniqueNameAsync(childReference.SourceProject);
-
-                            // Skip projects which have ReferenceOutputAssembly=false
-                            if (!excludedProjects.Contains(childName, StringComparer.OrdinalIgnoreCase))
-                            {
-                                childReferences.Add(childName);
-
-                                // avoid looping by checking if we already have this project
-                                if (!uniqueProjects.Contains(childName))
-                                {
-                                    toProcess.Enqueue(childReference.SourceProject);
-                                    uniqueProjects.Add(childName);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // SDK references do not have a SourceProject or child references, 
-                            // but they can contain project.json files, and should be part of the closure
-                            // SDKs are not projects, only the project.json name is checked here
-
-                            var possibleSdkPath = childReference.Path;
-
-                            if (!string.IsNullOrEmpty(possibleSdkPath) && Directory.Exists(possibleSdkPath))
-                            {
-                                var possibleProjectJson = Path.Combine(
-                                                            possibleSdkPath,
-                                                            BuildIntegratedProjectUtility.ProjectConfigFileName);
-
-                                if (File.Exists(possibleProjectJson))
-                                {
-                                    childReferences.Add(possibleProjectJson);
-
-                                    // add the sdk to the results here
-                                    results.Add(new BuildIntegratedProjectReference(
-                                        possibleProjectJson,
-                                        possibleProjectJson,
-                                        Enumerable.Empty<string>()));
-                                }
-                            }
+                            Debug.Fail("Unable to find project closure: " + ex.ToString());
                         }
                     }
-                    catch (Exception ex)
+
+                    if (hasMissingReferences)
                     {
-                        // Exceptions are expected in some scenarios for native projects,
-                        // ignore them and show a warning
-                        hasMissingReferences = true;
+                        // Log a warning message once per project
+                        // This warning contains only the names of the root project and the project with the
+                        // broken reference. Attempting to display more details on the actual reference 
+                        // that has the problem may lead to another exception being thrown.
+                        var warning = string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Warning_ErrorDuringProjectClosureWalk,
+                            projectUniqueName,
+                            rootProjectName);
 
-                        Debug.Fail("Unable to find project closure: " + ex.ToString());
+                        logger.LogWarning(warning);
                     }
-                }
 
-                if (hasMissingReferences)
-                {
-                    // Log a warning message once per project
-                    // This warning contains only the names of the root project and the project with the
-                    // broken reference. Attempting to display more details on the actual reference 
-                    // that has the problem may lead to another exception being thrown.
-                    var warning = string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.Warning_ErrorDuringProjectClosureWalk,
-                        projectUniqueName,
-                        rootProjectName);
+                    // Add the current project (include the root) to the results
+                    PackageSpec packageSpec = null;
+                    if (File.Exists(jsonConfigItem))
+                    {
+                        // Not all projects have a project.json, only read it if it exists
+                        packageSpec = JsonPackageSpecReader.GetPackageSpec(projectUniqueName, jsonConfigItem);
+                    }
 
-                    logger.LogWarning(warning);
-                }
+                    // Find the full path to the msbuild project file
+                    var projectFileFullPath = EnvDTEProjectUtility.GetFullProjectPath(project);
 
-                if (!string.Equals(rootProjectName, projectUniqueName, StringComparison.OrdinalIgnoreCase))
-                {
-                    // Don't add the project we're trying to resolve the closure for to the result
+                    // For the xproj -> xproj -> csproj scenario find all xproj-> xproj references.
+                    if (projectFileFullPath.EndsWith(XProjUtility.XProjExtension, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // All xproj paths, these are already checked for project.json
+                        var xprojFiles = XProjUtility.GetProjectReferences(projectFileFullPath);
+
+                        if (xprojFiles.Count > 0)
+                        {
+                            var pathToProject = GetPathToDTEProjectLookup(project);
+
+                            foreach (var xProjPath in xprojFiles)
+                            {
+                                // Only add projects that we can find in the solution, otherwise they will
+                                // end up causing failures. If this is an actual failure the resolver will
+                                // fail when resolving the dependency from project.json
+                                Project xProjDTE;
+                                if (pathToProject.TryGetValue(xProjPath, out xProjDTE))
+                                {
+                                    var xProjUniqueName = EnvDTEProjectUtility.GetUniqueName(xProjDTE);
+
+                                    // Xprojs use the file name not the unique name for references
+                                    var xprojProjectName = Path.GetFileNameWithoutExtension(xProjPath);
+                                    childReferences.Add(xprojProjectName);
+
+                                    // Continue walking this project if it has not been walked already
+                                    if (!uniqueProjects.Contains(xProjUniqueName))
+                                    {
+                                        toProcess.Enqueue(xProjDTE);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     results.Add(new BuildIntegratedProjectReference(
                         projectUniqueName,
-                        jsonConfigItem,
+                        packageSpec,
+                        projectFileFullPath,
                         childReferences));
                 }
             }
 
+            // Cache the results
+            if (!cache.ContainsKey(rootProjectName))
+            {
+                // Create a new copy of the list so that callers cannot modify it
+                cache.Add(rootProjectName, new List<BuildIntegratedProjectReference>(results));
+            }
+
             return results;
+        }
+
+        /// <summary>
+        /// Find project.json or projectName.project.json
+        /// </summary>
+        private static string GetJsonConfigFromProject(EnvDTEProject project, string fileWithProjectName)
+        {
+            string jsonConfigItem = null;
+
+            foreach (var filePath in project.ProjectItems.OfType<ProjectItem>()
+                                    .Select(p => p.FileNames[1]))
+            {
+                if (!BuildIntegratedProjectUtility.IsProjectConfig(filePath))
+                {
+                    continue;
+                }
+
+                // The filename is also checked in BuildIntegratedProjectUtility.IsProjectConfig, if it
+                // is invalid, it will return false above.
+                var fileName = Path.GetFileName(filePath);
+
+                // Check for projName.project.json
+                if (string.Equals(
+                        fileWithProjectName,
+                        fileName,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    jsonConfigItem = filePath;
+                    break;
+                }
+
+                // Fallback to project.json if projName.project.json does not exist
+                if (string.Equals(
+                        BuildIntegratedProjectUtility.ProjectConfigFileName,
+                        fileName,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    jsonConfigItem = filePath;
+                }
+            }
+
+            return jsonConfigItem;
+        }
+
+        private static Dictionary<string, EnvDTEProject> GetPathToDTEProjectLookup(EnvDTEProject project)
+        {
+            var pathToProject
+                   = new Dictionary<string, EnvDTEProject>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var solutionProjectObj in project.DTE.Solution.Projects)
+            {
+                var solutionProject = solutionProjectObj as Project;
+
+                if (solutionProject != null)
+                {
+                    var solutionProjectPath = EnvDTEProjectUtility.GetFullProjectPath(solutionProject);
+
+                    if (!string.IsNullOrEmpty(solutionProjectPath)
+                        && !pathToProject.ContainsKey(solutionProjectPath))
+                    {
+                        pathToProject.Add(solutionProjectPath, solutionProject);
+                    }
+                }
+            }
+
+            return pathToProject;
         }
 
         public override async Threading.Task<bool> ExecuteInitScriptAsync(

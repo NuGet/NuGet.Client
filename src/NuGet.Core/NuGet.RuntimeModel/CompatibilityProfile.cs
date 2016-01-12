@@ -1,8 +1,8 @@
-﻿using NuGet.Frameworks;
+﻿using System;
 using System.Collections.Generic;
-using System;
 using System.Linq;
-using NuGet.Common;
+using NuGet.Frameworks;
+using NuGet.Shared;
 
 namespace NuGet.RuntimeModel
 {

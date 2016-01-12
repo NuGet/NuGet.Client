@@ -13,7 +13,7 @@
   "dependencies": {
     "NuGet.Packaging": "3.4.0-*",
     "NuGet.Protocol.Core.Types": "3.4.0-*",
-    "NuGet.Common": {
+    "NuGet.Shared": {
       "type": "build",
       "version": "3.4.0-*"
     }

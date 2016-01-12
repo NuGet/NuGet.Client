@@ -8,6 +8,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -17,7 +18,7 @@ namespace NuGet.ProjectModel
 {
     public class LockFileFormat
     {
-        public static readonly int Version = 1;
+        public static readonly int Version = 2;
         public static readonly string LockFileName = "project.lock.json";
 
         private static readonly char[] PathSplitChars = new[] { '/' };
@@ -38,6 +39,9 @@ namespace NuGet.ProjectModel
         private const string ContentFilesProperty = "contentFiles";
         private const string ResourceProperty = "resource";
         private const string TypeProperty = "type";
+        private const string PathProperty = "path";
+        private const string MSBuildProjectProperty = "msbuildProject";
+        private const string FrameworkProperty = "framework";
 
         // Legacy property names
         private const string RuntimeAssembliesProperty = "runtimeAssemblies";
@@ -168,7 +172,7 @@ namespace NuGet.ProjectModel
         {
             var json = new JObject();
             json[LockedProperty] = new JValue(lockFile.IsLocked);
-            json[VersionProperty] = new JValue(Version);
+            json[VersionProperty] = new JValue(lockFile.Version);
             json[TargetsProperty] = WriteObject(lockFile.Targets, WriteTarget);
             json[LibrariesProperty] = WriteObject(lockFile.Libraries, WriteLibrary);
             json[ProjectFileDependencyGroupsProperty] = WriteObject(lockFile.ProjectFileDependencyGroups, WriteProjectFileDependencyGroup);
@@ -184,10 +188,18 @@ namespace NuGet.ProjectModel
             {
                 library.Version = NuGetVersion.Parse(parts[1]);
             }
-            library.IsServiceable = ReadBool(json, ServicableProperty, defaultValue: false);
-            library.Sha512 = ReadString(json[Sha512Property]);
-            library.Files = ReadPathArray(json[FilesProperty] as JArray, ReadString);
+
             library.Type = ReadString(json[TypeProperty]);
+
+            var jObject = json as JObject;
+
+            library.Path = ReadProperty<string>(jObject, PathProperty);
+            library.MSBuildProject = ReadProperty<string>(jObject, MSBuildProjectProperty);
+            library.Sha512 = ReadProperty<string>(jObject, Sha512Property);
+
+            library.IsServiceable = ReadBool(json, ServicableProperty, defaultValue: false);
+            library.Files = ReadPathArray(json[FilesProperty] as JArray, ReadString);
+
             return library;
         }
 
@@ -198,8 +210,24 @@ namespace NuGet.ProjectModel
             {
                 WriteBool(json, ServicableProperty, library.IsServiceable);
             }
-            json[Sha512Property] = WriteString(library.Sha512);
+
+            if (library.Sha512 != null)
+            {
+                json[Sha512Property] = WriteString(library.Sha512);
+            }
+
             json[TypeProperty] = WriteString(library.Type);
+
+            if (library.Path != null)
+            {
+                json[PathProperty] = WriteString(library.Path);
+            }
+
+            if (library.MSBuildProject != null)
+            {
+                json[MSBuildProjectProperty] = WriteString(library.MSBuildProject);
+            }
+
             WritePathArray(json, FilesProperty, library.Files, WriteString);
             return new JProperty(
                 library.Name + "/" + library.Version.ToString(),
@@ -241,6 +269,10 @@ namespace NuGet.ProjectModel
                 library.Version = NuGetVersion.Parse(parts[1]);
             }
 
+            var jObject = json as JObject;
+            library.Type = ReadProperty<string>(jObject, TypeProperty);
+            library.Framework = ReadProperty<string>(jObject, FrameworkProperty);
+
             library.Dependencies = ReadObject(json[DependenciesProperty] as JObject, ReadPackageDependency);
             library.FrameworkAssemblies = ReadArray(json[FrameworkAssembliesProperty] as JArray, ReadString);
             library.RuntimeAssemblies = ReadObject(json[RuntimeProperty] as JObject, ReadFileItem);
@@ -256,51 +288,61 @@ namespace NuGet.ProjectModel
         {
             var json = new JObject();
 
+            if (library.Type != null)
+            {
+                json[TypeProperty] = library.Type;
+            }
+
+            if (library.Framework != null)
+            {
+                json[FrameworkProperty] = library.Framework;
+            }
+
             if (library.Dependencies.Count > 0)
             {
-                var ordered = library.Dependencies.OrderBy(dependency => dependency.Id);
+                var ordered = library.Dependencies.OrderBy(dependency => dependency.Id, StringComparer.Ordinal);
 
                 json[DependenciesProperty] = WriteObject(ordered, WritePackageDependency);
             }
 
             if (library.FrameworkAssemblies.Count > 0)
             {
-                var ordered = library.FrameworkAssemblies.OrderBy(assembly => assembly);
+                var ordered = library.FrameworkAssemblies.OrderBy(assembly => assembly, StringComparer.Ordinal);
 
                 json[FrameworkAssembliesProperty] = WriteArray(ordered, WriteString);
             }
 
             if (library.CompileTimeAssemblies.Count > 0)
             {
-                var ordered = library.CompileTimeAssemblies.OrderBy(assembly => assembly.Path);
+                var ordered = library.CompileTimeAssemblies.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
                 json[CompileProperty] = WriteObject(ordered, WriteFileItem);
             }
 
             if (library.RuntimeAssemblies.Count > 0)
             {
-                var ordered = library.RuntimeAssemblies.OrderBy(assembly => assembly.Path);
+                var ordered = library.RuntimeAssemblies.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
                 json[RuntimeProperty] = WriteObject(ordered, WriteFileItem);
             }
 
             if (library.ResourceAssemblies.Count > 0)
             {
-                var ordered = library.ResourceAssemblies.OrderBy(assembly => assembly.Path);
+                var ordered = library.ResourceAssemblies.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
                 json[ResourceProperty] = WriteObject(ordered, WriteFileItem);
             }
 
             if (library.NativeLibraries.Count > 0)
             {
-                var ordered = library.NativeLibraries.OrderBy(assembly => assembly.Path);
+                var ordered = library.NativeLibraries.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
                 json[NativeProperty] = WriteObject(ordered, WriteFileItem);
             }
 
             if (library.ContentFiles.Count > 0)
             {
-                var ordered = library.ContentFiles.OrderBy(assembly => assembly.Path);
+                var ordered = library.ContentFiles.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
                 json[ContentFilesProperty] = WriteObject(ordered, WriteFileItem);
             }
@@ -349,7 +391,7 @@ namespace NuGet.ProjectModel
         {
             return new JProperty(
                 item.Id,
-                WriteString(item.VersionRange?.ToLegacyString()));
+                WriteString(item.VersionRange?.ToLegacyShortString()));
         }
 
         private static LockFileItem ReadFileItem(string property, JToken json)
@@ -366,7 +408,7 @@ namespace NuGet.ProjectModel
         {
             return new JProperty(
                 item.Path,
-                new JObject(item.Properties.OrderBy(prop => prop.Key).Select(x =>
+                new JObject(item.Properties.OrderBy(prop => prop.Key, StringComparer.Ordinal).Select(x =>
                 {
                     if (Boolean.TrueString.Equals(x.Value, StringComparison.OrdinalIgnoreCase))
                     {
@@ -412,7 +454,10 @@ namespace NuGet.ProjectModel
 
         private static void WritePathArray(JToken json, string property, IEnumerable<string> items, Func<string, JToken> writeItem)
         {
-            var orderedItems = items.Select(f => GetPathWithForwardSlashes(f)).OrderBy(f => f).ToList();
+            var orderedItems = items
+                .Select(f => GetPathWithForwardSlashes(f))
+                .OrderBy(f => f, StringComparer.Ordinal)
+                .ToList();
 
             WriteArray(json, property, orderedItems, writeItem);
         }
@@ -430,6 +475,20 @@ namespace NuGet.ProjectModel
         private static JArray WritePathArray(IEnumerable<string> items, Func<string, JToken> writeItem)
         {
             return WriteArray(items.Select(f => GetPathWithForwardSlashes(f)), writeItem);
+        }
+
+        private static TItem ReadProperty<TItem>(JObject jObject, string propertyName)
+        {
+            if (jObject != null)
+            {
+                JToken value;
+                if (jObject.TryGetValue(propertyName, out value) && value != null)
+                {
+                    return value.Value<TItem>();
+                }
+            }
+
+            return default(TItem);
         }
 
         private static IList<TItem> ReadObject<TItem>(JObject jObject, Func<string, JToken, TItem> readItem)

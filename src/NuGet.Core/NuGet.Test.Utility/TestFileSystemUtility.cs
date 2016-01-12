@@ -6,7 +6,7 @@ namespace NuGet.Test.Utility
     public class TestFileSystemUtility
     {
         public static readonly string NuGetTestFolder =
-            Path.Combine(Environment.GetEnvironmentVariable("temp"), "NuGetTestFolder");
+            Path.Combine(Path.GetTempPath(), "NuGetTestFolder");
 
         public static TestDirectory CreateRandomTestFolder()
         {

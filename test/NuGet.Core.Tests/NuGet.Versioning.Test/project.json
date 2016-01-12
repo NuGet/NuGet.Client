@@ -8,7 +8,11 @@
     "test": "xunit.runner.dnx"
   },
   "frameworks": {
-    "dnxcore50": {},
-    "dnx451": {}
+    "dnx451": {},
+    "dnxcore50": {
+      "dependencies": {
+        "System.Collections": "4.0.0-beta-23109"
+      }
+    }
   }
 }
