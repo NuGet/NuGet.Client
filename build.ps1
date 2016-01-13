@@ -22,6 +22,14 @@ param (
     [switch]$Fast
 )
 
+# For TeamCity - Incase any issue comes in this script fail the build. - Be default TeamCity returns exit code of 0 for all powershell even if it fails
+trap
+{
+    Write-Host "Build failed: $_" -ForegroundColor Red
+    Write-Host ("`r`n" * 3)
+    exit 1
+}
+
 . "$PSScriptRoot\build\common.ps1"
 
 $RunTests = (-not $SkipTests) -and (-not $Fast)
@@ -127,4 +135,9 @@ if ($BuildErrors) {
 }
 
 Trace-Log ('=' * 60)
+
+if ($BuildErrors) {
+    Throw $BuildErrors.Count
+}
+
 Write-Host ("`r`n" * 3)
