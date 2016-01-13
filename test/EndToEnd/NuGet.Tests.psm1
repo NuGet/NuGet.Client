@@ -16,11 +16,23 @@ $testRepositoryPath = Join-Path $currentPath Packages
 
 $nugetRoot = Join-Path $currentPath "..\.."
 
-$nugetExePath = Join-Path $nugetRoot ".nuget\nuget.exe"
+$dotNuGetFolder = Join-Path $nugetRoot ".nuget"
+
+$nugetExePath = [string]$null
+
+if ((Test-Path $dotNuGetFolder) -eq $True)
+{
+    $nugetExePath = Join-Path $dotNuGetFolder "nuget.exe"
+}
+else
+{
+    # Since there is no .nuget folder, assume that nuget.exe should be present alongside this module script
+    $nugetExePath = Join-Path $currentPath "nuget.exe"
+}
 
 if ((Test-Path $nugetExePath) -eq $False)
 {
-    Write-Host -BackgroundColor Yellow 'nuget.exe cannot be found at' $nugetExePath
+    Write-Host -BackgroundColor Yellow -ForegroundColor Black 'nuget.exe cannot be found at' $nugetExePath
     Write-Host "Downloading nuget.exe"
     wget https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe -OutFile $nugetExePath
 }
@@ -32,8 +44,19 @@ $env:NuGetTestModeEnabled = "True"
 $msbuildPath = Join-Path $env:windir Microsoft.NET\Framework\v4.0.30319\msbuild
 $testExtensionNames = ( "GenerateTestPackages.exe", "API.Test.dll" )
 $testExtensionsRoot = Join-Path $nugetRoot "test\TestExtensions"
-$testExtensions  = [System.Collections.ArrayList]($testExtensionNames |
-                        %{ Join-Path $testExtensionsRoot ([System.IO.Path]::GetFileNameWithoutExtension($_) + "\bin\Debug\" + $_) })
+
+$testExtensions = @()
+
+if ((Test-Path $testExtensionsRoot) -eq $True)
+{
+    $testExtensions  = [System.Collections.ArrayList]($testExtensionNames |
+                            %{ Join-Path $testExtensionsRoot ([System.IO.Path]::GetFileNameWithoutExtension($_) + "\bin\Debug\" + $_) })
+}
+else
+{
+    # Since the test\TestExtensions folder is not present, assume that the test extensions are present alongside this module script
+    $testExtensions  = [System.Collections.ArrayList]($testExtensionNames | %{ Join-Path $currentPath $_ })
+}
 
 # Remove GenerateTestPackages alone from the list of test extensions
 $generatePackagesExePath = $testExtensions[0]
