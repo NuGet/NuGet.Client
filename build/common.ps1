@@ -251,10 +251,12 @@ Function Restore-XProject {
         if (-not $V2) {
             $opts += '-s', 'https://www.myget.org/F/nuget-volatile/api/v3/index.json'
             $opts += '-s', 'https://api.nuget.org/v3/index.json'
+            $opts += '-s', 'https://www.myget.org/F/aspnetvnext/api/v3/index.json'
         }
         else {
             $opts += '-s', 'https://www.myget.org/F/nuget-volatile/api/v2/'
             $opts += '-s', 'https://www.nuget.org/api/v2/'
+            $opts += '-s', 'https://www.myget.org/F/aspnetvnext/api/v2/'
         }
         if (-not $VerbosePreference) {
             $opts += '--quiet'
