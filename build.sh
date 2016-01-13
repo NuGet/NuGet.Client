@@ -8,6 +8,8 @@ while true ; do
     esac
 done
 
+RESULTCODE=0
+
 # install dnx
 if ! type dnvm > /dev/null 2>&1; then
     source ~/.dnx/dnvm/dnvm.sh
@@ -42,7 +44,7 @@ dnu restore test/NuGet.Core.Tests
 # run tests
 for testProject in `find test/NuGet.Core.Tests -type f -name project.json`
 do
-    if [[ $testProject =~ "NuGet.Protocol.Core.v3.Tests" ]] ||
+    if [[ $testProject =~ "NuGet.Protocol.Core.v2.Tests" ]] ||
        [[ $testProject =~ "NuGet.Resolver.Test" ]] ||
        [[ $testProject =~ "NuGet.Packaging.Test" ]] ||
        [[ $testProject =~ "NuGet.PackageManagement.Test" ]] ||
@@ -51,6 +53,20 @@ do
         echo "Skipping tests in $testProject because they hang"
         continue
     fi
-    dnvm use 1.0.0-rc1-update1 -runtime coreclr
-    dnx --project $testProject test -parallel none
+	
+	if grep -q dnxcore50 "$testProject"; then
+         echo "Running tests in $testProject on CoreCLR"
+		 
+		 dnvm use 1.0.0-rc1-update1 -runtime coreclr
+		 dnx --project $testProject test -parallel none
+		 
+		 if [ $? -ne 0 ]; then
+			echo "$testProject FAILED on CoreCLR"
+			RESULTCODE=1
+		 fi		 
+	else
+         echo "Skipping the tests in $testProject on CoreCLR"
+	fi	
 done
+
+exit $RESULTCODE
