@@ -49,7 +49,8 @@ namespace NuGet.PackageManagement
             var failedTasks = new List<Task<DownloadResourceResult>>();
             var tasksLookup = new Dictionary<Task<DownloadResourceResult>, SourceRepository>();
 
-            using (var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token))
+            var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+            try
             {
                 // Create a group of local sources that will go first, then everything else.
                 var groups = new Queue<List<SourceRepository>>();
@@ -91,8 +92,37 @@ namespace NuGet.PackageManagement
 
                         if (completedTask.Status == TaskStatus.RanToCompletion)
                         {
+                            tasks.Remove(completedTask);
+
                             // Cancel the other tasks, since, they may still be running
                             linkedTokenSource.Cancel();
+
+                            if (tasks.Any())
+                            {
+                                // NOTE: Create a Task out of remainingTasks which waits for all the tasks to complete
+                                // and disposes the linked token source safely. One of the tasks could try to access
+                                // its incoming CancellationToken to register a callback. If the linkedTokenSource was
+                                // disposed before being accessed, it will throw an ObjectDisposedException.
+                                // At the same time, we do not want to wait for all the tasks to complete before
+                                // before this method returns with a DownloadResourceResult.
+                                var remainingTasks = Task.Run(async () =>
+                                {
+                                    try
+                                    {
+                                        await Task.WhenAll(tasks);
+                                    }
+                                    catch
+                                    {
+                                        // Any exception from one of the remaining tasks is not actionable.
+                                        // And, this code is running on the threadpool and the task is not awaited on.
+                                        // Catch all and do nothing.
+                                    }
+                                    finally
+                                    {
+                                        linkedTokenSource.Dispose();
+                                    }
+                                });
+                            }
 
                             return completedTask.Result;
                         }
@@ -107,23 +137,28 @@ namespace NuGet.PackageManagement
                         }
                     }
                 }
+
+                // no matches were found
+                var errors = new StringBuilder();
+
+                errors.AppendLine(string.Format(CultureInfo.CurrentCulture,
+                    Strings.UnknownPackageSpecificVersion, packageIdentity.Id,
+                    packageIdentity.Version.ToNormalizedString()));
+
+                foreach (var task in failedTasks)
+                {
+                    var message = ExceptionUtilities.DisplayMessage(task.Exception);
+
+                    errors.AppendLine($"{tasksLookup[task].PackageSource.Source}: {message}");
+                }
+
+                throw new FatalProtocolException(errors.ToString());
             }
-
-            // no matches were found
-            var errors = new StringBuilder();
-
-            errors.AppendLine(string.Format(CultureInfo.CurrentCulture,
-                Strings.UnknownPackageSpecificVersion, packageIdentity.Id,
-                packageIdentity.Version.ToNormalizedString()));
-
-            foreach (var task in failedTasks)
+            catch
             {
-                var message = ExceptionUtilities.DisplayMessage(task.Exception);
-
-                errors.AppendLine($"{tasksLookup[task].PackageSource.Source}: {message}");
+                linkedTokenSource.Dispose();
+                throw;
             }
-
-            throw new FatalProtocolException(errors.ToString());
         }
 
         /// <summary>
