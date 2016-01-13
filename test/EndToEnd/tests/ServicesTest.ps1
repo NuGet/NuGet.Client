@@ -268,7 +268,7 @@ function Test-InstallPackageAPIBadSource
     Assert-NoPackage $p "owin"
 }
 
-function Test-InstallPackageAPI_FWLinkSource
+function InstallPackageAPI_FWLinkSource
 {
     param($context)
 
