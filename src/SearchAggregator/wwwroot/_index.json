@@ -1,0 +1,39 @@
+{
+  "version": "3.0.0-beta.1",
+  "resources": [
+    {
+      "@id": "http://localhost:5000/api/packages/search",
+      "@type": "SearchQueryService",
+      "comment": "Query endpoint of a NuGet search proxy aggregator"
+    },
+    {
+      "@id": "https://api-v3search-0.nuget.org/autocomplete",
+      "@type": "SearchAutocompleteService",
+      "comment": "Autocomplete endpoint of NuGet Search service (primary)"
+    },
+    {
+      "@id": "https://nuget-prod-0-v2searchwebsite.azurewebsites.net/",
+      "@type": "SearchGalleryQueryService/3.0.0-rc",
+      "comment": "Azure Website based Search Service used by Gallery (Primary)"
+    },
+    {
+      "@id": "https://nuget-prod-1-v2searchwebsite.azurewebsites.net/",
+      "@type": "SearchGalleryQueryService/3.0.0-rc",
+      "comment": "Azure Website based Search Service used by Gallery (Secondary)"
+    },
+    {
+      "@id": "https://api.nuget.org/v3/registration1/",
+      "@type": "RegistrationsBaseUrl",
+      "comment": "Base URL of Azure storage where NuGet package registration info is stored"
+    },
+    {
+      "@id": "https://api.nuget.org/v3-flatcontainer/",
+      "@type": "PackageBaseAddress/3.0.0",
+      "comment": "Base URL of Azure storage where NuGet package registration info for DNX is stored, in the format https://api.nuget.org/v3-flatcontainer/{id-lower}/{version-lower}.{version-lower}.nupkg"
+    }
+  ],
+  "@context": {
+    "@vocab": "http://schema.nuget.org/services#",
+    "comment": "http://www.w3.org/2000/01/rdf-schema#comment"
+  }
+}

@@ -1,0 +1,49 @@
+﻿{
+  "version": "3.4.0-*",
+  "description": "NuGet.Indexing Class Library",
+  "compile": [
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/PackageAnalyzer.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/NuGetQuery.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/IdentifierKeywordAnalyzer.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/IdentifierAnalyzer.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/ShingledIdentifierAnalyzer.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/DescriptionAnalyzer.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/DotTokenizer.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/TokenizingHelper.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/IdentifierAutocompleteAnalyzer.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/OwnerAnalyzer.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/VersionAnalyzer.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/CamelCaseFilter.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/TagsAnalyzer.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/SemanticVersionFilter.cs"
+  ],
+  "dependencies": {
+    "EntityFramework": "5.0.0",
+    "Lucene.Net": "3.0.3",
+    "Lucene.Net.Contrib": "3.0.3",
+    "Lucene.Net.Store.Azure": "3.0.5553.21100",
+    "Microsoft.Data.Edm": "5.6.4",
+    "Microsoft.Data.OData": "5.6.4",
+    "Microsoft.Data.Services.Client": "5.6.4",
+    "Microsoft.Extensions.Logging": "1.0.0-rc1-final",
+    "Microsoft.Extensions.Logging.Console": "1.0.0-rc1-final",
+    "Microsoft.Extensions.Logging.Debug": "1.0.0-rc1-final",
+    "Microsoft.Web.Xdt": "2.1.1",
+    "Microsoft.WindowsAzure.ConfigurationManager": "3.1.0",
+    "Newtonsoft.Json": "8.0.2",
+    "NuGet.Core": "2.8.11",
+    "NuGet.Frameworks": "3.4.0-*",
+    "NuGet.Logging": "3.4.0-*",
+    "NuGet.Packaging": "3.4.0-*",
+    "NuGet.Packaging.Core": "3.4.0-*",
+    "NuGet.Packaging.Core.Types": "3.4.0-*",
+    "NuGet.Versioning": "3.4.0-*",
+    "NuGetGallery.Core": "3.0.413-r-master",
+    "SharpZipLib": "0.86.0",
+    "System.Spatial": "5.6.4",
+    "WindowsAzure.Storage": "4.3.0"
+  },
+  "frameworks": {
+    "dnx451": { }
+  }
+}
