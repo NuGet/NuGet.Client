@@ -2015,7 +2015,7 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
                    configFileName: "NuGet.config",
                    machineWideSettings: null,
-                   loadAppDataSettings: true);
+                   loadAppDataSettings: false);
                 var packageSourceProvider = new PackageSourceProvider(settings);
 
                 // Act
