@@ -161,7 +161,7 @@ function InstallVSIX
     
     $VSIXInstallerPath = GetVSIXInstallerPath $VSVersion
 
-    Write-Host "Installing VSIX from $VSIXInstallerPath..."
+    Write-Host "Installing VSIX from $vsixpath..."
     & $VSIXInstallerPath /q /a $vsixpath
 
     if ($lastexitcode)
