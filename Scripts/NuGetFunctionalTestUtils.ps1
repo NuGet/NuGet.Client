@@ -1,40 +1,6 @@
 ﻿. "$PSScriptRoot\Utils.ps1"
 . "$PSScriptRoot\VSUtils.ps1"
 
-function LaunchVSandGetDTE
-{
-    param (
-    [Parameter(Mandatory=$true)]
-    [ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
-    [string]$VSVersion,
-    [Parameter(Mandatory=$true)]
-    $VSLaunchWaitTimeInSecs)
-
-    LaunchVS $VSVersion
-
-    $dte2 = $null
-    $count = 0
-    $numberOfWaits = 6
-    Write-Host "Will wait for $numberOfWaits times and $VSLaunchWaitTimeInSecs seconds each time."
-
-    while($count -lt $numberOfWaits)
-    {
-        # Wait for $VSLaunchWaitTimeInSecs secs for VS to load before getting the DTE COM object
-        Write-Host "Waiting for $VSLaunchWaitTimeInSecs seconds for DTE to become available"
-        start-sleep $VSLaunchWaitTimeInSecs
-
-        $dte2 = GetDTE2 $VSVersion
-        if ($dte2)
-        {
-	        break
-        }
-
-        $count++
-    }
-
-    return $dte2
-}
-
 # This function requires a rewrite. This is a first cut
 function WaitForResults
 {
