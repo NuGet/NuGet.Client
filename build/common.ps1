@@ -4,6 +4,8 @@ $DefaultConfiguration = 'debug'
 $ValidReleaseLabels = 'Release','rtm', 'rc', 'beta', 'local'
 $DefaultReleaseLabel = 'local'
 
+$DefaultDnxVersion = '1.0.0-rc1-update1'
+$DefaultDnxArch = 'x86'
 $NuGetClientRoot = Split-Path -Path $PSScriptRoot -Parent
 $MSBuildExe = Join-Path ${env:ProgramFiles(x86)} 'MSBuild\14.0\Bin\msbuild.exe'
 $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
@@ -24,6 +26,10 @@ Function Reset-Colors {
 ### Functions ###
 Function Trace-Log($TraceMessage = '') {
     Write-Host "[$(Trace-Time)]`t$TraceMessage" -ForegroundColor Cyan
+}
+
+Function Verbose-Log($VerboseMessage = '') {
+    Write-Verbose "[$(Trace-Time)]`t$VerboseMessage"
 }
 
 Function Error-Log($ErrorMessage) {
@@ -85,18 +91,22 @@ Function Invoke-BuildStep {
 Function Update-Submodules {
     [CmdletBinding()]
     param()
+    $opts = 'submodule', 'update'
     if (-not (Test-Path -Path "$NuGetClientRoot/submodules/FileSystem/src")) {
         Trace-Log 'Updating and initializing submodules'
-        & git submodule update --init 2>&1
+        $opts += '--init'
     }
-    else {
-        Trace-Log 'Updating submodules'
-        & git submodule update 2>&1
+    if (-not $VerbosePreference) {
+        $opts += '--quiet'
     }
+    Verbose-Log "git $opts"
+    & git $opts 2>&1
 }
 
 # Downloads NuGet.exe if missing
-Function Install-NuGet() {
+Function Install-NuGet {
+    [CmdletBinding()]
+    param()
     if (-not (Test-Path $NuGetExe)) {
         Trace-Log 'Downloading nuget.exe'
         wget https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe -OutFile $NuGetExe
@@ -104,7 +114,9 @@ Function Install-NuGet() {
 }
 
 # Validates DNVM installed and installs it if missing
-Function Install-DNVM() {
+Function Install-DNVM {
+    [CmdletBinding()]
+    param()
     if (-not (Test-Path $DnvmCmd)) {
         Trace-Log 'Downloading DNVM'
         &{
@@ -117,21 +129,44 @@ Function Install-DNVM() {
 }
 
 # Makes sure the needed DNX runtimes installed
-Function Install-DNX() {
-    Trace-Log 'Validating the correct DNX runtime set'
+Function Install-DNX {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$True, Position=1)]
+        [Alias('r')]
+        [ValidateSet('CLR', 'CoreCLR')]
+        [string]$Runtime,
+        [Alias('v')]
+        [string]$Version = $DefaultDnxVersion,
+        [Alias('a')]
+        [string]$Arch = $DefaultDnxArch,
+        [switch]$Default
+    )
+    Install-DNVM
     $env:DNX_FEED = 'https://www.nuget.org/api/v2'
-    & dnvm install 1.0.0-rc1-update1 -runtime CoreCLR -arch x86 2>&1
-    & dnvm install 1.0.0-rc1-update1 -runtime CLR -arch x86 -alias default 2>&1
+    $opts = $Version, '-runtime', $Runtime, '-arch', $Arch
+    if ($Default) {
+        $opts += '-alias', 'default'
+    }
+    Verbose-Log "dnvm install $opts"
+    & dnvm install $opts 2>&1
 }
 
-Function Set-DNXCLR() {
-    Trace-Log 'Setting DNX to CLR x86'
-    & dnvm use 1.0.0-rc1-update1 -runtime CLR -arch x86 2>&1
-}
-
-Function Set-DNXCoreCLR() {
-    Trace-Log 'Setting DNX to CoreCLR x86'
-    & dnvm use 1.0.0-rc1-update1 -runtime CoreCLR -arch x86 2>&1
+Function Use-DNX {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$True, Position=1)]
+        [Alias('r')]
+        [ValidateSet('CLR', 'CoreCLR')]
+        [string]$Runtime,
+        [Alias('v')]
+        [string]$Version = $DefaultDnxVersion,
+        [Alias('a')]
+        [string]$Arch = $DefaultDnxArch
+    )
+    $opts = $Version, '-runtime', $Runtime, '-arch', $Arch
+    Verbose-Log "dnvm use $opts"
+    & dnvm use $opts 2>&1
 }
 
 # Enables delay signed build
@@ -161,7 +196,9 @@ Function Format-BuildNumber([int]$BuildNumber) {
 }
 
 ## Cleans the machine level cache from all packages
-Function Clear-PackageCache() {
+Function Clear-PackageCache {
+    [CmdletBinding()]
+    param()
     Trace-Log 'Removing DNX packages'
 
     if (Test-Path $env:userprofile\.dnx\packages) {
@@ -193,14 +230,18 @@ Function Clear-PackageCache() {
     }
 }
 
-Function Clear-Artifacts() {
+Function Clear-Artifacts {
+    [CmdletBinding()]
+    param()
     if( Test-Path $Artifacts) {
         Trace-Log 'Cleaning the Artifacts folder'
         Remove-Item $Artifacts\*.* -Recurse -Force
     }
 }
 
-Function Clear-Nupkgs() {
+Function Clear-Nupkgs {
+    [CmdletBinding()]
+    param()
     if (Test-Path $Nupkgs) {
         Trace-Log 'Cleaning nupkgs folder'
         Remove-Item $Nupkgs\*.nupkg -Force
@@ -230,7 +271,7 @@ Function Restore-SolutionPackages{
     }
 
     Trace-Log "Restoring packages @""$NuGetClientRoot"""
-    Trace-Log "$NuGetExe $opts"
+    Verbose-Log "$NuGetExe $opts"
     & $NuGetExe $opts 2>&1
     if (-not $?) {
         Error-Log "Restore failed @""$NuGetClientRoot"". Code: ${LASTEXITCODE}"
@@ -242,7 +283,7 @@ Function Restore-XProject {
     [CmdletBinding()]
     param(
         [parameter(ValueFromPipeline=$True)]
-        [string[]]$XProjectLocation,
+        [string]$XProjectLocation,
         [switch]$V2
     )
     Process {
@@ -263,7 +304,7 @@ Function Restore-XProject {
         }
 
         Trace-Log "Restoring packages @""$XProjectLocation"""
-        Trace-Log "dnu $opts"
+        Verbose-Log "dnu $opts"
         & dnu $opts 2>&1
         if (-not $?) {
             Error-Log "Restore failed @""$XProjectLocation"". Code: $LASTEXITCODE"
@@ -285,7 +326,7 @@ Function Restore-XProjectsFast {
     }
 
     Trace-Log "Restoring packages @""$XProjectsLocation"""
-    Trace-Log "dnu $opts"
+    Verbose-Log "dnu $opts"
     & dnu $opts 2>&1
     if (-not $?) {
         Error-Log "Restore failed @""$XProjectsLocation"". Code: $LASTEXITCODE"
@@ -298,6 +339,7 @@ Function Find-XProjects($XProjectsLocation) {
 }
 
 Function Restore-XProjects {
+    [CmdletBinding()]
     param(
         [string]$XProjectsLocation,
         [switch]$Fast
@@ -307,7 +349,7 @@ Function Restore-XProjects {
     }
     else {
         $xprojects = Find-XProjects $XProjectsLocation
-        $xprojects | Restore-XProject -Verbose
+        $xprojects | Restore-XProject
     }
 }
 
@@ -342,7 +384,7 @@ Function Invoke-DnuPack {
         $opts += '--quiet'
     }
 
-    Trace-Log "dnu $opts"
+    Verbose-Log "dnu $opts"
     &dnu $opts 2>&1
     if (-not $?) {
         Error-Log "Pack failed @""$XProjectsLocation"". Code: $LASTEXITCODE"
@@ -364,11 +406,49 @@ Function Build-CoreProjects {
         Restore-XProjects $XProjectsLocation -Fast:$Fast
     }
 
-    Invoke-DnuPack $XProjectsLocation $Configuration $ReleaseLabel $BuildNumber $Artifacts -Verbose:(-not $Fast)
+    Invoke-DnuPack $XProjectsLocation $Configuration $ReleaseLabel $BuildNumber $Artifacts
 
     ## Moving nupkgs
     Trace-Log "Moving the packages to $Nupkgs"
     Get-ChildItem "${Artifacts}\*.nupkg" -Recurse | % { Move-Item $_ $Nupkgs }
+}
+
+Function Test-XProject {
+    [CmdletBinding()]
+    param(
+        [parameter(ValueFromPipeline=$True)]
+        [string]$XProjectLocation
+    )
+    Process {
+        Trace-Log "Running tests in ""$XProjectLocation"""
+
+        $opts = '-p', $XProjectLocation, 'test'
+        if ($VerbosePreference) {
+            $opts += '-diagnostics', '-verbose'
+        }
+        else {
+            $opts += '-nologo', '-quiet'
+        }
+        Verbose-Log "dnx $opts"
+
+        # Check if dnxcore50 exists in the project.json file
+        $xtestProjectJson = Join-Path $XProjectLocation "project.json"
+        if (Get-Content $($xtestProjectJson) | Select-String "dnxcore50") {
+            # Run tests for Core CLR
+            Use-DNX CoreCLR
+            & dnx $opts 2>&1
+            if (-not $?) {
+                Error-Log "Tests failed @""$XProjectLocation"" on CoreCLR. Code: $LASTEXITCODE"
+            }
+        }
+
+        # Run tests for CLR
+        Use-DNX CLR
+        & dnx $opts 2>&1
+        if (-not $?) {
+            Error-Log "Tests failed @""$XProjectLocation"" on CLR. Code: $LASTEXITCODE"
+        }
+    }
 }
 
 Function Test-CoreProjects {
@@ -393,35 +473,7 @@ Function Test-CoreProjects {
     }
 
     $xtests = Find-XProjects $XProjectsLocation
-    foreach ($xtestLocation in $xtests) {
-        Trace-Log "Running tests in ""$xtestLocation"""
-
-        pushd $xtestLocation
-
-        # Run tests for Core CLR
-
-        $xtestProjectJson = Join-Path $xtestLocation "project.json"
-
-        # Check if dnxcore50 exists in the project.json file
-        if (Get-Content $($xtestProjectJson) | Select-String "dnxcore50") {
-            Set-DNXCoreCLR
-            & dnx test 2>&1
-
-            if (-not $?) {
-                Error-Log "Tests failed @""$xtestLocation"" on CoreCLR. Code: $LASTEXITCODE"
-            }
-        }
-
-        # Run tests for CLR
-        Set-DNXCLR
-        & dnx test 2>&1
-
-        if (-not $?) {
-            Error-Log "Tests failed @""$xtestLocation"" on CLR. Code: $LASTEXITCODE"
-        }
-
-        popd
-    }
+    $xtests | Test-XProject
 }
 
 Function Build-ClientsProjects {
@@ -436,25 +488,25 @@ Function Build-ClientsProjects {
     #Building the microsoft interop package for the test.utility
     $interopLib = Join-Path $NuGetClientRoot lib\Microsoft.VisualStudio.ProjectSystem.Interop
     if (-not $SkipRestore) {
-        Restore-XProject $interopLib -V2 -Verbose:(-not $Fast)
+        Restore-XProject $interopLib -V2
     }
-    Invoke-DnuPack $interopLib $Configuration $ReleaseLabel $BuildNumber -Verbose:(-not $Fast)
+    Invoke-DnuPack $interopLib $Configuration $ReleaseLabel $BuildNumber
     Get-ChildItem "$interopLib\*.nupkg" -Recurse | % { Move-Item $_ $Nupkgs -Force }
 
     $solutionPath = Join-Path $NuGetClientRoot NuGet.Clients.sln
     if (-not $SkipRestore) {
         # Restore packages for NuGet.Tooling solution
-        Restore-SolutionPackages -path $solutionPath -MSBuildVersion 14 -Verbose:(-not $Fast)
+        Restore-SolutionPackages -path $solutionPath -MSBuildVersion 14
     }
 
     # Build the solution
     $opts = , $solutionPath
     $opts += "/p:Configuration=$Configuration;ReleaseLabel=$ReleaseLabel;BuildNumber=$(Format-BuildNumber $BuildNumber)"
-    if ($Fast) {
+    if (-not $VerbosePreference) {
         $opts += '/verbosity:minimal'
     }
 
-    Trace-Log "$MSBuildExe $opts"
+    Verbose-Log "$MSBuildExe $opts"
     & $MSBuildExe $opts
     if (-not $?) {
         Error-Log "Build of NuGet.Clients.sln failed. Code: $LASTEXITCODE"
@@ -477,7 +529,10 @@ Function Test-ClientsProjects {
 
     foreach($testProj in $testProjects) {
         $opts = $testProj, "/t:RunTests", "/p:Configuration=$Configuration;RunTests=true"
-        Trace-Log "$MSBuildExe $opts"
+        if (-not $VerbosePreference) {
+            $opts += '/verbosity:minimal'
+        }
+        Verbose-Log "$MSBuildExe $opts"
         & $MSBuildExe $opts
         if (-not $?) {
             Error-Log "Tests failed @""$testProj"". Code: $LASTEXITCODE"
@@ -494,8 +549,15 @@ Function Invoke-ILMerge {
     $nugetArtifactsFolder = Join-Path $Artifacts "$Configuration\NuGet.Clients\NuGet.CommandLine"
     pushd $nugetArtifactsFolder
 
+    $dlls = 'NuGet.Common.dll', 'NuGet.Client.dll', 'NuGet.Commands.dll', 'NuGet.Configuration.dll', 'NuGet.ContentModel.dll', 'NuGet.Core.dll', 'NuGet.Credentials.dll', 'NuGet.DependencyResolver.Core.dll', 'NuGet.DependencyResolver.dll', 'NuGet.Frameworks.dll', 'NuGet.LibraryModel.dll', 'NuGet.Logging.dll', 'NuGet.PackageManagement.dll', 'NuGet.Packaging.Core.dll', 'NuGet.Packaging.Core.Types.dll', 'NuGet.Packaging.dll', 'NuGet.ProjectManagement.dll', 'NuGet.ProjectModel.dll', 'NuGet.Protocol.Core.Types.dll', 'NuGet.Protocol.Core.v2.dll', 'NuGet.Protocol.Core.v3.dll', 'NuGet.Repositories.dll', 'NuGet.Resolver.dll', 'NuGet.RuntimeModel.dll', 'NuGet.Versioning.dll', 'Microsoft.Web.XmlTransform.dll', 'Newtonsoft.Json.dll'
+
     Trace-Log 'Creating the ilmerged nuget.exe'
-    & $ILMerge NuGet.exe NuGet.Common.dll NuGet.Client.dll NuGet.Commands.dll NuGet.Configuration.dll NuGet.ContentModel.dll NuGet.Core.dll NuGet.Credentials.dll NuGet.DependencyResolver.Core.dll NuGet.DependencyResolver.dll NuGet.Frameworks.dll NuGet.LibraryModel.dll NuGet.Logging.dll NuGet.PackageManagement.dll NuGet.Packaging.Core.dll NuGet.Packaging.Core.Types.dll NuGet.Packaging.dll NuGet.ProjectManagement.dll NuGet.ProjectModel.dll NuGet.Protocol.Core.Types.dll NuGet.Protocol.Core.v2.dll NuGet.Protocol.Core.v3.dll NuGet.Repositories.dll NuGet.Resolver.dll NuGet.RuntimeModel.dll NuGet.Versioning.dll Microsoft.Web.XmlTransform.dll Newtonsoft.Json.dll /log:mergelog.txt /out:$Artifacts\NuGet.exe 2>&1
+    $opts = 'NuGet.exe', $dlls, "/out:$Artifacts\NuGet.exe"
+    if ($VerbosePreference) {
+        $opts += /log
+    }
+    Verbose-Log "$ILMerge $opts"
+    & $ILMerge $opts 2>&1
 
     popd
 }

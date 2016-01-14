@@ -64,14 +64,11 @@ Invoke-BuildStep 'Installing NuGet.exe' { Install-NuGet } `
     -ev +BuildErrors -ea $ErrorActionPreference
 
 # Restoring tools required for build
-Invoke-BuildStep 'Restoring solution packages' {
-        param($Fast) Restore-SolutionPackages -Verbose:(-not $Fast)
-    } `
-    -args $Fast `
+Invoke-BuildStep 'Restoring solution packages' { Restore-SolutionPackages } `
     -skip:$SkipRestore `
     -ev +BuildErrors -ea $ErrorActionPreference
 
-Invoke-BuildStep 'Installing runtime' { Install-DNVM; Install-DNX } `
+Invoke-BuildStep 'Installing runtime' { Install-DNX CoreCLR; Install-DNX CLR -Default } `
     -ev +BuildErrors -ea $ErrorActionPreference
 
 Invoke-BuildStep 'Enabling delayed signing' {
