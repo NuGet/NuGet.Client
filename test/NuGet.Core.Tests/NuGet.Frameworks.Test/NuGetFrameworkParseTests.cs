@@ -72,6 +72,22 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public void NuGetFramework_PortableSingleMoniker()
+        {
+            NuGetFramework framework = NuGetFramework.Parse("portable-net45");
+
+            Assert.Equal("portable-net45", framework.GetShortFolderName());
+        }
+
+        [Fact]
+        public void NuGetFramework_PortableZeroMoniker()
+        {
+            NuGetFramework framework = NuGetFramework.Parse("portable");
+
+            Assert.True(framework.IsUnsupported);
+        }
+
+        [Fact]
         public void NuGetFramework_PortableNormalizeOptional()
         {
             NuGetFramework framework = NuGetFramework.Parse("portable-net45+win8+wp8+wpa81+monotouch+monoandroid");

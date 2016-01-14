@@ -32,6 +32,42 @@ namespace NuGet.Test
             Assert.False(compat.IsCompatible(framework2, framework1));
         }
 
+        [Fact]
+        public void CompatibilityPCL_WithOneTfm()
+        {
+            var framework1 = NuGetFramework.Parse("net45");
+            var framework2 = NuGetFramework.Parse("portable-net45");
+
+            var compat = DefaultCompatibilityProvider.Instance;
+
+            Assert.True(compat.IsCompatible(framework1, framework2));
+            Assert.False(compat.IsCompatible(framework2, framework1));
+        }
+
+        [Fact]
+        public void CompatibilityPCL_ZeroTfmIntoNonPclProject()
+        {
+            var framework1 = NuGetFramework.Parse("net45");
+            var framework2 = NuGetFramework.Parse("portable");
+
+            var compat = DefaultCompatibilityProvider.Instance;
+
+            Assert.False(compat.IsCompatible(framework1, framework2));
+            Assert.False(compat.IsCompatible(framework2, framework1));
+        }
+
+        [Fact]
+        public void CompatibilityPCL_ZeroTfm()
+        {
+            var framework1 = NuGetFramework.Parse("portable");
+            var framework2 = NuGetFramework.Parse("portable");
+
+            var compat = DefaultCompatibilityProvider.Instance;
+
+            Assert.True(compat.IsCompatible(framework1, framework2));
+            Assert.True(compat.IsCompatible(framework2, framework1));
+        }
+
         [Theory]
         [InlineData("portable-net45+win8+monoandroid", "portable-net45+win8+unk8+monoandroid")]
         [InlineData("portable-net45+win8", "portable-net45+win8+unk8+monoandroid+monotouch")]

@@ -417,8 +417,6 @@ namespace NuGet.Frameworks
 
             var shortNames = shortPortableProfiles.Split(new char[] { '+' }, StringSplitOptions.RemoveEmptyEntries);
 
-            Debug.Assert(shortNames.Length > 0);
-
             var result = new List<NuGetFramework>();
             foreach (var name in shortNames)
             {
