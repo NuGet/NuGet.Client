@@ -55,6 +55,6 @@ namespace NuGet.Packaging.Core
         /// </summary>
         Stream GetNuspec();
 
-        Task<IEnumerable<string>> CopyFilesAsync(string destination, IEnumerable<string> packageFiles, CancellationToken token);
+        IEnumerable<string> CopyFiles(string destination, IEnumerable<string> packageFiles, CancellationToken token);
     }
 }

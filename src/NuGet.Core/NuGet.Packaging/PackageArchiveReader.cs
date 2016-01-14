@@ -133,7 +133,7 @@ namespace NuGet.Packaging
             }
         }
 
-        public override async Task<IEnumerable<string>> CopyFilesAsync(string destination, IEnumerable<string> packageFiles, CancellationToken token)
+        public override IEnumerable<string> CopyFiles(string destination, IEnumerable<string> packageFiles, CancellationToken token)
         {
             var filesCopied = new List<string>();
 
@@ -161,17 +161,17 @@ namespace NuGet.Packaging
                     continue;
                 }
 
-                var copiedFile = await entry.SaveAsFileAsync(targetFilePath, token);
+                var copiedFile = entry.SaveAsFile(targetFilePath);
                 filesCopied.Add(copiedFile);
             }
 
             return filesCopied;
         }
 
-        public async Task<string> ExtractFileAsync(string packageFile, string targetFilePath, CancellationToken token)
+        public string ExtractFile(string packageFile, string targetFilePath)
         {
             var entry = GetEntry(packageFile);
-            var copiedFile = await entry.SaveAsFileAsync(targetFilePath, token);
+            var copiedFile = entry.SaveAsFile(targetFilePath);
             return copiedFile;
         }
 

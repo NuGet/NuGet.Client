@@ -63,7 +63,7 @@ namespace NuGet.Packaging
 
         public abstract IEnumerable<string> GetFiles(string folder);
 
-        public abstract Task<IEnumerable<string>> CopyFilesAsync(string destination, IEnumerable<string> packageFiles, CancellationToken token);
+        public abstract IEnumerable<string> CopyFiles(string destination, IEnumerable<string> packageFiles, CancellationToken token);
 
         public virtual PackageIdentity GetIdentity()
         {

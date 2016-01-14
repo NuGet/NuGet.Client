@@ -351,10 +351,10 @@ namespace NuGet.Resolver.Test
             var available = solution.ToList();
 
             // Act
-            var message = ResolverUtility.GetDiagnosticMessage(solution, available, Enumerable.Empty<PackageReference>(), new string[] { "a" }, Enumerable.Empty<PackageSource>());
+            var message = ResolverUtility.GetDiagnosticMessage(solution, available, Enumerable.Empty<PackageReference>(), new[] { "a" }, Enumerable.Empty<PackageSource>());
 
             // Assert
-            Assert.Equal("Unable to find a version of 'b' that is compatible with 'a 1.0.0 constraint: b (\u2265 1.0.0)'.", message);
+            Assert.Equal("Unable to find a version of 'b' that is compatible with 'a 1.0.0 constraint: b (>= 1.0.0)'.", message);
         }
 
         [Fact]

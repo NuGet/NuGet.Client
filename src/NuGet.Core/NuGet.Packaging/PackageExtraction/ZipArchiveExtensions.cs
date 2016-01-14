@@ -49,11 +49,11 @@ namespace NuGet.Packaging
             return entry.Open();
         }
 
-        public static async Task<string> SaveAsFileAsync(this ZipArchiveEntry entry, string fileFullPath, CancellationToken token)
+        public static string SaveAsFile(this ZipArchiveEntry entry, string fileFullPath)
         {
             using (var inputStream = entry.Open())
             {
-                await inputStream.CopyToFileAsync(fileFullPath, token);
+                inputStream.CopyToFile(fileFullPath);
             }
 
             var attr = File.GetAttributes(fileFullPath);

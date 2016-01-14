@@ -49,7 +49,7 @@ namespace NuGet.ProjectManagement
             return Task.FromResult(Enumerable.Empty<PackageReference>());
         }
 
-        public override async Task<bool> InstallPackageAsync(
+        public override Task<bool> InstallPackageAsync(
             PackageIdentity packageIdentity,
             DownloadResourceResult downloadResourceResult,
             INuGetProjectContext nuGetProjectContext,
@@ -79,7 +79,7 @@ namespace NuGet.ProjectManagement
             if (PackageExists(packageIdentity))
             {
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.PackageAlreadyExistsInFolder, packageIdentity, Root);
-                return false;
+                return Task.FromResult(false);
             }
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageToFolder, packageIdentity, Path.GetFullPath(Root));
@@ -90,7 +90,7 @@ namespace NuGet.ProjectManagement
             if (downloadResourceResult.PackageReader != null)
             {
                 addedPackageFilesList.AddRange(
-                    await PackageExtractor.ExtractPackageAsync(
+                    PackageExtractor.ExtractPackage(
                         downloadResourceResult.PackageReader,
                         downloadResourceResult.PackageStream,
                         PackagePathResolver,
@@ -100,7 +100,7 @@ namespace NuGet.ProjectManagement
             else
             {
                 addedPackageFilesList.AddRange(
-                    await PackageExtractor.ExtractPackageAsync(
+                    PackageExtractor.ExtractPackage(
                         downloadResourceResult.PackageStream,
                         PackagePathResolver,
                         nuGetProjectContext.PackageExtractionContext ?? new PackageExtractionContext(),
@@ -121,7 +121,7 @@ namespace NuGet.ProjectManagement
             FileSystemUtility.PendAddFiles(addedPackageFilesList, Root, nuGetProjectContext);
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToFolder, packageIdentity, Path.GetFullPath(Root));
-            return true;
+            return Task.FromResult(true);
         }
 
         public override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
@@ -138,11 +138,11 @@ namespace NuGet.ProjectManagement
             return !string.IsNullOrEmpty(GetInstalledPackageFilePath(packageIdentity));
         }
 
-        public async Task<bool> CopySatelliteFilesAsync(PackageIdentity packageIdentity,
+        public Task<bool> CopySatelliteFilesAsync(PackageIdentity packageIdentity,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-            var copiedSatelliteFiles = await PackageExtractor.CopySatelliteFilesAsync(
+            var copiedSatelliteFiles = PackageExtractor.CopySatelliteFiles(
                 packageIdentity,
                 PackagePathResolver,
                 GetPackageSaveMode(nuGetProjectContext),
@@ -150,7 +150,7 @@ namespace NuGet.ProjectManagement
 
             FileSystemUtility.PendAddFiles(copiedSatelliteFiles, Root, nuGetProjectContext);
 
-            return copiedSatelliteFiles.Any();
+            return Task.FromResult(copiedSatelliteFiles.Any());
         }
 
         public string GetInstalledPackageFilePath(PackageIdentity packageIdentity)
