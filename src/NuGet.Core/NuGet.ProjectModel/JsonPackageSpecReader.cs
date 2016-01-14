@@ -59,7 +59,6 @@ namespace NuGet.ProjectModel
             var authors = rawPackageSpec["authors"];
             var owners = rawPackageSpec["owners"];
             var tags = rawPackageSpec["tags"];
-            var buildVersion = Environment.GetEnvironmentVariable("NUGET_BUILD_VERSION");
 
             packageSpec.Name = name;
             packageSpec.FilePath = Path.GetFullPath(packageSpecPath);
@@ -72,7 +71,7 @@ namespace NuGet.ProjectModel
             {
                 try
                 {
-                    packageSpec.Version = SpecifySnapshot(version.Value<string>(), buildVersion);
+                    packageSpec.Version = SpecifySnapshot(version.Value<string>(), snapshotValue: string.Empty);
                 }
                 catch (Exception ex)
                 {
