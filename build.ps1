@@ -7,9 +7,7 @@ param (
     [int]$BuildNumber,
     [switch]$SkipRestore,
     [switch]$CleanCache,
-    [switch]$DelaySign,
-    [string]$MSPFXPath,
-    [string]$NuGetPFXPath,
+    [string[]]$DelaySign,
     [switch]$SkipXProj,
     [switch]$SkipCSProj,
     [Parameter(ParameterSetName='RegularBuild')]
@@ -74,9 +72,9 @@ Invoke-BuildStep 'Installing runtime' { Install-DNX CoreCLR; Install-DNX CLR -De
     -ev +BuildErrors
 
 Invoke-BuildStep 'Enabling delayed signing' {
-        param($MSPFXPath, $NuGetPFXPath) Enable-DelayedSigning $MSPFXPath $NuGetPFXPath
+        param($MSPFXPath, $NuGetPFXPath) Enable-DelaySigning $MSPFXPath $NuGetPFXPath
     } `
-    -args $MSPFXPath, $NuGetPFXPath `
+    -args $DelaySign `
     -skip:(-not $DelaySign) `
     -ev +BuildErrors
 

@@ -187,7 +187,9 @@ Function Use-DNX {
 }
 
 # Enables delay signed build
-Function Enable-DelayedSigning($MSPFXPath, $NuGetPFXPath) {
+Function Enable-DelaySigning {
+    [CmdletBinding()]
+    param($MSPFXPath, $NuGetPFXPath)
     if (Test-Path $MSPFXPath) {
         Trace-Log "Setting NuGet.Core solution to delay sign using $MSPFXPath"
         $env:DNX_BUILD_KEY_FILE=$MSPFXPath
