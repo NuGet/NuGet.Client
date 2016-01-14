@@ -7,8 +7,6 @@ namespace NuGet.Frameworks
 {
     public static class FrameworkConstants
     {
-        public const string LessThanOrEqualTo = "\u2264";
-        public const string GreaterThanOrEqualTo = "\u2265";
         public static readonly Version EmptyVersion = new Version(0, 0, 0, 0);
         public static readonly Version MaxVersion = new Version(Int32.MaxValue, 0, 0, 0);
         public static readonly Version Version5 = new Version(5, 0, 0, 0);
