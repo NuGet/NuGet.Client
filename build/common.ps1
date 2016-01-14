@@ -14,6 +14,16 @@ $DnvmCmd = Join-Path $env:USERPROFILE '.dnx\bin\dnvm.cmd'
 $Nupkgs = Join-Path $NuGetClientRoot nupkgs
 $Artifacts = Join-Path $NuGetClientRoot artifacts
 
+Function Read-PackageSources {
+    param($NuGetConfig)
+    $xml = New-Object xml
+    $xml.Load($NuGetConfig)
+    $xml.SelectNodes('/configuration/packageSources/add') | `
+        ? { $_.key -ne "BuildFeed" } | `
+        % { $_.value }
+}
+$PackageSources = Read-PackageSources (Join-Path $NuGetClientRoot 'NuGet.Config')
+
 $OrigBgColor = $host.ui.rawui.BackgroundColor
 $OrigFgColor = $host.ui.rawui.ForegroundColor
 
@@ -69,17 +79,24 @@ Function Invoke-BuildStep {
     if (-not $SkipExecution) {
         Trace-Log "[BEGIN] $BuildStep"
         $sw = [Diagnostics.Stopwatch]::StartNew()
+        $completed = $false
         try {
             Invoke-Command $Expression -ArgumentList $Arguments -ErrorVariable err
+            $completed = $true
         }
         finally {
             $sw.Stop()
             Reset-Colors
-            if (-not $err) {
+            if ($completed) {
                 Trace-Log "[DONE +$(Format-ElapsedTime $sw.Elapsed)] $BuildStep"
             }
             else {
-                Error-Log "[FAILED +$(Format-ElapsedTime $sw.Elapsed)] $BuildStep"
+                if (-not $err) {
+                    Trace-Log "[STOPPED +$(Format-ElapsedTime $sw.Elapsed)] $BuildStep"
+                }
+                else {
+                    Error-Log "[FAILED +$(Format-ElapsedTime $sw.Elapsed)] $BuildStep"
+                }
             }
         }
     }
@@ -289,16 +306,7 @@ Function Restore-XProject {
     Process {
         $projectJsonFile = Join-Path $XProjectLocation 'project.json'
         $opts = 'restore', $projectJsonFile
-        if (-not $V2) {
-            $opts += '-s', 'https://www.myget.org/F/nuget-volatile/api/v3/index.json'
-            $opts += '-s', 'https://api.nuget.org/v3/index.json'
-            $opts += '-s', 'https://www.myget.org/F/aspnetvnext/api/v3/index.json'
-        }
-        else {
-            $opts += '-s', 'https://www.myget.org/F/nuget-volatile/api/v2/'
-            $opts += '-s', 'https://www.nuget.org/api/v2/'
-            $opts += '-s', 'https://www.myget.org/F/aspnetvnext/api/v2/'
-        }
+        $opts += $PackageSources | %{ '-s', $_ }
         if (-not $VerbosePreference) {
             $opts += '--quiet'
         }
@@ -319,8 +327,7 @@ Function Restore-XProjectsFast {
         [string]$XProjectsLocation
     )
     $opts = 'restore', $XProjectsLocation, '--parallel', '--ignore-failed-sources'
-    $opts += '-s', 'https://www.myget.org/F/nuget-volatile/api/v3/index.json'
-    $opts += '-s', 'https://api.nuget.org/v3/index.json'
+    $opts += $PackageSources | %{ '-s', $_ }
     if (-not $VerbosePreference) {
         $opts += '--quiet'
     }
