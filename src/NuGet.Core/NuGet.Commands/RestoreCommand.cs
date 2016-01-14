@@ -250,11 +250,14 @@ namespace NuGet.Commands
                 // We care about TFM only and null RID for compilation purposes
                 projectFrameworkRuntimePairs.Add(new FrameworkRuntimePair(framework.FrameworkName, null));
 
-                var runtimeIds = RequestRuntimeUtility.GetRestoreRuntimes(_request);
-
-                foreach (var runtimeId in runtimeIds)
+                if (!framework.FrameworkName.IsCompileOnly)
                 {
-                    projectFrameworkRuntimePairs.Add(new FrameworkRuntimePair(framework.FrameworkName, runtimeId));
+                    var runtimeIds = RequestRuntimeUtility.GetRestoreRuntimes(_request);
+
+                    foreach (var runtimeId in runtimeIds)
+                    {
+                        projectFrameworkRuntimePairs.Add(new FrameworkRuntimePair(framework.FrameworkName, runtimeId));
+                    }
                 }
             }
 

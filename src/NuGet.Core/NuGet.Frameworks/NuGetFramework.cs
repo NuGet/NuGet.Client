@@ -261,6 +261,22 @@ namespace NuGet.Frameworks
         }
 
         /// <summary>
+        /// True if the framework is only used for compilation, not for execution.
+        /// Ex: dotnet, netstandard, portable-*
+        /// </summary>
+        public bool IsCompileOnly
+        {
+            get
+            {
+                return FrameworkConstants.FrameworkIdentifiers.NetPlatform
+                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
+                    || FrameworkConstants.FrameworkIdentifiers.NetStandard
+                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
+                    || IsPCL;
+            } 
+        }
+
+        /// <summary>
         /// True if the framework is packages based.
         /// Ex: dotnet, dnxcore
         /// </summary>
