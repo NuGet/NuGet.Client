@@ -556,17 +556,23 @@ Function Invoke-ILMerge {
         [string]$Configuration = $DefaultConfiguration
     )
     $nugetArtifactsFolder = Join-Path $Artifacts "$Configuration\NuGet.Clients\NuGet.CommandLine"
-    pushd $nugetArtifactsFolder
-
-    $dlls = 'NuGet.Common.dll', 'NuGet.Client.dll', 'NuGet.Commands.dll', 'NuGet.Configuration.dll', 'NuGet.ContentModel.dll', 'NuGet.Core.dll', 'NuGet.Credentials.dll', 'NuGet.DependencyResolver.Core.dll', 'NuGet.DependencyResolver.dll', 'NuGet.Frameworks.dll', 'NuGet.LibraryModel.dll', 'NuGet.Logging.dll', 'NuGet.PackageManagement.dll', 'NuGet.Packaging.Core.dll', 'NuGet.Packaging.Core.Types.dll', 'NuGet.Packaging.dll', 'NuGet.ProjectManagement.dll', 'NuGet.ProjectModel.dll', 'NuGet.Protocol.Core.Types.dll', 'NuGet.Protocol.Core.v2.dll', 'NuGet.Protocol.Core.v3.dll', 'NuGet.Repositories.dll', 'NuGet.Resolver.dll', 'NuGet.RuntimeModel.dll', 'NuGet.Versioning.dll', 'Microsoft.Web.XmlTransform.dll', 'Newtonsoft.Json.dll'
+    $dlls = Get-ChildItem $nugetArtifactsFolder -Filter 'nuget.*.dll' | %{ $_.Name }
+    $dlls += 'Microsoft.Web.XmlTransform.dll', 'Newtonsoft.Json.dll'
 
     Trace-Log 'Creating the ilmerged nuget.exe'
-    $opts = 'NuGet.exe', $dlls, "/out:$Artifacts\NuGet.exe"
+    $opts = , 'NuGet.exe'
+    $opts += $dlls
+    $opts += "/out:$Artifacts\NuGet.exe"
     if ($VerbosePreference) {
-        $opts += /log
+        $opts += '/log'
     }
     Verbose-Log "$ILMerge $opts"
-    & $ILMerge $opts 2>&1
 
-    popd
+    pushd $nugetArtifactsFolder
+    try {
+        & $ILMerge $opts 2>&1
+    }
+    finally {
+        popd
+    }
 }
