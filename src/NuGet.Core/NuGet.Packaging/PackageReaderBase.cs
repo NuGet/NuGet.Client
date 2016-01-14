@@ -115,10 +115,16 @@ namespace NuGet.Packaging
             }
         }
 
-        protected virtual void Dispose(bool disposing)
+        private static readonly char[] Slashes = new char[] { '/', '\\' };
+        private static bool IsRoot(string path)
         {
-            // do nothing here
+            // True if the path contains no directory slashes.
+            return path.IndexOfAny(Slashes) == -1;
         }
+
+        #endregion
+
+        #region IDisposable implementation
 
         public void Dispose()
         {
@@ -126,12 +132,7 @@ namespace NuGet.Packaging
             GC.SuppressFinalize(this);
         }
 
-        private static readonly char[] Slashes = new char[] { '/', '\\' };
-        private static bool IsRoot(string path)
-        {
-            // True if the path contains no directory slashes.
-            return path.IndexOfAny(Slashes) == -1;
-        }
+        protected abstract void Dispose(bool disposing);
 
         #endregion
 

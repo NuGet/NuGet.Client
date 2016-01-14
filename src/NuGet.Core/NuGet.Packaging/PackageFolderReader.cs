@@ -176,5 +176,10 @@ namespace NuGet.Packaging
 
             return Task.FromResult< IEnumerable<string>>(filesCopied);
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            // do nothing here
+        }
     }
 }

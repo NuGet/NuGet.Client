@@ -127,8 +127,6 @@ namespace NuGet.Packaging
 
         protected override void Dispose(bool disposing)
         {
-            base.Dispose(disposing);
-
             if (disposing)
             {
                 _zipArchive.Dispose();
