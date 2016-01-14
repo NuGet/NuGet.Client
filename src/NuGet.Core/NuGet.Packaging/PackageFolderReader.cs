@@ -155,7 +155,7 @@ namespace NuGet.Packaging
             return String.Join("/", parts);
         }
 
-        public override Task<IEnumerable<string>> CopyFilesAsync(string destination, IEnumerable<string> packageFiles, CancellationToken token)
+        public override IEnumerable<string> CopyFiles(string destination, IEnumerable<string> packageFiles, CancellationToken token)
         {
             var filesCopied = new List<string>();
 
@@ -174,7 +174,7 @@ namespace NuGet.Packaging
                 filesCopied.Add(targetPath);
             }
 
-            return Task.FromResult< IEnumerable<string>>(filesCopied);
+            return filesCopied;
         }
 
         protected override void Dispose(bool disposing)

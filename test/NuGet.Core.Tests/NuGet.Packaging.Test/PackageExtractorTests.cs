@@ -22,7 +22,7 @@ namespace NuGet.Packaging.Test
                 var packagePath = Path.Combine(root, "packageA.2.0.3");
 
                 // Act
-                var files = await PackageExtractor.ExtractPackageAsync(packageReader,
+                var files = PackageExtractor.ExtractPackage(packageReader,
                                                                  packageStream,
                                                                  new PackagePathResolver(root),
                                                                  new PackageExtractionContext(),
@@ -51,7 +51,7 @@ namespace NuGet.Packaging.Test
                     using (var folderReader = new PackageFolderReader(packageFolder))
                     {
                         // Act
-                        var files = await PackageExtractor.ExtractPackageAsync(folderReader,
+                        var files = PackageExtractor.ExtractPackage(folderReader,
                                                                          stream,
                                                                          new PackagePathResolver(root),
                                                                          new PackageExtractionContext(),
@@ -82,7 +82,7 @@ namespace NuGet.Packaging.Test
                     packageExtractionContext.PackageSaveMode = PackageSaveMode.Nupkg;
 
                     // Act
-                    var files = await PackageExtractor.ExtractPackageAsync(folderReader,
+                    var files = PackageExtractor.ExtractPackage(folderReader,
                                                                          packageStream,
                                                                          new PackagePathResolver(root),
                                                                          packageExtractionContext,
@@ -113,7 +113,7 @@ namespace NuGet.Packaging.Test
                     packageExtractionContext.PackageSaveMode = PackageSaveMode.Nuspec;
 
                     // Act
-                    var files = await PackageExtractor.ExtractPackageAsync(folderReader,
+                    var files = PackageExtractor.ExtractPackage(folderReader,
                                                                          packageStream,
                                                                          new PackagePathResolver(root),
                                                                          packageExtractionContext,
@@ -144,7 +144,7 @@ namespace NuGet.Packaging.Test
                     packageExtractionContext.PackageSaveMode = PackageSaveMode.Nuspec | PackageSaveMode.Nupkg;
 
                     // Act
-                    var files = await PackageExtractor.ExtractPackageAsync(folderReader,
+                    var files = PackageExtractor.ExtractPackage(folderReader,
                                                                          packageStream,
                                                                          new PackagePathResolver(root),
                                                                          packageExtractionContext,
@@ -172,12 +172,12 @@ namespace NuGet.Packaging.Test
                     var packageExtractionContext = new PackageExtractionContext();
 
                     // Act
-                    var packageFiles = await PackageExtractor.ExtractPackageAsync(packageStream,
+                    var packageFiles = PackageExtractor.ExtractPackage(packageStream,
                                                                      new PackagePathResolver(root),
                                                                      packageExtractionContext,
                                                                      CancellationToken.None);
 
-                    var satellitePackageFiles = await PackageExtractor.ExtractPackageAsync(satellitePackageStream,
+                    var satellitePackageFiles = PackageExtractor.ExtractPackage(satellitePackageStream,
                                                                      new PackagePathResolver(root),
                                                                      packageExtractionContext,
                                                                      CancellationToken.None);

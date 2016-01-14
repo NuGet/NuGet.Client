@@ -47,7 +47,7 @@ namespace SynchronizationTestApp
 
             _client = new TcpClient();
 
-            var lockedTask = ConcurrencyUtilities.ExecuteWithFileLocked(filename, WaitInALock, CancellationToken.None);
+            var lockedTask = ConcurrencyUtilities.ExecuteWithFileLockedAsync(filename, WaitInALock, CancellationToken.None);
 
             try
             {

@@ -1,12 +1,10 @@
 ﻿using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace NuGet.Packaging
 {
     public static class StreamExtensions
     {
-        public static async Task<string> CopyToFileAsync(this Stream inputStream, string fileFullPath, CancellationToken token)
+        public static string CopyToFile(this Stream inputStream, string fileFullPath)
         {
             if (Path.GetFileName(fileFullPath).Length == 0)
             {
@@ -26,10 +24,9 @@ namespace NuGet.Packaging
                 return fileFullPath;
             }
 
-            const int DefaultBufferSize = 4096;
-            using (var outputStream = File.Create(fileFullPath, DefaultBufferSize, FileOptions.Asynchronous))
+            using (var outputStream = File.Create(fileFullPath))
             {
-                await inputStream.CopyToAsync(outputStream, DefaultBufferSize, token);
+                inputStream.CopyTo(outputStream);
             }
 
             return fileFullPath;
