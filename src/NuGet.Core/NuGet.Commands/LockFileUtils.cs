@@ -30,7 +30,8 @@ namespace NuGet.Commands
                 defaultPackagePathResolver,
                 correctedPackageName,
                 dependencyType: dependencyType,
-                targetFrameworkOverride: null);
+                targetFrameworkOverride: null,
+                dependencies: null);
         }
 
         public static LockFileTargetLibrary CreateLockFileTargetLibrary(
@@ -40,7 +41,8 @@ namespace NuGet.Commands
             VersionFolderPathResolver defaultPackagePathResolver,
             string correctedPackageName,
             LibraryIncludeFlags dependencyType,
-            NuGetFramework targetFrameworkOverride)
+            NuGetFramework targetFrameworkOverride,
+            IEnumerable<LibraryDependency> dependencies)
         {
             var lockFileLib = new LockFileTargetLibrary();
 
@@ -114,18 +116,25 @@ namespace NuGet.Commands
                 }
             }
 
-            var dependencySet = nuspec
-                .GetDependencyGroups()
-                .GetNearest(framework);
-
-            if (dependencySet != null)
+            if (dependencies == null)
             {
-                var set = dependencySet.Packages;
+                var dependencySet = nuspec
+                    .GetDependencyGroups()
+                    .GetNearest(framework);
 
-                if (set != null)
+                if (dependencySet != null)
                 {
-                    lockFileLib.Dependencies = set.ToList();
+                    var set = dependencySet.Packages;
+
+                    if (set != null)
+                    {
+                        lockFileLib.Dependencies = set.ToList();
+                    }
                 }
+            }
+            else
+            {
+                lockFileLib.Dependencies = dependencies.Select(ld => new PackageDependency(ld.Name, ld.LibraryRange.VersionRange)).ToList();
             }
 
             var referenceSet = nuspec.GetReferenceGroups().GetNearest(framework);
@@ -278,7 +287,7 @@ namespace NuGet.Commands
                 Debug.Assert(!string.IsNullOrEmpty(fileName));
                 Debug.Assert(firstItem.Path.IndexOf('/') > 0);
 
-                var emptyDir = firstItem.Path.Substring(0, firstItem.Path.Length - fileName.Length) 
+                var emptyDir = firstItem.Path.Substring(0, firstItem.Path.Length - fileName.Length)
                     + PackagingCoreConstants.EmptyFolder;
 
                 group.Clear();

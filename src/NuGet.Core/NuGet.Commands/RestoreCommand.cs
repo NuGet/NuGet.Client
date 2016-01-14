@@ -769,7 +769,9 @@ namespace NuGet.Commands
                         targetGraph,
                         resolver,
                         correctedPackageName: library.Name,
-                        dependencyType: includeFlags);
+                        dependencyType: includeFlags,
+                        targetFrameworkOverride: null,
+                        dependencies: graphItem.Data.Dependencies);
 
                     target.Libraries.Add(targetLibrary);
 
@@ -785,7 +787,8 @@ namespace NuGet.Commands
                             resolver,
                             correctedPackageName: library.Name,
                             targetFrameworkOverride: nonFallbackFramework,
-                            dependencyType: includeFlags);
+                            dependencyType: includeFlags,
+                            dependencies: graphItem.Data.Dependencies);
 
                         if (!targetLibrary.Equals(targetLibraryWithoutFallback))
                         {

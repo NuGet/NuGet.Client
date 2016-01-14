@@ -30,7 +30,11 @@ namespace NuGet.CommandLine.XPlat
             if (args.Contains("--debug"))
             {
                 args = args.Skip(1).ToArray();
-                Debugger.Launch();
+                while (!Debugger.IsAttached)
+                {
+
+                }
+                Debugger.Break();
             }
 #endif
 

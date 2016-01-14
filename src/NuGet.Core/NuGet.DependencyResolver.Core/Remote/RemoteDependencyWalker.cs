@@ -88,9 +88,22 @@ namespace NuGet.DependencyResolver
 
             var tasks = new List<Task<GraphNode<RemoteResolveResult>>>();
 
-            dependencies.AddRange(node.Item.Data.Dependencies);
+            if (dependencies.Count > 0)
+            {
+                // Create a new item on this node so that we can update it with the new dependencies from
+                // runtime.json files
+                // We need to clone the item since they can be shared across multiple nodes
+                node.Item = new GraphItem<RemoteResolveResult>(node.Item.Key)
+                {
+                    Data = new RemoteResolveResult()
+                    {
+                        Dependencies = dependencies.Concat(node.Item.Data.Dependencies).ToList(),
+                        Match = node.Item.Data.Match
+                    }
+                };
+            }
 
-            foreach (var dependency in dependencies)
+            foreach (var dependency in node.Item.Data.Dependencies)
             {
                 // Skip dependencies if the dependency edge has 'all' excluded and
                 // the node is not a direct dependency.
@@ -497,7 +510,8 @@ namespace NuGet.DependencyResolver
                 var match = provider.GetLibrary(libraryRange, framework);
                 if (match != null)
                 {
-                    result = new LocalMatch {
+                    result = new LocalMatch
+                    {
                         LocalLibrary = match,
                         Library = match.Identity,
                         LocalProvider = provider,
