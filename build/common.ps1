@@ -38,7 +38,7 @@ Function Trace-Log($TraceMessage = '') {
     Write-Host "[$(Trace-Time)]`t$TraceMessage" -ForegroundColor Cyan
 }
 
-Function Verbose-Log($VerboseMessage = '') {
+Function Verbose-Log($VerboseMessage) {
     Write-Verbose "[$(Trace-Time)]`t$VerboseMessage"
 }
 

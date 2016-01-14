@@ -49,34 +49,36 @@ pushd $NuGetClientRoot
 $BuildErrors = @()
 Invoke-BuildStep 'Updating sub-modules' { Update-SubModules } `
     -skip:($SkipSubModules -or $Fast) `
-    -ev +BuildErrors -ea $ErrorActionPreference
+    -ev +BuildErrors
 
 Invoke-BuildStep 'Cleaning artifacts' { Clear-Artifacts } `
-    -ev +BuildErrors -ea $ErrorActionPreference
+    -ev +BuildErrors
 
-Invoke-BuildStep 'Cleaning nupkgs' { Clear-Nupkgs } -skip:$SkipXProj `
-    -ev +BuildErrors -ea $ErrorActionPreference
+Invoke-BuildStep 'Cleaning nupkgs' { Clear-Nupkgs } `
+    -skip:$SkipXProj `
+    -ev +BuildErrors
 
-Invoke-BuildStep 'Cleaning package cache' { Clear-PackageCache } -skip:(-not $CleanCache) `
-    -ev +BuildErrors -ea $ErrorActionPreference
+Invoke-BuildStep 'Cleaning package cache' { Clear-PackageCache } `
+    -skip:(-not $CleanCache) `
+    -ev +BuildErrors
 
 Invoke-BuildStep 'Installing NuGet.exe' { Install-NuGet } `
-    -ev +BuildErrors -ea $ErrorActionPreference
+    -ev +BuildErrors
 
 # Restoring tools required for build
 Invoke-BuildStep 'Restoring solution packages' { Restore-SolutionPackages } `
     -skip:$SkipRestore `
-    -ev +BuildErrors -ea $ErrorActionPreference
+    -ev +BuildErrors
 
 Invoke-BuildStep 'Installing runtime' { Install-DNX CoreCLR; Install-DNX CLR -Default } `
-    -ev +BuildErrors -ea $ErrorActionPreference
+    -ev +BuildErrors
 
 Invoke-BuildStep 'Enabling delayed signing' {
         param($MSPFXPath, $NuGetPFXPath) Enable-DelayedSigning $MSPFXPath $NuGetPFXPath
     } `
     -args $MSPFXPath, $NuGetPFXPath `
     -skip:(-not $DelaySign) `
-    -ev +BuildErrors -ea $ErrorActionPreference
+    -ev +BuildErrors
 
 Invoke-BuildStep 'Building NuGet.Core projects' {
         param($Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast)
@@ -84,7 +86,7 @@ Invoke-BuildStep 'Building NuGet.Core projects' {
     } `
     -args $Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast `
     -skip:$SkipXProj `
-    -ev +BuildErrors -ea $ErrorActionPreference
+    -ev +BuildErrors
 
 ## Building the Tooling solution
 Invoke-BuildStep 'Building NuGet.Clients projects' {
@@ -93,7 +95,7 @@ Invoke-BuildStep 'Building NuGet.Clients projects' {
     } `
     -args $Configuration, $ReleaseLabel, $BuildNumber, $SkipRestore, $Fast `
     -skip:$SkipCSproj `
-    -ev +BuildErrors -ea $ErrorActionPreference
+    -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Core tests' {
         param($SkipRestore, $Fast)
@@ -101,21 +103,21 @@ Invoke-BuildStep 'Running NuGet.Core tests' {
     } `
     -args $SkipRestore, $Fast `
     -skip:($SkipXProj -or (-not $RunTests)) `
-    -ev +BuildErrors -ea $ErrorActionPreference
+    -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Clients tests' {
         param($Configuration) Test-ClientsProjects $Configuration
     } `
     -args $Configuration `
     -skip:($SkipCSproj -or (-not $RunTests)) `
-    -ev +BuildErrors -ea $ErrorActionPreference
+    -ev +BuildErrors
 
 Invoke-BuildStep 'Merging NuGet.exe' {
         param($Configuration) Invoke-ILMerge $Configuration
     } `
     -args $Configuration `
     -skip:($SkipILMerge -or $SkipCSProj -or $Fast) `
-    -ev +BuildErrors -ea $ErrorActionPreference
+    -ev +BuildErrors
 
 popd
 
