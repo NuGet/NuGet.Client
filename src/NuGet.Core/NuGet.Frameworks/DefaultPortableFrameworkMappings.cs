@@ -11,9 +11,6 @@ namespace NuGet.Frameworks
     /// </summary>
     public class DefaultPortableFrameworkMappings : IPortableFrameworkMappings
     {
-        public DefaultPortableFrameworkMappings()
-        {
-        }
 
         private KeyValuePair<int, NuGetFramework[]>[] _profileFrameworks;
 
@@ -139,6 +136,45 @@ namespace NuGet.Frameworks
 
                 return _profileOptionalFrameworks;
             }
+        }
+
+        private IEnumerable<KeyValuePair<int, FrameworkRange>> _compatibilityMappings;
+
+        public IEnumerable<KeyValuePair<int, FrameworkRange>> CompatibilityMappings
+        {
+            get
+            {
+                if (_compatibilityMappings == null)
+                {
+                    _compatibilityMappings = new[]
+                    {
+                        CreateStandardMapping(7, FrameworkConstants.CommonFrameworks.NetStandard11),
+                        CreateStandardMapping(31, FrameworkConstants.CommonFrameworks.NetStandard10),
+                        CreateStandardMapping(32, FrameworkConstants.CommonFrameworks.NetStandard12),
+                        CreateStandardMapping(44, FrameworkConstants.CommonFrameworks.NetStandard12),
+                        CreateStandardMapping(49, FrameworkConstants.CommonFrameworks.NetStandard10),
+                        CreateStandardMapping(78, FrameworkConstants.CommonFrameworks.NetStandard10),
+                        CreateStandardMapping(84, FrameworkConstants.CommonFrameworks.NetStandard10),
+                        CreateStandardMapping(111, FrameworkConstants.CommonFrameworks.NetStandard11),
+                        CreateStandardMapping(151, FrameworkConstants.CommonFrameworks.NetStandard12),
+                        CreateStandardMapping(157, FrameworkConstants.CommonFrameworks.NetStandard10),
+                        CreateStandardMapping(259, FrameworkConstants.CommonFrameworks.NetStandard10)
+                    };
+                }
+
+                return _compatibilityMappings;
+            }
+        }
+
+        private static KeyValuePair<int, FrameworkRange> CreateStandardMapping(
+            int profileNumber,
+            NuGetFramework netStandard)
+        {
+            var range = new FrameworkRange(
+                    FrameworkConstants.CommonFrameworks.NetStandard10,
+                    netStandard);
+
+            return new KeyValuePair<int, FrameworkRange>(profileNumber, range);
         }
 
         private static IPortableFrameworkMappings _instance;

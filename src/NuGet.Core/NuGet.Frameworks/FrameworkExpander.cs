@@ -46,6 +46,29 @@ namespace NuGet.Frameworks
                 }
             }
 
+            // This PCL check is done outside of the loop because we do not want
+            // to recurse (via the stack above) on this PCL equivalence. The
+            // intent here is to ensure that PCL should expand to netstandard,
+            // but NOT to dotnet (which is deprecated).
+            if (framework.IsPCL)
+            {
+                int profileNumber;
+                IEnumerable<FrameworkRange> ranges;
+                if (_mappings.TryGetPortableProfileNumber(framework.Profile, out profileNumber)
+                    && _mappings.TryGetPortableCompatibilityMappings(profileNumber, out ranges))
+                {
+                    foreach (var range in ranges)
+                    {
+                        yield return range.Min;
+
+                        if (!range.Min.Equals(range.Max))
+                        {
+                            yield return range.Max;
+                        }
+                    }
+                }
+            }
+
             yield break;
         }
 
@@ -106,8 +129,6 @@ namespace NuGet.Frameworks
                     }
                 }
             }
-
-            yield break;
         }
     }
 }

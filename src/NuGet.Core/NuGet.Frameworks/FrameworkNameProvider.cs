@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 
 namespace NuGet.Frameworks
 {
@@ -28,13 +26,16 @@ namespace NuGet.Frameworks
         private readonly Dictionary<int, HashSet<NuGetFramework>> _portableFrameworks;
         private readonly Dictionary<int, HashSet<NuGetFramework>> _portableOptionalFrameworks;
 
+        // PCL compatibility mappings
+        private readonly Dictionary<int, HashSet<FrameworkRange>> _portableCompatibilityMappings;
+
         // equivalent frameworks
         private readonly Dictionary<NuGetFramework, HashSet<NuGetFramework>> _equivalentFrameworks;
 
         // equivalent profiles
         private readonly Dictionary<string, Dictionary<string, HashSet<string>>> _equivalentProfiles;
 
-        // all compatibility mappings
+        // non-PCL compatibility mappings
         private readonly Dictionary<string, HashSet<OneWayCompatibilityMappingEntry>> _compatibilityMappings;
 
         // subsets, net -> netcore
@@ -65,6 +66,7 @@ namespace NuGet.Frameworks
             _nonPackageBasedFrameworkPrecedence = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             _packageBasedFrameworkPrecedence = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             _compatibilityMappings = new Dictionary<string, HashSet<OneWayCompatibilityMappingEntry>>(StringComparer.OrdinalIgnoreCase);
+            _portableCompatibilityMappings = new Dictionary<int, HashSet<FrameworkRange>>();
             _shortNameRewrites = new Dictionary<NuGetFramework, NuGetFramework>(NuGetFramework.Comparer);
             _fullNameRewrites = new Dictionary<NuGetFramework, NuGetFramework>(NuGetFramework.Comparer);
 
@@ -427,24 +429,45 @@ namespace NuGet.Frameworks
             return result.Count > 0;
         }
 
-        public bool TryGetPortableFrameworks(string profile, bool includeOptional, out IEnumerable<NuGetFramework> frameworks)
+        public bool TryGetPortableCompatibilityMappings(int profile, out IEnumerable<FrameworkRange> supportedFrameworkRanges)
+        {
+            HashSet<FrameworkRange> entries;
+            if (_portableCompatibilityMappings.TryGetValue(profile, out entries))
+            {
+                supportedFrameworkRanges = entries;
+                return supportedFrameworkRanges.Any();
+            }
+
+            supportedFrameworkRanges = null;
+            return false;
+        }
+
+        public bool TryGetPortableProfileNumber(string profile, out int profileNumber)
         {
             // attempt to parse the profile for a number
             if (profile.StartsWith("Profile", StringComparison.OrdinalIgnoreCase))
             {
                 var trimmed = profile.Substring(7, profile.Length - 7);
+                return Int32.TryParse(trimmed, out profileNumber);
+            }
 
-                var profileNum = -1;
-                if (Int32.TryParse(trimmed, out profileNum)
-                    && TryGetPortableFrameworks(profileNum, includeOptional, out frameworks))
+            profileNumber = -1;
+            return false;
+        }
+
+        public bool TryGetPortableFrameworks(string profile, bool includeOptional, out IEnumerable<NuGetFramework> frameworks)
+        {
+            // attempt to parse the profile for a number
+            int profileNum;
+            if (TryGetPortableProfileNumber(profile, out profileNum))
+            {
+                if (TryGetPortableFrameworks(profileNum, includeOptional, out frameworks))
                 {
                     return true;
                 }
-                else
-                {
-                    frameworks = Enumerable.Empty<NuGetFramework>();
-                    return false;
-                }
+
+                frameworks = Enumerable.Empty<NuGetFramework>();
+                return false;
             }
 
             // treat the profile as a list of frameworks
@@ -571,8 +594,11 @@ namespace NuGet.Frameworks
                     // populate portable framework names
                     AddPortableProfileMappings(portableMapping.ProfileFrameworks);
 
-                    // populate optional frameworks
+                    // populate portable optional frameworks
                     AddPortableOptionalFrameworks(portableMapping.ProfileOptionalFrameworks);
+
+                    // populate portable compatibility mappings
+                    AddPortableCompatibilityMappings(portableMapping.CompatibilityMappings);
                 }
             }
         }
@@ -806,6 +832,24 @@ namespace NuGet.Frameworks
                     {
                         frameworks.Add(fw);
                     }
+                }
+            }
+        }
+
+        private void AddPortableCompatibilityMappings(IEnumerable<KeyValuePair<int, FrameworkRange>> mappings)
+        {
+            if (mappings != null)
+            {
+                foreach (var mapping in mappings)
+                {
+                    HashSet<FrameworkRange> entries;
+                    if (!_portableCompatibilityMappings.TryGetValue(mapping.Key, out entries))
+                    {
+                        entries = new HashSet<FrameworkRange>(new FrameworkRangeComparer());
+                        _portableCompatibilityMappings.Add(mapping.Key, entries);
+                    }
+
+                    entries.Add(mapping.Value);
                 }
             }
         }

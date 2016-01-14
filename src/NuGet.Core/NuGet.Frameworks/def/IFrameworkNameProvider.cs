@@ -39,6 +39,11 @@ namespace NuGet.Frameworks
         string GetVersionString(string framework, Version version);
 
         /// <summary>
+        /// Tries to parse the portable profile number out of a profile.
+        /// </summary>
+        bool TryGetPortableProfileNumber(string profile, out int profileNumber);
+
+        /// <summary>
         /// Looks up the portable profile number based on the framework list.
         /// </summary>
         bool TryGetPortableProfile(IEnumerable<NuGetFramework> supportedFrameworks, out int profileNumber);
@@ -64,6 +69,12 @@ namespace NuGet.Frameworks
         /// Ex: net45+win8
         /// </summary>
         bool TryGetPortableFrameworks(string shortPortableProfiles, out IEnumerable<NuGetFramework> frameworks);
+
+        /// <summary>
+        /// Returns ranges of frameworks that are known to be supported by the given portable profile number.
+        /// Ex: Profile7 -> netstandard1.1
+        /// </summary>
+        bool TryGetPortableCompatibilityMappings(int profile, out IEnumerable<FrameworkRange> supportedFrameworkRanges);
 
         /// <summary>
         /// Returns a list of all possible substitutions where the framework name

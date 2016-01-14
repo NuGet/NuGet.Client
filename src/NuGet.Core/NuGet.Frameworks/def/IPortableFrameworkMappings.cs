@@ -17,5 +17,11 @@ namespace NuGet.Frameworks
         /// Ex: 5 -> MonoAndroid1+MonoTouch1
         /// </summary>
         IEnumerable<KeyValuePair<int, NuGetFramework[]>> ProfileOptionalFrameworks { get; }
+
+        /// <summary>
+        /// Compatibility mapping for portable profiles. This is a separate compatibility from that in
+        /// <see cref="IFrameworkMappings.CompatibilityMappings"/>.
+        /// </summary>
+        IEnumerable<KeyValuePair<int, FrameworkRange>> CompatibilityMappings { get; }
     }
 }

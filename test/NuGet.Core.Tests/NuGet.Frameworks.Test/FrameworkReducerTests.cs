@@ -64,6 +64,17 @@ namespace NuGet.Test
         [InlineData("netstandard1.5", "dotnet5.6,netstandard0.1", "netstandard0.1")]
         [InlineData("netstandard1.5", "dotnet5.6,netstandard0.0", "netstandard")]
         [InlineData("netstandard7.0", "netstandard6.0,netstandard1.0", "netstandard6.0")]
+        // PCL
+        [InlineData("portable-net45", "portable-net45+netcore45,portable-net45+netcore45+wpa81", "portable-net45+netcore45")]
+        [InlineData("portable-net45+netcore45", "portable-net45+netcore45,netstandard1.2", "portable-net45+netcore45")]
+        [InlineData("portable-net45+netcore45", "portable-net45+netcore45,netstandard1.1.1", "portable-net45+netcore45")]
+        [InlineData("portable-net45+netcore45", "portable-net45+netcore45,dotnet5.2", "portable-net45+netcore45")]
+        [InlineData("portable-net45+netcore45", "portable-net45+netcore45,dotnet5.1", "portable-net45+netcore45")]
+        [InlineData("portable-net45+netcore45", "portable-net45+netcore45+wpa81,netstandard1.1,dotnet5.1", "portable-net45+netcore45+wpa81")]
+        [InlineData("portable-net45+netcore45", "portable-net45+netcore45+wpa81,netstandard1.1", "portable-net45+netcore45+wpa81")]
+        [InlineData("portable-net45+netcore45", "portable-net45+netcore45+wpa81,netstandard1.0", "portable-net45+netcore45+wpa81")]
+        [InlineData("portable-net45+netcore45", "netstandard1.1,dotnet5.1", "netstandard1.1")]
+        [InlineData("portable-net45+netcore45+bad", "netstandard1.0", null)]
         // Additional tests
         [InlineData("dotnet5.5", "dotnet6.0,dotnet5.4,portable-net45+win8", "dotnet5.4")]
         [InlineData("dotnet7", "dotnet6.0,dotnet5.4,portable-net45+win8", "dotnet6.0")]
