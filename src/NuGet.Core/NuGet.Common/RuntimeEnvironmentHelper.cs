@@ -29,5 +29,43 @@ namespace NuGet.Common
         {
             get { return _isMono.Value; }
         }
+
+        public static bool IsMacOSX
+        {
+            get
+            {
+#if DNXCORE50
+                // This API does work on full framework but it requires a newer nuget client (RID aware)
+                if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
+                {
+                    return true;
+                }
+
+                return false;
+#else
+                var platform = (int)Environment.OSVersion.Platform;
+                return platform == 6;
+#endif
+            }
+        }
+
+        public static bool IsLinux
+        {
+            get
+            {
+#if DNXCORE50
+                // This API does work on full framework but it requires a newer nuget client (RID aware)
+                if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
+                {
+                    return true;
+                }
+
+                return false;
+#else
+                var platform = (int)Environment.OSVersion.Platform;
+                return platform == 4;
+#endif
+            }
+        }
     }
 }
