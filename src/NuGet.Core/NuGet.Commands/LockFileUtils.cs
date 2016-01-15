@@ -134,7 +134,12 @@ namespace NuGet.Commands
             }
             else
             {
-                lockFileLib.Dependencies = dependencies.Select(ld => new PackageDependency(ld.Name, ld.LibraryRange.VersionRange)).ToList();
+                // Filter the dependency set down to packages and projects.
+                // Framework references will not be displayed
+                lockFileLib.Dependencies = dependencies
+                    .Where(ld => IsPackageOrProject(ld))
+                    .Select(ld => new PackageDependency(ld.Name, ld.LibraryRange.VersionRange))
+                    .ToList();
             }
 
             var referenceSet = nuspec.GetReferenceGroups().GetNearest(framework);
@@ -311,6 +316,23 @@ namespace NuGet.Commands
         private static bool GroupHasNonEmptyItems(IList<LockFileItem> group)
         {
             return group?.Any(item => !item.Path.EndsWith(PackagingCoreConstants.ForwardSlashEmptyFolder)) == true;
+        }
+
+        /// <summary>
+        /// True if the dependeny requires a project, package, or external project
+        /// </summary>
+        private static bool IsPackageOrProject(LibraryDependency libraryDependency)
+        {
+            switch (libraryDependency.LibraryRange.TypeConstraint)
+            {
+                case null:
+                case LibraryTypes.Package:
+                case LibraryTypes.Project:
+                case LibraryTypes.ExternalProject:
+                    return true;
+            }
+
+            return false;
         }
     }
 }
