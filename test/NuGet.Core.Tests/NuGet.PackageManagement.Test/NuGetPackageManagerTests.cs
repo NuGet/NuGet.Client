@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Moq;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging;

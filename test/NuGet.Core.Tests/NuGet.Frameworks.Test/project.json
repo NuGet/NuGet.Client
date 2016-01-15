@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "3.4.0-*",
   "dependencies": {
     "NuGet.Frameworks": "3.4.0-*",
@@ -12,7 +12,7 @@
   "frameworks": {
     "dnx451": {
       "dependencies": {
-        "Moq": "4.2.1409.1722"
+        "Moq": "4.2.1510.2205"
       }
     },
     "dnxcore50": {
