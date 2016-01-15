@@ -57,7 +57,7 @@ namespace NuGet.Protocol.Core.v3
                     && filters.SupportedFrameworks.Any())
                 {
                     var frameworks =
-                        String.Join("&",
+                        string.Join("&",
                             filters.SupportedFrameworks.Select(
                                 fx => "supportedFramework=" + fx.ToString()));
                     queryString += "&" + frameworks;
@@ -66,7 +66,7 @@ namespace NuGet.Protocol.Core.v3
                 if (filters.PackageTypes != null
                     && filters.PackageTypes.Any())
                 {
-                    var types = String.Join("&",
+                    var types = string.Join("&",
                         filters.PackageTypes.Select(
                             s => "packageTypeFilter=" + s));
                     queryString += "&" + types;
@@ -87,11 +87,11 @@ namespace NuGet.Protocol.Core.v3
                     }
                     catch (JsonReaderException ex)
                     {
-                        throw new NuGetProtocolException(Strings.FormatProtocol_MalformedMetadataError(queryUrl.Uri), ex);
+                        throw new FatalProtocolException(Strings.FormatProtocol_MalformedMetadataError(queryUrl.Uri), ex);
                     }
                     catch (HttpRequestException ex)
                     {
-                        throw new NuGetProtocolException(Strings.FormatProtocol_BadSource(queryUrl.Uri), ex);
+                        throw new FatalProtocolException(Strings.FormatProtocol_BadSource(queryUrl.Uri), ex);
                     }
 
                     if (searchJson != null)
@@ -102,7 +102,7 @@ namespace NuGet.Protocol.Core.v3
             }
 
             // TODO: get a better message for this
-            throw new NuGetProtocolException(Strings.Protocol_MissingSearchService);
+            throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
         }
 
         public virtual async Task<IEnumerable<JObject>> Search(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)

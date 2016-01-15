@@ -165,4 +165,7 @@
   <data name="RequiredFeatureUnsupportedException_DefaultMessageWithoutFeature" xml:space="preserve">
     <value>The installation host does not support a feature required by this package.</value>
   </data>
+  <data name="Warning_ErrorDownloading" xml:space="preserve">
+    <value>Error downloading '{0}' from '{1}' : {2}</value>
+  </data>
 </root>

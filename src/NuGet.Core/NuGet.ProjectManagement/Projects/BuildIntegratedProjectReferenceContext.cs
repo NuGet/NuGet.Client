@@ -27,7 +27,7 @@ namespace NuGet.ProjectManagement
         /// Create a new build integrated project reference context with the given cache.
         /// </summary>
         public BuildIntegratedProjectReferenceContext(
-            ILogger logger, 
+            ILogger logger,
             IDictionary<string, IReadOnlyList<BuildIntegratedProjectReference>> cache)
         {
             if (logger == null)

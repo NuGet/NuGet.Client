@@ -8,7 +8,7 @@ namespace NuGet.Protocol.Core.Types
     /// <summary>
     /// Base protocol exception type containing a message and optional inner exception.
     /// </summary>
-    public class NuGetProtocolException : Exception
+    public abstract class NuGetProtocolException : Exception
     {
         public NuGetProtocolException(string message)
             : base(message)

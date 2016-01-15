@@ -57,7 +57,7 @@ namespace NuGet.Protocol.Core.v3
                 }
                 catch (Exception ex)
                 {
-                    throw new NuGetProtocolException(Strings.FormatProtocol_PackageMetadataError(id, _regResource.BaseUri), ex);
+                    throw new FatalProtocolException(Strings.FormatProtocol_PackageMetadataError(id, _regResource.BaseUri), ex);
                 }
 
                 // find the latest

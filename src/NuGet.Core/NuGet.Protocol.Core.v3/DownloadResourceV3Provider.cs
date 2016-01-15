@@ -28,7 +28,7 @@ namespace NuGet.Protocol.Core.v3
                 var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
                 var client = new DataClient(messageHandlerResource);
 
-                // If index.json contains a flat container resource use that to directly 
+                // If index.json contains a flat container resource use that to directly
                 // construct package download urls.
                 var packageBaseAddress = serviceIndex[ServiceTypes.PackageBaseAddress].FirstOrDefault()?.AbsoluteUri;
 

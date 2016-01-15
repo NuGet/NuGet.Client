@@ -519,6 +519,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Error finding repository for &apos;{0}&apos;: {1}.
+        /// </summary>
+        internal static string Warning_ErrorFindingRepository {
+            get {
+                return ResourceManager.GetString("Warning_ErrorFindingRepository", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Install failed. Rolling back....
         /// </summary>
         internal static string Warning_RollingBack {
