@@ -61,6 +61,15 @@ function CleanPaths($NuGetTestPath)
 Write-Host "This script will clean, copy and extract EndToEnd.zip file"
 Write-Host "EndtoEnd.zip file from the CI all the necessary scripts to run the functional tests"
 
+Write-Host 'Try to kill any running instances of devenv to be able to cleanup EndToEnd folder'
+$pcs = (Get-Process 'devenv' -ErrorAction SilentlyContinue)
+$pcs | Kill -ErrorAction SilentlyContinue
+if ($pcs.Count -gt 0)
+{
+    Write-Host 'Since VS has been killed, wait for 3 seconds to be able to EndToEnd folder'
+    Start-Sleep 3
+}
+
 $NuGetTestPath = Join-Path $FuncTestRoot "EndToEnd"
 
 Write-Host "NuGet drop path is $NuGetDropPath"
