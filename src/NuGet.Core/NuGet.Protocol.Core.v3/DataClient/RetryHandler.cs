@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol.Core.v3.Data
 {
@@ -56,6 +58,22 @@ namespace NuGet.Protocol.Core.v3.Data
                         success = false;
                     }
                 }
+                //catch (HttpRequestException ex) when (ex.InnerException is WebException)
+                //{
+                //    var inner = (WebException)ex.InnerException;
+
+                //    if (inner.Status == WebExceptionStatus.NameResolutionFailure)
+                //    {
+                //        throw;
+                //    }
+
+                //    success = false;
+
+                //    if (tries >= MaxTries)
+                //    {
+                //        throw;
+                //    }
+                //}
                 catch
                 {
                     success = false;

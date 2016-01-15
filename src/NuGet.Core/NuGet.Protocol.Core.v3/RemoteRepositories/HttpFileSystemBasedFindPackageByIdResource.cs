@@ -194,7 +194,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
                     Logger.LogError(message + Environment.NewLine + ex.Message);
 
-                    throw new NuGetProtocolException(message, ex);
+                    throw new FatalProtocolException(message, ex);
                 }
             }
 

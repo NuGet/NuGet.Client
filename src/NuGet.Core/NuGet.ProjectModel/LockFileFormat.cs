@@ -8,7 +8,6 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
-using NuGet.LibraryModel;
 using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;

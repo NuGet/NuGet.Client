@@ -146,7 +146,6 @@ namespace NuGet.Protocol.Core.Types
             return cache;
         }
 
-        // TODO: improve this sort
         private static INuGetResourceProvider[]
             Sort(IEnumerable<Lazy<INuGetResourceProvider>> group)
         {

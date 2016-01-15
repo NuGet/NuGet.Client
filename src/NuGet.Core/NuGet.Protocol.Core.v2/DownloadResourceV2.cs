@@ -4,8 +4,10 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -38,34 +40,58 @@ namespace NuGet.Protocol.Core.v2
                 throw new ArgumentNullException(nameof(identity));
             }
 
+            string uri = string.Empty;
+
             return Task.Run(() =>
             {
                 token.ThrowIfCancellationRequested();
 
-                try
+                for (int i = 0; i < 3; i++)
                 {
-                    var sourcePackage = identity as SourcePackageDependencyInfo;
-                    var repository = V2Client as DataServicePackageRepository;
+                    try
+                    {
+                        var sourcePackage = identity as SourcePackageDependencyInfo;
+                        var repository = V2Client as DataServicePackageRepository;
 
-                    if (repository != null
-                        && sourcePackage?.PackageHash != null
-                        && sourcePackage?.DownloadUri != null)
-                    {
-                        // If this is a SourcePackageDependencyInfo object with everything populated
-                        // and it is from an online source, use the machine cache and download it using the
-                        // given url.
-                        return DownloadFromUrl(sourcePackage, repository, token);
+                        bool isFromUri = repository != null
+                            && sourcePackage?.PackageHash != null
+                            && sourcePackage?.DownloadUri != null;
+
+                        if (isFromUri)
+                        {
+                            uri = sourcePackage?.DownloadUri.AbsoluteUri;
+                        }
+                        else
+                        {
+                            uri = (repository as DataServicePackageRepository)?.Source ?? "Folder";
+                        }
+
+                        if (isFromUri)
+                        {
+                            // If this is a SourcePackageDependencyInfo object with everything populated
+                            // and it is from an online source, use the machine cache and download it using the
+                            // given url.
+                            return DownloadFromUrl(sourcePackage, repository, token);
+                        }
+                        else
+                        {
+                            // Look up the package from the id and version and download it.
+                            return DownloadFromIdentity(identity, V2Client, token);
+                        }
                     }
-                    else
+                    catch (IOException ex) when (ex.InnerException is SocketException && i < 2)
                     {
-                        // Look up the package from the id and version and download it.
-                        return DownloadFromIdentity(identity, V2Client, token);
+                        string message = $"Error downloading {identity} from {uri} {ExceptionUtilities.DisplayMessage(ex)}";
+
+                        Logger.Instance.LogWarning(message);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new FatalProtocolException(ex);
                     }
                 }
-                catch (Exception ex)
-                {
-                    throw new NuGetProtocolException(Strings.FormatProtocol_FailedToDownloadPackage(identity, V2Client.Source), ex);
-                }
+
+                throw new InvalidOperationException("Can never reach here.");
             });
         }
 
@@ -80,49 +106,39 @@ namespace NuGet.Protocol.Core.v2
 
             try
             {
-                try
-                {
-                    // Try finding the package in the machine cache
-                    var localPackage = cacheRepository.FindPackage(package.Id, version)
-                        as OptimizedZipPackage;
+                // Try finding the package in the machine cache
+                var localPackage = cacheRepository.FindPackage(package.Id, version)
+                    as OptimizedZipPackage;
 
-                    // Validate the package matches the hash
-                    if (localPackage != null
-                        && localPackage.IsValid
-                        && MatchPackageHash(localPackage, package.PackageHash))
-                    {
-                        newPackage = localPackage;
-                    }
-                }
-                catch
+                // Validate the package matches the hash
+                if (localPackage != null
+                    && localPackage.IsValid
+                    && MatchPackageHash(localPackage, package.PackageHash))
                 {
-                    // Ignore cache failures here to match NuGet.Core
-                    // The bad package will be deleted and replaced during the download.
-                }
-
-                // If the local package does not exist in the cache download it from the source
-                if (newPackage == null)
-                {
-                    newPackage = DownloadToMachineCache(
-                        cacheRepository,
-                        package,
-                        repository,
-                        package.DownloadUri,
-                        token);
-                }
-
-                // Read the package from the machine cache
-                if (newPackage != null)
-                {
-                    return new DownloadResourceResult(newPackage.GetStream());
+                    newPackage = localPackage;
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                throw new NuGetProtocolException(Strings.FormatProtocol_FailedToDownloadPackage(
+                // Ignore cache failures here to match NuGet.Core
+                // The bad package will be deleted and replaced during the download.
+            }
+
+            // If the local package does not exist in the cache download it from the source
+            if (newPackage == null)
+            {
+                newPackage = DownloadToMachineCache(
+                    cacheRepository,
                     package,
-                    repository.Source),
-                    ex);
+                    repository,
+                    package.DownloadUri,
+                    token);
+            }
+
+            // Read the package from the machine cache
+            if (newPackage != null)
+            {
+                return new DownloadResourceResult(newPackage.GetStream());
             }
 
             return null;
@@ -144,9 +160,6 @@ namespace NuGet.Protocol.Core.v2
 
                 var package = dataServiceRepo.FindPackage(identity.Id, version);
                 var dataServicePackage = package as DataServicePackage;
-
-                Debug.Assert(package == null || dataServicePackage != null,
-                    "Package type returned is unpexpected: " + package.GetType().ToString());
 
                 if (dataServicePackage != null)
                 {
@@ -230,6 +243,8 @@ namespace NuGet.Protocol.Core.v2
                 token.ThrowIfCancellationRequested();
             };
 
+            Exception downloadException = null;
+
             Action<Stream> downloadAction = (stream) =>
             {
                 try
@@ -239,7 +254,8 @@ namespace NuGet.Protocol.Core.v2
                     Logger.Instance.LogVerbose($"  GET: {downloadUri}");
                     repository.PackageDownloader.DownloadPackage(downloadClient, packageName, stream);
                 }
-                catch (OperationCanceledException)
+                catch (Exception ex) when (ex is OperationCanceledException ||
+                                           ex is IOException && ex.InnerException is SocketException)
                 {
                     // The task was canceled. To avoid writing a partial file to the machine cache
                     // we need to clear out the current tmp file stream so that it will be ignored.
@@ -252,6 +268,12 @@ namespace NuGet.Protocol.Core.v2
                     {
                         tmpFile = new FileInfo(tmpFileStream.Name);
                     }
+
+                    downloadException = ex;
+                }
+                catch (Exception ex)
+                {
+                    downloadException = ex;
                 }
                 finally
                 {
@@ -283,6 +305,11 @@ namespace NuGet.Protocol.Core.v2
                 {
                     // Ignore exceptions for tmp file clean up
                 }
+            }
+
+            if (downloadException != null)
+            {
+                throw downloadException;
             }
 
             return newPackage;

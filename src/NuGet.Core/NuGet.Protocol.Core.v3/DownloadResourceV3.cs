@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Logging;
 using NuGet.Packaging.Core;
@@ -19,7 +22,7 @@ namespace NuGet.Protocol.Core.v3
     {
         private readonly RegistrationResourceV3 _regResource;
         private readonly HttpClient _client;
-        private readonly string _flatContainerBaseUrl;
+        private readonly string _packageBaseAddressUrl;
 
         /// <summary>
         /// Download packages using the download url found in the registration resource.
@@ -36,17 +39,17 @@ namespace NuGet.Protocol.Core.v3
         }
 
         /// <summary>
-        /// Download packages using the flat container resource.
+        /// Download packages using the package base address container resource.
         /// </summary>
-        public DownloadResourceV3(HttpClient client, string flatContainerBaseUrl)
+        public DownloadResourceV3(HttpClient client, string packageBaseAddress)
             : this(client)
         {
-            if (flatContainerBaseUrl == null)
+            if (packageBaseAddress == null)
             {
-                throw new ArgumentNullException(nameof(flatContainerBaseUrl));
+                throw new ArgumentNullException(nameof(packageBaseAddress));
             }
 
-            _flatContainerBaseUrl = flatContainerBaseUrl.TrimEnd('/');
+            _packageBaseAddressUrl = packageBaseAddress.TrimEnd('/');
         }
 
         private DownloadResourceV3(HttpClient client)
@@ -75,13 +78,13 @@ namespace NuGet.Protocol.Core.v3
                 // Read the already provided url
                 downloadUri = sourcePackage?.DownloadUri;
             }
-            else if (_flatContainerBaseUrl != null)
+            else if (_packageBaseAddressUrl != null)
             {
                 // Construct the url
                 var id = identity.Id.ToLowerInvariant();
                 var version = identity.Version.ToNormalizedString().ToLowerInvariant();
 
-                var url = $"{_flatContainerBaseUrl}/{id}/{version}/{id}.{version}.nupkg";
+                var url = $"{_packageBaseAddressUrl}/{id}/{version}/{id}.{version}.nupkg";
                 downloadUri = new Uri(url);
             }
             else if (_regResource != null)
@@ -130,6 +133,8 @@ namespace NuGet.Protocol.Core.v3
         {
             // Uri is not null, so the package exists in the source
             // Now, check if it is in the global packages folder, before, getting the package stream
+
+            // TODO: This code should respect no_cache settings and not write or read packages from the global packages folder
             var packageFromGlobalPackages = GlobalPackagesFolderUtility.GetPackage(identity, settings);
 
             if (packageFromGlobalPackages != null)
@@ -138,15 +143,35 @@ namespace NuGet.Protocol.Core.v3
             }
 
             Logger.Instance.LogVerbose($"  GET: {uri}");
-            using (var packageStream = await _client.GetStreamAsync(uri))
-            {
-                var downloadResult = await GlobalPackagesFolderUtility.AddPackageAsync(identity,
-                    packageStream,
-                    settings,
-                    token);
 
-                return downloadResult;
+            for (int i = 0; i < 3; i++)
+            {
+                try
+                {
+                    using (var packageStream = await _client.GetStreamAsync(uri))
+                    {
+                        var downloadResult = await GlobalPackagesFolderUtility.AddPackageAsync(identity,
+                            packageStream,
+                            settings,
+                            Logger.Instance,
+                            token);
+
+                        return downloadResult;
+                    }
+                }
+                catch (IOException ex) when (ex.InnerException is SocketException && i < 2)
+                {
+                    string message = $"Error downloading {identity} from {uri} {ExceptionUtilities.DisplayMessage(ex)}";
+
+                    Logger.Instance.LogWarning(message);
+                }
+                catch (Exception ex)
+                {
+                    throw new FatalProtocolException(ex);
+                }
             }
+
+            throw new InvalidOperationException("Reached an unexpected point in the code");
         }
     }
 }

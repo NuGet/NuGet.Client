@@ -96,12 +96,12 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
                     catch (XmlException ex)
                     {
                         var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, nupkgInfo.Name, _source);
-                        throw new NuGetProtocolException(message, ex);
+                        throw new FatalProtocolException(message, ex);
                     }
                     catch (PackagingException ex)
                     {
                         var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, nupkgInfo.Name, _source);
-                        throw new NuGetProtocolException(message, ex);
+                        throw new FatalProtocolException(message, ex);
                     }
 
                     if (string.Equals(reader.GetId(), id, StringComparison.Ordinal))

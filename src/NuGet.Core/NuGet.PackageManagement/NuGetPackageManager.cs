@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -1221,7 +1221,8 @@ namespace NuGet.PackageManagement
             }
             else
             {
-                var sourceRepository = await GetSourceRepository(packageIdentity, effectiveSources);
+                var logger = new ProjectContextLogger(nuGetProjectContext);
+                var sourceRepository = await GetSourceRepository(packageIdentity, effectiveSources, logger);
                 nuGetProjectActions.Add(NuGetProjectAction.CreateInstallProjectAction(packageIdentity, sourceRepository));
             }
 
@@ -1235,7 +1236,9 @@ namespace NuGet.PackageManagement
         /// Since, resolver gather is not used when dependencies are not used,
         /// we simply get the source repository using MetadataResource.Exists
         /// </summary>
-        private static async Task<SourceRepository> GetSourceRepository(PackageIdentity packageIdentity, IEnumerable<SourceRepository> sourceRepositories)
+        private static async Task<SourceRepository> GetSourceRepository(PackageIdentity packageIdentity,
+            IEnumerable<SourceRepository> sourceRepositories,
+            Logging.ILogger logger)
         {
             SourceRepository source = null;
 
@@ -1259,9 +1262,10 @@ namespace NuGet.PackageManagement
 
             while (results.Count > 0)
             {
+                var pair = results.Dequeue();
+
                 try
                 {
-                    var pair = results.Dequeue();
                     var exists = await pair.Value;
 
                     // take only the first true result, but continue waiting for the remaining cancelled
@@ -1278,16 +1282,19 @@ namespace NuGet.PackageManagement
                 {
                     // ignore these
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    Debug.Fail("Error finding repository");
+                    logger.LogWarning(
+                        $"Error finding repository for '{pair.Key.PackageSource.Source}:" +
+                        $"{ExceptionUtilities.DisplayMessage(ex)}");
                 }
             }
 
             if (source == null)
             {
                 // no matches were found
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.UnknownPackageSpecificVersion, packageIdentity.Id, packageIdentity.Version));
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                    Strings.UnknownPackageSpecificVersion, packageIdentity.Id, packageIdentity.Version));
             }
 
             return source;
@@ -1454,8 +1461,10 @@ namespace NuGet.PackageManagement
         ///     cref="PreviewInstallPackageAsync(NuGetProject,string,ResolutionContext,INuGetProjectContext,SourceRepository,IEnumerable{SourceRepository},CancellationToken)" />
         /// <paramref name="nuGetProjectContext" /> is used in the process.
         /// </summary>
-        public async Task ExecuteNuGetProjectActionsAsync(NuGetProject nuGetProject, IEnumerable<NuGetProjectAction> nuGetProjectActions,
-            INuGetProjectContext nuGetProjectContext, CancellationToken token)
+        public async Task ExecuteNuGetProjectActionsAsync(NuGetProject nuGetProject,
+            IEnumerable<NuGetProjectAction> nuGetProjectActions,
+            INuGetProjectContext nuGetProjectContext,
+            CancellationToken token)
         {
             if (nuGetProject == null)
             {
@@ -1508,7 +1517,10 @@ namespace NuGet.PackageManagement
                         executedNuGetProjectActions.Push(nuGetProjectAction);
                         if (nuGetProjectAction.NuGetProjectActionType == NuGetProjectActionType.Uninstall)
                         {
-                            await ExecuteUninstallAsync(nuGetProject, nuGetProjectAction.PackageIdentity, packageWithDirectoriesToBeDeleted, nuGetProjectContext, token);
+                            await ExecuteUninstallAsync(nuGetProject,
+                                nuGetProjectAction.PackageIdentity,
+                                packageWithDirectoriesToBeDeleted,
+                                nuGetProjectContext, token);
                         }
                         else
                         {
@@ -1516,6 +1528,7 @@ namespace NuGet.PackageManagement
                                     PackageDownloader.GetDownloadResourceResultAsync(nuGetProjectAction.SourceRepository,
                                     nuGetProjectAction.PackageIdentity,
                                     Settings,
+                                    new ProjectContextLogger(nuGetProjectContext),
                                     token))
                             {
                                 // use the version exactly as specified in the nuspec file
@@ -1851,7 +1864,7 @@ namespace NuGet.PackageManagement
                 var referenceContext = new BuildIntegratedProjectReferenceContext(logger);
                 var parents = await BuildIntegratedRestoreUtility.GetParentProjectsInClosure(
                     SolutionManager,
-                    buildIntegratedProject, 
+                    buildIntegratedProject,
                     referenceContext);
 
                 var now = DateTime.UtcNow;
@@ -1988,6 +2001,7 @@ namespace NuGet.PackageManagement
             using (var downloadResult = await PackageDownloader.GetDownloadResourceResultAsync(enabledSources,
                 packageIdentity,
                 Settings,
+                new ProjectContextLogger(nuGetProjectContext),
                 token))
             {
                 packageIdentity = downloadResult.PackageReader.GetIdentity();

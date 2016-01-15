@@ -80,7 +80,7 @@ namespace NuGet.Protocol.Core.v2
                     // Wrap exceptions coming from the server with a user friendly message
                     var error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, package, V2Client.Source);
 
-                    throw new NuGetProtocolException(error, ex);
+                    throw new FatalProtocolException(error, ex);
                 }
             }
 
@@ -121,12 +121,16 @@ namespace NuGet.Protocol.Core.v2
                 // Convert from v2 to v3 types and enumerate the list to finish all server requests before returning
                 results = repoPackages.Select(p => CreateDependencyInfo(p, projectFramework)).ToList();
             }
+            catch (NuGetProtocolException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 // Wrap exceptions coming from the server with a user friendly message
                 var error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, packageId, V2Client.Source);
 
-                throw new NuGetProtocolException(error, ex);
+                throw new FatalProtocolException(error, ex);
             }
 
             return Task.FromResult<IEnumerable<SourcePackageDependencyInfo>>(results);

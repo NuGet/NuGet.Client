@@ -37,7 +37,7 @@ namespace NuGet.Protocol.VisualStudio
 
             if (searchUrl == null)
             {
-                throw new NuGetProtocolException(Strings.Protocol_MissingSearchService);
+                throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
             }
 
             // Construct the query
@@ -79,7 +79,7 @@ namespace NuGet.Protocol.VisualStudio
             bool includePrerelease,
             CancellationToken token)
         {
-            //*TODOs : Take prerelease as parameter. Also it should return both listed and unlisted for powershell ? 
+            //*TODOs : Take prerelease as parameter. Also it should return both listed and unlisted for powershell ?
             var packages = await _regResource.GetPackageMetadata(packageId, includePrerelease, false, token);
             var versions = new List<NuGetVersion>();
             foreach (var package in packages)

@@ -74,7 +74,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
         [Theory]
         [InlineData("not-valid-json")]
-        [InlineData(@"<?xml version=""1.0"" encoding=""utf-8""?><service xml:base=""http://www.nuget.org/api/v2/"" 
+        [InlineData(@"<?xml version=""1.0"" encoding=""utf-8""?><service xml:base=""http://www.nuget.org/api/v2/""
 xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom""><workspace><atom:title>Default</atom:title>
 <collection href=""Packages""><atom:title>Packages</atom:title></collection></workspace></service>")]
         public async Task TryCreate_Throws_IfSourceLocationDoesNotReturnValidJson(string content)
@@ -106,7 +106,7 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
                 new INuGetResourceProvider[] { handlerProvider, provider });
 
             // Act
-            NuGetProtocolException ex = await Assert.ThrowsAsync<NuGetProtocolException>(async () =>
+            NuGetProtocolException ex = await Assert.ThrowsAsync<FatalProtocolException>(async () =>
             {
                 var result = await provider.TryCreate(sourceRepository, default(CancellationToken));
             });
@@ -129,7 +129,7 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
                 new INuGetResourceProvider[] { handlerProvider, provider });
 
             // Act
-            NuGetProtocolException ex = await Assert.ThrowsAsync<NuGetProtocolException>(async () =>
+            NuGetProtocolException ex = await Assert.ThrowsAsync<FatalProtocolException>(async () =>
             {
                 var result = await provider.TryCreate(sourceRepository, default(CancellationToken));
             });

@@ -93,6 +93,12 @@ namespace NuGet.Protocol.Core.v3
                 package.Id.ToLowerInvariant(), package.Version.ToNormalizedString().ToLowerInvariant()));
         }
 
+        public virtual async Task<bool> Exists(PackageIdentity packageId, CancellationToken token)
+        {
+            var uri= GetUri(packageId);
+            return await Utils.ResourceExists(_client, uri, token);
+        }
+
         /// <summary>
         /// Returns the registration blob for the id and version
         /// </summary>
