@@ -323,7 +323,6 @@ function Test-SubTreeUpdateWithConflict {
     
     # Arrange
     $p = New-ClassLibrary
-    $gt = [char]0x2265
     
     # Act
     $p | Install-Package A -Source $context.RepositoryPath
@@ -334,7 +333,7 @@ function Test-SubTreeUpdateWithConflict {
     Assert-Package $p D 1.0
     Assert-Package $p H 1.0
 
-    Assert-Throws { $p | Update-Package C -Source $context.RepositoryPath } "Unable to resolve dependencies. 'C 2.0.0' is not compatible with 'A 1.0.0 constraint: C ($gt 1.0.0)', 'H 1.0.0 constraint: C (= 1.0.0)'."
+    Assert-Throws { $p | Update-Package C -Source $context.RepositoryPath } "Unable to resolve dependencies. 'C 2.0.0' is not compatible with 'A 1.0.0 constraint: C (>= 1.0.0)', 'H 1.0.0 constraint: C (= 1.0.0)'."
     Assert-Null (Get-ProjectPackage $p C 2.0)
     Assert-Null (Get-SolutionPackage C 2.0)
     Assert-Package $p A 1.0
@@ -667,9 +666,8 @@ function Test-UpdateScenariosWithConstraints {
     Add-PackageConstraint $p3 E "[1.0]"
      
     # Act
-    $gt = [char]0x2265
-    Assert-Throws { Update-Package A -Source $context.RepositoryPath } "Unable to resolve 'A'. An additional constraint '($gt 1.0.0 && < 2.0.0)' defined in packages.config prevents this operation."
-    Assert-Throws { Update-Package C -Source $context.RepositoryPath } "Unable to find a version of 'D' that is compatible with 'C 2.0.0 constraint: D ($gt 2.0.0)'. 'D' has an additional constraint (= 1.0.0) defined in packages.config."
+    Assert-Throws { Update-Package A -Source $context.RepositoryPath } "Unable to resolve 'A'. An additional constraint '(>= 1.0.0 && < 2.0.0)' defined in packages.config prevents this operation."
+    Assert-Throws { Update-Package C -Source $context.RepositoryPath } "Unable to find a version of 'D' that is compatible with 'C 2.0.0 constraint: D (>= 2.0.0)'. 'D' has an additional constraint (= 1.0.0) defined in packages.config."
     Assert-Throws { Update-Package F -Source $context.RepositoryPath } "Unable to resolve dependencies. 'F 2.0.0' is not compatible with 'E 1.0.0 constraint: F (= 1.0.0)'."
 
     # Assert
