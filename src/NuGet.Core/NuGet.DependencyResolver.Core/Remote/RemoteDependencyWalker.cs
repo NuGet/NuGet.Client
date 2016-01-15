@@ -159,7 +159,7 @@ namespace NuGet.DependencyResolver
 
                 foreach (var d in item.Data.Dependencies)
                 {
-                    if (d != dependency && string.Equals(d.Name, library.Name, StringComparison.OrdinalIgnoreCase))
+                    if (d != dependency && library.IsEclipsedBy(d.LibraryRange))
                     {
                         if (d.LibraryRange.VersionRange != null &&
                             library.VersionRange != null &&
