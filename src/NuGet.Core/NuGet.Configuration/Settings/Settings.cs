@@ -1042,7 +1042,7 @@ namespace NuGet.Configuration
             {
                 return false;
             }
-            else if (RuntimeEnvironmentHelper.IsWindows)
+            else if (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsMacOSX)
             {
                 return path1.Equals(path2, StringComparison.OrdinalIgnoreCase);
             }

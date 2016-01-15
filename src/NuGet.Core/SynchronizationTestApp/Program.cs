@@ -78,8 +78,10 @@ namespace SynchronizationTestApp
                 await writer.WriteLineAsync("Locked");
                 await writer.FlushAsync();
 
-                await reader.ReadLineAsync();
-
+                if (!RuntimeEnvironmentHelper.IsMacOSX)
+                {
+                    await reader.ReadLineAsync();
+                }
                 if (_abandonLock)
                 {
                     // Kill the process so if the locking mechanism doesn't deal with abandoned locks
