@@ -2,20 +2,18 @@ param (
     [Parameter(Mandatory=$true)]
     [string]$PMCCommand,
     [Parameter(Mandatory=$true)]
-    [string]$FuncTestRoot,
-    [Parameter(Mandatory=$true)]
-    [int]$ResultsTotalWaitTimeInSecs,
-    [Parameter(Mandatory=$true)]
-    [int]$ResultsPollingFrequencyInSecs,
-    [Parameter(Mandatory=$true)]
-    [int]$VSLaunchWaitTimeInSecs,
-    [Parameter(Mandatory=$true)]
     [int]$PMCLaunchWaitTimeInSecs,
     [Parameter(Mandatory=$true)]
+    [int]$EachTestTimoutInSecs,
+    [Parameter(Mandatory=$true)]
+    [string]$NuGetDropPath,
+    [Parameter(Mandatory=$true)]
+    [string]$FuncTestRoot,
+    [Parameter(Mandatory=$true)]
+    [string]$RunCounter,
+    [Parameter(Mandatory=$true)]
 	[ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
-    [string]$VSVersion,
-    [switch]$SkipEndToEndZipCopyAndExtraction,
-    [switch]$SkipSetupAndInstall)
+    [string]$VSVersion)
 
 . "$PSScriptRoot\Utils.ps1"
 . "$PSScriptRoot\VSUtils.ps1"
@@ -54,14 +52,20 @@ ExecuteCommand $dte2 "View.PackageManagerConsole" "Import-Module $NuGetTestsModu
 Write-Host "Executing the provided Package manager console command: ""$PMCCommand"""
 ExecuteCommand $dte2 "View.PackageManagerConsole" $PMCCommand "Running command: $PMCCommand ..."
 
-Write-Host "Starting functional tests with command '$PMCCommand'. Will wait for results for '$ResultsTotalWaitTimeInSecs' seconds."
-$success = WaitForResults $NuGetTestPath $ResultsTotalWaitTimeInSecs $ResultsPollingFrequencyInSecs
+Write-Host "Starting functional tests with command '$PMCCommand'"
+$resultsHtmlFile = RealTimeLogResults $NuGetTestPath $EachTestTimoutInSecs
 
-if ($success -eq $false)
+if (!$resultsHtmlFile)
 {
     exit 1
 }
+else
+{
+    Write-Host 'Run has completed. Copying the results file to CI'
+    CopyResultsToCI $NuGetDropPath $RunCounter $resultsHtmlFile
 
-# TODO: IMPLEMENT BACKUP OF LOGS
+    # Only kill VS if run has completed, otherwise, we might need to investigate
+    KillRunningInstancesOfVS
+}
 
 Write-Host -ForegroundColor Cyan "THE END!"

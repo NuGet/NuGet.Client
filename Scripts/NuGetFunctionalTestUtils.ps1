@@ -2,68 +2,87 @@
 . "$PSScriptRoot\VSUtils.ps1"
 
 # This function requires a rewrite. This is a first cut
-function WaitForResults
+function RealTimeLogResults
 {
     param (
     [Parameter(Mandatory=$true)]
     [string]$NuGetTestPath,
     [Parameter(Mandatory=$true)]
-    $ResultsTotalWaitTimeInSecs,
-    [Parameter(Mandatory=$true)]
-    $ResultsPollingFrequencyInSecs)
+    $EachTestTimoutInSecs)
 
-    $sleepCounter = 0
-    $totalSleepCycles = [Math]::Ceiling($ResultsTotalWaitTimeInSecs / $ResultsPollingFrequencyInSecs)
-    $sleepCycleDuration = [Math]::Min($ResultsTotalWaitTimeInSecs, $ResultsPollingFrequencyInSecs)
+    $currentTestTime = 0
+    $currentTestId = 0
+    $currentTestName = [string]$null    
 
-    Write-Host 'Started waiting now. Total timeout : ' $ResultsTotalWaitTimeInSecs 'secs.'
-    Write-Host 'Number of sleep cycles: ' $totalSleepCycles '. Duration of each sleep cycle: ' $sleepCycleDuration 'secs.'
-
-    While ($sleepCounter -lt $totalSleepCycles)
+    While ($currentTestTime -le $EachTestTimoutInSecs)
     {
-        # On each cycle, wait for $MaxTimeoutPerCycle seconds
-        # and, then check if the Results.html has been created.
-        Start-Sleep -Seconds $sleepCycleDuration
-        $resultsHtmlFiles = (Get-ChildItem $NuGetTestPath -Recurse Results.html)
-        if ($resultsHtmlFiles.Count -eq 1)
+        Start-Sleep 1
+        $currentTestTime++
+        $log = (Get-ChildItem $NuGetTestPath -Recurse log.txt | sort LastWriteTime | select -last 1)
+        if ($log -and (Test-Path $log.FullName))
         {
-            Write-Host 'Found the results html file. Functional tests have completed run.'
-            $result = ParseResultsHtml $resultsHtmlFiles[0]
-            if ($result[0] -eq $true)
+            $content = Get-Content $log.FullName
+            if (($content.Count -gt 0) -and ($content.Count -gt $currentTestId))
             {
-                Write-Host -ForegroundColor Green 'Run passed. Result: ' $result[1]
-                return $true
+                $currentTestTime = 0
+
+                $content[($currentTestId)..($content.Count - 1)] | %{ Write-Host $_ }
+
+                $lastLine = $content[-1]
+                if (($lastLine -is [string]) -and $lastLine.Contains("Tests and/or Test cases, "))
+                {
+                    # RUN HAS COMPLETED
+
+                    if ($lastLine.Contains(", 0 Failed"))
+                    {
+                        Write-Host -ForegroundColor Green $lastLine
+                    }
+                    else
+                    {
+                        Write-Error -ForegroundColor Red $lastLine
+                    }
+
+                    $resultsFile = Join-Path $log.Directory.FullName results.html
+                    if (Test-Path $resultsFile)
+                    {
+                        Start-Process $resultsFile
+                        return $resultsFile
+                    }
+                }
+                else
+                {
+                    $currentTestId = $content.Count
+                }
             }
-
-            $errorMessage = 'RUN FAILED. Result: ' + $result[1]
-            Write-Error $errorMessage
-            return $false
         }
-
-        Write-Host 'Waiting for another ' $sleepCycleDuration 'secs.'
-        $sleepCounter++
     }
 
-    $errorMessage = 'Run Failed - Results.html did not get created in timeout ' + $ResultsTotalWaitTimeInSecs + ' secs' +
-                    '. This indicates that the tests did not finish running. It could be that the VS crashed. Please investigate."'
+    $errorMessage = 'Run Failed - Results.html did not get created. Completed running of ' + [string]$currentTestId + ' tests. '
+                    + $currentTestName + ' was the last test running.' +
+                    '. This indicates that the tests did not finish running. It could be that the VS crashed. Please investigate.'
 
     Write-Error $errorMessage
-    return $false
+    return $null
 }
 
-function ParseResultsHtml
+function CopyResultsToCI
 {
     param (
     [Parameter(Mandatory=$true)]
+    [string]$NuGetDropPath,
+    [Parameter(Mandatory=$true)]
+    [int]$RunCounter,
+    [Parameter(Mandatory=$true)]
     [string]$resultsHtmlFile)
 
-    $resultsHtmlString = [string]::Join('', (Get-Content $resultsHtmlFile))
-    $result = [regex]::matches($resultsHtmlString, 'Ran.*Skipped').Value
+    $DropPathFileInfo = Get-Item $NuGetDropPath
+    $DropPathParent = $DropPathFileInfo.Parent
 
-    Write-Host 'Parsed Result is ' $result
-    if ($result.Contains(", 0 Failed"))
-    {
-        return @($true, $result)
-    }
-    return @($false, $result)
+    $TestResultsPath = Join-Path $DropPathParent.FullName 'testresults'
+    mkdir $TestResultsPath -ErrorAction Ignore
+
+    $DestinationFileName = 'Run-' + $RunCounter + '-Results.html'
+    $DestinationPath = Join-Path $TestResultsPath $DestinationFileName
+    Copy-Item $resultsHtmlFile $DestinationPath
+    Copy-Item $resultsHtmlFile (Join-Path $TestResultsPath 'LatestResults.html')
 }
