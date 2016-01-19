@@ -116,6 +116,8 @@ namespace NuGet.Credentials
         public virtual PluginCredentialResponse Execute(PluginCredentialRequest request,
             CancellationToken cancellationToken)
         {
+            var stdOut = new StringBuilder();
+            var stdError = new StringBuilder();
             var argumentString =
                 $"-uri {request.Uri}"
                 + (request.IsRetry ? " -isRetry" : string.Empty)
@@ -134,18 +136,16 @@ namespace NuGet.Credentials
                 ErrorDialog = false
             };
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             var process = Process.Start(startInfo);
             if (process == null)
             {
                 throw PluginException.CreateNotStartedMessage(Path);
             }
 
-            // Clear out std out and std error since it might have been set from a previous run
-            _stdOut.Clear();
-            _stdError.Clear();
-
-            process.OutputDataReceived += ReadStdOut;
-            process.ErrorDataReceived += ReadStdError;
+            process.OutputDataReceived += (object o, DataReceivedEventArgs e) => { stdOut.AppendLine(e.Data); };
+            process.ErrorDataReceived += (object o, DataReceivedEventArgs e) => { stdError.AppendLine(e.Data); }; 
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
@@ -156,6 +156,11 @@ namespace NuGet.Credentials
                     Kill(process);
                     throw PluginException.CreateTimeoutMessage(Path, TimeoutSeconds);
                 }
+                // Give time for the Async event handlers to finish by calling WaitForExit again.
+                // if the first one succeeded
+                // Note: Read remarks from https://msdn.microsoft.com/en-us/library/ty0d8k56(v=vs.110).aspx
+                // for reason.
+                process.WaitForExit();
             }
 
             process.CancelErrorRead();
@@ -166,7 +171,7 @@ namespace NuGet.Credentials
             if (Enum.GetValues(typeof(PluginCredentialResponseExitCode)).Cast<int>().Contains(exitCode))
             {
                 var status = (PluginCredentialResponseExitCode)exitCode;
-                var responseJson = _stdOut.ToString();
+                var responseJson = stdOut.ToString();
 
                 PluginCredentialResponse credentialResponse;
 
@@ -201,8 +206,8 @@ namespace NuGet.Credentials
             throw PluginException.CreateWrappedExceptionMessage(
                 Path,
                 exitCode,
-                _stdOut.ToString(),
-                _stdError.ToString());
+                stdOut.ToString(),
+                stdError.ToString());
         }
 
         private static void Kill(Process p)
@@ -221,20 +226,6 @@ namespace NuGet.Credentials
                 // the process may have exited, 
                 // in this case ignore the exception
             }
-        }
-
-        //std out and std error for the process we will be running
-        private readonly StringBuilder _stdOut = new StringBuilder();
-        private readonly StringBuilder _stdError = new StringBuilder();
-
-        void ReadStdOut(object sender, DataReceivedEventArgs e)
-        {
-            _stdOut.AppendLine(e.Data);
-        }
-
-        void ReadStdError(object sender, DataReceivedEventArgs e)
-        {
-            _stdError.AppendLine(e.Data);
         }
     }
 }

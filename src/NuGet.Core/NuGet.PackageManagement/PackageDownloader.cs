@@ -44,56 +44,58 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            using (var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token))
-            {
-                // Create a group of local sources that will go first, then everything else.
-                var groups = new Queue<List<SourceRepository>>();
-                var localGroup = new List<SourceRepository>();
-                var otherGroup = new List<SourceRepository>();
-                groups.Enqueue(localGroup);
-                groups.Enqueue(otherGroup);
+            // While CancellationTokenSource has a dispose, if we call it before the tasks using
+            // the token are done we risk having these tasks fail with a object disposed exception so
+            // this should not be in a using unless we want to block until all tasks are done/cancled
+            var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 
-                foreach (var source in sources)
+            // Create a group of local sources that will go first, then everything else.
+            var groups = new Queue<List<SourceRepository>>();
+            var localGroup = new List<SourceRepository>();
+            var otherGroup = new List<SourceRepository>();
+            groups.Enqueue(localGroup);
+            groups.Enqueue(otherGroup);
+
+            foreach (var source in sources)
+            {
+                if (source.PackageSource.IsLocal)
                 {
-                    if (source.PackageSource.IsLocal)
+                    localGroup.Add(source);
+                }
+                else
+                {
+                    otherGroup.Add(source);
+                }
+            }
+
+            while (groups.Count > 0)
+            {
+                token.ThrowIfCancellationRequested();
+
+                var sourceGroup = groups.Dequeue();
+
+                var tasks = sourceGroup.Select(s =>
+                    GetDownloadResourceResultAsync(s, packageIdentity, settings, linkedTokenSource.Token))
+                    .ToList();
+
+                while (tasks.Any())
+                {
+                    var completedTask = await Task.WhenAny(tasks);
+
+                    if (completedTask.Status == TaskStatus.RanToCompletion)
                     {
-                        localGroup.Add(source);
+                        // Cancel the other tasks, since, they may still be running
+                        linkedTokenSource.Cancel();
+
+                        return completedTask.Result;
                     }
                     else
                     {
-                        otherGroup.Add(source);
-                    }
-                }
+                        token.ThrowIfCancellationRequested();
 
-                while (groups.Count > 0)
-                {
-                    token.ThrowIfCancellationRequested();
-
-                    var sourceGroup = groups.Dequeue();
-
-                    var tasks = sourceGroup.Select(s =>
-                        GetDownloadResourceResultAsync(s, packageIdentity, settings, linkedTokenSource.Token))
-                        .ToList();
-
-                    while (tasks.Any())
-                    {
-                        var completedTask = await Task.WhenAny(tasks);
-
-                        if (completedTask.Status == TaskStatus.RanToCompletion)
-                        {
-                            // Cancel the other tasks, since, they may still be running
-                            linkedTokenSource.Cancel();
-
-                            return completedTask.Result;
-                        }
-                        else
-                        {
-                            token.ThrowIfCancellationRequested();
-
-                            // In this case, completedTask did not run to completion.
-                            // That is, it faulted or got canceled. Remove it, and try Task.WhenAny again
-                            tasks.Remove(completedTask);
-                        }
+                        // In this case, completedTask did not run to completion.
+                        // That is, it faulted or got canceled. Remove it, and try Task.WhenAny again
+                        tasks.Remove(completedTask);
                     }
                 }
             }
