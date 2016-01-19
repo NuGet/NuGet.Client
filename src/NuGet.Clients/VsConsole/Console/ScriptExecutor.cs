@@ -22,13 +22,13 @@ using Task = System.Threading.Tasks.Task;
 namespace NuGetConsole
 {
     [Export(typeof(IScriptExecutor))]
-    public class VSScriptExecutor : IScriptExecutor
+    public class ScriptExecutor : IScriptExecutor
     {
         private AsyncLazy<IHost> Host { get; }
         private readonly ISolutionManager _solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
         private bool _skipPSScriptExecution;
 
-        public VSScriptExecutor()
+        public ScriptExecutor()
         {
             Host = new AsyncLazy<IHost>(GetHostAsync, ThreadHelper.JoinableTaskFactory);
         }
