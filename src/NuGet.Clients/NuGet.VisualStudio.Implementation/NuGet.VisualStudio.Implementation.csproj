@@ -66,6 +66,7 @@
     <Compile Include="Extensibility\VsPackageRestorer.cs" />
     <Compile Include="Extensibility\VsPackageSourceProvider.cs" />
     <Compile Include="Extensibility\VsPackageUninstaller.cs" />
+    <Compile Include="Extensibility\VsScriptExecutor.cs" />
     <Compile Include="ExtensionManagerShim.cs" />
     <Compile Include="MessageHelper.cs" />
     <Compile Include="NativeMethods.cs" />
