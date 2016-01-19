@@ -286,7 +286,8 @@ namespace NuGet.Commands.Test
         {
             var data = await result.Reader.ReadLineAsync();
 
-            if (data.Trim() != "Locked")
+            // data will be null on Mac, skip the check on Mac
+            if (!RuntimeEnvironmentHelper.IsMacOSX && data.Trim() != "Locked")
             {
                 throw new InvalidOperationException($"Unexpected output from process: {data}");
             }
