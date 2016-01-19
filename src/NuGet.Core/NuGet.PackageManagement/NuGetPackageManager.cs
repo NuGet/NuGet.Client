@@ -1285,8 +1285,9 @@ namespace NuGet.PackageManagement
                 catch (Exception ex)
                 {
                     logger.LogWarning(
-                        $"Error finding repository for '{pair.Key.PackageSource.Source}:" +
-                        $"{ExceptionUtilities.DisplayMessage(ex)}");
+                        string.Format(Strings.Warning_ErrorFindingRepository,
+                            pair.Key.PackageSource.Source,
+                            ExceptionUtilities.DisplayMessage(ex)));
                 }
             }
 

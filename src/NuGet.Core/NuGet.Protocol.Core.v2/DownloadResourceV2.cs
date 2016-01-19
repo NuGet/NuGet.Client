@@ -40,7 +40,7 @@ namespace NuGet.Protocol.Core.v2
                 throw new ArgumentNullException(nameof(identity));
             }
 
-            string uri = string.Empty;
+            string displayUri = V2Client.Source;
 
             return Task.Run(() =>
             {
@@ -59,15 +59,6 @@ namespace NuGet.Protocol.Core.v2
 
                         if (isFromUri)
                         {
-                            uri = sourcePackage?.DownloadUri.AbsoluteUri;
-                        }
-                        else
-                        {
-                            uri = (repository as DataServicePackageRepository)?.Source ?? "Folder";
-                        }
-
-                        if (isFromUri)
-                        {
                             // If this is a SourcePackageDependencyInfo object with everything populated
                             // and it is from an online source, use the machine cache and download it using the
                             // given url.
@@ -81,7 +72,10 @@ namespace NuGet.Protocol.Core.v2
                     }
                     catch (IOException ex) when (ex.InnerException is SocketException && i < 2)
                     {
-                        string message = $"Error downloading {identity} from {uri} {ExceptionUtilities.DisplayMessage(ex)}";
+                        string message = string.Format(Strings.Warning_ErrorDownloading,
+                            identity,
+                            displayUri,
+                            ExceptionUtilities.DisplayMessage(ex));
 
                         Logger.Instance.LogWarning(message);
                     }
@@ -91,6 +85,7 @@ namespace NuGet.Protocol.Core.v2
                     }
                 }
 
+                // This line cannot be reached, but the compiler doesn't understand it
                 throw new InvalidOperationException("Can never reach here.");
             });
         }
