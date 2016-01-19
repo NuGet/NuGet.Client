@@ -81,7 +81,6 @@ namespace SynchronizationTestApp
                 // ReadLine is blocked on Mac, skip it here
                 if (!RuntimeEnvironmentHelper.IsMacOSX)
                 {
-                    Console.WriteLine("Warning: Skip ReadLineAsync() on Mac due to coreclr bug");
                     await reader.ReadLineAsync();
                 }
                 if (_abandonLock)
