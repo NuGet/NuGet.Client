@@ -78,6 +78,7 @@ namespace SynchronizationTestApp
                 await writer.WriteLineAsync("Locked");
                 await writer.FlushAsync();
 
+                // ReadLine is blocked on Mac, skip it here
                 if (!RuntimeEnvironmentHelper.IsMacOSX)
                 {
                     await reader.ReadLineAsync();
