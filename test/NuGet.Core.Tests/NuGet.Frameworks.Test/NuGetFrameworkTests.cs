@@ -89,6 +89,20 @@ namespace NuGet.Test
             Assert.Equal(1, hashSet.Count);
         }
 
+        [Theory]
+        [InlineData("net45", false)]
+        [InlineData("win8", false)]
+        [InlineData("netstandardapp1.0", true)]
+        [InlineData("netstandard1.0", true)]
+        [InlineData("dotnet5.1", true)]
+        [InlineData("dotnet", true)]
+        public void NuGetFramework_IsPackageBased(string framework, bool isPackageBased)
+        {
+            var fw = NuGetFramework.Parse(framework);
+
+            Assert.Equal(isPackageBased, fw.IsPackageBased);
+        }
+
         [Fact]
         public void NuGetFramework_EqualityMixed()
         {

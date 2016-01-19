@@ -30,6 +30,7 @@ namespace NuGet.Frameworks
 
         public static class FrameworkIdentifiers
         {
+            public const string NetStandardApp = ".NETStandardApp";
             public const string NetStandard = ".NETStandard";
             public const string NetPlatform = ".NETPlatform";
             public const string DotNet = "dotnet";

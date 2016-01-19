@@ -284,11 +284,13 @@ namespace NuGet.Frameworks
         {
             get
             {
-                return FrameworkConstants.FrameworkIdentifiers.NetPlatform
+                return FrameworkConstants.FrameworkIdentifiers.DnxCore
+                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
+                    || FrameworkConstants.FrameworkIdentifiers.NetPlatform
                     .Equals(Framework, StringComparison.OrdinalIgnoreCase)
                     || FrameworkConstants.FrameworkIdentifiers.NetStandard
                     .Equals(Framework, StringComparison.OrdinalIgnoreCase)
-                    || FrameworkConstants.FrameworkIdentifiers.DnxCore
+                    || FrameworkConstants.FrameworkIdentifiers.NetStandardApp
                     .Equals(Framework, StringComparison.OrdinalIgnoreCase);
             }
         }

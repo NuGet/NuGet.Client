@@ -56,6 +56,7 @@ namespace NuGet.Frameworks
                 {
                     _identifierShortNames = new KeyValuePair<string, string>[]
                         {
+                            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetStandardApp, "netstandardapp"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetStandard, "netstandard"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetPlatform, "dotnet"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.Net, "net"),
@@ -271,7 +272,12 @@ namespace NuGet.Frameworks
                             // NetPlatform is a subset of DNXCore
                             new KeyValuePair<string, string>(
                                 FrameworkConstants.FrameworkIdentifiers.NetPlatform,
-                                FrameworkConstants.FrameworkIdentifiers.DnxCore)
+                                FrameworkConstants.FrameworkIdentifiers.DnxCore), 
+
+                            // NetStandard is a subset of NetStandardApp
+                            new KeyValuePair<string, string>(
+                                FrameworkConstants.FrameworkIdentifiers.NetStandard,
+                                FrameworkConstants.FrameworkIdentifiers.NetStandardApp)
                         };
                 }
 
@@ -567,6 +573,7 @@ namespace NuGet.Frameworks
                 {
                     _packageBasedFrameworkPrecedence = new[]
                     {
+                        FrameworkConstants.FrameworkIdentifiers.NetStandardApp,
                         FrameworkConstants.FrameworkIdentifiers.NetStandard,
                         FrameworkConstants.FrameworkIdentifiers.NetPlatform
                     };

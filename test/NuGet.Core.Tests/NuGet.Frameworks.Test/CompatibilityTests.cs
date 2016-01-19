@@ -28,7 +28,13 @@ namespace NuGet.Test
         [InlineData("dnxcore50", "dotnet5.2", true)]
         [InlineData("dnxcore50", "dotnet5.1", true)]
 
-        // net -> dotnet, netstandard
+        // net -> dotnet, netstandard (but not netstandardapp)
+        [InlineData("net462", "netstandardapp1.5", false)]
+        [InlineData("net462", "netstandardapp1.4", false)]
+        [InlineData("net462", "netstandardapp1.3", false)]
+        [InlineData("net462", "netstandardapp1.2", false)]
+        [InlineData("net462", "netstandardapp1.1", false)]
+        [InlineData("net462", "netstandardapp1.0", false)]
         [InlineData("net462", "netstandard1.5", true)]
         [InlineData("net462", "netstandard1.4", true)]
         [InlineData("net462", "netstandard1.3", true)]
@@ -324,7 +330,9 @@ namespace NuGet.Test
         [InlineData("win8", "dotnet5.2", true)]
         [InlineData("win8", "dotnet5.1", true)]
 
-        // Older things don't support netstandard or dotnet at all
+        // Older things don't support dotnet, netstandard, or netstandard app at all
+        [InlineData("sl4", "netstandardapp", false)]
+        [InlineData("net40", "netstandardapp", false)]
         [InlineData("sl4", "netstandard", false)]
         [InlineData("sl3", "netstandard", false)]
         [InlineData("sl2", "netstandard", false)]
@@ -356,6 +364,8 @@ namespace NuGet.Test
         [InlineData("netstandard1.1", "dnxcore50", false)]
         [InlineData("netstandard1.2", "dnxcore50", false)]
         [InlineData("netstandard1.3", "dnxcore50", false)]
+        [InlineData("netstandard1.3", "netstandardapp1.3", false)]
+        [InlineData("netstandard1.3", "netstandardapp1.2", false)]
         [InlineData("dotnet5.1", "net45", false)]
         [InlineData("dotnet5.2", "net45", false)]
         [InlineData("dotnet5.2", "net451", false)]
@@ -371,6 +381,8 @@ namespace NuGet.Test
         [InlineData("dotnet5.2", "dnxcore50", false)]
         [InlineData("dotnet5.3", "dnxcore50", false)]
         [InlineData("dotnet5.4", "dnxcore50", false)]
+        [InlineData("dotnet5.4", "netstandardapp1.3", false)]
+        [InlineData("dotnet5.4", "netstandardapp1.2", false)]
 
         // Old-world Portable doesn't support dotnet and vice-versa
         [InlineData("dotnet", "portable-net40+sl5+win8", false)]
@@ -385,6 +397,57 @@ namespace NuGet.Test
         [InlineData("portable-net451+win8+core50", "dotnet", false)]
         [InlineData("portable-net451+win8+dnxcore50", "dotnet", false)]
         [InlineData("portable-net451+win8+aspnetcore50", "dotnet", false)]
+
+        // netstandardapp supports netstandardapp
+        [InlineData("netstandardapp1.5", "netstandardapp6.0", false)]
+        [InlineData("netstandardapp1.5", "netstandardapp1.5.1", false)]
+        [InlineData("netstandardapp1.5", "netstandardapp1.5.0", true)]
+        [InlineData("netstandardapp1.5", "netstandardapp1.5", true)]
+        [InlineData("netstandardapp1.5", "netstandardapp1.4", true)]
+        [InlineData("netstandardapp1.5", "netstandardapp1.4.11", true)]
+        [InlineData("netstandardapp1.5", "netstandardapp1.3", true)]
+        [InlineData("netstandardapp1.5", "netstandardapp1.2", true)]
+        [InlineData("netstandardapp1.5", "netstandardapp1.1", true)]
+        [InlineData("netstandardapp1.5", "netstandardapp1.0", true)]
+        [InlineData("netstandardapp1.5", "netstandardapp0.9", true)]
+        [InlineData("netstandardapp1.5", "netstandardapp0.0", true)]
+        [InlineData("netstandardapp1.5", "netstandardapp", true)]
+        [InlineData("netstandardapp0.9", "netstandardapp0.8", true)]
+        [InlineData("netstandardapp", "netstandardapp", true)]
+
+        // netstandardapp supports netstandard
+        [InlineData("netstandardapp1.5", "netstandard1.6", false)]
+        [InlineData("netstandardapp1.5", "netstandard1.5", true)]
+        [InlineData("netstandardapp1.5", "netstandard1.4", true)]
+        [InlineData("netstandardapp1.5", "netstandard0.0", true)]
+        [InlineData("netstandardapp1.5", "netstandard", true)]
+        [InlineData("netstandardapp1.4", "netstandard1.5", false)]
+        [InlineData("netstandardapp1.4", "netstandard1.4", true)]
+        [InlineData("netstandardapp1.3", "netstandard1.3", true)]
+        [InlineData("netstandardapp1.2", "netstandard1.2", true)]
+        [InlineData("netstandardapp1.1", "netstandard1.1", true)]
+        [InlineData("netstandardapp1.0", "netstandard1.0", true)]
+        [InlineData("netstandardapp0.9", "netstandard0.8", true)]
+        [InlineData("netstandardapp", "netstandard", true)]
+
+        // netstandardapp supports dotnet
+        [InlineData("netstandardapp1.5", "dotnet6.0", false)]
+        [InlineData("netstandardapp1.5", "dotnet5.6", true)]
+        [InlineData("netstandardapp1.5", "dotnet5.5", true)]
+        [InlineData("netstandardapp1.5", "dotnet1.0", true)]
+        [InlineData("netstandardapp1.5", "dotnet0.0", true)]
+        [InlineData("netstandardapp1.5", "dotnet", true)]
+        [InlineData("netstandardapp1.4", "dotnet5.6", false)]
+        [InlineData("netstandardapp1.4", "dotnet5.5", true)]
+        [InlineData("netstandardapp1.3", "dotnet5.4", true)]
+        [InlineData("netstandardapp1.2", "dotnet5.3", true)]
+        [InlineData("netstandardapp1.1", "dotnet5.2", true)]
+        [InlineData("netstandardapp1.0", "dotnet5.1", true)]
+
+        // netstandardapp doesn't support anything else
+        [InlineData("netstandardapp1.5", "net451", false)]
+        [InlineData("netstandardapp1.5", "net4", false)]
+        [InlineData("netstandardapp1.5", "win8", false)]
         public void Compatibility_FrameworksAreCompatible(string project, string package, bool compatible)
         {
             // Arrange

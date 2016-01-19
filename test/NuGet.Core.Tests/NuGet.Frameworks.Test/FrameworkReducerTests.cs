@@ -64,6 +64,15 @@ namespace NuGet.Test
         [InlineData("netstandard1.5", "dotnet5.6,netstandard0.1", "netstandard0.1")]
         [InlineData("netstandard1.5", "dotnet5.6,netstandard0.0", "netstandard")]
         [InlineData("netstandard7.0", "netstandard6.0,netstandard1.0", "netstandard6.0")]
+        // netstandardapp
+        [InlineData("netstandardapp1.5", "net4,netstandardapp1.5,netstandardapp1.4", "netstandardapp1.5")]
+        [InlineData("netstandardapp1.5", "net4,netstandard1.4,netstandardapp1.3,dotnet5.6", "netstandardapp1.3")]
+        [InlineData("netstandardapp1.5", "dotnet5.6,netstandard1.4", "netstandard1.4")]
+        [InlineData("netstandardapp1.5", "net4,dotnet5.3", "dotnet5.3")]
+        [InlineData("netstandardapp1.5", "net4", null)]
+        [InlineData("netstandardapp1.0", "net4,dotnet5.3", null)]
+        [InlineData("netstandardapp1.0", "netstandardapp1.1,netstandardapp1.0", "netstandardapp1.0")]
+        [InlineData("netstandardapp1.0", "dotnet5.2,dotnet", "dotnet")]
         // PCL
         [InlineData("portable-net45", "portable-net45+netcore45,portable-net45+netcore45+wpa81", "portable-net45+netcore45")]
         [InlineData("portable-net45+netcore45", "portable-net45+netcore45,netstandard1.2", "portable-net45+netcore45")]
