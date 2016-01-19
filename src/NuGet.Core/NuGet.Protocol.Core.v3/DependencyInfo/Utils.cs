@@ -49,6 +49,14 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
             return obj;
         }
 
+        public static async Task<bool> ResourceExists(HttpClient httpClient, Uri uri, CancellationToken token)
+        {
+            using (var response = await httpClient.GetAsync(uri, token))
+            {
+                return response.IsSuccessStatusCode;
+            }
+        }
+
         public async static Task<IEnumerable<JObject>> LoadRanges(
             HttpClient httpClient,
             Uri registrationUri,

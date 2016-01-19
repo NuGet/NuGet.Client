@@ -54,7 +54,7 @@ namespace NuGet.Test
 
                 // Act
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    new BuildIntegratedProjectReferenceContext(),
+                    GetBuildIntegratedProjectReferenceContext(),
                     sources,
                     effectiveGlobalPackagesFolder,
                     CancellationToken.None);
@@ -101,7 +101,7 @@ namespace NuGet.Test
 
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(
                     project,
-                    new BuildIntegratedProjectReferenceContext(),
+                    GetBuildIntegratedProjectReferenceContext(),
                     sources,
                     packagesFolder,
                     CancellationToken.None);
@@ -117,7 +117,7 @@ namespace NuGet.Test
                     writer.Write(json.ToString());
                 }
 
-                var context = new BuildIntegratedProjectReferenceContext();
+                var context = GetBuildIntegratedProjectReferenceContext();
 
                 // Act
                 var b = await BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver, context);
@@ -162,7 +162,7 @@ namespace NuGet.Test
 
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(
                     project,
-                    new BuildIntegratedProjectReferenceContext(),
+                    GetBuildIntegratedProjectReferenceContext(),
                     sources,
                     packagesFolder,
                     CancellationToken.None);
@@ -178,7 +178,7 @@ namespace NuGet.Test
                     writer.Write("ANAWESOMELYWRONGHASH!!!");
                 }
 
-                var context = new BuildIntegratedProjectReferenceContext();
+                var context = GetBuildIntegratedProjectReferenceContext();
 
                 // Act
                 var b = await BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver, context);
@@ -223,7 +223,7 @@ namespace NuGet.Test
 
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(
                     project,
-                    new BuildIntegratedProjectReferenceContext(),
+                    GetBuildIntegratedProjectReferenceContext(),
                     sources,
                     packagesFolder,
                     CancellationToken.None);
@@ -234,7 +234,7 @@ namespace NuGet.Test
 
                 var pathToDelete = resolver.GetInstallPath("nuget.versioning", NuGetVersion.Parse("1.0.7"));
 
-                var context = new BuildIntegratedProjectReferenceContext();
+                var context = GetBuildIntegratedProjectReferenceContext();
 
                 // Act
                 TestFileSystemUtility.DeleteRandomTestFolder(pathToDelete);
@@ -284,7 +284,7 @@ namespace NuGet.Test
                         Configuration.NullSettings.Instance);
 
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    new BuildIntegratedProjectReferenceContext(),
+                    GetBuildIntegratedProjectReferenceContext(),
                     sources,
                     effectiveGlobalPackagesFolder,
                     CancellationToken.None);
@@ -293,7 +293,7 @@ namespace NuGet.Test
 
                 var resolver = new VersionFolderPathResolver(effectiveGlobalPackagesFolder);
 
-                var context = new BuildIntegratedProjectReferenceContext();
+                var context = GetBuildIntegratedProjectReferenceContext();
 
                 // Act
                 var b = await BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver, context);
@@ -341,7 +341,7 @@ namespace NuGet.Test
                         Configuration.NullSettings.Instance);
 
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    new BuildIntegratedProjectReferenceContext(),
+                    GetBuildIntegratedProjectReferenceContext(),
                     sources,
                     effectiveGlobalPackagesFolder,
                     CancellationToken.None);
@@ -350,7 +350,7 @@ namespace NuGet.Test
 
                 var resolver = new VersionFolderPathResolver(effectiveGlobalPackagesFolder);
 
-                var context = new BuildIntegratedProjectReferenceContext();
+                var context = GetBuildIntegratedProjectReferenceContext();
 
                 // Act
                 var b = await BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver, context);
@@ -402,8 +402,8 @@ namespace NuGet.Test
                 projects.Add(project2);
 
                 var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
-                    projects, 
-                    new BuildIntegratedProjectReferenceContext());
+                    projects,
+                    GetBuildIntegratedProjectReferenceContext());
 
                 var projects2 = new List<BuildIntegratedNuGetProject>();
                 project1.ProjectClosure = new List<BuildIntegratedProjectReference>() {
@@ -415,7 +415,7 @@ namespace NuGet.Test
                 projects2.Add(project2);
                 var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
                     projects2,
-                    new BuildIntegratedProjectReferenceContext());
+                    GetBuildIntegratedProjectReferenceContext());
 
                 // Act
                 var b = BuildIntegratedRestoreUtility.CacheHasChanges(cache, cache2);
@@ -481,13 +481,13 @@ namespace NuGet.Test
 
                 var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
                     projects,
-                    new BuildIntegratedProjectReferenceContext());
+                    GetBuildIntegratedProjectReferenceContext());
 
                 supports["net46"] = new JObject();
                 File.WriteAllText(randomConfig, configJson.ToString());
                 var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
                     projects,
-                    new BuildIntegratedProjectReferenceContext());
+                    GetBuildIntegratedProjectReferenceContext());
 
                 // Act 1
                 var result1 = BuildIntegratedRestoreUtility.CacheHasChanges(cache, cache2);
@@ -498,7 +498,7 @@ namespace NuGet.Test
                 // Act 2
                 var cache3 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
                     projects,
-                    new BuildIntegratedProjectReferenceContext());
+                    GetBuildIntegratedProjectReferenceContext());
                 var result2 = BuildIntegratedRestoreUtility.CacheHasChanges(cache2, cache3);
 
                 // Assert 2
@@ -548,13 +548,13 @@ namespace NuGet.Test
 
                 var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
                     projects,
-                    new BuildIntegratedProjectReferenceContext());
+                    GetBuildIntegratedProjectReferenceContext());
 
                 // Add a new project to the second cache
                 projects.Add(project2);
                 var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
                     projects,
-                    new BuildIntegratedProjectReferenceContext());
+                    GetBuildIntegratedProjectReferenceContext());
 
                 // Act
                 var b = BuildIntegratedRestoreUtility.CacheHasChanges(cache, cache2);
@@ -607,10 +607,10 @@ namespace NuGet.Test
 
                 var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
                     projects,
-                    new BuildIntegratedProjectReferenceContext());
+                    GetBuildIntegratedProjectReferenceContext());
                 var cache2 = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
                     projects,
-                    new BuildIntegratedProjectReferenceContext());
+                    GetBuildIntegratedProjectReferenceContext());
 
                 // Act
                 var b = BuildIntegratedRestoreUtility.CacheHasChanges(cache, cache2);
@@ -664,7 +664,7 @@ namespace NuGet.Test
                 // Act
                 var cache = await BuildIntegratedRestoreUtility.CreateBuildIntegratedProjectStateCache(
                     projects,
-                    new BuildIntegratedProjectReferenceContext());
+                    GetBuildIntegratedProjectReferenceContext());
 
                 // Assert
                 Assert.Equal(2, cache.Count);
@@ -705,7 +705,7 @@ namespace NuGet.Test
 
                 // Act
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    new BuildIntegratedProjectReferenceContext(),
+                    GetBuildIntegratedProjectReferenceContext(),
                     sources,
                     effectiveGlobalPackagesFolder,
                     CancellationToken.None);
@@ -745,7 +745,7 @@ namespace NuGet.Test
                         Configuration.NullSettings.Instance);
 
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    new BuildIntegratedProjectReferenceContext(),
+                    GetBuildIntegratedProjectReferenceContext(),
                     sources,
                     effectiveGlobalPackagesFolder,
                     CancellationToken.None);
@@ -761,7 +761,7 @@ namespace NuGet.Test
 
                 // Act
                 result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    new BuildIntegratedProjectReferenceContext(),
+                    GetBuildIntegratedProjectReferenceContext(),
                     sources,
                     effectiveGlobalPackagesFolder,
                     CancellationToken.None);
@@ -819,7 +819,7 @@ namespace NuGet.Test
 
                 // Act
                 var result = await BuildIntegratedRestoreUtility.RestoreAsync(project,
-                    new BuildIntegratedProjectReferenceContext(),
+                    GetBuildIntegratedProjectReferenceContext(),
                     sources,
                     effectiveGlobalPackagesFolder,
                     CancellationToken.None);
@@ -887,6 +887,11 @@ namespace NuGet.Test
                 spec,
                 msbuildProjectPath: null,
                 projectReferences: references);
+        }
+
+        private static BuildIntegratedProjectReferenceContext GetBuildIntegratedProjectReferenceContext()
+        {
+            return new BuildIntegratedProjectReferenceContext(Logging.NullLogger.Instance);
         }
 
         private class TestBuildIntegratedNuGetProject : BuildIntegratedNuGetProject

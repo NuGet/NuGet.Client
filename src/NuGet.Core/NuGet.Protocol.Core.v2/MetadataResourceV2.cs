@@ -26,7 +26,7 @@ namespace NuGet.Protocol.Core.v2
         {
             V2Client = resource.V2Client;
         }
-       
+
         public override async Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, CancellationToken token)
         {
             var results = new List<KeyValuePair<string, NuGetVersion>>();
@@ -76,7 +76,7 @@ namespace NuGet.Protocol.Core.v2
             }
             catch (Exception ex)
             {
-                throw new NuGetProtocolException(Strings.FormatProtocol_PackageMetadataError(packageId, V2Client.Source), ex);
+                throw new FatalProtocolException(Strings.FormatProtocol_PackageMetadataError(packageId, V2Client.Source), ex);
             }
         }
 
