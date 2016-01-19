@@ -5951,7 +5951,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;all | http-cache | packages-cache | global-packages&gt; [-clear | -list].
+        ///   Looks up a localized string similar to &lt;all | http-cache | packages-cache | global-packages | temp&gt; [-clear | -list].
         /// </summary>
         internal static string LocalsCommandSummary {
             get {
