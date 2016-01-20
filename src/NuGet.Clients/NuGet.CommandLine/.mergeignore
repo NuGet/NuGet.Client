@@ -1,0 +1,25 @@
+# common ignore patterns
+.merge*
+*.xml
+*.pdb
+*.exe
+*.manifest
+
+# ignore individual unsolicited files
+Microsoft.CSharp.dll
+mscorlib.dll
+System.dll
+System.Collections.Concurrent.dll
+System.Collections.dll
+System.ComponentModel.Composition.dll
+System.Globalization.dll
+System.IdentityModel.dll
+System.IO.Compression.dll
+System.Net.Http.dll
+System.Net.Http.WebRequest.dll
+System.Runtime.Serialization.dll
+System.Security.dll
+System.ServiceModel.dll
+System.Xml.dll
+System.Xml.Linq.dll
+WindowsBase.dll

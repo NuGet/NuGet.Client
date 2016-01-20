@@ -566,26 +566,40 @@ Function Test-ClientsProjects {
     }
 }
 
+Function Read-FileList($FilePath) {
+    Get-Content $FilePath | ?{ -not $_.StartsWith('#') } | %{ $_.Trim() } | ?{ $_ -ne '' }
+}
+
 # Merges the NuGet.exe
 Function Invoke-ILMerge {
     [CmdletBinding()]
     param(
         [string]$Configuration = $DefaultConfiguration
     )
-    $nugetArtifactsFolder = Join-Path $Artifacts "$Configuration\NuGet.Clients\NuGet.CommandLine"
-    $dlls = Get-ChildItem $nugetArtifactsFolder -Filter 'nuget.*.dll' | %{ $_.Name }
-    $dlls += 'Microsoft.Web.XmlTransform.dll', 'Newtonsoft.Json.dll'
+    $buildArtifactsFolder = [io.path]::combine($Artifacts, $Configuration, 'NuGet.Clients', 'NuGet.CommandLine')
+    $ignoreList = Read-FileList (Join-Path $buildArtifactsFolder '.mergeignore')
+    $buildArtifacts = Get-ChildItem $buildArtifactsFolder -Exclude $ignoreList | %{ $_.Name }
+
+    $includeList = Read-FileList (Join-Path $buildArtifactsFolder '.mergeinclude')
+    $notInList = $buildArtifacts | ?{ -not ($includeList -contains $_) }
+    if ($notInList) {
+        Error-Log "Found build artifacts NOT listed in include list: $($notInList -join ', ')"
+    }
+    $notFound = $includeList | ?{ -not ($buildArtifacts -contains $_) }
+    if ($notFound) {
+        Error-Log "Missing build artifacts listed in include list: $($notFound -join ', ')"
+    }
 
     Trace-Log 'Creating the ilmerged nuget.exe'
     $opts = , 'NuGet.exe'
-    $opts += $dlls
+    $opts += $buildArtifacts
     $opts += "/out:$Artifacts\NuGet.exe"
     if ($VerbosePreference) {
         $opts += '/log'
     }
     Verbose-Log "$ILMerge $opts"
 
-    pushd $nugetArtifactsFolder
+    pushd $buildArtifactsFolder
     try {
         & $ILMerge $opts 2>&1
     }
