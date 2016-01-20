@@ -25,8 +25,9 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 try
                 {
                     using (var reader = new PackageArchiveReader(nupkgStream, leaveStreamOpen: true))
+                    using (var nuspecStream = reader.GetNuspec())
                     {
-                        return new NuspecReader(reader.GetNuspec());
+                        return new NuspecReader(nuspecStream);
                     }
                 }
                 catch (Exception exception) when (exception is PackagingException 

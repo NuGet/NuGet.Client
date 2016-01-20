@@ -677,6 +677,42 @@ namespace NuGet.Commands.Test
             }
         }
 
+        [Fact] 
+        public async Task RestoreCommand_InstallPackageWithManyDependencies()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.myget.org/F/aspnetcidev/api/v3/index.json"));
+            sources.Add(new PackageSource("https://api.nuget.org/v3/index.json"));
+
+            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
+
+                AddDependency(spec, "Microsoft.AspNet.SignalR.Server", "3.0.0-*");
+
+                var request = new RestoreRequest(spec, sources, packagesDir);
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
+
+                // Act
+                var logger = new TestLogger();
+                var command = new RestoreCommand(logger, request);
+               
+                var result = await command.ExecuteAsync();
+                var installed = result.GetAllInstalled();
+                var unresolved = result.GetAllUnresolved();
+
+                Assert.Equal(114, installed.Count);
+                Assert.Equal(0, unresolved.Count);
+
+            }
+
+        }
+
         [Fact]
         public async Task RestoreCommand_InstallPackageWithReferenceDependencies()
         {
