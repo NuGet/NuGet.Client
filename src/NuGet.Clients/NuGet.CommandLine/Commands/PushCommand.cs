@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -60,7 +61,10 @@ namespace NuGet.CommandLine
                 timeout = TimeSpan.FromMinutes(5); // Default to 5 minutes
             }
 
-            PushPackage(packagePath, pushEndpoint, apiKey, timeout);
+            var tokenSource = new CancellationTokenSource();
+            tokenSource.CancelAfter(timeout);
+
+            await PushPackage(packagePath, pushEndpoint, apiKey, tokenSource.Token);
 
             if (pushEndpoint.Equals(NuGetConstants.DefaultGalleryServerUrl, StringComparison.OrdinalIgnoreCase))
             {
@@ -113,7 +117,7 @@ namespace NuGet.CommandLine
             return source;
         }
 
-        private void PushSymbols(string packagePath, TimeSpan timeout)
+        private async Task PushSymbols(string packagePath, CancellationToken token)
         {
             // Get the symbol package for this package
             string symbolPackagePath = GetSymbolsPath(packagePath);
@@ -133,7 +137,8 @@ namespace NuGet.CommandLine
                         Path.GetFileName(symbolPackagePath),
                         LocalizedResourceManager.GetString("DefaultSymbolServer"));
                 }
-                PushPackage(symbolPackagePath, source, apiKey, timeout);
+
+                await PushPackage(symbolPackagePath, source, apiKey, token);
             }
         }
 
@@ -147,14 +152,10 @@ namespace NuGet.CommandLine
             return Path.Combine(packageDir, symbolPath);
         }
 
-        private void PushPackage(string packagePath, string source, string apiKey, TimeSpan timeout)
+        private async Task PushPackage(string packagePath, string source, string apiKey, CancellationToken token)
         {
             var userAgent = UserAgent.CreateUserAgentString(CommandLineConstants.UserAgent);
-            var packageServer = new PackageServer(source, userAgent);
-            packageServer.SendingRequest += (sender, e) =>
-            {
-                Console.LogDebug(String.Format(CultureInfo.CurrentCulture, "{0} {1}", e.Request.Method, e.Request.RequestUri));
-            };
+            var packageServer = new PackageUploader(source, userAgent);
 
             IEnumerable<string> packagesToPush = GetPackagesToPush(packagePath);
 
@@ -162,11 +163,15 @@ namespace NuGet.CommandLine
 
             foreach (string packageToPush in packagesToPush)
             {
-                PushPackageCore(source, apiKey, packageServer, packageToPush, timeout);
+                await PushPackageCore(source, apiKey, packageServer, packageToPush, token);
             }
         }
 
-        private void PushPackageCore(string source, string apiKey, PackageServer packageServer, string packageToPush, TimeSpan timeout)
+        private void PushPackageCore(string source,
+            string apiKey,
+            PackageServer packageServer,
+            string packageToPush,
+            CancellationToken token)
         {
             // Push the package to the server
             IPackage package;
@@ -174,14 +179,15 @@ namespace NuGet.CommandLine
             package = new OptimizedZipPackage(packageToPush);
 
             string sourceName = CommandLineUtility.GetSourceDisplayName(source);
-            Console.WriteLine(LocalizedResourceManager.GetString("PushCommandPushingPackage"), package.GetFullName(), sourceName);
+            Console.WriteLine(LocalizedResourceManager.GetString("PushCommandPushingPackage"),
+                package.GetFullName(), sourceName);
 
             packageServer.PushPackage(
                 apiKey,
                 package,
                 new FileInfo(packageToPush).Length,
-                Convert.ToInt32(timeout.TotalMilliseconds),
-                DisableBuffering);
+                token);
+
             Console.WriteLine(LocalizedResourceManager.GetString("PushCommandPackagePushed"));
         }
 
