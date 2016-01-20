@@ -68,8 +68,6 @@ namespace NuGet.Frameworks
                     }
                 }
             }
-
-            yield break;
         }
 
         /// <summary>

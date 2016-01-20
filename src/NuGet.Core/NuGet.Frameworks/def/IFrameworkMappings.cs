@@ -70,6 +70,12 @@ namespace NuGet.Frameworks
         IEnumerable<string> PackageBasedFrameworkPrecedence { get; }
 
         /// <summary>
+        /// Only used to choose between frameworks that are equivalent. This favors more human-readable target
+        /// frameworks identifiers.
+        /// </summary>
+        IEnumerable<string> EquivalentFrameworkPrecedence { get; }
+
+        /// <summary>
         /// Rewrite folder short names to the given value.
         /// Ex: dotnet50 -> dotnet
         /// </summary>

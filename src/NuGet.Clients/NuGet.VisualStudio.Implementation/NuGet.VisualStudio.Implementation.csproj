@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommonResources.cs" />
+    <Compile Include="Extensibility\VsFrameworkCompatibility.cs" />
     <Compile Include="Extensibility\VsPackageInstaller.cs" />
     <Compile Include="Extensibility\VsPackageInstallerEvents.cs" />
     <Compile Include="Extensibility\VsPackageInstallerServices.cs" />

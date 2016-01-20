@@ -102,10 +102,26 @@ namespace NuGet.Frameworks
         bool TryGetSubSetFrameworks(string frameworkIdentifier, out IEnumerable<string> subSetFrameworkIdentifiers);
 
         /// <summary>
-        /// Attempts order and prefer one framework over the other based on framework preference rules.
+        /// The ascending order of frameworks should be based on the following ordered groups:
+        /// 
+        /// 1. Non-package-based frameworks in <see cref="IFrameworkMappings.NonPackageBasedFrameworkPrecedence"/>.
+        /// 2. Other non-package-based frameworks.
+        /// 3. Package-based frameworks in <see cref="IFrameworkMappings.PackageBasedFrameworkPrecedence"/>.
+        /// 4. Other package-based frameworks.
+        /// 
+        /// For group #1 and #3, the order within the group is based on the order of the respective precedence list.
+        /// For group #2 and #4, the order is the original order in the incoming list. This should later be made
+        /// consistent between different input orderings by using the <see cref="NuGetFrameworkSorter"/>.
         /// </summary>
-        /// <returns>0 if no order can be determined, -1 if the first framework is preferred.</returns>
         int CompareFrameworks(NuGetFramework x, NuGetFramework y);
+
+        /// <summary>
+        /// Used to pick between two equivalent frameworks. This is meant to favor the more human-readable
+        /// framework. Note that this comparison does not validate that the provided frameworks are indeed
+        /// equivalent (e.g. with
+        /// <see cref="TryGetEquivalentFrameworks(NuGetFramework, out IEnumerable{NuGetFramework})"/>).
+        /// </summary>
+        int CompareEquivalentFrameworks(NuGetFramework x, NuGetFramework y);
 
         /// <summary>
         /// Returns folder short names rewrites.
@@ -118,5 +134,15 @@ namespace NuGet.Frameworks
         /// Ex: .NETPlatform,Version=v0.0 -> .NETPlatform,Version=v5.0
         /// </summary>
         NuGetFramework GetFullNameReplacement(NuGetFramework framework);
+
+        /// <summary>
+        /// Returns all versions of .NETStandard in ascending order.
+        /// </summary>
+        IEnumerable<NuGetFramework> GetNetStandardVersions();
+
+        /// <summary>
+        /// Returns a list of frameworks that could be compatible with .NETStandard.
+        /// </summary>
+        IEnumerable<NuGetFramework> GetCompatibleCandidates();
     }
 }

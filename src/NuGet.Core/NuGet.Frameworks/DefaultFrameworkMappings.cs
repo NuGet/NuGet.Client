@@ -548,6 +548,35 @@ namespace NuGet.Frameworks
             }
         }
 
+        private static string[] _equivalentFrameworkPrecedence;
+
+        public IEnumerable<string> EquivalentFrameworkPrecedence
+        {
+            get
+            {
+                if (_equivalentFrameworkPrecedence == null)
+                {
+                    _equivalentFrameworkPrecedence = new[]
+                    {
+                        FrameworkConstants.FrameworkIdentifiers.Windows,
+                        FrameworkConstants.FrameworkIdentifiers.NetCore,
+                        FrameworkConstants.FrameworkIdentifiers.WinRT,
+
+                        FrameworkConstants.FrameworkIdentifiers.WindowsPhone,
+                        FrameworkConstants.FrameworkIdentifiers.Silverlight,
+
+                        FrameworkConstants.FrameworkIdentifiers.DnxCore,
+                        FrameworkConstants.FrameworkIdentifiers.AspNetCore,
+
+                        FrameworkConstants.FrameworkIdentifiers.Dnx,
+                        FrameworkConstants.FrameworkIdentifiers.AspNet
+                    };
+                }
+
+                return _equivalentFrameworkPrecedence;
+            }
+        }
+
         private static KeyValuePair<NuGetFramework, NuGetFramework>[] _shortNameReplacements;
 
         public IEnumerable<KeyValuePair<NuGetFramework, NuGetFramework>> ShortNameReplacements

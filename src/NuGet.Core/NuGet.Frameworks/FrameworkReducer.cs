@@ -175,7 +175,7 @@ namespace NuGet.Frameworks
                 {
                     // Sort by precedence rules, then by name in the case of a tie
                     nearest = reduced
-                        .OrderBy(f => f, new FrameworkPrecedenceSorter(_mappings))
+                        .OrderBy(f => f, new FrameworkPrecedenceSorter(_mappings, false))
                         .ThenByDescending(f => f, new NuGetFrameworkSorter())
                         .ThenBy(f => f.GetHashCode())
                         .First();
@@ -188,35 +188,35 @@ namespace NuGet.Frameworks
         /// <summary>
         /// Remove duplicates found in the equivalence mappings.
         /// </summary>
-        public IEnumerable<NuGetFramework> Reduce(IEnumerable<NuGetFramework> frameworks)
+        public IEnumerable<NuGetFramework> ReduceEquivalent(IEnumerable<NuGetFramework> frameworks)
         {
             // order first so we get consistent results for equivalent frameworks
-            var input = frameworks.OrderBy(f => f.DotNetFrameworkName, StringComparer.OrdinalIgnoreCase).ToArray();
+            var input = frameworks
+                .OrderBy(f => f, new FrameworkPrecedenceSorter(_mappings, true))
+                .ThenByDescending(f => f, new NuGetFrameworkSorter())
+                .ToArray();
 
-            var comparer = new NuGetFrameworkFullComparer();
-
-            for (var i = 0; i < input.Length; i++)
+            var duplicates = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+            foreach (var framework in input)
             {
-                var dupe = false;
-
-                IEnumerable<NuGetFramework> eqFrameworks = null;
-                if (!_mappings.TryGetEquivalentFrameworks(input[i], out eqFrameworks))
+                if (duplicates.Contains(framework))
                 {
-                    eqFrameworks = new List<NuGetFramework>() { input[i] };
+                    continue;
                 }
 
-                for (var j = i + 1; !dupe && j < input.Length; j++)
-                {
-                    dupe = eqFrameworks.Contains(input[j], comparer);
-                }
+                yield return framework;
 
-                if (!dupe)
+                duplicates.Add(framework);
+
+                IEnumerable<NuGetFramework> eqFrameworks;
+                if (_mappings.TryGetEquivalentFrameworks(framework, out eqFrameworks))
                 {
-                    yield return input[i];
+                    foreach (var eqFramework in eqFrameworks)
+                    {
+                        duplicates.Add(eqFramework);
+                    }
                 }
             }
-
-            yield break;
         }
 
         /// <summary>
@@ -247,7 +247,7 @@ namespace NuGet.Frameworks
             if (frameworks.Any(e => e == NuGetFramework.AnyFramework))
             {
                 // Any is always the lowest
-                return new NuGetFramework[] { NuGetFramework.AnyFramework };
+                return new[] { NuGetFramework.AnyFramework };
             }
 
             return ReduceCore(frameworks, (x, y) => _compat.IsCompatible(x, y)).ToArray();
@@ -331,7 +331,7 @@ namespace NuGet.Frameworks
 
             // reduce the sub frameworks - this would only have an effect if the PCL is 
             // poorly formed and contains duplicates such as portable-win8+win81
-            subFrameworks = Reduce(subFrameworks);
+            subFrameworks = ReduceEquivalent(subFrameworks);
 
             // Find all frameworks in all PCLs
             var pclToFrameworks = ExplodePortableFrameworks(reduced);

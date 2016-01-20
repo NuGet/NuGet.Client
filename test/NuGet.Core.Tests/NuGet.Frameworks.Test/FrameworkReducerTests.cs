@@ -764,7 +764,7 @@ namespace NuGet.Test
 
             var all = new NuGetFramework[] { framework1, framework2 };
 
-            var result = reducer.Reduce(all);
+            var result = reducer.ReduceEquivalent(all);
 
             Assert.Equal(framework1, result.Single());
         }
@@ -780,10 +780,32 @@ namespace NuGet.Test
 
             var all = new NuGetFramework[] { sl3wp, wp7, win81 };
 
-            var result = reducer.Reduce(all);
+            var result = reducer.ReduceEquivalent(all);
 
+            Assert.Equal(2, result.Count());
             Assert.Equal(win81, result.First());
-            Assert.Equal(wp7, result.Skip(1).First());
+            Assert.Equal(wp7, result.ElementAt(1));
+        }
+
+        [Fact]
+        public void FrameworkReducer_ReducePrecedence()
+        {
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            var win = NuGetFramework.Parse("win");
+            var win8 = NuGetFramework.Parse("win8");
+            var netcore45 = NuGetFramework.Parse("netcore45");
+            var winrt45 = NuGetFramework.Parse("winrt45");
+            var winrt = NuGetFramework.Parse("netcore");
+            var net45 = NuGetFramework.Parse("net45");
+
+            var all = new NuGetFramework[] { win, win8, netcore45, winrt45, winrt, net45 };
+
+            var result = reducer.ReduceEquivalent(all);
+
+            Assert.Equal(2, result.Count());
+            Assert.Equal(win8, result.First());
+            Assert.Equal(net45, result.ElementAt(1));
         }
 
         [Fact]
@@ -796,7 +818,7 @@ namespace NuGet.Test
 
             var all = new NuGetFramework[] { sl3wp, wp7 };
 
-            var result = reducer.Reduce(all);
+            var result = reducer.ReduceEquivalent(all);
 
             Assert.Equal(wp7, result.Single());
         }
