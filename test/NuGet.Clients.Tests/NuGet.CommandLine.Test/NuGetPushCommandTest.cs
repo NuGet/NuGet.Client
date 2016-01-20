@@ -203,7 +203,7 @@ namespace NuGet.CommandLine.Test
 
         // Tests that push command will terminate even when there is an infinite
         // redirection loop.
-        [Fact]
+        [Fact(Skip="On-hold, nuget.org has removed the redirect long ago")]
         public void PushCommand_PushToServerWithInfiniteRedirectionLoop()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -241,7 +241,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Tests that push command generates error when it detects invalid redirection location.
-        [Fact]
+        [Fact(Skip="On-hold, nuget.org has removed the redirect long ago")]
         public void PushCommand_PushToServerWithInvalidRedirectionLocation()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -275,7 +275,8 @@ namespace NuGet.CommandLine.Test
 
         // Regression test for the bug that "nuget.exe push" will retry forever instead of asking for
         // user's password when NuGet.Server uses Windows Authentication.
-        [Fact]
+        [Fact(Skip = "TODO: reconstruct faked response headers which won't crash HttpClient. " + 
+            "Using real serevr, same sceanrio works fine")]
         public void PushCommand_PushToServerWontRetryForever()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -336,13 +337,6 @@ namespace NuGet.CommandLine.Test
                     using (var server = new MockServer())
                     {
                         server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
-                        server.Get.Add("/nuget", r =>
-                        {
-                            var h = r.Headers["Authorization"];
-                            var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                            credentialForGetRequest.Add(credential);
-                            return HttpStatusCode.OK;
-                        });
                         server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
                         {
                             var h = r.Headers["Authorization"];
@@ -391,17 +385,13 @@ namespace NuGet.CommandLine.Test
                         // Assert
                         Assert.Equal(0, r1.Item1);
 
-                        Assert.Equal(1, credentialForGetRequest.Count);
-                        Assert.Equal("a:b", credentialForGetRequest[0]);
-
                         // Because the credential service caches the answer and attempts
                         // to use it for token refresh the first request happens twice
                         // from a server prespective.
-                        Assert.Equal(4, credentialForPutRequest.Count);
+                        Assert.Equal(3, credentialForPutRequest.Count);
                         Assert.Equal("a:b", credentialForPutRequest[0]);
-                        Assert.Equal("a:b", credentialForPutRequest[1]);
-                        Assert.Equal("c:d", credentialForPutRequest[2]);
-                        Assert.Equal("testuser:testpassword", credentialForPutRequest[3]);
+                        Assert.Equal("c:d", credentialForPutRequest[1]);
+                        Assert.Equal("testuser:testpassword", credentialForPutRequest[2]);
                     }
                 }
                 finally
@@ -432,13 +422,6 @@ namespace NuGet.CommandLine.Test
                     using (var server = new MockServer())
                     {
                         server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
-                        server.Get.Add("/nuget", r =>
-                        {
-                            var h = r.Headers["Authorization"];
-                            var credential = System.Text.Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                            credentialForGetRequest.Add(credential);
-                            return HttpStatusCode.OK;
-                        });
                         server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
                         {
                             var h = r.Headers["Authorization"];
@@ -487,17 +470,13 @@ namespace NuGet.CommandLine.Test
                         // Assert
                         Assert.Equal(0, r1.Item1);
 
-                        Assert.Equal(1, credentialForGetRequest.Count);
-                        Assert.Equal("a:b", credentialForGetRequest[0]);
-
                         // Because the credential service caches the answer and attempts
                         // to use it for token refresh the first request happens twice
                         // from a server prespective.
-                        Assert.Equal(4, credentialForPutRequest.Count);
+                        Assert.Equal(3, credentialForPutRequest.Count);
                         Assert.Equal("a:b", credentialForPutRequest[0]);
-                        Assert.Equal("a:b", credentialForPutRequest[1]);
-                        Assert.Equal("c:d", credentialForPutRequest[2]);
-                        Assert.Equal("testuser:testpassword", credentialForPutRequest[3]);
+                        Assert.Equal("c:d", credentialForPutRequest[1]);
+                        Assert.Equal("testuser:testpassword", credentialForPutRequest[2]);
                     }
                 }
                 finally
@@ -514,7 +493,6 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            IPrincipal getUser = null;
             IPrincipal putUser = null;
 
             using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
@@ -526,11 +504,6 @@ namespace NuGet.CommandLine.Test
                 using (var server = new MockServer())
                 {
                     server.Listener.AuthenticationSchemes = AuthenticationSchemes.IntegratedWindowsAuthentication;
-                    server.Get.Add("/nuget", r => new Action<HttpListenerResponse, IPrincipal>((res, user) =>
-                    {
-                        getUser = user;
-                        res.StatusCode = (int)HttpStatusCode.OK;
-                    }));
                     server.Put.Add("/nuget", r => new Action<HttpListenerResponse, IPrincipal>((res, user) =>
                     {
                         putUser = user;
@@ -553,9 +526,6 @@ namespace NuGet.CommandLine.Test
                     Assert.Equal(0, r1.Item1);
 
                     var currentUser = WindowsIdentity.GetCurrent();
-                    Assert.Equal("NTLM", getUser.Identity.AuthenticationType);
-                    Assert.Equal(currentUser.Name, getUser.Identity.Name);
-
                     Assert.Equal("NTLM", putUser.Identity.AuthenticationType);
                     Assert.Equal(currentUser.Name, putUser.Identity.Name);
                 }
@@ -568,7 +538,6 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            IPrincipal getUser = null;
             IPrincipal putUser = null;
 
             using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
@@ -579,11 +548,6 @@ namespace NuGet.CommandLine.Test
                 using (var server = new MockServer())
                 {
                     server.Listener.AuthenticationSchemes = AuthenticationSchemes.IntegratedWindowsAuthentication;
-                    server.Get.Add("/nuget", r => new Action<HttpListenerResponse, IPrincipal>((res, user) =>
-                    {
-                        getUser = user;
-                        res.StatusCode = (int)HttpStatusCode.OK;
-                    }));
                     server.Put.Add("/nuget", r => new Action<HttpListenerResponse, IPrincipal>((res, user) =>
                     {
                         putUser = user;
@@ -608,9 +572,6 @@ namespace NuGet.CommandLine.Test
                         Assert.Equal(0, r1.Item1);
 
                         var currentUser = WindowsIdentity.GetCurrent();
-                        Assert.Equal("NTLM", getUser.Identity.AuthenticationType);
-                        Assert.Equal(currentUser.Name, getUser.Identity.Name);
-
                         Assert.Equal("NTLM", putUser.Identity.AuthenticationType);
                         Assert.Equal(currentUser.Name, putUser.Identity.Name);
                     }
@@ -648,13 +609,6 @@ namespace NuGet.CommandLine.Test
                     using (var server = new MockServer())
                     {
                         server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
-                        server.Get.Add("/nuget", r =>
-                        {
-                            var h = r.Headers["Authorization"];
-                            var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                            credentialForGetRequest.Add(credential);
-                            return HttpStatusCode.OK;
-                        });
                         server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
                         {
                             var h = r.Headers["Authorization"];
@@ -696,9 +650,6 @@ namespace NuGet.CommandLine.Test
                         // Assert
                         Assert.Equal(0, r1.Item1);
 
-                        Assert.Equal(1, credentialForGetRequest.Count);
-                        Assert.Equal("testuser:testpassword", credentialForGetRequest[0]);
-
                         Assert.Equal(1, credentialForPutRequest.Count);
                         Assert.Equal("testuser:testpassword", credentialForPutRequest[0]);
                     }
@@ -737,13 +688,6 @@ namespace NuGet.CommandLine.Test
                     using (var server = new MockServer())
                     {
                         server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
-                        server.Get.Add("/nuget", r =>
-                        {
-                            var h = r.Headers["Authorization"];
-                            var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                            credentialForGetRequest.Add(credential);
-                            return HttpStatusCode.OK;
-                        });
                         server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
                         {
                             var h = r.Headers["Authorization"];
@@ -785,10 +729,6 @@ namespace NuGet.CommandLine.Test
 
                         // Assert
                         Assert.Equal(0, r1.Item1);
-
-                        Assert.Equal(1, credentialForGetRequest.Count);
-                        Assert.Equal("testuser:testpassword", credentialForGetRequest[0]);
-
                         Assert.Equal(1, credentialForPutRequest.Count);
                         Assert.Equal("testuser:testpassword", credentialForPutRequest[0]);
                     }
@@ -825,13 +765,6 @@ namespace NuGet.CommandLine.Test
                     using (var server = new MockServer())
                     {
                         server.Listener.AuthenticationSchemes = AuthenticationSchemes.Basic;
-                        server.Get.Add("/nuget", r =>
-                        {
-                            var h = r.Headers["Authorization"];
-                            var credential = Encoding.Default.GetString(Convert.FromBase64String(h.Substring(6)));
-                            credentialForGetRequest.Add(credential);
-                            return HttpStatusCode.OK;
-                        });
                         server.Put.Add("/nuget", r => new Action<HttpListenerResponse>(res =>
                         {
                             var h = r.Headers["Authorization"];
@@ -873,7 +806,6 @@ namespace NuGet.CommandLine.Test
                         // Assert
                         Assert.Equal(0, r1.Item1);
 
-                        Assert.Equal(1, credentialForGetRequest.Count);
                         Assert.Equal(1, credentialForPutRequest.Count);
                     }
                 }
@@ -1731,9 +1663,10 @@ namespace NuGet.CommandLine.Test
                     result.Item1 != 0,
                     "The run did not fail as desired. Simply got this output:" + result.Item2);
 
+                //TODO: review with nuget team, that this new error is good
                 Assert.True(
                     result.Item3.Contains(
-                        "The remote server returned an error: (404) Not Found."),
+                        "Response status code does not indicate success: 404 (Not Found)"),
                     "Expected error message not found in " + result.Item3
                     );
             }

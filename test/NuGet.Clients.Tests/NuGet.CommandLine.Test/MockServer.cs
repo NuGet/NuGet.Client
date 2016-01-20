@@ -115,7 +115,15 @@ namespace NuGet.CommandLine.Test
             int bodyEndIndex = Find(buffer, 0, delimiter);
             if (bodyEndIndex == -1)
             {
-                return result;
+                //Patch, to deal with new binary format coming with the HttpClient
+                //from dnxcore50. The right way should use existing libraries with
+                //multi-part parsers
+                byte[] delimiter2 = Encoding.UTF8.GetBytes("\r\n--");
+                bodyEndIndex = Find(buffer, 0, delimiter2);
+                if (bodyEndIndex == -1)
+                {
+                    return result;
+                }
             }
 
             result = buffer.Skip(bodyStartIndex).Take(bodyEndIndex - bodyStartIndex).ToArray();
