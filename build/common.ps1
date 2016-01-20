@@ -194,14 +194,14 @@ Function Enable-DelaySigning {
         Trace-Log "Setting NuGet.Core solution to delay sign using $MSPFXPath"
         $env:DNX_BUILD_KEY_FILE=$MSPFXPath
         $env:DNX_BUILD_DELAY_SIGN=$true
+
+        Trace-Log "Using the Microsoft Key for NuGet Command line $MSPFXPath"
+        $env:MS_PFX_PATH=$MSPFXPath
     }
 
     if (Test-Path $NuGetPFXPath) {
         Trace-Log "Setting NuGet.Clients solution to delay sign using $NuGetPFXPath"
         $env:NUGET_PFX_PATH= $NuGetPFXPath
-
-        Trace-Log "Using the Microsoft Key for NuGet Command line $MSPFXPath"
-        $env:MS_PFX_PATH=$MSPFXPath
     }
 }
 
