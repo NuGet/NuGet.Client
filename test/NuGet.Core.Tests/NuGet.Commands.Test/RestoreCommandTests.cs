@@ -729,6 +729,84 @@ namespace NuGet.Commands.Test
             }
         }
 
+        [Fact] 
+        public async Task RestoreCommand_InstallPackageWithManyDependencies()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""dependencies"": {
+                ""packageA"": ""1.0.0""
+              },
+              ""frameworks"": {
+                ""net45"": {
+                }
+              }
+            }";
+
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir,  "projects", "project1"));
+                sources.Add(new PackageSource(packageSource.FullName));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var request = new RestoreRequest(spec1, sources, packagesDir.FullName);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+
+                var packages = new List<SimpleTestPackageContext>();
+                var dependencies = new List<SimpleTestPackageContext>();
+
+                for (int i= 0;i < 500;i++ )
+                {
+                    var package = new SimpleTestPackageContext()
+                    {
+                      Id = $"package{i}"
+                    };
+                    packages.Add(package);
+                    dependencies.Add(package);
+                }
+
+                var packageA = new SimpleTestPackageContext()
+                {
+                    Id = "packageA",
+                    Dependencies = dependencies
+                };
+                packages.Add(packageA);
+                SimpleTestPackageUtility.CreatePackages(packages, packageSource.FullName);
+                 
+                // Act
+                var logger = new TestLogger();
+                var command = new RestoreCommand(logger, request);
+                var result = await command.ExecuteAsync();
+                var lockFile = result.LockFile;
+                var installed = result.GetAllInstalled();
+                var unresolved = result.GetAllUnresolved();
+                result.Commit(logger);
+
+                // Assert
+                Assert.True(result.Success);
+                Assert.Equal(501, installed.Count);
+                Assert.Equal(0, unresolved.Count);
+            }
+        }
+
         [Fact]
         public async Task RestoreCommand_InstallPackageWithReferenceDependencies()
         {

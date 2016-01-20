@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol.Core.v3.RemoteRepositories
 {
@@ -22,11 +24,22 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         {
             using (var nupkgStream = await openNupkgStreamAsync)
             {
+                if (nupkgStream == null)
+                {
+                    throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToGetNupkgStream, id));
+                }
+
                 try
                 {
                     using (var reader = new PackageArchiveReader(nupkgStream, leaveStreamOpen: true))
+                    using (var nuspecStream = reader.GetNuspec())
                     {
-                        return new NuspecReader(reader.GetNuspec());
+                        if (nupkgStream == null)
+                        {
+                            throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToGetNuspecStream, id));
+                        }
+
+                        return new NuspecReader(nuspecStream);
                     }
                 }
                 catch (Exception exception) when (exception is PackagingException 
@@ -35,7 +48,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     var fileStream = nupkgStream as FileStream;
                     if (fileStream != null)
                     {
-                        report.LogWarning($"The ZIP archive {fileStream.Name} is corrupt");
+                        report.LogWarning(Strings.FormatLog_FileIsCorrupt(fileStream.Name));
                     }
                     throw;
                 }

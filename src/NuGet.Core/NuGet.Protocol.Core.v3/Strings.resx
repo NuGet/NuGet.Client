@@ -138,6 +138,12 @@
   <data name="Log_FailedToDownloadPackage" xml:space="preserve">
     <value>Failed to download package from '{0}'.</value>
   </data>
+  <data name="Log_FailedToGetNupkgStream" xml:space="preserve">
+    <value>Unable to load package '{0}'.</value>
+  </data>
+  <data name="Log_FailedToGetNuspecStream" xml:space="preserve">
+    <value>Unable to load nuspec from package '{0}'.</value>
+  </data>
   <data name="Log_FailedToRetrievePackage" xml:space="preserve">
     <value>Failed to retrieve information from remote source '{0}'.</value>
   </data>
