@@ -35,6 +35,11 @@ namespace NuGet
             {
                 throw new ArgumentNullException(nameof(uri));
             }
+            if (nonInteractive)
+            {
+                return Task.FromResult(
+                    new CredentialResponse(null, CredentialStatus.ProviderNotApplicable));
+            }
 
             string message = isProxy ?
                     LocalizedResourceManager.GetString("Credentials_ProxyCredentials") :
