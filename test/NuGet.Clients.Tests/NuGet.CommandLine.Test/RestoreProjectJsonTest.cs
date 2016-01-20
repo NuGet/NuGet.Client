@@ -1221,10 +1221,10 @@ namespace NuGet.CommandLine.Test
                                 <package id=""packageA"" version=""1.1.0-beta-01"" targetFramework=""net45"" />
                             </packages>");
 
-                Util.CreateFile(projectDir, "testA.csproj", CSProjXML); // testA.project.json
-                Util.CreateFile(projectDir, "testB.csproj", CSProjXML); // testB.project.json
-                Util.CreateFile(projectDir, "testC.csproj", CSProjXML); // packages.testC.config
-                Util.CreateFile(projectDir, "testD.csproj", CSProjXML); // Non-nuget
+                Util.CreateFile(projectDir, "testA.csproj", Util.GetCSProjXML("testA")); // testA.project.json
+                Util.CreateFile(projectDir, "testB.csproj", Util.GetCSProjXML("testB")); // testB.project.json
+                Util.CreateFile(projectDir, "testC.csproj", Util.GetCSProjXML("testC")); // packages.testC.config
+                Util.CreateFile(projectDir, "testD.csproj", Util.GetCSProjXML("testD")); // Non-nuget
 
                 var slnPath = Path.Combine(workingPath, "xyz.sln");
 
@@ -1321,12 +1321,7 @@ namespace NuGet.CommandLine.Test
                                                         }
                                                    }");
 
-                Util.CreateFile(workingPath, "test.csproj",
-                       @"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
-                        xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-                          <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
-                        </Project>");
+                Util.CreateFile(workingPath, "test.csproj", Util.GetCSProjXML("test"));
 
                 var csprojPath = Path.Combine(workingPath, "test.csproj");
 
@@ -1339,7 +1334,7 @@ namespace NuGet.CommandLine.Test
                 csprojPath
             };
 
-                var targetFilePath = Path.Combine(workingPath, $"test.nuget.targets");
+                var targetFilePath = Path.Combine(workingPath, "test.nuget.targets");
                 var lockFilePath = Path.Combine(workingPath, $"test.project.lock.json");
 
                 // Act
@@ -1393,12 +1388,7 @@ namespace NuGet.CommandLine.Test
                                                     }
                                             }");
 
-                Util.CreateFile(projectDir, "test.csproj",
-                     @"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
-                         xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-                           <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
-                        </Project>");
+                Util.CreateFile(projectDir, "test.csproj", Util.GetCSProjXML("test"));
 
                 var slnPath = Path.Combine(workingPath, "xyz.sln");
 
@@ -1438,7 +1428,7 @@ namespace NuGet.CommandLine.Test
                     slnPath
                 };
 
-                var targetFilePath = Path.Combine(projectDir, $"test.nuget.targets");
+                var targetFilePath = Path.Combine(projectDir, "test.nuget.targets");
 
                 // Act
                 var r = CommandRunner.Run(
@@ -1499,12 +1489,7 @@ namespace NuGet.CommandLine.Test
                                                             }
                                                 }");
 
-                Util.CreateFile(workingPath, "test.csproj",
-                     @"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
-                            xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-                          <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
-                        </Project>");
+                Util.CreateFile(workingPath, "test.csproj", Util.GetCSProjXML("test"));
 
                 var csprojPath = Path.Combine(workingPath, "test.csproj");
 
@@ -1517,7 +1502,7 @@ namespace NuGet.CommandLine.Test
                     csprojPath
                 };
 
-                var targetFilePath = Path.Combine(workingPath, $"test.nuget.targets");
+                var targetFilePath = Path.Combine(workingPath, "test.nuget.targets");
 
                 // Act
                 var r = CommandRunner.Run(
@@ -1581,6 +1566,81 @@ namespace NuGet.CommandLine.Test
                                                             }
                                                   }");
 
+                Util.CreateFile(workingPath, "test.csproj", Util.GetCSProjXML("test"));
+
+                string[] args = new string[] {
+                    "restore",
+                    "-Source",
+                    repositoryPath,
+                    "-solutionDir",
+                    workingPath,
+                    "test.csproj"
+                };
+
+                var targetFilePath = Path.Combine(workingPath, "test.nuget.targets");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(File.Exists(targetFilePath));
+
+                var targetsFile = File.OpenText(targetFilePath).ReadToEnd();
+                Assert.True(targetsFile.IndexOf(@"build\uap\packageA.targets") > -1);
+                Assert.True(targetsFile.IndexOf(@"build\uap\packageB.targets") > -1);
+            }
+        }
+
+        [Fact]
+        public void RestoreProjectJson_SkipTargetsForProjectJsonOnly()
+        {
+            // Arrange
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                string folderName = Path.GetFileName(workingPath);
+
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var nugetexe = Util.GetNuGetExePath();
+
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+                var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
+                var packageB = Util.CreateTestPackageBuilder("packageB", "2.2.0-beta-02");
+
+                var targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
+
+                var targetA = Util.CreatePackageFile("build/uap/packageA.targets", targetContent);
+                var libA = Util.CreatePackageFile("lib/uap/a.dll", "a");
+
+                packageA.Files.Add(targetA);
+                packageA.Files.Add(libA);
+
+                var targetB = Util.CreatePackageFile("build/uap/packageB.targets", targetContent);
+                var libB = Util.CreatePackageFile("lib/uap/b.dll", "b");
+
+                packageB.Files.Add(targetB);
+                packageB.Files.Add(libB);
+
+                Util.CreateTestPackage(packageA, repositoryPath);
+                Util.CreateTestPackage(packageB, repositoryPath);
+
+                Util.CreateFile(workingPath, "project.json",
+                                                @"{
+                                                    'dependencies': {
+                                                    'packageA': '1.1.0-beta-*',
+                                                    'packageB': '2.2.0-beta-*'
+                                                    },
+                                                    'frameworks': {
+                                                                'uap10.0': { }
+                                                            }
+                                                  }");
+
                 string[] args = new string[] {
                     "restore",
                     "-Source",
@@ -1601,11 +1661,78 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
-                Assert.True(File.Exists(targetFilePath));
+                Assert.False(File.Exists(targetFilePath));
+            }
+        }
 
-                var targetsFile = File.OpenText(targetFilePath).ReadToEnd();
-                Assert.True(targetsFile.IndexOf(@"build\uap\packageA.targets") > -1);
-                Assert.True(targetsFile.IndexOf(@"build\uap\packageB.targets") > -1);
+        [Fact]
+        public void RestoreProjectJson_SkipTargetsForXProjProjects()
+        {
+            // Arrange
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                string folderName = Path.GetFileName(workingPath);
+
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var nugetexe = Util.GetNuGetExePath();
+
+                Directory.CreateDirectory(repositoryPath);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+                var packageA = Util.CreateTestPackageBuilder("packageA", "1.1.0-beta-01");
+                var packageB = Util.CreateTestPackageBuilder("packageB", "2.2.0-beta-02");
+
+                var targetContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?><Project ToolsVersion=\"12.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"></Project>";
+
+                var targetA = Util.CreatePackageFile("build/uap/packageA.targets", targetContent);
+                var libA = Util.CreatePackageFile("lib/uap/a.dll", "a");
+
+                packageA.Files.Add(targetA);
+                packageA.Files.Add(libA);
+
+                var targetB = Util.CreatePackageFile("build/uap/packageB.targets", targetContent);
+                var libB = Util.CreatePackageFile("lib/uap/b.dll", "b");
+
+                packageB.Files.Add(targetB);
+                packageB.Files.Add(libB);
+
+                Util.CreateTestPackage(packageA, repositoryPath);
+                Util.CreateTestPackage(packageB, repositoryPath);
+
+                Util.CreateFile(workingPath, "project.json",
+                                                @"{
+                                                    'dependencies': {
+                                                    'packageA': '1.1.0-beta-*',
+                                                    'packageB': '2.2.0-beta-*'
+                                                    },
+                                                    'frameworks': {
+                                                                'uap10.0': { }
+                                                            }
+                                                  }");
+
+                Util.CreateFile(workingPath, "test.xproj", Util.GetCSProjXML("test"));
+
+                string[] args = new string[] {
+                    "restore",
+                    "-Source",
+                    repositoryPath,
+                    "-solutionDir",
+                    workingPath,
+                    "test.xproj"
+                };
+
+                var targetFilePath = Path.Combine(workingPath, "test.nuget.targets");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.False(File.Exists(targetFilePath));
             }
         }
 
@@ -1645,16 +1772,19 @@ namespace NuGet.CommandLine.Test
                                                   }
                                                }");
 
+                Util.CreateFile(workingPath, "test.csproj", Util.GetCSProjXML("test"));
+
+
                 string[] args = new string[] {
                     "restore",
                     "-Source",
                     repositoryPath,
                     "-solutionDir",
                     workingPath,
-                    "project.json"
+                    "test.csproj"
                 };
 
-                var targetFilePath = Path.Combine(workingPath, $"{folderName}.nuget.targets");
+                var targetFilePath = Path.Combine(workingPath, "test.nuget.targets");
 
                 // Act
                 var r = CommandRunner.Run(
@@ -1721,16 +1851,18 @@ namespace NuGet.CommandLine.Test
                                                             }
                                                 }");
 
+                Util.CreateFile(workingPath, "test.csproj", Util.GetCSProjXML("test"));
+
                 string[] args = new string[] {
                     "restore",
                     "-Source",
                     repositoryPath,
                     "-solutionDir",
                     workingPath,
-                    "project.json"
+                    "test.csproj"
                 };
 
-                var targetFilePath = Path.Combine(workingPath, $"{folderName}.nuget.targets");
+                var targetFilePath = Path.Combine(workingPath, "test.nuget.targets");
 
                 // Act
                 var r = CommandRunner.Run(
@@ -1909,11 +2041,5 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(2, lockFile.Libraries.Count);
             }
         }
-
-        private const string CSProjXML = @"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
-                        xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-        <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
-        </Project>";
     }
 }

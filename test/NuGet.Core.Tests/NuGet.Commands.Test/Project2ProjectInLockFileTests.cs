@@ -14,7 +14,7 @@ namespace NuGet.Commands.Test
     public class Project2ProjectTests
     {
         [Fact]
-        public async Task Project2Project_VerifySnapshotVersionsXProj()
+        public async Task Project2ProjectInLockFile_VerifySnapshotVersionsXProj()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -105,7 +105,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task Project2Project_VerifySnapshotVersions()
+        public async Task Project2ProjectInLockFile_VerifySnapshotVersions()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -239,7 +239,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task Project2Project_PackageReferenceConflict()
+        public async Task Project2ProjectInLockFile_PackageReferenceConflict()
         {
             // Arrange
             var sources = new List<PackageSource>()
@@ -315,7 +315,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task Project2Project_CSProjToXProj()
+        public async Task Project2ProjectInLockFile_CSProjToXProj()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -410,7 +410,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task Project2Project_VerifyP2PWithNonProjectJsonReference()
+        public async Task Project2ProjectInLockFile_VerifyP2PWithNonProjectJsonReference()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -513,7 +513,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task Project2Project_VerifyProjectsUnderProjectFileDependencyGroups_External()
+        public async Task Project2ProjectInLockFile_VerifyProjectsUnderProjectFileDependencyGroups_External()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -562,7 +562,7 @@ namespace NuGet.Commands.Test
 
                 request.ExternalProjects.Add(new ExternalProjectReference(
                     "project2",
-                    spec2, 
+                    spec2,
                     Path.Combine(project2.FullName, "project2.csproj"),
                     new string[] { "project3" }));
 
@@ -622,7 +622,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task Project2Project_VerifyProjectsReferencesInLibAndTargets()
+        public async Task Project2ProjectInLockFile_VerifyProjectsReferencesInLibAndTargets()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -749,7 +749,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task Project2Project_VerifyProjectsNoAddedForV1()
+        public async Task Project2ProjectInLockFile_VerifyProjectsNoAddedForV1()
         {
             // Arrange
             var sources = new List<PackageSource>();

@@ -82,10 +82,10 @@ namespace NuGet.PackageManagement.VisualStudio
             toProcess.Enqueue(EnvDTEProject);
 
             // keep track of found projects to avoid duplicates
-            var uniqueProjects = new HashSet<string>();
-            var rootProjectName = await EnvDTEProjectUtility.GetCustomUniqueNameAsync(EnvDTEProject);
+            var uniqueProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var rootProjectPath = EnvDTEProjectUtility.GetFullProjectPath(EnvDTEProject);
 
-            uniqueProjects.Add(rootProjectName);
+            uniqueProjects.Add(rootProjectPath);
 
             var itemsFactory = ServiceLocator.GetInstance<IVsEnumHierarchyItemsFactory>();
 
@@ -94,11 +94,11 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 var project = toProcess.Dequeue();
 
-                // Find the unique name of the current project
-                var projectUniqueName = await EnvDTEProjectUtility.GetCustomUniqueNameAsync(project);
+                // Find the path of the current project
+                var projectFileFullPath = EnvDTEProjectUtility.GetFullProjectPath(project);
 
                 IReadOnlyList<BuildIntegratedProjectReference> cacheReferences;
-                if (cache.TryGetValue(projectUniqueName, out cacheReferences))
+                if (cache.TryGetValue(projectFileFullPath, out cacheReferences))
                 {
                     // The cached value contains the entire closure, add it to the results and skip
                     // all child references.
@@ -107,7 +107,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 else
                 {
                     // Find projectName.project.json first
-                    var projectName = project.Name;
+                    var projectName = Path.GetFileNameWithoutExtension(projectFileFullPath);
 
                     var fileWithProjectName =
                         BuildIntegratedProjectUtility.GetProjectConfigWithProjectName(projectName);
@@ -118,7 +118,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     jsonConfigItem = GetJsonConfigFromProject(project, fileWithProjectName);
 
                     // Verify ReferenceOutputAssembly
-                    var excludedProjects = await GetExcludedReferences(project, itemsFactory);
+                    var excludedProjects = GetExcludedReferences(project, itemsFactory);
 
                     var childReferences = new List<string>();
                     var hasMissingReferences = false;
@@ -140,8 +140,7 @@ namespace NuGet.PackageManagement.VisualStudio
                             // Skip missing references
                             if (childReference.SourceProject != null)
                             {
-                                var childName =
-                                    await EnvDTEProjectUtility.GetCustomUniqueNameAsync(childReference.SourceProject);
+                                var childName = EnvDTEProjectUtility.GetFullProjectPath(childReference.SourceProject);
 
                                 // Skip projects which have ReferenceOutputAssembly=false
                                 if (!excludedProjects.Contains(childName, StringComparer.OrdinalIgnoreCase))
@@ -174,7 +173,7 @@ namespace NuGet.PackageManagement.VisualStudio
                                     {
                                         childReferences.Add(possibleProjectJson);
 
-                                        var projectSpec = JsonPackageSpecReader.GetPackageSpec(
+                                        var projectSpec = context.GetOrCreateSpec(
                                             childReference.Name,
                                             possibleProjectJson);
 
@@ -207,8 +206,8 @@ namespace NuGet.PackageManagement.VisualStudio
                         var warning = string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.Warning_ErrorDuringProjectClosureWalk,
-                            projectUniqueName,
-                            rootProjectName);
+                            projectName,
+                            rootProjectPath);
 
                         logger.LogWarning(warning);
                     }
@@ -218,11 +217,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     if (File.Exists(jsonConfigItem))
                     {
                         // Not all projects have a project.json, only read it if it exists
-                        packageSpec = JsonPackageSpecReader.GetPackageSpec(projectUniqueName, jsonConfigItem);
+                        packageSpec = context.GetOrCreateSpec(projectName, jsonConfigItem);
                     }
-
-                    // Find the full path to the msbuild project file
-                    var projectFileFullPath = EnvDTEProjectUtility.GetFullProjectPath(project);
 
                     // For the xproj -> xproj -> csproj scenario find all xproj-> xproj references.
                     if (projectFileFullPath.EndsWith(XProjUtility.XProjExtension, StringComparison.OrdinalIgnoreCase))
@@ -242,14 +238,11 @@ namespace NuGet.PackageManagement.VisualStudio
                                 Project xProjDTE;
                                 if (pathToProject.TryGetValue(xProjPath, out xProjDTE))
                                 {
-                                    var xProjUniqueName = EnvDTEProjectUtility.GetUniqueName(xProjDTE);
-
-                                    // Xprojs use the file name not the unique name for references
-                                    var xprojProjectName = Path.GetFileNameWithoutExtension(xProjPath);
-                                    childReferences.Add(xprojProjectName);
+                                    var xProjFullPath = EnvDTEProjectUtility.GetFullProjectPath(xProjDTE);
+                                    childReferences.Add(xProjFullPath);
 
                                     // Continue walking this project if it has not been walked already
-                                    if (!uniqueProjects.Contains(xProjUniqueName))
+                                    if (!uniqueProjects.Contains(xProjFullPath))
                                     {
                                         toProcess.Enqueue(xProjDTE);
                                     }
@@ -259,7 +252,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     }
 
                     results.Add(new BuildIntegratedProjectReference(
-                        projectUniqueName,
+                        projectFileFullPath,
                         packageSpec,
                         projectFileFullPath,
                         childReferences));
@@ -267,10 +260,10 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Cache the results
-            if (!cache.ContainsKey(rootProjectName))
+            if (!cache.ContainsKey(rootProjectPath))
             {
                 // Create a new copy of the list so that callers cannot modify it
-                cache.Add(rootProjectName, new List<BuildIntegratedProjectReference>(results));
+                cache.Add(rootProjectPath, new List<BuildIntegratedProjectReference>(results));
             }
 
             return results;
@@ -407,7 +400,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Get the unique names of all references which have ReferenceOutputAssembly set to false.
         /// </summary>
-        private static async Task<List<string>> GetExcludedReferences(
+        private static List<string> GetExcludedReferences(
             EnvDTEProject project,
             IVsEnumHierarchyItemsFactory itemsFactory)
         {
@@ -457,10 +450,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
                                 if (reference != null && reference.Resolved && reference.SourceProject != null)
                                 {
-                                    var childUniqueName = await EnvDTEProjectUtility
-                                        .GetCustomUniqueNameAsync(reference.SourceProject);
+                                    var childPath = EnvDTEProjectUtility
+                                        .GetFullProjectPath(reference.SourceProject);
 
-                                    excludedReferences.Add(childUniqueName);
+                                    excludedReferences.Add(childPath);
                                 }
                             }
                         }
