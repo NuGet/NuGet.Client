@@ -20,6 +20,58 @@ namespace NuGet.Commands.Test
     public class RestoreCommandTests
     {
         [Fact]
+        public async Task RestoreCommand_RestoreProjectWithNoDependencies()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            var project1Json = @"
+            {
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""frameworks"": {
+                ""net45"": {
+                }
+              }
+            }";
+
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
+
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+
+                var request = new RestoreRequest(spec1, sources, packagesDir.FullName);
+
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+
+                // Act
+                var logger = new TestLogger();
+                var command = new RestoreCommand(logger, request);
+                var result = await command.ExecuteAsync();
+                var lockFile = result.LockFile;
+                result.Commit(logger);
+
+                // Assert
+                Assert.True(result.Success);
+                Assert.Equal(0, lockFile.Libraries.Count);
+            }
+        }
+
+        [Fact]
         public async Task RestoreCommand_FrameworkImportRulesAreApplied()
         {
             // Arrange
