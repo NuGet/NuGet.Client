@@ -301,25 +301,28 @@ Function Restore-SolutionPackages{
 Function Restore-XProject {
     [CmdletBinding()]
     param(
-        [parameter(ValueFromPipeline=$True)]
-        [string]$XProjectLocation,
-        [switch]$V2
+        [parameter(ValueFromPipeline=$True, Mandatory=$True, Position=0)]
+        [string[]]$XProjectLocations
     )
+    Begin {}
     Process {
-        $projectJsonFile = Join-Path $XProjectLocation 'project.json'
-        $opts = 'restore', $projectJsonFile
-        $opts += $PackageSources | %{ '-s', $_ }
-        if (-not $VerbosePreference) {
-            $opts += '--quiet'
-        }
+        $XProjectLocations | %{
+            $projectJsonFile = Join-Path $_ 'project.json'
+            $opts = 'restore', $projectJsonFile
+            $opts += $PackageSources | %{ '-s', $_ }
+            if (-not $VerbosePreference) {
+                $opts += '--quiet'
+            }
 
-        Trace-Log "Restoring packages @""$XProjectLocation"""
-        Verbose-Log "dnu $opts"
-        & dnu $opts 2>&1
-        if (-not $?) {
-            Error-Log "Restore failed @""$XProjectLocation"". Code: $LASTEXITCODE"
+            Trace-Log "Restoring packages @""$_"""
+            Verbose-Log "dnu $opts"
+            & dnu $opts 2>&1
+            if (-not $?) {
+                Error-Log "Restore failed @""$_"". Code: $LASTEXITCODE"
+            }
         }
     }
+    End {}
 }
 
 # Restore in parallel first to speed things up
@@ -365,39 +368,48 @@ Function Restore-XProjects {
 Function Invoke-DnuPack {
     [CmdletBinding()]
     param(
-        [string]$XProjectsLocation,
-        [string]$Configuration,
+        [parameter(ValueFromPipeline=$True, Mandatory=$True, Position=0)]
+        [string[]]$XProjectLocations,
+        [Alias('config')]
+        [string]$Configuration = $DefaultConfiguration,
+        [Alias('label')]
         [string]$ReleaseLabel,
+        [Alias('build')]
         [int]$BuildNumber,
+        [Alias('out')]
         [string]$Output
     )
-    $BuildNumber = Format-BuildNumber $BuildNumber
+    Begin {
+        $BuildNumber = Format-BuildNumber $BuildNumber
 
-    ## Setting the DNX build version
-    if($ReleaseLabel -ne 'Release') {
-        $env:DNX_BUILD_VERSION="${ReleaseLabel}-${BuildNumber}"
+        ## Setting the DNX build version
+        if($ReleaseLabel -ne 'Release') {
+            $env:DNX_BUILD_VERSION="${ReleaseLabel}-${BuildNumber}"
+        }
+
+        # Setting the DNX AssemblyFileVersion
+        $env:DNX_ASSEMBLY_FILE_VERSION=$BuildNumber
     }
+    Process {
+        $XProjectLocations | %{
+            $opts = , 'pack'
+            $opts += $_
+            $opts += '--configuration', $Configuration
+            if ($Output) {
+                $opts += '--out', (Join-Path $Output (Split-Path $_ -Leaf))
+            }
+            if (-not $VerbosePreference) {
+                $opts += '--quiet'
+            }
 
-    # Setting the DNX AssemblyFileVersion
-    $env:DNX_ASSEMBLY_FILE_VERSION=$BuildNumber
-
-    $xprojects = Find-XProjects $XProjectsLocation
-
-    $opts = , 'pack'
-    $opts += $xprojects
-    $opts += '--configuration', $Configuration
-    if ($Output) {
-        $opts += '--out', $Output
+            Verbose-Log "dnu $opts"
+            &dnu $opts 2>&1
+            if (-not $?) {
+                Error-Log "Pack failed @""$_"". Code: $LASTEXITCODE"
+            }
+        }
     }
-    if (-not $VerbosePreference) {
-        $opts += '--quiet'
-    }
-
-    Verbose-Log "dnu $opts"
-    &dnu $opts 2>&1
-    if (-not $?) {
-        Error-Log "Pack failed @""$XProjectsLocation"". Code: $LASTEXITCODE"
-    }
+    End { }
 }
 
 Function Build-CoreProjects {
@@ -415,49 +427,63 @@ Function Build-CoreProjects {
         Restore-XProjects $XProjectsLocation -Fast:$Fast
     }
 
-    Invoke-DnuPack $XProjectsLocation $Configuration $ReleaseLabel $BuildNumber $Artifacts
+    $xprojects = Find-XProjects $XProjectsLocation
+    $xprojects | Invoke-DnuPack -config $Configuration -label $ReleaseLabel -build $BuildNumber -out $Artifacts
 
     ## Moving nupkgs
     Trace-Log "Moving the packages to $Nupkgs"
-    Get-ChildItem "${Artifacts}\*.nupkg" -Recurse | % { Move-Item $_ $Nupkgs }
+    Get-ChildItem "${Artifacts}\*.nupkg" -Recurse | % { Move-Item $_ $Nupkgs -Force }
 }
 
 Function Test-XProject {
     [CmdletBinding()]
     param(
-        [parameter(ValueFromPipeline=$True)]
-        [string]$XProjectLocation
+        [parameter(ValueFromPipeline=$True, Mandatory=$True, Position=0)]
+        [string[]]$XProjectLocations
     )
-    Process {
-        Trace-Log "Running tests in ""$XProjectLocation"""
-
-        $opts = '-p', $XProjectLocation, 'test'
-        if ($VerbosePreference) {
-            $opts += '-diagnostics', '-verbose'
-        }
-        else {
-            $opts += '-nologo', '-quiet'
-        }
-        Verbose-Log "dnx $opts"
-
-        # Check if dnxcore50 exists in the project.json file
-        $xtestProjectJson = Join-Path $XProjectLocation "project.json"
-        if (Get-Content $($xtestProjectJson) | Select-String "dnxcore50") {
-            # Run tests for Core CLR
-            Use-DNX CoreCLR
-            & dnx $opts 2>&1
-            if (-not $?) {
-                Error-Log "Tests failed @""$XProjectLocation"" on CoreCLR. Code: $LASTEXITCODE"
-            }
+    Begin {
+        # Test assemblies should not be signed
+        if (Test-Path Env:\DNX_BUILD_KEY_FILE) {
+            Remove-Item Env:\DNX_BUILD_KEY_FILE
         }
 
-        # Run tests for CLR
-        Use-DNX CLR
-        & dnx $opts 2>&1
-        if (-not $?) {
-            Error-Log "Tests failed @""$XProjectLocation"" on CLR. Code: $LASTEXITCODE"
+        if (Test-Path Env:\DNX_BUILD_DELAY_SIGN) {
+            Remove-Item Env:\DNX_BUILD_DELAY_SIGN
         }
     }
+    Process {
+        $XProjectLocations | %{
+            Trace-Log "Running tests in ""$_"""
+
+            $opts = '-p', $_, 'test'
+            if ($VerbosePreference) {
+                $opts += '-diagnostics', '-verbose'
+            }
+            else {
+                $opts += '-nologo', '-quiet'
+            }
+            Verbose-Log "dnx $opts"
+
+            # Check if dnxcore50 exists in the project.json file
+            $xtestProjectJson = Join-Path $_ "project.json"
+            if (Get-Content $($xtestProjectJson) | Select-String "dnxcore50") {
+                # Run tests for Core CLR
+                Use-DNX CoreCLR
+                & dnx $opts 2>&1
+                if (-not $?) {
+                    Error-Log "Tests failed @""$_"" on CoreCLR. Code: $LASTEXITCODE"
+                }
+            }
+
+            # Run tests for CLR
+            Use-DNX CLR
+            & dnx $opts 2>&1
+            if (-not $?) {
+                Error-Log "Tests failed @""$_"" on CLR. Code: $LASTEXITCODE"
+            }
+        }
+    }
+    End {}
 }
 
 Function Test-CoreProjects {
@@ -466,15 +492,6 @@ Function Test-CoreProjects {
         [switch]$SkipRestore,
         [switch]$Fast
     )
-    # Test assemblies should not be signed
-    if (Test-Path Env:\DNX_BUILD_KEY_FILE) {
-        Remove-Item Env:\DNX_BUILD_KEY_FILE
-    }
-
-    if (Test-Path Env:\DNX_BUILD_DELAY_SIGN) {
-        Remove-Item Env:\DNX_BUILD_DELAY_SIGN
-    }
-
     $XProjectsLocation = Join-Path $NuGetClientRoot test\NuGet.Core.Tests
 
     if (-not $SkipRestore) {
@@ -497,9 +514,9 @@ Function Build-ClientsProjects {
     #Building the microsoft interop package for the test.utility
     $interopLib = Join-Path $NuGetClientRoot lib\Microsoft.VisualStudio.ProjectSystem.Interop
     if (-not $SkipRestore) {
-        Restore-XProject $interopLib -V2
+        Restore-XProjects $interopLib -Fast:$Fast
     }
-    Invoke-DnuPack $interopLib $Configuration $ReleaseLabel $BuildNumber
+    Invoke-DnuPack $interopLib -config $Configuration -label $ReleaseLabel -build $BuildNumber
     Get-ChildItem "$interopLib\*.nupkg" -Recurse | % { Move-Item $_ $Nupkgs -Force }
 
     $solutionPath = Join-Path $NuGetClientRoot NuGet.Clients.sln
