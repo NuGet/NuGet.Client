@@ -149,7 +149,7 @@ Function Install-DNVM {
 Function Install-DNX {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$True, Position=1)]
+        [Parameter(Mandatory=$True, Position=0)]
         [Alias('r')]
         [ValidateSet('CLR', 'CoreCLR')]
         [string]$Runtime,
@@ -161,18 +161,19 @@ Function Install-DNX {
     )
     Install-DNVM
     $env:DNX_FEED = 'https://www.nuget.org/api/v2'
-    $opts = $Version, '-runtime', $Runtime, '-arch', $Arch
+    Verbose-Log "dnvm install $Version -runtime $Runtime -arch $Arch"
     if ($Default) {
-        $opts += '-alias', 'default'
+        & dnvm install $Version -runtime $Runtime -arch $Arch -alias default 2>&1
     }
-    Verbose-Log "dnvm install $opts"
-    & dnvm install $opts 2>&1
+    else {
+        & dnvm install $Version -runtime $Runtime -arch $Arch 2>&1
+    }
 }
 
 Function Use-DNX {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$True, Position=1)]
+        [Parameter(Mandatory=$True, Position=0)]
         [Alias('r')]
         [ValidateSet('CLR', 'CoreCLR')]
         [string]$Runtime,
@@ -181,9 +182,8 @@ Function Use-DNX {
         [Alias('a')]
         [string]$Arch = $DefaultDnxArch
     )
-    $opts = $Version, '-runtime', $Runtime, '-arch', $Arch
-    Verbose-Log "dnvm use $opts"
-    & dnvm use $opts 2>&1
+    Verbose-Log "dnvm use $Version -runtime $Runtime -arch $Arch"
+    & dnvm use $Version -runtime $Runtime -arch $Arch 2>&1
 }
 
 # Enables delay signed build

@@ -25,6 +25,7 @@ param (
 trap
 {
     Write-Host "Build failed: $_" -ForegroundColor Red
+    Write-Host $_.Exception -ForegroundColor Red
     Write-Host ("`r`n" * 3)
     exit 1
 }
