@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,6 +15,15 @@ namespace NuGet.ProjectModel
     public static class XProjUtility
     {
         public static readonly string XProjExtension = ".xproj";
+
+        /// <summary>
+        /// Returns false for xproj and empty paths.
+        /// </summary>
+        public static bool IsMSBuildBasedProject(string projectPath)
+        {
+            return !string.IsNullOrEmpty(projectPath)
+                && !projectPath.EndsWith(XProjExtension, StringComparison.OrdinalIgnoreCase);
+        }
 
         /// <summary>
         /// Returns the path to all referenced xprojs by using the package spec resolver.
@@ -59,7 +71,7 @@ namespace NuGet.ProjectModel
 
                             // dir/ProjectName.xproj
                             var xprojPath = Path.Combine(
-                                fileInfo.DirectoryName, 
+                                fileInfo.DirectoryName,
                                 fileInfo.Directory.Name + XProjExtension);
 
                             output.Add(xprojPath);
@@ -73,11 +85,9 @@ namespace NuGet.ProjectModel
 
         private static bool IsProjectReference(LibraryDependency dependency)
         {
-            var type = dependency.LibraryRange.TypeConstraint;
+            var libraryType = dependency.LibraryRange.TypeConstraint;
 
-            return string.IsNullOrEmpty(type)
-                || type == LibraryTypes.Project
-                || type == LibraryTypes.ExternalProject;
+            return (libraryType & (LibraryTypeFlag.Project | LibraryTypeFlag.ExternalProject)) != LibraryTypeFlag.None;
         }
     }
 }

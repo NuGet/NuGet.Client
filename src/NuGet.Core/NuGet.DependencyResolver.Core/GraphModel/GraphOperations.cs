@@ -265,31 +265,35 @@ namespace NuGet.DependencyResolver
                     if (acceptedLibraries.TryGetValue(childNode.Key.Name, out acceptedNode) &&
                         childNode != acceptedNode &&
                         childNode.Key.VersionRange != null &&
-                        string.Equals(
-                            childNode.Key.TypeConstraint, 
-                            acceptedNode.Key.TypeConstraint, 
-                            StringComparison.Ordinal))
+                        acceptedNode.Item.Key.Version != null)
                     {
-                        var versionRange = childNode.Key.VersionRange;
-                        var checkVersion = acceptedNode.Item.Key.Version;
+                        var acceptedType = LibraryTargetFlagUtils.GetFlag(acceptedNode.Item.Key.Type);
+                        var childType = childNode.Key.TypeConstraint;
 
-                        // Allow prerelease versions if the selected library is prerelease and the range is
-                        // using the default behavior of filtering to stable versions.
-                        // Ex: [4.0.0, ) should allow 4.0.10-beta if that library was selected during the graph walk
-                        // The decision on if a prerelease version should be allowed should happen previous to this
-                        // check during the walk.
-                        if (checkVersion.IsPrerelease && !versionRange.IncludePrerelease)
+                        // Check the type constraints, if there is any overlap check for conflict
+                        if ((childType & acceptedType) != LibraryTypeFlag.None)
                         {
-                            versionRange = VersionRange.SetIncludePrerelease(versionRange, includePrerelease: true);
-                        }
+                            var versionRange = childNode.Key.VersionRange;
+                            var checkVersion = acceptedNode.Item.Key.Version;
 
-                        if (!versionRange.Satisfies(checkVersion))
-                        {
-                            versionConflicts.Add(new VersionConflictResult<TItem>
+                            // Allow prerelease versions if the selected library is prerelease and the range is
+                            // using the default behavior of filtering to stable versions.
+                            // Ex: [4.0.0, ) should allow 4.0.10-beta if that library was selected during the graph walk
+                            // The decision on if a prerelease version should be allowed should happen previous to this
+                            // check during the walk.
+                            if (checkVersion.IsPrerelease && !versionRange.IncludePrerelease)
                             {
-                                Selected = acceptedNode,
-                                Conflicting = childNode
-                            });
+                                versionRange = VersionRange.SetIncludePrerelease(versionRange, includePrerelease: true);
+                            }
+
+                            if (!versionRange.Satisfies(checkVersion))
+                            {
+                                versionConflicts.Add(new VersionConflictResult<TItem>
+                                {
+                                    Selected = acceptedNode,
+                                    Conflicting = childNode
+                                });
+                            }
                         }
                     }
                 }

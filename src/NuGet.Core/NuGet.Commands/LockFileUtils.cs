@@ -323,16 +323,9 @@ namespace NuGet.Commands
         /// </summary>
         private static bool IsPackageOrProject(LibraryDependency libraryDependency)
         {
-            switch (libraryDependency.LibraryRange.TypeConstraint)
-            {
-                case null:
-                case LibraryTypes.Package:
-                case LibraryTypes.Project:
-                case LibraryTypes.ExternalProject:
-                    return true;
-            }
+            var typeFlags = libraryDependency.LibraryRange.TypeConstraint;
 
-            return false;
+            return (typeFlags & LibraryTargetFlagUtils.PackageProjectExternal) != LibraryTypeFlag.None;
         }
     }
 }
