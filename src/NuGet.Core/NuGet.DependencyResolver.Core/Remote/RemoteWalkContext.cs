@@ -13,7 +13,7 @@ namespace NuGet.DependencyResolver
     {
         public RemoteWalkContext()
         {
-            ProjectLibraryProviders = new List<IDependencyProvider>();
+            ProjectLibraryProviders = new List<IProjectDependencyProvider>();
             LocalLibraryProviders = new List<IRemoteDependencyProvider>();
             RemoteLibraryProviders = new List<IRemoteDependencyProvider>();
 
@@ -21,7 +21,7 @@ namespace NuGet.DependencyResolver
             PackageFileCache = new ConcurrentDictionary<PackageIdentity, IList<string>>(PackageIdentity.Comparer);
         }
 
-        public IList<IDependencyProvider> ProjectLibraryProviders { get; }
+        public IList<IProjectDependencyProvider> ProjectLibraryProviders { get; }
         public IList<IRemoteDependencyProvider> LocalLibraryProviders { get; }
         public IList<IRemoteDependencyProvider> RemoteLibraryProviders { get; }
 
@@ -34,5 +34,10 @@ namespace NuGet.DependencyResolver
         /// Files contained in a package.
         /// </summary>
         public ConcurrentDictionary<PackageIdentity, IList<string>> PackageFileCache { get; }
+
+        /// <summary>
+        /// True if this is a csproj or similar project. Xproj should be false.
+        /// </summary>
+        public bool IsMsBuildBased { get; set; }
     }
 }

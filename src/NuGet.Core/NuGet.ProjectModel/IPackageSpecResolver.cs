@@ -10,5 +10,7 @@ namespace NuGet.ProjectModel
         IEnumerable<string> SearchPaths { get; }
 
         bool TryResolvePackageSpec(string name, out PackageSpec packageSpec);
+
+        string RootPath { get; }
     }
 }

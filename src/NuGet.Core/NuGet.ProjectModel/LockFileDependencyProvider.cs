@@ -38,10 +38,9 @@ namespace NuGet.ProjectModel
             }
         }
 
-        public bool SupportsType(string libraryType)
+        public bool SupportsType(LibraryTypeFlag libraryType)
         {
-            return string.IsNullOrEmpty(libraryType) ||
-                   string.Equals(libraryType, LibraryTypes.Package);
+            return (libraryType & LibraryTypeFlag.Package) == LibraryTypeFlag.Package;
         }
 
         public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
@@ -55,7 +54,8 @@ namespace NuGet.ProjectModel
             {
                 var dependencies = GetDependencies(library, targetFramework);
 
-                var description = new Library {
+                var description = new Library
+                {
                     LibraryRange = libraryRange,
                     Identity = new LibraryIdentity
                     {
@@ -69,7 +69,7 @@ namespace NuGet.ProjectModel
                     [KnownLibraryProperties.LockFileLibrary] = _libraries[Tuple.Create(library.Name, library.Version)],
                     [KnownLibraryProperties.LockFileTargetLibrary] = library
                 };
-                
+
                 return description;
             }
 
@@ -86,21 +86,16 @@ namespace NuGet.ProjectModel
             foreach (var name in library.FrameworkAssemblies)
             {
                 libraryDependencies.Add(new LibraryDependency
+                {
+                    LibraryRange = new LibraryRange
                     {
-                        LibraryRange = new LibraryRange
-                            {
-                                Name = name,
-                                TypeConstraint = LibraryTypes.Reference
-                            }
-                    });
+                        Name = name,
+                        TypeConstraint = LibraryTypeFlag.Reference
+                    }
+                });
             }
 
             return libraryDependencies;
-        }
-        
-        public IEnumerable<string> GetAttemptedPaths(NuGetFramework targetFramework)
-        {
-            return Enumerable.Empty<string>();
         }
     }
 }

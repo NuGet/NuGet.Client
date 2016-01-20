@@ -33,7 +33,8 @@ namespace NuGet.DependencyResolver
                 LibraryRange = new LibraryRange
                 {
                     Name = dependency.Id,
-                    VersionRange = dependency.VersionRange
+                    VersionRange = dependency.VersionRange,
+                    TypeConstraint = LibraryTypeFlag.Package  // Package dependencies must be filled by packages
                 },
                 IncludeType = includeType,
                 SuppressParent = LibraryIncludeFlags.None

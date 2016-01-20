@@ -45,11 +45,11 @@ namespace NuGet.DependencyResolver
             if (packageVersion != null)
             {
                 return new LibraryIdentity
-                    {
-                        Name = libraryRange.Name,
-                        Version = packageVersion,
-                        Type = LibraryTypes.Package
-                    };
+                {
+                    Name = libraryRange.Name,
+                    Version = packageVersion,
+                    Type = LibraryTypes.Package
+                };
             }
 
             return null;
@@ -123,13 +123,13 @@ namespace NuGet.DependencyResolver
             foreach (var name in frameworkAssemblies.Items)
             {
                 libraryDependencies.Add(new LibraryDependency
+                {
+                    LibraryRange = new LibraryRange
                     {
-                        LibraryRange = new LibraryRange
-                            {
-                                Name = name,
-                                TypeConstraint = LibraryTypes.Reference
-                            }
-                    });
+                        Name = name,
+                        TypeConstraint = LibraryTypeFlag.Reference
+                    }
+                });
             }
 
             return libraryDependencies;
