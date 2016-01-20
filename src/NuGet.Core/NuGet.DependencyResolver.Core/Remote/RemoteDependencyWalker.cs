@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,7 +53,8 @@ namespace NuGet.DependencyResolver
                         LibraryRange = new LibraryRange()
                         {
                             Name = runtimeDependency.Id,
-                            VersionRange = runtimeDependency.VersionRange
+                            VersionRange = runtimeDependency.VersionRange,
+                            TypeConstraint = LibraryTargetFlagUtils.PackageProjectExternal
                         }
                     };
 
@@ -76,7 +78,13 @@ namespace NuGet.DependencyResolver
 
             var node = new GraphNode<RemoteResolveResult>(libraryRange)
             {
-                Item = await FindLibraryCached(_context.FindLibraryEntryCache, libraryRange, framework)
+                // Resolve the dependency from the cache or sources
+                Item = await FindLibraryCached(
+                    _context.FindLibraryEntryCache,
+                    libraryRange,
+                    framework,
+                    outerEdge,
+                    CancellationToken.None)
             };
 
             Debug.Assert(node.Item != null, "FindLibraryCached should return an unresolved item instead of null");
@@ -312,25 +320,31 @@ namespace NuGet.DependencyResolver
             ConcurrentDictionary<LibraryRangeCacheKey, Task<GraphItem<RemoteResolveResult>>> cache,
             LibraryRange libraryRange,
             NuGetFramework framework,
-            CancellationToken cancellationToken = default(CancellationToken))
+            GraphEdge<RemoteResolveResult> outerEdge,
+            CancellationToken cancellationToken)
         {
             var key = new LibraryRangeCacheKey(libraryRange, framework);
 
             return cache.GetOrAdd(key, (cacheKey) =>
-                FindLibraryEntry(cacheKey.LibraryRange, framework, cancellationToken));
+                FindLibraryEntry(cacheKey.LibraryRange, framework, outerEdge, cancellationToken));
         }
 
-        private async Task<GraphItem<RemoteResolveResult>> FindLibraryEntry(LibraryRange libraryRange, NuGetFramework framework, CancellationToken cancellationToken)
+        private async Task<GraphItem<RemoteResolveResult>> FindLibraryEntry(
+            LibraryRange libraryRange,
+            NuGetFramework framework,
+            GraphEdge<RemoteResolveResult> outerEdge,
+            CancellationToken cancellationToken)
         {
-            var match = await FindLibraryMatch(libraryRange, framework, cancellationToken);
+            var match = await FindLibraryMatch(libraryRange, framework, outerEdge, cancellationToken);
 
             if (match == null)
             {
                 // HACK(anurse): Reference requests are not resolved and just left as-is
-                if (string.Equals(libraryRange.TypeConstraint, LibraryTypes.Reference))
+                if (libraryRange.TypeConstraint == LibraryTypeFlag.Reference)
                 {
                     return CreateReferenceMatch(libraryRange);
                 }
+
                 return CreateUnresolvedMatch(libraryRange);
             }
 
@@ -405,9 +419,13 @@ namespace NuGet.DependencyResolver
             };
         }
 
-        private async Task<RemoteMatch> FindLibraryMatch(LibraryRange libraryRange, NuGetFramework framework, CancellationToken cancellationToken)
+        private async Task<RemoteMatch> FindLibraryMatch(
+            LibraryRange libraryRange,
+            NuGetFramework framework,
+            GraphEdge<RemoteResolveResult> outerEdge,
+            CancellationToken cancellationToken)
         {
-            var projectMatch = await FindProjectMatch(libraryRange.Name, framework, cancellationToken);
+            var projectMatch = await FindProjectMatch(libraryRange, framework, outerEdge, cancellationToken);
 
             if (projectMatch != null)
             {
@@ -419,7 +437,7 @@ namespace NuGet.DependencyResolver
                 return null;
             }
 
-            if (libraryRange.TypeConstraint == LibraryTypes.Reference)
+            if (libraryRange.TypeConstraint == LibraryTypeFlag.Reference)
             {
                 return null;
             }
@@ -498,32 +516,69 @@ namespace NuGet.DependencyResolver
             }
         }
 
-        public Task<RemoteMatch> FindProjectMatch(string name, NuGetFramework framework, CancellationToken cancellationToken)
+        public Task<RemoteMatch> FindProjectMatch(
+            LibraryRange libraryRange,
+            NuGetFramework framework,
+            GraphEdge<RemoteResolveResult> outerEdge,
+            CancellationToken cancellationToken)
         {
             RemoteMatch result = null;
 
-            var libraryRange = new LibraryRange
+            // Check if projects are allowed for this dependency
+            if ((libraryRange.TypeConstraint & (LibraryTypeFlag.Project | LibraryTypeFlag.ExternalProject))
+                != LibraryTypeFlag.None)
             {
-                Name = name
-            };
+                // Find the root directory of the parent project if one exists.
+                // This is used for resolving global json.
+                var parentProjectRoot = GetRootPathForParentProject(outerEdge);
 
-            foreach (var provider in _context.ProjectLibraryProviders)
-            {
-                var match = provider.GetLibrary(libraryRange, framework);
-                if (match != null)
+                foreach (var provider in _context.ProjectLibraryProviders)
                 {
-                    result = new LocalMatch
+                    if (provider.SupportsType(libraryRange.TypeConstraint))
                     {
-                        LocalLibrary = match,
-                        Library = match.Identity,
-                        LocalProvider = provider,
-                        Provider = new LocalDependencyProvider(provider),
-                        Path = match.Path,
-                    };
+                        var match = provider.GetLibrary(libraryRange, framework, parentProjectRoot);
+                        if (match != null)
+                        {
+                            result = new LocalMatch
+                            {
+                                LocalLibrary = match,
+                                Library = match.Identity,
+                                LocalProvider = provider,
+                                Provider = new LocalDependencyProvider(provider),
+                                Path = match.Path,
+                            };
+                        }
+                    }
                 }
             }
 
             return Task.FromResult<RemoteMatch>(result);
+        }
+
+        /// <summary>
+        /// Returns root directory of the parent project.
+        /// This will be null if the reference is from a non-project type.
+        /// </summary>
+        private static string GetRootPathForParentProject(GraphEdge<RemoteResolveResult> outerEdge)
+        {
+            if (outerEdge != null
+                && LibraryTypes.Project.Equals(outerEdge.Item.Key.Type, StringComparison.Ordinal)
+                && outerEdge.Item.Data.Match.Path != null)
+            {
+                var projectJsonPath = new FileInfo(outerEdge.Item.Data.Match.Path);
+
+                // For files in the root of the drive this will be null
+                if (projectJsonPath.Directory.Parent == null)
+                {
+                    return projectJsonPath.Directory.FullName;
+                }
+                else
+                {
+                    return projectJsonPath.Directory.Parent.FullName;
+                }
+            }
+
+            return null;
         }
 
         private async Task<RemoteMatch> FindLibraryByVersion(LibraryRange libraryRange, NuGetFramework framework, IEnumerable<IRemoteDependencyProvider> providers, CancellationToken token)

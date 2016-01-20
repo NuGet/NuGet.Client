@@ -26,10 +26,9 @@ namespace NuGet.DependencyResolver
             _repository = new NuGetv3LocalRepository(packagesPath, checkPackageIdCase: false);
         }
 
-        public bool SupportsType(string libraryType)
+        public bool SupportsType(LibraryTypeFlag libraryType)
         {
-            return string.IsNullOrEmpty(libraryType) ||
-                   string.Equals(libraryType, LibraryTypes.Package);
+            return (libraryType & LibraryTypeFlag.Package) == LibraryTypeFlag.Package;
         }
 
         public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
@@ -45,17 +44,17 @@ namespace NuGet.DependencyResolver
                 }
 
                 var description = new Library
+                {
+                    LibraryRange = libraryRange,
+                    Identity = new LibraryIdentity
                     {
-                        LibraryRange = libraryRange,
-                        Identity = new LibraryIdentity
-                            {
-                                Name = package.Id,
-                                Version = package.Version,
-                                Type = LibraryTypes.Package
-                            },
-                        Path = package.ManifestPath,
-                        Dependencies = GetDependencies(nuspecReader, targetFramework)
-                    };
+                        Name = package.Id,
+                        Version = package.Version,
+                        Type = LibraryTypes.Package
+                    },
+                    Path = package.ManifestPath,
+                    Dependencies = GetDependencies(nuspecReader, targetFramework)
+                };
 
                 description.Items["package"] = package;
                 description.Items["metadata"] = nuspecReader;
@@ -111,13 +110,13 @@ namespace NuGet.DependencyResolver
             foreach (var name in frameworkAssemblies.Items)
             {
                 libraryDependencies.Add(new LibraryDependency
+                {
+                    LibraryRange = new LibraryRange
                     {
-                        LibraryRange = new LibraryRange
-                            {
-                                Name = name,
-                                TypeConstraint = LibraryTypes.Reference
-                            }
-                    });
+                        Name = name,
+                        TypeConstraint = LibraryTypeFlag.Reference
+                    }
+                });
             }
 
             return libraryDependencies;
@@ -128,14 +127,6 @@ namespace NuGet.DependencyResolver
             var packages = _repository.FindPackagesById(name);
 
             return packages.FindBestMatch(versionRange, info => info?.Version);
-        }
-
-        public IEnumerable<string> GetAttemptedPaths(NuGetFramework targetFramework)
-        {
-            return new[]
-                {
-                    Path.Combine(_repository.RepositoryRoot, "{name}", "{version}", "{name}.nuspec")
-                };
         }
     }
 }

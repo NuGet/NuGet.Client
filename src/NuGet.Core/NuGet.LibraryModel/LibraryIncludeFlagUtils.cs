@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace NuGet.LibraryModel
 {
     /// <summary>
-    /// Helper methods for dealing withi include/exclude flag strings.
+    /// Helper methods for dealing with include/exclude flag strings.
     /// </summary>
     public class LibraryIncludeFlagUtils
     {

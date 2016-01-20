@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -18,10 +17,15 @@ namespace NuGet.ProjectModel
     /// Handles both external references and projects discovered through directories
     /// If the type is set to external project directory discovery will be disabled.
     /// </summary>
-    public class PackageSpecReferenceDependencyProvider : IDependencyProvider
+    public class PackageSpecReferenceDependencyProvider : IProjectDependencyProvider
     {
-        private readonly IPackageSpecResolver _resolver;
-        private readonly Dictionary<string, ExternalProjectReference> _externalProjects;
+        private readonly IPackageSpecResolver _defaultResolver;
+        private readonly Dictionary<string, ExternalProjectReference> _externalProjects
+            = new Dictionary<string, ExternalProjectReference>(StringComparer.OrdinalIgnoreCase);
+
+        // RootPath -> Resolver
+        private readonly Dictionary<string, IPackageSpecResolver> _resolverCache
+            = new Dictionary<string, IPackageSpecResolver>(StringComparer.Ordinal);
 
         public PackageSpecReferenceDependencyProvider(
             IPackageSpecResolver projectResolver,
@@ -37,9 +41,9 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(externalProjects));
             }
 
-            _resolver = projectResolver;
+            _defaultResolver = projectResolver;
 
-            _externalProjects = new Dictionary<string, ExternalProjectReference>(StringComparer.OrdinalIgnoreCase);
+            _resolverCache.Add(projectResolver.RootPath, projectResolver);
 
             foreach (var project in externalProjects)
             {
@@ -54,19 +58,17 @@ namespace NuGet.ProjectModel
             }
         }
 
-        public IEnumerable<string> GetAttemptedPaths(NuGetFramework targetFramework)
+        public bool SupportsType(LibraryTypeFlag libraryType)
         {
-            return _resolver.SearchPaths.Select(p => Path.Combine(p, "{name}", "project.json"));
-        }
-
-        public bool SupportsType(string libraryType)
-        {
-            return string.IsNullOrEmpty(libraryType)
-                || string.Equals(libraryType, LibraryTypes.Project, StringComparison.Ordinal)
-                || string.Equals(libraryType, LibraryTypes.ExternalProject, StringComparison.Ordinal);
+            return (libraryType & (LibraryTypeFlag.Project | LibraryTypeFlag.ExternalProject)) != LibraryTypeFlag.None;
         }
 
         public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
+        {
+            return GetLibrary(libraryRange, targetFramework, rootPath: _defaultResolver.RootPath);
+        }
+
+        public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework, string rootPath)
         {
             var name = libraryRange.Name;
 
@@ -79,13 +81,13 @@ namespace NuGet.ProjectModel
             {
                 packageSpec = externalReference.PackageSpec;
             }
-            else if (!string.Equals(
-                libraryRange.TypeConstraint,
-                LibraryTypes.ExternalProject,
-                StringComparison.Ordinal))
+            else if (libraryRange.TypeConstraintAllows(LibraryTypeFlag.Project))
             {
+                // Find the package spec resolver for this root path.
+                var specResolver = GetPackageSpecResolver(rootPath);
+
                 // Allow directory look ups unless this constrained to external
-                resolvedUsingDirectory = _resolver.TryResolvePackageSpec(name, out packageSpec);
+                resolvedUsingDirectory = specResolver.TryResolvePackageSpec(name, out packageSpec);
             }
 
             if (externalReference == null && packageSpec == null)
@@ -106,6 +108,20 @@ namespace NuGet.ProjectModel
                 // Add framework specific dependencies
                 targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
                 dependencies.AddRange(targetFrameworkInfo.Dependencies);
+
+                // Disallow projects (resolved by directory) for non-xproj msbuild projects.
+                // If there is no msbuild path then resolving by directory is allowed.
+                // CSProj does not allow directory to directory look up.
+                if (XProjUtility.IsMSBuildBasedProject(externalReference?.MSBuildProjectPath))
+                {
+                    foreach (var dependency in dependencies)
+                    {
+                        // Remove "project" from the allowed types for this dependency
+                        // This will require that projects referenced by an msbuild project
+                        // must be external projects.
+                        dependency.LibraryRange.TypeConstraint &= ~LibraryTypeFlag.Project;
+                    }
+                }
             }
 
             if (externalReference != null)
@@ -145,7 +161,7 @@ namespace NuGet.ProjectModel
                 // a path already resolved by msbuild.
                 foreach (var dependency in dependencies.Where(d => filteredExternalDependencies.Contains(d.Name)))
                 {
-                    dependency.LibraryRange.TypeConstraint = LibraryTypes.ExternalProject;
+                    dependency.LibraryRange.TypeConstraint = LibraryTypeFlag.ExternalProject;
                 }
 
                 // Add dependencies passed in externally
@@ -160,7 +176,7 @@ namespace NuGet.ProjectModel
                         {
                             Name = reference,
                             VersionRange = VersionRange.Parse("1.0.0"),
-                            TypeConstraint = LibraryTypes.ExternalProject
+                            TypeConstraint = LibraryTypeFlag.ExternalProject
                         }
                     }));
             }
@@ -173,7 +189,7 @@ namespace NuGet.ProjectModel
                     LibraryRange = new LibraryRange
                     {
                         Name = "mscorlib",
-                        TypeConstraint = LibraryTypes.Reference
+                        TypeConstraint = LibraryTypeFlag.Reference
                     }
                 });
 
@@ -182,7 +198,7 @@ namespace NuGet.ProjectModel
                     LibraryRange = new LibraryRange
                     {
                         Name = "System",
-                        TypeConstraint = LibraryTypes.Reference
+                        TypeConstraint = LibraryTypeFlag.Reference
                     }
                 });
 
@@ -191,7 +207,7 @@ namespace NuGet.ProjectModel
                     LibraryRange = new LibraryRange
                     {
                         Name = "System.Core",
-                        TypeConstraint = LibraryTypes.Reference
+                        TypeConstraint = LibraryTypeFlag.Reference
                     }
                 });
 
@@ -200,7 +216,7 @@ namespace NuGet.ProjectModel
                     LibraryRange = new LibraryRange
                     {
                         Name = "Microsoft.CSharp",
-                        TypeConstraint = LibraryTypes.Reference
+                        TypeConstraint = LibraryTypeFlag.Reference
                     }
                 });
             }
@@ -296,6 +312,30 @@ namespace NuGet.ProjectModel
             }
 
             return library;
+        }
+
+        /// <summary>
+        /// Get and cache the package spec resolver.
+        /// </summary>
+        private IPackageSpecResolver GetPackageSpecResolver(string rootPath)
+        {
+            var specResolver = _defaultResolver;
+
+            if (!string.IsNullOrEmpty(rootPath))
+            {
+                IPackageSpecResolver cachedResolver;
+                if (_resolverCache.TryGetValue(rootPath, out cachedResolver))
+                {
+                    specResolver = cachedResolver;
+                }
+                else
+                {
+                    specResolver = new PackageSpecResolver(rootPath);
+                    _resolverCache.Add(rootPath, specResolver);
+                }
+            }
+
+            return specResolver;
         }
 
         /// <summary>
