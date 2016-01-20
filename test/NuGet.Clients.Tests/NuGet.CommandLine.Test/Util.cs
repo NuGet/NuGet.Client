@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -601,9 +600,9 @@ EndProject";
 
             if (!string.IsNullOrEmpty(expectedOutputMessage))
             {
-                Assert.True(
-                    result.Item2.Contains(expectedOutputMessage),
-                    "Expected output is " + expectedOutputMessage + ". Actual output is " + result.Item2);
+                Assert.Contains(
+                    expectedOutputMessage,
+                    result.Item2);
             }
         }
 
