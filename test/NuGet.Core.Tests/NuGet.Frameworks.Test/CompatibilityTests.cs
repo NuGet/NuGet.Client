@@ -399,6 +399,9 @@ namespace NuGet.Test
         [InlineData("portable-net451+win8+aspnetcore50", "dotnet", false)]
 
         // netstandardapp supports netstandardapp
+        [InlineData("netstandardapp6.0", "netstandardapp7.0", false)]
+        [InlineData("netstandardapp6.0", "netstandardapp6", true)]
+        [InlineData("netstandardapp6.0", "netstandardapp5.9", true)]
         [InlineData("netstandardapp1.5", "netstandardapp6.0", false)]
         [InlineData("netstandardapp1.5", "netstandardapp1.5.1", false)]
         [InlineData("netstandardapp1.5", "netstandardapp1.5.0", true)]
@@ -430,19 +433,19 @@ namespace NuGet.Test
         [InlineData("netstandardapp0.9", "netstandard0.8", true)]
         [InlineData("netstandardapp", "netstandard", true)]
 
-        // netstandardapp supports dotnet
+        // netstandardapp does not support dotnet
         [InlineData("netstandardapp1.5", "dotnet6.0", false)]
-        [InlineData("netstandardapp1.5", "dotnet5.6", true)]
-        [InlineData("netstandardapp1.5", "dotnet5.5", true)]
-        [InlineData("netstandardapp1.5", "dotnet1.0", true)]
-        [InlineData("netstandardapp1.5", "dotnet0.0", true)]
-        [InlineData("netstandardapp1.5", "dotnet", true)]
+        [InlineData("netstandardapp1.5", "dotnet5.6", false)]
+        [InlineData("netstandardapp1.5", "dotnet5.5", false)]
+        [InlineData("netstandardapp1.5", "dotnet1.0", false)]
+        [InlineData("netstandardapp1.5", "dotnet0.0", false)]
+        [InlineData("netstandardapp1.5", "dotnet", false)]
         [InlineData("netstandardapp1.4", "dotnet5.6", false)]
-        [InlineData("netstandardapp1.4", "dotnet5.5", true)]
-        [InlineData("netstandardapp1.3", "dotnet5.4", true)]
-        [InlineData("netstandardapp1.2", "dotnet5.3", true)]
-        [InlineData("netstandardapp1.1", "dotnet5.2", true)]
-        [InlineData("netstandardapp1.0", "dotnet5.1", true)]
+        [InlineData("netstandardapp1.4", "dotnet5.5", false)]
+        [InlineData("netstandardapp1.3", "dotnet5.4", false)]
+        [InlineData("netstandardapp1.2", "dotnet5.3", false)]
+        [InlineData("netstandardapp1.1", "dotnet5.2", false)]
+        [InlineData("netstandardapp1.0", "dotnet5.1", false)]
 
         // netstandardapp doesn't support anything else
         [InlineData("netstandardapp1.5", "net451", false)]
@@ -467,16 +470,21 @@ namespace NuGet.Test
         [InlineData("netstandard1.3", "dotnet5.4")]
         [InlineData("netstandard1.4", "dotnet5.5")]
         [InlineData("netstandard1.5", "dotnet5.6")]
-        public void Compatibility_NetStandardSupportsNetPlatform(string netStandard, string netPlatform)
+        [InlineData("netstandard1.5", "dotnet5.5")]
+        [InlineData("netstandard1.5", "dotnet5.4")]
+        [InlineData("netstandard1.5", "dotnet5.3")]
+        [InlineData("netstandard1.5", "dotnet5.2")]
+        [InlineData("netstandard1.5", "dotnet5.1")]
+        [InlineData("netstandard1.5", "dotnet5.0")]
+        [InlineData("netstandard1.5", "dotnet")]
+        public void Compatibility_NetStandardDoesNotSupportNetPlatform(string netStandard, string netPlatform)
         {
             var project = NuGetFramework.Parse(netStandard);
             var package = NuGetFramework.Parse(netPlatform);
 
             var compat = DefaultCompatibilityProvider.Instance;
 
-            Assert.True(compat.IsCompatible(project, package));
-
-            // verify the relationship is unidirectional
+            Assert.False(compat.IsCompatible(project, package));
             Assert.False(compat.IsCompatible(package, project));
         }
 

@@ -142,6 +142,9 @@ namespace NuGet.Frameworks
             public static readonly NuGetFramework NetStandard15
                 = new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(1, 5, 0, 0));
 
+            public static readonly NuGetFramework NetStandardApp15
+                = new NuGetFramework(FrameworkIdentifiers.NetStandardApp, new Version(1, 5, 0, 0));
+
             public static readonly NuGetFramework UAP10
                 = new NuGetFramework(FrameworkIdentifiers.UAP, Version10);
         }

@@ -325,32 +325,7 @@ namespace NuGet.Frameworks
                             new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, FrameworkConstants.MaxVersion)),
                             new FrameworkRange(
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WinRT, FrameworkConstants.EmptyVersion),
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WinRT, new Version(4, 5, 0, 0)))),
-
-                        // netstandard supports dotnet, but not the reverse
-                        CreateGenerationMapping(
-                            FrameworkConstants.CommonFrameworks.NetStandard10,
-                            FrameworkConstants.CommonFrameworks.DotNet51),
-
-                        CreateGenerationMapping(
-                            FrameworkConstants.CommonFrameworks.NetStandard11,
-                            FrameworkConstants.CommonFrameworks.DotNet52),
-
-                        CreateGenerationMapping(
-                            FrameworkConstants.CommonFrameworks.NetStandard12,
-                            FrameworkConstants.CommonFrameworks.DotNet53),
-
-                        CreateGenerationMapping(
-                            FrameworkConstants.CommonFrameworks.NetStandard13,
-                            FrameworkConstants.CommonFrameworks.DotNet54),
-
-                        CreateGenerationMapping(
-                            FrameworkConstants.CommonFrameworks.NetStandard14,
-                            FrameworkConstants.CommonFrameworks.DotNet55),
-
-                        CreateGenerationMapping(
-                            FrameworkConstants.CommonFrameworks.NetStandard15,
-                            FrameworkConstants.CommonFrameworks.DotNet56)
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WinRT, new Version(4, 5, 0, 0))))
                     }
                         .Concat(new[]
                         {
