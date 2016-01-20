@@ -741,5 +741,45 @@ EndProject";
 
             NativeMethods.CreateReparsePoint(junctionPoint, targetDirectoryPath);
         }
+
+        /// <summary>
+        /// Create a basic csproj file for net45.
+        /// </summary>
+        public static string GetCSProjXML(string projectName)
+        {
+            return @"<?xml version=""1.0"" encoding=""utf-8""?>
+                <Project ToolsVersion=""14.0"" DefaultTargets=""Build"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
+                  <Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"" Condition=""Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"" />
+                  <PropertyGroup>
+                    <Configuration Condition="" '$(Configuration)' == '' "">Debug</Configuration>
+                    <Platform Condition="" '$(Platform)' == '' "">AnyCPU</Platform>
+                    <ProjectGuid>29b6f645-ae2a-4653-a142-d0de9341adba</ProjectGuid>
+                    <OutputType>Library</OutputType>
+                    <AppDesignerFolder>Properties</AppDesignerFolder>
+                    <RootNamespace>$NAME$</RootNamespace>
+                    <AssemblyName>$NAME$</AssemblyName>
+                    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+                    <FileAlignment>512</FileAlignment>
+                    <DebugSymbols>true</DebugSymbols>
+                    <DebugType>full</DebugType>
+                    <Optimize>false</Optimize>
+                    <OutputPath>bin\Debug\</OutputPath>
+                    <DefineConstants>DEBUG;TRACE</DefineConstants>
+                    <ErrorReport>prompt</ErrorReport>
+                    <WarningLevel>4</WarningLevel>
+                  </PropertyGroup>
+                  <ItemGroup>
+                    <Reference Include=""System""/>
+                    <Reference Include=""System.Core""/>
+                    <Reference Include=""System.Xml.Linq""/>
+                    <Reference Include=""System.Data.DataSetExtensions""/>
+                    <Reference Include=""Microsoft.CSharp""/>
+                    <Reference Include=""System.Data""/>
+                    <Reference Include=""System.Net.Http""/>
+                    <Reference Include=""System.Xml""/>
+                  </ItemGroup>
+                  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+                 </Project>".Replace("$NAME$", projectName);
+        }
     }
 }

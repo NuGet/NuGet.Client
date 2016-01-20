@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NuGet.Logging;
+using NuGet.ProjectModel;
 
 namespace NuGet.ProjectManagement
 {
@@ -15,20 +16,31 @@ namespace NuGet.ProjectManagement
         }
 
         /// <summary>
-        /// Create a new build integrated project reference context and cache.
+        /// Create a new build integrated project reference context and caches.
         /// </summary>
         public BuildIntegratedProjectReferenceContext(ILogger logger)
-            : this(logger, new Dictionary<string, IReadOnlyList<BuildIntegratedProjectReference>>(
-                StringComparer.OrdinalIgnoreCase))
         {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            Logger = logger;
+
+            Cache = new Dictionary<string, IReadOnlyList<BuildIntegratedProjectReference>>(
+                StringComparer.OrdinalIgnoreCase);
+
+            SpecCache = new Dictionary<string, PackageSpec>(
+                StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
-        /// Create a new build integrated project reference context with the given cache.
+        /// Create a new build integrated project reference context with the given caches.
         /// </summary>
         public BuildIntegratedProjectReferenceContext(
             ILogger logger,
-            IDictionary<string, IReadOnlyList<BuildIntegratedProjectReference>> cache)
+            IDictionary<string, IReadOnlyList<BuildIntegratedProjectReference>> cache,
+            IDictionary<string, PackageSpec> specCache)
         {
             if (logger == null)
             {
@@ -40,8 +52,14 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentNullException(nameof(cache));
             }
 
+            if (specCache == null)
+            {
+                throw new ArgumentNullException(nameof(specCache));
+            }
+
             Logger = logger;
             Cache = cache;
+            SpecCache = specCache;
         }
 
         /// <summary>
@@ -51,8 +69,32 @@ namespace NuGet.ProjectManagement
         public IDictionary<string, IReadOnlyList<BuildIntegratedProjectReference>> Cache { get; }
 
         /// <summary>
+        /// Cached project.json files
+        /// </summary>
+        public IDictionary<string, PackageSpec> SpecCache { get; }
+
+        /// <summary>
         /// Logger
         /// </summary>
         public ILogger Logger { get; }
+
+        /// <summary>
+        /// Retrieves a project.json file from the cache. It will be added if it does not exist already.
+        /// </summary>
+        public PackageSpec GetOrCreateSpec(string projectName, string projectJsonPath)
+        {
+            PackageSpec spec;
+            if (!SpecCache.TryGetValue(projectJsonPath, out spec))
+            {
+                // Read the spec and add it to the cache
+                spec = JsonPackageSpecReader.GetPackageSpec(
+                    projectName,
+                    projectJsonPath);
+
+                SpecCache.Add(projectJsonPath, spec);
+            }
+
+            return spec;
+        }
     }
 }
