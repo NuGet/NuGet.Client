@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -16,7 +19,7 @@ namespace NuGet.CommandLine
         private readonly IPackageRepository _cacheRepository;
         private readonly List<string> _sources = new List<string>();
 
-        protected PackageSaveModes EffectivePackageSaveMode { get; set; }
+        protected PackageSaveMode EffectivePackageSaveMode { get; set; }
 
         protected DownloadCommandBase(IPackageRepository cacheRepository)
         {
@@ -49,18 +52,19 @@ namespace NuGet.CommandLine
                 packageSaveModeValue = SettingsUtility.GetConfigValue(Settings, "PackageSaveMode");
             }
 
-            EffectivePackageSaveMode = PackageSaveModes.None;
             if (!string.IsNullOrEmpty(packageSaveModeValue))
             {
+                // Restore \ Install always extract files
+                EffectivePackageSaveMode = Packaging.PackageSaveMode.Files;
                 foreach (var v in packageSaveModeValue.Split(';'))
                 {
-                    if (v.Equals(PackageSaveModes.Nupkg.ToString(), StringComparison.OrdinalIgnoreCase))
+                    if (v.Equals(Packaging.PackageSaveMode.Nupkg.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
-                        EffectivePackageSaveMode |= PackageSaveModes.Nupkg;
+                        EffectivePackageSaveMode |= Packaging.PackageSaveMode.Nupkg;
                     }
-                    else if (v.Equals(PackageSaveModes.Nuspec.ToString(), StringComparison.OrdinalIgnoreCase))
+                    else if (v.Equals(Packaging.PackageSaveMode.Nuspec.ToString(), StringComparison.OrdinalIgnoreCase))
                     {
-                        EffectivePackageSaveMode |= PackageSaveModes.Nuspec;
+                        EffectivePackageSaveMode |= Packaging.PackageSaveMode.Nuspec;
                     }
                     else
                     {
@@ -72,6 +76,10 @@ namespace NuGet.CommandLine
                         throw new InvalidOperationException(message);
                     }
                 }
+            }
+            else
+            {
+                EffectivePackageSaveMode = Packaging.PackageSaveMode.None;
             }
         }
 
