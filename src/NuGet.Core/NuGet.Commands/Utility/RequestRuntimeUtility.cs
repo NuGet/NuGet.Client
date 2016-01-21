@@ -45,7 +45,9 @@ namespace NuGet.Commands
             }
             else
             {
-                yield return runtimeOsName + "-x86"; // We do support x86 on Linux/Darwin via Mono
+                // Core CLR only supports x64 on non-windows OSes.
+                // Mono supports x86, for those scenarios the runtimes
+                // will need to be passed in or added to project.json.
                 yield return runtimeOsName + "-x64";
             }
         }
