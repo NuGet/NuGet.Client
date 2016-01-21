@@ -1168,7 +1168,8 @@ namespace NuGet.Commands
                 _logger,
                 fixNuspecIdCasing: true,
                 extractNuspecOnly: false,
-                normalizeFileNames: false);
+                normalizeFileNames: false,
+                xmlDocFileSaveMode: _request.XmlDocFileSaveMode);
 
             await PackageExtractor.InstallFromSourceAsync(
                 stream => installItem.Provider.CopyToAsync(installItem.Library, stream, token),

@@ -56,7 +56,13 @@ namespace NuGet.Packaging
                 var packageDirectory = packageDirectoryInfo.FullName;
 
                 var packageFiles = packageReader.GetPackageFiles(packageSaveMode);
-                filesAdded.AddRange(packageReader.CopyFiles(packageDirectory, packageFiles, token));
+                var packageFileExtractor = new PackageFileExtractor(packageFiles, packageExtractionContext.XmlDocFileSaveMode);
+
+                filesAdded.AddRange(packageReader.CopyFiles(
+                    packageDirectory,
+                    packageFiles,
+                    packageFileExtractor.ExtractPackageFile,
+                    token));
 
                 var nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentityFromNuspec));
                 if (packageSaveMode.HasFlag(PackageSaveMode.Nupkg))
@@ -71,7 +77,12 @@ namespace NuGet.Packaging
                 // Now, copy satellite files unless requested to not copy them
                 if (packageExtractionContext.CopySatelliteFiles)
                 {
-                    filesAdded.AddRange(CopySatelliteFiles(packageReader, packagePathResolver, packageSaveMode, token));
+                    filesAdded.AddRange(CopySatelliteFiles(
+                        packageReader,
+                        packagePathResolver,
+                        packageSaveMode,
+                        packageExtractionContext.XmlDocFileSaveMode,
+                        token));
                 }
             }
 
@@ -111,7 +122,12 @@ namespace NuGet.Packaging
             var packageDirectory = packageDirectoryInfo.FullName;
 
             var packageFiles = packageReader.GetPackageFiles(packageSaveMode);
-            filesAdded.AddRange(packageReader.CopyFiles(packageDirectory, packageFiles, token));
+            var packageFileExtractor = new PackageFileExtractor(packageFiles, packageExtractionContext.XmlDocFileSaveMode);
+            filesAdded.AddRange(packageReader.CopyFiles(
+                packageDirectory,
+                packageFiles,
+                packageFileExtractor.ExtractPackageFile,
+                token));
 
             var nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentityFromNuspec));
             if (packageSaveMode.HasFlag(PackageSaveMode.Nupkg))
@@ -135,7 +151,12 @@ namespace NuGet.Packaging
             // Now, copy satellite files unless requested to not copy them
             if (packageExtractionContext.CopySatelliteFiles)
             {
-                filesAdded.AddRange(CopySatelliteFiles(packageReader, packagePathResolver, packageSaveMode, token));
+                filesAdded.AddRange(CopySatelliteFiles(
+                    packageReader,
+                    packagePathResolver,
+                    packageSaveMode,
+                    packageExtractionContext.XmlDocFileSaveMode,
+                    token));
             }
 
             return filesAdded;
@@ -239,7 +260,14 @@ namespace NuGet.Packaging
                                     var nupkgFileName = Path.GetFileName(targetNupkg);
                                     var hashFileName = Path.GetFileName(hashPath);
                                     var packageFiles = packageReader.GetFiles().Where(f => ShouldInclude(f, nupkgFileName, hashFileName));
-                                    packageReader.CopyFiles(targetPath, packageFiles, token);
+                                    var packageFileExtractor = new PackageFileExtractor(
+                                        packageFiles,
+                                        versionFolderPathContext.XmlDocFileSaveMode);
+                                    packageReader.CopyFiles(
+                                        targetPath,
+                                        packageFiles,
+                                        packageFileExtractor.ExtractPackageFile,
+                                        token);
                                 }
                             }
                         }
@@ -357,6 +385,7 @@ namespace NuGet.Packaging
             PackageIdentity packageIdentity,
             PackagePathResolver packagePathResolver,
             PackageSaveMode packageSaveMode,
+            XmlDocFileSaveMode xmlDocFileSaveMode,
             CancellationToken token)
         {
             if (packageIdentity == null)
@@ -376,7 +405,12 @@ namespace NuGet.Packaging
             {
                 using (var packageReader = new PackageArchiveReader(nupkgFilePath))
                 {
-                    return CopySatelliteFiles(packageReader, packagePathResolver, packageSaveMode, token);
+                    return CopySatelliteFiles(
+                        packageReader,
+                        packagePathResolver,
+                        packageSaveMode,
+                        xmlDocFileSaveMode,
+                        token);
                 }
             }
 
@@ -387,6 +421,7 @@ namespace NuGet.Packaging
             PackageReaderBase packageReader,
             PackagePathResolver packagePathResolver,
             PackageSaveMode packageSaveMode,
+            XmlDocFileSaveMode xmlDocFileSaveMode,
             CancellationToken token)
         {
             if (packageReader == null)
@@ -406,10 +441,16 @@ namespace NuGet.Packaging
                 .GetSatelliteFiles(packageReader, packagePathResolver, out runtimePackageDirectory)
                 .Where(file => PackageHelper.IsPackageFile(file, packageSaveMode))
                 .ToList();
-            if (satelliteFiles.Any())
+            if (satelliteFiles.Count > 0)
             {
+                var packageFileExtractor = new PackageFileExtractor(satelliteFiles, xmlDocFileSaveMode);
+
                 // Now, add all the satellite files collected from the package to the runtime package folder(s)
-                satelliteFilesCopied = packageReader.CopyFiles(runtimePackageDirectory, satelliteFiles, token);
+                satelliteFilesCopied = packageReader.CopyFiles(
+                    runtimePackageDirectory,
+                    satelliteFiles,
+                    packageFileExtractor.ExtractPackageFile,
+                    token);
             }
 
             return satelliteFilesCopied;

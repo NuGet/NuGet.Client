@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
 
 namespace NuGet.CommandLine
 {
@@ -182,7 +183,8 @@ namespace NuGet.CommandLine
                             logger,
                             fixNuspecIdCasing: false,
                             extractNuspecOnly: !offlineFeedAddContext.Expand,
-                            normalizeFileNames: true);
+                            normalizeFileNames: true,
+                            xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
 
                         await PackageExtractor.InstallFromSourceAsync(
                             stream => packageStream.CopyToAsync(stream),
