@@ -30,7 +30,7 @@ namespace NuGet.Test.Utility
                     packagesDirectory: globalFolder,
                     logger: Logging.NullLogger.Instance,
                     fixNuspecIdCasing: true,
-                    extractNuspecOnly: false,
+                    packageSaveMode: PackageSaveMode.Defaultv3,
                     normalizeFileNames: true,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 

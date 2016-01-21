@@ -286,7 +286,9 @@ namespace NuGet.Packaging
                 if (include == null)
                 {
                     // Invalid include
-                    var message = Strings.FormatInvalidNuspecEntry(
+                    var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidNuspecEntry,
                         filesNode.ToString().Trim(),
                         GetIdentity());
 

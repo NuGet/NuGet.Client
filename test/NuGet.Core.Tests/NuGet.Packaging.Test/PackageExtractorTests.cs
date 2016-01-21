@@ -4,6 +4,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Logging;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -22,7 +23,8 @@ namespace NuGet.Packaging.Test
                 var packagePath = Path.Combine(root, "packageA.2.0.3");
 
                 // Act
-                var files = PackageExtractor.ExtractPackage(packageReader,
+                var files = PackageExtractor.ExtractPackage(
+                    packageReader,
                                                                  packageStream,
                                                                  new PackagePathResolver(root),
                                                                  new PackageExtractionContext(),
@@ -525,6 +527,226 @@ namespace NuGet.Packaging.Test
                     // Assert
                     Assert.True(File.Exists(Path.Combine(root, "A.2.0.3", "lib", "net45", "A.xml.zip")));
                     Assert.True(File.Exists(Path.Combine(root, "A.2.0.3", "lib", "net45", "A.dll")));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task PackageExtractor_WithoutPackageSaveModeFile_DoesNotExtractFiles()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   root,
+                   "A",
+                   "2.0.3",
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "lib/net45/A.dll",
+                   "content/net40/B.txt");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    var packageExtractionContext = new PackageExtractionContext
+                    {
+                        PackageSaveMode = PackageSaveMode.Nupkg | PackageSaveMode.Nuspec
+                    };
+
+                    // Act
+                    var packageFiles = PackageExtractor.ExtractPackage(
+                        packageStream,
+                        new PackagePathResolver(root),
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.3", "A.2.0.3.nupkg")));
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.3", "A.nuspec")));
+                    Assert.False(File.Exists(Path.Combine(root, "A.2.0.3", "lib", "net45", "A.dll")));
+                    Assert.False(File.Exists(Path.Combine(root, "A.2.0.3", "content", "net40", "B.txt")));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task PackageExtractor_WithoutPackageSaveModeNuspec_DoesNotExtractNuspec()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   root,
+                   "A",
+                   "2.0.3",
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "lib/net45/A.dll",
+                   "content/net40/B.txt");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    var packageExtractionContext = new PackageExtractionContext
+                    {
+                        PackageSaveMode = PackageSaveMode.Nupkg | PackageSaveMode.Files
+                    };
+
+                    // Act
+                    var packageFiles = PackageExtractor.ExtractPackage(
+                        packageStream,
+                        new PackagePathResolver(root),
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.3", "A.2.0.3.nupkg")));
+                    Assert.False(File.Exists(Path.Combine(root, "A.2.0.3", "A.nuspec")));
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.3", "lib", "net45", "A.dll")));
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.3", "content", "net40", "B.txt")));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task PackageExtractor_WithoutPackageSaveModeNupkg_DoesNotExtractNupkg()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   root,
+                   "A",
+                   "2.0.3",
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "lib/net45/A.dll",
+                   "content/net40/B.txt");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    var packageExtractionContext = new PackageExtractionContext
+                    {
+                        PackageSaveMode = PackageSaveMode.Nuspec | PackageSaveMode.Files
+                    };
+
+                    // Act
+                    var packageFiles = PackageExtractor.ExtractPackage(
+                        packageStream,
+                        new PackagePathResolver(root),
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.False(File.Exists(Path.Combine(root, "A.2.0.3", "A.2.0.3.nupkg")));
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.3", "A.nuspec")));
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.3", "lib", "net45", "A.dll")));
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.3", "content", "net40", "B.txt")));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsync_WithoutPackageSaveModeNuspec_DoesNotExtractNuspec()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   root,
+                   "A",
+                   "2.0.3",
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "lib/net45/A.dll");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    // Act
+                    await PackageExtractor.InstallFromSourceAsync(
+                        packageStream.CopyToAsync,
+                        new VersionFolderPathContext(
+                            new Core.PackageIdentity("A", new Versioning.NuGetVersion("2.0.3")),
+                            root,
+                            NullLogger.Instance,
+                            fixNuspecIdCasing: false,
+                            packageSaveMode: PackageSaveMode.Nupkg | PackageSaveMode.Files,
+                            normalizeFileNames: false,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.True(File.Exists(Path.Combine(root, "A", "2.0.3", "A.2.0.3.nupkg")));
+                    Assert.False(File.Exists(Path.Combine(root, "A", "2.0.3", "A.nuspec")));
+                    Assert.True(File.Exists(Path.Combine(root, "A", "2.0.3", "lib", "net45", "A.dll")));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsync_WithoutPackageSaveModeNupkg_DoesNotExtractNupkg()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   root,
+                   "A",
+                   "2.0.3",
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "lib/net45/A.dll");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    // Act
+                    await PackageExtractor.InstallFromSourceAsync(
+                        packageStream.CopyToAsync,
+                        new VersionFolderPathContext(
+                            new Core.PackageIdentity("A", new Versioning.NuGetVersion("2.0.3")),
+                            root,
+                            NullLogger.Instance,
+                            fixNuspecIdCasing: false,
+                            packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Files,
+                            normalizeFileNames: false,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.False(File.Exists(Path.Combine(root, "A", "2.0.3", "A.2.0.3.nupkg")));
+                    Assert.True(File.Exists(Path.Combine(root, "A", "2.0.3", "A.nuspec")));
+                    Assert.True(File.Exists(Path.Combine(root, "A", "2.0.3", "lib", "net45", "A.dll")));
+
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InstallFromSourceAsync_WithoutPackageSaveModeFiles_DoesNotExtractFiles()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   root,
+                   "A",
+                   "2.0.3",
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "lib/net45/A.dll");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    // Act
+                    await PackageExtractor.InstallFromSourceAsync(
+                        packageStream.CopyToAsync,
+                        new VersionFolderPathContext(
+                            new Core.PackageIdentity("A", new Versioning.NuGetVersion("2.0.3")),
+                            root,
+                            NullLogger.Instance,
+                            fixNuspecIdCasing: false,
+                            packageSaveMode: PackageSaveMode.Nupkg | PackageSaveMode.Nuspec,
+                            normalizeFileNames: false,
+                            xmlDocFileSaveMode: XmlDocFileSaveMode.None),
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.True(File.Exists(Path.Combine(root, "A", "2.0.3", "A.2.0.3.nupkg")));
+                    Assert.True(File.Exists(Path.Combine(root, "A", "2.0.3", "A.nuspec")));
+                    Assert.False(File.Exists(Path.Combine(root, "A", "2.0.3", "lib", "net45", "A.dll")));
                 }
             }
         }

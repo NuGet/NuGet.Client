@@ -1168,12 +1168,13 @@ namespace NuGet.Commands
         private async Task InstallPackageAsync(RemoteMatch installItem, string packagesDirectory, CancellationToken token)
         {
             var packageIdentity = new PackageIdentity(installItem.Library.Name, installItem.Library.Version);
+
             var versionFolderPathContext = new VersionFolderPathContext(
                 packageIdentity,
                 packagesDirectory,
                 _logger,
                 fixNuspecIdCasing: true,
-                extractNuspecOnly: false,
+                packageSaveMode: _request.PackageSaveMode,
                 normalizeFileNames: false,
                 xmlDocFileSaveMode: _request.XmlDocFileSaveMode);
 
