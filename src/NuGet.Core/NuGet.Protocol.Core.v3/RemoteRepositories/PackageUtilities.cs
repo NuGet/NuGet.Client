@@ -27,6 +27,14 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     using (var reader = new PackageArchiveReader(nupkgStream, leaveStreamOpen: true))
                     using (var nuspecStream = reader.GetNuspec())
                     {
+                        if (nupkgStream == null)
+                        {
+                            report.LogError(Strings.FormatLog_NupkgIsNull(id)); 
+                        }
+                        if (nuspecStream == null)
+                        {
+                            report.LogError(Strings.FormatLog_NuspecIsNull(id));
+                        }
                         return new NuspecReader(nuspecStream);
                     }
                 }
@@ -36,7 +44,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     var fileStream = nupkgStream as FileStream;
                     if (fileStream != null)
                     {
-                        report.LogWarning($"The ZIP archive {fileStream.Name} is corrupt");
+                        report.LogWarning(Strings.FormatLog_FileIsCorrupt(fileStream.Name));
                     }
                     throw;
                 }
