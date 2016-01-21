@@ -32,7 +32,7 @@ namespace Commands.Test
                     packagesDir,
                     logger,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
+                    packageSaveMode: PackageSaveMode.Default,
                     normalizeFileNames: false,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
@@ -76,7 +76,7 @@ namespace Commands.Test
                     packagesDir,
                     logger,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
+                    packageSaveMode: PackageSaveMode.Default,
                     normalizeFileNames: false,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
@@ -121,7 +121,7 @@ namespace Commands.Test
                     packagesDir,
                     logger,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
+                    packageSaveMode: PackageSaveMode.Default,
                     normalizeFileNames: false,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
@@ -174,7 +174,7 @@ namespace Commands.Test
                     packagesDir,
                     logger,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
+                    packageSaveMode: PackageSaveMode.Default,
                     normalizeFileNames: false,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
@@ -232,7 +232,7 @@ namespace Commands.Test
                     packagesDir,
                     logger,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
+                    packageSaveMode: PackageSaveMode.Default,
                     normalizeFileNames: false,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
@@ -291,7 +291,7 @@ namespace Commands.Test
                     packagesDir,
                     logger,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
+                    packageSaveMode: PackageSaveMode.Default,
                     normalizeFileNames: false,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
@@ -358,7 +358,7 @@ namespace Commands.Test
                     packagesDirectory,
                     NullLogger.Instance,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
+                    packageSaveMode: PackageSaveMode.Default,
                     normalizeFileNames: false,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
@@ -399,7 +399,7 @@ namespace Commands.Test
                     packagesDirectory,
                     NullLogger.Instance,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: true,
+                    packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Nupkg,
                     normalizeFileNames: false,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
@@ -438,7 +438,7 @@ namespace Commands.Test
                     packagesDirectory,
                     NullLogger.Instance,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: true,
+                    packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Nupkg,
                     normalizeFileNames: true,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
@@ -486,7 +486,7 @@ namespace Commands.Test
                     packagesDirectory,
                     NullLogger.Instance,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
+                    packageSaveMode: PackageSaveMode.Default,
                     normalizeFileNames: true,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
@@ -542,7 +542,7 @@ namespace Commands.Test
                     packagesDirectory,
                     NullLogger.Instance,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
+                    packageSaveMode: PackageSaveMode.Default,
                     normalizeFileNames: true,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
@@ -596,7 +596,7 @@ namespace Commands.Test
                     packagesDirectory,
                     NullLogger.Instance,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
+                    packageSaveMode: PackageSaveMode.Default,
                     normalizeFileNames: true,
                     xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
@@ -617,6 +617,47 @@ namespace Commands.Test
                 var dllFileInfo = new FileInfo(dllPath);
                 AssertFileExists(dllFileInfo.FullName);
                 Assert.Equal(entryModifiedTime, dllFileInfo.LastWriteTime);
+            }
+        }
+
+        [Fact]
+        public async Task Test_ExtractionDoesNotExtractFiles_IfPackageSaveModeDoesNotIncludeFiles()
+        {
+            // Arrange
+            var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
+
+            using (var packageFileInfo = TestPackages.GetLegacyTestPackage())
+            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var versionFolderPathContext = new VersionFolderPathContext(
+                    package,
+                    packagesDirectory,
+                    NullLogger.Instance,
+                    fixNuspecIdCasing: false,
+                    packageSaveMode: PackageSaveMode.Nupkg | PackageSaveMode.Nuspec,
+                    normalizeFileNames: false,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
+
+                // Act
+                using (var packageFileStream = File.OpenRead(packageFileInfo))
+                {
+                    await PackageExtractor.InstallFromSourceAsync(
+                        stream => packageFileStream.CopyToAsync(stream),
+                        versionFolderPathContext,
+                        CancellationToken.None);
+                }
+
+                // Assert
+                var packageIdDirectory = Path.Combine(packagesDirectory, package.Id);
+                var packageVersionDirectory = Path.Combine(packageIdDirectory, package.Version.ToNormalizedString());
+
+                AssertDirectoryExists(packageIdDirectory);
+                AssertDirectoryExists(packageVersionDirectory);
+                AssertFileExists(packageVersionDirectory, "packageA.2.0.3.nupkg");
+                AssertFileExists(packageVersionDirectory, "packageA.nuspec");
+                AssertFileExists(packageVersionDirectory, "packageA.2.0.3.nupkg.sha512");
+
+                Assert.False(File.Exists(Path.Combine(packageVersionDirectory, @"lib", "test.dll")));
             }
         }
 

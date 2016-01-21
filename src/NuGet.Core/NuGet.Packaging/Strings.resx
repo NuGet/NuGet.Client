@@ -171,4 +171,7 @@
   <data name="PackagesNodeNotExist" xml:space="preserve">
     <value>Packages node does not exists in packages.config at {0}.</value>
   </data>
+  <data name="ErrorUnableToDeleteFile" xml:space="preserve">
+    <value>Unable to delete temporary file '{0}'. Error: '{1}'.</value>
+  </data>
 </root>

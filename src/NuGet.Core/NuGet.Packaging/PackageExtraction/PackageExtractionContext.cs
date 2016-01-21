@@ -15,7 +15,7 @@ namespace NuGet.Packaging
         /// </summary>
         public bool UseLegacyPackageInstallPath { get; set; }
 
-        public PackageSaveMode PackageSaveMode { get; set; } = PackageSaveMode.Nupkg;
+        public PackageSaveMode PackageSaveMode { get; set; } = PackageSaveMode.Nupkg | PackageSaveMode.Files;
 
         public XmlDocFileSaveMode XmlDocFileSaveMode { get; set; } = PackageExtractionBehavior.XmlDocFileSaveMode;
     }

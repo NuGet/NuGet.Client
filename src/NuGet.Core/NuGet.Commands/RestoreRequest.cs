@@ -114,6 +114,11 @@ namespace NuGet.Commands
         public ISet<string> RequestedRuntimes { get; } = new SortedSet<string>(StringComparer.Ordinal);
 
         /// <summary>
+        /// Gets or sets the <see cref="Packaging.PackageSaveMode"/>.
+        /// </summary>
+        public PackageSaveMode PackageSaveMode { get; set; } = PackageSaveMode.Default;
+
+        /// <summary>
         /// These Runtime Ids will be used if <see cref="RequestedRuntimes"/> and the project runtimes
         /// are both empty.
         /// </summary>

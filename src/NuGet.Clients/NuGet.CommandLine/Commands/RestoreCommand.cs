@@ -12,6 +12,7 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
+using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
@@ -50,6 +51,8 @@ namespace NuGet.CommandLine
 
         public override async Task ExecuteCommandAsync()
         {
+            CalculateEffectivePackageSaveMode();
+
             var success = true;
 
             _msbuildDirectory = MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console);
@@ -238,12 +241,17 @@ namespace NuGet.CommandLine
                 Console.LogVerbose($"Using packages directory: {packagesDir}");
 
                 // Create a restore request
-                var request = new RestoreRequest(
+                using (var request = new RestoreRequest(
                     packageSpec,
                     repositories,
-                    packagesDirectory: null);
-
+                    packagesDirectory: null))
+                {
                 request.PackagesDirectory = packagesDir;
+                    var packageSaveMode = EffectivePackageSaveMode;
+                    if (packageSaveMode != Packaging.PackageSaveMode.None)
+                    {
+                        request.PackageSaveMode = EffectivePackageSaveMode;
+                    }
 
                 if (DisableParallelProcessing)
                 {
@@ -293,6 +301,7 @@ namespace NuGet.CommandLine
                 result.Commit(Console);
 
                 success = result.Success;
+            }
             }
 
             return success;
@@ -414,9 +423,19 @@ namespace NuGet.CommandLine
                         : PackageManagementConstants.DefaultMaxDegreeOfParallelism);
 
             CheckRequireConsent();
+            var projectContext = new ConsoleProjectContext(Console)
+            {
+                PackageExtractionContext = new PackageExtractionContext()
+            };
+
+            if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
+            {
+                projectContext.PackageExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
+            }
+
             var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
                 packageRestoreContext,
-                new ConsoleProjectContext(Console));
+                projectContext);
 
             foreach (var item in bag)
             {

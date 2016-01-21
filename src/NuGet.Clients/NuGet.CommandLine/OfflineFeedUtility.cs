@@ -177,12 +177,16 @@ namespace NuGet.CommandLine
                     else
                     {
                         packageStream.Seek(0, SeekOrigin.Begin);
+                        var packageSaveMode = offlineFeedAddContext.Expand
+                            ? PackageSaveMode.Default
+                            : PackageSaveMode.Nuspec | PackageSaveMode.Nupkg;
+
                         var versionFolderPathContext = new VersionFolderPathContext(
                             packageIdentity,
                             source,
                             logger,
                             fixNuspecIdCasing: false,
-                            extractNuspecOnly: !offlineFeedAddContext.Expand,
+                            packageSaveMode: packageSaveMode,
                             normalizeFileNames: true,
                             xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
 

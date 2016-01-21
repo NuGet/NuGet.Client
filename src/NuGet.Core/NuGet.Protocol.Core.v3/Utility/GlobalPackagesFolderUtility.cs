@@ -102,7 +102,7 @@ namespace NuGet.Protocol.Core.v3
                 globalPackagesFolder,
                 logger,
                 fixNuspecIdCasing: false,
-                extractNuspecOnly: false,
+                packageSaveMode: PackageSaveMode.Nupkg | PackageSaveMode.Nuspec,
                 normalizeFileNames: false,
                 xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
 
