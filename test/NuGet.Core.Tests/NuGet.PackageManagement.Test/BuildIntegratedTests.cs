@@ -77,11 +77,11 @@ namespace NuGet.Test
                     }
 
                     // Link projects
-                    var reference0 = new TestBuildIntegratedProjectReference(buildIntegratedProjects[0], buildIntegratedProjects[1]);
-                    var reference1 = new TestBuildIntegratedProjectReference(buildIntegratedProjects[1], buildIntegratedProjects[2]);
-                    var reference2 = new TestBuildIntegratedProjectReference(buildIntegratedProjects[2], buildIntegratedProjects[3]);
-                    var reference3 = new TestBuildIntegratedProjectReference(buildIntegratedProjects[3]);
-                    var normalReference = new TestBuildIntegratedProjectReference("myproj");
+                    var reference0 = new TestExternalProjectReference(buildIntegratedProjects[0], buildIntegratedProjects[1]);
+                    var reference1 = new TestExternalProjectReference(buildIntegratedProjects[1], buildIntegratedProjects[2]);
+                    var reference2 = new TestExternalProjectReference(buildIntegratedProjects[2], buildIntegratedProjects[3]);
+                    var reference3 = new TestExternalProjectReference(buildIntegratedProjects[3]);
+                    var normalReference = new TestExternalProjectReference("myproj");
 
                     buildIntegratedProjects[0].ProjectReferences.Add(reference0);
                     buildIntegratedProjects[0].ProjectReferences.Add(reference1);
@@ -198,11 +198,11 @@ namespace NuGet.Test
                     }
 
                     // Link projects
-                    var reference0 = new TestBuildIntegratedProjectReference(buildIntegratedProjects[0], buildIntegratedProjects[1]);
-                    var reference1 = new TestBuildIntegratedProjectReference(buildIntegratedProjects[1], buildIntegratedProjects[2]);
-                    var reference2 = new TestBuildIntegratedProjectReference(buildIntegratedProjects[2], buildIntegratedProjects[3]);
-                    var reference3 = new TestBuildIntegratedProjectReference(buildIntegratedProjects[3]);
-                    var normalReference = new TestBuildIntegratedProjectReference("myproj");
+                    var reference0 = new TestExternalProjectReference(buildIntegratedProjects[0], buildIntegratedProjects[1]);
+                    var reference1 = new TestExternalProjectReference(buildIntegratedProjects[1], buildIntegratedProjects[2]);
+                    var reference2 = new TestExternalProjectReference(buildIntegratedProjects[2], buildIntegratedProjects[3]);
+                    var reference3 = new TestExternalProjectReference(buildIntegratedProjects[3]);
+                    var normalReference = new TestExternalProjectReference("myproj");
 
                     buildIntegratedProjects[0].ProjectReferences.Add(reference0);
                     buildIntegratedProjects[0].ProjectReferences.Add(reference1);
@@ -1408,8 +1408,8 @@ namespace NuGet.Test
         {
             public HashSet<PackageIdentity> ExecuteInitScriptAsyncCalls { get; }
                 = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
-            public List<TestBuildIntegratedProjectReference> ProjectReferences { get; }
-                = new List<TestBuildIntegratedProjectReference>();
+            public List<TestExternalProjectReference> ProjectReferences { get; }
+                = new List<TestExternalProjectReference>();
 
             public TestBuildIntegratedNuGetProject(string jsonConfig, IMSBuildNuGetProjectSystem msbuildProjectSystem)
                 : base(jsonConfig, msbuildProjectSystem)
@@ -1428,20 +1428,20 @@ namespace NuGet.Test
                 return base.ExecuteInitScriptAsync(identity, packageInstallPath, projectContext, throwOnFailure);
             }
 
-            public override Task<IReadOnlyList<BuildIntegratedProjectReference>> GetProjectReferenceClosureAsync(
-                BuildIntegratedProjectReferenceContext context)
+            public override Task<IReadOnlyList<ExternalProjectReference>> GetProjectReferenceClosureAsync(
+                ExternalProjectReferenceContext context)
             {
-                return Task.FromResult<IReadOnlyList<BuildIntegratedProjectReference>>(
-                    ProjectReferences.Select(proj => proj.BuildIntegratedProjectReference).ToList());
+                return Task.FromResult<IReadOnlyList<ExternalProjectReference>>(
+                    ProjectReferences.Select(proj => proj.ExternalProjectReference).ToList());
             }
         }
 
-        private BuildIntegratedProjectReference CreateReference(string name)
+        private ExternalProjectReference CreateReference(string name)
         {
-            return new BuildIntegratedProjectReference(name, null, null, Enumerable.Empty<string>());
+            return new ExternalProjectReference(name, null, null, Enumerable.Empty<string>());
         }
 
-        private class TestBuildIntegratedProjectReference
+        private class TestExternalProjectReference
         {
             public BuildIntegratedNuGetProject Project { get; set; }
 
@@ -1449,12 +1449,12 @@ namespace NuGet.Test
 
             public string ProjectName { get; set; }
 
-            public TestBuildIntegratedProjectReference(string name)
+            public TestExternalProjectReference(string name)
             {
                 ProjectName = name;
             }
 
-            public TestBuildIntegratedProjectReference(
+            public TestExternalProjectReference(
                 BuildIntegratedNuGetProject project, 
                 params BuildIntegratedNuGetProject[] children)
             {
@@ -1462,13 +1462,13 @@ namespace NuGet.Test
                 Children = children;
             }
 
-            public BuildIntegratedProjectReference BuildIntegratedProjectReference
+            public ExternalProjectReference ExternalProjectReference
             {
                 get
                 {
                     if (ProjectName != null)
                     {
-                        return new BuildIntegratedProjectReference(
+                        return new ExternalProjectReference(
                             ProjectName, 
                             null,
                             null, 
@@ -1478,7 +1478,7 @@ namespace NuGet.Test
                     {
                         var childConfigs = Children.Select(child => child.ProjectName).ToList();
 
-                        return new BuildIntegratedProjectReference(
+                        return new ExternalProjectReference(
                             Project.ProjectName,
                             Project.PackageSpec,
                             Project.MSBuildNuGetProjectSystem.ProjectFullPath,

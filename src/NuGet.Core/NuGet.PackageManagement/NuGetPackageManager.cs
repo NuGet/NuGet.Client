@@ -1678,7 +1678,7 @@ namespace NuGet.PackageManagement
             }
 
             var logger = new ProjectContextLogger(nuGetProjectContext);
-            var buildIntegratedContext = new BuildIntegratedProjectReferenceContext(logger);
+            var buildIntegratedContext = new ExternalProjectReferenceContext(logger);
 
             var effectiveGlobalPackagesFolder = BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
                                                     SolutionManager?.SolutionDirectory,
@@ -1862,7 +1862,7 @@ namespace NuGet.PackageManagement
                 }
 
                 // Restore parent projects. These will be updated to include the transitive changes.
-                var referenceContext = new BuildIntegratedProjectReferenceContext(logger);
+                var referenceContext = new ExternalProjectReferenceContext(logger);
                 var parents = await BuildIntegratedRestoreUtility.GetParentProjectsInClosure(
                     SolutionManager,
                     buildIntegratedProject,
