@@ -11,6 +11,7 @@ using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
+using NuGet.Packaging.Core;
 
 namespace NuGet.CommandLine
 {
@@ -260,8 +261,9 @@ namespace NuGet.CommandLine
                 var installed = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
 
                 var targetIdentities = installed
-                    .Select(pr => pr.PackageIdentity)
-                    .Where(pi => targetIds.Contains(pi.Id))
+                    .Select(pr => pr.PackageIdentity.Id)
+                    .Where(id => targetIds.Contains(id))
+                    .Select(id => new PackageIdentity(id, null))
                     .ToList();
 
                 if (targetIdentities.Any())

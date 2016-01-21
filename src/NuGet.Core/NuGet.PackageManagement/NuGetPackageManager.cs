@@ -589,7 +589,7 @@ namespace NuGet.PackageManagement
             // We have been given the exact PackageIdentities (id and version) to update to e.g. from PMC update-package -Id <id> -Version <version>
             if (packageIdentities.Count > 0)
             {
-                primaryTargets = packageIdentities;
+                primaryTargets = new List<PackageIdentity>();
                 primaryTargetIds = packageIdentities.Select(p => p.Id);
 
                 // If we have been given explicit PackageIdentities to install then we will naturally prefer that
@@ -602,6 +602,7 @@ namespace NuGet.PackageManagement
                         if (packageIdentity.HasVersion)
                         {
                             preferredVersions[packageIdentity.Id] = packageIdentity;
+                            ((List<PackageIdentity>)primaryTargets).Add(packageIdentity);
                         }
                         // Otherwise we just have the Id and so we wil explicitly not prefer the one currently installed
                         else
