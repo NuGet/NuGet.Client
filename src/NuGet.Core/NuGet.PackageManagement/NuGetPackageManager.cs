@@ -595,7 +595,20 @@ namespace NuGet.PackageManagement
                 // If we have been given explicit PackageIdentities to install then we will naturally prefer that
                 foreach (var packageIdentity in packageIdentities)
                 {
-                    preferredVersions[packageIdentity.Id] = packageIdentity;
+                    // Just a check to make sure the preferredVersions created from the existing package list actually contains the target
+                    if (preferredVersions.ContainsKey(packageIdentity.Id))
+                    {
+                        // If there was a version specified we will prefer that version
+                        if (packageIdentity.HasVersion)
+                        {
+                            preferredVersions[packageIdentity.Id] = packageIdentity;
+                        }
+                        // Otherwise we just have the Id and so we wil explicitly not prefer the one currently installed
+                        else
+                        {
+                            preferredVersions.Remove(packageIdentity.Id);
+                        }
+                    }
                 }
             }
             // We have just been given the package id, in which case we will look for the highest version and attempt to move to that
@@ -702,7 +715,7 @@ namespace NuGet.PackageManagement
                     prunedAvailablePackages = PrunePackageTree.PrunePrereleaseExceptAllowed(
                         prunedAvailablePackages,
                         oldListOfInstalledPackages,
-                        isUpdateAll: (packageId == null && packageIdentities.Count == 0));
+                        isUpdateAll);
                 }
 
                 // Remove packages that do not meet the constraints specified in the UpdateConstrainst

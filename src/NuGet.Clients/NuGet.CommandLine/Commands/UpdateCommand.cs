@@ -255,23 +255,27 @@ namespace NuGet.CommandLine
             var sourceRepositories = packageSources.Select(sourceRepositoryProvider.CreateRepository);
             if (Id.Count > 0)
             {
-                foreach (var packageId in Id)
+                var targetIds = new HashSet<string>(Id, StringComparer.OrdinalIgnoreCase);
+
+                var installed = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
+
+                var targetIdentities = installed
+                    .Select(pr => pr.PackageIdentity)
+                    .Where(pi => targetIds.Contains(pi.Id))
+                    .ToList();
+
+                if (targetIdentities.Any())
                 {
-                    var installed = await nugetProject.GetInstalledPackagesAsync(CancellationToken.None);
+                    var actions = await packageManager.PreviewUpdatePackagesAsync(
+                        targetIdentities,
+                        nugetProject,
+                        resolutionContext,
+                        project.NuGetProjectContext,
+                        sourceRepositories,
+                        Enumerable.Empty<SourceRepository>(),
+                        CancellationToken.None);
 
-                    if (installed.Where(pr => pr.PackageIdentity.Id.Equals(packageId, StringComparison.OrdinalIgnoreCase)).Any())
-                    {
-                        var actions = await packageManager.PreviewUpdatePackagesAsync(
-                           packageId,
-                           nugetProject,
-                           resolutionContext,
-                           project.NuGetProjectContext,
-                           sourceRepositories,
-                           Enumerable.Empty<SourceRepository>(),
-                           CancellationToken.None);
-
-                        projectActions.AddRange(actions);
-                    }
+                    projectActions.AddRange(actions);
                 }
             }
             else
