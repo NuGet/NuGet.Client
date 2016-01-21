@@ -110,12 +110,12 @@ namespace NuGet.ProjectManagement.Projects
         /// Retrieve the full closure of project to project references.
         /// Warnings and errors encountered will be logged.
         /// </summary>
-        public virtual Task<IReadOnlyList<BuildIntegratedProjectReference>> GetProjectReferenceClosureAsync(
-            BuildIntegratedProjectReferenceContext context)
+        public virtual Task<IReadOnlyList<ExternalProjectReference>> GetProjectReferenceClosureAsync(
+            ExternalProjectReferenceContext context)
         {
             // This cannot be resolved with DTE currently, it is overridden at a higher level
-            return Task.FromResult<IReadOnlyList<BuildIntegratedProjectReference>>(
-                Enumerable.Empty<BuildIntegratedProjectReference>().ToList());
+            return Task.FromResult<IReadOnlyList<ExternalProjectReference>>(
+                Enumerable.Empty<ExternalProjectReference>().ToList());
         }
 
         /// <summary>

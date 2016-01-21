@@ -64,8 +64,8 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Returns the closure of all project to project references below this project.
         /// </summary>
         /// <remarks>This uses DTE and should be called from the UI thread.</remarks>
-        public override async Task<IReadOnlyList<BuildIntegratedProjectReference>> GetProjectReferenceClosureAsync(
-            BuildIntegratedProjectReferenceContext context)
+        public override async Task<IReadOnlyList<ExternalProjectReference>> GetProjectReferenceClosureAsync(
+            ExternalProjectReferenceContext context)
         {
             var logger = context.Logger;
             var cache = context.Cache;
@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // DTE calls need to be done from the main thread
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var results = new List<BuildIntegratedProjectReference>();
+            var results = new List<ExternalProjectReference>();
 
             // projects to walk
             var toProcess = new Queue<EnvDTEProject>();
@@ -97,7 +97,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 // Find the path of the current project
                 var projectFileFullPath = EnvDTEProjectUtility.GetFullProjectPath(project);
 
-                IReadOnlyList<BuildIntegratedProjectReference> cacheReferences;
+                IReadOnlyList<ExternalProjectReference> cacheReferences;
                 if (cache.TryGetValue(projectFileFullPath, out cacheReferences))
                 {
                     // The cached value contains the entire closure, add it to the results and skip
@@ -178,7 +178,7 @@ namespace NuGet.PackageManagement.VisualStudio
                                             possibleProjectJson);
 
                                         // add the sdk to the results here
-                                        results.Add(new BuildIntegratedProjectReference(
+                                        results.Add(new ExternalProjectReference(
                                             possibleProjectJson,
                                             projectSpec,
                                             msbuildProjectPath: null,
@@ -251,7 +251,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         }
                     }
 
-                    results.Add(new BuildIntegratedProjectReference(
+                    results.Add(new ExternalProjectReference(
                         projectFileFullPath,
                         packageSpec,
                         projectFileFullPath,
@@ -263,7 +263,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (!cache.ContainsKey(rootProjectPath))
             {
                 // Create a new copy of the list so that callers cannot modify it
-                cache.Add(rootProjectPath, new List<BuildIntegratedProjectReference>(results));
+                cache.Add(rootProjectPath, new List<ExternalProjectReference>(results));
             }
 
             return results;

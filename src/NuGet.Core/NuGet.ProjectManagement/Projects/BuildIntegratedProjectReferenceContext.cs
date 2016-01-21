@@ -5,12 +5,12 @@ using NuGet.ProjectModel;
 
 namespace NuGet.ProjectManagement
 {
-    public class BuildIntegratedProjectReferenceContext
+    public class ExternalProjectReferenceContext
     {
         /// <summary>
         /// Create a new build integrated project reference context and cache.
         /// </summary>
-        public BuildIntegratedProjectReferenceContext()
+        public ExternalProjectReferenceContext()
             : this(NullLogger.Instance)
         {
         }
@@ -18,7 +18,7 @@ namespace NuGet.ProjectManagement
         /// <summary>
         /// Create a new build integrated project reference context and caches.
         /// </summary>
-        public BuildIntegratedProjectReferenceContext(ILogger logger)
+        public ExternalProjectReferenceContext(ILogger logger)
         {
             if (logger == null)
             {
@@ -27,7 +27,7 @@ namespace NuGet.ProjectManagement
 
             Logger = logger;
 
-            Cache = new Dictionary<string, IReadOnlyList<BuildIntegratedProjectReference>>(
+            Cache = new Dictionary<string, IReadOnlyList<ExternalProjectReference>>(
                 StringComparer.OrdinalIgnoreCase);
 
             SpecCache = new Dictionary<string, PackageSpec>(
@@ -37,9 +37,9 @@ namespace NuGet.ProjectManagement
         /// <summary>
         /// Create a new build integrated project reference context with the given caches.
         /// </summary>
-        public BuildIntegratedProjectReferenceContext(
+        public ExternalProjectReferenceContext(
             ILogger logger,
-            IDictionary<string, IReadOnlyList<BuildIntegratedProjectReference>> cache,
+            IDictionary<string, IReadOnlyList<ExternalProjectReference>> cache,
             IDictionary<string, PackageSpec> specCache)
         {
             if (logger == null)
@@ -66,7 +66,7 @@ namespace NuGet.ProjectManagement
         /// Cached references
         /// </summary>
         /// <remarks>Projects should add themselves here after finding their references.</remarks>
-        public IDictionary<string, IReadOnlyList<BuildIntegratedProjectReference>> Cache { get; }
+        public IDictionary<string, IReadOnlyList<ExternalProjectReference>> Cache { get; }
 
         /// <summary>
         /// Cached project.json files

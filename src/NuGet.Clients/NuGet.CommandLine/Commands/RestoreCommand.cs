@@ -265,8 +265,8 @@ namespace NuGet.CommandLine
                 Console.LogVerbose($"Using packages directory: {request.PackagesDirectory}");
 
                 // Find all external references
-                var childReferences = projectReferences.GetReferences(inputPath);
-                request.ExternalProjects.AddRange(childReferences);
+                var externalProjectReferences = projectReferences.GetReferences(inputPath);
+                request.ExternalProjects.AddRange(externalProjectReferences);
 
                 // Determine which lock file version to use
                 request.LockFileVersion = LockFileFormat.Version;
@@ -275,9 +275,9 @@ namespace NuGet.CommandLine
                 // To work around that NuGet will downgrade the lock file if there are only csproj references.
                 // Projects with zero project references can go to v2, and projects with xproj references must be
                 // at least v2 to work.
-                if (childReferences.Count > 0
+                if (externalProjectReferences.Any(reference => reference.ExternalProjectReferences.Count > 0)
                     && inputFileName?.EndsWith(XProjUtility.XProjExtension) == false
-                    && !childReferences.Any(child => 
+                    && !externalProjectReferences.Any(child => 
                     child.MSBuildProjectPath?.EndsWith(XProjUtility.XProjExtension) == true))
                 {
                     // Fallback to v1 for non-xprojs with p2ps

@@ -20,7 +20,10 @@ namespace NuGet.ProjectModel
     public class PackageSpecReferenceDependencyProvider : IProjectDependencyProvider
     {
         private readonly IPackageSpecResolver _defaultResolver;
-        private readonly Dictionary<string, ExternalProjectReference> _externalProjects
+        private readonly Dictionary<string, ExternalProjectReference> _externalProjectsByPath
+            = new Dictionary<string, ExternalProjectReference>(StringComparer.OrdinalIgnoreCase);
+
+        private readonly Dictionary<string, ExternalProjectReference> _externalProjectsByName
             = new Dictionary<string, ExternalProjectReference>(StringComparer.OrdinalIgnoreCase);
 
         // RootPath -> Resolver
@@ -48,12 +51,21 @@ namespace NuGet.ProjectModel
             foreach (var project in externalProjects)
             {
                 Debug.Assert(
-                    !_externalProjects.ContainsKey(project.UniqueName),
+                    !_externalProjectsByPath.ContainsKey(project.UniqueName),
                     $"Duplicate project {project.UniqueName}");
 
-                if (!_externalProjects.ContainsKey(project.UniqueName))
+                if (!_externalProjectsByPath.ContainsKey(project.UniqueName))
                 {
-                    _externalProjects.Add(project.UniqueName, project);
+                    _externalProjectsByPath.Add(project.UniqueName, project);
+                }
+
+                Debug.Assert(
+                    !_externalProjectsByName.ContainsKey(project.ProjectName),
+                    $"Duplicate project {project.ProjectName}");
+
+                if (!_externalProjectsByName.ContainsKey(project.ProjectName))
+                {
+                    _externalProjectsByName.Add(project.ProjectName, project);
                 }
             }
         }
@@ -77,7 +89,7 @@ namespace NuGet.ProjectModel
             bool resolvedUsingDirectory = false;
 
             // Check the external references first
-            if (_externalProjects.TryGetValue(name, out externalReference))
+            if (_externalProjectsByName.TryGetValue(name, out externalReference))
             {
                 packageSpec = externalReference.PackageSpec;
             }
@@ -126,10 +138,13 @@ namespace NuGet.ProjectModel
 
             if (externalReference != null)
             {
+                var childReferences = GetChildReferences(externalReference);
+                var childReferenceNames = childReferences.Select(reference => reference.ProjectName).ToList();
+
                 // External references are created without pivoting on the TxM. Here we need to account for this
                 // and filter out references except the nearest TxM.
                 var filteredExternalDependencies = new HashSet<string>(
-                    externalReference.ExternalProjectReferences,
+                    childReferenceNames,
                     StringComparer.OrdinalIgnoreCase);
 
                 if (packageSpec != null)
@@ -168,7 +183,7 @@ namespace NuGet.ProjectModel
                 // These are usually msbuild references which have less metadata, they have
                 // the lowest priority.
                 // Note: Only add in dependencies that are in the filtered list to avoid getting the wrong TxM
-                dependencies.AddRange(externalReference.ExternalProjectReferences
+                dependencies.AddRange(childReferenceNames
                     .Where(dependencyName => filteredExternalDependencies.Contains(dependencyName))
                     .Select(reference => new LibraryDependency
                     {
@@ -248,7 +263,7 @@ namespace NuGet.ProjectModel
                 LibraryRange = libraryRange,
                 Identity = new LibraryIdentity
                 {
-                    Name = externalReference?.UniqueName ?? packageSpec.Name,
+                    Name = externalReference?.ProjectName ?? packageSpec.Name,
                     Version = packageSpec?.Version ?? NuGetVersion.Parse("1.0.0"),
                     Type = LibraryTypes.Project,
                 },
@@ -359,6 +374,29 @@ namespace NuGet.ProjectModel
             var type = dependency.LibraryRange.TypeConstraint;
 
             return SupportsType(type);
+        }
+
+        private List<ExternalProjectReference> GetChildReferences(ExternalProjectReference parent)
+        {
+            var children = new List<ExternalProjectReference>(parent.ExternalProjectReferences.Count);
+
+            foreach (var reference in parent.ExternalProjectReferences)
+            {
+                ExternalProjectReference childReference;
+                if (!_externalProjectsByPath.TryGetValue(reference, out childReference))
+                {
+                    // Create a reference to mark that this project is unresolved here
+                    childReference = new ExternalProjectReference(
+                        uniqueName: reference,
+                        packageSpec: null,
+                        msbuildProjectPath: null,
+                        projectReferences: Enumerable.Empty<string>());
+                }
+
+                children.Add(childReference);
+            }
+
+            return children;
         }
     }
 }
