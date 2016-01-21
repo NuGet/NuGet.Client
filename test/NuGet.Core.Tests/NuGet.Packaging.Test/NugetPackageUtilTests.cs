@@ -33,7 +33,8 @@ namespace Commands.Test
                     logger,
                     fixNuspecIdCasing: false,
                     extractNuspecOnly: false,
-                    normalizeFileNames: false);
+                    normalizeFileNames: false,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 // Act
                 using (var stream = package.File.OpenRead())
@@ -76,7 +77,8 @@ namespace Commands.Test
                     logger,
                     fixNuspecIdCasing: false,
                     extractNuspecOnly: false,
-                    normalizeFileNames: false);
+                    normalizeFileNames: false,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 // Act
                 using (var stream = package.File.OpenRead())
@@ -120,7 +122,8 @@ namespace Commands.Test
                     logger,
                     fixNuspecIdCasing: false,
                     extractNuspecOnly: false,
-                    normalizeFileNames: false);
+                    normalizeFileNames: false,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
 
@@ -172,7 +175,8 @@ namespace Commands.Test
                     logger,
                     fixNuspecIdCasing: false,
                     extractNuspecOnly: false,
-                    normalizeFileNames: false);
+                    normalizeFileNames: false,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
 
@@ -229,7 +233,8 @@ namespace Commands.Test
                     logger,
                     fixNuspecIdCasing: false,
                     extractNuspecOnly: false,
-                    normalizeFileNames: false);
+                    normalizeFileNames: false,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
                 Assert.False(Directory.Exists(packageDir), packageDir + " exist");
@@ -287,7 +292,8 @@ namespace Commands.Test
                     logger,
                     fixNuspecIdCasing: false,
                     extractNuspecOnly: false,
-                    normalizeFileNames: false);
+                    normalizeFileNames: false,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
                 Assert.False(Directory.Exists(packageDir), packageDir + " exist");
@@ -353,7 +359,8 @@ namespace Commands.Test
                     NullLogger.Instance,
                     fixNuspecIdCasing: false,
                     extractNuspecOnly: false,
-                    normalizeFileNames: false);
+                    normalizeFileNames: false,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 // Act
                 using (var packageFileStream = File.OpenRead(packageFileInfo))
@@ -393,7 +400,8 @@ namespace Commands.Test
                     NullLogger.Instance,
                     fixNuspecIdCasing: false,
                     extractNuspecOnly: true,
-                    normalizeFileNames: false);
+                    normalizeFileNames: false,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 // Act
                 using (var packageFileStream = File.OpenRead(packageFileInfo))
@@ -431,7 +439,8 @@ namespace Commands.Test
                     NullLogger.Instance,
                     fixNuspecIdCasing: false,
                     extractNuspecOnly: true,
-                    normalizeFileNames: true);
+                    normalizeFileNames: true,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 // Act
                 using (var packageFileStream = File.OpenRead(packageFile))
@@ -478,7 +487,8 @@ namespace Commands.Test
                     NullLogger.Instance,
                     fixNuspecIdCasing: false,
                     extractNuspecOnly: false,
-                    normalizeFileNames: true);
+                    normalizeFileNames: true,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 // Act
                 using (var packageFileStream = packageFileInfo.OpenRead())
@@ -533,7 +543,8 @@ namespace Commands.Test
                     NullLogger.Instance,
                     fixNuspecIdCasing: false,
                     extractNuspecOnly: false,
-                    normalizeFileNames: true);
+                    normalizeFileNames: true,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 // Act
                 using (var packageFileStream = packageFileInfo.OpenRead())
@@ -586,7 +597,8 @@ namespace Commands.Test
                     NullLogger.Instance,
                     fixNuspecIdCasing: false,
                     extractNuspecOnly: false,
-                    normalizeFileNames: true);
+                    normalizeFileNames: true,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 // Act
                 using (var packageFileStream = packageFileInfo.OpenRead())

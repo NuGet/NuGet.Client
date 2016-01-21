@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.Packaging;
+using NuGet.Packaging.PackageExtraction;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
@@ -117,6 +119,8 @@ namespace NuGet.Commands
         /// </summary>
         /// <remarks>RIDs are case sensitive.</remarks>
         public ISet<string> FallbackRuntimes { get; } = new SortedSet<string>(StringComparer.Ordinal);
+
+        public XmlDocFileSaveMode XmlDocFileSaveMode { get; set; } = PackageExtractionBehavior.XmlDocFileSaveMode;
 
         public void Dispose()
         {

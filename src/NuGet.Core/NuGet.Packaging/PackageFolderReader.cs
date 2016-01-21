@@ -155,7 +155,11 @@ namespace NuGet.Packaging
             return String.Join("/", parts);
         }
 
-        public override IEnumerable<string> CopyFiles(string destination, IEnumerable<string> packageFiles, CancellationToken token)
+        public override IEnumerable<string> CopyFiles(
+            string destination,
+            IEnumerable<string> packageFiles,
+            ExtractPackageFileDelegate extractFile,
+            CancellationToken token)
         {
             var filesCopied = new List<string>();
 
@@ -168,10 +172,15 @@ namespace NuGet.Packaging
                 var targetPath = Path.Combine(destination, packageFile);
                 Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
 
-                sourceFile.CopyTo(targetPath, overwrite: true);
-                File.SetLastWriteTimeUtc(targetPath, sourceFile.LastWriteTimeUtc);
-
-                filesCopied.Add(targetPath);
+                using (var fileStream = sourceFile.OpenRead())
+                {
+                    targetPath = extractFile(sourceFile.FullName, targetPath, fileStream);
+                    if (targetPath != null)
+                    {
+                        File.SetLastWriteTimeUtc(targetPath, sourceFile.LastWriteTimeUtc);
+                        filesCopied.Add(targetPath);
+                    }
+                }
             }
 
             return filesCopied;

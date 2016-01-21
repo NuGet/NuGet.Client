@@ -7,6 +7,7 @@ using NuGet.Configuration;
 using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol.Core.v3
@@ -102,7 +103,8 @@ namespace NuGet.Protocol.Core.v3
                 logger,
                 fixNuspecIdCasing: false,
                 extractNuspecOnly: false,
-                normalizeFileNames: false);
+                normalizeFileNames: false,
+                xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
 
             await PackageExtractor.InstallFromSourceAsync(
                 stream => packageStream.CopyToAsync(stream),
