@@ -708,9 +708,7 @@ namespace NuGet.Commands.Test
 
                 Assert.Equal(114, installed.Count);
                 Assert.Equal(0, unresolved.Count);
-
             }
-
         }
 
         [Fact]
