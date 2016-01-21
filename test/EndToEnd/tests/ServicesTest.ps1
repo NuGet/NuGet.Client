@@ -256,7 +256,33 @@ function Test-InstallPackageAPIEmptyVersion
     Assert-Package $p owin 1.0.0
 }
 
-function Test-InstallPackageAPIBadSource
+function Test-InstallPackageAPIAllSource
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallPackageApi("All", "owin", "1.0.0", $false) 
+
+    # Assert
+    Assert-Package $p owin 1.0.0
+}
+
+function Test-InstallPackageAPIInvalidSource
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act&Assert
+    Assert-Throws { [API.Test.InternalAPITestHook]::InstallPackageApi("invalid", "owin", "1.0.0", $false) } "Exception calling `"InstallPackageApi`" with `"4`" argument(s): `"The specified source 'invalid' is invalid. Please provide a valid source.`r`nParameter name: source`""
+    Assert-NoPackage $p "owin"
+}
+
+function Test-InstallPackageAPIUnreachableSource
 {
     param($context)
 
