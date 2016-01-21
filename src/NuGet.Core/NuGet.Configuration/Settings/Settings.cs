@@ -290,7 +290,7 @@ namespace NuGet.Configuration
             }
 
             var settingFiles = new List<Settings>();
-            var basePath = Path.Combine("NuGet","Config");
+            var basePath = NuGetEnvironment.GetFolderPath(NuGetFolderPath.MachineWideConfigDirectory);
             var combinedPath = Path.Combine(paths);
 
             while (true)

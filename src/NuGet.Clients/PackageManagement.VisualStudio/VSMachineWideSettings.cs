@@ -7,6 +7,7 @@ using System.ComponentModel.Composition;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -23,7 +24,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         internal VsMachineWideSettings(DTE dte)
         {
-            var baseDirectory = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+            var baseDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.MachineWideSettingsBaseDirectory);
             _settings = new AsyncLazy<IEnumerable<Configuration.Settings>>(async () =>
                 {
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
