@@ -38,6 +38,7 @@ namespace NuGet.DependencyResolver
             GraphEdge<RemoteResolveResult> outerEdge)
         {
             var dependencies = new List<LibraryDependency>();
+            var runtimeDependencies = new HashSet<string>();
 
             if (!string.IsNullOrEmpty(runtimeName) && runtimeGraph != null)
             {
@@ -68,6 +69,7 @@ namespace NuGet.DependencyResolver
                     {
                         // Otherwise it's a dependency of this node
                         dependencies.Add(libraryDependency);
+                        runtimeDependencies.Add(libraryDependency.Name);
                     }
                 }
             }
@@ -97,7 +99,7 @@ namespace NuGet.DependencyResolver
                 {
                     Data = new RemoteResolveResult()
                     {
-                        Dependencies = dependencies.Concat(node.Item.Data.Dependencies).ToList(),
+                        Dependencies = dependencies.Concat(node.Item.Data.Dependencies.Where(d => !runtimeDependencies.Contains(d.Name))).ToList(),
                         Match = node.Item.Data.Match
                     }
                 };
