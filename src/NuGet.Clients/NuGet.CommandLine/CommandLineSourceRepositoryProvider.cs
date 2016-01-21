@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine
@@ -15,7 +16,7 @@ namespace NuGet.CommandLine
         private readonly List<SourceRepository> _repositories = new List<SourceRepository>();
 
         // There should only be one instance of the source repository for each package source.
-        private static readonly ConcurrentDictionary<Configuration.PackageSource, SourceRepository> _sources
+        private static readonly ConcurrentDictionary<Configuration.PackageSource, SourceRepository> _cachedSources
             = new ConcurrentDictionary<Configuration.PackageSource, SourceRepository>();
 
         public CommandLineSourceRepositoryProvider(Configuration.IPackageSourceProvider packageSourceProvider)
@@ -27,19 +28,14 @@ namespace NuGet.CommandLine
             _resourceProviders.AddRange(Protocol.Core.v3.FactoryExtensionsV2.GetCoreV3(Repository.Provider));
 
             // Create repositories
-            foreach (var source in _packageSourceProvider.LoadPackageSources())
-            {
-                if (source.IsEnabled)
-                {
-                    // Create and cache the repo.
-                    var sourceRepo = CreateRepository(source);
-                    _repositories.Add(sourceRepo);
-                }
-            }
+            _repositories = _packageSourceProvider.LoadPackageSources()
+                .Where(s => s.IsEnabled)
+                .Select(CreateRepository)
+                .ToList();
         }
 
         /// <summary>
-        /// Retrieve repositories. This does not include cached repos.
+        /// Retrieve repositories that have been cached.
         /// </summary>
         public IEnumerable<SourceRepository> GetRepositories()
         {
@@ -51,7 +47,7 @@ namespace NuGet.CommandLine
         /// </summary>
         public SourceRepository CreateRepository(Configuration.PackageSource source)
         {
-            return _sources.GetOrAdd(source, new SourceRepository(source, _resourceProviders));
+            return _cachedSources.GetOrAdd(source, new SourceRepository(source, _resourceProviders));
         }
 
         public Configuration.IPackageSourceProvider PackageSourceProvider
