@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace NuGet.ProjectModel
@@ -60,5 +61,21 @@ namespace NuGet.ProjectModel
         /// Path to msbuild project file. Ex: xproj, csproj
         /// </summary>
         public string MSBuildProjectPath { get; }
+
+        /// <summary>
+        /// Project name from the package spec or msbuild file.
+        /// </summary>
+        public string ProjectName
+        {
+            get
+            {
+                // project.json name goes first
+                // use the msbuild file path for non-project.json projects
+                // fallback to the given unique name
+                return PackageSpec?.Name
+                        ?? Path.GetFileNameWithoutExtension(MSBuildProjectPath)
+                        ?? UniqueName;
+            }
+        }
     }
 }

@@ -324,7 +324,7 @@ namespace NuGetVSExtension
                 var enabledSources = SourceRepositoryProvider.GetRepositories();
 
                 // Cache p2ps discovered from DTE 
-                var referenceContext = new BuildIntegratedProjectReferenceContext(logger: this);
+                var referenceContext = new ExternalProjectReferenceContext(logger: this);
 
                 // No-op all project closures are up to date and all packages exist on disk.
                 if (await IsRestoreRequired(buildEnabledProjects, forceRestore, referenceContext))
@@ -407,7 +407,7 @@ namespace NuGetVSExtension
         private async Task<bool> IsRestoreRequired(
             List<BuildIntegratedProjectSystem> projects,
             bool forceRestore,
-            BuildIntegratedProjectReferenceContext referenceContext)
+            ExternalProjectReferenceContext referenceContext)
         {
             try
             {
@@ -465,7 +465,7 @@ namespace NuGetVSExtension
             BuildIntegratedNuGetProject project,
             string solutionDirectory,
             IEnumerable<SourceRepository> enabledSources,
-            BuildIntegratedProjectReferenceContext context,
+            ExternalProjectReferenceContext context,
             CancellationToken token)
         {
             // Go off the UI thread to perform I/O operations

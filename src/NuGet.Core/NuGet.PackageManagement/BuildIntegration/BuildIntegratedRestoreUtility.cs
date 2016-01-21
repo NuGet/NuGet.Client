@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static async Task<RestoreResult> RestoreAsync(
             BuildIntegratedNuGetProject project,
-            BuildIntegratedProjectReferenceContext context,
+            ExternalProjectReferenceContext context,
             IEnumerable<SourceRepository> sources,
             string effectiveGlobalPackagesFolder,
             CancellationToken token)
@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static async Task<RestoreResult> RestoreAsync(
             BuildIntegratedNuGetProject project,
-            BuildIntegratedProjectReferenceContext context,
+            ExternalProjectReferenceContext context,
             IEnumerable<SourceRepository> sources,
             string effectiveGlobalPackagesFolder,
             Action<SourceCacheContext> cacheContextModifier,
@@ -79,7 +79,7 @@ namespace NuGet.PackageManagement
         internal static async Task<RestoreResult> RestoreAsync(
             BuildIntegratedNuGetProject project,
             PackageSpec packageSpec,
-            BuildIntegratedProjectReferenceContext context,
+            ExternalProjectReferenceContext context,
             IEnumerable<SourceRepository> sources,
             string effectiveGlobalPackagesFolder,
             Action<SourceCacheContext> cacheContextModifier,
@@ -108,9 +108,7 @@ namespace NuGet.PackageManagement
 
                 // Find the full closure of project.json files and referenced projects
                 var projectReferences = await project.GetProjectReferenceClosureAsync(context);
-                request.ExternalProjects = projectReferences
-                    .Select(reference => BuildIntegratedProjectUtility.ConvertProjectReference(reference))
-                    .ToList();
+                request.ExternalProjects = projectReferences.ToList();
 
                 token.ThrowIfCancellationRequested();
 
@@ -172,7 +170,7 @@ namespace NuGet.PackageManagement
         public static async Task<Dictionary<string, BuildIntegratedProjectCacheEntry>>
             CreateBuildIntegratedProjectStateCache(
                 IReadOnlyList<BuildIntegratedNuGetProject> projects,
-                BuildIntegratedProjectReferenceContext context)
+                ExternalProjectReferenceContext context)
         {
             var cache = new Dictionary<string, BuildIntegratedProjectCacheEntry>();
 
@@ -272,7 +270,7 @@ namespace NuGet.PackageManagement
         public static async Task<bool> IsRestoreRequired(
             IReadOnlyList<BuildIntegratedNuGetProject> projects,
             VersionFolderPathResolver pathResolver,
-            BuildIntegratedProjectReferenceContext referenceContext)
+            ExternalProjectReferenceContext referenceContext)
         {
             var hashesChecked = new HashSet<string>();
 
@@ -358,7 +356,7 @@ namespace NuGet.PackageManagement
         public static async Task<IReadOnlyList<BuildIntegratedNuGetProject>> GetParentProjectsInClosure(
             ISolutionManager solutionManager,
             BuildIntegratedNuGetProject target,
-            BuildIntegratedProjectReferenceContext referenceContext)
+            ExternalProjectReferenceContext referenceContext)
         {
             var projects = solutionManager.GetNuGetProjects().OfType<BuildIntegratedNuGetProject>().ToList();
 
@@ -371,7 +369,7 @@ namespace NuGet.PackageManagement
         public static async Task<IReadOnlyList<BuildIntegratedNuGetProject>> GetParentProjectsInClosure(
             IReadOnlyList<BuildIntegratedNuGetProject> projects,
             BuildIntegratedNuGetProject target,
-            BuildIntegratedProjectReferenceContext referenceContext)
+            ExternalProjectReferenceContext referenceContext)
         {
             if (projects == null)
             {
@@ -433,7 +431,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         public static async Task<int> GetLockFileVersion(
             NuGetProject project,
-            BuildIntegratedProjectReferenceContext referenceContext)
+            ExternalProjectReferenceContext referenceContext)
         {
             var lockFileVersion = LockFileFormat.Version;
 
@@ -443,39 +441,31 @@ namespace NuGet.PackageManagement
             {
                 var references = await buildProject.GetProjectReferenceClosureAsync(referenceContext);
 
-                if (references.Count > 0 
-                    && !references.Any(reference =>
-                    reference.MSBuildProjectPath?.EndsWith(XProjUtility.XProjExtension) == true))
-                {
-                    // This is allowed to downgrade to v1
-                    // If using the older version of MSBuild and p2ps are added to the lock file
-                    // then this will break.
-                    lockFileVersion = 1;
-                }
-            }
-
-            // Override the lock file version using the env variable
-            if (_lockFileVersion == -1)
-            {
-                _lockFileVersion = 0;
-
-                int envValue;
-                if (Int32.TryParse(Environment.GetEnvironmentVariable("NUGET_LOCKFILE_VERSION"), out envValue))
-                {
-                    _lockFileVersion = envValue;
-                }
-            }
-
-            if (_lockFileVersion > 0)
-            {
-                lockFileVersion = _lockFileVersion;
+                lockFileVersion = GetLockFileVersion(references);
             }
 
             return lockFileVersion;
         }
 
-        // -1 unchecked
-        // 0 checked but not set
-        private static int _lockFileVersion = -1;
+        // MSBuild for VS2015U1 fails when projects are in the lock file since it treats them as packages.
+        // To work around that NuGet will downgrade the lock file if there are only csproj references.
+        // Projects with zero project references can go to v2, and projects with xproj references must be
+        // at least v2 to work.
+        // references should include the parent project
+        public static int GetLockFileVersion(IReadOnlyList<ExternalProjectReference> references)
+        {
+            var version = LockFileFormat.Version;
+
+            // if xproj is used the higher version must be used
+            if (references.Any(reference => reference.ExternalProjectReferences.Count > 0)
+                && !references.Any(reference =>
+                        reference.MSBuildProjectPath?.EndsWith(XProjUtility.XProjExtension) == true))
+            {
+                // Fallback to v1 for non-xprojs with p2ps
+                version = 1;
+            }
+
+            return version;
+        }
     }
 }
