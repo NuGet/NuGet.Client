@@ -17,6 +17,8 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Logging;
 using NuGet.ProjectModel;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -134,11 +136,11 @@ namespace NuGet.CommandLine.XPlat
                         foreach (var inputPath in inputValues)
                         {
                             var currentExitCode = await ExecuteRestore(
-                                sources, 
-                                packagesDirectory, 
-                                parallel, 
-                                fallBack, 
-                                runtime, 
+                                sources,
+                                packagesDirectory,
+                                parallel,
+                                fallBack,
+                                runtime,
                                 inputPath);
 
                             if (currentExitCode != 0)
@@ -166,11 +168,11 @@ namespace NuGet.CommandLine.XPlat
         }
 
         private static async Task<int> ExecuteRestore
-            (CommandOption sources, 
-            CommandOption packagesDirectory, 
-            CommandOption parallel, 
-            CommandOption fallBack, 
-            CommandOption runtime, 
+            (CommandOption sources,
+            CommandOption packagesDirectory,
+            CommandOption parallel,
+            CommandOption fallBack,
+            CommandOption runtime,
             string inputPath)
         {
             // Figure out the project directory
@@ -227,18 +229,12 @@ namespace NuGet.CommandLine.XPlat
                 Strings.Log_FoundProjectRoot,
                 rootDirectory));
 
-            var packageSources = sources.Values.Select(s => new PackageSource(s));
+            // Load settings based on the current project path.
             var settings = Settings.LoadDefaultSettings(projectPath,
                 configFileName: null,
                 machineWideSettings: null);
-            if (!packageSources.Any())
-            {
-                var packageSourceProvider = new PackageSourceProvider(settings);
-                packageSources = packageSourceProvider.LoadPackageSources();
-            }
 
-            packageSources = packageSources.Concat(
-                fallBack.Values.Select(s => new PackageSource(s)));
+            var packageSources = GetSources(sources, fallBack, settings);
 
             using (var request = new RestoreRequest(
                 project,
@@ -341,5 +337,41 @@ namespace NuGet.CommandLine.XPlat
                 }
             }
         }
+
+        /// <summary>
+        /// Returns a unique list of sources. New sources will be cached
+        /// and shared between restores.
+        /// </summary>
+        private static List<SourceRepository> GetSources(
+            CommandOption sources,
+            CommandOption fallBack,
+            ISettings settings)
+        {
+
+            // CommandLineSourceRepositoryProvider caches repositories to avoid duplicates
+            var packageSourceProvider = new PackageSourceProvider(settings);
+
+            // Take the passed in sources
+            var packageSources = sources.Values.Select(s => new PackageSource(s));
+
+            // If no sources were passed in use the NuGet.Config sources
+            if (!packageSources.Any())
+            {
+                // Add enabled sources
+                packageSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
+            }
+
+            packageSources = packageSources.Concat(
+                fallBack.Values.Select(s => new PackageSource(s)));
+
+            return packageSources.Select(source => _sourceProvider.CreateRepository(source))
+                .Distinct()
+                .ToList();
+        }
+
+        // Create a caching source provider with the default settings, the sources will be passed in
+        private static CachingSourceProvider _sourceProvider = new CachingSourceProvider(
+            new PackageSourceProvider(
+                Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null)));
     }
 }
