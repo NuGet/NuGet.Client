@@ -245,6 +245,7 @@ namespace NuGet.CommandLine.XPlat
                 packageSources,
                 packagesDirectory: null))
             {
+                request.CompatibilityCheckAsWarning = true;
 
                 if (packagesDirectory.HasValue())
                 {

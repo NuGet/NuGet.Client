@@ -118,6 +118,12 @@ namespace NuGet.Commands
         /// <remarks>RIDs are case sensitive.</remarks>
         public ISet<string> FallbackRuntimes { get; } = new SortedSet<string>(StringComparer.Ordinal);
 
+        /// <summary>
+        /// Set this to true to treat the runtime implementation compatibility check as optional and only
+        /// emit warnings when it fails.
+        /// </summary>
+        public bool CompatibilityCheckAsWarning { get; set; }
+
         public void Dispose()
         {
             CacheContext.Dispose();

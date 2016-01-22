@@ -16,12 +16,14 @@ namespace NuGet.Commands
         private readonly NuGetv3LocalRepository _localRepository;
         private readonly LockFile _lockFile;
         private readonly ILogger _log;
+        private readonly bool _asWarning;
 
-        public CompatibilityChecker(NuGetv3LocalRepository localRepository, LockFile lockFile, ILogger log)
+        public CompatibilityChecker(NuGetv3LocalRepository localRepository, LockFile lockFile, ILogger log, bool asWarning)
         {
             _localRepository = localRepository;
             _lockFile = lockFile;
             _log = log;
+            _asWarning = asWarning;
         }
 
         internal CompatibilityCheckResult Check(RestoreTargetGraph graph)
@@ -67,7 +69,15 @@ namespace NuGet.Commands
                         graph.Framework,
                         graph.RuntimeIdentifier);
                     issues.Add(issue);
-                    _log.LogError(issue.Format());
+
+                    if (_asWarning)
+                    {
+                        _log.LogWarning(issue.Format());
+                    }
+                    else
+                    {
+                        _log.LogError(issue.Format());
+                    }
                 }
 
                 // Check for matching ref/libs if we're checking a runtime-specific graph
@@ -122,7 +132,15 @@ namespace NuGet.Commands
                         graph.Framework,
                         graph.RuntimeIdentifier);
                     issues.Add(issue);
-                    _log.LogError(issue.Format());
+
+                    if (_asWarning)
+                    {
+                        _log.LogWarning(issue.Format());
+                    }
+                    else
+                    {
+                        _log.LogError(issue.Format());
+                    }
                 }
             }
 
