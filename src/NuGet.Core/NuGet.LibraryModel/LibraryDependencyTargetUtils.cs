@@ -7,70 +7,64 @@ using System.Collections.Generic;
 namespace NuGet.LibraryModel
 {
     /// <summary>
-    /// Helper methods for dealing with Target flag strings.
+    /// Helper methods for dealing with LibraryDependencyTarget strings.
     /// </summary>
-    public class LibraryTargetFlagUtils
+    public class LibraryDependencyTargetUtils
     {
-        /// <summary>
-        /// Package, Project, or ExternalProject
-        /// </summary>
-        public static readonly LibraryTypeFlag PackageProjectExternal =
-            (LibraryTypeFlag.Package | LibraryTypeFlag.Project | LibraryTypeFlag.ExternalProject);
-
         /// <summary>
         /// Convert flag string into a LibraryTypeFlag.
         /// </summary>
-        public static LibraryTypeFlag GetFlag(string flag)
+        public static LibraryDependencyTarget Parse(string flag)
         {
             // If the LibraryDependency does not have a flag value it is considered all
             if (string.IsNullOrEmpty(flag))
             {
-                return LibraryTypeFlag.All;
+                return LibraryDependencyTarget.All;
             }
 
             switch (flag.ToLowerInvariant())
             {
                 case "package":
-                    return LibraryTypeFlag.Package;
+                    return LibraryDependencyTarget.Package;
                 case "project":
-                    return LibraryTypeFlag.Project;
+                    return LibraryDependencyTarget.Project;
                 case "externalproject":
-                    return LibraryTypeFlag.ExternalProject;
+                    return LibraryDependencyTarget.ExternalProject;
                 case "reference":
-                    return LibraryTypeFlag.Reference;
+                    return LibraryDependencyTarget.Reference;
                 case "assembly":
-                    return LibraryTypeFlag.Assembly;
+                    return LibraryDependencyTarget.Assembly;
                 case "winmd":
-                    return LibraryTypeFlag.WinMD;
+                    return LibraryDependencyTarget.WinMD;
                 case "all":
-                    return LibraryTypeFlag.All;
+                    return LibraryDependencyTarget.All;
 
                     // None is a noop here
             }
 
-            return LibraryTypeFlag.None;
+            return LibraryDependencyTarget.None;
         }
 
         /// <summary>
         /// Convert type flags to a friendly string.
         /// </summary>
-        public static string GetFlagString(LibraryTypeFlag flags)
+        public static string GetFlagString(LibraryDependencyTarget flags)
         {
-            if (flags == LibraryTypeFlag.None)
+            if (flags == LibraryDependencyTarget.None)
             {
                 return "none";
             }
 
-            if (flags == LibraryTypeFlag.All)
+            if (flags == LibraryDependencyTarget.All)
             {
                 return "all";
             }
 
             var flagStrings = new List<string>();
 
-            foreach (LibraryTypeFlag value in Enum.GetValues(typeof(LibraryTypeFlag)))
+            foreach (LibraryDependencyTarget value in Enum.GetValues(typeof(LibraryDependencyTarget)))
             {
-                if (value != LibraryTypeFlag.None && flags.HasFlag(value))
+                if (value != LibraryDependencyTarget.None && flags.HasFlag(value))
                 {
                     flagStrings.Add(value.ToString().ToLowerInvariant());
                 }

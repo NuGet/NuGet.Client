@@ -64,7 +64,7 @@ namespace NuGet.LibraryModel
             return new LibraryRange
             {
                 Name = library.Name,
-                TypeConstraint = LibraryTargetFlagUtils.GetFlag(library.Type),
+                TypeConstraint = LibraryDependencyTargetUtils.Parse(library.Type),
                 VersionRange = library.Version == null ? null
                         : new VersionRange(
                             library.Version,

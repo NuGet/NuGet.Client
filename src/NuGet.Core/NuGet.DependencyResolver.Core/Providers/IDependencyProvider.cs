@@ -8,7 +8,7 @@ namespace NuGet.DependencyResolver
 {
     public interface IDependencyProvider
     {
-        bool SupportsType(LibraryTypeFlag libraryTypeFlag);
+        bool SupportsType(LibraryDependencyTarget libraryTypeFlag);
 
         Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework);
     }

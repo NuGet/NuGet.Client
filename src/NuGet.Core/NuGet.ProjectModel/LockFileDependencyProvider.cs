@@ -38,9 +38,9 @@ namespace NuGet.ProjectModel
             }
         }
 
-        public bool SupportsType(LibraryTypeFlag libraryType)
+        public bool SupportsType(LibraryDependencyTarget libraryType)
         {
-            return (libraryType & LibraryTypeFlag.Package) == LibraryTypeFlag.Package;
+            return (libraryType & LibraryDependencyTarget.Package) == LibraryDependencyTarget.Package;
         }
 
         public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
@@ -90,7 +90,7 @@ namespace NuGet.ProjectModel
                     LibraryRange = new LibraryRange
                     {
                         Name = name,
-                        TypeConstraint = LibraryTypeFlag.Reference
+                        TypeConstraint = LibraryDependencyTarget.Reference
                     }
                 });
             }

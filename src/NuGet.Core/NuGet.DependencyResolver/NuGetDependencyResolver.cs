@@ -26,9 +26,9 @@ namespace NuGet.DependencyResolver
             _repository = new NuGetv3LocalRepository(packagesPath, checkPackageIdCase: false);
         }
 
-        public bool SupportsType(LibraryTypeFlag libraryType)
+        public bool SupportsType(LibraryDependencyTarget libraryType)
         {
-            return (libraryType & LibraryTypeFlag.Package) == LibraryTypeFlag.Package;
+            return (libraryType & LibraryDependencyTarget.Package) == LibraryDependencyTarget.Package;
         }
 
         public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
@@ -114,7 +114,7 @@ namespace NuGet.DependencyResolver
                     LibraryRange = new LibraryRange
                     {
                         Name = name,
-                        TypeConstraint = LibraryTypeFlag.Reference
+                        TypeConstraint = LibraryDependencyTarget.Reference
                     }
                 });
             }

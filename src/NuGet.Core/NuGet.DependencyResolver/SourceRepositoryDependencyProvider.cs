@@ -127,7 +127,7 @@ namespace NuGet.DependencyResolver
                     LibraryRange = new LibraryRange
                     {
                         Name = name,
-                        TypeConstraint = LibraryTypeFlag.Reference
+                        TypeConstraint = LibraryDependencyTarget.Reference
                     }
                 });
             }

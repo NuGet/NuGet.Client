@@ -200,8 +200,8 @@ namespace NuGet.ProjectModel
                     // Framework references should be limited to references.
                     // Dependencies should allow everything but framework references.
                     var targetFlagsValue = isGacOrFrameworkReference
-                                                    ? LibraryTypeFlag.Reference
-                                                    : ~LibraryTypeFlag.Reference;
+                                                    ? LibraryDependencyTarget.Reference
+                                                    : ~LibraryDependencyTarget.Reference;
 
                     string dependencyVersionValue = null;
                     var dependencyVersionToken = dependencyValue;
@@ -249,7 +249,7 @@ namespace NuGet.ProjectModel
                         {
                             var targetString = targetToken.Value<string>();
 
-                            targetFlagsValue = LibraryTargetFlagUtils.GetFlag(targetString);
+                            targetFlagsValue = LibraryDependencyTargetUtils.Parse(targetString);
 
                             // Verify that the value specified is package, project, or external project
                             if (!ValidateDependencyTarget(targetFlagsValue))
@@ -324,15 +324,15 @@ namespace NuGet.ProjectModel
             return true;
         }
 
-        private static bool ValidateDependencyTarget(LibraryTypeFlag targetValue)
+        private static bool ValidateDependencyTarget(LibraryDependencyTarget targetValue)
         {
             var isValid = false;
 
             switch (targetValue)
             {
-                case LibraryTypeFlag.Package:
-                case LibraryTypeFlag.Project:
-                case LibraryTypeFlag.ExternalProject:
+                case LibraryDependencyTarget.Package:
+                case LibraryDependencyTarget.Project:
+                case LibraryDependencyTarget.ExternalProject:
                     isValid = true;
                     break;
             }

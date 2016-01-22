@@ -13,7 +13,7 @@ namespace NuGet.LibraryModel
 
         public VersionRange VersionRange { get; set; }
 
-        public LibraryTypeFlag TypeConstraint { get; set; } = LibraryTypeFlag.All;
+        public LibraryDependencyTarget TypeConstraint { get; set; } = LibraryDependencyTarget.All;
 
         public override string ToString()
         {
@@ -28,14 +28,14 @@ namespace NuGet.LibraryModel
 
             switch (TypeConstraint)
             {
-                case LibraryTypeFlag.Reference:
+                case LibraryDependencyTarget.Reference:
                     contraintString = LibraryTypes.Reference;
                     break;
-                case LibraryTypeFlag.ExternalProject:
+                case LibraryDependencyTarget.ExternalProject:
                     contraintString = LibraryTypes.ExternalProject;
                     break;
-                case LibraryTypeFlag.Project:
-                case LibraryTypeFlag.Project | LibraryTypeFlag.ExternalProject:
+                case LibraryDependencyTarget.Project:
+                case LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject:
                     contraintString = LibraryTypes.Project;
                     break;
             }
@@ -85,9 +85,17 @@ namespace NuGet.LibraryModel
         /// <summary>
         /// True if the type constraint allows the flag.
         /// </summary>
-        public bool TypeConstraintAllows(LibraryTypeFlag flag)
+        public bool TypeConstraintAllows(LibraryDependencyTarget flag)
         {
             return (TypeConstraint & flag) == flag;
+        }
+
+        /// <summary>
+        /// True if any flags are allowed by the constraint.
+        /// </summary>
+        public bool TypeConstraintAllowsAnyOf(LibraryDependencyTarget flag)
+        {
+            return (TypeConstraint & flag) != LibraryDependencyTarget.None;
         }
 
         public bool Equals(LibraryRange other)
