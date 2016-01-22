@@ -73,7 +73,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // DTE calls need to be done from the main thread
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var results = new List<ExternalProjectReference>();
+            var results = new HashSet<ExternalProjectReference>();
 
             // projects to walk
             var toProcess = new Queue<EnvDTEProject>();
@@ -102,7 +102,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     // The cached value contains the entire closure, add it to the results and skip
                     // all child references.
-                    results.AddRange(cacheReferences);
+                    results.UnionWith(cacheReferences);
                 }
                 else
                 {
@@ -266,7 +266,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 cache.Add(rootProjectPath, new List<ExternalProjectReference>(results));
             }
 
-            return results;
+            return results.ToList();
         }
 
         /// <summary>

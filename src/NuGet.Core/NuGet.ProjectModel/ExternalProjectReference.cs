@@ -11,7 +11,7 @@ namespace NuGet.ProjectModel
     /// <summary>
     /// Represents a reference to a project produced by an external build system, such as msbuild.
     /// </summary>
-    public class ExternalProjectReference
+    public class ExternalProjectReference : IEquatable<ExternalProjectReference>
     {
         /// <summary>
         /// Represents a reference to a project produced by an external build system, such as msbuild.
@@ -76,6 +76,36 @@ namespace NuGet.ProjectModel
                         ?? Path.GetFileNameWithoutExtension(MSBuildProjectPath)
                         ?? UniqueName;
             }
+        }
+
+        public override string ToString()
+        {
+            return UniqueName;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as ExternalProjectReference);
+        }
+
+        public override int GetHashCode()
+        {
+            return StringComparer.Ordinal.GetHashCode(UniqueName);
+        }
+
+        public bool Equals(ExternalProjectReference other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return UniqueName.Equals(other.UniqueName, StringComparison.Ordinal);
         }
     }
 }
