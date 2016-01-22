@@ -249,7 +249,7 @@ namespace NuGet.Commands
             {
                 Name = _request.Project.Name,
                 VersionRange = new VersionRange(_request.Project.Version),
-                TypeConstraint = LibraryTypeFlag.Project | LibraryTypeFlag.ExternalProject
+                TypeConstraint = LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject
             };
 
             // Resolve dependency graphs
@@ -749,8 +749,8 @@ namespace NuGet.Commands
                             // Include dependencies with no constraints, or package/project/external
                             Dependencies = graphItem.Data.Dependencies
                                 .Where(
-                                    d => (d.LibraryRange.TypeConstraint & LibraryTargetFlagUtils.PackageProjectExternal) 
-                                                != LibraryTypeFlag.None)
+                                    d => (d.LibraryRange.TypeConstraintAllowsAnyOf(
+                                        LibraryDependencyTarget.PackageProjectExternal)))
                                 .Select(d => GetDependencyVersionRange(d))
                                 .ToList()
                         };
@@ -861,8 +861,7 @@ namespace NuGet.Commands
             var range = dependency.LibraryRange.VersionRange;
 
             if (range == null
-                && (dependency.LibraryRange.TypeConstraint & LibraryTypeFlag.ExternalProject)
-                    == LibraryTypeFlag.ExternalProject)
+                && (dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.ExternalProject)))
             {
                 // For csproj -> csproj type references where there is no range, use 1.0.0
                 range = VersionRange.Parse("1.0.0");
@@ -977,7 +976,7 @@ namespace NuGet.Commands
                         var range = new LibraryRange()
                         {
                             Name = library.Name,
-                            TypeConstraint = LibraryTargetFlagUtils.GetFlag(library.Type),
+                            TypeConstraint = LibraryDependencyTargetUtils.Parse(library.Type),
                             VersionRange = new VersionRange(
                                 minVersion: library.Version,
                                 includeMinVersion: true,

@@ -27,7 +27,7 @@ namespace NuGet.ProjectModel.Test
             var dependency = spec.Dependencies.Single();
 
             // Assert
-            Assert.Equal(LibraryTypeFlag.ExternalProject, dependency.LibraryRange.TypeConstraint);
+            Assert.Equal(LibraryDependencyTarget.ExternalProject, dependency.LibraryRange.TypeConstraint);
         }
 
         [Fact]
@@ -51,7 +51,7 @@ namespace NuGet.ProjectModel.Test
             var dependency = spec.Dependencies.Single();
 
             // Assert
-            Assert.Equal(LibraryTypeFlag.Project, dependency.LibraryRange.TypeConstraint);
+            Assert.Equal(LibraryDependencyTarget.Project, dependency.LibraryRange.TypeConstraint);
         }
 
         [Fact]
@@ -75,7 +75,7 @@ namespace NuGet.ProjectModel.Test
             var dependency = spec.Dependencies.Single();
 
             // Assert
-            Assert.Equal(LibraryTypeFlag.Package, dependency.LibraryRange.TypeConstraint);
+            Assert.Equal(LibraryDependencyTarget.Package, dependency.LibraryRange.TypeConstraint);
         }
 
         [Fact]
@@ -99,7 +99,7 @@ namespace NuGet.ProjectModel.Test
             var dependency = spec.Dependencies.Single();
 
             // Assert
-            Assert.Equal(LibraryTypeFlag.Package, dependency.LibraryRange.TypeConstraint);
+            Assert.Equal(LibraryDependencyTarget.Package, dependency.LibraryRange.TypeConstraint);
         }
 
         [Fact]
@@ -120,7 +120,7 @@ namespace NuGet.ProjectModel.Test
             var dependency = spec.Dependencies.Single();
 
             // Assert
-            var expected = ~LibraryTypeFlag.Reference;
+            var expected = ~LibraryDependencyTarget.Reference;
             Assert.Equal(expected, dependency.LibraryRange.TypeConstraint);
         }
 

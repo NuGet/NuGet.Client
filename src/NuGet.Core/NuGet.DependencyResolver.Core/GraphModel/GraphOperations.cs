@@ -267,11 +267,11 @@ namespace NuGet.DependencyResolver
                         childNode.Key.VersionRange != null &&
                         acceptedNode.Item.Key.Version != null)
                     {
-                        var acceptedType = LibraryTargetFlagUtils.GetFlag(acceptedNode.Item.Key.Type);
+                        var acceptedType = LibraryDependencyTargetUtils.Parse(acceptedNode.Item.Key.Type);
                         var childType = childNode.Key.TypeConstraint;
 
                         // Check the type constraints, if there is any overlap check for conflict
-                        if ((childType & acceptedType) != LibraryTypeFlag.None)
+                        if ((childType & acceptedType) != LibraryDependencyTarget.None)
                         {
                             var versionRange = childNode.Key.VersionRange;
                             var checkVersion = acceptedNode.Item.Key.Version;

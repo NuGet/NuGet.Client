@@ -137,7 +137,7 @@ namespace NuGet.Commands
                 // Filter the dependency set down to packages and projects.
                 // Framework references will not be displayed
                 lockFileLib.Dependencies = dependencies
-                    .Where(ld => IsPackageOrProject(ld))
+                    .Where(ld => ld.LibraryRange.TypeConstraintAllowsAnyOf(LibraryDependencyTarget.PackageProjectExternal))
                     .Select(ld => new PackageDependency(ld.Name, ld.LibraryRange.VersionRange))
                     .ToList();
             }
@@ -316,16 +316,6 @@ namespace NuGet.Commands
         private static bool GroupHasNonEmptyItems(IList<LockFileItem> group)
         {
             return group?.Any(item => !item.Path.EndsWith(PackagingCoreConstants.ForwardSlashEmptyFolder)) == true;
-        }
-
-        /// <summary>
-        /// True if the dependeny requires a project, package, or external project
-        /// </summary>
-        private static bool IsPackageOrProject(LibraryDependency libraryDependency)
-        {
-            var typeFlags = libraryDependency.LibraryRange.TypeConstraint;
-
-            return (typeFlags & LibraryTargetFlagUtils.PackageProjectExternal) != LibraryTypeFlag.None;
         }
     }
 }

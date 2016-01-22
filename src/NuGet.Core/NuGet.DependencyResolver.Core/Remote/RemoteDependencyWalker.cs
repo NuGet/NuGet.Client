@@ -54,7 +54,7 @@ namespace NuGet.DependencyResolver
                         {
                             Name = runtimeDependency.Id,
                             VersionRange = runtimeDependency.VersionRange,
-                            TypeConstraint = LibraryTargetFlagUtils.PackageProjectExternal
+                            TypeConstraint = LibraryDependencyTarget.PackageProjectExternal
                         }
                     };
 
@@ -340,7 +340,7 @@ namespace NuGet.DependencyResolver
             if (match == null)
             {
                 // HACK(anurse): Reference requests are not resolved and just left as-is
-                if (libraryRange.TypeConstraint == LibraryTypeFlag.Reference)
+                if (libraryRange.TypeConstraint == LibraryDependencyTarget.Reference)
                 {
                     return CreateReferenceMatch(libraryRange);
                 }
@@ -437,7 +437,7 @@ namespace NuGet.DependencyResolver
                 return null;
             }
 
-            if (libraryRange.TypeConstraint == LibraryTypeFlag.Reference)
+            if (libraryRange.TypeConstraint == LibraryDependencyTarget.Reference)
             {
                 return null;
             }
@@ -525,8 +525,8 @@ namespace NuGet.DependencyResolver
             RemoteMatch result = null;
 
             // Check if projects are allowed for this dependency
-            if ((libraryRange.TypeConstraint & (LibraryTypeFlag.Project | LibraryTypeFlag.ExternalProject))
-                != LibraryTypeFlag.None)
+            if (libraryRange.TypeConstraintAllowsAnyOf(
+                (LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject)))
             {
                 // Find the root directory of the parent project if one exists.
                 // This is used for resolving global json.

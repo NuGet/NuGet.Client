@@ -87,7 +87,7 @@ namespace NuGet.ProjectModel
         {
             var libraryType = dependency.LibraryRange.TypeConstraint;
 
-            return (libraryType & (LibraryTypeFlag.Project | LibraryTypeFlag.ExternalProject)) != LibraryTypeFlag.None;
+            return (libraryType & (LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject)) != LibraryDependencyTarget.None;
         }
     }
 }

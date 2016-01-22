@@ -166,7 +166,7 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.False(result.Success);
                 Assert.Equal("packageB", result.GetAllUnresolved().Single().Name);
-                Assert.Equal(LibraryTypeFlag.Package, result.GetAllUnresolved().Single().TypeConstraint);
+                Assert.Equal(LibraryDependencyTarget.Package, result.GetAllUnresolved().Single().TypeConstraint);
             }
         }
 

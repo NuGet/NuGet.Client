@@ -12,7 +12,7 @@ namespace NuGet.LibraryModel
         {
             // Allow a library to eclipse the other if the names match and they 
             // share a common type constraint.
-            return (library.TypeConstraint & other.TypeConstraint) != LibraryTypeFlag.None
+            return (library.TypeConstraint & other.TypeConstraint) != LibraryDependencyTarget.None
                 && string.Equals(library.Name, other.Name, StringComparison.OrdinalIgnoreCase);
         }
 

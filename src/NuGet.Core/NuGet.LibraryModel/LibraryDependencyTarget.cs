@@ -6,9 +6,9 @@ using System;
 namespace NuGet.LibraryModel
 {
     // Values are from LibraryTypes
-    // LibraryTypeConstraintFlag describes the types allowed to fill a dependency.
+    // LibraryDependencyTarget describes the types allowed to fill a dependency.
     [Flags]
-    public enum LibraryTypeFlag : ushort
+    public enum LibraryDependencyTarget : ushort
     {
         None = 0,
         Package = 1 << 0,
@@ -17,6 +17,11 @@ namespace NuGet.LibraryModel
         Assembly = 1 << 3,
         Reference = 1 << 4,
         WinMD = 1 << 5,
-        All = 0xFFFF
+        All = 0xFFFF,
+
+        /// <summary>
+        /// A package, project, or external project
+        /// </summary>
+        PackageProjectExternal = Package | Project | ExternalProject,
     }
 }

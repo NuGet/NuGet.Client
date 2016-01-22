@@ -131,7 +131,7 @@ namespace NuGet.Commands
 
                         if (string.Equals(node?.Item?.Key?.Type, LibraryTypes.Unresolved))
                         {
-                            if (node.Key.TypeConstraint != LibraryTypeFlag.Reference
+                            if (node.Key.TypeConstraint != LibraryDependencyTarget.Reference
                                 && node.Key.VersionRange != null)
                             {
                                 unresolved.Add(node.Key);

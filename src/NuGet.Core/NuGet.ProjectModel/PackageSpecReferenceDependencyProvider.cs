@@ -70,9 +70,9 @@ namespace NuGet.ProjectModel
             }
         }
 
-        public bool SupportsType(LibraryTypeFlag libraryType)
+        public bool SupportsType(LibraryDependencyTarget libraryType)
         {
-            return (libraryType & (LibraryTypeFlag.Project | LibraryTypeFlag.ExternalProject)) != LibraryTypeFlag.None;
+            return (libraryType & (LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject)) != LibraryDependencyTarget.None;
         }
 
         public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
@@ -93,7 +93,7 @@ namespace NuGet.ProjectModel
             {
                 packageSpec = externalReference.PackageSpec;
             }
-            else if (libraryRange.TypeConstraintAllows(LibraryTypeFlag.Project))
+            else if (libraryRange.TypeConstraintAllows(LibraryDependencyTarget.Project))
             {
                 // Find the package spec resolver for this root path.
                 var specResolver = GetPackageSpecResolver(rootPath);
@@ -131,7 +131,7 @@ namespace NuGet.ProjectModel
                         // Remove "project" from the allowed types for this dependency
                         // This will require that projects referenced by an msbuild project
                         // must be external projects.
-                        dependency.LibraryRange.TypeConstraint &= ~LibraryTypeFlag.Project;
+                        dependency.LibraryRange.TypeConstraint &= ~LibraryDependencyTarget.Project;
                     }
                 }
             }
@@ -176,7 +176,7 @@ namespace NuGet.ProjectModel
                 // a path already resolved by msbuild.
                 foreach (var dependency in dependencies.Where(d => filteredExternalDependencies.Contains(d.Name)))
                 {
-                    dependency.LibraryRange.TypeConstraint = LibraryTypeFlag.ExternalProject;
+                    dependency.LibraryRange.TypeConstraint = LibraryDependencyTarget.ExternalProject;
                 }
 
                 // Add dependencies passed in externally
@@ -191,7 +191,7 @@ namespace NuGet.ProjectModel
                         {
                             Name = reference,
                             VersionRange = VersionRange.Parse("1.0.0"),
-                            TypeConstraint = LibraryTypeFlag.ExternalProject
+                            TypeConstraint = LibraryDependencyTarget.ExternalProject
                         }
                     }));
             }
@@ -204,7 +204,7 @@ namespace NuGet.ProjectModel
                     LibraryRange = new LibraryRange
                     {
                         Name = "mscorlib",
-                        TypeConstraint = LibraryTypeFlag.Reference
+                        TypeConstraint = LibraryDependencyTarget.Reference
                     }
                 });
 
@@ -213,7 +213,7 @@ namespace NuGet.ProjectModel
                     LibraryRange = new LibraryRange
                     {
                         Name = "System",
-                        TypeConstraint = LibraryTypeFlag.Reference
+                        TypeConstraint = LibraryDependencyTarget.Reference
                     }
                 });
 
@@ -222,7 +222,7 @@ namespace NuGet.ProjectModel
                     LibraryRange = new LibraryRange
                     {
                         Name = "System.Core",
-                        TypeConstraint = LibraryTypeFlag.Reference
+                        TypeConstraint = LibraryDependencyTarget.Reference
                     }
                 });
 
@@ -231,7 +231,7 @@ namespace NuGet.ProjectModel
                     LibraryRange = new LibraryRange
                     {
                         Name = "Microsoft.CSharp",
-                        TypeConstraint = LibraryTypeFlag.Reference
+                        TypeConstraint = LibraryDependencyTarget.Reference
                     }
                 });
             }
