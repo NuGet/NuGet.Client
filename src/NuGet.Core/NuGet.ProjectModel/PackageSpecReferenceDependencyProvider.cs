@@ -147,7 +147,10 @@ namespace NuGet.ProjectModel
                     childReferenceNames,
                     StringComparer.OrdinalIgnoreCase);
 
-                if (packageSpec != null)
+                // Non-Xproj projects may only have one TxM, all external references should be 
+                // included if this is an msbuild based project.
+                if (packageSpec != null 
+                    && !XProjUtility.IsMSBuildBasedProject(externalReference.MSBuildProjectPath))
                 {
                     // Create an exclude list of all references from the non-selected TxM
                     // Start with all framework specific references
@@ -174,7 +177,8 @@ namespace NuGet.ProjectModel
                 // Set all dependencies from project.json to external if an external match was passed in
                 // This is viral and keeps p2ps from looking into directories when we are going down
                 // a path already resolved by msbuild.
-                foreach (var dependency in dependencies.Where(d => filteredExternalDependencies.Contains(d.Name)))
+                foreach (var dependency in dependencies.Where(d => IsProject(d)
+                    && filteredExternalDependencies.Contains(d.Name)))
                 {
                     dependency.LibraryRange.TypeConstraint = LibraryDependencyTarget.ExternalProject;
                 }
@@ -183,13 +187,13 @@ namespace NuGet.ProjectModel
                 // These are usually msbuild references which have less metadata, they have
                 // the lowest priority.
                 // Note: Only add in dependencies that are in the filtered list to avoid getting the wrong TxM
-                dependencies.AddRange(childReferenceNames
-                    .Where(dependencyName => filteredExternalDependencies.Contains(dependencyName))
+                dependencies.AddRange(childReferences
+                    .Where(reference => filteredExternalDependencies.Contains(reference.ProjectName))
                     .Select(reference => new LibraryDependency
                     {
                         LibraryRange = new LibraryRange
                         {
-                            Name = reference,
+                            Name = reference.ProjectName,
                             VersionRange = VersionRange.Parse("1.0.0"),
                             TypeConstraint = LibraryDependencyTarget.ExternalProject
                         }
