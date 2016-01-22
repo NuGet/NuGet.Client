@@ -133,17 +133,21 @@ namespace NuGet.Commands
             var checkResults = new List<CompatibilityCheckResult>();
             if (graphs.All(g => !g.Unresolved.Any()))
             {
-                var checker = new CompatibilityChecker(localRepository, lockFile, _logger);
+                var checker = new CompatibilityChecker(localRepository, lockFile, _logger, _request.CompatibilityCheckAsWarning);
                 foreach (var graph in graphs)
                 {
                     _logger.LogVerbose(Strings.FormatLog_CheckingCompatibility(graph.Name));
 
                     var res = checker.Check(graph);
-                    _success &= res.Success;
+                    _success &= (_request.CompatibilityCheckAsWarning || res.Success);
                     checkResults.Add(res);
                     if (res.Success)
                     {
                         _logger.LogInformation(Strings.FormatLog_PackagesAreCompatible(graph.Name));
+                    }
+                    else if (_request.CompatibilityCheckAsWarning)
+                    {
+                        _logger.LogWarning(Strings.FormatLog_PackagesIncompatible(graph.Name));
                     }
                     else
                     {
