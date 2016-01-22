@@ -14,7 +14,9 @@
     "warningsAsErrors": true
   },
   "dependencies": {
+    "Lucene.Net": "3.0.3",
     "NuGet.Configuration": "3.4.0-*",
+    "NuGet.Indexing": "3.4.0-*",
     "NuGet.Protocol.Core.v2": "3.4.0-*",
     "NuGet.Protocol.Core.v3": "3.4.0-*",
     "NuGet.Shared": {

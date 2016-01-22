@@ -10,6 +10,7 @@ using System.Windows;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement.UI
 {

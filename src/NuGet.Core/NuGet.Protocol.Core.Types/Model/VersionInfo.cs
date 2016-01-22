@@ -3,7 +3,7 @@
 
 using NuGet.Versioning;
 
-namespace NuGet.Protocol.VisualStudio
+namespace NuGet.Protocol.Core.Types
 {
     public class VersionInfo
     {

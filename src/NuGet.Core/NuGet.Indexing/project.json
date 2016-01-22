@@ -25,25 +25,21 @@
     "Microsoft.Data.Edm": "5.6.4",
     "Microsoft.Data.OData": "5.6.4",
     "Microsoft.Data.Services.Client": "5.6.4",
-    "Microsoft.Extensions.Logging": "1.0.0-rc1-final",
-    "Microsoft.Extensions.Logging.Console": "1.0.0-rc1-final",
-    "Microsoft.Extensions.Logging.Debug": "1.0.0-rc1-final",
     "Microsoft.Web.Xdt": "2.1.1",
     "Microsoft.WindowsAzure.ConfigurationManager": "3.1.0",
     "Newtonsoft.Json": "8.0.2",
-    "NuGet.Core": "2.8.11",
+    "NuGet.Core": "2.11.0",
     "NuGet.Frameworks": "3.4.0-*",
     "NuGet.Logging": "3.4.0-*",
     "NuGet.Packaging": "3.4.0-*",
     "NuGet.Packaging.Core": "3.4.0-*",
     "NuGet.Packaging.Core.Types": "3.4.0-*",
     "NuGet.Versioning": "3.4.0-*",
-    "NuGetGallery.Core": "3.0.413-r-master",
     "SharpZipLib": "0.86.0",
     "System.Spatial": "5.6.4",
     "WindowsAzure.Storage": "4.3.0"
   },
   "frameworks": {
-    "dnx451": { }
+    "net45": { }
   }
 }
