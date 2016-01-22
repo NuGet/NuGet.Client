@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using NuGet.Shared;
 
 namespace NuGet.Frameworks
@@ -6,11 +8,11 @@ namespace NuGet.Frameworks
     public class FallbackFramework : NuGetFramework, IEquatable<FallbackFramework>
     {
         /// <summary>
-        /// Secondary framework to fall back to.
+        /// List framework to fall back to.
         /// </summary>
-        public NuGetFramework Fallback { get; }
+        public IReadOnlyList<NuGetFramework> Fallback { get; }
 
-        public FallbackFramework(NuGetFramework framework, NuGetFramework fallbackFramework)
+        public FallbackFramework(NuGetFramework framework, IReadOnlyList<NuGetFramework> fallbackFrameworks)
             : base(framework)
         {
             if (framework == null)
@@ -18,12 +20,17 @@ namespace NuGet.Frameworks
                 throw new ArgumentNullException(nameof(framework));
             }
 
-            if (fallbackFramework == null)
+            if (fallbackFrameworks == null)
             {
-                throw new ArgumentNullException(nameof(fallbackFramework));
+                throw new ArgumentNullException(nameof(fallbackFrameworks));
             }
 
-            Fallback = fallbackFramework;
+            if (fallbackFrameworks.Count == 0)
+            {
+                throw new ArgumentException("Empty fallbackFrameworks is invalid",nameof(fallbackFrameworks));
+            }
+
+            Fallback = fallbackFrameworks;
         }
 
         public override bool Equals(object obj)
@@ -36,7 +43,11 @@ namespace NuGet.Frameworks
             var combiner = new HashCodeCombiner();
 
             combiner.AddInt32(NuGetFramework.Comparer.GetHashCode(this));
-            combiner.AddInt32(NuGetFramework.Comparer.GetHashCode(Fallback));
+
+            foreach (var each in Fallback)
+            {
+                combiner.AddInt32(NuGetFramework.Comparer.GetHashCode(each));
+            }
 
             return combiner.CombinedHash;
         }
@@ -54,7 +65,7 @@ namespace NuGet.Frameworks
             }
 
             return NuGetFramework.Comparer.Equals(this, other)
-                && NuGetFramework.Comparer.Equals(Fallback, other.Fallback);
+                && Fallback.SequenceEqual(other.Fallback);
         }
     }
 }

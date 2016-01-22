@@ -340,6 +340,35 @@ namespace NuGet.ProjectModel
             return isValid;
         }
 
+        private static bool TryGetStringEnumerableFromJArray(JToken token, out IEnumerable<string> result)
+        {
+            IEnumerable<string> values;
+            if (token == null)
+            {
+                result = null;
+                return false;
+            }
+            else if (token.Type == JTokenType.String)
+            {
+                values = new[]
+                    {
+                        token.Value<string>()
+                    };
+            }
+            else if(token.Type == JTokenType.Array)
+            {
+                values = token.ValueAsArray<string>();
+            }
+            else
+            {
+                result = null;
+                return false;
+            }
+
+            result = values;
+            return true;
+        }
+
         private static void BuildTargetFrameworks(PackageSpec packageSpec, JObject rawPackageSpec)
         {
             // The frameworks node is where target frameworks go
@@ -384,12 +413,12 @@ namespace NuGet.ProjectModel
 
             var properties = targetFramework.Value.Value<JObject>();
 
-            var importFramework = GetImports(properties);
+            var importFramework = GetImports(properties, packageSpec);
 
             // If a fallback framework exists, update the framework to contain both.
             var updatedFramework = frameworkName;
 
-            if (importFramework != null)
+            if (importFramework.Count != 0)
             {
                 updatedFramework = new FallbackFramework(frameworkName, importFramework);
             }
@@ -398,7 +427,7 @@ namespace NuGet.ProjectModel
             {
                 FrameworkName = updatedFramework,
                 Dependencies = new List<LibraryDependency>(),
-                Imports = GetImports(properties),
+                Imports = GetImports(properties, packageSpec),
                 Warn = GetWarnSetting(properties)
             };
 
@@ -424,21 +453,28 @@ namespace NuGet.ProjectModel
             return true;
         }
 
-        private static NuGetFramework GetImports(JObject properties)
+        private static List<NuGetFramework> GetImports(JObject properties, PackageSpec packageSpec)
         {
-            NuGetFramework framework = null;
+            List<NuGetFramework> framework = new List<NuGetFramework>();
 
             var importsProperty = properties["imports"];
 
             if (importsProperty != null)
             {
-                var importFramework = NuGetFramework.Parse(importsProperty.ToString());
-
-                if (importFramework.IsPCL)
+                IEnumerable<string> importArray = new List<string>();
+                if (TryGetStringEnumerableFromJArray(importsProperty, out importArray))
                 {
-                    // PCLs are the only frameworks allowed here, other values will be ignored
-                    framework = importFramework;
+                    framework = importArray.Where(p => !string.IsNullOrEmpty(p)).Select(p => NuGetFramework.Parse(p)).ToList();
                 }
+            }
+
+            if (framework.Any(p => !p.IsSpecificFramework))
+            {
+                throw FileFormatException.Create(
+                           string.Format(Strings.Log_InvalidImportFramework, importsProperty.ToString().Replace(Environment.NewLine,string.Empty),
+                                            PackageSpec.PackageSpecFileName),
+                           importsProperty,
+                           packageSpec.FilePath);
             }
 
             return framework;

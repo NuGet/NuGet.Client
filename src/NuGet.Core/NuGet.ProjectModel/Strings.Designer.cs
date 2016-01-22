@@ -94,5 +94,14 @@ namespace NuGet.ProjectModel {
                 return ResourceManager.GetString("Log_ErrorReadingProjectJsonWithLocation", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Imports contains an invalid framework: &apos;{0}&apos; in &apos;{1}&apos;..
+        /// </summary>
+        internal static string Log_InvalidImportFramework {
+            get {
+                return ResourceManager.GetString("Log_InvalidImportFramework", resourceCulture);
+            }
+        }
     }
 }
