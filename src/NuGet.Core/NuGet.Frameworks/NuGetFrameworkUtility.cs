@@ -124,7 +124,14 @@ namespace NuGet.Frameworks
 
                 if (fallbackFramework != null && fallbackFramework.Fallback != null)
                 {
-                    compatible = DefaultCompatibilityProvider.Instance.IsCompatible(fallbackFramework.Fallback, candidate);
+                    foreach (var supportFramework in fallbackFramework.Fallback)
+                    {
+                        compatible = DefaultCompatibilityProvider.Instance.IsCompatible(supportFramework, candidate);
+                        if (compatible)
+                        {
+                            break;
+                        }
+                    }
                 }
             }
 

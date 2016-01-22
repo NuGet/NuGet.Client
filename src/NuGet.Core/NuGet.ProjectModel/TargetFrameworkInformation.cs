@@ -17,7 +17,7 @@ namespace NuGet.ProjectModel
         /// A fallback PCL framework to use when no compatible items
         /// were found for <see cref="FrameworkName"/>.
         /// </summary>
-        public NuGetFramework Imports { get; set; }
+        public IEnumerable<NuGetFramework> Imports { get; set; }
 
         /// <summary>
         /// Display warnings when the Imports framework is used.
