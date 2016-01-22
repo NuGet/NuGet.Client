@@ -154,14 +154,14 @@ namespace NuGet.Protocol.Core.v3
             return string.Format(CultureInfo.CurrentCulture, GetString("Log_FileIsCorrupt"), p0);
         }
 
-        internal static string FormatLog_NupkgIsNull(object p0)
+        internal static string Log_FailedToGetNupkgStream
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Log_FailedToGetNupkgStream"), p0);
+            get { return GetString("Log_FailedToGetNupkgStream"); }
         }
 
-        internal static string FormatLog_NuspecIsNull(object p0)
+        internal static string Log_FailedToGetNuspecStream
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Log_failedToGetNuspecStream"), p0);
+            get { return GetString("Log_FailedToGetNuspecStream"); }
         }
 
         /// <summary>

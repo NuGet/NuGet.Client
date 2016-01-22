@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol.Core.v3.RemoteRepositories
 {
@@ -22,6 +24,11 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         {
             using (var nupkgStream = await openNupkgStreamAsync)
             {
+                if (nupkgStream == null)
+                {
+                    throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToGetNupkgStream, id));
+                }
+
                 try
                 {
                     using (var reader = new PackageArchiveReader(nupkgStream, leaveStreamOpen: true))
@@ -29,12 +36,9 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     {
                         if (nupkgStream == null)
                         {
-                            report.LogError(Strings.FormatLog_NupkgIsNull(id)); 
+                            throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToGetNuspecStream, id));
                         }
-                        if (nuspecStream == null)
-                        {
-                            report.LogError(Strings.FormatLog_NuspecIsNull(id));
-                        }
+
                         return new NuspecReader(nuspecStream);
                     }
                 }
