@@ -44,9 +44,9 @@ namespace NuGet.Commands
         /// </summary>
         public IEnumerable<string> Targets { get; }
 
-        public MSBuildRestoreResult(string projectName, string projectDirectory)
+        public MSBuildRestoreResult(string projectName, string projectDirectory, bool success)
         {
-            Success = false;
+            Success = success;
             ProjectName = projectName;
             ProjectDirectory = projectDirectory;
             RepositoryRoot = string.Empty;

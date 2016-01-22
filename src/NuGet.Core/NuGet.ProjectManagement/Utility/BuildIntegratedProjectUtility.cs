@@ -202,18 +202,6 @@ namespace NuGet.ProjectManagement
             return configPath;
         }
 
-        /// <summary>
-        /// BuildIntegratedProjectReference -> ExternalProjectReference
-        /// </summary>
-        public static ExternalProjectReference ConvertProjectReference(BuildIntegratedProjectReference reference)
-        {
-            return new ExternalProjectReference(
-                reference.Name,
-                reference.PackageSpec,
-                reference.MSBuildProjectPath,
-                reference.ExternalProjectReferences);
-        }
-
         public static IReadOnlyList<PackageIdentity> GetOrderedProjectDependencies(
             BuildIntegratedNuGetProject buildIntegratedProject)
         {

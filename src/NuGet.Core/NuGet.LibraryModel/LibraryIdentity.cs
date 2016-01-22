@@ -36,19 +36,7 @@ namespace NuGet.LibraryModel
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
-            {
-                return false;
-            }
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-            if (obj.GetType() != this.GetType())
-            {
-                return false;
-            }
-            return Equals((LibraryIdentity)obj);
+            return Equals(obj as LibraryIdentity);
         }
 
         public override int GetHashCode()
@@ -74,11 +62,14 @@ namespace NuGet.LibraryModel
         public static implicit operator LibraryRange(LibraryIdentity library)
         {
             return new LibraryRange
-                {
-                    Name = library.Name,
-                    TypeConstraint = library.Type,
-                    VersionRange = library.Version == null ? null : new VersionRange(library.Version, new FloatRange(NuGetVersionFloatBehavior.None, library.Version))
-                };
+            {
+                Name = library.Name,
+                TypeConstraint = LibraryTargetFlagUtils.GetFlag(library.Type),
+                VersionRange = library.Version == null ? null
+                        : new VersionRange(
+                            library.Version,
+                            new FloatRange(NuGetVersionFloatBehavior.None, library.Version))
+            };
         }
 
         public int CompareTo(LibraryIdentity other)

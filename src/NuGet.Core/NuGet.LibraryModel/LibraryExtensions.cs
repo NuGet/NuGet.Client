@@ -10,8 +10,10 @@ namespace NuGet.LibraryModel
     {
         public static bool IsEclipsedBy(this LibraryRange library, LibraryRange other)
         {
-            return string.Equals(library.Name, other.Name, StringComparison.OrdinalIgnoreCase) &&
-                   string.Equals(library.TypeConstraint, other.TypeConstraint);
+            // Allow a library to eclipse the other if the names match and they 
+            // share a common type constraint.
+            return (library.TypeConstraint & other.TypeConstraint) != LibraryTypeFlag.None
+                && string.Equals(library.Name, other.Name, StringComparison.OrdinalIgnoreCase);
         }
 
         public static T GetItem<T>(this Library library, string key)

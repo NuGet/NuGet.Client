@@ -350,7 +350,7 @@ namespace NuGet.DependencyResolver.Tests
 
             // Restore doesn't actually support null versions so fake a resolved dependency
             var cNode = node.Path("A", "C");
-            cNode.Key.TypeConstraint = "Package";
+            cNode.Key.TypeConstraint = LibraryTypeFlag.Package;
             cNode.Item = new GraphItem<RemoteResolveResult>(new LibraryIdentity
             {
                 Name = "C",

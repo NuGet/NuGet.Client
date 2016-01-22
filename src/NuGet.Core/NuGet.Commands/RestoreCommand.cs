@@ -125,7 +125,8 @@ namespace NuGet.Commands
                     var fromVersion = downgraded.Key.VersionRange.MinVersion ?? new NuGetVersion(0, 0, 0);
                     var toVersion = downgradedBy.Key.VersionRange.MinVersion ?? new NuGetVersion(0, 0, 0);
 
-                    _logger.LogWarning(Strings.FormatLog_DowngradeWarning(downgraded.Key.Name, fromVersion, toVersion) + $" {Environment.NewLine} {downgraded.GetPath()} {Environment.NewLine} {downgradedBy.GetPath()}");                }
+                    _logger.LogWarning(Strings.FormatLog_DowngradeWarning(downgraded.Key.Name, fromVersion, toVersion) + $" {Environment.NewLine} {downgraded.GetPath()} {Environment.NewLine} {downgradedBy.GetPath()}");
+                }
             }
 
             // Scan every graph for compatibility, as long as there were no unresolved packages
@@ -191,10 +192,19 @@ namespace NuGet.Commands
             // External references
             var updatedExternalProjects = new List<ExternalProjectReference>(_request.ExternalProjects);
 
-            if (_request.ExternalProjects.Any())
+            if (_request.ExternalProjects.Count > 0)
             {
-                var rootProject = _request.ExternalProjects.SingleOrDefault(proj =>
-                     string.Equals(_request.Project.Name, proj.UniqueName, StringComparison.OrdinalIgnoreCase));
+                // There should be at most one match in the external projects.
+                var rootProjectMatches = _request.ExternalProjects.Where(proj =>
+                     string.Equals(_request.Project.Name, proj.PackageSpec?.Name, StringComparison.OrdinalIgnoreCase))
+                     .ToList();
+
+                if (rootProjectMatches.Count > 1)
+                {
+                    throw new InvalidOperationException($"Ambiguous project name '{_request.Project.Name}'.");
+                }
+
+                var rootProject = rootProjectMatches.SingleOrDefault();
 
                 if (rootProject != null)
                 {
@@ -211,6 +221,9 @@ namespace NuGet.Commands
                         rootProject.ExternalProjectReferences);
 
                     updatedExternalProjects.Add(updatedReference);
+
+                    // Determine if the targets and props files should be written out.
+                    context.IsMsBuildBased = XProjUtility.IsMSBuildBasedProject(rootProject.MSBuildProjectPath);
                 }
                 else
                 {
@@ -236,7 +249,7 @@ namespace NuGet.Commands
             {
                 Name = _request.Project.Name,
                 VersionRange = new VersionRange(_request.Project.Version),
-                TypeConstraint = LibraryTypes.Project
+                TypeConstraint = LibraryTypeFlag.Project | LibraryTypeFlag.ExternalProject
             };
 
             // Resolve dependency graphs
@@ -471,11 +484,21 @@ namespace NuGet.Commands
         {
             // Get the project graph
             var projectFrameworks = project.TargetFrameworks.Select(f => f.FrameworkName).ToList();
-            if (projectFrameworks.Count > 1 || !targetGraphs.Any())
+
+            // Non-Msbuild projects should skip targets and treat it as success
+            if (!context.IsMsBuildBased)
             {
-                return new MSBuildRestoreResult(project.Name, project.BaseDirectory);
+                return new MSBuildRestoreResult(project.Name, project.BaseDirectory, success: true);
             }
 
+            // Invalid msbuild projects should write out an msbuild error target
+            if (projectFrameworks.Count != 1
+                || !targetGraphs.Any())
+            {
+                return new MSBuildRestoreResult(project.Name, project.BaseDirectory, success: false);
+            }
+
+            // Gather props and targets to write out
             var graph = targetGraphs
                 .Single(g => g.Framework.Equals(projectFrameworks[0]) && string.IsNullOrEmpty(g.RuntimeIdentifier));
 
@@ -723,13 +746,11 @@ namespace NuGet.Commands
                             Framework = projectFramework,
 
                             // Find all dependencies which would be in the nuspec
-                            // If there is no
+                            // Include dependencies with no constraints, or package/project/external
                             Dependencies = graphItem.Data.Dependencies
                                 .Where(
-                                    d => d.LibraryRange.TypeConstraint == null
-                                    || d.LibraryRange.TypeConstraint == LibraryTypes.Package
-                                    || d.LibraryRange.TypeConstraint == LibraryTypes.Project
-                                    || d.LibraryRange.TypeConstraint == LibraryTypes.ExternalProject)
+                                    d => (d.LibraryRange.TypeConstraint & LibraryTargetFlagUtils.PackageProjectExternal) 
+                                                != LibraryTypeFlag.None)
                                 .Select(d => GetDependencyVersionRange(d))
                                 .ToList()
                         };
@@ -839,7 +860,9 @@ namespace NuGet.Commands
         {
             var range = dependency.LibraryRange.VersionRange;
 
-            if (range == null && dependency.LibraryRange.TypeConstraint == LibraryTypes.ExternalProject)
+            if (range == null
+                && (dependency.LibraryRange.TypeConstraint & LibraryTypeFlag.ExternalProject)
+                    == LibraryTypeFlag.ExternalProject)
             {
                 // For csproj -> csproj type references where there is no range, use 1.0.0
                 range = VersionRange.Parse("1.0.0");
@@ -954,7 +977,7 @@ namespace NuGet.Commands
                         var range = new LibraryRange()
                         {
                             Name = library.Name,
-                            TypeConstraint = library.Type, // Lockfile contains only Package libraries.
+                            TypeConstraint = LibraryTargetFlagUtils.GetFlag(library.Type),
                             VersionRange = new VersionRange(
                                 minVersion: library.Version,
                                 includeMinVersion: true,
