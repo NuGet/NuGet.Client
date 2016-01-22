@@ -27,6 +27,8 @@ if ($success -eq $false)
 
 KillRunningInstancesOfVS
 
+start-sleep -Seconds $VSIXInstallerWaitTimeInSecs
+
 $VSIXSrcPath = Join-Path $NuGetDropPath 'NuGet.Tools.vsix'
 $VSIXPath = Join-Path $FuncTestRoot 'NuGet.Tools.vsix'
 
