@@ -29,7 +29,7 @@ $success = IsAdminPrompt
 if ($success -eq $false)
 {
     $errorMessage = 'ERROR: Please re-run this script as an Administrator! ' +
-    'Actions such as installing VSIX, uninstalling VSIX and updating registry require admin privileges.'
+    'Updating registry require admin privileges.'
 
     Write-Error $errorMessage
     exit 1

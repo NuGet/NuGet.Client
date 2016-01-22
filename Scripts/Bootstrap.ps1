@@ -22,16 +22,12 @@ function ExtractEndToEndZip
     [Parameter(Mandatory=$true)]
     [string]$NuGetDropPath,
     [Parameter(Mandatory=$true)]
-    [string]$FuncTestRoot)
+    [string]$FuncTestRoot,
+    [Parameter(Mandatory=$true)]
+    [string]$NuGetTestPath)
 
     $endToEndZipSrc = Join-Path $NuGetDropPath 'EndToEnd.zip'
     $endToEndZip = Join-Path $FuncTestRoot 'EndToEnd.zip'
-
-    # Delete the zip file if it exists
-    if (Test-Path $endToEndZip)
-    {
-        Remove-Item $endToEndZip
-    }
 
     Copy-Item $endToEndZipSrc $endToEndZip -Force
 
@@ -76,6 +72,6 @@ Write-Host "NuGet drop path is $NuGetDropPath"
 Write-Host "NuGet test path is $NuGetTestPath"
 
 CleanPaths $NuGetTestPath
-ExtractEndToEndZip $NuGetDropPath $FuncTestRoot
+ExtractEndToEndZip $NuGetDropPath $FuncTestRoot $NuGetTestPath
 
 Write-Host "Cleaned, Copied and Extracted and EndToEnd.zip file"

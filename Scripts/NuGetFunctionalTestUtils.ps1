@@ -39,7 +39,7 @@ function RealTimeLogResults
                     }
                     else
                     {
-                        Write-Error -ForegroundColor Red $lastLine
+                        Write-Error $lastLine
                     }
 
                     $resultsFile = Join-Path $log.Directory.FullName results.html
