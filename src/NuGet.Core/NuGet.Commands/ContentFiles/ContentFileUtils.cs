@@ -65,7 +65,10 @@ namespace NuGet.Commands
                         "SplashScreen",
                         "DesignData",
                         "DesignDataWithDesignTimeCreatableTypes",
-                        "CodeAnalysisDictionary"
+                        "CodeAnalysisDictionary",
+                        "AndroidAsset",
+                        "AndroidResource",
+                        "BundleResource"
                     }, StringComparer.Ordinal);
                 }
 
