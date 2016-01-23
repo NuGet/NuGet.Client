@@ -734,31 +734,75 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var sources = new List<PackageSource>();
-            sources.Add(new PackageSource("https://www.myget.org/F/aspnetcidev/api/v3/index.json"));
-            sources.Add(new PackageSource("https://api.nuget.org/v3/index.json"));
 
-            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
-            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            var project1Json = @"
             {
-                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
-                var spec = JsonPackageSpecReader.GetPackageSpec(BasicConfig.ToString(), "TestProject", specPath);
+              ""version"": ""1.0.0"",
+              ""description"": """",
+              ""authors"": [ ""author"" ],
+              ""tags"": [ """" ],
+              ""projectUrl"": """",
+              ""licenseUrl"": """",
+              ""dependencies"": {
+                ""packageA"": ""1.0.0""
+              },
+              ""frameworks"": {
+                ""net45"": {
+                }
+              }
+            }";
 
-                AddDependency(spec, "Microsoft.AspNet.SignalR.Server", "3.0.0-*");
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir,  "projects", "project1"));
+                sources.Add(new PackageSource(packageSource.FullName));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
-                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+                File.WriteAllText(Path.Combine(project1.FullName, "project.json"), project1Json);
 
-                var lockFileFormat = new LockFileFormat();
+                var specPath1 = Path.Combine(project1.FullName, "project.json");
+                var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
+                var request = new RestoreRequest(spec1, sources, packagesDir.FullName);
 
+                request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
+
+                var packages = new List<SimpleTestPackageContext>();
+                var dependencies = new List<SimpleTestPackageContext>();
+
+                for (int i= 0;i < 500;i++ )
+                {
+                    var package = new SimpleTestPackageContext()
+                    {
+                      Id = $"package{i}"
+                    };
+                    packages.Add(package);
+                    dependencies.Add(package);
+                }
+
+                var packageA = new SimpleTestPackageContext()
+                {
+                    Id = "packageA",
+                    Dependencies = dependencies
+                };
+                packages.Add(packageA);
+                SimpleTestPackageUtility.CreatePackages(packages, packageSource.FullName);
+                 
                 // Act
                 var logger = new TestLogger();
                 var command = new RestoreCommand(logger, request);
-               
                 var result = await command.ExecuteAsync();
+                var lockFile = result.LockFile;
                 var installed = result.GetAllInstalled();
                 var unresolved = result.GetAllUnresolved();
+                result.Commit(logger);
 
-                Assert.Equal(114, installed.Count);
+                // Assert
+                Assert.True(result.Success);
+                Assert.Equal(501, installed.Count);
                 Assert.Equal(0, unresolved.Count);
             }
         }
