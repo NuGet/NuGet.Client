@@ -39,9 +39,4 @@ $NuGetTestPath = Join-Path $FuncTestRoot "EndToEnd"
 CopyNuGetCITools $NuGetCIToolsFolder $NuGetTestPath
 
 # Already checked if the prompt is an admin prompt
-$success = DisableCrashDialog
-if ($success -eq $false)
-{
-    Write-Error 'WARNING: Could not disable crash dialog'
-    exit 1
-}
+DisableCrashDialog
