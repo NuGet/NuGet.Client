@@ -8,7 +8,6 @@ using System.Linq;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
-
 namespace NuGet.Packaging
 {
     public static class PackageHelper
@@ -22,7 +21,7 @@ namespace NuGet.Packaging
             "[Content_Types].xml"
         };
 
-        private static readonly string[] ExcludeExtension = new[] { ".nupkg.sha512" };
+        private static readonly string ExcludeExtension = ".nupkg.sha512";
 
         public static bool IsManifest(string path)
         {
@@ -37,16 +36,19 @@ namespace NuGet.Packaging
                 // This is to ignore archive entries that are not really files
                 return false;
             }
-            if (packageSaveMode.HasFlag(PackageSaveMode.Nuspec))
+
+            if (IsManifest(packageFileName))
+            {
+                return (packageSaveMode & PackageSaveMode.Nuspec) == PackageSaveMode.Nuspec;
+            }
+
+            if ((packageSaveMode & PackageSaveMode.Files) == PackageSaveMode.Files)
             {
                 return !ExcludePaths.Any(p => packageFileName.StartsWith(p, StringComparison.OrdinalIgnoreCase)) &&
-                    !ExcludeExtension.Any(p => packageFileName.EndsWith(p, StringComparison.OrdinalIgnoreCase));
+                    !packageFileName.EndsWith(ExcludeExtension, StringComparison.OrdinalIgnoreCase);
             }
-            else
-            {
-                return !IsManifest(packageFileName) && !ExcludePaths.Any(p => packageFileName.StartsWith(p, StringComparison.OrdinalIgnoreCase)) &&
-                    !ExcludeExtension.Any(p => packageFileName.EndsWith(p, StringComparison.OrdinalIgnoreCase));
-            }
+
+            return false;
         }
 
         /// <summary>

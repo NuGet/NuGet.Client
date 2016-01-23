@@ -7,8 +7,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging
 {
@@ -133,7 +133,11 @@ namespace NuGet.Packaging
             }
         }
 
-        public override IEnumerable<string> CopyFiles(string destination, IEnumerable<string> packageFiles, CancellationToken token)
+        public override IEnumerable<string> CopyFiles(
+            string destination,
+            IEnumerable<string> packageFiles,
+            ExtractPackageFileDelegate extractFile,
+            CancellationToken token)
         {
             var filesCopied = new List<string>();
 
@@ -153,16 +157,28 @@ namespace NuGet.Packaging
 
                 // ZipArchive always has forward slashes in them. By replacing them with DirectorySeparatorChar;
                 // in windows, we get the windows-style path
-                packageFileName = Uri.UnescapeDataString(packageFileName.Replace('/', Path.DirectorySeparatorChar));
+                var normalizedPath = Uri.UnescapeDataString(packageFileName.Replace('/', Path.DirectorySeparatorChar));
 
-                var targetFilePath = Path.Combine(destination, packageFileName);
+                var targetFilePath = Path.Combine(destination, normalizedPath);
                 if (!targetFilePath.StartsWith(destination, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
-                var copiedFile = entry.SaveAsFile(targetFilePath);
-                filesCopied.Add(copiedFile);
+                using (var stream = entry.Open())
+                {
+                    var copiedFile = extractFile(packageFileName, targetFilePath, stream);
+                    if (copiedFile != null)
+                    {
+                        var attr = File.GetAttributes(copiedFile);
+                        if (!attr.HasFlag(FileAttributes.Directory))
+                        {
+                            File.SetLastWriteTimeUtc(copiedFile, entry.LastWriteTime.UtcDateTime);
+                        }
+
+                        filesCopied.Add(copiedFile);
+                    }
+                }
             }
 
             return filesCopied;

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.ProjectManagement
@@ -142,10 +143,14 @@ namespace NuGet.ProjectManagement
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
+            var xmlDocFileSaveMode = nuGetProjectContext.PackageExtractionContext?.XmlDocFileSaveMode ??
+                PackageExtractionBehavior.XmlDocFileSaveMode;
+
             var copiedSatelliteFiles = PackageExtractor.CopySatelliteFiles(
                 packageIdentity,
                 PackagePathResolver,
                 GetPackageSaveMode(nuGetProjectContext),
+                xmlDocFileSaveMode,
                 token);
 
             FileSystemUtility.PendAddFiles(copiedSatelliteFiles, Root, nuGetProjectContext);

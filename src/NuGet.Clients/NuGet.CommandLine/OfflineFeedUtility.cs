@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
 
 namespace NuGet.CommandLine
 {
@@ -176,13 +177,18 @@ namespace NuGet.CommandLine
                     else
                     {
                         packageStream.Seek(0, SeekOrigin.Begin);
+                        var packageSaveMode = offlineFeedAddContext.Expand
+                            ? PackageSaveMode.Default
+                            : PackageSaveMode.Nuspec | PackageSaveMode.Nupkg;
+
                         var versionFolderPathContext = new VersionFolderPathContext(
                             packageIdentity,
                             source,
                             logger,
                             fixNuspecIdCasing: false,
-                            extractNuspecOnly: !offlineFeedAddContext.Expand,
-                            normalizeFileNames: true);
+                            packageSaveMode: packageSaveMode,
+                            normalizeFileNames: true,
+                            xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
 
                         await PackageExtractor.InstallFromSourceAsync(
                             stream => packageStream.CopyToAsync(stream),

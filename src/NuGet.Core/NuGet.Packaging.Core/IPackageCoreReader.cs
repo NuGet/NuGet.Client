@@ -4,9 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using NuGet.Versioning;
-using System.Threading.Tasks;
 using System.Threading;
+using NuGet.Versioning;
 
 namespace NuGet.Packaging.Core
 {
@@ -55,6 +54,10 @@ namespace NuGet.Packaging.Core
         /// </summary>
         Stream GetNuspec();
 
-        IEnumerable<string> CopyFiles(string destination, IEnumerable<string> packageFiles, CancellationToken token);
+        IEnumerable<string> CopyFiles(
+            string destination,
+            IEnumerable<string> packageFiles,
+            ExtractPackageFileDelegate extractFile,
+            CancellationToken token);
     }
 }

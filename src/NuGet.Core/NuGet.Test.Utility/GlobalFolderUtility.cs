@@ -30,8 +30,9 @@ namespace NuGet.Test.Utility
                     packagesDirectory: globalFolder,
                     logger: Logging.NullLogger.Instance,
                     fixNuspecIdCasing: true,
-                    extractNuspecOnly: false,
-                    normalizeFileNames: true);
+                    packageSaveMode: PackageSaveMode.Default,
+                    normalizeFileNames: true,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 using (var stream = File.OpenRead(packagePath))
                 {

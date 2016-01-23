@@ -139,7 +139,10 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var request = new RestoreRequest(spec, sources, packagesDir)
+                {
+                    XmlDocFileSaveMode = Packaging.XmlDocFileSaveMode.None
+                };
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();

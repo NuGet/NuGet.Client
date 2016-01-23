@@ -48,7 +48,7 @@ namespace NuGet.Packaging
                 throw new PackagingException(Strings.MultipleNuspecFiles);
             }
 
-            return nuspecEntries.First();
+            return nuspecEntries[0];
         }
     }
 }

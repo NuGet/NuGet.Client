@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.Packaging;
+using NuGet.Packaging.PackageExtraction;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
@@ -112,11 +114,18 @@ namespace NuGet.Commands
         public ISet<string> RequestedRuntimes { get; } = new SortedSet<string>(StringComparer.Ordinal);
 
         /// <summary>
+        /// Gets or sets the <see cref="Packaging.PackageSaveMode"/>.
+        /// </summary>
+        public PackageSaveMode PackageSaveMode { get; set; } = PackageSaveMode.Default;
+
+        /// <summary>
         /// These Runtime Ids will be used if <see cref="RequestedRuntimes"/> and the project runtimes
         /// are both empty.
         /// </summary>
         /// <remarks>RIDs are case sensitive.</remarks>
         public ISet<string> FallbackRuntimes { get; } = new SortedSet<string>(StringComparer.Ordinal);
+
+        public XmlDocFileSaveMode XmlDocFileSaveMode { get; set; } = PackageExtractionBehavior.XmlDocFileSaveMode;
 
         public void Dispose()
         {
