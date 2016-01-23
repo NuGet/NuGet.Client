@@ -254,7 +254,7 @@ Function Clear-Artifacts {
     param()
     if( Test-Path $Artifacts) {
         Trace-Log 'Cleaning the Artifacts folder'
-        Remove-Item $Artifacts\*.* -Recurse -Force
+        Remove-Item $Artifacts\* -Recurse -Force
     }
 }
 
@@ -537,10 +537,6 @@ Function Build-ClientsProjects {
     if (-not $?) {
         Error-Log "Build of NuGet.Clients.sln failed. Code: $LASTEXITCODE"
     }
-
-    Trace-Log "Copying the Vsix to $Artifacts"
-    $visxLocation = Join-Path $Artifacts "$Configuration\NuGet.Clients\VsExtension"
-    Copy-Item "$visxLocation\NuGet.Tools.vsix" $Artifacts
 }
 
 Function Test-ClientsProjects {
@@ -576,7 +572,7 @@ Function Invoke-ILMerge {
     param(
         [string]$Configuration = $DefaultConfiguration
     )
-    $buildArtifactsFolder = [io.path]::combine($Artifacts, $Configuration, 'NuGet.Clients', 'NuGet.CommandLine')
+    $buildArtifactsFolder = [io.path]::combine($Artifacts, 'NuGet.CommandLine', $Configuration)
     $ignoreList = Read-FileList (Join-Path $buildArtifactsFolder '.mergeignore')
     $buildArtifacts = Get-ChildItem $buildArtifactsFolder -Exclude $ignoreList | %{ $_.Name }
 

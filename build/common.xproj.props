@@ -9,9 +9,7 @@
     <ArtifactRoot>$(EnlistmentRoot)\artifacts</ArtifactRoot>
     <ArtifactRoot>$([System.IO.Path]::GetFullPath( $(ArtifactRoot) ))</ArtifactRoot>
 
-    <RelativeOutputPathBase>$(MSBuildProjectDirectory.Substring($(EnlistmentRootSrc.Length)))</RelativeOutputPathBase>
-
-    <BaseIntermediateOutputPath>$(EnlistmentRoot)\artifacts\obj</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>$(ArtifactRoot)\.obj</BaseIntermediateOutputPath>
     <BaseIntermediateOutputPath>$([System.IO.Path]::GetFullPath( $(BaseIntermediateOutputPath) ))</BaseIntermediateOutputPath>
 
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
