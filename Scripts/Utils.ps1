@@ -19,21 +19,82 @@ function IsAdminPrompt()
     return $true
 }
 
+function GetRegistryKey
+{
+    param (
+    [Parameter(Mandatory=$true)]
+    [string]$RegKey,
+    [Parameter(Mandatory=$true)]
+    [string]$RegName)
+
+    if (!(Test-Path -Path $RegKey -PathType Container))
+    {
+        return $null
+    }
+
+    $props = Get-ItemProperty -Path $RegKey
+    if (!($props) -or ($props.Length -eq 0))
+    {
+        return $null
+    }
+
+    $name = Get-Member -InputObject $props -Name $RegName
+    if (!($name))
+    {
+        return $null
+    }
+
+    $value = Get-ItemPropertyValue -Path $RegKey -Name $RegName
+    return $value
+}
+
+function SetRegistryKey
+{
+    param (
+    [Parameter(Mandatory=$true)]
+    [string]$RegKey,
+    [Parameter(Mandatory=$true)]
+    [string]$RegName,
+    [Parameter(Mandatory=$true)]
+    $ExpectedValue,
+    $FriendlyKeyName = "the provided registry key",
+    [switch]$NeedAdmin)
+
+    $currentValue = GetRegistryKey $RegKey $RegName
+
+    Write-Host "Current value is $currentValue"
+    if ($currentValue -eq $ExpectedValue)
+    {
+        Write-Host -ForegroundColor Cyan "Registry settings for $FriendlyKeyName is already as desired."
+        return $true
+    }
+    else
+    {
+        if ($NeedAdmin -and !(IsAdminPrompt))
+        {
+            return $false
+        }
+
+        New-Item -Path $RegKey -Name $RegName -Value $ExpectedValue -Force
+    }
+
+    return $true
+}
+
+
 function DisableCrashDialog()
 {
-    $success = IsAdminPrompt
-    If ($success -eq $false)
+    # Set the registry key to prevent the 'Not Responding' window from showing up on a crash
+    $result1 = SetRegistryKey "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting" "ForceQueue" 1 -NeedAdmin
+    $result2 = SetRegistryKey "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\Consent" "DefaultConsent" 1 -NeedAdmin
+
+    If (($result1 -eq $false) -or ($result2 -eq $false))
     {
         $warningMessage = 'WARNING: Please re-run this script as an Administrator! Setting registry keys need admin privileges.'
 
         Write-Host -ForegroundColor Yellow $warningMessage
-        return $false
+        exit 1
     }
 
-    # Set the registry key to prevent the 'Not Responding' window from showing up on a crash
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting" -Name ForceQueue -Value 1
-    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\Consent" -Name DefaultConsent -Value 1
-
-    Write-host 'Windows error reporting Crash dialog has been disabled.'
-    return $true
+    Write-Host -ForegroundColor Cyan 'Windows crash dialog has been disabled'
 }

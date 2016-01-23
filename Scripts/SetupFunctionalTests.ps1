@@ -1,78 +1,73 @@
-param (
-    [string]$NuGetRoot=$null
-)
+. "$PSScriptRoot\Utils.ps1"
 
 function EnableWindowsDeveloperMode()
 {
     $windowsDeveloperModeKey = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"
-    if (Test-Path $windowsDeveloperModeKey)
+    $success = SetRegistryKey $windowsDeveloperModeKey "AllowDevelopmentWithoutDevLicense" 1 -NeedAdmin
+    if (!($success))
     {
-        Set-ItemProperty -Path $windowsDeveloperModeKey -Name AllowDevelopmentWithoutDevLicense -Value 1
-        return $true
+        exit 1
     }
-    else {
-        return $false
-    }
+
+    Write-Host -ForegroundColor Cyan 'Windows Developer mode has been enabled.'
 }
 
 function DisableTextTemplateSecurityWarning([string]$VSVersion)
 {
-    $textTemplatingSecurityWarningRegistryKey = "HKCU:\SOFTWARE\Microsoft\VisualStudio\" + $VSVersion + "\ApplicationPrivateSettings\Microsoft\VisualStudio\TextTemplating\VSHost\OrchestratorOptionsAutomation"
+    $textTemplatingSecurityWarningRegistryKey = Join-Path "HKCU:\SOFTWARE\Microsoft\VisualStudio" $VSVersion
+    $textTemplatingSecurityWarningRegistryKey = Join-Path $textTemplatingSecurityWarningRegistryKey `
+    "ApplicationPrivateSettings\Microsoft\VisualStudio\TextTemplating\VSHost\OrchestratorOptionsAutomation"
 
-    if (Test-Path $textTemplatingSecurityWarningRegistryKey)
+    $success = SetRegistryKey $textTemplatingSecurityWarningRegistryKey "ShowWarningDialog" 1*System.Boolean*False
+    if (!($success))
     {
-        Set-ItemProperty -Path $textTemplatingSecurityWarningRegistryKey -Name ShowWarningDialog -Value 1*System.Boolean*False
-        return $True
+        exit 1
     }
-    else {
-        return $false
-    }
+
+    $message = 'Disabled security message for Text Templates. To re-enable,' `
+    + 'Go to Visual Studio -> Tools -> Options -> Text Templating -> Show Security Message. Change it to True.'
+
+    Write-Host -ForegroundColor Cyan $Message
 }
 
-if (!$NuGetRoot)
+trap
 {
-    $NuGetRoot = $pwd
+    Write-Host $_.Exception -ForegroundColor Red
+    exit 1
 }
 
-$NuGetTestsPSM1 = Join-Path $NuGetRoot "test\EndToEnd\NuGet.Tests.psm1"
+$CurrentFolder = Get-Item $PSScriptRoot
+$NuGetRoot = $CurrentFolder.Parent
+
+$NuGetTestsPSM1 = Join-Path $NuGetRoot.FullName "test\EndToEnd\NuGet.Tests.psm1"
 
 Write-Host 'If successful, this script needs to be run only once on your machine!'
 
-Write-Host 'Setting the environment variable needed to load NuGet.Tests powershell module for running functional tests...'
+Write-Host 'Setting the environment variable needed to load NuGet.Tests powershell module ' `
+'for running functional tests...'
+
 [Environment]::SetEnvironmentVariable("NuGetFunctionalTestPath", $NuGetTestsPSM1, "User")
-Write-Host -ForegroundColor Cyan 'You can now call Run-Test from any instance of Visual Studio as soon as you open Package Manager Console!'
-Write-Host -ForegroundColor Cyan 'Before running all the functional tests, please ensure that you have VS Enterprise with F#, Windows Phone tooling and Silverlight installed'
+Write-Host -ForegroundColor Cyan 'You can now call Run-Test from any instance of Visual Studio ' `
+'as soon as you open Package Manager Console!'
+
+Write-Host -ForegroundColor Cyan 'Before running all the functional tests, ' `
+'please ensure that you have VS Enterprise with F#, Windows Phone tooling and Silverlight installed'
+
 Write-Host
 Write-Host 'Trying to set some registry keys to avoid dialog boxes popping during the functional test run...'
 
-If (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(`
-    [Security.Principal.WindowsBuiltInRole] "Administrator"))
-{
-    $warningMessage = 'WARNING: Please re-run this script as an Administrator! Setting registry keys need admin privileges. If you are not planning to run all the tests, you can ignore this message'
-
-    Write-Host -ForegroundColor Yellow $warningMessage
-    Break
-}
-
-$result = EnableWindowsDeveloperMode
-
-if (!$result)
-{
-    Write-Host -ForegroundColor Yellow 'WARNING: Could not enable windows developer mode. Registry Key not found'
-}
-else {
-    Write-Host -ForegroundColor Cyan 'Windows Developer mode has been enabled.'
-}
-
-
 $VSVersion = '14.0'
-$result = DisableTextTemplateSecurityWarning $VSVersion
-if (!$result)
+DisableTextTemplateSecurityWarning $VSVersion
+
+$net35x86 = "C:\windows\Microsoft.NET\Framework\v3.5\msbuild.exe"
+$net35x64 = "C:\windows\Microsoft.NET\Framework64\v3.5\msbuild.exe"
+
+if (!(Test-Path $net35x86) -or !(Test-Path $net35x64))
 {
-    Write-Host -ForegroundColor Yellow 'WARNING: Currently, functional tests can only be run on VS 2015 and could not find settings on registry for that. Skipping...'
+    Write-Host -ForegroundColor Yellow 'WARNING: .NET 3.5 is not installed on the machine. Please install'
+    exit 1
 }
-else {
-    Write-Host -ForegroundColor Cyan 'Disabled security message for Text Templates. To re-enable, Go to Visual Studio -> Tools -> Options -> Text Templating -> Show Security Message. Change it to True.'
-}
+
+EnableWindowsDeveloperMode
 
 Write-Host 'THE END!'

@@ -15,6 +15,12 @@ param (
 	[ValidateSet("15.0", "14.0", "12.0", "11.0", "10.0")]
     [string]$VSVersion)
 
+trap
+{
+    Write-Host $_.Exception -ForegroundColor Red
+    exit 1
+}
+
 . "$PSScriptRoot\Utils.ps1"
 . "$PSScriptRoot\VSUtils.ps1"
 . "$PSScriptRoot\NuGetFunctionalTestUtils.ps1"

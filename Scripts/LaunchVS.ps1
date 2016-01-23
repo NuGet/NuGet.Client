@@ -7,9 +7,25 @@ $DTEReadyPollFrequencyInSecs,
 [Parameter(Mandatory=$true)]
 $NumberOfPolls)
 
+trap
+{
+    Write-Host $_.Exception -ForegroundColor Red
+    exit 1
+}
+
 . "$PSScriptRoot\VSUtils.ps1"
 
 KillRunningInstancesOfVS
+
+Write-Host 'Waiting for 5 seconds before cleaning the MEF cache'
+start-sleep 5
+
+Write-Host "Force deleting LOCALAPPDATA\Microsoft\VisualStudio\$VSVersion"
+$localappdata = $env:LOCALAPPDATA
+Remove-Item (Join-Path $localappdata\Microsoft\VisualStudio $VSVersion) -Force -Recurse -ErrorAction SilentlyContinue
+
+Write-Host 'Waiting for 5 seconds after cleaning the MEF cache'
+start-sleep 5
 
 LaunchVS $VSVersion
 
