@@ -78,11 +78,11 @@ namespace NuGet.Common
                         }
                         else if (RuntimeEnvironmentHelper.IsMacOSX)
                         {
-                            return Path.Combine(@"/","Library", "Application Support");
+                            return @"/Library/Application Support";
                         }
                         else
                         {
-                            return Path.Combine(@"/","etc","opt");
+                            return @"/etc/opt";
                         }
 
                     case SpecialFolder.ApplicationData:
