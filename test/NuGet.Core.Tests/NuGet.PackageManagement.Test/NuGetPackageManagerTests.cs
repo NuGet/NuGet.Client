@@ -4430,6 +4430,7 @@ namespace NuGet.Test
             public override Task<DownloadResourceResult> GetDownloadResourceResultAsync(
                 PackageIdentity identity,
                 Configuration.ISettings settings,
+                NuGet.Logging.ILogger logger,
                 CancellationToken token)
             {
                 var packageReader = new Mock<PackageReaderBase>(

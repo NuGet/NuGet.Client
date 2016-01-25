@@ -102,8 +102,10 @@ namespace NuGet.Protocol.Core.v3
             return downloadUri;
         }
 
-        public override async Task<DownloadResourceResult> GetDownloadResourceResultAsync(PackageIdentity identity,
+        public override async Task<DownloadResourceResult> GetDownloadResourceResultAsync(
+            PackageIdentity identity,
             ISettings settings,
+            ILogger logger,
             CancellationToken token)
         {
             if (identity == null)
@@ -116,10 +118,15 @@ namespace NuGet.Protocol.Core.v3
                 throw new ArgumentNullException(nameof(settings));
             }
 
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             var uri = await GetDownloadUrl(identity, token);
             if (uri != null)
             {
-                return await GetDownloadResultAsync(identity, uri, settings, token);
+                return await GetDownloadResultAsync(identity, uri, settings, logger, token);
             }
 
             return null;
@@ -129,6 +136,7 @@ namespace NuGet.Protocol.Core.v3
             PackageIdentity identity,
             Uri uri,
             ISettings settings,
+            ILogger logger,
             CancellationToken token)
         {
             // Uri is not null, so the package exists in the source
@@ -142,7 +150,7 @@ namespace NuGet.Protocol.Core.v3
                 return packageFromGlobalPackages;
             }
 
-            Logger.Instance.LogVerbose($"  GET: {uri}");
+            logger.LogVerbose($"  GET: {uri}");
 
             for (int i = 0; i < 3; i++)
             {
@@ -153,7 +161,7 @@ namespace NuGet.Protocol.Core.v3
                         var downloadResult = await GlobalPackagesFolderUtility.AddPackageAsync(identity,
                             packageStream,
                             settings,
-                            Logger.Instance,
+                            logger,
                             token);
 
                         return downloadResult;
@@ -163,7 +171,7 @@ namespace NuGet.Protocol.Core.v3
                 {
                     string message = $"Error downloading {identity} from {uri} {ExceptionUtilities.DisplayMessage(ex)}";
 
-                    Logger.Instance.LogWarning(message);
+                    logger.LogWarning(message);
                 }
                 catch (Exception ex)
                 {
