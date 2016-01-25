@@ -31,7 +31,7 @@ namespace NuGet.CommandLine.XPlat
             _verbosity = new Lazy<LogLevel>(() =>
             {
                 LogLevel level;
-                if (!Enum.TryParse(verbosity.Value(), out level))
+                if (!Enum.TryParse(value: verbosity.Value(), ignoreCase: true, result: out level))
                 {
                     level = LogLevel.Information;
                 }
@@ -66,7 +66,7 @@ namespace NuGet.CommandLine.XPlat
 
         private void LogInternal(LogLevel logLevel, string message)
         {
-            if(logLevel < Verbosity)
+            if (logLevel < Verbosity)
             {
                 return;
             }
