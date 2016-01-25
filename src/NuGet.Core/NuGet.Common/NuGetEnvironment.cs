@@ -14,16 +14,7 @@ namespace NuGet.Common
             {
                 case NuGetFolderPath.MachineWideSettingsBaseDirectory:
                     var appData = string.Empty;
-                    if (RuntimeEnvironmentHelper.IsWindows)
-                    {
-                        appData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-                    }
-                    else
-                    {
-                        // Only super users have write access to common app data folder on *nix,
-                        // so we use roaming local app data folder instead
-                        appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                    }
+                    appData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
                     return Path.Combine(appData, "NuGet");
                 case NuGetFolderPath.MachineWideConfigDirectory:
                     return Path.Combine(GetFolderPath(NuGetFolderPath.MachineWideSettingsBaseDirectory),
@@ -85,22 +76,23 @@ namespace NuGet.Common
                                 () => GetEnvironmentVariable("PROGRAMDATA"),
                                 () => GetEnvironmentVariable("ALLUSERSPROFILE"));
                         }
+                        else if (RuntimeEnvironmentHelper.IsMacOSX)
+                        {
+                            return @"/Library/Application Support";
+                        }
                         else
                         {
-                            return "/usr/share";
+                            return @"/etc/opt";
                         }
+
                     case SpecialFolder.ApplicationData:
                         if (RuntimeEnvironmentHelper.IsWindows)
                         {
                             return GetEnvironmentVariable("APPDATA");
                         }
-                        else if (RuntimeEnvironmentHelper.IsMacOSX)
-                        {
-                            return Path.Combine("Library", "Application Support","NuGet");
-                        }
                         else
                         {
-                            return Path.Combine("etc", "opt");
+                            return Path.Combine(GetHome(), ".nuget");
                         }
                     case SpecialFolder.LocalApplicationData:
                         if (RuntimeEnvironmentHelper.IsWindows)

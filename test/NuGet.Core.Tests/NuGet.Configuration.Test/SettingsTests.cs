@@ -8,6 +8,7 @@ using System.Linq;
 using System.Xml;
 using Microsoft.Extensions.PlatformAbstractions;
 using Moq;
+using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -32,6 +33,75 @@ namespace NuGet.Configuration.Test
                 // Assert
                 Assert.Equal(tuple.Item1, expectedFileName);
                 Assert.Equal(tuple.Item2, expectedRoot);
+            }
+        }
+
+        [Fact] 
+        public void TestNuGetEnviromentPath()
+        {
+            if (PlatformServices.Default.Runtime.OperatingSystem.Equals("windows", StringComparison.OrdinalIgnoreCase))
+            {
+                // Act
+                var machineWidePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.MachineWideSettingsBaseDirectory), "NuGet.Config");
+                var globalConfigPath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory), "NuGet.Config");
+                var machineWidePathTuple = Settings.GetFileNameAndItsRoot("test root", machineWidePath);
+                var globalConfigTuple = Settings.GetFileNameAndItsRoot("test root", globalConfigPath);
+
+#if DNXCORE50
+                var commonApplicationData = Environment.GetEnvironmentVariable("PROGRAMDATA") ??
+                    Environment.GetEnvironmentVariable("ALLUSERSPROFILE") ?? null;
+                var userSetting = Environment.GetEnvironmentVariable("APPDATA");
+#else
+                var commonApplicationData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+                var userSetting = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+#endif
+                // Assert 
+                Assert.Equal(Path.Combine(commonApplicationData, "NuGet"), machineWidePathTuple.Item2);
+                Assert.Equal("NuGet.Config", machineWidePathTuple.Item1);
+                Assert.Equal(Path.Combine(userSetting, "NuGet"), globalConfigTuple.Item2);
+                Assert.Equal("NuGet.Config", globalConfigTuple.Item1);
+            }
+            else if(PlatformServices.Default.Runtime.OperatingSystem.Equals("linux", StringComparison.OrdinalIgnoreCase))
+            {
+                // Act
+                var machineWidePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.MachineWideSettingsBaseDirectory), "NuGet.Config");
+                var globalConfigPath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory), "NuGet.Config");
+                var machineWidePathTuple = Settings.GetFileNameAndItsRoot("test root", machineWidePath);
+                var globalConfigTuple = Settings.GetFileNameAndItsRoot("test root", globalConfigPath);
+
+#if DNXCORE50
+                var commonApplicationData = @"/etc/opt";
+                var userSetting = Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".nuget");
+#else
+                var commonApplicationData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+                var userSetting = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+#endif
+                // Assert 
+                Assert.Equal(Path.Combine(commonApplicationData, "NuGet"), machineWidePathTuple.Item2);
+                Assert.Equal("NuGet.Config", machineWidePathTuple.Item1);
+                Assert.Equal(Path.Combine(userSetting, "NuGet"), globalConfigTuple.Item2);
+                Assert.Equal("NuGet.Config", globalConfigTuple.Item1);
+            }
+            else if (PlatformServices.Default.Runtime.OperatingSystem.Equals("mac", StringComparison.OrdinalIgnoreCase))
+            {
+                // Act
+                var machineWidePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.MachineWideSettingsBaseDirectory), "NuGet.Config");
+                var globalConfigPath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory), "NuGet.Config");
+                var machineWidePathTuple = Settings.GetFileNameAndItsRoot("test root", machineWidePath);
+                var globalConfigTuple = Settings.GetFileNameAndItsRoot("test root", globalConfigPath);
+
+#if DNXCORE50
+                var commonApplicationData = @"/Library/Application Support";
+                var userSetting = Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".nuget");
+#else
+                var commonApplicationData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+                var userSetting = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+#endif
+                // Assert 
+                Assert.Equal(Path.Combine(commonApplicationData, "NuGet"), machineWidePathTuple.Item2);
+                Assert.Equal("NuGet.Config", machineWidePathTuple.Item1);
+                Assert.Equal(Path.Combine(userSetting, "NuGet"), globalConfigTuple.Item2);
+                Assert.Equal("NuGet.Config", globalConfigTuple.Item1);
             }
         }
 
