@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
-namespace NuGet.Commands.Test
+namespace NuGet.Test.Utility
 {
-    public class TestLogger : NuGet.Logging.ILogger
+    public class TestLogger : Logging.ILogger
     {
         /// <summary>
         /// Logged messages
