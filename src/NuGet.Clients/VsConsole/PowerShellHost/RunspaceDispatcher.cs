@@ -12,6 +12,7 @@ using System.Management.Automation.Runspaces;
 using System.Threading;
 using Microsoft.PowerShell;
 using NuGet;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using PathUtility = NuGet.ProjectManagement.PathUtility;
 
@@ -180,14 +181,15 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         }
 
         // Was passing in IPackage
-        public void ExecuteScript(string installPath, string scriptPath, PackageIdentity package)
+        public void ExecuteScript(string installPath, string scriptPath, ScriptPackage package)
         {
             if (File.Exists(scriptPath))
             {
                 string folderPath = Path.GetDirectoryName(scriptPath);
 
                 Invoke(
-                    "$__pc_args=@(); $input|%{$__pc_args+=$_}; & " + PathUtility.EscapePSPath(scriptPath) + " $__pc_args[0] $__pc_args[1] $__pc_args[2]; Remove-Variable __pc_args -Scope 0",
+                    "$__pc_args=@(); $input|%{$__pc_args+=$_}; & " + PathUtility.EscapePSPath(scriptPath)
+                    + " $__pc_args[0] $__pc_args[1] $__pc_args[2]; Remove-Variable __pc_args -Scope 0",
                     new object[] { installPath, folderPath, package },
                     outputResults: true);
             }

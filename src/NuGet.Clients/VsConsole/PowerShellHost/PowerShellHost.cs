@@ -39,6 +39,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private readonly ISourceControlManagerProvider _sourceControlManagerProvider;
         private readonly ICommonOperations _commonOperations;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
+        private readonly IScriptExecutor _scriptExecutor;
         private const string ActivePackageSourceKey = "activePackageSource";
         private const string SyncModeKey = "IsSyncMode";
         private const string PackageManagementContextKey = "PackageManagementContext";
@@ -72,6 +73,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _solutionManager = ServiceLocator.GetInstance<ISolutionManager>();
             _settings = ServiceLocator.GetInstance<ISettings>();
             _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
+            _scriptExecutor = ServiceLocator.GetInstance<IScriptExecutor>();
 
             _dte = ServiceLocator.GetInstance<DTE>();
             _sourceControlManagerProvider = ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>();
@@ -237,6 +239,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             // Hook up solution events
                             _solutionManager.SolutionOpened += (o, e) =>
                                 {
+                                    _scriptExecutor.Reset();
+
                                     // Solution opened event is raised on the UI thread
                                     // Go off the UI thread before calling likely expensive call of ExecuteInitScriptsAsync
                                     // Also, it uses semaphores, do not call it from the UI thread
@@ -396,7 +400,22 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                                 if (Directory.Exists(toolsPath))
                                 {
                                     AddPathToEnvironment(toolsPath);
-                                    Runspace.ExecuteScript(pathToPackage, scriptPath, package);
+                                    if (File.Exists(scriptPath))
+                                    {
+                                        if (_scriptExecutor.TryMarkVisited(package, true))
+                                        {
+                                            var scriptPackage = new ScriptPackage(
+                                                package.Id,
+                                                package.Version.ToString(),
+                                                pathToPackage);
+
+                                            Runspace.ExecuteScript(pathToPackage, scriptPath, scriptPackage);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        _scriptExecutor.TryMarkVisited(package, false);
+                                    }
                                 }
                             }
                         }

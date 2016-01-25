@@ -1,5 +1,6 @@
 ﻿using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
+using Task = System.Threading.Tasks.Task;
 
 namespace API.Test
 {
@@ -56,6 +57,22 @@ namespace API.Test
                 restorer.RestorePackages(project);
                 return;
             }
+        }
+
+        public static bool ExecuteInitScript(string id, string version)
+        {
+            IVsScriptExecutor scriptExecutor = ServiceLocator.GetInstance<IVsScriptExecutor>();
+            // It is important that this method does not wait on ExecuteInitScriptAsync on the calling thread.
+            // Calling thread is powershell execution thread and ExecuteInitScriptAsync needs to switch to
+            // Powershell execution thread to execute the scripts
+            var task = Task.Run(async () => await scriptExecutor.ExecuteInitScriptAsync(id, version));
+            Task.WaitAny(task, Task.Delay(1000));
+            if (task.IsCompleted)
+            {
+                return task.Result;
+            }
+
+            return false;
         }
     }
 }

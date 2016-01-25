@@ -22,6 +22,7 @@ namespace NuGet.VisualStudio
         /// <param name="packageId">Id of the package whose init.ps1 will be executed.</param>
         /// <param name="packageVersion">Version of the package whose init.ps1 will be executed.</param>
         /// <returns>Returns true if the script was executed or has been executed already.</returns>
+        /// <remarks>This method throws if the init.ps1 being executed throws </remarks>
         Task<bool> ExecuteInitScriptAsync(string packageId, string packageVersion);
     }
 }
