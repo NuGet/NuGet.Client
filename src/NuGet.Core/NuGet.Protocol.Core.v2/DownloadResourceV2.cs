@@ -8,7 +8,6 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -32,12 +31,18 @@ namespace NuGet.Protocol.Core.v2
         public override Task<DownloadResourceResult> GetDownloadResourceResultAsync(
             PackageIdentity identity,
             Configuration.ISettings settings,
+            NuGet.Logging.ILogger logger,
             CancellationToken token)
         {
             // settings are not used here, since, global packages folder are not used for v2 sources
             if (identity == null)
             {
                 throw new ArgumentNullException(nameof(identity));
+            }
+
+            if (logger == null)
+            {
+                logger = new NuGet.Logging.NullLogger();
             }
 
             string displayUri = V2Client.Source;
@@ -62,12 +67,12 @@ namespace NuGet.Protocol.Core.v2
                             // If this is a SourcePackageDependencyInfo object with everything populated
                             // and it is from an online source, use the machine cache and download it using the
                             // given url.
-                            return DownloadFromUrl(sourcePackage, repository, token);
+                            return DownloadFromUrl(sourcePackage, repository, logger, token);
                         }
                         else
                         {
                             // Look up the package from the id and version and download it.
-                            return DownloadFromIdentity(identity, V2Client, token);
+                            return DownloadFromIdentity(identity, V2Client, logger, token);
                         }
                     }
                     catch (IOException ex) when (ex.InnerException is SocketException && i < 2)
@@ -77,7 +82,7 @@ namespace NuGet.Protocol.Core.v2
                             displayUri,
                             ExceptionUtilities.DisplayMessage(ex));
 
-                        Logger.Instance.LogWarning(message);
+                        logger.LogWarning(message);
                     }
                     catch (Exception ex)
                     {
@@ -90,9 +95,10 @@ namespace NuGet.Protocol.Core.v2
             });
         }
 
-        private static DownloadResourceResult DownloadFromUrl(
+        private DownloadResourceResult DownloadFromUrl(
             SourcePackageDependencyInfo package,
             DataServicePackageRepository repository,
+            NuGet.Logging.ILogger logger,
             CancellationToken token)
         {
             IPackage newPackage = null;
@@ -127,6 +133,7 @@ namespace NuGet.Protocol.Core.v2
                     package,
                     repository,
                     package.DownloadUri,
+                    logger,
                     token);
             }
 
@@ -139,9 +146,10 @@ namespace NuGet.Protocol.Core.v2
             return null;
         }
 
-        private static DownloadResourceResult DownloadFromIdentity(
+        private DownloadResourceResult DownloadFromIdentity(
             PackageIdentity identity,
             IPackageRepository repository,
+            NuGet.Logging.ILogger logger,
             CancellationToken token)
         {
             var version = SemanticVersion.Parse(identity.Version.ToString());
@@ -168,6 +176,7 @@ namespace NuGet.Protocol.Core.v2
                         identity,
                         dataServiceRepo,
                         url,
+                        logger,
                         token);
 
                     if (downloadedPackage != null)
@@ -212,11 +221,12 @@ namespace NuGet.Protocol.Core.v2
             return package != null && package.GetHash(hashProvider).Equals(hash, StringComparison.OrdinalIgnoreCase);
         }
 
-        private static IPackage DownloadToMachineCache(
+        private IPackage DownloadToMachineCache(
             IPackageCacheRepository cacheRepository,
             PackageIdentity package,
             DataServicePackageRepository repository,
             Uri downloadUri,
+            NuGet.Logging.ILogger logger,
             CancellationToken token)
         {
             var packageName = new PackageNameWrapper(package);
@@ -246,7 +256,7 @@ namespace NuGet.Protocol.Core.v2
                 {
                     repository.PackageDownloader.ProgressAvailable += progressHandler;
 
-                    Logger.Instance.LogVerbose($"  GET: {downloadUri}");
+                    logger.LogVerbose($"  GET: {downloadUri}");
                     repository.PackageDownloader.DownloadPackage(downloadClient, packageName, stream);
                 }
                 catch (Exception ex) when (ex is OperationCanceledException ||

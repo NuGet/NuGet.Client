@@ -16,7 +16,7 @@ namespace NuGet.Protocol.Core.Types
     {
         public virtual SourceCacheContext CacheContext { get; set; }
 
-        public virtual ILogger Logger { get; set; }
+        public virtual ILogger Logger { get; set; } = new NullLogger();
 
         public abstract Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken token);
 

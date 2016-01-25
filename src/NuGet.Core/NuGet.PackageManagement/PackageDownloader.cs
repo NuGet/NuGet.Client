@@ -163,7 +163,7 @@ namespace NuGet.PackageManagement
             token.ThrowIfCancellationRequested();
 
             result
-                = await downloadResource.GetDownloadResourceResultAsync(packageIdentity, settings, token);
+                = await downloadResource.GetDownloadResourceResultAsync(packageIdentity, settings, logger, token);
 
             if (result == null)
             {
