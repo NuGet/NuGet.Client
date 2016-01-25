@@ -24,7 +24,10 @@ namespace NuGet.CommandLine.XPlat
 {
     public class Program
     {
-        private static ILogger _log;
+        private const string HelpOption = "-h|--help";
+        private const string VerbosityOption = "-v|--verbosity <verbosity>";
+
+        public static ILogger Log { get; set; }
 
         public static int Main(string[] args)
         {
@@ -43,14 +46,155 @@ namespace NuGet.CommandLine.XPlat
             var app = new CommandLineApplication();
             app.Name = "nuget3";
             app.FullName = Strings.App_FullName;
-            app.HelpOption("-h|--help");
+            app.HelpOption(HelpOption);
             app.VersionOption("--version", typeof(Program).GetTypeInfo().Assembly.GetName().Version.ToString());
 
-            var verbosity = app.Option("-v|--verbosity <verbosity>", Strings.Switch_Verbosity, CommandOptionType.SingleValue);
+            var verbosity = app.Option(VerbosityOption, Strings.Switch_Verbosity, CommandOptionType.SingleValue);
 
-            // Set up logging
-            _log = new CommandOutputLogger(verbosity);
+            SetConnectionLimit();
 
+            app.Command("restore", restore =>
+            {
+                restore.Description = Strings.Restore_Description;
+                restore.HelpOption(HelpOption);
+
+                var sources = restore.Option(
+                    "-s|--source <source>",
+                    Strings.Restore_Switch_Source_Description,
+                    CommandOptionType.MultipleValue);
+                var packagesDirectory = restore.Option(
+                    "--packages <packagesDirectory>",
+                    Strings.Restore_Switch_Packages_Description,
+                    CommandOptionType.SingleValue);
+                var parallel = restore.Option(
+                    "-p|--parallel <noneOrNumberOfParallelTasks>",
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Restore_Switch_Parallel_Description,
+                        RestoreRequest.DefaultDegreeOfConcurrency),
+                    CommandOptionType.SingleValue);
+                var fallBack = restore.Option(
+                    "-f|--fallbacksource <FEED>",
+                    Strings.Restore_Switch_Fallback_Description,
+                    CommandOptionType.MultipleValue);
+                var runtime = restore.Option(
+                    "--runtime <RID>",
+                    Strings.Restore_Switch_Runtime_Description,
+                    CommandOptionType.MultipleValue);
+                verbosity = restore.Option(VerbosityOption,
+                    Strings.Switch_Verbosity,
+                    CommandOptionType.SingleValue);
+
+                EnsureLog(verbosity);
+
+                var argRoot = restore.Argument(
+                    "[root]",
+                    Strings.Restore_Arg_ProjectName_Description,
+                    multipleValues: true);
+
+                restore.OnExecute(async () =>
+                {
+                    // Ignore casing on windows
+                    var comparer = RuntimeEnvironmentHelper.IsWindows ?
+                        StringComparer.OrdinalIgnoreCase
+                        : StringComparer.Ordinal;
+
+                    var inputValues = new HashSet<string>(comparer);
+
+                    if (argRoot.Values.Count < 1)
+                    {
+                        // Use the current directory if no path was given
+                        var workingDir = Path.GetFullPath(".");
+
+                        inputValues.UnionWith(GetProjectJsonFilesInDirectory(workingDir));
+                    }
+                    else
+                    {
+                        foreach (var inputPath in argRoot.Values)
+                        {
+                            var fullPath = Path.GetFullPath(inputPath);
+
+                            // For directories find all children
+                            if (Directory.Exists(inputPath))
+                            {
+                                inputValues.UnionWith(GetProjectJsonFilesInDirectory(fullPath));
+                            }
+                            else
+                            {
+                                // Add the input directly
+                                inputValues.Add(fullPath);
+                            }
+                        }
+                    }
+
+                    var restoreExitCode = 0;
+
+                    foreach (var inputPath in inputValues)
+                    {
+                        var currentExitCode = await ExecuteRestore(
+                            sources,
+                            packagesDirectory,
+                            parallel,
+                            fallBack,
+                            runtime,
+                            inputPath);
+
+                        if (currentExitCode != 0)
+                        {
+                            restoreExitCode = currentExitCode;
+                        }
+                    }
+
+                    return restoreExitCode;
+                });
+            });
+
+            app.OnExecute(() =>
+            {
+                app.ShowHelp();
+                return 0;
+            });
+
+            var exitCode = 0;
+
+            try
+            {
+                exitCode = app.Execute(args);
+            }
+            catch (Exception e)
+            {
+                EnsureLog(verbosity);
+
+                // Log the error
+                Log.LogError(ExceptionUtilities.DisplayMessage(e));
+
+                // Log the stack trace as verbose output.
+                Log.LogVerbose(e.ToString());
+
+                exitCode = 1;
+            }
+
+            // Limit the exit code range to 0-255 to support POSIX
+            if (exitCode < 0 || exitCode > 255)
+            {
+                exitCode = 1;
+            }
+
+            return exitCode;
+        }
+
+        private static void EnsureLog(CommandOption verbosity)
+        {
+            // Set up logging.
+            // For tests this will already be set.
+            if (Log == null)
+            {
+                Log = new CommandOutputLogger(verbosity);
+            }
+        }
+
+        private static void SetConnectionLimit()
+        {
 #if !DNXCORE50
             // Increase the maximum number of connections per server.
             if (!RuntimeEnvironmentHelper.IsMono)
@@ -63,103 +207,6 @@ namespace NuGet.CommandLine.XPlat
                 ServicePointManager.DefaultConnectionLimit = 1;
             }
 #endif
-
-            app.Command("restore", restore =>
-                {
-                    restore.Description = Strings.Restore_Description;
-
-                    var sources = restore.Option(
-                        "-s|--source <source>",
-                        Strings.Restore_Switch_Source_Description,
-                        CommandOptionType.MultipleValue);
-                    var packagesDirectory = restore.Option(
-                        "--packages <packagesDirectory>",
-                        Strings.Restore_Switch_Packages_Description,
-                        CommandOptionType.SingleValue);
-                    var parallel = restore.Option(
-                        "-p|--parallel <noneOrNumberOfParallelTasks>",
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            Strings.Restore_Switch_Parallel_Description,
-                            RestoreRequest.DefaultDegreeOfConcurrency),
-                        CommandOptionType.SingleValue);
-                    var fallBack = restore.Option(
-                        "-f|--fallbacksource <FEED>",
-                        Strings.Restore_Switch_Fallback_Description,
-                        CommandOptionType.MultipleValue);
-                    var runtime = restore.Option(
-                        "--runtime <RID>",
-                        Strings.Restore_Switch_Runtime_Description,
-                        CommandOptionType.MultipleValue);
-                    var argRoot = restore.Argument(
-                        "[root]",
-                        Strings.Restore_Arg_ProjectName_Description,
-                        multipleValues: true);
-
-                    restore.OnExecute(async () =>
-                    {
-                        // Ignore casing on windows
-                        var comparer = RuntimeEnvironmentHelper.IsWindows ?
-                            StringComparer.OrdinalIgnoreCase
-                            : StringComparer.Ordinal;
-
-                        var inputValues = new HashSet<string>(comparer);
-
-                        if (argRoot.Values.Count < 1)
-                        {
-                            // Use the current directory if no path was given
-                            var workingDir = Path.GetFullPath(".");
-
-                            inputValues.UnionWith(GetProjectJsonFilesInDirectory(workingDir));
-                        }
-                        else
-                        {
-                            foreach (var inputPath in argRoot.Values)
-                            {
-                                var fullPath = Path.GetFullPath(inputPath);
-
-                                // For directories find all children
-                                if (Directory.Exists(inputPath))
-                                {
-                                    inputValues.UnionWith(GetProjectJsonFilesInDirectory(fullPath));
-                                }
-                                else
-                                {
-                                    // Add the input directly
-                                    inputValues.Add(fullPath);
-                                }
-                            }
-                        }
-
-                        var exitCode = 0;
-
-                        foreach (var inputPath in inputValues)
-                        {
-                            var currentExitCode = await ExecuteRestore(
-                                sources,
-                                packagesDirectory,
-                                parallel,
-                                fallBack,
-                                runtime,
-                                inputPath);
-
-                            if (currentExitCode != 0)
-                            {
-                                exitCode = currentExitCode;
-                            }
-                        }
-
-                        return exitCode;
-                    });
-                });
-
-            app.OnExecute(() =>
-                {
-                    app.ShowHelp();
-                    return 0;
-                });
-
-            return app.Execute(args);
         }
 
         private static IEnumerable<string> GetProjectJsonFilesInDirectory(string path)
@@ -182,7 +229,7 @@ namespace NuGet.CommandLine.XPlat
             var projectPath = Path.GetFullPath(inputPath);
             if (string.Equals(PackageSpec.PackageSpecFileName, Path.GetFileName(projectPath), StringComparison.OrdinalIgnoreCase))
             {
-                _log.LogVerbose(string.Format(
+                Log.LogVerbose(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Log_ReadingProject,
                     inputPath));
@@ -201,7 +248,7 @@ namespace NuGet.CommandLine.XPlat
                 var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(projectPath));
                 var packageSpecFile = Path.Combine(projectDirectory, PackageSpec.PackageSpecFileName);
                 project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(packageSpecFile), projectPath, inputPath);
-                _log.LogVerbose(string.Format(
+                Log.LogVerbose(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Log_ReadingProject, inputPath));
 #endif
@@ -210,21 +257,21 @@ namespace NuGet.CommandLine.XPlat
             {
                 var file = Path.Combine(projectPath, PackageSpec.PackageSpecFileName);
 
-                _log.LogVerbose(string.Format(
+                Log.LogVerbose(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Log_ReadingProject,
                     file));
 
                 project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(file), Path.GetFileName(projectPath), file);
             }
-            _log.LogVerbose(string.Format(
+            Log.LogVerbose(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Log_LoadedProject,
                     project.Name, project.FilePath));
 
             // Resolve the root directory
             var rootDirectory = PackageSpecResolver.ResolveRootDirectory(projectPath);
-            _log.LogVerbose(string.Format(
+            Log.LogVerbose(string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.Log_FoundProjectRoot,
                 rootDirectory));
@@ -252,7 +299,7 @@ namespace NuGet.CommandLine.XPlat
                 }
 
                 // Resolve the packages directory
-                _log.LogVerbose(string.Format(
+                Log.LogVerbose(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Log_UsingPackagesDirectory,
                     request.PackagesDirectory));
@@ -299,28 +346,28 @@ namespace NuGet.CommandLine.XPlat
                 }
                 if (request.MaxDegreeOfConcurrency <= 1)
                 {
-                    _log.LogInformation(Strings.Log_RunningNonParallelRestore);
+                    Log.LogInformation(Strings.Log_RunningNonParallelRestore);
                 }
                 else
                 {
-                    _log.LogInformation(string.Format(
+                    Log.LogInformation(string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.Log_RunningParallelRestore,
                         request.MaxDegreeOfConcurrency));
                 }
-                var command = new RestoreCommand(_log, request);
+                var command = new RestoreCommand(Log, request);
                 var sw = Stopwatch.StartNew();
                 var result = await command.ExecuteAsync();
 
                 // Commit the result
-                _log.LogInformation(Strings.Log_Committing);
-                result.Commit(_log);
+                Log.LogInformation(Strings.Log_Committing);
+                result.Commit(Log);
 
                 sw.Stop();
 
                 if (result.Success)
                 {
-                    _log.LogInformation(string.Format(
+                    Log.LogInformation(string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.Log_RestoreComplete,
                         sw.ElapsedMilliseconds));
@@ -328,7 +375,7 @@ namespace NuGet.CommandLine.XPlat
                 }
                 else
                 {
-                    _log.LogInformation(string.Format(
+                    Log.LogInformation(string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.Log_RestoreFailed,
                         sw.ElapsedMilliseconds));
