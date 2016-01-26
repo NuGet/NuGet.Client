@@ -34,6 +34,8 @@ namespace NuGet.Configuration
         internal static string UserKey = "http_proxy.user";
 
         internal static string PasswordKey = "http_proxy.password";
+        
+        internal static string NoProxy     = "no_proxy";
 
         internal static string KeyAttribute = "key";
 
