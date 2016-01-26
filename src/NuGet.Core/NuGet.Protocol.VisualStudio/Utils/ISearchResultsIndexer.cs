@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace NuGet.Protocol.VisualStudio
 {
-    public interface ISearchResultsIndexer : INuGetResource
+    public interface ISearchResultsIndexer
     {
         IDictionary<string, int> Rank(string queryString, IEnumerable<PackageSearchMetadata> entries);
     }

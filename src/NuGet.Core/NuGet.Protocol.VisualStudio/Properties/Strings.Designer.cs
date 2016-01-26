@@ -187,7 +187,7 @@ namespace NuGet.Protocol.VisualStudio
         }
 
         /// <summary>
-        /// The source does not have a Rank service!
+        /// The source does not have a Search service!
         /// </summary>
         internal static string Protocol_MissingSearchService
         {
@@ -195,7 +195,7 @@ namespace NuGet.Protocol.VisualStudio
         }
 
         /// <summary>
-        /// The source does not have a Rank service!
+        /// The source does not have a Search service!
         /// </summary>
         internal static string FormatProtocol_MissingSearchService()
         {

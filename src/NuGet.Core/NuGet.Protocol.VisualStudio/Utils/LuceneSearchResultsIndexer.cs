@@ -11,8 +11,23 @@ namespace NuGet.Protocol.VisualStudio
 {
     public class LuceneSearchResultsIndexer : ISearchResultsIndexer
     {
-        public LuceneSearchResultsIndexer()
+        public IDictionary<string, int> Rank(string queryString, IEnumerable<PackageSearchMetadata> entries)
         {
+            using (var directory = new RAMDirectory())
+            {
+                AddToIndex(directory, entries);
+
+                var searcher = new IndexSearcher(directory);
+                var query = NuGetQuery.MakeQuery(queryString);
+                var topDocs = searcher.Search(query, 100);
+
+                var ranking = topDocs.ScoreDocs
+                    .Select(d => searcher.Doc(d.Doc))
+                    .Zip(Enumerable.Range(0, topDocs.ScoreDocs.Length), (doc, rank) => new { doc, rank })
+                    .ToDictionary(x => x.doc.Get("Id"), x => x.rank);
+
+                return ranking;
+            }
         }
 
         private static void AddToIndex(Directory directory, IEnumerable<PackageSearchMetadata> entries)
@@ -41,25 +56,6 @@ namespace NuGet.Protocol.VisualStudio
                 .ToList()
                 .ForEach(doc.Add);
             return doc;
-        }
-
-        public IDictionary<string, int> Rank(string queryString, IEnumerable<PackageSearchMetadata> entries)
-        {
-            using (var directory = new RAMDirectory())
-            {
-                AddToIndex(directory, entries);
-
-                var searcher = new IndexSearcher(directory);
-                var query = NuGetQuery.MakeQuery(queryString);
-                var topDocs = searcher.Search(query, 100);
-
-                var ranking = topDocs.ScoreDocs
-                    .Select(d => searcher.Doc(d.Doc))
-                    .Zip(Enumerable.Range(0, topDocs.ScoreDocs.Length), (doc, rank) => new { doc, rank })
-                    .ToDictionary(x => x.doc.Get("Id"), x => x.rank);
-
-                return ranking;
-            }
         }
     }
 }
