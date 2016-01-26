@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
@@ -20,7 +21,7 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "CommandApiKey")]
         public string ApiKey { get; set; }
 
-        public override void ExecuteCommand()
+        public override async Task ExecuteCommandAsync()
         {
             if (NoPrompt)
             {
@@ -36,14 +37,7 @@ namespace NuGet.CommandLine
             //If the user passed a source use it for the gallery location
             string source = SourceProvider.ResolveAndValidateSource(Source) ?? NuGetConstants.DefaultGalleryServerUrl;
             var userAgent = UserAgent.CreateUserAgentString(CommandLineConstants.UserAgent);
-            var gallery = new PackageServer(source, userAgent);
-            gallery.SendingRequest += (sender, e) =>
-            {
-                if (Console.Verbosity == NuGet.Verbosity.Detailed)
-                {
-                    Console.WriteLine(ConsoleColor.Green, "{0} {1}", e.Request.Method, e.Request.RequestUri);
-                }
-            };
+            var gallery = new PackageUploader(source, userAgent, Console);
 
             //If the user did not pass an API Key look in the config file
             string apiKey = GetApiKey(source);
@@ -56,7 +50,7 @@ namespace NuGet.CommandLine
             if (NonInteractive || Console.Confirm(String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("DeleteCommandConfirm"), packageId, packageVersion, sourceDisplayName)))
             {
                 Console.WriteLine(LocalizedResourceManager.GetString("DeleteCommandDeletingPackage"), packageId, packageVersion, sourceDisplayName);
-                gallery.DeletePackage(apiKey, packageId, packageVersion);
+                await gallery.DeletePackage(apiKey, packageId, packageVersion);
                 Console.WriteLine(LocalizedResourceManager.GetString("DeleteCommandDeletedPackage"), packageId, packageVersion);
             }
             else

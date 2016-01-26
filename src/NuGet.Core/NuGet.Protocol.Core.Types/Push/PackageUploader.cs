@@ -117,48 +117,54 @@ namespace NuGet
         //    }
         //}
 
-        ///// <summary>
-        ///// Deletes a package from the Source.
-        ///// </summary>
-        ///// <param name="apiKey">API key to be used to delete the package.</param>
-        ///// <param name="packageId">The package Id.</param>
-        ///// <param name="packageVersion">The package version.</param>
-        //public void DeletePackage(string apiKey, string packageId, string packageVersion)
-        //{
-        //    var sourceUri = new Uri(Source);
-        //    if (sourceUri.IsFile)
-        //    {
-        //        DeletePackageFromFileSystem(
-        //            new PhysicalFileSystem(sourceUri.LocalPath),
-        //            packageId,
-        //            packageVersion);
-        //    }
-        //    else
-        //    {
-        //        DeletePackageFromServer(apiKey, packageId, packageVersion);
-        //    }
-        //}
+        /// <summary>
+        /// Deletes a package from the Source.
+        /// </summary>
+        /// <param name="apiKey">API key to be used to delete the package.</param>
+        /// <param name="packageId">The package Id.</param>
+        /// <param name="packageVersion">The package version.</param>
+        public async Task DeletePackage(string apiKey, string packageId, string packageVersion)
+        {
+            var sourceUri = GetServiceEndpointUrl(string.Empty);
+            if (sourceUri.IsFile)
+            {
+                //DeletePackageFromFileSystem(
+                //    new PhysicalFileSystem(sourceUri.LocalPath),
+                //    packageId,
+                //    packageVersion);
+            }
+            else
+            {
+                await DeletePackageFromServer(apiKey, packageId, packageVersion);
+            }
+        }
 
-        ///// <summary>
-        ///// Deletes a package from the server represented by the Source.
-        ///// </summary>
-        ///// <param name="apiKey">API key to be used to delete the package.</param>
-        ///// <param name="packageId">The package Id.</param>
-        ///// <param name="packageVersion">The package Id.</param>
-        //private void DeletePackageFromServer(string apiKey, string packageId, string packageVersion)
-        //{
-        //    // Review: Do these values need to be encoded in any way?
-        //    var url = String.Join("/", packageId, packageVersion);
-        //    HttpClient client = GetClient(url, "DELETE", "text/html");
-
-        //    client.SendingRequest += (sender, e) =>
-        //    {
-        //        SendingRequest(this, e);
-        //        var request = (HttpWebRequest)e.Request;
-        //        request.Headers.Add(ApiKeyHeader, apiKey);
-        //    };
-        //    EnsureSuccessfulResponse(client);
-        //}
+        /// <summary>
+        /// Deletes a package from the server represented by the Source.
+        /// </summary>
+        /// <param name="apiKey">API key to be used to delete the package.</param>
+        /// <param name="packageId">The package Id.</param>
+        /// <param name="packageVersion">The package Id.</param>
+        private async Task DeletePackageFromServer(string apiKey, string packageId, string packageVersion)
+        {
+            // Review: Do these values need to be encoded in any way?
+            var url = String.Join("/", packageId, packageVersion);
+            using (var client = new HttpClient())
+            using (var request = new HttpRequestMessage(HttpMethod.Delete, GetServiceEndpointUrl(url)))
+            {
+                //request.Headers.Add("Content-Type", "text/html");
+                if (!string.IsNullOrEmpty(apiKey))
+                {
+                    request.Headers.Add(ApiKeyHeader, apiKey);
+                }
+                
+                Logger.LogDebug(string.Format(CultureInfo.CurrentCulture, "Delete: {0}", request.RequestUri));
+                using (var response = await client.SendAsync(request))
+                {
+                    response.EnsureSuccessStatusCode();
+                }
+            }
+        }
 
         ///// <summary>
         ///// Deletes a package from a FileSystem.
