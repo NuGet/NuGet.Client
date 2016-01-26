@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement
         public void LogVerbose(string data)
         {
             // Treat Verbose as Debug
-            _projectContext.Log(ProjectManagement.MessageLevel.Debug, data);
+            LogDebug(data);
         }
 
         public void LogError(string data)
@@ -38,6 +38,12 @@ namespace NuGet.PackageManagement
         public void LogWarning(string data)
         {
             _projectContext.Log(ProjectManagement.MessageLevel.Warning, data);
+        }
+
+        public void LogSummary(string data)
+        {
+            // Treat Summary as Debug
+            LogDebug(data);
         }
     }
 }

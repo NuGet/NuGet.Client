@@ -40,6 +40,11 @@ namespace NuGet.CommandLine
             LogInternal(LogLevel.Error, data);
         }
 
+        public void LogSummary(string data)
+        {
+            Console.WriteLine(data);
+        }
+
         public void LogInformation(string data)
         {
             LogInternal(LogLevel.Information, data);

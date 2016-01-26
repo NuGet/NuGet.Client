@@ -123,6 +123,9 @@
   <data name="Log_Committing" xml:space="preserve">
     <value>Committing restore...</value>
   </data>
+  <data name="Log_ErrorSummary" xml:space="preserve">
+    <value>Errors in {0}</value>
+  </data>
   <data name="Log_FoundProjectRoot" xml:space="preserve">
     <value>Found project root directory: {0}.</value>
   </data>

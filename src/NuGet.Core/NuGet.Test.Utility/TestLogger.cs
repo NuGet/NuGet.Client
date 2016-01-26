@@ -45,6 +45,12 @@ namespace NuGet.Test.Utility
             DumpMessage("WARN ", data);
         }
 
+        public void LogSummary(string data)
+        {
+            Messages.Enqueue(data);
+            DumpMessage("SUMRY", data);
+        }
+
         private void DumpMessage(string level, string data)
         {
             // NOTE(anurse): Uncomment this to help when debugging tests

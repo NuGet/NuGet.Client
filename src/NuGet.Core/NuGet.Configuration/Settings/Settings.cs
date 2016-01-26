@@ -98,16 +98,16 @@ namespace NuGet.Configuration
 
         /// <summary>
         /// Loads user settings from the NuGet configuration files. The method walks the directory
-        /// tree in <paramref name="fileSystem" /> up to its root, and reads each NuGet.config file
+        /// tree in <paramref name="root" /> up to its root, and reads each NuGet.config file
         /// it finds in the directories. It then reads the user specific settings,
         /// which is file <paramref name="configFileName" />
-        /// in <paramref name="fileSystem" /> if <paramref name="configFileName" /> is not null,
+        /// in <paramref name="root" /> if <paramref name="configFileName" /> is not null,
         /// If <paramref name="configFileName" /> is null, the user specific settings file is
         /// %AppData%\NuGet\NuGet.config.
         /// After that, the machine wide settings files are added.
         /// </summary>
         /// <remarks>
-        /// For example, if <paramref name="fileSystem" /> is c:\dir1\dir2, <paramref name="configFileName" />
+        /// For example, if <paramref name="root" /> is c:\dir1\dir2, <paramref name="configFileName" />
         /// is "userConfig.file", the files loaded are (in the order that they are loaded):
         /// c:\dir1\dir2\nuget.config
         /// c:\dir1\nuget.config
@@ -115,7 +115,7 @@ namespace NuGet.Configuration
         /// c:\dir1\dir2\userConfig.file
         /// machine wide settings (e.g. c:\programdata\NuGet\Config\*.config)
         /// </remarks>
-        /// <param name="fileSystem">
+        /// <param name="root">
         /// The file system to walk to find configuration files.
         /// Can be null.
         /// </param>

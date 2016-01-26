@@ -423,16 +423,6 @@ namespace NuGet.Frameworks
                                 FrameworkConstants.CommonFrameworks.NetStandard15),
 
                             CreateGenerationAndStandardMappingForAllVersions(
-                                FrameworkConstants.FrameworkIdentifiers.XamarinIOs,
-                                FrameworkConstants.CommonFrameworks.DotNet56,
-                                FrameworkConstants.CommonFrameworks.NetStandard15),
-
-                            CreateGenerationAndStandardMappingForAllVersions(
-                                FrameworkConstants.FrameworkIdentifiers.XamarinIOs,
-                                FrameworkConstants.CommonFrameworks.DotNet56,
-                                FrameworkConstants.CommonFrameworks.NetStandard15),
-
-                            CreateGenerationAndStandardMappingForAllVersions(
                                 FrameworkConstants.FrameworkIdentifiers.XamarinMac,
                                 FrameworkConstants.CommonFrameworks.DotNet56,
                                 FrameworkConstants.CommonFrameworks.NetStandard15),

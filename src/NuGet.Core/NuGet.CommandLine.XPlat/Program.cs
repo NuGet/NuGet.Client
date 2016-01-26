@@ -154,8 +154,8 @@ namespace NuGet.CommandLine.XPlat
 
                     var localCaches = new Dictionary<string, NuGetv3LocalRepository>(StringComparer.Ordinal);
 
-                    var success = true;
-                    var restoreTasks = new List<Task<int>>(maxTasks);
+                    var restoreSummaries = new List<RestoreSummary>();
+                    var restoreTasks = new List<Task<RestoreSummary>>(maxTasks);
 
                     foreach (var inputPath in inputValues)
                     {
@@ -188,7 +188,8 @@ namespace NuGet.CommandLine.XPlat
                         // Throttle and wait for a task to finish if we have hit the limit
                         if (restoreTasks.Count == maxTasks)
                         {
-                            success &= await CompleteTaskAsync(restoreTasks);
+                            var restoreSummary = await CompleteTaskAsync(restoreTasks);
+                            restoreSummaries.Add(restoreSummary);
                         }
 
                         // Start a new restore
@@ -208,11 +209,31 @@ namespace NuGet.CommandLine.XPlat
                     // Wait for all restores to finish
                     while (restoreTasks.Count > 0)
                     {
-                        success &= await CompleteTaskAsync(restoreTasks);
+                        var restoreSummary = await CompleteTaskAsync(restoreTasks);
+                        restoreSummaries.Add(restoreSummary);
+                    }
+
+                    // Display the errors in the same order that they were produced, but grouped by project
+                    if (restoreSummaries.Any())
+                    {
+                        foreach (var restoreSummary in restoreSummaries)
+                        {
+                            if (!restoreSummary.Errors.Any())
+                            {
+                                continue;
+                            }
+
+                            Log.LogSummary(string.Empty);
+                            Log.LogSummary(string.Format(Strings.Log_ErrorSummary, restoreSummary.InputPath));
+                            foreach (var error in restoreSummary.Errors)
+                            {
+                                Log.LogSummary($"    {error}");
+                            }
+                        }
                     }
 
                     // Return 0 if all restores were successful
-                    return success ? 0 : 1;
+                    return restoreSummaries.All(x => x.Success) ? 0 : 1;
                 });
             });
 
@@ -251,15 +272,13 @@ namespace NuGet.CommandLine.XPlat
         }
 
         /// <summary>
-        /// Removes a task from the list and returns the success flag.
+        /// Removes a task from the list and returns the restore summary.
         /// </summary>
-        private static async Task<bool> CompleteTaskAsync(List<Task<int>> restoreTasks)
+        private static async Task<RestoreSummary> CompleteTaskAsync(List<Task<RestoreSummary>> restoreTasks)
         {
             var doneTask = await Task.WhenAny(restoreTasks);
             restoreTasks.Remove(doneTask);
-            var taskExitCode = await doneTask;
-
-            return (taskExitCode == 0);
+            return await doneTask;
         }
 
         private static void EnsureLog(CommandOption verbosity)
@@ -293,7 +312,7 @@ namespace NuGet.CommandLine.XPlat
             return Directory.GetFiles(path, "project.json", SearchOption.AllDirectories);
         }
 
-        private static async Task<int> ExecuteRestoreAsync
+        private static async Task<RestoreSummary> ExecuteRestoreAsync
             (CommandOption sources,
             CommandOption packagesDirectory,
             CommandOption fallBack,
@@ -400,13 +419,14 @@ namespace NuGet.CommandLine.XPlat
                 request.MaxDegreeOfConcurrency = isParallel ? RestoreRequest.DefaultDegreeOfConcurrency : 1;
 
                 // Run the restore
-                var command = new RestoreCommand(Log, request);
+                var collectorLog = new CollectorLogger(Log);
+                var command = new RestoreCommand(collectorLog, request);
                 var sw = Stopwatch.StartNew();
                 var result = await command.ExecuteAsync();
 
                 // Commit the result
                 Log.LogInformation(Strings.Log_Committing);
-                result.Commit(Log);
+                result.Commit(collectorLog);
 
                 sw.Stop();
 
@@ -416,7 +436,6 @@ namespace NuGet.CommandLine.XPlat
                         CultureInfo.CurrentCulture,
                         Strings.Log_RestoreComplete,
                         sw.ElapsedMilliseconds));
-                    return 0;
                 }
                 else
                 {
@@ -424,9 +443,12 @@ namespace NuGet.CommandLine.XPlat
                         CultureInfo.CurrentCulture,
                         Strings.Log_RestoreFailed,
                         sw.ElapsedMilliseconds));
-
-                    return 1;
                 }
+
+                return new RestoreSummary(
+                    inputPath,
+                    result.Success,
+                    collectorLog.Errors);
             }
         }
 

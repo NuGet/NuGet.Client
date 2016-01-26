@@ -382,5 +382,11 @@ namespace NuGet.Common
         {
             WriteError(data);
         }
+
+        public void LogSummary(string data)
+        {
+            // Treat Summary as Debug
+            LogDebug(data);
+        }
     }
 }

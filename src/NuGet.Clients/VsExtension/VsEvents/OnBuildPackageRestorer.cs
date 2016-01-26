@@ -907,6 +907,13 @@ namespace NuGetVSExtension
         {
             LogToVS(VerbosityLevel.Quiet, data);
         }
+
+        public void LogSummary(string data)
+        {
+            // Treat Summary as Debug
+            LogDebug(data);
+        }
+
         #endregion ILogger implementation
 
         private void LogToVS(VerbosityLevel verbosityLevel, string message)

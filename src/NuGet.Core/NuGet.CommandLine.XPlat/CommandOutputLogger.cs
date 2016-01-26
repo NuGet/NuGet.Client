@@ -12,15 +12,6 @@ namespace NuGet.CommandLine.XPlat
     /// </summary>
     internal class CommandOutputLogger : ILogger
     {
-        private enum LogLevel
-        {
-            Debug = 0,
-            Verbose = 1,
-            Information = 2,
-            Warning = 3,
-            Error = 4
-        }
-
         private static readonly bool _useConsoleColor = true;
         private Lazy<LogLevel> _verbosity;
 
@@ -47,6 +38,11 @@ namespace NuGet.CommandLine.XPlat
         public void LogError(string data)
         {
             LogInternal(LogLevel.Error, data);
+        }
+
+        public void LogSummary(string data)
+        {
+            Console.WriteLine(data);
         }
 
         public void LogInformation(string data)

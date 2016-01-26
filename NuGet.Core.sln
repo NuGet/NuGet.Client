@@ -115,6 +115,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Shared", "src\NuGet.C
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.CommandLine.XPlat.Test", "test\NuGet.Core.Tests\NuGet.CommandLine.XPlat.Test\NuGet.CommandLine.XPlat.Test.xproj", "{82FF10C5-8724-4187-953E-5096AD90184F}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Logging.Test", "test\NuGet.Core.Tests\NuGet.Logging.Test\NuGet.Logging.Test.xproj", "{95CCAF1D-B922-4DDF-A0B2-8570F5FA9BA8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -325,6 +327,10 @@ Global
 		{82FF10C5-8724-4187-953E-5096AD90184F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82FF10C5-8724-4187-953E-5096AD90184F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82FF10C5-8724-4187-953E-5096AD90184F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95CCAF1D-B922-4DDF-A0B2-8570F5FA9BA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95CCAF1D-B922-4DDF-A0B2-8570F5FA9BA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95CCAF1D-B922-4DDF-A0B2-8570F5FA9BA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95CCAF1D-B922-4DDF-A0B2-8570F5FA9BA8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -380,5 +386,6 @@ Global
 		{77DC049B-16EA-4FE6-9287-E8E514F4700F} = {BD1946CE-5544-4F28-A04A-9C3D51113E1A}
 		{CA92BD12-5500-4809-B998-F6ECDD9DD79B} = {BD1946CE-5544-4F28-A04A-9C3D51113E1A}
 		{82FF10C5-8724-4187-953E-5096AD90184F} = {7323F93B-D141-4001-BB9E-7AF14031143E}
+		{95CCAF1D-B922-4DDF-A0B2-8570F5FA9BA8} = {7323F93B-D141-4001-BB9E-7AF14031143E}
 	EndGlobalSection
 EndGlobal
