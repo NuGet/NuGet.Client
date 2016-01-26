@@ -143,7 +143,7 @@ namespace NuGet.Commands
                     checkResults.Add(res);
                     if (res.Success)
                     {
-                        _logger.LogInformation(Strings.FormatLog_PackagesAreCompatible(graph.Name));
+                        _logger.LogVerbose(Strings.FormatLog_PackagesAreCompatible(graph.Name));
                     }
                     else
                     {

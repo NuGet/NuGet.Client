@@ -346,11 +346,11 @@ namespace NuGet.CommandLine.XPlat
                 }
                 if (request.MaxDegreeOfConcurrency <= 1)
                 {
-                    Log.LogInformation(Strings.Log_RunningNonParallelRestore);
+                    Log.LogVerbose(Strings.Log_RunningNonParallelRestore);
                 }
                 else
                 {
-                    Log.LogInformation(string.Format(
+                    Log.LogVerbose(string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.Log_RunningParallelRestore,
                         request.MaxDegreeOfConcurrency));

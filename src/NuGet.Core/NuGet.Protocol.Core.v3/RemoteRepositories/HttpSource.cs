@@ -101,7 +101,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         {
                             if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
                             {
-                                Logger.LogInformation(string.Format(CultureInfo.InvariantCulture,
+                                Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture,
                                     "  {1} {0} {2}ms", uri, response.StatusCode.ToString(), sw.ElapsedMilliseconds.ToString()));
                                 return new HttpSourceResult();
                             }
