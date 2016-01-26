@@ -71,7 +71,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             var s = string.Format(
-                CultureInfo.CurrentCulture,
+                CultureInfo.InvariantCulture, // force '.' as decimal separator
                 "{0:G3}{1}",
                 v,
                 _scalingFactor[exp]);
