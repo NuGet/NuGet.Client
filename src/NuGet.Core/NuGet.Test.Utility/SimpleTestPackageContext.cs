@@ -15,6 +15,11 @@ namespace NuGet.Test.Utility
         public string Include { get; set; } = string.Empty;
         public string Exclude { get; set; } = string.Empty;
 
+        /// <summary>
+        /// runtime.json
+        /// </summary>
+        public string RuntimeJson { get; set; }
+
         public PackageIdentity Identity
         {
             get

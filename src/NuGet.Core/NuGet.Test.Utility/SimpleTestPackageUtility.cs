@@ -22,7 +22,7 @@ namespace NuGet.Test.Utility
            string id,
            string version)
         {
-            return CreateFullPackage(repositoryDir, id, version, new Packaging.Core.PackageDependency[0]);
+            return CreateFullPackage(repositoryDir, id, version, new PackageDependency[0]);
         }
 
         /// <summary>
@@ -32,8 +32,36 @@ namespace NuGet.Test.Utility
            string repositoryDir,
            string id,
            string version,
-           IEnumerable<Packaging.Core.PackageDependency> dependencies)
+           IEnumerable<PackageDependency> dependencies)
         {
+            var package = new SimpleTestPackageContext()
+            {
+                Id = id,
+                Version = version
+            };
+
+            package.Dependencies.AddRange(dependencies.Select(d => new SimpleTestPackageContext()
+            {
+                Id = d.Id,
+                Version = d.VersionRange.MinVersion.ToString() ?? "1.0.0",
+                Include = string.Join(",", d.Include),
+                Exclude = string.Join(",", d.Include),
+            }));
+
+            return CreateFullPackage(repositoryDir, package);
+        }
+
+        /// <summary>
+        /// Creates a net45 package containing lib, build, native, tools, and contentFiles
+        /// </summary>
+        public static FileInfo CreateFullPackage(
+           string repositoryDir,
+           SimpleTestPackageContext packageContext)
+        {
+            var id = packageContext.Id;
+            var version = packageContext.Version;
+            var runtimeJson = packageContext.RuntimeJson;
+
             var file = new FileInfo(Path.Combine(repositoryDir, $"{id}.{version}.nupkg"));
 
             file.Directory.Create();
@@ -46,6 +74,11 @@ namespace NuGet.Test.Utility
                 zip.AddEntry($"build/net45/{id}.targets", @"<targets />", Encoding.UTF8);
                 zip.AddEntry("native/net45/a.dll", new byte[] { 0 });
                 zip.AddEntry("tools/a.exe", new byte[] { 0 });
+
+                if (!string.IsNullOrEmpty(runtimeJson))
+                {
+                    zip.AddEntry("runtime.json", runtimeJson, Encoding.UTF8);
+                }
 
                 var nuspecXml = $@"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package>
@@ -65,6 +98,17 @@ namespace NuGet.Test.Utility
                         </package>";
 
                 var xml = XDocument.Parse(nuspecXml);
+
+                var dependencies = packageContext.Dependencies.Select(e =>
+                    new PackageDependency(
+                        e.Id,
+                        VersionRange.Parse(e.Version),
+                        string.IsNullOrEmpty(e.Include)
+                            ? new List<string>()
+                            : e.Include.Split(',').ToList(),
+                        string.IsNullOrEmpty(e.Exclude)
+                            ? new List<string>()
+                            : e.Exclude.Split(',').ToList()));
 
                 if (dependencies.Any())
                 {
@@ -100,6 +144,9 @@ namespace NuGet.Test.Utility
             return file;
         }
 
+        /// <summary>
+        /// Create all packages in the list, including dependencies.
+        /// </summary>
         public static void CreatePackages(List<SimpleTestPackageContext> packages, string repositoryPath)
         {
             var done = new HashSet<PackageIdentity>();
@@ -111,22 +158,9 @@ namespace NuGet.Test.Utility
 
                 if (done.Add(package.Identity))
                 {
-                    var dependencies = package.Dependencies.Select(e =>
-                        new Packaging.Core.PackageDependency(
-                            e.Id,
-                            VersionRange.Parse(e.Version),
-                            string.IsNullOrEmpty(e.Include)
-                                ? new List<string>()
-                                : e.Include.Split(',').ToList(),
-                            string.IsNullOrEmpty(e.Exclude)
-                                ? new List<string>()
-                                : e.Exclude.Split(',').ToList()));
-
                     CreateFullPackage(
                         repositoryPath,
-                        package.Id,
-                        package.Version,
-                        dependencies);
+                        package);
 
                     foreach (var dep in package.Dependencies)
                     {
