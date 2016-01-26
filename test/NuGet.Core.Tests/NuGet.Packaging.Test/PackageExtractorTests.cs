@@ -12,7 +12,7 @@ namespace NuGet.Packaging.Test
     public class PackageExtractorTests
     {
         [Fact]
-        public async Task PackageExtractor_withContentXmlFile()
+        public void PackageExtractor_withContentXmlFile()
         {
             // Arrange
             using (var packageStream = TestPackages.GetTestPackageWithContentXmlFile())
@@ -34,7 +34,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_duplicateNupkg()
+        public void PackageExtractor_DuplicateNupkg()
         {
             using (var packageFile = TestPackages.GetLegacyTestPackage())
             {
@@ -65,7 +65,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_PackageSaveModeNupkg_FolderReader()
+        public void PackageExtractor_PackageSaveModeNupkg_FolderReader()
         {
             // Arrange
             using (var packageFile = TestPackages.GetLegacyTestPackage())
@@ -96,7 +96,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_PackageSaveModeNuspec_FolderReader()
+        public void PackageExtractor_PackageSaveModeNuspec_FolderReader()
         {
             // Arrange
             using (var packageFile = TestPackages.GetLegacyTestPackage())
@@ -127,7 +127,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public async Task PackageExtractor_PackageSaveModeNuspecAndNupkg_PackageStream()
+        public void PackageExtractor_PackageSaveModeNuspecAndNupkg_PackageStream()
         {
             // Arrange
             using (var packageFile = TestPackages.GetLegacyTestPackage())
@@ -189,6 +189,342 @@ namespace NuGet.Packaging.Test
 
                     Assert.True(File.Exists(pathToAFrDllInSatellitePackage));
                     Assert.True(File.Exists(pathToAFrDllInRunTimePackage));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task PackageExtractor_ExtractsXmlFiles_IfXmlSaveModeIsSetToNone()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   root,
+                   "A",
+                   "2.0.4",
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "lib/net45/A.dll",
+                   "lib/net45/A.xml",
+                   "lib/net45/appconfig.xml");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    var packageExtractionContext = new PackageExtractionContext
+                    {
+                        XmlDocFileSaveMode = XmlDocFileSaveMode.None
+                    };
+
+                    // Act
+                    var packageFiles = PackageExtractor.ExtractPackage(
+                        packageStream,
+                        new PackagePathResolver(root),
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.4", "lib", "net45", "A.dll")));
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.4", "lib", "net45", "A.xml")));
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.4", "lib", "net45", "appconfig.xml")));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task PackageExtractor_CompressesXmlFiles_IfXmlSaveModeIsSetToCompress()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   root,
+                   "A",
+                   "2.0.4",
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "lib/net45/A.dll",
+                   "lib/net45/A.xml",
+                   "lib/net45/appconfig.xml");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    var packageExtractionContext = new PackageExtractionContext
+                    {
+                        XmlDocFileSaveMode = XmlDocFileSaveMode.Compress
+                    };
+
+                    // Act
+                    var packageFiles = PackageExtractor.ExtractPackage(
+                        packageStream,
+                        new PackagePathResolver(root),
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    // Assert
+                    var xmlZip = Path.Combine(root, "A.2.0.4", "lib", "net45", "A.xml.zip");
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.4", "lib", "net45", "A.dll")));
+                    Assert.False(File.Exists(Path.Combine(root, "A.2.0.4", "lib", "net45", "A.xml")));
+                    Assert.True(File.Exists(xmlZip));
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.4", "lib", "net45", "appconfig.xml")));
+
+                    // Verify the zip has a A.xml in it.
+                    using (var fileStream = File.OpenRead(xmlZip))
+                    using (var archive = new ZipArchive(fileStream))
+                    {
+                        var entry = Assert.Single(archive.Entries);
+                        Assert.Equal("A.xml", entry.Name);
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public async Task PackageExtractor_CompressesXmlFilesForLanguageSpecificDirectories()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   root,
+                   "A",
+                   "2.0.4",
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "ref/dotnet5.4/A.xml",
+                   "ref/dotnet5.4/fr/B.xml",
+                   "ref/dotnet5.4/fr/B.resources.dll",
+                   "ref/dotnet5.4/zh-hans/A.xml",
+                   "ref/dotnet5.4/ru/C.xml");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    var packageExtractionContext = new PackageExtractionContext
+                    {
+                        XmlDocFileSaveMode = XmlDocFileSaveMode.Compress
+                    };
+
+                    // Act
+                    var packageFiles = PackageExtractor.ExtractPackage(
+                        packageStream,
+                        new PackagePathResolver(root),
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    // Assert
+                    var packageRoot = Path.Combine(root, "A.2.0.4", "ref", "dotnet5.4");
+                    Assert.False(File.Exists(Path.Combine(packageRoot, "fr", "B.xml")));
+                    Assert.True(File.Exists(Path.Combine(packageRoot, "fr", "B.xml.zip")));
+                    Assert.False(File.Exists(Path.Combine(packageRoot, "zh-hans", "A.xml.zip")));
+                    Assert.True(File.Exists(Path.Combine(packageRoot, "ru", "C.xml")));
+                    Assert.False(File.Exists(Path.Combine(packageRoot, "ru", "C.xml.zip")));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task PackageExtractor_SkipsXmlFiles_IfXmlSaveModeIsSetToSkip()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   root,
+                   "A",
+                   "2.0.4",
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "lib/net45/A.dll",
+                   "lib/net45/A.xml",
+                   "lib/net45/appconfig.xml");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    var packageExtractionContext = new PackageExtractionContext
+                    {
+                        XmlDocFileSaveMode = XmlDocFileSaveMode.Skip
+                    };
+
+                    // Act
+                    var packageFiles = PackageExtractor.ExtractPackage(
+                        packageStream,
+                        new PackagePathResolver(root),
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.4", "lib", "net45", "A.dll")));
+                    Assert.False(File.Exists(Path.Combine(root, "A.2.0.4", "lib", "net45", "A.xml")));
+                    Assert.False(File.Exists(Path.Combine(root, "A.2.0.4", "lib", "net45", "A.xml.zip")));
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.4", "lib", "net45", "appconfig.xml")));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task PackageExtractor_SkipsXmlFiles_ForLanguageSpecificDirectories()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   root,
+                   "A",
+                   "2.0.4",
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "ref/portable-net40+win8+netcore/A.dll",
+                   "ref/portable-net40+win8+netcore/A.xml",
+                   "ref/portable-net40+win8+netcore/fr/B.xml",
+                   "ref/portable-net40+win8+netcore/fr/B.resources.dll",
+                   "ref/portable-net40+win8+netcore/zh-hans/A.xml");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    var packageExtractionContext = new PackageExtractionContext
+                    {
+                        XmlDocFileSaveMode = XmlDocFileSaveMode.Skip
+                    };
+
+                    // Act
+                    var packageFiles = PackageExtractor.ExtractPackage(
+                        packageStream,
+                        new PackagePathResolver(root),
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    // Assert
+                    var packageRoot = Path.Combine(root, "A.2.0.4", "ref", "portable-net40+win8+netcore");
+                    Assert.True(File.Exists(Path.Combine(packageRoot, "A.dll")));
+                    Assert.False(File.Exists(Path.Combine(packageRoot, "A.xml")));
+                    Assert.False(File.Exists(Path.Combine(packageRoot, "A.xml.zip")));
+                    Assert.False(File.Exists(Path.Combine(packageRoot, "B.xml")));
+                    Assert.False(File.Exists(Path.Combine(packageRoot, "B.xml.zip")));
+                    Assert.True(File.Exists(Path.Combine(packageRoot, "fr", "B.resources.dll")));
+                    Assert.False(File.Exists(Path.Combine(packageRoot, "fr", "B.xml")));
+                    Assert.False(File.Exists(Path.Combine(packageRoot, "A.xml")));
+                    Assert.False(File.Exists(Path.Combine(packageRoot, "A.xml.zip")));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task PackageExtractor_SkipsSatelliteXmlFiles()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   root,
+                   "A",
+                   "2.0.3",
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "lib/net45/A.dll",
+                   "lib/net45/A.xml");
+                var satellitePackageInfo = await TestPackages.GeneratePackageAsync(
+                   root,
+                   "A.fr",
+                   "2.0.3",
+                   language: "fr",
+                   entryModifiedTime: DateTimeOffset.UtcNow.LocalDateTime,
+                   zipEntries: new[] { "lib/net45/fr/A.resources.dll", "lib/net45/fr/A.xml" });
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                using (var satellitePackageStream = File.OpenRead(satellitePackageInfo.FullName))
+                {
+                    var packageExtractionContext = new PackageExtractionContext
+                    {
+                        XmlDocFileSaveMode = XmlDocFileSaveMode.Skip
+                    };
+
+                    // Act
+                    var packageFiles = PackageExtractor.ExtractPackage(
+                        packageStream,
+                        new PackagePathResolver(root),
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    var satellitePackageFiles = PackageExtractor.ExtractPackage(
+                        satellitePackageStream,
+                        new PackagePathResolver(root),
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    Assert.False(File.Exists(Path.Combine(root, "A.2.0.3", "lib", "net45", "A.xml")));
+                    Assert.False(File.Exists(Path.Combine(root, "A.2.0.3", "lib", "net45", "A.xml.zip")));
+                    Assert.False(File.Exists(Path.Combine(root, "A.fr.2.0.3", "lib", "net45", "fr", "A.xml")));
+                    Assert.False(File.Exists(Path.Combine(root, "A.fr.2.0.3", "lib", "net45", "fr", "A.xml.zip")));
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.3", "lib", "net45", "A.dll")));
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.3", "lib", "net45", "fr", "A.resources.dll")));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task PackageExtractor_WithXmlModeCompress_DoesNotThrowIfPackageAlreadyContainsAXmlZipFile()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   root,
+                   "A",
+                   "2.0.3",
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "lib/net45/A.dll",
+                   "lib/net45/A.xml",
+                   "lib/net45/A.xml.zip");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    var packageExtractionContext = new PackageExtractionContext
+                    {
+                        XmlDocFileSaveMode = XmlDocFileSaveMode.Compress
+                    };
+
+                    // Act
+                    var packageFiles = PackageExtractor.ExtractPackage(
+                        packageStream,
+                        new PackagePathResolver(root),
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.3", "lib", "net45", "A.xml.zip")));
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.3", "lib", "net45", "A.dll")));
+
+                    // If we got this far, extraction did not throw.
+                }
+            }
+        }
+
+        [Fact]
+        public async Task PackageExtractor_WithXmlModeSkip_DoesNotSkipXmlZipFile()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   root,
+                   "A",
+                   "2.0.3",
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "lib/net45/A.dll",
+                   "lib/net45/A.xml",
+                   "lib/net45/A.xml.zip");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    var packageExtractionContext = new PackageExtractionContext
+                    {
+                        XmlDocFileSaveMode = XmlDocFileSaveMode.Compress
+                    };
+
+                    // Act
+                    var packageFiles = PackageExtractor.ExtractPackage(
+                        packageStream,
+                        new PackagePathResolver(root),
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.3", "lib", "net45", "A.xml.zip")));
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.3", "lib", "net45", "A.dll")));
                 }
             }
         }

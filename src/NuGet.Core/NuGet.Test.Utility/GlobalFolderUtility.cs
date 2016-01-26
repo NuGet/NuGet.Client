@@ -31,7 +31,8 @@ namespace NuGet.Test.Utility
                     logger: Logging.NullLogger.Instance,
                     fixNuspecIdCasing: true,
                     extractNuspecOnly: false,
-                    normalizeFileNames: true);
+                    normalizeFileNames: true,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 using (var stream = File.OpenRead(packagePath))
                 {

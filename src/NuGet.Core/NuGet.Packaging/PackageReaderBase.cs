@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -63,7 +62,11 @@ namespace NuGet.Packaging
 
         public abstract IEnumerable<string> GetFiles(string folder);
 
-        public abstract IEnumerable<string> CopyFiles(string destination, IEnumerable<string> packageFiles, CancellationToken token);
+        public abstract IEnumerable<string> CopyFiles(
+            string destination,
+            IEnumerable<string> packageFiles,
+            ExtractPackageFileDelegate extractFile,
+            CancellationToken token);
 
         public virtual PackageIdentity GetIdentity()
         {
@@ -276,7 +279,7 @@ namespace NuGet.Packaging
                 {
                     // check for a matching reference group to use for filtering
                     var referenceGroup = NuGetFrameworkUtility.GetNearest<FrameworkSpecificGroup>(
-                                                                           items: referenceGroups, 
+                                                                           items: referenceGroups,
                                                                            framework: fileGroup.TargetFramework,
                                                                            frameworkMappings: _frameworkProvider,
                                                                            compatibilityProvider: _compatibilityProvider);
