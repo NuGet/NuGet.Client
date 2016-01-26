@@ -99,6 +99,14 @@ namespace NuGet.Configuration
                 {
                     webProxy.Credentials = new NetworkCredential(userName, password);
                 }
+                
+                var noProxy = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationContants.NoProxy);
+                if (!String.IsNullOrEmpty(noProxy))
+                {
+                    // split comma-separated list of domains
+                    webProxy.BypassList = noProxy.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries);
+                }
+                
                 return webProxy;
             }
 
@@ -117,6 +125,14 @@ namespace NuGet.Configuration
                         webProxy.Credentials = new NetworkCredential(userName: credentials[0], password: credentials[1]);
                     }
                 }
+                
+                var noProxy = _environment.GetEnvironmentVariable(ConfigurationContants.NoProxy);
+                if (!String.IsNullOrEmpty(noProxy))
+                {
+                    // split comma-separated list of domains
+                    webProxy.BypassList = noProxy.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries);
+                }
+                
                 return webProxy;
             }
             return null;
