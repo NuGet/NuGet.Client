@@ -93,7 +93,7 @@ namespace NuGet
                     content.Add(packageContent, "package", "package.nupkg");
 
                     Logger.LogDebug(string.Format(CultureInfo.CurrentCulture, "PUT: {0}", request.RequestUri));
-
+                    request.Content = content;
                     using (var response = await client.SendAsync(request))
                     {
                         response.EnsureSuccessStatusCode();

@@ -68,7 +68,7 @@ namespace NuGet.CommandLine
 
             if (pushEndpoint.Equals(NuGetConstants.DefaultGalleryServerUrl, StringComparison.OrdinalIgnoreCase))
             {
-                PushSymbols(packagePath, timeout);
+                await PushSymbols(packagePath, tokenSource.Token);
             }
         }
 
@@ -155,7 +155,7 @@ namespace NuGet.CommandLine
         private async Task PushPackage(string packagePath, string source, string apiKey, CancellationToken token)
         {
             var userAgent = UserAgent.CreateUserAgentString(CommandLineConstants.UserAgent);
-            var packageServer = new PackageUploader(source, userAgent);
+            var packageServer = new PackageUploader(source, userAgent, Console);
 
             IEnumerable<string> packagesToPush = GetPackagesToPush(packagePath);
 
@@ -167,9 +167,9 @@ namespace NuGet.CommandLine
             }
         }
 
-        private void PushPackageCore(string source,
+        private async Task PushPackageCore(string source,
             string apiKey,
-            PackageServer packageServer,
+            PackageUploader packageServer,
             string packageToPush,
             CancellationToken token)
         {
@@ -182,9 +182,9 @@ namespace NuGet.CommandLine
             Console.WriteLine(LocalizedResourceManager.GetString("PushCommandPushingPackage"),
                 package.GetFullName(), sourceName);
 
-            packageServer.PushPackage(
+            await packageServer.PushPackage(
                 apiKey,
-                package,
+                packageToPush,
                 new FileInfo(packageToPush).Length,
                 token);
 
