@@ -8,11 +8,161 @@ using NuGet.Configuration;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Xunit;
+using System.Linq;
 
 namespace NuGet.Commands.Test
 {
     public class RuntimePackageTests
     {
+        [Fact]
+        public async Task RuntimePackage_RejectedPackagesAreNotMerged()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var framework = "net46";
+
+            using (var workingDir = CreateTestFolders())
+            {
+                var repository = Path.Combine(workingDir, "repository");
+                var projectDir = Path.Combine(workingDir, "project");
+                var packagesDir = Path.Combine(workingDir, "packages");
+
+                var runtimeJsonX1 = @"{
+                  ""runtimes"": {
+                    ""unix"": {
+                            ""packageX"": {
+                                ""runtime.packageX"": ""1.0.0""
+                            }
+                          }
+                        },
+                ""supports"": {
+                    ""x1.app"": {
+                            ""uap10.0"": [
+                                ""win10-x86""
+                        ]
+                    }
+                   }
+                  }";
+
+                var runtimeJsonX2 = @"{
+                  ""runtimes"": {
+                    ""unix"": {
+                            ""packageX"": {
+                                ""runtime.packageX"": ""2.0.0""
+                            }
+                          }
+                        },
+                ""supports"": {
+                    ""x2.app"": {
+                            ""uap10.0"": [
+                                ""win10-x86""
+                        ]
+                    }
+                   }
+                  }";
+
+                var packages = new List<SimpleTestPackageContext>();
+
+                // A -> X 1.0.0 -> runtime.X 1.0.0
+                // B -> X 2.0.0 -> runtime.X 2.0.0
+
+                var packageX1 = new SimpleTestPackageContext()
+                {
+                    Id = "packageX",
+                    Version = "1.0.0",
+                    RuntimeJson = runtimeJsonX1
+                };
+
+                var packageX2 = new SimpleTestPackageContext()
+                {
+                    Id = "packageX",
+                    Version = "2.0.0",
+                    RuntimeJson = runtimeJsonX2
+                };
+
+                var packageB = new SimpleTestPackageContext()
+                {
+                    Id = "packageB"
+                };
+
+                var packageA = new SimpleTestPackageContext()
+                {
+                    Id = "packageA"
+                };
+
+                var packageX1Runtime = new SimpleTestPackageContext()
+                {
+                    Id = "runtime.packageX",
+                    Version = "1.0.0"
+                };
+
+                var packageX2Runtime = new SimpleTestPackageContext()
+                {
+                    Id = "runtime.packageX",
+                    Version = "2.0.0"
+                };
+
+                packageA.Dependencies.Add(packageX1);
+                packageB.Dependencies.Add(packageX2);
+
+                packages.Add(packageA);
+                packages.Add(packageB);
+                packages.Add(packageX1);
+                packages.Add(packageX2);
+                packages.Add(packageX1Runtime);
+                packages.Add(packageX2Runtime);
+
+                SimpleTestPackageUtility.CreatePackages(packages, repository);
+
+                var sources = new List<PackageSource>();
+                sources.Add(new PackageSource(repository));
+
+                var configJson = JObject.Parse(@"{
+                    ""runtimes"": {
+                        ""unix"": {}
+                    },
+                    ""dependencies"": {
+                        ""packageA"": ""1.0.0"",
+                        ""packageB"": ""1.0.0""
+                    },
+                    ""frameworks"": {
+                        ""_FRAMEWORK_"": {}
+                    }
+                }".Replace("_FRAMEWORK_", framework));
+
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+                var request = new RestoreRequest(spec, sources, packagesDir);
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var command = new RestoreCommand(logger, request);
+
+                // Act
+                var result = await command.ExecuteAsync();
+                result.Commit(logger);
+
+                var runtimeGraph = result.RestoreGraphs.Single(graph => graph.RuntimeIdentifier == "unix").RuntimeGraph;
+
+                var selectedRuntimeDependency = runtimeGraph
+                    .Runtimes
+                    .Single()
+                    .Value
+                    .RuntimeDependencySets
+                    .Single()
+                    .Value
+                    .Dependencies
+                    .Single();
+
+                var runtimeDependencyVersion = selectedRuntimeDependency.Value.VersionRange.ToLegacyShortString();
+
+                // Assert
+                Assert.True(result.Success);
+                Assert.Equal("x2.app", runtimeGraph.Supports.Single().Key);
+                Assert.Equal("2.0.0", runtimeDependencyVersion);
+            }
+        }
+
         [Fact]
         public async Task RuntimePackage_BasicRuntimePackageRestore()
         {
