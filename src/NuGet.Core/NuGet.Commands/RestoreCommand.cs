@@ -1092,6 +1092,12 @@ namespace NuGet.Commands
                     return;
                 }
 
+                // Ignore runtime.json from rejected nodes
+                if (node.Disposition == Disposition.Rejected)
+                {
+                    return;
+                }
+
                 // Locate the package in the local repository
                 var package = localRepository.FindPackagesById(match.Library.Name)
                     .FirstOrDefault(p => p.Version == match.Library.Version);
