@@ -16,6 +16,7 @@ using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
+using NuGet.Repositories;
 
 namespace NuGet.CommandLine
 {
@@ -97,6 +98,8 @@ namespace NuGet.CommandLine
 
                 Console.PrintPackageSources(packageSources);
 
+                var localCache = new NuGetv3LocalRepository(packagesDir);
+
                 int maxTasks = DisableParallelProcessing ? 1 : 16;
 
                 // Throttle the tasks so no more than 16 run at a time, so memory doesn't accumulate.
@@ -120,11 +123,11 @@ namespace NuGet.CommandLine
                         var file = restoreInputs.V3RestoreFiles[currentFileIndex];
 
                         var newTask = PerformNuGetV3RestoreAsync(
-                            packagesDir,
                             file,
                             packageSources,
                             restoreInputs.ProjectReferenceLookup,
-                            repositories);
+                            repositories,
+                            localCache);
 
                         tasks.Add(newTask);
                     }
@@ -182,11 +185,11 @@ namespace NuGet.CommandLine
         }
 
         private async Task<bool> PerformNuGetV3RestoreAsync(
-            string packagesDir,
             string inputPath,
             IReadOnlyCollection<Configuration.PackageSource> packageSources,
             ProjectReferenceCache projectReferences,
-            SourceRepository[] repositories)
+            SourceRepository[] repositories,
+            NuGetv3LocalRepository localCache)
         {
             var inputFileName = Path.GetFileName(inputPath);
             var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(inputPath));
@@ -238,7 +241,7 @@ namespace NuGet.CommandLine
                 var rootDirectory = PackageSpecResolver.ResolveRootDirectory(inputPath);
                 Console.LogVerbose($"Found project root directory: {rootDirectory}");
 
-                Console.LogVerbose($"Using packages directory: {packagesDir}");
+                Console.LogVerbose($"Using packages directory: {localCache.RepositoryRoot}");
 
                 // Create a restore request
                 using (var request = new RestoreRequest(
@@ -246,7 +249,7 @@ namespace NuGet.CommandLine
                     repositories,
                     packagesDirectory: null))
                 {
-                    request.PackagesDirectory = packagesDir;
+                    request.PackagesDirectory = localCache.RepositoryRoot;
                     var packageSaveMode = EffectivePackageSaveMode;
                     if (packageSaveMode != Packaging.PackageSaveMode.None)
                     {
