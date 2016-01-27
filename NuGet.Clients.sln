@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackageManagement.VisualStudio", "src\NuGet.Clients\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj", "{306CDDFA-FF0B-4299-930C-9EC6C9308160}"
 EndProject
@@ -95,6 +95,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VsExtension.Test", "test\NuGet.Clients.Tests\NuGet.VsExtension.Test\NuGet.VsExtension.Test.csproj", "{5E2D927E-87E3-431A-A062-16DF6EC98BFB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenerateTestPackages", "test\TestExtensions\GenerateTestPackages\GenerateTestPackages.csproj", "{61EC099A-8AC0-4CCC-AFA8-DF9806CBAFD1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio.Implementation.Test", "test\NuGet.Clients.Tests\NuGet.VisualStudio.Implementation.Test\NuGet.VisualStudio.Implementation.Test.csproj", "{30D3D653-C936-40DD-B044-329980E156ED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -294,8 +296,6 @@ Global
 		{E2853887-4959-4356-A379-50960060A78F}.Mono Release|Any CPU.Build.0 = Release|Any CPU
 		{E2853887-4959-4356-A379-50960060A78F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E2853887-4959-4356-A379-50960060A78F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{33294BB8-5144-4363-B02C-332F6D94C1C1}.Release|x86.ActiveCfg = Release|Any CPU
-		{33294BB8-5144-4363-B02C-332F6D94C1C1}.Release|x86.Build.0 = Release|Any CPU
 		{1E243B39-7C61-4525-A664-3DC8589707AC}.Coverage|Any CPU.ActiveCfg = Release|Any CPU
 		{1E243B39-7C61-4525-A664-3DC8589707AC}.Coverage|Any CPU.Build.0 = Release|Any CPU
 		{1E243B39-7C61-4525-A664-3DC8589707AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -356,8 +356,6 @@ Global
 		{5E2D927E-87E3-431A-A062-16DF6EC98BFB}.Mono Release|Any CPU.Build.0 = Release|Any CPU
 		{5E2D927E-87E3-431A-A062-16DF6EC98BFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E2D927E-87E3-431A-A062-16DF6EC98BFB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F2F53B1A-B973-4932-80CB-5EDA38F9D74C}.Release|x86.ActiveCfg = Release|Any CPU
-		{F2F53B1A-B973-4932-80CB-5EDA38F9D74C}.Release|x86.Build.0 = Release|Any CPU
 		{61EC099A-8AC0-4CCC-AFA8-DF9806CBAFD1}.Coverage|Any CPU.ActiveCfg = Release|Any CPU
 		{61EC099A-8AC0-4CCC-AFA8-DF9806CBAFD1}.Coverage|Any CPU.Build.0 = Release|Any CPU
 		{61EC099A-8AC0-4CCC-AFA8-DF9806CBAFD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -368,6 +366,16 @@ Global
 		{61EC099A-8AC0-4CCC-AFA8-DF9806CBAFD1}.Mono Release|Any CPU.Build.0 = Release|Any CPU
 		{61EC099A-8AC0-4CCC-AFA8-DF9806CBAFD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61EC099A-8AC0-4CCC-AFA8-DF9806CBAFD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30D3D653-C936-40DD-B044-329980E156ED}.Coverage|Any CPU.ActiveCfg = Release|Any CPU
+		{30D3D653-C936-40DD-B044-329980E156ED}.Coverage|Any CPU.Build.0 = Release|Any CPU
+		{30D3D653-C936-40DD-B044-329980E156ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30D3D653-C936-40DD-B044-329980E156ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30D3D653-C936-40DD-B044-329980E156ED}.Mono Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30D3D653-C936-40DD-B044-329980E156ED}.Mono Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30D3D653-C936-40DD-B044-329980E156ED}.Mono Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30D3D653-C936-40DD-B044-329980E156ED}.Mono Release|Any CPU.Build.0 = Release|Any CPU
+		{30D3D653-C936-40DD-B044-329980E156ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30D3D653-C936-40DD-B044-329980E156ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -386,5 +394,6 @@ Global
 		{E901BDC7-CB84-40FA-A2C0-03DB4F9AEA3C} = {6F6D0E69-329D-4D0E-9795-A253FB2CA0CD}
 		{5E2D927E-87E3-431A-A062-16DF6EC98BFB} = {25E91311-400E-47A6-A844-733D604E662A}
 		{61EC099A-8AC0-4CCC-AFA8-DF9806CBAFD1} = {6F6D0E69-329D-4D0E-9795-A253FB2CA0CD}
+		{30D3D653-C936-40DD-B044-329980E156ED} = {25E91311-400E-47A6-A844-733D604E662A}
 	EndGlobalSection
 EndGlobal
