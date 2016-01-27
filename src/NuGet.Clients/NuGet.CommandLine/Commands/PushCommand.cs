@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -64,11 +66,26 @@ namespace NuGet.CommandLine
             var tokenSource = new CancellationTokenSource();
             tokenSource.CancelAfter(timeout);
 
-            await PushPackage(packagePath, pushEndpoint, apiKey, tokenSource.Token);
-
-            if (pushEndpoint.Equals(NuGetConstants.DefaultGalleryServerUrl, StringComparison.OrdinalIgnoreCase))
+            try
             {
-                await PushSymbols(packagePath, tokenSource.Token);
+                await PushPackage(packagePath, pushEndpoint, apiKey, tokenSource.Token);
+
+                if (pushEndpoint.Equals(NuGetConstants.DefaultGalleryServerUrl, StringComparison.OrdinalIgnoreCase))
+                {
+                    await PushSymbols(packagePath, tokenSource.Token);
+                }
+            }
+            catch (HttpRequestException exception)
+            {
+                //WebException contains more detail, so surface it.
+                if (exception.InnerException is WebException)
+                {
+                    throw exception.InnerException;
+                }
+                else
+                {
+                    throw exception;
+                }
             }
         }
 
