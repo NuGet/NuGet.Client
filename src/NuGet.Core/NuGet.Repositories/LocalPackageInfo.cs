@@ -8,13 +8,18 @@ namespace NuGet.Repositories
 {
     public class LocalPackageInfo
     {
-        public LocalPackageInfo(string packageId, NuGetVersion version, string path)
+        public LocalPackageInfo(
+            string packageId,
+            NuGetVersion version,
+            string path,
+            string manifestPath,
+            string zipPath)
         {
             Id = packageId;
             Version = version;
             ExpandedPath = path;
-            ManifestPath = Path.Combine(path, string.Format("{0}.nuspec", Id));
-            ZipPath = Path.Combine(path, string.Format("{0}.{1}.nupkg", Id, Version.ToNormalizedString()));
+            ManifestPath = manifestPath;
+            ZipPath = zipPath;
         }
 
         public string Id { get; }

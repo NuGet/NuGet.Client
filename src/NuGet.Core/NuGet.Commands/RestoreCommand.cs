@@ -67,7 +67,9 @@ namespace NuGet.Commands
 
         public async Task<RestoreResult> ExecuteAsync(CancellationToken token)
         {
-            var localRepository = new NuGetv3LocalRepository(_request.PackagesDirectory, checkPackageIdCase: false);
+            // Use the shared cache if one was provided, otherwise create a new one.
+            var localRepository = _request.SharedLocalCache ?? new NuGetv3LocalRepository(_request.PackagesDirectory);
+
             var projectLockFilePath = string.IsNullOrEmpty(_request.LockFilePath) ?
                 Path.Combine(_request.Project.BaseDirectory, LockFileFormat.LockFileName) :
                 _request.LockFilePath;

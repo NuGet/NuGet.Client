@@ -19,6 +19,7 @@ using NuGet.Logging;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
+using NuGet.Repositories;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -145,11 +146,39 @@ namespace NuGet.CommandLine.XPlat
                         Log.LogVerbose(Strings.Log_RunningNonParallelRestore);
                     }
 
+                    var localCaches = new Dictionary<string, NuGetv3LocalRepository>(StringComparer.Ordinal);
+
                     var success = true;
                     var restoreTasks = new List<Task<int>>(maxTasks);
 
                     foreach (var inputPath in inputValues)
                     {
+                        // Global folder
+                        // Load settings based on the current project path.
+                        var projectDir = Path.GetDirectoryName(inputPath);
+                        var settings = Settings.LoadDefaultSettings(projectDir,
+                            configFileName: null,
+                            machineWideSettings: null);
+
+                        var globalFolderPath = string.Empty;
+                        if (packagesDirectory.HasValue())
+                        {
+                            globalFolderPath = packagesDirectory.Value();
+                        }
+                        else
+                        {
+                            globalFolderPath = SettingsUtility.GetGlobalPackagesFolder(settings);
+                        }
+
+                        // Find the shared local cache for globalFolderPath
+                        // The global folder may differ between projects
+                        NuGetv3LocalRepository localCache;
+                        if (!localCaches.TryGetValue(globalFolderPath, out localCache))
+                        {
+                            localCache = new NuGetv3LocalRepository(globalFolderPath);
+                            localCaches.Add(globalFolderPath, localCache);
+                        }
+
                         // Throttle and wait for a task to finish if we have hit the limit
                         if (restoreTasks.Count == maxTasks)
                         {
@@ -162,6 +191,8 @@ namespace NuGet.CommandLine.XPlat
                             packagesDirectory,
                             fallBack,
                             runtime,
+                            localCache,
+                            settings,
                             isParallel,
                             inputPath);
 
@@ -261,6 +292,8 @@ namespace NuGet.CommandLine.XPlat
             CommandOption packagesDirectory,
             CommandOption fallBack,
             CommandOption runtime,
+            NuGetv3LocalRepository localCache,
+            ISettings settings,
             bool isParallel,
             string inputPath)
         {
@@ -318,28 +351,13 @@ namespace NuGet.CommandLine.XPlat
                 Strings.Log_FoundProjectRoot,
                 rootDirectory));
 
-            // Load settings based on the current project path.
-            var settings = Settings.LoadDefaultSettings(projectPath,
-                configFileName: null,
-                machineWideSettings: null);
-
             var packageSources = GetSources(sources, fallBack, settings);
 
             using (var request = new RestoreRequest(
                 project,
                 packageSources,
-                packagesDirectory: null))
+                localCache.RepositoryRoot))
             {
-
-                if (packagesDirectory.HasValue())
-                {
-                    request.PackagesDirectory = packagesDirectory.Value();
-                }
-                else
-                {
-                    request.PackagesDirectory = SettingsUtility.GetGlobalPackagesFolder(settings);
-                }
-
                 // Resolve the packages directory
                 Log.LogVerbose(string.Format(
                     CultureInfo.CurrentCulture,
