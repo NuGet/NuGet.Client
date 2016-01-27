@@ -1725,9 +1725,10 @@ namespace NuGet.CommandLine.Test
                     result.Item1 != 0,
                     "The run did not fail as desired. Simply got this output:" + result.Item2);
 
+                //TODO: review with nuget team, that this new error is good
                 Assert.True(
                     result.Item3.Contains(
-                        "The remote server returned an error: (404) Not Found."),
+                        "Response status code does not indicate success: 404 (Not Found)"),
                     "Expected error message not found in " + result.Item3
                     );
             }
