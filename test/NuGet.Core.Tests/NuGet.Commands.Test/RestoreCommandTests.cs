@@ -95,7 +95,7 @@ namespace NuGet.Commands.Test
                         }
                     }
                 }");
-                System.Diagnostics.Debugger.Launch();
+                
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 

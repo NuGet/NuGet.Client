@@ -793,7 +793,7 @@ namespace NuGet.Commands
                         if (!targetLibrary.Equals(targetLibraryWithoutFallback))
                         {
                             var libraryName = $"{library.Name} {library.Version}";
-                            _logger.LogWarning(Strings.FormatLog_ImportsFallbackWarning(libraryName, fallbackFramework.Fallback, nonFallbackFramework));
+                            _logger.LogWarning(Strings.FormatLog_ImportsFallbackWarning(libraryName, String.Join(",", fallbackFramework.Fallback), nonFallbackFramework));
 
                             // only log the warning once per library
                             librariesWithWarnings.Add(library);
