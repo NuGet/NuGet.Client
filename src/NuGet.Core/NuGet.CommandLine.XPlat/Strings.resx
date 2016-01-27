@@ -153,14 +153,14 @@
   <data name="Restore_Description" xml:space="preserve">
     <value>Restores packages for a project and writes a lock file.</value>
   </data>
+  <data name="Restore_Switch_DisableParallel_Description" xml:space="preserve">
+    <value>Disables restoring multiple projects in parallel.</value>
+  </data>
   <data name="Restore_Switch_Fallback_Description" xml:space="preserve">
     <value>A list of packages sources to use as a fallback.</value>
   </data>
   <data name="Restore_Switch_Packages_Description" xml:space="preserve">
     <value>Directory to install packages in.</value>
-  </data>
-  <data name="Restore_Switch_Parallel_Description" xml:space="preserve">
-    <value>The number of concurrent tasks to use when restoring. Defaults to {0}; pass 'none' to run without concurrency.</value>
   </data>
   <data name="Restore_Switch_Runtime_Description" xml:space="preserve">
     <value>List of runtime identifiers to restore for.</value>
