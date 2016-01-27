@@ -390,8 +390,7 @@ namespace NuGet.Common
 
         public void LogSummary(string data)
         {
-            // Treat Summary as Debug
-            LogDebug(data);
+            WriteLine(data);
         }
     }
 }

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Logging;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
@@ -56,7 +57,7 @@ namespace NuGet.CommandLine
         {
             CalculateEffectivePackageSaveMode();
 
-            var success = true;
+            var restoreSummaries = new List<RestoreSummary>();
 
             _msbuildDirectory = MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console);
 
@@ -74,7 +75,7 @@ namespace NuGet.CommandLine
             if (restoreInputs.PackageReferenceFiles.Count > 0)
             {
                 var v2RestoreResult = await PerformNuGetV2RestoreAsync(restoreInputs);
-                success &= v2RestoreResult;
+                restoreSummaries.Add(v2RestoreResult);
             }
 
             if (restoreInputs.V3RestoreFiles.Count > 0)
@@ -98,8 +99,6 @@ namespace NuGet.CommandLine
 
                 var packageSources = GetPackageSources(Settings);
 
-                Console.PrintPackageSources(packageSources);
-
                 var localCache = new NuGetv3LocalRepository(packagesDir);
 
                 var isParallel = !DisableParallelProcessing && !RuntimeEnvironmentHelper.IsMono;
@@ -114,7 +113,7 @@ namespace NuGet.CommandLine
                 // Throttle the tasks so no more than 16 run at a time, so memory doesn't accumulate.
                 // This should make large project (over 100 project.json files) allocate reasonable
                 // amounts of memory.
-                var tasks = new List<Task<bool>>();
+                var tasks = new List<Task<RestoreSummary>>();
                 int restoreCount = restoreInputs.V3RestoreFiles.Count;
 
                 int currentFileIndex = 0;
@@ -143,13 +142,15 @@ namespace NuGet.CommandLine
 
                     var task = await Task.WhenAny(tasks);
 
-                    success &= task.Result;
+                    restoreSummaries.Add(task.Result);
                     tasks.Remove(task);
                 }
                 while (tasks.Count > 0 || currentFileIndex < restoreCount);
             }
 
-            if (!success)
+            RestoreSummary.Log(Console, restoreSummaries);
+
+            if (restoreSummaries.Any(x => !x.Success))
             {
                 throw new ExitCodeException(exitCode: 1);
             }
@@ -193,7 +194,7 @@ namespace NuGet.CommandLine
             throw new CommandLineException(message);
         }
 
-        private async Task<bool> PerformNuGetV3RestoreAsync(
+        private async Task<RestoreSummary> PerformNuGetV3RestoreAsync(
             string inputPath,
             IReadOnlyCollection<Configuration.PackageSource> packageSources,
             ProjectReferenceCache projectReferences,
@@ -221,7 +222,7 @@ namespace NuGet.CommandLine
             {
                 // Unsupported projects such as DNX's .xproj are a noop and should
                 // be treated as a success.
-                return true;
+                return new RestoreSummary(true);
             }
             else
             {
@@ -229,96 +230,95 @@ namespace NuGet.CommandLine
                 projectJsonPath = BuildIntegratedProjectUtility.GetProjectConfigPath(projectDirectory, projectName);
             }
 
-            var success = false;
-
-            if (projectJsonPath != null && File.Exists(projectJsonPath))
+            if (projectJsonPath == null || !File.Exists(projectJsonPath))
             {
-                Console.LogVerbose($"Reading project file {inputPath}");
-
-                packageSpec = projectReferences.GetProjectJson(projectJsonPath);
-
-                if (packageSpec == null)
-                {
-                    packageSpec = JsonPackageSpecReader.GetPackageSpec(
-                        projectName,
-                        projectJsonPath);
-                }
-
-                Console.LogVerbose($"Loaded project {packageSpec.Name} from {packageSpec.FilePath}");
-
-                // Resolve the root directory
-                var rootDirectory = PackageSpecResolver.ResolveRootDirectory(inputPath);
-                Console.LogVerbose($"Found project root directory: {rootDirectory}");
-
-                Console.LogVerbose($"Using packages directory: {localCache.RepositoryRoot}");
-
-                // Create a restore request
-                using (var request = new RestoreRequest(
-                    packageSpec,
-                    repositories,
-                    packagesDirectory: null))
-                {
-                    request.PackagesDirectory = localCache.RepositoryRoot;
-                    request.SharedLocalCache = localCache;
-
-                    var packageSaveMode = EffectivePackageSaveMode;
-                    if (packageSaveMode != Packaging.PackageSaveMode.None)
-                    {
-                        request.PackageSaveMode = EffectivePackageSaveMode;
-                    }
-
-                    if (DisableParallelProcessing)
-                    {
-                        request.MaxDegreeOfConcurrency = 1;
-                    }
-                    else
-                    {
-                        request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
-                    }
-
-                    request.CacheContext.NoCache = NoCache;
-
-                    // Read the existing lock file, this is needed to support IsLocked=true
-                    var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(projectJsonPath);
-                    request.LockFilePath = lockFilePath;
-                    request.ExistingLockFile = BuildIntegratedRestoreUtility.GetLockFile(lockFilePath, Console);
-
-                    // Resolve the packages directory
-                    Console.LogVerbose($"Using packages directory: {request.PackagesDirectory}");
-
-                    // Find all external references
-                    var externalProjectReferences = projectReferences.GetReferences(inputPath);
-                    request.ExternalProjects.AddRange(externalProjectReferences);
-
-                    // Determine which lock file version to use
-                    request.LockFileVersion = LockFileFormat.Version;
-
-                    // MSBuild for VS2015U1 fails when projects are in the lock file since it treats them as packages.
-                    // To work around that NuGet will downgrade the lock file if there are only csproj references.
-                    // Projects with zero project references can go to v2, and projects with xproj references must be
-                    // at least v2 to work.
-                    if (externalProjectReferences.Any(reference => reference.ExternalProjectReferences.Count > 0)
-                        && inputFileName?.EndsWith(XProjUtility.XProjExtension) == false
-                        && !externalProjectReferences.Any(child =>
-                        child.MSBuildProjectPath?.EndsWith(XProjUtility.XProjExtension) == true))
-                    {
-                        // Fallback to v1 for non-xprojs with p2ps
-                        request.LockFileVersion = 1;
-                    }
-
-                    // Check if we can restore based on the nuget.config settings
-                    CheckRequireConsent();
-
-                    // Run the restore
-                    var command = new NuGet.Commands.RestoreCommand(Console, request);
-                    var result = await command.ExecuteAsync();
-                    result.Commit(Console);
-
-                    success = result.Success;
-                }
+                return new RestoreSummary(false);
             }
 
-            return success;
+            Console.LogVerbose($"Reading project file {inputPath}");
+
+            packageSpec = projectReferences.GetProjectJson(projectJsonPath);
+
+            if (packageSpec == null)
+            {
+                packageSpec = JsonPackageSpecReader.GetPackageSpec(
+                    projectName,
+                    projectJsonPath);
+            }
+
+            Console.LogVerbose($"Loaded project {packageSpec.Name} from {packageSpec.FilePath}");
+
+            // Resolve the root directory
+            var rootDirectory = PackageSpecResolver.ResolveRootDirectory(inputPath);
+            Console.LogVerbose($"Found project root directory: {rootDirectory}");
+
+            Console.LogVerbose($"Using packages directory: {localCache.RepositoryRoot}");
+
+            // Create a restore request
+            using (var request = new RestoreRequest(
+                packageSpec,
+                repositories,
+                packagesDirectory: null))
+            {
+                request.PackagesDirectory = localCache.RepositoryRoot;
+                request.SharedLocalCache = localCache;
+
+                var packageSaveMode = EffectivePackageSaveMode;
+                if (packageSaveMode != Packaging.PackageSaveMode.None)
+                {
+                    request.PackageSaveMode = EffectivePackageSaveMode;
+                }
+
+                if (DisableParallelProcessing)
+                {
+                    request.MaxDegreeOfConcurrency = 1;
+                }
+                else
+                {
+                    request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
+                }
+
+                request.CacheContext.NoCache = NoCache;
+
+                // Read the existing lock file, this is needed to support IsLocked=true
+                var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(projectJsonPath);
+                request.LockFilePath = lockFilePath;
+                request.ExistingLockFile = BuildIntegratedRestoreUtility.GetLockFile(lockFilePath, Console);
+
+                // Resolve the packages directory
+                Console.LogVerbose($"Using packages directory: {request.PackagesDirectory}");
+
+                // Find all external references
+                var externalProjectReferences = projectReferences.GetReferences(inputPath);
+                request.ExternalProjects.AddRange(externalProjectReferences);
+
+                // Determine which lock file version to use
+                request.LockFileVersion = LockFileFormat.Version;
+
+                // MSBuild for VS2015U1 fails when projects are in the lock file since it treats them as packages.
+                // To work around that NuGet will downgrade the lock file if there are only csproj references.
+                // Projects with zero project references can go to v2, and projects with xproj references must be
+                // at least v2 to work.
+                if (externalProjectReferences.Any(reference => reference.ExternalProjectReferences.Count > 0)
+                    && inputFileName?.EndsWith(XProjUtility.XProjExtension) == false
+                    && !externalProjectReferences.Any(child =>
+                    child.MSBuildProjectPath?.EndsWith(XProjUtility.XProjExtension) == true))
+                {
+                    // Fallback to v1 for non-xprojs with p2ps
+                    request.LockFileVersion = 1;
+                }
+
+                // Check if we can restore based on the nuget.config settings
+                CheckRequireConsent();
+
+                // Run the restore
+                var logger = new CollectorLogger(Console);
+                var command = new NuGet.Commands.RestoreCommand(logger, request);
+                var result = await command.ExecuteAsync();
+                result.Commit(Console);
+
+                return new RestoreSummary(result, inputPath, Settings, repositories, logger.Errors);
+            }
         }
 
         private CommandLineSourceRepositoryProvider GetSourceRepositoryProvider()
@@ -354,7 +354,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private async Task<bool> PerformNuGetV2RestoreAsync(PackageRestoreInputs packageRestoreInputs)
+        private async Task<RestoreSummary> PerformNuGetV2RestoreAsync(PackageRestoreInputs packageRestoreInputs)
         {
             ReadSettings(packageRestoreInputs);
             var packagesFolderPath = GetPackagesFolder(packageRestoreInputs);
@@ -404,7 +404,7 @@ namespace NuGet.CommandLine
                     "packages.config");
 
                 Console.LogMinimal(message);
-                return true;
+                return new RestoreSummary(true);
             }
 
             var packageRestoreData = missingPackageReferences.Select(reference =>
@@ -417,27 +417,28 @@ namespace NuGet.CommandLine
 
             var packageSources = GetPackageSources(Settings);
 
-            Console.PrintPackageSources(packageSources);
-
             var repositories = packageSources
                 .Select(sourceRepositoryProvider.CreateRepository)
                 .ToArray();
 
-            var bag = new ConcurrentBag<PackageRestoreFailedEventArgs>();
+            var installCount = 0;
+            var failedEvents = new ConcurrentQueue<PackageRestoreFailedEventArgs>();
 
             var packageRestoreContext = new PackageRestoreContext(
                 nuGetPackageManager,
                 packageRestoreData,
                 CancellationToken.None,
-                packageRestoredEvent: null,
-                packageRestoreFailedEvent: (sender, args) => { bag.Add(args); },
+                packageRestoredEvent: (sender, args) => { Interlocked.Add(ref installCount, args.Restored ? 1 : 0); },
+                packageRestoreFailedEvent: (sender, args) => { failedEvents.Enqueue(args); },
                 sourceRepositories: repositories,
                 maxNumberOfParallelTasks: DisableParallelProcessing
                         ? 1
                         : PackageManagementConstants.DefaultMaxDegreeOfParallelism);
 
             CheckRequireConsent();
-            var projectContext = new ConsoleProjectContext(Console)
+
+            var collectorLogger = new CollectorLogger(Console);
+            var projectContext = new ConsoleProjectContext(collectorLogger)
             {
                 PackageExtractionContext = new PackageExtractionContext()
             };
@@ -451,12 +452,13 @@ namespace NuGet.CommandLine
                 packageRestoreContext,
                 projectContext);
 
-            foreach (var item in bag)
-            {
-                Console.WriteError(item.Exception.Message);
-            }
-
-            return result.Restored;
+            return new RestoreSummary(
+                result.Restored,
+                "packages.config projects",
+                Settings.Priority.Select(x => Path.Combine(x.Root, x.FileName)),
+                packageSources.Select(x => x.Source),
+                installCount,
+                collectorLogger.Errors.Concat(failedEvents.Select(e => e.Exception.Message)));
         }
 
         private void CheckRequireConsent()

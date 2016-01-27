@@ -213,26 +213,8 @@ namespace NuGet.CommandLine.XPlat
                         restoreSummaries.Add(restoreSummary);
                     }
 
-                    // Display the errors in the same order that they were produced, but grouped by project
-                    if (restoreSummaries.Any())
-                    {
-                        foreach (var restoreSummary in restoreSummaries)
-                        {
-                            if (!restoreSummary.Errors.Any())
-                            {
-                                continue;
-                            }
+                    RestoreSummary.Log(Log, restoreSummaries);
 
-                            Log.LogSummary(string.Empty);
-                            Log.LogSummary(string.Format(Strings.Log_ErrorSummary, restoreSummary.InputPath));
-                            foreach (var error in restoreSummary.Errors)
-                            {
-                                Log.LogSummary($"    {error}");
-                            }
-                        }
-                    }
-
-                    // Return 0 if all restores were successful
                     return restoreSummaries.All(x => x.Success) ? 0 : 1;
                 });
             });
@@ -270,10 +252,7 @@ namespace NuGet.CommandLine.XPlat
 
             return exitCode;
         }
-
-        /// <summary>
-        /// Removes a task from the list and returns the restore summary.
-        /// </summary>
+		
         private static async Task<RestoreSummary> CompleteTaskAsync(List<Task<RestoreSummary>> restoreTasks)
         {
             var doneTask = await Task.WhenAny(restoreTasks);
@@ -445,10 +424,8 @@ namespace NuGet.CommandLine.XPlat
                         sw.ElapsedMilliseconds));
                 }
 
-                return new RestoreSummary(
-                    inputPath,
-                    result.Success,
-                    collectorLog.Errors);
+                // Build the summary
+                return new RestoreSummary(result, inputPath, settings, packageSources, collectorLog.Errors);
             }
         }
 

@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using NuGet.Common;
@@ -38,9 +37,9 @@ namespace NuGet.Configuration
                 DefaultSettingsFileName  // NuGet v2 style
             };
 
-        private XDocument ConfigXDocument { get; set; }
-        private string ConfigFileName { get; set; }
-        private bool IsMachineWideSettings { get; set; }
+        private XDocument ConfigXDocument { get; }
+        public string FileName { get; }
+        private bool IsMachineWideSettings { get; }
         // next config file to read if any
         private Settings _next;
         // The priority of this setting file
@@ -74,7 +73,7 @@ namespace NuGet.Configuration
             }
 
             Root = root;
-            ConfigFileName = fileName;
+            FileName = fileName;
             XDocument config = null;
             ExecuteSynchronized(() => config = XmlUtility.GetOrCreateDocument("configuration", ConfigFilePath));
             ConfigXDocument = config;
@@ -83,17 +82,38 @@ namespace NuGet.Configuration
 
         public event EventHandler SettingsChanged = delegate { };
 
+        public IEnumerable<ISettings> Priority
+        {
+            get
+            {
+                // explore the linked list, terminating when a duplicate path is found
+                var current = this;
+                var found = new List<Settings>();
+                var paths = new HashSet<string>();
+                while (current != null && paths.Add(current.ConfigFilePath))
+                {
+                    found.Add(current);
+                    current = current._next;
+                }
+
+                // sort by priority
+                return found
+                    .OrderByDescending(s => s._priority)
+                    .ToArray();
+            }
+        }
+
         /// <summary>
         /// Folder under which the config file is present
         /// </summary>
-        public string Root { get; private set; }
+        public string Root { get; }
 
         /// <summary>
         /// Full path to the ConfigFile corresponding to this Settings object
         /// </summary>
         public string ConfigFilePath
         {
-            get { return Path.GetFullPath(Path.Combine(Root, ConfigFileName)); }
+            get { return Path.GetFullPath(Path.Combine(Root, FileName)); }
         }
 
         /// <summary>
@@ -170,7 +190,7 @@ namespace NuGet.Configuration
                 {
                     validSettingFiles.AddRange(
                         machineWideSettings.Settings.Select(
-                            s => new Settings(s.Root, s.ConfigFileName, s.IsMachineWideSettings)));
+                            s => new Settings(s.Root, s.FileName, s.IsMachineWideSettings)));
                 }
 
                 if (validSettingFiles == null

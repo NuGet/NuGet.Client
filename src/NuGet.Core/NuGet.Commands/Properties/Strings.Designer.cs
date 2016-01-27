@@ -498,6 +498,62 @@ namespace NuGet.Commands
             return string.Format(CultureInfo.CurrentCulture, GetString("Error_UnknownBuildAction"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// NuGet Config files used:
+        /// </summary>
+        internal static string Log_ConfigFileSummary
+        {
+            get { return GetString("Log_ConfigFileSummary"); }
+        }
+
+        /// <summary>
+        /// NuGet Config files used:
+        /// </summary>
+        internal static string Log_ErrorSummary
+        {
+            get { return GetString("Log_ErrorSummary"); }
+        }
+
+        /// <summary>
+        /// Errors in {0}
+        /// </summary>
+        internal static string FormatLog_ErrorSummary(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_ErrorSummary"), p0);
+        }
+
+        /// <summary>
+        /// Feeds used:
+        /// </summary>
+        internal static string Log_FeedsUsedSummary
+        {
+            get { return GetString("Log_FeedsUsedSummary"); }
+        }
+
+        /// <summary>
+        /// Installed:
+        /// </summary>
+        internal static string Log_InstalledSummary
+        {
+            get { return GetString("Log_InstalledSummary"); }
+        }
+
+        /// <summary>
+        /// NuGet Config files used:
+        /// </summary>
+        internal static string Log_InstalledSummaryCount
+        {
+            get { return GetString("Log_InstalledSummaryCount"); }
+        }
+
+        /// <summary>
+        /// {0} package(s) to {1}
+        /// </summary>
+        internal static string FormatLog_InstalledSummaryCount(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Log_InstalledSummaryCount"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

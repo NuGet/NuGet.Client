@@ -51,6 +51,16 @@ namespace StandaloneUI
             get { return Instance.Root; }
         }
 
+        public string FileName
+        {
+            get { return Instance.FileName; }
+        }
+
+        public IEnumerable<ISettings> Priority
+        {
+            get { return Instance.Priority; }
+        }
+
         public void SetNestedValues(string section, string subSection, IList<KeyValuePair<string, string>> values)
         {
             Instance.SetNestedValues(section, subSection, values);

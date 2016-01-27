@@ -210,4 +210,19 @@
   <data name="Error_UnknownBuildAction" xml:space="preserve">
     <value>Package '{0}' specifies an invalid build action '{1}' for file '{2}'.</value>
   </data>
+  <data name="Log_ConfigFileSummary" xml:space="preserve">
+    <value>NuGet Config files used:</value>
+  </data>
+  <data name="Log_ErrorSummary" xml:space="preserve">
+    <value>Errors in {0}</value>
+  </data>
+  <data name="Log_FeedsUsedSummary" xml:space="preserve">
+    <value>Feeds used:</value>
+  </data>
+  <data name="Log_InstalledSummary" xml:space="preserve">
+    <value>Installed:</value>
+  </data>
+  <data name="Log_InstalledSummaryCount" xml:space="preserve">
+    <value>{0} package(s) to {1}</value>
+  </data>
 </root>

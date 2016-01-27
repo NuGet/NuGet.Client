@@ -78,15 +78,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Errors in {0}.
-        /// </summary>
-        internal static string Log_ErrorSummary {
-            get {
-                return ResourceManager.GetString("Log_ErrorSummary", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///    Looks up a localized string similar to Found project root directory: {0}..
         /// </summary>
         internal static string Log_FoundProjectRoot {

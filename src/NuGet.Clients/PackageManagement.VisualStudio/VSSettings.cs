@@ -94,6 +94,16 @@ namespace NuGet.PackageManagement.VisualStudio
             get { return SolutionSettings.Root; }
         }
 
+        public string FileName
+        {
+            get { return SolutionSettings.FileName; }
+        }
+
+        public IEnumerable<Configuration.ISettings> Priority
+        {
+            get { return SolutionSettings.Priority; }
+        }
+
         public void SetNestedValues(string section, string subSection, IList<KeyValuePair<string, string>> values)
         {
             SolutionSettings.SetNestedValues(section, subSection, values);
