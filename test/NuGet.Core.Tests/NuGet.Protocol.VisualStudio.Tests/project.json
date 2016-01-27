@@ -1,6 +1,9 @@
 ﻿{
   "version": "1.0.0-*",
+  "compile": "*.cs",
+  "resource": "Resources/**/*",
   "dependencies": {
+    "Moq": "4.2.1507.118",
     "NuGet.Protocol.VisualStudio": "3.4.0-*",
     "NuGet.Protocol.Test.Utility": "1.0.0-*",
     "xunit": "2.1.0",
