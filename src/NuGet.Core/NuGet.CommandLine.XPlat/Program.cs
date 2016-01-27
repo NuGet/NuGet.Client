@@ -62,25 +62,27 @@ namespace NuGet.CommandLine.XPlat
                     "-s|--source <source>",
                     Strings.Restore_Switch_Source_Description,
                     CommandOptionType.MultipleValue);
+
                 var packagesDirectory = restore.Option(
                     "--packages <packagesDirectory>",
                     Strings.Restore_Switch_Packages_Description,
                     CommandOptionType.SingleValue);
-                var parallel = restore.Option(
-                    "-p|--parallel <noneOrNumberOfParallelTasks>",
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.Restore_Switch_Parallel_Description,
-                        RestoreRequest.DefaultDegreeOfConcurrency),
-                    CommandOptionType.SingleValue);
+
+                var disableParallel = restore.Option(
+                    "--disable-parallel",
+                    Strings.Restore_Switch_DisableParallel_Description,
+                    CommandOptionType.NoValue);
+
                 var fallBack = restore.Option(
                     "-f|--fallbacksource <FEED>",
                     Strings.Restore_Switch_Fallback_Description,
                     CommandOptionType.MultipleValue);
+
                 var runtime = restore.Option(
                     "--runtime <RID>",
                     Strings.Restore_Switch_Runtime_Description,
                     CommandOptionType.MultipleValue);
+
                 verbosity = restore.Option(VerbosityOption,
                     Strings.Switch_Verbosity,
                     CommandOptionType.SingleValue);
@@ -127,25 +129,53 @@ namespace NuGet.CommandLine.XPlat
                         }
                     }
 
-                    var restoreExitCode = 0;
+                    // Run restores
+                    var isParallel = !disableParallel.HasValue();
+                    var maxTasks = isParallel ? 16 : 1;
+
+                    if (isParallel)
+                    {
+                        Log.LogVerbose(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Log_RunningParallelRestore,
+                            maxTasks));
+                    }
+                    else
+                    {
+                        Log.LogVerbose(Strings.Log_RunningNonParallelRestore);
+                    }
+
+                    var success = true;
+                    var restoreTasks = new List<Task<int>>(maxTasks);
 
                     foreach (var inputPath in inputValues)
                     {
-                        var currentExitCode = await ExecuteRestore(
+                        // Throttle and wait for a task to finish if we have hit the limit
+                        if (restoreTasks.Count == maxTasks)
+                        {
+                            success &= await CompleteTask(restoreTasks);
+                        }
+
+                        // Start a new restore
+                        var task = ExecuteRestore(
                             sources,
                             packagesDirectory,
-                            parallel,
                             fallBack,
                             runtime,
+                            isParallel,
                             inputPath);
 
-                        if (currentExitCode != 0)
-                        {
-                            restoreExitCode = currentExitCode;
-                        }
+                        restoreTasks.Add(task);
                     }
 
-                    return restoreExitCode;
+                    // Wait for all restores to finish
+                    while (restoreTasks.Count > 0)
+                    {
+                        success &= await CompleteTask(restoreTasks);
+                    }
+
+                    // Return 0 if all restores were successful
+                    return success ? 0 : 1;
                 });
             });
 
@@ -183,6 +213,18 @@ namespace NuGet.CommandLine.XPlat
             return exitCode;
         }
 
+        /// <summary>
+        /// Removes a task from the list and returns the success flag.
+        /// </summary>
+        private static async Task<bool> CompleteTask(List<Task<int>> restoreTasks)
+        {
+            var doneTask = await Task.WhenAny(restoreTasks);
+            restoreTasks.Remove(doneTask);
+            var taskExitCode = await doneTask;
+
+            return (taskExitCode == 0);
+        }
+
         private static void EnsureLog(CommandOption verbosity)
         {
             // Set up logging.
@@ -217,9 +259,9 @@ namespace NuGet.CommandLine.XPlat
         private static async Task<int> ExecuteRestore
             (CommandOption sources,
             CommandOption packagesDirectory,
-            CommandOption parallel,
             CommandOption fallBack,
             CommandOption runtime,
+            bool isParallel,
             string inputPath)
         {
             // Figure out the project directory
@@ -331,30 +373,9 @@ namespace NuGet.CommandLine.XPlat
 
                 request.FallbackRuntimes.UnionWith(defaultRuntimes);
 
+                request.MaxDegreeOfConcurrency = isParallel ? RestoreRequest.DefaultDegreeOfConcurrency : 1;
+
                 // Run the restore
-                if (parallel.HasValue())
-                {
-                    int parallelDegree;
-                    if (string.Equals(parallel.Value(), "none", StringComparison.OrdinalIgnoreCase))
-                    {
-                        request.MaxDegreeOfConcurrency = 1;
-                    }
-                    else if (int.TryParse(parallel.Value(), out parallelDegree))
-                    {
-                        request.MaxDegreeOfConcurrency = parallelDegree;
-                    }
-                }
-                if (request.MaxDegreeOfConcurrency <= 1)
-                {
-                    Log.LogVerbose(Strings.Log_RunningNonParallelRestore);
-                }
-                else
-                {
-                    Log.LogVerbose(string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.Log_RunningParallelRestore,
-                        request.MaxDegreeOfConcurrency));
-                }
                 var command = new RestoreCommand(Log, request);
                 var sw = Stopwatch.StartNew();
                 var result = await command.ExecuteAsync();

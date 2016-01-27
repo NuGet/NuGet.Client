@@ -168,6 +168,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Disables restoring multiple projects in parallel..
+        /// </summary>
+        internal static string Restore_Switch_DisableParallel_Description {
+            get {
+                return ResourceManager.GetString("Restore_Switch_DisableParallel_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to A list of packages sources to use as a fallback..
         /// </summary>
         internal static string Restore_Switch_Fallback_Description {
@@ -182,15 +191,6 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Restore_Switch_Packages_Description {
             get {
                 return ResourceManager.GetString("Restore_Switch_Packages_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to The number of concurrent tasks to use when restoring. Defaults to {0}; pass &apos;none&apos; to run without concurrency..
-        /// </summary>
-        internal static string Restore_Switch_Parallel_Description {
-            get {
-                return ResourceManager.GetString("Restore_Switch_Parallel_Description", resourceCulture);
             }
         }
         
