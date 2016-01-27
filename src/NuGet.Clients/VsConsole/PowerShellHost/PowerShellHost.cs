@@ -402,7 +402,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                                     AddPathToEnvironment(toolsPath);
                                     if (File.Exists(scriptPath))
                                     {
-                                        if (_scriptExecutor.TryMarkVisited(package, true))
+                                        if (_scriptExecutor.TryMarkVisited(package, initPS1Present: true))
                                         {
                                             var scriptPackage = new ScriptPackage(
                                                 package.Id,
@@ -414,7 +414,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                                     }
                                     else
                                     {
-                                        _scriptExecutor.TryMarkVisited(package, false);
+                                        _scriptExecutor.TryMarkVisited(package, initPS1Present: false);
                                     }
                                 }
                             }

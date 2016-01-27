@@ -61,12 +61,12 @@ namespace API.Test
 
         public static bool ExecuteInitScript(string id, string version)
         {
-            IVsScriptExecutor scriptExecutor = ServiceLocator.GetInstance<IVsScriptExecutor>();
+            var scriptExecutor = ServiceLocator.GetInstance<IVsGlobalPackagesInitScriptExecutor>();
             // It is important that this method does not wait on ExecuteInitScriptAsync on the calling thread.
             // Calling thread is powershell execution thread and ExecuteInitScriptAsync needs to switch to
             // Powershell execution thread to execute the scripts
             var task = Task.Run(async () => await scriptExecutor.ExecuteInitScriptAsync(id, version));
-            Task.WaitAny(task, Task.Delay(1000));
+            Task.WaitAny(task, Task.Delay(3000));
             if (task.IsCompleted)
             {
                 return task.Result;

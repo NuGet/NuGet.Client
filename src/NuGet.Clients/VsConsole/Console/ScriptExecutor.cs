@@ -48,8 +48,6 @@ namespace NuGetConsole
 
         public void Reset()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             if (SolutionManager.IsSolutionAvailable)
             {
                 SolutionDirectory = SolutionManager.SolutionDirectory;
@@ -102,7 +100,7 @@ namespace NuGetConsole
             // Reserve the key. We can remove if the package has not been restored
             if (TryMarkVisited(packageIdentity, false))
             {
-                var packageInstalledPath = await GetPackageInstalledPathAsync(packageIdentity);
+                var packageInstalledPath = GetPackageInstalledPath(packageIdentity);
                 if (!string.IsNullOrEmpty(packageInstalledPath))
                 {
                     var initPS1Path = Path.Combine(packageInstalledPath, "tools", PowerShellScripts.Init);
@@ -168,7 +166,7 @@ namespace NuGetConsole
                     nuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.TargetFramework, out targetFramework);
 
                     // targetFramework can be null for unknown project types
-                    string shortFramework = targetFramework == null ? string.Empty : targetFramework.GetShortFolderName();
+                    string shortFramework = targetFramework?.GetShortFolderName() ?? string.Empty;
 
                     nuGetProjectContext.Log(MessageLevel.Debug, Strings.Debug_TargetFrameworkInfoPrefix, packageIdentity,
                         envDTEProject.Name, shortFramework);
@@ -232,30 +230,15 @@ namespace NuGetConsole
             return false;
         }
 
-        private async Task<string> GetPackageInstalledPathAsync(PackageIdentity packageIdentity)
+        private string GetPackageInstalledPath(PackageIdentity packageIdentity)
         {
-            // Since we need the solution directory when available, we switch to the main thread
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
             string effectiveGlobalPackagesFolder = null;
             if (!string.IsNullOrEmpty(SolutionDirectory))
             {
-                var packagesFolder = PackagesFolderPathUtility.GetPackagesFolderPath(SolutionDirectory, Settings);
-                var packagePathResolver = new PackagePathResolver(packagesFolder);
-                var packageInstalledPath = packagePathResolver.GetInstalledPath(packageIdentity);
-
-                if (string.IsNullOrEmpty(packageInstalledPath))
-                {
-                    // Package not found in packages folder
-                    effectiveGlobalPackagesFolder = BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
-                                                            SolutionDirectory,
-                                                            Settings);
-                }
-                else
-                {
-                    // Package is found in packages folder
-                    return packageInstalledPath;
-                }
+                // Package not found in packages folder
+                effectiveGlobalPackagesFolder = BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolder(
+                                                        SolutionDirectory,
+                                                        Settings);
             }
             else
             {
@@ -263,12 +246,12 @@ namespace NuGetConsole
                 effectiveGlobalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(Settings);
             }
 
-            var packageInstallPath = BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(
-                effectiveGlobalPackagesFolder,
-                packageIdentity);
+            var versionFolderPathResolver = new VersionFolderPathResolver(effectiveGlobalPackagesFolder);
+            var hashPath = versionFolderPathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
 
-            if (Directory.Exists(packageInstallPath))
+            if (File.Exists(hashPath))
             {
+                var packageInstallPath = Path.GetDirectoryName(hashPath);
                 return packageInstallPath;
             }
 

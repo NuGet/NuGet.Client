@@ -8,13 +8,13 @@ using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio
 {
-    [Export(typeof(IVsScriptExecutor))]
-    public class VsScriptExecutor : IVsScriptExecutor
+    [Export(typeof(IVsGlobalPackagesInitScriptExecutor))]
+    public class VsGlobalPackagesInitScriptExecutor : IVsGlobalPackagesInitScriptExecutor
     {
         private IScriptExecutor ScriptExecutor { get; }
 
         [ImportingConstructor]
-        public VsScriptExecutor(IScriptExecutor scriptExecutor)
+        public VsGlobalPackagesInitScriptExecutor(IScriptExecutor scriptExecutor)
         {
             if (scriptExecutor == null)
             {
@@ -31,7 +31,7 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageId));
             }
 
-            if (string.IsNullOrEmpty(packageId))
+            if (string.IsNullOrEmpty(packageVersion))
             {
                 throw new ArgumentNullException(
                     CommonResources.Argument_Cannot_Be_Null_Or_Empty,

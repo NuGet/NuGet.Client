@@ -485,7 +485,7 @@ function Test-InstallPackageAPIBindingRedirect
     Assert-BindingRedirect $p app.config B '0.0.0.0-2.0.0.0' '2.0.0.0'
 }
 
-function Test-ExecuteInitPS1
+function Test-ExecuteInitPS1OnClassLibrary
 {
     param($context)
 
@@ -505,9 +505,34 @@ function Test-ExecuteInitPS1
     Assert-True ($global:PackageInitPS1Var -eq 1)
 }
 
-function Test-ExecuteInitPS1OnProjectK
+function Test-ExecuteInitPS1OnUAP
 {
     param($context)
+
+    # Arrange
+    $global:PackageInitPS1Var = 0
+    $p = New-BuildIntegratedProj UAPApp
+
+    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryPath
+
+    Assert-True ($global:PackageInitPS1Var -eq 1)
+
+    # Act
+    $result = [API.Test.InternalAPITestHook]::ExecuteInitScript("PackageInitPS1","1.0.0")
+
+    Assert-True $result
+
+    Assert-True ($global:PackageInitPS1Var -eq 1)
+}
+
+# NOTE: The following test does not work since ExecuteInitScript needs the powershell pipeline to be free
+#       for it execute scripts. But, under Run-Test, the pipeline is already busy.
+function ExecuteInitPS1OnAspNetCore
+{
+    param($context)
+
+    # Set DNX packages folder to be NUGET global packages folder
+    $env:DNX_PACKAGES = "$env:USERPROFILE\.nuget\packages"
 
     # Arrange
     $global:PackageInitPS1Var = 0
@@ -516,9 +541,6 @@ function Test-ExecuteInitPS1OnProjectK
     Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryPath
 
     Assert-True ($global:PackageInitPS1Var -eq 0)
-
-    # Set DNX packages folder to be NUGET global packages folder
-    $env:DNX_PACKAGES = "$env:USERPROFILE\.nuget\packages"
 
     # Act
     $result = [API.Test.InternalAPITestHook]::ExecuteInitScript("PackageInitPS1","1.0.0")
