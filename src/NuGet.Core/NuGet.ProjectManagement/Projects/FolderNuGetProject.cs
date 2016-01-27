@@ -237,7 +237,7 @@ namespace NuGet.ProjectManagement
 
         private PackageSaveMode GetPackageSaveMode(INuGetProjectContext nuGetProjectContext)
         {
-            return nuGetProjectContext.PackageExtractionContext?.PackageSaveMode ?? PackageSaveMode.Nupkg;
+            return nuGetProjectContext.PackageExtractionContext?.PackageSaveMode ?? PackageSaveMode.Defaultv2;
         }
     }
 }
