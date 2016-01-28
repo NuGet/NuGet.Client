@@ -17,7 +17,7 @@ param (
 
 trap
 {
-    Write-Host $_.Exception -ForegroundColor Red
+    Write-Host "RunFunctionalTests.ps1 threw an exception: " $_.Exception -ForegroundColor Red
     exit 1
 }
 

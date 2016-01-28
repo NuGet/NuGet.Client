@@ -18,7 +18,7 @@ function RealTimeLogResults
     {
         Start-Sleep 1
         $currentTestTime++
-        $log = (Get-ChildItem $NuGetTestPath -Recurse log.txt | sort LastWriteTime | select -last 1)
+        $log = (Get-ChildItem $NuGetTestPath -Recurse -File log.txt -ErrorAction Ignore | sort LastWriteTime | select -last 1)
         if ($log -and (Test-Path $log.FullName))
         {
             $content = Get-Content $log.FullName
@@ -57,9 +57,8 @@ function RealTimeLogResults
         }
     }
 
-    $errorMessage = 'Run Failed - Results.html did not get created. Completed running of ' + [string]$currentTestId + ' tests. '
-                    + $currentTestName + ' was the last test running.' +
-                    '. This indicates that the tests did not finish running. It could be that the VS crashed. Please investigate.'
+    $errorMessage = 'Run Failed - Results.html did not get created. ' `
+    + 'This indicates that the tests did not finish running. It could be that the VS crashed. Please investigate.'
 
     Write-Error $errorMessage
     return $null
