@@ -651,7 +651,7 @@ namespace NuGet.Commands
 
                     lockFile.Libraries.Add(projectLib);
                 }
-                else
+                else if (library.Type == LibraryTypes.Package)
                 {
                     // Packages
                     var packageInfo = repository.FindPackagesById(library.Name)
@@ -768,56 +768,58 @@ namespace NuGet.Commands
                         target.Libraries.Add(lib);
                         continue;
                     }
-
-                    var packageInfo = repository.FindPackagesById(library.Name)
-                        .FirstOrDefault(p => p.Version == library.Version);
-
-                    if (packageInfo == null)
+                    else if (library.Type == LibraryTypes.Package)
                     {
-                        continue;
-                    }
+                        var packageInfo = repository.FindPackagesById(library.Name)
+                            .FirstOrDefault(p => p.Version == library.Version);
 
-                    // include flags
-                    LibraryIncludeFlags includeFlags;
-                    if (!flattenedFlags.TryGetValue(library.Name, out includeFlags))
-                    {
-                        includeFlags = ~LibraryIncludeFlags.ContentFiles;
-                    }
+                        if (packageInfo == null)
+                        {
+                            continue;
+                        }
 
-                    var targetLibrary = LockFileUtils.CreateLockFileTargetLibrary(
-                        libraries[Tuple.Create(library.Name, library.Version)],
-                        packageInfo,
-                        targetGraph,
-                        resolver,
-                        correctedPackageName: library.Name,
-                        dependencyType: includeFlags,
-                        targetFrameworkOverride: null,
-                        dependencies: graphItem.Data.Dependencies);
+                        // include flags
+                        LibraryIncludeFlags includeFlags;
+                        if (!flattenedFlags.TryGetValue(library.Name, out includeFlags))
+                        {
+                            includeFlags = ~LibraryIncludeFlags.ContentFiles;
+                        }
 
-                    target.Libraries.Add(targetLibrary);
-
-                    // Log warnings if the target library used the fallback framework
-                    if (warnForImportsOnGraph && !librariesWithWarnings.Contains(library))
-                    {
-                        var nonFallbackFramework = new NuGetFramework(fallbackFramework);
-
-                        var targetLibraryWithoutFallback = LockFileUtils.CreateLockFileTargetLibrary(
+                        var targetLibrary = LockFileUtils.CreateLockFileTargetLibrary(
                             libraries[Tuple.Create(library.Name, library.Version)],
                             packageInfo,
                             targetGraph,
                             resolver,
                             correctedPackageName: library.Name,
-                            targetFrameworkOverride: nonFallbackFramework,
                             dependencyType: includeFlags,
+                            targetFrameworkOverride: null,
                             dependencies: graphItem.Data.Dependencies);
 
-                        if (!targetLibrary.Equals(targetLibraryWithoutFallback))
-                        {
-                            var libraryName = $"{library.Name} {library.Version}";
-                            _logger.LogWarning(Strings.FormatLog_ImportsFallbackWarning(libraryName, fallbackFramework.Fallback, nonFallbackFramework));
+                        target.Libraries.Add(targetLibrary);
 
-                            // only log the warning once per library
-                            librariesWithWarnings.Add(library);
+                        // Log warnings if the target library used the fallback framework
+                        if (warnForImportsOnGraph && !librariesWithWarnings.Contains(library))
+                        {
+                            var nonFallbackFramework = new NuGetFramework(fallbackFramework);
+
+                            var targetLibraryWithoutFallback = LockFileUtils.CreateLockFileTargetLibrary(
+                                libraries[Tuple.Create(library.Name, library.Version)],
+                                packageInfo,
+                                targetGraph,
+                                resolver,
+                                correctedPackageName: library.Name,
+                                targetFrameworkOverride: nonFallbackFramework,
+                                dependencyType: includeFlags,
+                                dependencies: graphItem.Data.Dependencies);
+
+                            if (!targetLibrary.Equals(targetLibraryWithoutFallback))
+                            {
+                                var libraryName = $"{library.Name} {library.Version}";
+                                _logger.LogWarning(Strings.FormatLog_ImportsFallbackWarning(libraryName, fallbackFramework.Fallback, nonFallbackFramework));
+
+                                // only log the warning once per library
+                                librariesWithWarnings.Add(library);
+                            }
                         }
                     }
                 }
