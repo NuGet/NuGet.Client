@@ -148,11 +148,8 @@ namespace NuGet.Commands
                 referenceFilter = new HashSet<string>(referenceSet.Items, StringComparer.OrdinalIgnoreCase);
             }
 
-            // TODO: Remove this when we do #596
-            // ASP.NET Core isn't compatible with generic PCL profiles
-            if (!string.Equals(framework.Framework, FrameworkConstants.FrameworkIdentifiers.AspNetCore, StringComparison.OrdinalIgnoreCase)
-                &&
-                !string.Equals(framework.Framework, FrameworkConstants.FrameworkIdentifiers.DnxCore, StringComparison.OrdinalIgnoreCase))
+            // Exclude framework references for package based frameworks.
+            if (!framework.IsPackageBased)
             {
                 var frameworkAssemblies = nuspec.GetFrameworkReferenceGroups().GetNearest(framework);
                 if (frameworkAssemblies != null)
