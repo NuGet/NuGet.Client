@@ -53,7 +53,14 @@ namespace NuGet.Frameworks
             {
                 if (nearest == null || nearest.IsAny)
                 {
-                    nearest = GetNearestInternal(fallbackFramework.Fallback, possibleFrameworks);
+                    foreach (var supportFramework in fallbackFramework.Fallback)
+                    {
+                        nearest = GetNearestInternal(supportFramework, possibleFrameworks);
+                        if (nearest != null)
+                        {
+                            break;
+                        }
+                    }
                 }
             }
 

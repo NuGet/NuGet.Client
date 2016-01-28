@@ -93,7 +93,7 @@ namespace NuGet.Commands.Test
                         }
                     }
                 }");
-
+                
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
@@ -104,9 +104,10 @@ namespace NuGet.Commands.Test
                 var lockFileFormat = new LockFileFormat();
                 var logger = new TestLogger();
                 var command = new RestoreCommand(logger, request);
-                var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), NuGetFramework.Parse("portable-net452+win81"));
+                var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"),new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
 
                 // Act
+                
                 var result = await command.ExecuteAsync();
                 result.Commit(logger);
                 var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, framework, null);
@@ -121,6 +122,62 @@ namespace NuGet.Commands.Test
                 Assert.Equal("7.0.1", result.GetAllInstalled().Single().Version.ToNormalizedString());
                 Assert.Equal(1, runtimeAssemblies.Count);
                 Assert.Equal("lib/portable-net45+wp80+win8+wpa81+dnxcore50/Newtonsoft.Json.dll", runtimeAssembly.Path);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_FrameworkImportArray()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+            sources.Add(new PackageSource("https://www.nuget.org/api/v2/"));
+
+            using (var packagesDir = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var projectDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var configJson = JObject.Parse(@"
+                {
+                    ""dependencies"": {
+                        ""Newtonsoft.Json"": ""7.0.1""
+                    },
+                    ""frameworks"": {
+                        ""netstandard1.2"": {
+                            ""imports"": [""dotnet5.3"",""portable-net452+win81""],
+                            ""warn"": false
+                        }
+                    }
+                }");
+                
+                var specPath = Path.Combine(projectDir, "TestProject", "project.json");
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
+
+                var request = new RestoreRequest(spec, sources, packagesDir);
+
+                request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
+
+                var lockFileFormat = new LockFileFormat();
+                var logger = new TestLogger();
+                var command = new RestoreCommand(logger, request);
+                var framework = new FallbackFramework(NuGetFramework.Parse("netstandard1.2"), new List<NuGetFramework> { NuGetFramework.Parse("dotnet5.3"),
+                                                                                                                         NuGetFramework.Parse("portable-net452+win81")});
+
+                // Act
+
+                var result = await command.ExecuteAsync();
+                result.Commit(logger);
+                var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, framework, null);
+                var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
+
+                // Assert
+                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+                Assert.Equal(0, logger.Errors);
+                Assert.Equal(0, logger.Warnings);
+                Assert.Equal(1, result.GetAllInstalled().Count);
+                Assert.Equal("Newtonsoft.Json", result.GetAllInstalled().Single().Name);
+                Assert.Equal("7.0.1", result.GetAllInstalled().Single().Version.ToNormalizedString());
+                Assert.Equal(1, runtimeAssemblies.Count);
+                Assert.Equal("lib/portable-net45+wp80+win8+wpa81+dnxcore50/Newtonsoft.Json.dll", runtimeAssembly.Path);
+
             }
         }
 
@@ -157,7 +214,7 @@ namespace NuGet.Commands.Test
                 var lockFileFormat = new LockFileFormat();
                 var logger = new TestLogger();
                 var command = new RestoreCommand(logger, request);
-                var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), NuGetFramework.Parse("portable-net452+win81"));
+                var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
                 var result = await command.ExecuteAsync();
                 result.Commit(logger);
                 logger.Clear();
@@ -270,7 +327,7 @@ namespace NuGet.Commands.Test
                 var lockFileFormat = new LockFileFormat();
                 var logger = new TestLogger();
                 var command = new RestoreCommand(logger, request);
-                var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), NuGetFramework.Parse("portable-net452+win81"));
+                var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
                 var warning = "Package 'Newtonsoft.Json 7.0.1' was restored using '.NETPortable,Version=v0.0,Profile=net452+win81' instead the project target framework '.NETPlatform,Version=v5.0'. This may cause compatibility problems.";
 
                 // Act
@@ -320,7 +377,7 @@ namespace NuGet.Commands.Test
                 var lockFileFormat = new LockFileFormat();
                 var logger = new TestLogger();
                 var command = new RestoreCommand(logger, request);
-                var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), NuGetFramework.Parse("portable-net452+win81"));
+                var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
 
                 // Act
                 var result = await command.ExecuteAsync();
@@ -372,7 +429,7 @@ namespace NuGet.Commands.Test
                 var lockFileFormat = new LockFileFormat();
                 var logger = new TestLogger();
                 var command = new RestoreCommand(logger, request);
-                var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), NuGetFramework.Parse("portable-net452+win81"));
+                var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
                 var result = await command.ExecuteAsync();
                 result.Commit(logger);
 

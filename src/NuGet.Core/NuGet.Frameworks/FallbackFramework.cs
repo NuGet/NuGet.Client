@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using NuGet.Shared;
+using System.Linq;
 
 namespace NuGet.Frameworks
 {
@@ -8,9 +10,9 @@ namespace NuGet.Frameworks
         /// <summary>
         /// Secondary framework to fall back to.
         /// </summary>
-        public NuGetFramework Fallback { get; }
+        public IEnumerable<NuGetFramework> Fallback { get; }
 
-        public FallbackFramework(NuGetFramework framework, NuGetFramework fallbackFramework)
+        public FallbackFramework(NuGetFramework framework, IEnumerable<NuGetFramework> fallbackFramework)
             : base(framework)
         {
             if (framework == null)
@@ -36,7 +38,11 @@ namespace NuGet.Frameworks
             var combiner = new HashCodeCombiner();
 
             combiner.AddInt32(NuGetFramework.Comparer.GetHashCode(this));
-            combiner.AddInt32(NuGetFramework.Comparer.GetHashCode(Fallback));
+
+            foreach (var each in Fallback)
+            {
+                combiner.AddInt32(NuGetFramework.Comparer.GetHashCode(each));
+            }
 
             return combiner.CombinedHash;
         }
@@ -54,7 +60,8 @@ namespace NuGet.Frameworks
             }
 
             return NuGetFramework.Comparer.Equals(this, other)
-                && NuGetFramework.Comparer.Equals(Fallback, other.Fallback);
+                && Fallback.All(p => other.Fallback.Contains(p, NuGetFramework.Comparer))
+                && other.Fallback.All(p => Fallback.Contains(p, NuGetFramework.Comparer));
         }
     }
 }

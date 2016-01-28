@@ -424,20 +424,21 @@ namespace NuGet.ProjectModel
             return true;
         }
 
-        private static NuGetFramework GetImports(JObject properties)
+        private static List<NuGetFramework> GetImports(JObject properties)
         {
-            NuGetFramework framework = null;
+            List<NuGetFramework> framework = null;
 
             var importsProperty = properties["imports"];
 
             if (importsProperty != null)
             {
-                var importFramework = NuGetFramework.Parse(importsProperty.ToString());
-
-                if (importFramework.IsPCL)
+                if (importsProperty.Type == JTokenType.Array)
                 {
-                    // PCLs are the only frameworks allowed here, other values will be ignored
-                    framework = importFramework;
+                    framework = importsProperty.ValueAsArray<string>().Select(p => NuGetFramework.Parse(p)).ToList();
+                }
+                else
+                {
+                    framework = new List<NuGetFramework>() { NuGetFramework.Parse(importsProperty.ToString()) };
                 }
             }
 
