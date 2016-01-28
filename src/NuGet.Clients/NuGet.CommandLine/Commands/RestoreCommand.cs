@@ -250,6 +250,8 @@ namespace NuGet.CommandLine
                     packagesDirectory: null))
                 {
                     request.PackagesDirectory = localCache.RepositoryRoot;
+                    request.SharedLocalCache = localCache;
+
                     var packageSaveMode = EffectivePackageSaveMode;
                     if (packageSaveMode != Packaging.PackageSaveMode.None)
                     {
