@@ -26,7 +26,8 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private readonly Func<Task<HttpHandlerResource>> _messageHandlerFactory;
         private readonly Uri _baseUri;
 
-        private const int ConcurrencyLimit = 128;
+        // In order to avoid too many open files error, set concurrent requests number to 64 on Mac
+        private readonly static int ConcurrencyLimit= RuntimeEnvironmentHelper.IsMacOSX? 64 : 128;
 
         // Limiting concurrent requests to limit the amount of files open at a time on Mac OSX
         // the default is 256 which is easy to hit if we don't limit concurrency

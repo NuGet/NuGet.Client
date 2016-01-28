@@ -119,7 +119,7 @@ namespace NuGet.PackageManagement.UI
 
                 _textBlockDownloadCount.Inlines.Add(new Run(begin)); 
                 _textBlockDownloadCount.Inlines.Add(
-                    new Run(UIUtility.NumberToString(DownloadCount.Value))
+                    new Run(UIUtility.NumberToString(DownloadCount.Value, CultureInfo.CurrentCulture))
                     {
                         FontWeight = FontWeights.Bold
                     });
