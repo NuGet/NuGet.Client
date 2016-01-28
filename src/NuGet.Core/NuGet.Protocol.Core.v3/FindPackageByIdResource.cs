@@ -44,6 +44,11 @@ namespace NuGet.Protocol.Core.Types
 
         protected static HttpSourceCacheContext CreateCacheContext(SourceCacheContext cacheContext, int retryCount)
         {
+            if (cacheContext == null)
+            {
+                throw new ArgumentNullException(nameof(CacheContext));
+            }
+
             if (retryCount == 0)
             {
                 return new HttpSourceCacheContext(cacheContext);
