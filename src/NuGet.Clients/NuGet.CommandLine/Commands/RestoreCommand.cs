@@ -41,6 +41,8 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "CommandMSBuildVersion")]
         public string MSBuildVersion { get; set; }
 
+        private static readonly int MaxDegreesOfConcurrency = Environment.ProcessorCount;
+
         [ImportingConstructor]
         public RestoreCommand()
             : base(MachineCache.Default)
@@ -100,7 +102,14 @@ namespace NuGet.CommandLine
 
                 var localCache = new NuGetv3LocalRepository(packagesDir);
 
-                int maxTasks = DisableParallelProcessing ? 1 : 16;
+                var isParallel = !DisableParallelProcessing && !RuntimeEnvironmentHelper.IsMono;
+
+                int maxTasks = isParallel ? MaxDegreesOfConcurrency : 1;
+
+                if (maxTasks < 1)
+                {
+                    maxTasks = 1;
+                }
 
                 // Throttle the tasks so no more than 16 run at a time, so memory doesn't accumulate.
                 // This should make large project (over 100 project.json files) allocate reasonable
@@ -122,12 +131,12 @@ namespace NuGet.CommandLine
                     {
                         var file = restoreInputs.V3RestoreFiles[currentFileIndex];
 
-                        var newTask = PerformNuGetV3RestoreAsync(
+                        var newTask = Task.Run(async () => await PerformNuGetV3RestoreAsync(
                             file,
                             packageSources,
                             restoreInputs.ProjectReferenceLookup,
                             repositories,
-                            localCache);
+                            localCache));
 
                         tasks.Add(newTask);
                     }

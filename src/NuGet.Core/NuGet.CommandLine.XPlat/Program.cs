@@ -27,7 +27,7 @@ namespace NuGet.CommandLine.XPlat
     {
         private const string HelpOption = "-h|--help";
         private const string VerbosityOption = "-v|--verbosity <verbosity>";
-        private const int MaxProjectThreads = 16;
+        private static readonly int MaxDegreesOfConcurrency = Environment.ProcessorCount;
 
         public static ILogger Log { get; set; }
 
@@ -132,8 +132,13 @@ namespace NuGet.CommandLine.XPlat
                     }
 
                     // Run restores
-                    var isParallel = !disableParallel.HasValue();
-                    var maxTasks = isParallel ? MaxProjectThreads : 1;
+                    var isParallel = !disableParallel.HasValue() && !RuntimeEnvironmentHelper.IsMono;
+                    var maxTasks = isParallel ? MaxDegreesOfConcurrency : 1;
+
+                    if (maxTasks < 1)
+                    {
+                        maxTasks = 1;
+                    }
 
                     if (isParallel)
                     {
@@ -187,7 +192,7 @@ namespace NuGet.CommandLine.XPlat
                         }
 
                         // Start a new restore
-                        var task = ExecuteRestore(
+                        var task = Task.Run(async () => await ExecuteRestore(
                             sources,
                             packagesDirectory,
                             fallBack,
@@ -195,7 +200,7 @@ namespace NuGet.CommandLine.XPlat
                             localCache,
                             settings,
                             isParallel,
-                            inputPath);
+                            inputPath));
 
                         restoreTasks.Add(task);
                     }
