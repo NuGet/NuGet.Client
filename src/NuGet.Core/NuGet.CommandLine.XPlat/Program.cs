@@ -27,6 +27,7 @@ namespace NuGet.CommandLine.XPlat
     {
         private const string HelpOption = "-h|--help";
         private const string VerbosityOption = "-v|--verbosity <verbosity>";
+        private const int MaxProjectThreads = 16;
 
         public static ILogger Log { get; set; }
 
@@ -132,7 +133,7 @@ namespace NuGet.CommandLine.XPlat
 
                     // Run restores
                     var isParallel = !disableParallel.HasValue();
-                    var maxTasks = isParallel ? 16 : 1;
+                    var maxTasks = isParallel ? MaxProjectThreads : 1;
 
                     if (isParallel)
                     {

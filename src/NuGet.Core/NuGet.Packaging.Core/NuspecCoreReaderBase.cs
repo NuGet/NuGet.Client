@@ -32,7 +32,6 @@ namespace NuGet.Packaging.Core
         /// Read a nuspec from a path.
         /// </summary>
         public NuspecCoreReaderBase(string path)
-            : this(File.OpenRead(path))
         {
             if (path == null)
             {

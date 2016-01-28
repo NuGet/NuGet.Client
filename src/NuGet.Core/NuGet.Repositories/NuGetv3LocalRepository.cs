@@ -84,11 +84,11 @@ namespace NuGet.Repositories
                             id = Path.GetFileNameWithoutExtension(manifestFileName);
                         }
 
-                        var sha512Path = _pathResolver.GetHashPath(id, version);
+                        var hashPath = _pathResolver.GetHashPath(id, version);
 
                         // The hash file is written last. If this file does not exist then the package is
                         // incomplete and should not be used.
-                        if (File.Exists(sha512Path))
+                        if (File.Exists(hashPath))
                         {
                             var manifestPath = _pathResolver.GetManifestFilePath(id, version);
                             var zipPath = _pathResolver.GetPackageFilePath(id, version);
