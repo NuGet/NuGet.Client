@@ -42,7 +42,7 @@ namespace NuGet.Protocol.Core.v2
 
             if (logger == null)
             {
-                logger = new NuGet.Logging.NullLogger();
+                throw new ArgumentNullException(nameof(logger));
             }
 
             string displayUri = V2Client.Source;

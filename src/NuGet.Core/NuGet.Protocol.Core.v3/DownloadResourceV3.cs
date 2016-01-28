@@ -120,7 +120,7 @@ namespace NuGet.Protocol.Core.v3
 
             if (logger == null)
             {
-                logger = new NullLogger();
+                throw new ArgumentNullException(nameof(logger));
             }
 
             var uri = await GetDownloadUrl(identity, token);
