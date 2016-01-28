@@ -59,7 +59,7 @@ namespace NuGet.PackageManagement.UI
 
         // Convert numbers into strings like "1.2K", "33.4M" etc.
         // Precondition: number > 0.
-        public static string NumberToString(long number, IFormatProvider culture = null)
+        public static string NumberToString(long number, IFormatProvider culture)
         {
             double v = (double)number;
             int exp = 0;
@@ -70,9 +70,6 @@ namespace NuGet.PackageManagement.UI
                 ++exp;
             }
             
-            if (culture == null)
-                culture = CultureInfo.CurrentCulture;
-
             var s = string.Format(
                 culture,
                 "{0:G3}{1}",
