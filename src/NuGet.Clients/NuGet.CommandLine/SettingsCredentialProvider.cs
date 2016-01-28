@@ -32,7 +32,7 @@ namespace NuGet.CommandLine
             // If we are retrying, the stored credentials must be invalid.
             if (!retrying && (credentialType == CredentialType.RequestCredentials) && TryGetCredentials(uri, out credentials))
             {
-                _logger.LogInformation(
+                _logger.LogMinimal(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString(nameof(NuGetResources.SettingsCredentials_UsingSavedCredentials)),

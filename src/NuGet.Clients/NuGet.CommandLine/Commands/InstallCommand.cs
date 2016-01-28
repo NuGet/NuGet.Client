@@ -184,7 +184,7 @@ namespace NuGet.CommandLine
                     LocalizedResourceManager.GetString("InstallCommandNothingToInstall"),
                     packagesConfigFilePath);
 
-                Console.LogInformation(message);
+                Console.LogMinimal(message);
             }
 
             Task<PackageRestoreResult> packageRestoreTask = PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Console));
@@ -255,7 +255,7 @@ namespace NuGet.CommandLine
                     LocalizedResourceManager.GetString("InstallCommandPackageAlreadyExists"),
                     packageIdentity);
 
-                Console.LogInformation(message);
+                Console.LogMinimal(message);
             }
             else
             {

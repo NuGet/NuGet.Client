@@ -50,6 +50,11 @@ namespace NuGet.CommandLine.XPlat
             LogInternal(LogLevel.Information, data);
         }
 
+        public void LogMinimal(string data)
+        {
+            LogInternal(LogLevel.Minimal, data);
+        }
+
         public void LogVerbose(string data)
         {
             LogInternal(LogLevel.Verbose, data);
@@ -75,17 +80,20 @@ namespace NuGet.CommandLine.XPlat
                     case LogLevel.Debug:
                         caption = "debug";
                         break;
+                    case LogLevel.Verbose:
+                        caption = "trace";
+                        break;
                     case LogLevel.Information:
                         caption = "info ";
+                        break;
+                    case LogLevel.Minimal:
+                        caption = "log  ";
                         break;
                     case LogLevel.Warning:
                         caption = "warn ";
                         break;
                     case LogLevel.Error:
                         caption = "error";
-                        break;
-                    case LogLevel.Verbose:
-                        caption = "trace";
                         break;
                 }
             }

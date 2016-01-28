@@ -174,7 +174,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 catch (Exception ex) when (retry < 2)
                 {
                     var message = Strings.FormatLog_FailedToDownloadPackage(package.ContentUri) + Environment.NewLine + ex.Message;
-                    Logger.LogInformation(message);
+                    Logger.LogMinimal(message);
                 }
                 catch (Exception ex) when (retry == 2)
                 {

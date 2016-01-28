@@ -373,6 +373,11 @@ namespace NuGet.Common
             }
         }
 
+        public void LogMinimal(string data)
+        {
+            LogInformation(data);
+        }
+
         public void LogWarning(string data)
         {
             WriteWarning(data);

@@ -61,7 +61,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             var result = await TryCache(uri, cacheKey, context, cancellationToken);
             if (result.Stream != null)
             {
-                Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture, "  {0} {1}", "CACHE", uri));
+                Logger.LogInformation(string.Format(CultureInfo.InvariantCulture, "  {0} {1}", "CACHE", uri));
                 return result;
             }
 
@@ -71,7 +71,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             {
                 Logger.LogVerbose($"Current http requests queued: {_throttle.CurrentCount + 1}");
 
-                Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture, "  {0} {1}.", "GET", uri));
+                Logger.LogInformation(string.Format(CultureInfo.InvariantCulture, "  {0} {1}.", "GET", uri));
 
                 ICredentials credentials = CredentialStore.Instance.GetCredentials(_baseUri);
 
@@ -102,7 +102,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         {
                             if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
                             {
-                                Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture,
+                                Logger.LogInformation(string.Format(CultureInfo.InvariantCulture,
                                     "  {1} {0} {2}ms", uri, response.StatusCode.ToString(), sw.ElapsedMilliseconds.ToString()));
                                 return new HttpSourceResult();
                             }
@@ -139,7 +139,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
                             await CreateCacheFile(result, response, context, cancellationToken);
 
-                            Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture,
+                            Logger.LogInformation(string.Format(CultureInfo.InvariantCulture,
                                 "  {1} {0} {2}ms", uri, response.StatusCode.ToString(), sw.ElapsedMilliseconds.ToString()));
 
                             return result;

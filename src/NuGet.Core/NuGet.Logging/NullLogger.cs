@@ -23,6 +23,8 @@
 
         public void LogInformation(string data) { }
 
+        public void LogMinimal(string data) { }
+
         public void LogVerbose(string data) { }
 
         public void LogWarning(string data) { }

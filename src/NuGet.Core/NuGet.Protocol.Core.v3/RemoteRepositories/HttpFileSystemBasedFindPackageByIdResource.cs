@@ -163,7 +163,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         }
                         catch
                         {
-                            Logger.LogInformation(Strings.FormatLog_FileIsCorrupt(data.CacheFileName));
+                            Logger.LogMinimal(Strings.FormatLog_FileIsCorrupt(data.CacheFileName));
                             throw;
                         }
                     }
@@ -173,7 +173,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 catch (Exception ex) when (retry < 2)
                 {
                     var message = Strings.FormatLog_RetryingFindPackagesById(nameof(FindPackagesByIdAsync), baseUri) + Environment.NewLine + ex.Message;
-                    Logger.LogInformation(message);
+                    Logger.LogMinimal(message);
                 }
                 catch (Exception ex) when (retry == 2)
                 {
@@ -262,7 +262,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 catch (Exception ex) when (retry < 2)
                 {
                     var message = Strings.FormatLog_FailedToDownloadPackage(package.ContentUri) + Environment.NewLine + ex.Message;
-                    Logger.LogInformation(message);
+                    Logger.LogMinimal(message);
                 }
                 catch (Exception ex) when (retry == 2)
                 {

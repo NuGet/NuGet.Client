@@ -898,6 +898,11 @@ namespace NuGetVSExtension
             LogToVS(VerbosityLevel.Normal, data);
         }
 
+        public void LogMinimal(string data)
+        {
+            LogInformation(data);
+        }
+
         public void LogWarning(string data)
         {
             LogToVS(VerbosityLevel.Minimal, data);

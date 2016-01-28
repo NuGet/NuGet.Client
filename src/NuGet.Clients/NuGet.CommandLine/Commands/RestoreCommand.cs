@@ -403,7 +403,7 @@ namespace NuGet.CommandLine
                     LocalizedResourceManager.GetString("InstallCommandNothingToInstall"),
                     "packages.config");
 
-                Console.LogInformation(message);
+                Console.LogMinimal(message);
                 return true;
             }
 
@@ -472,7 +472,7 @@ namespace NuGet.CommandLine
                         LocalizedResourceManager.GetString("RestoreCommandPackageRestoreOptOutMessage"),
                         NuGet.Resources.NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
 
-                    Console.LogInformation(message);
+                    Console.LogMinimal(message);
                 }
                 else
                 {

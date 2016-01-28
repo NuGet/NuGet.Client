@@ -82,7 +82,7 @@ namespace NuGet.Commands
                 // The lock file was locked, but the project.json is out of date
                 relockFile = true;
                 _request.ExistingLockFile.IsLocked = false;
-                _logger.LogInformation(Strings.Log_LockFileOutOfDate);
+                _logger.LogMinimal(Strings.Log_LockFileOutOfDate);
             }
 
             var context = new RemoteWalkContext();
@@ -185,7 +185,7 @@ namespace NuGet.Commands
                 return Enumerable.Empty<RestoreTargetGraph>();
             }
 
-            _logger.LogInformation(Strings.FormatLog_RestoringPackages(_request.Project.FilePath));
+            _logger.LogMinimal(Strings.FormatLog_RestoringPackages(_request.Project.FilePath));
 
             // Load repositories
             var projectResolver = new PackageSpecResolver(_request.Project);

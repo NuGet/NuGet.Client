@@ -169,7 +169,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                             }
                             catch (XmlException)
                             {
-                                Logger.LogInformation($"The XML file {data.CacheFileName} is corrupt.");
+                                Logger.LogMinimal($"The XML file {data.CacheFileName} is corrupt.");
                                 throw;
                             }
                         }
@@ -179,7 +179,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 }
                 catch (Exception ex) when (retry < 2)
                 {
-                    Logger.LogInformation(string.Format("Warning: FindPackagesById: {1}\r\n  {0}", ex.Message, id));
+                    Logger.LogMinimal(string.Format("Warning: FindPackagesById: {1}\r\n  {0}", ex.Message, id));
                 }
                 catch (Exception ex) when (retry == 2)
                 {
@@ -265,7 +265,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 catch (TaskCanceledException ex) when (retry < 2)
                 {
                     // Requests can get cancelled if we got the data from elsewhere, no reason to warn.
-                    Logger.LogInformation(string.Format("Warning: DownloadPackageAsync: {1}\r\n  {0}", ex.Message, package.ContentUri));
+                    Logger.LogMinimal(string.Format("Warning: DownloadPackageAsync: {1}\r\n  {0}", ex.Message, package.ContentUri));
                 }
                 catch (Exception ex)
                 {
@@ -275,7 +275,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     }
                     else
                     {
-                        Logger.LogInformation(string.Format("Warning: DownloadPackageAsync: {1}\r\n  {0}", ex.Message, package.ContentUri));
+                        Logger.LogMinimal(string.Format("Warning: DownloadPackageAsync: {1}\r\n  {0}", ex.Message, package.ContentUri));
                     }
                 }
             }

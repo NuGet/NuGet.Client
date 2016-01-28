@@ -36,6 +36,11 @@ namespace NuGet.Logging
             _innerLogger.LogInformation(data);
         }
 
+        public void LogMinimal(string data)
+        {
+            _innerLogger.LogMinimal(data);
+        }
+
         public void LogWarning(string data)
         {
             _innerLogger.LogWarning(data);

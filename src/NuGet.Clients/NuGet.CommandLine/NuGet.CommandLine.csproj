@@ -52,7 +52,6 @@
     <Compile Include="CommandLineParser.cs" />
     <Compile Include="CommandLineSourceRepositoryProvider.cs" />
     <Compile Include="CommandManager.cs" />
-    <Compile Include="CommandOutputLogger.cs" />
     <Compile Include="Commands\AddCommand.cs" />
     <Compile Include="Commands\LocalsCommand.cs" />
     <Compile Include="Commands\Command.cs" />
@@ -89,7 +88,6 @@
     <Compile Include="Common\LocalResourceUtils.cs" />
     <Compile Include="Common\MSBuildProjectSystem.cs" />
     <Compile Include="Common\MSBuildUser.cs" />
-    <Compile Include="Common\PackageExtractor.cs" />
     <Compile Include="Common\PackageSourceProviderExtensions.cs" />
     <Compile Include="Common\ProjectHelper.cs" />
     <Compile Include="Common\ProjectInSolution.cs" />

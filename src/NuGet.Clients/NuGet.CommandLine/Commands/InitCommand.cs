@@ -56,7 +56,7 @@ namespace NuGet.CommandLine
                     LocalizedResourceManager.GetString(nameof(NuGetResources.InitCommand_FeedContainsNoPackages)),
                     source);
 
-                Console.LogInformation(message);
+                Console.LogMinimal(message);
             }
         }
 

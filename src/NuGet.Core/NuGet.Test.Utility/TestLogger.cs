@@ -32,6 +32,12 @@ namespace NuGet.Test.Utility
             DumpMessage("INFO ", data);
         }
 
+        public void LogMinimal(string data)
+        {
+            Messages.Enqueue(data);
+            DumpMessage("LOG  ", data);
+        }
+
         public void LogVerbose(string data)
         {
             Messages.Enqueue(data);

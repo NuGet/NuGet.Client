@@ -87,7 +87,7 @@ namespace NuGet.PackageManagement
         {
             // Restoring packages
             var logger = context.Logger;
-            logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+            logger.LogMinimal(string.Format(CultureInfo.CurrentCulture,
                 Strings.BuildIntegratedPackageRestoreStarted,
                 project.ProjectName));
 
@@ -120,13 +120,13 @@ namespace NuGet.PackageManagement
                 // Report a final message with the Success result
                 if (result.Success)
                 {
-                    logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                    logger.LogMinimal(string.Format(CultureInfo.CurrentCulture,
                         Strings.BuildIntegratedPackageRestoreSucceeded,
                         project.ProjectName));
                 }
                 else
                 {
-                    logger.LogInformation(string.Format(CultureInfo.CurrentCulture,
+                    logger.LogMinimal(string.Format(CultureInfo.CurrentCulture,
                         Strings.BuildIntegratedPackageRestoreFailed,
                         project.ProjectName));
                 }

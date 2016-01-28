@@ -33,7 +33,7 @@ namespace NuGet.CommandLine
                 projectOrLockfile = Path.Combine(projectOrLockfile, LockFileFormat.LockFileName);
             }
             var lockfile = new LockFileFormat().Read(projectOrLockfile);
-            _log.LogInformation($"Viewing data from Lock File: {projectOrLockfile}");
+            _log.LogMinimal($"Viewing data from Lock File: {projectOrLockfile}");
 
             // Attempt to locate the project
             var projectPath = Path.Combine(Path.GetDirectoryName(projectOrLockfile), PackageSpec.PackageSpecFileName);
@@ -62,13 +62,13 @@ namespace NuGet.CommandLine
                 return -1;
             }
 
-            _log.LogInformation($"{lib.Name} {lib.Version}");
-            _log.LogInformation($"Servicable: {lib.IsServiceable}");
-            _log.LogInformation($"SHA512 Hash: {lib.Sha512}");
-            _log.LogInformation($"Files:");
+            _log.LogMinimal($"{lib.Name} {lib.Version}");
+            _log.LogMinimal($"Servicable: {lib.IsServiceable}");
+            _log.LogMinimal($"SHA512 Hash: {lib.Sha512}");
+            _log.LogMinimal($"Files:");
             foreach (var file in lib.Files)
             {
-                _log.LogInformation($" * {file}");
+                _log.LogMinimal($" * {file}");
             }
 
             IEnumerable<LockFileTarget> targets = lockfile.Targets;
@@ -82,10 +82,10 @@ namespace NuGet.CommandLine
             var libraryTargets = targets.Select(t => new { Target = t, Library = t.Libraries.FirstOrDefault(l => string.Equals(l.Name, library, StringComparison.OrdinalIgnoreCase)) });
             foreach (var libraryTarget in libraryTargets)
             {
-                _log.LogInformation($"Target: {libraryTarget.Target.TargetFramework}/{libraryTarget.Target.RuntimeIdentifier}");
+                _log.LogMinimal($"Target: {libraryTarget.Target.TargetFramework}/{libraryTarget.Target.RuntimeIdentifier}");
                 if (libraryTarget.Library == null)
                 {
-                    _log.LogInformation(" Not supported");
+                    _log.LogMinimal(" Not supported");
                 }
                 else
                 {
@@ -101,48 +101,48 @@ namespace NuGet.CommandLine
 
         private void WriteList(string header, IEnumerable<string> items)
         {
-            _log.LogInformation($" {header}:");
+            _log.LogMinimal($" {header}:");
             foreach (var item in items)
             {
-                _log.LogInformation($"  * {item}");
+                _log.LogMinimal($"  * {item}");
             }
         }
 
         private int SummarizeLockfile(PackageSpec project, LockFile lockfile, string targetName)
         {
-            _log.LogInformation($"Locked: {lockfile.IsLocked}");
+            _log.LogMinimal($"Locked: {lockfile.IsLocked}");
 
             if (project == null)
             {
-                _log.LogInformation($"Up-to-date: Unknown");
+                _log.LogMinimal($"Up-to-date: Unknown");
             }
             else
             {
-                _log.LogInformation($"Up-to-date: {lockfile.IsValidForPackageSpec(project)}");
+                _log.LogMinimal($"Up-to-date: {lockfile.IsValidForPackageSpec(project)}");
             }
 
-            _log.LogInformation("Project Dependencies:");
+            _log.LogMinimal("Project Dependencies:");
             foreach (var group in lockfile.ProjectFileDependencyGroups)
             {
                 var fxName = string.IsNullOrEmpty(group.FrameworkName) ? "All Frameworks" : group.FrameworkName;
                 if (group.Dependencies.Any())
                 {
-                    _log.LogInformation($" {fxName}");
+                    _log.LogMinimal($" {fxName}");
                     foreach (var dep in group.Dependencies)
                     {
-                        _log.LogInformation($"  * {dep}");
+                        _log.LogMinimal($"  * {dep}");
                     }
                 }
                 else
                 {
-                    _log.LogInformation($" {fxName}: none");
+                    _log.LogMinimal($" {fxName}: none");
                 }
             }
 
-            _log.LogInformation("All Libraries:");
+            _log.LogMinimal("All Libraries:");
             foreach (var lib in lockfile.Libraries)
             {
-                _log.LogInformation($"* {lib.Name} {lib.Version}");
+                _log.LogMinimal($"* {lib.Name} {lib.Version}");
             }
 
             IEnumerable<LockFileTarget> targets = lockfile.Targets;
@@ -156,7 +156,7 @@ namespace NuGet.CommandLine
 
             foreach (var target in targets)
             {
-                _log.LogInformation($"Target: {target.TargetFramework} {target.RuntimeIdentifier}");
+                _log.LogMinimal($"Target: {target.TargetFramework} {target.RuntimeIdentifier}");
                 foreach (var lib in target.Libraries)
                 {
                     var provides = string.Empty;
@@ -181,7 +181,7 @@ namespace NuGet.CommandLine
                     {
                         provides = Nothing;
                     }
-                    _log.LogInformation($" * [{provides}] {lib.Name} {lib.Version}");
+                    _log.LogMinimal($" * [{provides}] {lib.Name} {lib.Version}");
                 }
             }
             return 0;

@@ -35,6 +35,12 @@ namespace NuGet.PackageManagement
             _projectContext.Log(ProjectManagement.MessageLevel.Info, data);
         }
 
+        public void LogMinimal(string data)
+        {
+            // Treat Minimal as Information
+            LogInformation(data);
+        }
+
         public void LogWarning(string data)
         {
             _projectContext.Log(ProjectManagement.MessageLevel.Warning, data);

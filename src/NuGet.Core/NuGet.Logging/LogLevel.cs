@@ -8,7 +8,8 @@ namespace NuGet.Logging
         Debug = 0,
         Verbose = 1,
         Information = 2,
-        Warning = 3,
-        Error = 4
+        Minimal = 3,
+        Warning = 4,
+        Error = 5
     }
 }

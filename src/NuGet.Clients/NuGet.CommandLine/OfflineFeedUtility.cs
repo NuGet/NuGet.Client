@@ -154,7 +154,7 @@ namespace NuGet.CommandLine
                             }
                             else
                             {
-                                logger.LogInformation(message);
+                                logger.LogMinimal(message);
                             }
                         }
                         else
@@ -201,7 +201,7 @@ namespace NuGet.CommandLine
                             packagePath,
                             source);
 
-                        logger.LogInformation(message);
+                        logger.LogMinimal(message);
                     }
                 }
                 catch (InvalidDataException)

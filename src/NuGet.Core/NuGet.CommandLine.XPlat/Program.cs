@@ -425,21 +425,21 @@ namespace NuGet.CommandLine.XPlat
                 var result = await command.ExecuteAsync();
 
                 // Commit the result
-                Log.LogInformation(Strings.Log_Committing);
+                Log.LogMinimal(Strings.Log_Committing);
                 result.Commit(collectorLog);
 
                 sw.Stop();
 
                 if (result.Success)
                 {
-                    Log.LogInformation(string.Format(
+                    Log.LogMinimal(string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.Log_RestoreComplete,
                         sw.ElapsedMilliseconds));
                 }
                 else
                 {
-                    Log.LogInformation(string.Format(
+                    Log.LogMinimal(string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.Log_RestoreFailed,
                         sw.ElapsedMilliseconds));
