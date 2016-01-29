@@ -12,17 +12,9 @@ namespace NuGet.Protocol.VisualStudio
 {
     public class UISearchResourceV3Provider : ResourceProvider
     {
-        private readonly DataClient _client;
-
         public UISearchResourceV3Provider()
-            : this(new DataClient())
-        {
-        }
-
-        public UISearchResourceV3Provider(DataClient client)
             : base(typeof(UISearchResource), nameof(UISearchResourceV3Provider), "UISearchResourceV2Provider")
         {
-            _client = client;
         }
 
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -23,32 +24,28 @@ namespace NuGet.Protocol.Core.v3
 
         public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
+            Debug.Assert(source.PackageSource.IsHttp, "HTTP handler requested for a non-http source.");
+
             HttpHandlerResourceV3 curResource = null;
 
-            var clientHandler = TryGetCredentialAndProxy(source.PackageSource);
+            var clientHandler = CreateCredentialHandler(source.PackageSource);
 
-            if (clientHandler == null)
-            {
-                curResource = DataClient.DefaultHandler;
-            }
-            else
-            {
-                // replace the handler with the proxy aware handler
-                curResource = DataClient.CreateHandler(clientHandler);
-            }
+            // replace the handler with the proxy aware handler
+            curResource = DataClient.CreateHandler(clientHandler);
 
             return Task.FromResult(new Tuple<bool, INuGetResource>(curResource != null, curResource));
         }
 
 #if DNXCORE50
-
-        private HttpClientHandler TryGetCredentialAndProxy(PackageSource packageSource)
+        private HttpClientHandler CreateCredentialHandler(PackageSource packageSource)
         {
-            return new HttpClientHandler();
+            var handler = new HttpClientHandler();
+            handler.AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate);
+            return handler;
         }
 #else
 
-        private HttpClientHandler TryGetCredentialAndProxy(PackageSource packageSource)
+        private HttpClientHandler CreateCredentialHandler(PackageSource packageSource)
         {
             var uri = new Uri(packageSource.Source);
             var proxy = ProxyCache.Instance.GetProxy(uri);
@@ -76,15 +73,18 @@ namespace NuGet.Protocol.Core.v3
                 CredentialStore.Instance.Add(uri, credential);
             }
 
-            return new CredentialPromptWebRequestHandler()
-            {
-                Proxy = proxy,
-                Credentials = credential
-            };
+            return new CredentialPromptWebRequestHandler(proxy, credential);
         }
 
         private class CredentialPromptWebRequestHandler : WebRequestHandler
         {
+            public CredentialPromptWebRequestHandler(IWebProxy proxy, ICredentials credentials)
+            {
+                Proxy = proxy;
+                Credentials = credentials;
+                AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate);
+            }
+
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
                 CancellationToken cancellationToken)
             {

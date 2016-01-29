@@ -12,17 +12,9 @@ namespace NuGet.Protocol.VisualStudio
 {
     public class PSAutoCompleteResourceV3Provider : ResourceProvider
     {
-        private readonly DataClient _client;
-
         public PSAutoCompleteResourceV3Provider()
-            : this(new DataClient())
-        {
-        }
-
-        public PSAutoCompleteResourceV3Provider(DataClient client)
             : base(typeof(PSAutoCompleteResource), "PSAutoCompleteResourceV3Provider", "V2PSAutoCompleteResourceProvider")
         {
-            _client = client;
         }
 
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
@@ -34,9 +26,11 @@ namespace NuGet.Protocol.VisualStudio
             if (serviceIndex != null)
             {
                 var regResource = await source.GetResourceAsync<RegistrationResourceV3>(token);
+                var handlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
+                var client = new DataClient(handlerResource.MessageHandler);
 
                 // construct a new resource
-                curResource = new PSAutoCompleteResourceV3(_client, serviceIndex, regResource);
+                curResource = new PSAutoCompleteResourceV3(client, serviceIndex, regResource);
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);
