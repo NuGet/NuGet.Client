@@ -13,7 +13,7 @@ namespace NuGet.VisualStudio.Implementation.Test
         {
             var scriptExecutor = new Mock<IScriptExecutor>();
             var executor = new VsGlobalPackagesInitScriptExecutor(scriptExecutor.Object);
-            await Assert.ThrowsAsync<ArgumentNullException>(async ()
+            await Assert.ThrowsAsync<ArgumentException>(async ()
                 => await executor.ExecuteInitScriptAsync(packageId:  null, packageVersion: "1.0.0"));
         }
 
@@ -22,8 +22,26 @@ namespace NuGet.VisualStudio.Implementation.Test
         {
             var scriptExecutor = new Mock<IScriptExecutor>();
             var executor = new VsGlobalPackagesInitScriptExecutor(scriptExecutor.Object);
-            await Assert.ThrowsAsync<ArgumentNullException>(async ()
+            await Assert.ThrowsAsync<ArgumentException>(async ()
                 => await executor.ExecuteInitScriptAsync("A", packageVersion: null));
+        }
+
+        [Fact]
+        public async Task EmptyPackageId()
+        {
+            var scriptExecutor = new Mock<IScriptExecutor>();
+            var executor = new VsGlobalPackagesInitScriptExecutor(scriptExecutor.Object);
+            await Assert.ThrowsAsync<ArgumentException>(async ()
+                => await executor.ExecuteInitScriptAsync(packageId: string.Empty, packageVersion: "1.0.0"));
+        }
+
+        [Fact]
+        public async Task EmptyPackageVersion()
+        {
+            var scriptExecutor = new Mock<IScriptExecutor>();
+            var executor = new VsGlobalPackagesInitScriptExecutor(scriptExecutor.Object);
+            await Assert.ThrowsAsync<ArgumentException>(async ()
+                => await executor.ExecuteInitScriptAsync("A", packageVersion: string.Empty));
         }
 
         [Fact]

@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement.VisualStudio
             INuGetProjectContext nuGetProjectContext,
             bool throwOnFailure);
 
-        bool TryMarkVisited(PackageIdentity packageIdentity, bool initPS1Present);
+        bool TryMarkVisited(PackageIdentity packageIdentity, PackageInitPS1State initPS1State);
 
         Task<bool> ExecuteInitScriptAsync(PackageIdentity packageIdentity);
     }

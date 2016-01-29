@@ -31,8 +31,8 @@ namespace NuGetConsole
         private ISolutionManager SolutionManager { get; }  = ServiceLocator.GetInstance<ISolutionManager>();
         private string SolutionDirectory { get; set; }
         private ISettings Settings { get; } = ServiceLocator.GetInstance<ISettings>();
-        private ConcurrentDictionary<PackageIdentity, bool> InitScriptExecutions
-            = new ConcurrentDictionary<PackageIdentity, bool>(PackageIdentityComparer.Default);
+        private ConcurrentDictionary<PackageIdentity, PackageInitPS1State> InitScriptExecutions
+            = new ConcurrentDictionary<PackageIdentity, PackageInitPS1State>(PackageIdentityComparer.Default);
 
         public ScriptExecutor()
         {
@@ -57,16 +57,7 @@ namespace NuGetConsole
                 SolutionDirectory = null;
             }
 
-            var packagesWithoutInitPS1 = InitScriptExecutions.Keys
-                .Where(k => !InitScriptExecutions[k])
-                .ToList();
-
             InitScriptExecutions.Clear();
-
-            foreach (var item in packagesWithoutInitPS1)
-            {
-                InitScriptExecutions.TryAdd(item, false);
-            }
         }
 
         public async Task<bool> ExecuteAsync(
@@ -89,16 +80,16 @@ namespace NuGetConsole
                 throwOnFailure);
         }
 
-        public bool TryMarkVisited(PackageIdentity packageIdentity, bool initPS1Present)
+        public bool TryMarkVisited(PackageIdentity packageIdentity, PackageInitPS1State initPS1State)
         {
-            return InitScriptExecutions.TryAdd(packageIdentity, initPS1Present);
+            return InitScriptExecutions.TryAdd(packageIdentity, initPS1State);
         }
 
         public async Task<bool> ExecuteInitScriptAsync(PackageIdentity packageIdentity)
         {
             var result = false;
-            // Reserve the key. We can remove if the package has not been restored
-            if (TryMarkVisited(packageIdentity, false))
+            // Reserve the key. We can remove if the package has not been restored.
+            if (TryMarkVisited(packageIdentity, PackageInitPS1State.NotFound))
             {
                 var packageInstalledPath = GetPackageInstalledPath(packageIdentity);
                 if (!string.IsNullOrEmpty(packageInstalledPath))
@@ -106,8 +97,11 @@ namespace NuGetConsole
                     var initPS1Path = Path.Combine(packageInstalledPath, "tools", PowerShellScripts.Init);
                     if (File.Exists(initPS1Path))
                     {
-                        // Init.ps1 is present and will be executed. Change the value for the key to true
-                        InitScriptExecutions.TryUpdate(packageIdentity, true, false);
+                        // Init.ps1 is present and will be executed.
+                        InitScriptExecutions.TryUpdate(
+                            packageIdentity,
+                            PackageInitPS1State.FoundAndExecuted,
+                            PackageInitPS1State.NotFound);
 
                         var scriptPackage = new ScriptPackage(
                             packageIdentity.Id,
@@ -127,8 +121,8 @@ namespace NuGetConsole
                 }
                 else
                 {
-                    // Package is not restored. Do not cache the results
-                    bool dummy;
+                    // Package is not restored. Do not cache the results.
+                    PackageInitPS1State dummy;
                     InitScriptExecutions.TryRemove(packageIdentity, out dummy);
                     result = false;
                 }
@@ -136,7 +130,7 @@ namespace NuGetConsole
             else
             {
                 // Key is already present. Simply access its value
-                result = InitScriptExecutions[packageIdentity];
+                result = (InitScriptExecutions[packageIdentity] == PackageInitPS1State.FoundAndExecuted);
             }
 
             return result;
@@ -154,7 +148,7 @@ namespace NuGetConsole
             if (File.Exists(fullScriptPath))
             {
                 if (fullScriptPath.EndsWith(PowerShellScripts.Init, StringComparison.OrdinalIgnoreCase)
-                    && !TryMarkVisited(packageIdentity, true))
+                    && !TryMarkVisited(packageIdentity, PackageInitPS1State.FoundAndExecuted))
                 {
                     return true;
                 }
@@ -224,7 +218,7 @@ namespace NuGetConsole
             {
                 if (fullScriptPath.EndsWith(PowerShellScripts.Init, StringComparison.OrdinalIgnoreCase))
                 {
-                    TryMarkVisited(packageIdentity, false);
+                    TryMarkVisited(packageIdentity, PackageInitPS1State.NotFound);
                 }
             }
             return false;

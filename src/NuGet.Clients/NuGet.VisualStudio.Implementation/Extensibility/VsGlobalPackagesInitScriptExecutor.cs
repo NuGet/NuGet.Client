@@ -28,14 +28,12 @@ namespace NuGet.VisualStudio
         {
             if (string.IsNullOrEmpty(packageId))
             {
-                throw new ArgumentNullException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageId));
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageId));
             }
 
             if (string.IsNullOrEmpty(packageVersion))
             {
-                throw new ArgumentNullException(
-                    CommonResources.Argument_Cannot_Be_Null_Or_Empty,
-                    nameof(packageVersion));
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageVersion));
             }
 
             var version = new NuGetVersion(packageVersion);

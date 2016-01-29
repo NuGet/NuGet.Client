@@ -66,7 +66,7 @@ namespace API.Test
             // Calling thread is powershell execution thread and ExecuteInitScriptAsync needs to switch to
             // Powershell execution thread to execute the scripts
             var task = Task.Run(async () => await scriptExecutor.ExecuteInitScriptAsync(id, version));
-            Task.WaitAny(task, Task.Delay(3000));
+            Task.WaitAny(task, Task.Delay(30000));
             if (task.IsCompleted)
             {
                 return task.Result;
