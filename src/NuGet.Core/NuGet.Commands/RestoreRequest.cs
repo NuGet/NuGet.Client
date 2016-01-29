@@ -11,6 +11,7 @@ using NuGet.Packaging.PackageExtraction;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
+using NuGet.Repositories;
 
 namespace NuGet.Commands
 {
@@ -126,6 +127,14 @@ namespace NuGet.Commands
         public ISet<string> FallbackRuntimes { get; } = new SortedSet<string>(StringComparer.Ordinal);
 
         public XmlDocFileSaveMode XmlDocFileSaveMode { get; set; } = PackageExtractionBehavior.XmlDocFileSaveMode;
+
+        /// <summary>
+        /// A <see cref="NuGetv3LocalRepository"/> repository may be passed in as part of the request.
+        /// This allows multiple restores to share the same cache for the global packages folder
+        /// and reduce disk hits.
+        /// </summary>
+        /// <remarks>This is optional and may be null.</remarks>
+        public NuGetv3LocalRepository SharedLocalCache { get; set; }
 
         public void Dispose()
         {

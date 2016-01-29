@@ -37,11 +37,7 @@ namespace NuGet.DependencyResolver
 
             if (package != null)
             {
-                NuspecReader nuspecReader = null;
-                using (var stream = File.OpenRead(package.ManifestPath))
-                {
-                    nuspecReader = new NuspecReader(stream);
-                }
+                var nuspecReader = package.Nuspec;
 
                 var description = new Library
                 {
