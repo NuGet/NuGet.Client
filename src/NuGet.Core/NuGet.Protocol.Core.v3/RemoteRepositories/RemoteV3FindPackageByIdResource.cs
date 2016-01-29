@@ -44,12 +44,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             }
         }
 
-        public override SourceCacheContext CacheContext
-        {
-            get { return base.CacheContext; }
-            set { base.CacheContext = value; }
-        }
-
         public override async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken cancellationToken)
         {
             var result = await EnsurePackagesAsync(id, cancellationToken);
@@ -168,7 +162,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     using (var data = await _httpSource.GetAsync(
                         package.ContentUri,
                         "nupkg_" + package.Identity.Id + "." + package.Identity.Version.ToNormalizedString(),
-                        CreateCacheContext(CacheContext, retry),
+                        CreateCacheContext(retry),
                         cancellationToken))
                     {
                         return new NupkgEntry

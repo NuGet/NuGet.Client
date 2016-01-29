@@ -42,15 +42,21 @@ namespace NuGet.Protocol.Core.Types
                 reader.GetFrameworkReferenceGroups());
         }
 
-        protected static HttpSourceCacheContext CreateCacheContext(SourceCacheContext cacheContext, int retryCount)
+        protected HttpSourceCacheContext CreateCacheContext(int retryCount)
         {
+            if (CacheContext == null)
+            {
+                throw new InvalidOperationException(
+                    $"Must set cache context on {this.GetType().FullName} before consuming.");
+            }
+
             if (retryCount == 0)
             {
-                return new HttpSourceCacheContext(cacheContext);
+                return new HttpSourceCacheContext(CacheContext);
             }
             else
             {
-                return new HttpSourceCacheContext(cacheContext, TimeSpan.Zero);
+                return new HttpSourceCacheContext(CacheContext, TimeSpan.Zero);
             }
         }
     }
