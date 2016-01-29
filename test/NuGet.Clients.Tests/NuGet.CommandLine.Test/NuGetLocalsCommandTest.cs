@@ -6,6 +6,9 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetLocalsCommandTest
     {
+        private const string LocalsHelpStringFragment =
+            "usage: NuGet locals <all | http-cache | packages-cache | global-packages | temp> [-clear | -list]";
+
         [Theory]
         [InlineData("locals")]
         [InlineData("locals -?")]
@@ -20,7 +23,7 @@ namespace NuGet.CommandLine.Test
                 waitForExit: true);
 
             // Assert
-            Util.VerifyResultSuccess(result, "usage: NuGet locals <all | http-cache | packages-cache | global-packages> [-clear | -list]");
+            Util.VerifyResultSuccess(result, LocalsHelpStringFragment);
         }
 
         [Theory]
@@ -52,7 +55,7 @@ namespace NuGet.CommandLine.Test
                 waitForExit: true);
 
             // Assert
-            Util.VerifyResultSuccess(result, "usage: NuGet locals <all | http-cache | packages-cache | global-packages> [-clear | -list]");
+            Util.VerifyResultSuccess(result, LocalsHelpStringFragment);
         }
 
         [Theory]
@@ -68,7 +71,7 @@ namespace NuGet.CommandLine.Test
                 waitForExit: true);
 
             // Assert
-            Util.VerifyResultSuccess(result, "usage: NuGet locals <all | http-cache | packages-cache | global-packages> [-clear | -list]");
+            Util.VerifyResultSuccess(result, LocalsHelpStringFragment);
         }
 
         [Theory]

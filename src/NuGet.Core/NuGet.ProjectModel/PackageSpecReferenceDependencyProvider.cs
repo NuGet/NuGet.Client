@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -18,10 +17,18 @@ namespace NuGet.ProjectModel
     /// Handles both external references and projects discovered through directories
     /// If the type is set to external project directory discovery will be disabled.
     /// </summary>
-    public class PackageSpecReferenceDependencyProvider : IDependencyProvider
+    public class PackageSpecReferenceDependencyProvider : IProjectDependencyProvider
     {
-        private readonly IPackageSpecResolver _resolver;
-        private readonly Dictionary<string, ExternalProjectReference> _externalProjects;
+        private readonly IPackageSpecResolver _defaultResolver;
+        private readonly Dictionary<string, ExternalProjectReference> _externalProjectsByPath
+            = new Dictionary<string, ExternalProjectReference>(StringComparer.OrdinalIgnoreCase);
+
+        private readonly Dictionary<string, ExternalProjectReference> _externalProjectsByName
+            = new Dictionary<string, ExternalProjectReference>(StringComparer.OrdinalIgnoreCase);
+
+        // RootPath -> Resolver
+        private readonly Dictionary<string, IPackageSpecResolver> _resolverCache
+            = new Dictionary<string, IPackageSpecResolver>(StringComparer.Ordinal);
 
         public PackageSpecReferenceDependencyProvider(
             IPackageSpecResolver projectResolver,
@@ -37,36 +44,43 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(externalProjects));
             }
 
-            _resolver = projectResolver;
+            _defaultResolver = projectResolver;
 
-            _externalProjects = new Dictionary<string, ExternalProjectReference>(StringComparer.OrdinalIgnoreCase);
+            _resolverCache.Add(projectResolver.RootPath, projectResolver);
 
             foreach (var project in externalProjects)
             {
                 Debug.Assert(
-                    !_externalProjects.ContainsKey(project.UniqueName),
+                    !_externalProjectsByPath.ContainsKey(project.UniqueName),
                     $"Duplicate project {project.UniqueName}");
 
-                if (!_externalProjects.ContainsKey(project.UniqueName))
+                if (!_externalProjectsByPath.ContainsKey(project.UniqueName))
                 {
-                    _externalProjects.Add(project.UniqueName, project);
+                    _externalProjectsByPath.Add(project.UniqueName, project);
+                }
+
+                Debug.Assert(
+                    !_externalProjectsByName.ContainsKey(project.ProjectName),
+                    $"Duplicate project {project.ProjectName}");
+
+                if (!_externalProjectsByName.ContainsKey(project.ProjectName))
+                {
+                    _externalProjectsByName.Add(project.ProjectName, project);
                 }
             }
         }
 
-        public IEnumerable<string> GetAttemptedPaths(NuGetFramework targetFramework)
+        public bool SupportsType(LibraryDependencyTarget libraryType)
         {
-            return _resolver.SearchPaths.Select(p => Path.Combine(p, "{name}", "project.json"));
-        }
-
-        public bool SupportsType(string libraryType)
-        {
-            return string.IsNullOrEmpty(libraryType)
-                || string.Equals(libraryType, LibraryTypes.Project, StringComparison.Ordinal)
-                || string.Equals(libraryType, LibraryTypes.ExternalProject, StringComparison.Ordinal);
+            return (libraryType & (LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject)) != LibraryDependencyTarget.None;
         }
 
         public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
+        {
+            return GetLibrary(libraryRange, targetFramework, rootPath: _defaultResolver.RootPath);
+        }
+
+        public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework, string rootPath)
         {
             var name = libraryRange.Name;
 
@@ -75,17 +89,17 @@ namespace NuGet.ProjectModel
             bool resolvedUsingDirectory = false;
 
             // Check the external references first
-            if (_externalProjects.TryGetValue(name, out externalReference))
+            if (_externalProjectsByName.TryGetValue(name, out externalReference))
             {
                 packageSpec = externalReference.PackageSpec;
             }
-            else if (!string.Equals(
-                libraryRange.TypeConstraint,
-                LibraryTypes.ExternalProject,
-                StringComparison.Ordinal))
+            else if (libraryRange.TypeConstraintAllows(LibraryDependencyTarget.Project))
             {
+                // Find the package spec resolver for this root path.
+                var specResolver = GetPackageSpecResolver(rootPath);
+
                 // Allow directory look ups unless this constrained to external
-                resolvedUsingDirectory = _resolver.TryResolvePackageSpec(name, out packageSpec);
+                resolvedUsingDirectory = specResolver.TryResolvePackageSpec(name, out packageSpec);
             }
 
             if (externalReference == null && packageSpec == null)
@@ -106,17 +120,37 @@ namespace NuGet.ProjectModel
                 // Add framework specific dependencies
                 targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
                 dependencies.AddRange(targetFrameworkInfo.Dependencies);
+
+                // Disallow projects (resolved by directory) for non-xproj msbuild projects.
+                // If there is no msbuild path then resolving by directory is allowed.
+                // CSProj does not allow directory to directory look up.
+                if (XProjUtility.IsMSBuildBasedProject(externalReference?.MSBuildProjectPath))
+                {
+                    foreach (var dependency in dependencies)
+                    {
+                        // Remove "project" from the allowed types for this dependency
+                        // This will require that projects referenced by an msbuild project
+                        // must be external projects.
+                        dependency.LibraryRange.TypeConstraint &= ~LibraryDependencyTarget.Project;
+                    }
+                }
             }
 
             if (externalReference != null)
             {
+                var childReferences = GetChildReferences(externalReference);
+                var childReferenceNames = childReferences.Select(reference => reference.ProjectName).ToList();
+
                 // External references are created without pivoting on the TxM. Here we need to account for this
                 // and filter out references except the nearest TxM.
                 var filteredExternalDependencies = new HashSet<string>(
-                    externalReference.ExternalProjectReferences,
+                    childReferenceNames,
                     StringComparer.OrdinalIgnoreCase);
 
-                if (packageSpec != null)
+                // Non-Xproj projects may only have one TxM, all external references should be 
+                // included if this is an msbuild based project.
+                if (packageSpec != null 
+                    && !XProjUtility.IsMSBuildBasedProject(externalReference.MSBuildProjectPath))
                 {
                     // Create an exclude list of all references from the non-selected TxM
                     // Start with all framework specific references
@@ -143,24 +177,25 @@ namespace NuGet.ProjectModel
                 // Set all dependencies from project.json to external if an external match was passed in
                 // This is viral and keeps p2ps from looking into directories when we are going down
                 // a path already resolved by msbuild.
-                foreach (var dependency in dependencies.Where(d => filteredExternalDependencies.Contains(d.Name)))
+                foreach (var dependency in dependencies.Where(d => IsProject(d)
+                    && filteredExternalDependencies.Contains(d.Name)))
                 {
-                    dependency.LibraryRange.TypeConstraint = LibraryTypes.ExternalProject;
+                    dependency.LibraryRange.TypeConstraint = LibraryDependencyTarget.ExternalProject;
                 }
 
                 // Add dependencies passed in externally
                 // These are usually msbuild references which have less metadata, they have
                 // the lowest priority.
                 // Note: Only add in dependencies that are in the filtered list to avoid getting the wrong TxM
-                dependencies.AddRange(externalReference.ExternalProjectReferences
-                    .Where(dependencyName => filteredExternalDependencies.Contains(dependencyName))
+                dependencies.AddRange(childReferences
+                    .Where(reference => filteredExternalDependencies.Contains(reference.ProjectName))
                     .Select(reference => new LibraryDependency
                     {
                         LibraryRange = new LibraryRange
                         {
-                            Name = reference,
+                            Name = reference.ProjectName,
                             VersionRange = VersionRange.Parse("1.0.0"),
-                            TypeConstraint = LibraryTypes.ExternalProject
+                            TypeConstraint = LibraryDependencyTarget.ExternalProject
                         }
                     }));
             }
@@ -173,7 +208,7 @@ namespace NuGet.ProjectModel
                     LibraryRange = new LibraryRange
                     {
                         Name = "mscorlib",
-                        TypeConstraint = LibraryTypes.Reference
+                        TypeConstraint = LibraryDependencyTarget.Reference
                     }
                 });
 
@@ -182,7 +217,7 @@ namespace NuGet.ProjectModel
                     LibraryRange = new LibraryRange
                     {
                         Name = "System",
-                        TypeConstraint = LibraryTypes.Reference
+                        TypeConstraint = LibraryDependencyTarget.Reference
                     }
                 });
 
@@ -191,7 +226,7 @@ namespace NuGet.ProjectModel
                     LibraryRange = new LibraryRange
                     {
                         Name = "System.Core",
-                        TypeConstraint = LibraryTypes.Reference
+                        TypeConstraint = LibraryDependencyTarget.Reference
                     }
                 });
 
@@ -200,7 +235,7 @@ namespace NuGet.ProjectModel
                     LibraryRange = new LibraryRange
                     {
                         Name = "Microsoft.CSharp",
-                        TypeConstraint = LibraryTypes.Reference
+                        TypeConstraint = LibraryDependencyTarget.Reference
                     }
                 });
             }
@@ -232,7 +267,7 @@ namespace NuGet.ProjectModel
                 LibraryRange = libraryRange,
                 Identity = new LibraryIdentity
                 {
-                    Name = externalReference?.UniqueName ?? packageSpec.Name,
+                    Name = externalReference?.ProjectName ?? packageSpec.Name,
                     Version = packageSpec?.Version ?? NuGetVersion.Parse("1.0.0"),
                     Type = LibraryTypes.Project,
                 },
@@ -299,6 +334,30 @@ namespace NuGet.ProjectModel
         }
 
         /// <summary>
+        /// Get and cache the package spec resolver.
+        /// </summary>
+        private IPackageSpecResolver GetPackageSpecResolver(string rootPath)
+        {
+            var specResolver = _defaultResolver;
+
+            if (!string.IsNullOrEmpty(rootPath))
+            {
+                IPackageSpecResolver cachedResolver;
+                if (_resolverCache.TryGetValue(rootPath, out cachedResolver))
+                {
+                    specResolver = cachedResolver;
+                }
+                else
+                {
+                    specResolver = new PackageSpecResolver(rootPath);
+                    _resolverCache.Add(rootPath, specResolver);
+                }
+            }
+
+            return specResolver;
+        }
+
+        /// <summary>
         /// Filter dependencies down to only possible project references and return the names.
         /// </summary>
         private IEnumerable<string> GetProjectNames(IEnumerable<LibraryDependency> dependencies)
@@ -319,6 +378,29 @@ namespace NuGet.ProjectModel
             var type = dependency.LibraryRange.TypeConstraint;
 
             return SupportsType(type);
+        }
+
+        private List<ExternalProjectReference> GetChildReferences(ExternalProjectReference parent)
+        {
+            var children = new List<ExternalProjectReference>(parent.ExternalProjectReferences.Count);
+
+            foreach (var reference in parent.ExternalProjectReferences)
+            {
+                ExternalProjectReference childReference;
+                if (!_externalProjectsByPath.TryGetValue(reference, out childReference))
+                {
+                    // Create a reference to mark that this project is unresolved here
+                    childReference = new ExternalProjectReference(
+                        uniqueName: reference,
+                        packageSpec: null,
+                        msbuildProjectPath: null,
+                        projectReferences: Enumerable.Empty<string>());
+                }
+
+                children.Add(childReference);
+            }
+
+            return children;
         }
     }
 }

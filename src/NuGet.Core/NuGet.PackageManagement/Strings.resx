@@ -273,4 +273,7 @@
   <data name="NoUpdatesAvailable" xml:space="preserve">
     <value>There are no new updates available.</value>
   </data>
+  <data name="Warning_ErrorFindingRepository" xml:space="preserve">
+    <value>Error finding repository for '{0}': {1}</value>
+  </data>
 </root>

@@ -32,13 +32,14 @@ namespace Commands.Test
                     packagesDir,
                     logger,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
-                    normalizeFileNames: false);
+                    packageSaveMode: PackageSaveMode.Defaultv3,
+                    normalizeFileNames: false,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 // Act
                 using (var stream = package.File.OpenRead())
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
+                    await PackageExtractor.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
                                                                    versionFolderPathContext,
                                                                    token);
                 }
@@ -75,13 +76,14 @@ namespace Commands.Test
                     packagesDir,
                     logger,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
-                    normalizeFileNames: false);
+                    packageSaveMode: PackageSaveMode.Defaultv3,
+                    normalizeFileNames: false,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 // Act
                 using (var stream = package.File.OpenRead())
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
+                    await PackageExtractor.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
                                                                    versionFolderPathContext,
                                                                    token);
                 }
@@ -119,8 +121,9 @@ namespace Commands.Test
                     packagesDir,
                     logger,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
-                    normalizeFileNames: false);
+                    packageSaveMode: PackageSaveMode.Defaultv3,
+                    normalizeFileNames: false,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
 
@@ -136,7 +139,7 @@ namespace Commands.Test
                 // Act
                 using (var stream = package.File.OpenRead())
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
+                    await PackageExtractor.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
                                                                    versionFolderPathContext,
                                                                    token);
                 }
@@ -171,8 +174,9 @@ namespace Commands.Test
                     packagesDir,
                     logger,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
-                    normalizeFileNames: false);
+                    packageSaveMode: PackageSaveMode.Defaultv3,
+                    normalizeFileNames: false,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
 
@@ -190,7 +194,7 @@ namespace Commands.Test
                 // Act
                 using (var stream = package.File.OpenRead())
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
+                    await PackageExtractor.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
                                                                    versionFolderPathContext,
                                                                    token);
                 }
@@ -228,8 +232,9 @@ namespace Commands.Test
                     packagesDir,
                     logger,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
-                    normalizeFileNames: false);
+                    packageSaveMode: PackageSaveMode.Defaultv3,
+                    normalizeFileNames: false,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
                 Assert.False(Directory.Exists(packageDir), packageDir + " exist");
@@ -238,7 +243,7 @@ namespace Commands.Test
                 using (var stream = package.File.OpenRead())
                 {
                     await Assert.ThrowsAnyAsync<CorruptionException>(async () =>
-                        await NuGetPackageUtils.InstallFromSourceAsync(
+                        await PackageExtractor.InstallFromSourceAsync(
                            async (d) => await new CorruptStreamWrapper(stream).CopyToAsync(d),
                            versionFolderPathContext,
                            token));
@@ -250,7 +255,7 @@ namespace Commands.Test
 
                 using (var stream = package.File.OpenRead())
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
+                    await PackageExtractor.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
                                                                    versionFolderPathContext,
                                                                    token);
                 }
@@ -286,8 +291,9 @@ namespace Commands.Test
                     packagesDir,
                     logger,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
-                    normalizeFileNames: false);
+                    packageSaveMode: PackageSaveMode.Defaultv3,
+                    normalizeFileNames: false,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 var packageDir = Path.Combine(packagesDir, package.Id, package.Version);
                 Assert.False(Directory.Exists(packageDir), packageDir + " exist");
@@ -300,7 +306,7 @@ namespace Commands.Test
                     var fileLocker = new FileLockedStreamWrapper(stream, filePathToLock);
 
                     await Assert.ThrowsAnyAsync<IOException>(async () =>
-                        await NuGetPackageUtils.InstallFromSourceAsync(
+                        await PackageExtractor.InstallFromSourceAsync(
                            async (d) => await fileLocker.CopyToAsync(d),
                            versionFolderPathContext,
                            token));
@@ -317,7 +323,7 @@ namespace Commands.Test
 
                 using (var stream = package.File.OpenRead())
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
+                    await PackageExtractor.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
                                                                    versionFolderPathContext,
                                                                    token);
                 }
@@ -352,13 +358,14 @@ namespace Commands.Test
                     packagesDirectory,
                     NullLogger.Instance,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
-                    normalizeFileNames: false);
+                    packageSaveMode: PackageSaveMode.Defaultv3,
+                    normalizeFileNames: false,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 // Act
                 using (var packageFileStream = File.OpenRead(packageFileInfo))
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(
+                    await PackageExtractor.InstallFromSourceAsync(
                         stream => packageFileStream.CopyToAsync(stream),
                         versionFolderPathContext,
                         CancellationToken.None);
@@ -392,13 +399,14 @@ namespace Commands.Test
                     packagesDirectory,
                     NullLogger.Instance,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: true,
-                    normalizeFileNames: false);
+                    packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Nupkg,
+                    normalizeFileNames: false,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 // Act
                 using (var packageFileStream = File.OpenRead(packageFileInfo))
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(
+                    await PackageExtractor.InstallFromSourceAsync(
                         stream => packageFileStream.CopyToAsync(stream),
                         versionFolderPathContext,
                         CancellationToken.None);
@@ -430,13 +438,14 @@ namespace Commands.Test
                     packagesDirectory,
                     NullLogger.Instance,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: true,
-                    normalizeFileNames: true);
+                    packageSaveMode: PackageSaveMode.Nuspec | PackageSaveMode.Nupkg,
+                    normalizeFileNames: true,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 // Act
                 using (var packageFileStream = File.OpenRead(packageFile))
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(
+                    await PackageExtractor.InstallFromSourceAsync(
                         stream => packageFileStream.CopyToAsync(stream),
                         versionFolderPathContext,
                         CancellationToken.None);
@@ -477,13 +486,14 @@ namespace Commands.Test
                     packagesDirectory,
                     NullLogger.Instance,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
-                    normalizeFileNames: true);
+                    packageSaveMode: PackageSaveMode.Defaultv3,
+                    normalizeFileNames: true,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 // Act
                 using (var packageFileStream = packageFileInfo.OpenRead())
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(
+                    await PackageExtractor.InstallFromSourceAsync(
                         stream => packageFileStream.CopyToAsync(stream),
                         versionFolderPathContext,
                         CancellationToken.None);
@@ -532,13 +542,14 @@ namespace Commands.Test
                     packagesDirectory,
                     NullLogger.Instance,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
-                    normalizeFileNames: true);
+                    packageSaveMode: PackageSaveMode.Defaultv3,
+                    normalizeFileNames: true,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 // Act
                 using (var packageFileStream = packageFileInfo.OpenRead())
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(
+                    await PackageExtractor.InstallFromSourceAsync(
                         stream => packageFileStream.CopyToAsync(stream),
                         versionFolderPathContext,
                         CancellationToken.None);
@@ -585,13 +596,14 @@ namespace Commands.Test
                     packagesDirectory,
                     NullLogger.Instance,
                     fixNuspecIdCasing: false,
-                    extractNuspecOnly: false,
-                    normalizeFileNames: true);
+                    packageSaveMode: PackageSaveMode.Defaultv3,
+                    normalizeFileNames: true,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
 
                 // Act
                 using (var packageFileStream = packageFileInfo.OpenRead())
                 {
-                    await NuGetPackageUtils.InstallFromSourceAsync(
+                    await PackageExtractor.InstallFromSourceAsync(
                         stream => packageFileStream.CopyToAsync(stream),
                         versionFolderPathContext,
                         CancellationToken.None);
@@ -605,6 +617,47 @@ namespace Commands.Test
                 var dllFileInfo = new FileInfo(dllPath);
                 AssertFileExists(dllFileInfo.FullName);
                 Assert.Equal(entryModifiedTime, dllFileInfo.LastWriteTime);
+            }
+        }
+
+        [Fact]
+        public async Task Test_ExtractionDoesNotExtractFiles_IfPackageSaveModeDoesNotIncludeFiles()
+        {
+            // Arrange
+            var package = new PackageIdentity("packageA", new NuGetVersion("2.0.3"));
+
+            using (var packageFileInfo = TestPackages.GetLegacyTestPackage())
+            using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var versionFolderPathContext = new VersionFolderPathContext(
+                    package,
+                    packagesDirectory,
+                    NullLogger.Instance,
+                    fixNuspecIdCasing: false,
+                    packageSaveMode: PackageSaveMode.Nupkg | PackageSaveMode.Nuspec,
+                    normalizeFileNames: false,
+                    xmlDocFileSaveMode: XmlDocFileSaveMode.None);
+
+                // Act
+                using (var packageFileStream = File.OpenRead(packageFileInfo))
+                {
+                    await PackageExtractor.InstallFromSourceAsync(
+                        stream => packageFileStream.CopyToAsync(stream),
+                        versionFolderPathContext,
+                        CancellationToken.None);
+                }
+
+                // Assert
+                var packageIdDirectory = Path.Combine(packagesDirectory, package.Id);
+                var packageVersionDirectory = Path.Combine(packageIdDirectory, package.Version.ToNormalizedString());
+
+                AssertDirectoryExists(packageIdDirectory);
+                AssertDirectoryExists(packageVersionDirectory);
+                AssertFileExists(packageVersionDirectory, "packageA.2.0.3.nupkg");
+                AssertFileExists(packageVersionDirectory, "packageA.nuspec");
+                AssertFileExists(packageVersionDirectory, "packageA.2.0.3.nupkg.sha512");
+
+                Assert.False(File.Exists(Path.Combine(packageVersionDirectory, @"lib", "test.dll")));
             }
         }
 

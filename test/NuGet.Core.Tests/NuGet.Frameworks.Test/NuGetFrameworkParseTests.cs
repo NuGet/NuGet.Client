@@ -72,6 +72,22 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public void NuGetFramework_PortableSingleMoniker()
+        {
+            NuGetFramework framework = NuGetFramework.Parse("portable-net45");
+
+            Assert.Equal("portable-net45", framework.GetShortFolderName());
+        }
+
+        [Fact]
+        public void NuGetFramework_PortableZeroMoniker()
+        {
+            NuGetFramework framework = NuGetFramework.Parse("portable");
+
+            Assert.True(framework.IsUnsupported);
+        }
+
+        [Fact]
         public void NuGetFramework_PortableNormalizeOptional()
         {
             NuGetFramework framework = NuGetFramework.Parse("portable-net45+win8+wp8+wpa81+monotouch+monoandroid");
@@ -201,6 +217,20 @@ namespace NuGet.Test
         [InlineData("dotnet5.5", ".NETPlatform,Version=v5.5")]
         [InlineData("dotnet6.0", ".NETPlatform,Version=v6.0")]
         [InlineData("dotnet6.0", ".NETPlatform,Version=v6")]
+        [InlineData("netstandard", ".NETStandard,Version=v0.0")]
+        [InlineData("netstandard1.0", ".NETStandard,Version=v1.0")]
+        [InlineData("netstandard1.0", ".NETStandard,Version=v1.0.0")]
+        [InlineData("netstandard0.9", ".NETStandard,Version=v0.9")]
+        [InlineData("netstandard1.0", ".NETStandard,Version=v1.0")]
+        [InlineData("netstandard1.1", ".NETStandard,Version=v1.1")]
+        [InlineData("netstandard1.2", ".NETStandard,Version=v1.2")]
+        [InlineData("netstandard1.3", ".NETStandard,Version=v1.3")]
+        [InlineData("netstandard1.4", ".NETStandard,Version=v1.4")]
+        [InlineData("netstandard1.5", ".NETStandard,Version=v1.5")]
+        [InlineData("netstandardapp", ".NETStandardApp,Version=v0.0")]
+        [InlineData("netstandardapp1.0", ".NETStandardApp,Version=v1.0")]
+        [InlineData("netstandardapp1.5", ".NETStandardApp,Version=v1.5")]
+        [InlineData("netstandardapp2.0", ".NETStandardApp,Version=v2.0")]
         public void NuGetFramework_ParseToShortName(string expected, string fullName)
         {
             // Arrange
@@ -233,6 +263,17 @@ namespace NuGet.Test
         [InlineData("dotnet5.3", ".NETPlatform,Version=v5.3")]
         [InlineData("dotnet5.4", ".NETPlatform,Version=v5.4")]
         [InlineData("dotnet5.5", ".NETPlatform,Version=v5.5")]
+        [InlineData("netstandard1.0", ".NETStandard,Version=v1.0")]
+        [InlineData("netstandard1.1", ".NETStandard,Version=v1.1")]
+        [InlineData("netstandard1.2", ".NETStandard,Version=v1.2")]
+        [InlineData("netstandard1.3", ".NETStandard,Version=v1.3")]
+        [InlineData("netstandard1.4", ".NETStandard,Version=v1.4")]
+        [InlineData("netstandard1.5", ".NETStandard,Version=v1.5")]
+        [InlineData("netstandardapp", ".NETStandardApp,Version=v0.0")]
+        [InlineData("netstandardapp0.0", ".NETStandardApp,Version=v0.0")]
+        [InlineData("netstandardapp1", ".NETStandardApp,Version=v1.0")]
+        [InlineData("netstandardapp1.5", ".NETStandardApp,Version=v1.5")]
+        [InlineData("netstandardapp2", ".NETStandardApp,Version=v2.0")]
         public void NuGetFramework_Basic(string folderName, string fullName)
         {
             string output = NuGetFramework.Parse(folderName).DotNetFrameworkName;

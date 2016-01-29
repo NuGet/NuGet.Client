@@ -118,7 +118,7 @@ namespace NuGet.Frameworks
                     }
                 }
 
-                // Packages based framework reduce 
+                // Packages based framework reduce
                 if (reduced.Count() > 1
                     && reduced.Any(f => f.IsPackageBased)
                     && reduced.Any(f => !f.IsPackageBased))
@@ -167,7 +167,8 @@ namespace NuGet.Frameworks
                 if (nearest == null && reduced.Any())
                 {
                     // Sort by precedence rules, then by name in the case of a tie
-                    nearest = reduced.OrderBy(f => f, new FrameworkPrecedenceSorter(_mappings))
+                    nearest = reduced
+                        .OrderBy(f => f, new FrameworkPrecedenceSorter(_mappings))
                         .ThenByDescending(f => f, new NuGetFrameworkSorter())
                         .ThenBy(f => f.GetHashCode())
                         .First();

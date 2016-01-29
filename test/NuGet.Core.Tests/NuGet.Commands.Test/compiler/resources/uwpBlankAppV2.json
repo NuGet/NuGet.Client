@@ -1761,7 +1761,10 @@
         }
       },
       "Microsoft.NETCore.Runtime/1.0.0": {
-        "type": "package"
+        "type": "package",
+        "dependencies": {
+          "Microsoft.NETCore.Runtime.CoreCLR-arm": "1.0.0"
+        }
       },
       "Microsoft.NETCore.Runtime.CoreCLR-arm/1.0.0": {
         "type": "package",
@@ -2137,6 +2140,8 @@
           "System.Linq.Expressions": "4.0.10",
           "System.ObjectModel": "4.0.0",
           "System.Reflection": "4.0.0",
+          "System.Reflection.Emit.ILGeneration": "4.0.0",
+          "System.Reflection.Emit.Lightweight": "4.0.0",
           "System.Reflection.TypeExtensions": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -2213,6 +2218,7 @@
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.IO": "4.0.0",
+          "System.IO.Compression.clrcompression-arm": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.0",
           "System.Runtime.Extensions": "4.0.0",
@@ -2354,6 +2360,8 @@
           "System.IO": "4.0.0",
           "System.Linq": "4.0.0",
           "System.Reflection": "4.0.0",
+          "System.Reflection.Emit.ILGeneration": "4.0.0",
+          "System.Reflection.Emit.Lightweight": "4.0.0",
           "System.Reflection.Extensions": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
           "System.Reflection.TypeExtensions": "4.0.0",
@@ -2575,6 +2583,8 @@
           "System.IO": "4.0.10",
           "System.Linq": "4.0.0",
           "System.Reflection": "4.0.10",
+          "System.Reflection.Emit.ILGeneration": "4.0.0",
+          "System.Reflection.Emit.Lightweight": "4.0.0",
           "System.Reflection.Extensions": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
           "System.Reflection.TypeExtensions": "4.0.0",
@@ -2716,6 +2726,8 @@
           "System.Collections": "4.0.10",
           "System.Linq": "4.0.0",
           "System.Reflection": "4.0.10",
+          "System.Reflection.Emit": "4.0.0",
+          "System.Reflection.Emit.ILGeneration": "4.0.0",
           "System.Reflection.Extensions": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -3342,6 +3354,8 @@
           "System.IO": "4.0.10",
           "System.Linq": "4.0.0",
           "System.Reflection": "4.0.10",
+          "System.Reflection.Emit": "4.0.0",
+          "System.Reflection.Emit.ILGeneration": "4.0.0",
           "System.Reflection.Extensions": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
           "System.Reflection.TypeExtensions": "4.0.0",
@@ -3489,7 +3503,10 @@
         }
       },
       "Microsoft.NETCore.Runtime/1.0.0": {
-        "type": "package"
+        "type": "package",
+        "dependencies": {
+          "Microsoft.NETCore.Runtime.Native": "1.0.0"
+        }
       },
       "Microsoft.NETCore.Runtime.Native/1.0.0": {
         "type": "package",
@@ -3926,6 +3943,7 @@
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.IO": "4.0.0",
+          "System.IO.Compression.clrcompression-arm": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.0",
           "System.Runtime.Extensions": "4.0.0",
@@ -5040,6 +5058,8 @@
           "System.IO": "4.0.10",
           "System.Linq": "4.0.0",
           "System.Reflection": "4.0.10",
+          "System.Reflection.Emit": "4.0.0",
+          "System.Reflection.Emit.ILGeneration": "4.0.0",
           "System.Reflection.Extensions": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
           "System.Reflection.TypeExtensions": "4.0.0",
@@ -5186,7 +5206,11 @@
         }
       },
       "Microsoft.NETCore.Runtime/1.0.0": {
-        "type": "package"
+        "type": "package",
+        "dependencies": {
+          "Microsoft.NETCore.Runtime.CoreCLR-x64": "1.0.0",
+          "Microsoft.NETCore.Windows.ApiSets-x64": "1.0.0"
+        }
       },
       "Microsoft.NETCore.Runtime.CoreCLR-x64/1.0.0": {
         "type": "package",
@@ -5568,6 +5592,8 @@
           "System.Linq.Expressions": "4.0.10",
           "System.ObjectModel": "4.0.0",
           "System.Reflection": "4.0.0",
+          "System.Reflection.Emit.ILGeneration": "4.0.0",
+          "System.Reflection.Emit.Lightweight": "4.0.0",
           "System.Reflection.TypeExtensions": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -5644,6 +5670,7 @@
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.IO": "4.0.0",
+          "System.IO.Compression.clrcompression-x64": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.0",
           "System.Runtime.Extensions": "4.0.0",
@@ -5785,6 +5812,8 @@
           "System.IO": "4.0.0",
           "System.Linq": "4.0.0",
           "System.Reflection": "4.0.0",
+          "System.Reflection.Emit.ILGeneration": "4.0.0",
+          "System.Reflection.Emit.Lightweight": "4.0.0",
           "System.Reflection.Extensions": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
           "System.Reflection.TypeExtensions": "4.0.0",
@@ -6006,6 +6035,8 @@
           "System.IO": "4.0.10",
           "System.Linq": "4.0.0",
           "System.Reflection": "4.0.10",
+          "System.Reflection.Emit.ILGeneration": "4.0.0",
+          "System.Reflection.Emit.Lightweight": "4.0.0",
           "System.Reflection.Extensions": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
           "System.Reflection.TypeExtensions": "4.0.0",
@@ -6147,6 +6178,8 @@
           "System.Collections": "4.0.10",
           "System.Linq": "4.0.0",
           "System.Reflection": "4.0.10",
+          "System.Reflection.Emit": "4.0.0",
+          "System.Reflection.Emit.ILGeneration": "4.0.0",
           "System.Reflection.Extensions": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -6773,6 +6806,8 @@
           "System.IO": "4.0.10",
           "System.Linq": "4.0.0",
           "System.Reflection": "4.0.10",
+          "System.Reflection.Emit": "4.0.0",
+          "System.Reflection.Emit.ILGeneration": "4.0.0",
           "System.Reflection.Extensions": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
           "System.Reflection.TypeExtensions": "4.0.0",
@@ -6920,7 +6955,10 @@
         }
       },
       "Microsoft.NETCore.Runtime/1.0.0": {
-        "type": "package"
+        "type": "package",
+        "dependencies": {
+          "Microsoft.NETCore.Runtime.Native": "1.0.0"
+        }
       },
       "Microsoft.NETCore.Runtime.Native/1.0.0": {
         "type": "package",
@@ -7357,6 +7395,7 @@
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.IO": "4.0.0",
+          "System.IO.Compression.clrcompression-x64": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.0",
           "System.Runtime.Extensions": "4.0.0",
@@ -8471,6 +8510,8 @@
           "System.IO": "4.0.10",
           "System.Linq": "4.0.0",
           "System.Reflection": "4.0.10",
+          "System.Reflection.Emit": "4.0.0",
+          "System.Reflection.Emit.ILGeneration": "4.0.0",
           "System.Reflection.Extensions": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
           "System.Reflection.TypeExtensions": "4.0.0",
@@ -8617,7 +8658,11 @@
         }
       },
       "Microsoft.NETCore.Runtime/1.0.0": {
-        "type": "package"
+        "type": "package",
+        "dependencies": {
+          "Microsoft.NETCore.Runtime.CoreCLR-x86": "1.0.0",
+          "Microsoft.NETCore.Windows.ApiSets-x86": "1.0.0"
+        }
       },
       "Microsoft.NETCore.Runtime.CoreCLR-x86/1.0.0": {
         "type": "package",
@@ -8999,6 +9044,8 @@
           "System.Linq.Expressions": "4.0.10",
           "System.ObjectModel": "4.0.0",
           "System.Reflection": "4.0.0",
+          "System.Reflection.Emit.ILGeneration": "4.0.0",
+          "System.Reflection.Emit.Lightweight": "4.0.0",
           "System.Reflection.TypeExtensions": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.20",
@@ -9075,6 +9122,7 @@
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.IO": "4.0.0",
+          "System.IO.Compression.clrcompression-x86": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.0",
           "System.Runtime.Extensions": "4.0.0",
@@ -9216,6 +9264,8 @@
           "System.IO": "4.0.0",
           "System.Linq": "4.0.0",
           "System.Reflection": "4.0.0",
+          "System.Reflection.Emit.ILGeneration": "4.0.0",
+          "System.Reflection.Emit.Lightweight": "4.0.0",
           "System.Reflection.Extensions": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
           "System.Reflection.TypeExtensions": "4.0.0",
@@ -9437,6 +9487,8 @@
           "System.IO": "4.0.10",
           "System.Linq": "4.0.0",
           "System.Reflection": "4.0.10",
+          "System.Reflection.Emit.ILGeneration": "4.0.0",
+          "System.Reflection.Emit.Lightweight": "4.0.0",
           "System.Reflection.Extensions": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
           "System.Reflection.TypeExtensions": "4.0.0",
@@ -9578,6 +9630,8 @@
           "System.Collections": "4.0.10",
           "System.Linq": "4.0.0",
           "System.Reflection": "4.0.10",
+          "System.Reflection.Emit": "4.0.0",
+          "System.Reflection.Emit.ILGeneration": "4.0.0",
           "System.Reflection.Extensions": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
@@ -10204,6 +10258,8 @@
           "System.IO": "4.0.10",
           "System.Linq": "4.0.0",
           "System.Reflection": "4.0.10",
+          "System.Reflection.Emit": "4.0.0",
+          "System.Reflection.Emit.ILGeneration": "4.0.0",
           "System.Reflection.Extensions": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
           "System.Reflection.TypeExtensions": "4.0.0",
@@ -10351,7 +10407,10 @@
         }
       },
       "Microsoft.NETCore.Runtime/1.0.0": {
-        "type": "package"
+        "type": "package",
+        "dependencies": {
+          "Microsoft.NETCore.Runtime.Native": "1.0.0"
+        }
       },
       "Microsoft.NETCore.Runtime.Native/1.0.0": {
         "type": "package",
@@ -10788,6 +10847,7 @@
         "dependencies": {
           "System.Collections": "4.0.0",
           "System.IO": "4.0.0",
+          "System.IO.Compression.clrcompression-x86": "4.0.0",
           "System.Resources.ResourceManager": "4.0.0",
           "System.Runtime": "4.0.0",
           "System.Runtime.Extensions": "4.0.0",
@@ -11902,6 +11962,8 @@
           "System.IO": "4.0.10",
           "System.Linq": "4.0.0",
           "System.Reflection": "4.0.10",
+          "System.Reflection.Emit": "4.0.0",
+          "System.Reflection.Emit.ILGeneration": "4.0.0",
           "System.Reflection.Extensions": "4.0.0",
           "System.Reflection.Primitives": "4.0.0",
           "System.Reflection.TypeExtensions": "4.0.0",

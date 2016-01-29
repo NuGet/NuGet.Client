@@ -15,24 +15,45 @@ namespace NuGet.Common
                 return;
             }
 
-            DeleteFilesInDirectoryTree(folderPath, failedDeletes);
-
+            bool fallbackToSafeDelete = false;
             try
             {
-                SafeDeleteDirectoryTree(folderPath);
+                // Try most-performant path first (initially avoiding Directory.EnumerateDirectories)
+                Directory.Delete(folderPath, recursive: true);
             }
             catch (DirectoryNotFoundException)
             {
                 // Should not happen, but it is a non-issue.
             }
-            catch (PathTooLongException)
+            catch (IOException)
             {
-                failedDeletes.Add(folderPath);
+                fallbackToSafeDelete = true;
             }
-            catch (UnauthorizedAccessException e)
+            catch (UnauthorizedAccessException)
             {
-                System.Diagnostics.Debug.Assert(e != null);
-                failedDeletes.Add(folderPath);
+                fallbackToSafeDelete = true;
+            }
+
+            if (fallbackToSafeDelete)
+            {
+                DeleteFilesInDirectoryTree(folderPath, failedDeletes);
+
+                try
+                {
+                    SafeDeleteDirectoryTree(folderPath);
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    // Should not happen, but it is a non-issue.
+                }
+                catch (PathTooLongException)
+                {
+                    failedDeletes.Add(folderPath);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    failedDeletes.Add(folderPath);
+                }
             }
         }
 

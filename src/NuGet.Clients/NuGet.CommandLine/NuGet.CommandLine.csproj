@@ -52,7 +52,6 @@
     <Compile Include="CommandLineParser.cs" />
     <Compile Include="CommandLineSourceRepositoryProvider.cs" />
     <Compile Include="CommandManager.cs" />
-    <Compile Include="CommandOutputLogger.cs" />
     <Compile Include="Commands\AddCommand.cs" />
     <Compile Include="Commands\LocalsCommand.cs" />
     <Compile Include="Commands\Command.cs" />
@@ -89,7 +88,6 @@
     <Compile Include="Common\LocalResourceUtils.cs" />
     <Compile Include="Common\MSBuildProjectSystem.cs" />
     <Compile Include="Common\MSBuildUser.cs" />
-    <Compile Include="Common\PackageExtractor.cs" />
     <Compile Include="Common\PackageSourceProviderExtensions.cs" />
     <Compile Include="Common\ProjectHelper.cs" />
     <Compile Include="Common\ProjectInSolution.cs" />
@@ -175,6 +173,14 @@
       <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
       <Name>NuGet.Credentials</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".mergeignore">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include=".mergeinclude">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\..\build\common.targets" />

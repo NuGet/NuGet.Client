@@ -14,8 +14,12 @@ namespace NuGet.Logging
 
         void LogInformation(string data);
 
+        void LogMinimal(string data);
+
         void LogWarning(string data);
 
         void LogError(string data);
+
+        void LogSummary(string data);
     }
 }

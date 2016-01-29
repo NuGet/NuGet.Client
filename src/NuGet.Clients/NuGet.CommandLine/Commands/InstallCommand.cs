@@ -1,5 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.ComponentModel.Composition;
 using System.Globalization;
 using System.IO;
@@ -9,6 +11,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
@@ -181,7 +184,7 @@ namespace NuGet.CommandLine
                     LocalizedResourceManager.GetString("InstallCommandNothingToInstall"),
                     packagesConfigFilePath);
 
-                Console.LogInformation(message);
+                Console.LogMinimal(message);
             }
 
             Task<PackageRestoreResult> packageRestoreTask = PackageRestoreManager.RestoreMissingPackagesAsync(packageRestoreContext, new ConsoleProjectContext(Console));
@@ -205,7 +208,7 @@ namespace NuGet.CommandLine
 
             var folderProject = new FolderNuGetProject(
                 installPath,
-                new Packaging.PackagePathResolver(installPath, !ExcludeVersion));
+                new PackagePathResolver(installPath, !ExcludeVersion));
 
             var sourceRepositoryProvider = GetSourceRepositoryProvider();
             var packageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, installPath);
@@ -217,10 +220,10 @@ namespace NuGet.CommandLine
             var primaryRepositories = packageSources.Select(sourceRepositoryProvider.CreateRepository);
 
             var resolutionContext = new ResolutionContext(
-                        DependencyBehavior.Lowest,
-                        includePrelease: Prerelease,
-                        includeUnlisted: true,
-                        versionConstraints: VersionConstraints.None);
+                DependencyBehavior.Lowest,
+                includePrelease: Prerelease,
+                includeUnlisted: true,
+                versionConstraints: VersionConstraints.None);
 
             if (version == null)
             {
@@ -252,15 +255,25 @@ namespace NuGet.CommandLine
                     LocalizedResourceManager.GetString("InstallCommandPackageAlreadyExists"),
                     packageIdentity);
 
-                Console.LogInformation(message);
+                Console.LogMinimal(message);
             }
             else
             {
+                var projectContext = new ConsoleProjectContext(Console)
+                {
+                    PackageExtractionContext = new PackageExtractionContext()
+                };
+
+                if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
+                {
+                    projectContext.PackageExtractionContext.PackageSaveMode = EffectivePackageSaveMode;
+                }
+
                 await packageManager.InstallPackageAsync(
                     folderProject,
                     packageIdentity,
                     resolutionContext,
-                    new ConsoleProjectContext(Console),
+                    projectContext,
                     primaryRepositories,
                     Enumerable.Empty<SourceRepository>(),
                     CancellationToken.None);

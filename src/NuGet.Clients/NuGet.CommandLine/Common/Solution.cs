@@ -31,6 +31,7 @@ namespace NuGet.Common
                     break;
 
                 case 14:
+                case 15:
                     LoadSolutionWithMsbuild14(msbuildAssembly, solutionFileName);
                     break;
 

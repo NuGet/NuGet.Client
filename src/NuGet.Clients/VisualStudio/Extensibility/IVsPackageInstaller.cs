@@ -18,10 +18,19 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Installs a single package from the specified package source.
         /// </summary>
-        /// <param name="source">The package source to install the package from.</param>
+        /// <param name="source">
+        /// The package source to install the package from. This value can be <c>null</c>
+        /// to indicate that the user's configured sources should be used. Otherwise,
+        /// this should be the source path as a string. If the user has credentials
+        /// configured for a source, this value must exactly match the configured source
+        /// value.
+        /// </param>
         /// <param name="project">The target project for package installation.</param>
-        /// <param name="packageId">The package id of the package to install.</param>
-        /// <param name="version">The version of the package to install</param>
+        /// <param name="packageId">The package ID of the package to install.</param>
+        /// <param name="version">
+        /// The version of the package to install. <c>null</c> can be provided to
+        /// install the latest version of the package.
+        /// </param>
         /// <param name="ignoreDependencies">
         /// A boolean indicating whether or not to ignore the package's dependencies
         /// during installation.
@@ -31,10 +40,19 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Installs a single package from the specified package source.
         /// </summary>
-        /// <param name="source">The package source to install the package from.</param>
+        /// <param name="source">
+        /// The package source to install the package from. This value can be <c>null</c>
+        /// to indicate that the user's configured sources should be used. Otherwise,
+        /// this should be the source path as a string. If the user has credentials
+        /// configured for a source, this value must exactly match the configured source
+        /// value.
+        /// </param>
         /// <param name="project">The target project for package installation.</param>
-        /// <param name="packageId">The package id of the package to install.</param>
-        /// <param name="version">The version of the package to install</param>
+        /// <param name="packageId">The package ID of the package to install.</param>
+        /// <param name="version">
+        /// The version of the package to install. <c>null</c> can be provided to
+        /// install the latest version of the package.
+        /// </param>
         /// <param name="ignoreDependencies">
         /// A boolean indicating whether or not to ignore the package's dependencies
         /// during installation.
@@ -47,7 +65,10 @@ namespace NuGet.VisualStudio
         /// <param name="repository">The package repository to install the package from.</param>
         /// <param name="project">The target project for package installation.</param>
         /// <param name="packageId">The package id of the package to install.</param>
-        /// <param name="version">The version of the package to install</param>
+        /// <param name="version">
+        /// The version of the package to install. <c>null</c> can be provided to
+        /// install the latest version of the package.
+        /// </param>
         /// <param name="ignoreDependencies">
         /// A boolean indicating whether or not to ignore the package's dependencies
         /// during installation.

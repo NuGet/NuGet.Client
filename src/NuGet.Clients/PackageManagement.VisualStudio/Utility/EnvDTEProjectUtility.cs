@@ -152,7 +152,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         /// <param name="envDTEProject">The project.</param>
         /// <returns>The full path of the project directory.</returns>
-        internal static string GetFullPath(EnvDTEProject envDTEProject)
+        public static string GetFullPath(EnvDTEProject envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 

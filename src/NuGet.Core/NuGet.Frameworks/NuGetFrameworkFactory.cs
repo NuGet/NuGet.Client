@@ -181,18 +181,23 @@ namespace NuGet.Frameworks
                             if (StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Portable, framework))
                             {
                                 IEnumerable<NuGetFramework> clientFrameworks = null;
-                                mappings.TryGetPortableFrameworks(profileShort, out clientFrameworks);
-
-                                var profileNumber = -1;
-                                if (mappings.TryGetPortableProfile(clientFrameworks, out profileNumber))
+                                if (!mappings.TryGetPortableFrameworks(profileShort, out clientFrameworks))
                                 {
-                                    var portableProfileNumber = FrameworkNameHelpers.GetPortableProfileNumberString(profileNumber);
-                                    result = new NuGetFramework(framework, version, portableProfileNumber);
+                                    result = UnsupportedFramework;
                                 }
                                 else
                                 {
-                                    // TODO: should this be unsupported?
-                                    result = new NuGetFramework(framework, version, profileShort);
+                                    var profileNumber = -1;
+                                    if (mappings.TryGetPortableProfile(clientFrameworks, out profileNumber))
+                                    {
+                                        var portableProfileNumber = FrameworkNameHelpers.GetPortableProfileNumberString(profileNumber);
+                                        result = new NuGetFramework(framework, version, portableProfileNumber);
+                                    }
+                                    else
+                                    {
+                                        // TODO: should this be unsupported?
+                                        result = new NuGetFramework(framework, version, profileShort);
+                                    }
                                 }
                             }
                             else

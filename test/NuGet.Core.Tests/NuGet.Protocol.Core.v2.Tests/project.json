@@ -1,6 +1,6 @@
-﻿{
+{
   "dependencies": {
-    "Moq": "4.2.1408.0717",
+    "Moq": "4.2.1510.2205",
     "NuGet.Protocol.Core.v2": "3.4.0-*",
     "NuGet.Protocol.Test.Utility": "1.0.0-*",
     "xunit": "2.1.0",

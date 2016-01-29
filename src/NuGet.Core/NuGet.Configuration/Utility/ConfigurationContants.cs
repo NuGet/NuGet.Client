@@ -3,7 +3,7 @@
 
 namespace NuGet.Configuration
 {
-    internal static class ConfigurationContants
+    internal static class ConfigurationConstants
     {
         internal static string DisabledPackageSources = "disabledPackageSources";
 

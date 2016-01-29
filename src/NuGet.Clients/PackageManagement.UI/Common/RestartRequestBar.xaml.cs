@@ -33,6 +33,8 @@ namespace NuGet.PackageManagement.UI
 
         public XDocument OriginalPackagesConfig { get; set; }
 
+        public NuGetActionType ActionType { get; set; }
+
         public RestartRequestBar(IDeleteOnRestartManager deleteOnRestartManager, IVsShell4 vsRestarter)
         {
             InitializeComponent();
@@ -130,6 +132,6 @@ namespace NuGet.PackageManagement.UI
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 RequestRestartMessage.Text = message;
             });
-        }
+        }       
     }
 }

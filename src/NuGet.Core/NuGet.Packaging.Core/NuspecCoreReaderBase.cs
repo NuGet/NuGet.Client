@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 using NuGet.Versioning;
 
@@ -28,11 +29,37 @@ namespace NuGet.Packaging.Core
         protected const string PackageTypeVersion = "version";
 
         /// <summary>
+        /// Read a nuspec from a path.
+        /// </summary>
+        public NuspecCoreReaderBase(string path)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            _xml = LoadXml(File.OpenRead(path), leaveStreamOpen: false);
+        }
+
+        /// <summary>
         /// Read a nuspec from a stream.
         /// </summary>
         public NuspecCoreReaderBase(Stream stream)
-            : this(XDocument.Load(stream))
+            : this(stream, leaveStreamOpen: false)
         {
+        }
+
+        /// <summary>
+        /// Read a nuspec from a stream.
+        /// </summary>
+        public NuspecCoreReaderBase(Stream stream, bool leaveStreamOpen)
+        {
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            _xml = LoadXml(stream, leaveStreamOpen);
         }
 
         /// <summary>
@@ -42,7 +69,7 @@ namespace NuGet.Packaging.Core
         {
             if (xml == null)
             {
-                throw new ArgumentNullException("xml");
+                throw new ArgumentNullException(nameof(xml));
             }
 
             _xml = xml;
@@ -143,6 +170,19 @@ namespace NuGet.Packaging.Core
         public PackageIdentity GetIdentity()
         {
             return new PackageIdentity(GetId(), GetVersion());
+        }
+
+        private static XDocument LoadXml(Stream stream, bool leaveStreamOpen)
+        {
+            var xmlReader = XmlReader.Create(stream, new XmlReaderSettings()
+            {
+                CloseInput = !leaveStreamOpen,
+                IgnoreWhitespace = true,
+                IgnoreComments = true,
+                IgnoreProcessingInstructions = true
+            });
+
+            return XDocument.Load(xmlReader, LoadOptions.None);
         }
     }
 }

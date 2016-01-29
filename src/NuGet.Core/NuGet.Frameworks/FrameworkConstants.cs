@@ -7,15 +7,13 @@ namespace NuGet.Frameworks
 {
     public static class FrameworkConstants
     {
-        public const string LessThanOrEqualTo = "\u2264";
-        public const string GreaterThanOrEqualTo = "\u2265";
         public static readonly Version EmptyVersion = new Version(0, 0, 0, 0);
         public static readonly Version MaxVersion = new Version(Int32.MaxValue, 0, 0, 0);
         public static readonly Version Version5 = new Version(5, 0, 0, 0);
         public static readonly Version Version10 = new Version(10, 0, 0, 0);
         public static readonly FrameworkRange DotNetAll = new FrameworkRange(
-                        new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetPlatform, FrameworkConstants.EmptyVersion),
-                        new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetPlatform, FrameworkConstants.MaxVersion));
+                        new NuGetFramework(FrameworkIdentifiers.NetPlatform, FrameworkConstants.EmptyVersion),
+                        new NuGetFramework(FrameworkIdentifiers.NetPlatform, FrameworkConstants.MaxVersion));
 
         public static class SpecialIdentifiers
         {
@@ -32,6 +30,8 @@ namespace NuGet.Frameworks
 
         public static class FrameworkIdentifiers
         {
+            public const string NetStandardApp = ".NETStandardApp";
+            public const string NetStandard = ".NETStandard";
             public const string NetPlatform = ".NETPlatform";
             public const string DotNet = "dotnet";
             public const string Net = ".NETFramework";
@@ -112,13 +112,13 @@ namespace NuGet.Frameworks
 
             public static readonly NuGetFramework DotNet
                 = new NuGetFramework(FrameworkIdentifiers.NetPlatform, EmptyVersion);
-            public static readonly NuGetFramework DotNet50 
+            public static readonly NuGetFramework DotNet50
                 = new NuGetFramework(FrameworkIdentifiers.NetPlatform, Version5);
             public static readonly NuGetFramework DotNet51
                 = new NuGetFramework(FrameworkIdentifiers.NetPlatform, new Version(5, 1, 0, 0));
-            public static readonly NuGetFramework DotNet52 
+            public static readonly NuGetFramework DotNet52
                 = new NuGetFramework(FrameworkIdentifiers.NetPlatform, new Version(5, 2, 0, 0));
-            public static readonly NuGetFramework DotNet53 
+            public static readonly NuGetFramework DotNet53
                 = new NuGetFramework(FrameworkIdentifiers.NetPlatform, new Version(5, 3, 0, 0));
             public static readonly NuGetFramework DotNet54
                 = new NuGetFramework(FrameworkIdentifiers.NetPlatform, new Version(5, 4, 0, 0));
@@ -127,34 +127,26 @@ namespace NuGet.Frameworks
             public static readonly NuGetFramework DotNet56
                 = new NuGetFramework(FrameworkIdentifiers.NetPlatform, new Version(5, 6, 0, 0));
 
-            public static readonly NuGetFramework UAP10 = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.UAP, Version10);
-        }
+            public static readonly NuGetFramework NetStandard
+                = new NuGetFramework(FrameworkIdentifiers.NetStandard, EmptyVersion);
+            public static readonly NuGetFramework NetStandard10
+                = new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(1, 0, 0, 0));
+            public static readonly NuGetFramework NetStandard11
+                = new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(1, 1, 0, 0));
+            public static readonly NuGetFramework NetStandard12
+                = new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(1, 2, 0, 0));
+            public static readonly NuGetFramework NetStandard13
+                = new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(1, 3, 0, 0));
+            public static readonly NuGetFramework NetStandard14
+                = new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(1, 4, 0, 0));
+            public static readonly NuGetFramework NetStandard15
+                = new NuGetFramework(FrameworkIdentifiers.NetStandard, new Version(1, 5, 0, 0));
 
-        /// <summary>
-        /// Ranges of dotnet frameworks
-        /// </summary>
-        public static class DotNetGenerationRanges
-        {
-            public static readonly FrameworkRange DotNet50 
-                = new FrameworkRange(CommonFrameworks.DotNet, CommonFrameworks.DotNet50);
+            public static readonly NuGetFramework NetStandardApp15
+                = new NuGetFramework(FrameworkIdentifiers.NetStandardApp, new Version(1, 5, 0, 0));
 
-            public static readonly FrameworkRange DotNet51
-                = new FrameworkRange(CommonFrameworks.DotNet, CommonFrameworks.DotNet51);
-
-            public static readonly FrameworkRange DotNet52
-                = new FrameworkRange(CommonFrameworks.DotNet, CommonFrameworks.DotNet52);
-
-            public static readonly FrameworkRange DotNet53
-                = new FrameworkRange(CommonFrameworks.DotNet, CommonFrameworks.DotNet53);
-
-            public static readonly FrameworkRange DotNet54
-                = new FrameworkRange(CommonFrameworks.DotNet, CommonFrameworks.DotNet54);
-
-            public static readonly FrameworkRange DotNet55
-                = new FrameworkRange(CommonFrameworks.DotNet, CommonFrameworks.DotNet55);
-
-            public static readonly FrameworkRange DotNet56
-                = new FrameworkRange(CommonFrameworks.DotNet, CommonFrameworks.DotNet56);
+            public static readonly NuGetFramework UAP10
+                = new NuGetFramework(FrameworkIdentifiers.UAP, Version10);
         }
     }
 }

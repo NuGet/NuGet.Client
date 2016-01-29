@@ -98,5 +98,7 @@ namespace NuGet.PackageManagement.UI
         {
             _logger.ReportError(message);
         }
+
+        public NuGetActionType ActionType { get; set; }
     }
 }

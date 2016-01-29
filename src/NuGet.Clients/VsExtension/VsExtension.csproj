@@ -75,7 +75,6 @@
     <Compile Include="VisualStudioCredentialProvider.cs" />
     <Compile Include="VisualStudioUIContext.cs" />
     <Compile Include="VisualStudioUIContextFactory.cs" />
-    <Compile Include="VsEvents\LoggingProjectContext.cs" />
     <Compile Include="VsEvents\OnBuildPackageRestorer.cs" />
     <Compile Include="VsEvents\ProjectRetargetingHandler.cs" />
     <Compile Include="VsEvents\ProjectUpgradeHandler.cs" />
@@ -270,4 +269,7 @@
   <Import Project="..\..\..\build\common.targets" />
   <Import Project="..\..\..\build\sign.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
+  <PropertyGroup>
+    <PostBuildEvent>copy /y "$(TargetVsixContainer)" "$(ArtifactRoot)\"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

@@ -4,13 +4,75 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Moq;
 using NuGet.Frameworks;
 using Xunit;
+using static NuGet.Frameworks.FrameworkConstants.FrameworkIdentifiers;
 
 namespace NuGet.Test
 {
     public class FrameworkNameProviderTests
     {
+        [Fact]
+        public void FrameworkNameProvider_DuplicateFrameworksInPrecedence()
+        {
+            // Arrange
+            var mappingsA = new Mock<IFrameworkMappings>();
+            var mappingsB = new Mock<IFrameworkMappings>();
+            mappingsA.Setup(x => x.NonPackageBasedFrameworkPrecedence).Returns(new[] { Net, NetCore });
+            mappingsB.Setup(x => x.NonPackageBasedFrameworkPrecedence).Returns(new[] { NetCore, Net });
+
+            var provider = new FrameworkNameProvider(new[] { mappingsA.Object, mappingsB.Object }, null);
+
+            // Act
+            var lt = provider.CompareFrameworks(FrameworkConstants.CommonFrameworks.Net45, FrameworkConstants.CommonFrameworks.NetCore45);
+            var gt = provider.CompareFrameworks(FrameworkConstants.CommonFrameworks.NetCore45, FrameworkConstants.CommonFrameworks.Net45);
+
+            // Assert
+            Assert.True(lt < 0, "Net should come before NetCore");
+            Assert.True(gt > 0, "NetCore should come after Net");
+        }
+
+        [Fact]
+        public void FrameworkNameProvider_DistinctFrameworksInPrecedence()
+        {
+            // Arrange
+            var mappingsA = new Mock<IFrameworkMappings>();
+            var mappingsB = new Mock<IFrameworkMappings>();
+            mappingsA.Setup(x => x.NonPackageBasedFrameworkPrecedence).Returns(new[] { Net });
+            mappingsB.Setup(x => x.NonPackageBasedFrameworkPrecedence).Returns(new[] { NetCore });
+
+            var provider = new FrameworkNameProvider(new[] { mappingsA.Object, mappingsB.Object }, null);
+
+            // Act
+            var lt = provider.CompareFrameworks(FrameworkConstants.CommonFrameworks.Net45, FrameworkConstants.CommonFrameworks.NetCore45);
+            var gt = provider.CompareFrameworks(FrameworkConstants.CommonFrameworks.NetCore45, FrameworkConstants.CommonFrameworks.Net45);
+
+            // Assert
+            Assert.True(lt < 0, "Net should come before NetCore");
+            Assert.True(gt > 0, "NetCore should come after Net");
+        }
+
+        [Fact]
+        public void FrameworkNameProvider_MissingFrameworksInPrecedence()
+        {
+            // Arrange
+            var mappingsA = new Mock<IFrameworkMappings>();
+            var mappingsB = new Mock<IFrameworkMappings>();
+            mappingsA.Setup(x => x.NonPackageBasedFrameworkPrecedence).Returns(new[] { Silverlight });
+            mappingsB.Setup(x => x.NonPackageBasedFrameworkPrecedence).Returns(new[] { Net });
+
+            var provider = new FrameworkNameProvider(new[] { mappingsA.Object, mappingsB.Object }, null);
+
+            // Act
+            var lt = provider.CompareFrameworks(FrameworkConstants.CommonFrameworks.Net45, FrameworkConstants.CommonFrameworks.NetCore45);
+            var gt = provider.CompareFrameworks(FrameworkConstants.CommonFrameworks.NetCore45, FrameworkConstants.CommonFrameworks.Net45);
+
+            // Assert
+            Assert.True(lt < 0, "Net should come before NetCore");
+            Assert.True(gt > 0, "NetCore should come after Net");
+        }
+
         [Fact]
         public void FrameworkNameProvider_EqualFrameworksWithoutCurrent()
         {

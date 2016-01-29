@@ -32,18 +32,18 @@ namespace NuGet.Commands.Test
             var tasks = new Task<int>[4];
 
             // Act
-            tasks[0] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForever1, cts.Token);
+            tasks[0] = ConcurrencyUtilities.ExecuteWithFileLockedAsync(fileId, WaitForever1, cts.Token);
 
             await _waitForEverStarted.WaitAsync();
 
             // We should now be blocked, so the value returned from here should not be returned until the token is cancelled.
-            tasks[1] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, timeout.Token);
+            tasks[1] = ConcurrencyUtilities.ExecuteWithFileLockedAsync(fileId, WaitForInt1, timeout.Token);
 
             Assert.False(tasks[0].IsCompleted, $"task status: {tasks[0].Status}");
 
             _value1 = 1;
 
-            tasks[2] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, timeout.Token);
+            tasks[2] = ConcurrencyUtilities.ExecuteWithFileLockedAsync(fileId, WaitForInt1, timeout.Token);
 
             Assert.False(cts.Token.IsCancellationRequested);
             cts.Cancel();
@@ -53,7 +53,7 @@ namespace NuGet.Commands.Test
 
             _value1 = 2;
 
-            tasks[3] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, timeout.Token);
+            tasks[3] = ConcurrencyUtilities.ExecuteWithFileLockedAsync(fileId, WaitForInt1, timeout.Token);
 
             await tasks[3];
 
@@ -86,11 +86,11 @@ namespace NuGet.Commands.Test
                 _value1 = 0;
 
                 // We should now be blocked, so the value returned from here should not be returned until the process has terminated.
-                tasks[0] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, timeout.Token);
+                tasks[0] = ConcurrencyUtilities.ExecuteWithFileLockedAsync(fileId, WaitForInt1, timeout.Token);
 
                 _value1 = 1;
 
-                tasks[1] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, timeout.Token);
+                tasks[1] = ConcurrencyUtilities.ExecuteWithFileLockedAsync(fileId, WaitForInt1, timeout.Token);
 
                 Assert.False(result.Process.HasExited);
 
@@ -114,7 +114,7 @@ namespace NuGet.Commands.Test
 
             _value1 = 2;
 
-            tasks[2] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt1, timeout.Token);
+            tasks[2] = ConcurrencyUtilities.ExecuteWithFileLockedAsync(fileId, WaitForInt1, timeout.Token);
 
             await Task.WhenAll(tasks);
 
@@ -140,19 +140,19 @@ namespace NuGet.Commands.Test
             var tasks = new Task<int>[4];
 
             // Act
-            tasks[0] = ConcurrencyUtilities.ExecuteWithFileLocked("x" + fileId, WaitForever, cts.Token);
+            tasks[0] = ConcurrencyUtilities.ExecuteWithFileLockedAsync("x" + fileId, WaitForever, cts.Token);
 
             _value2 = 0;
 
             // We should now be blocked, so the value returned from here should not be
             // returned until the token is cancelled.
-            tasks[1] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt2, timeout.Token);
+            tasks[1] = ConcurrencyUtilities.ExecuteWithFileLockedAsync(fileId, WaitForInt2, timeout.Token);
 
             await tasks[1];
 
             _value2 = 1;
 
-            tasks[2] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt2, timeout.Token);
+            tasks[2] = ConcurrencyUtilities.ExecuteWithFileLockedAsync(fileId, WaitForInt2, timeout.Token);
 
             await tasks[2]; // let the first tasks pass we get a deadlock if there is a lock applied by the first task
 
@@ -161,7 +161,7 @@ namespace NuGet.Commands.Test
 
             _value2 = 2;
 
-            tasks[3] = ConcurrencyUtilities.ExecuteWithFileLocked(fileId, WaitForInt2, timeout.Token);
+            tasks[3] = ConcurrencyUtilities.ExecuteWithFileLockedAsync(fileId, WaitForInt2, timeout.Token);
 
             await tasks[3];
 
@@ -286,7 +286,8 @@ namespace NuGet.Commands.Test
         {
             var data = await result.Reader.ReadLineAsync();
 
-            if (data.Trim() != "Locked")
+            // data will be null on Mac, skip the check on Mac
+            if (!RuntimeEnvironmentHelper.IsMacOSX && data.Trim() != "Locked")
             {
                 throw new InvalidOperationException($"Unexpected output from process: {data}");
             }

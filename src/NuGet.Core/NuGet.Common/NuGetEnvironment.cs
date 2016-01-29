@@ -13,146 +13,194 @@ namespace NuGet.Common
             switch (folder)
             {
                 case NuGetFolderPath.MachineWideSettingsBaseDirectory:
-                    var appData = string.Empty;
-                    if (RuntimeEnvironmentHelper.IsWindows)
-                    {
-                        appData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
-                    }
-                    else
-                    {
-                        // Only super users have write access to common app data folder on *nix,
-                        // so we use roaming local app data folder instead
-                        appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                    }
-                    return Path.Combine(appData, "NuGet");
+                    return Path.Combine(
+                        GetFolderPath(SpecialFolder.CommonApplicationData),
+                        "NuGet");
+
                 case NuGetFolderPath.MachineWideConfigDirectory:
-                    return Path.Combine(GetFolderPath(NuGetFolderPath.MachineWideSettingsBaseDirectory),
+                    return Path.Combine(
+                        GetFolderPath(NuGetFolderPath.MachineWideSettingsBaseDirectory),
                         "Config");
+
                 case NuGetFolderPath.UserSettingsDirectory:
                     return Path.Combine(
-                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                        GetFolderPath(SpecialFolder.ApplicationData),
                         "NuGet");
+
                 case NuGetFolderPath.NuGetHome:
-                    var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-                    return Path.Combine(userProfile, ".nuget");
+                    return Path.Combine(
+                        GetFolderPath(SpecialFolder.UserProfile),
+                        ".nuget");
+
                 case NuGetFolderPath.HttpCacheDirectory:
-                    var localAppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                    return Path.Combine(localAppDataFolder, "NuGet", "v3-cache");
+                    return Path.Combine(
+                        GetFolderPath(SpecialFolder.LocalApplicationData),
+                        "NuGet",
+                        "v3-cache");
+
                 case NuGetFolderPath.DefaultMsBuildPath:
-                    var programFilesPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+                    var programFilesPath = GetFolderPath(SpecialFolder.ProgramFilesX86);
                     if (string.IsNullOrEmpty(programFilesPath))
                     {
                         // On 32-bit Windows
-                        programFilesPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+                        programFilesPath = GetFolderPath(SpecialFolder.ProgramFiles);
                     }
+
                     return Path.Combine(programFilesPath, "MSBuild", "14.0", "Bin", "MSBuild.exe");
+
                 case NuGetFolderPath.Temp:
-                    return Path.Combine(Path.GetTempPath(), "NuGet-Scratch");
+                    return Path.Combine(Path.GetTempPath(), "NuGetScratch");
+
                 default:
                     return null;
             }
         }
 
 #if DNXCORE50
-        private static class Environment
+        private static string GetFolderPath(SpecialFolder folder)
         {
-            public static string NewLine { get; } = System.Environment.NewLine;
-
-            public static string GetEnvironmentVariable(string variable)
+            switch (folder)
             {
-                return System.Environment.GetEnvironmentVariable(variable);
+                case SpecialFolder.ProgramFilesX86:
+                    return Environment.GetEnvironmentVariable("PROGRAMFILES(X86)");
+
+                case SpecialFolder.ProgramFiles:
+                    return Environment.GetEnvironmentVariable("PROGRAMFILES");
+
+                case SpecialFolder.UserProfile:
+                    return GetHome();
+
+                case SpecialFolder.CommonApplicationData:
+                    if (RuntimeEnvironmentHelper.IsWindows)
+                    {
+                        string programData = Environment.GetEnvironmentVariable("PROGRAMDATA");
+
+                        if (!string.IsNullOrEmpty(programData))
+                        {
+                            return programData;
+                        }
+
+                        return Environment.GetEnvironmentVariable("ALLUSERSPROFILE");
+                    }
+                    else if (RuntimeEnvironmentHelper.IsMacOSX)
+                    {
+                        return @"/Library/Application Support";
+                    }
+                    else
+                    {
+                        return @"/etc/opt";
+                    }
+
+                case SpecialFolder.ApplicationData:
+                    if (RuntimeEnvironmentHelper.IsWindows)
+                    {
+                        return Environment.GetEnvironmentVariable("APPDATA");
+                    }
+                    else
+                    {
+                        return Path.Combine(GetHome(), ".nuget");
+                    }
+
+                case SpecialFolder.LocalApplicationData:
+                    if (RuntimeEnvironmentHelper.IsWindows)
+                    {
+                        return Environment.GetEnvironmentVariable("LOCALAPPDATA");
+                    }
+                    else
+                    {
+                        string xdgDataHome = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+                        if (!string.IsNullOrEmpty(xdgDataHome))
+                        {
+                            return xdgDataHome;
+                        }
+
+                        return Path.Combine(GetHome(), ".local", "share");
+                    }
+
+                default:
+                    return null;
+            }
+        }
+#else
+        private static string GetFolderPath(SpecialFolder folder)
+        {
+            // Convert the private enum to the .NET Framework enum
+            Environment.SpecialFolder converted;
+            switch (folder)
+            {
+                case SpecialFolder.ProgramFilesX86:
+                    converted = Environment.SpecialFolder.ProgramFilesX86;
+                    break;
+
+                case SpecialFolder.ProgramFiles:
+                    converted = Environment.SpecialFolder.ProgramFiles;
+                    break;
+
+                case SpecialFolder.UserProfile:
+                    var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+                    // On Kudu this might return null
+                    if (!string.IsNullOrEmpty(userProfile))
+                    {
+                        return userProfile;
+                    }
+
+                    return GetHome();
+
+                case SpecialFolder.CommonApplicationData:
+                    converted = Environment.SpecialFolder.CommonApplicationData;
+                    break;
+
+                case SpecialFolder.ApplicationData:
+                    converted = Environment.SpecialFolder.ApplicationData;
+                    break;
+
+                case SpecialFolder.LocalApplicationData:
+                    converted = Environment.SpecialFolder.LocalApplicationData;
+                    break;
+
+                default:
+                    return null;
             }
 
-            public static string ExpandEnvironmentVariables(string name)
-            {
-                return System.Environment.ExpandEnvironmentVariables(name);
-            }
+            return Environment.GetFolderPath(converted);
+        }
+#endif
 
-            public static string GetFolderPath(SpecialFolder folder)
+        private static string GetHome()
+        {
+            if (RuntimeEnvironmentHelper.IsWindows)
             {
-                switch (folder)
+                string userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
+                if (!string.IsNullOrEmpty(userProfile))
                 {
-                    case SpecialFolder.ProgramFilesX86:
-                        return GetEnvironmentVariable("PROGRAMFILES(X86)");
-                    case SpecialFolder.ProgramFiles:
-                        return GetEnvironmentVariable("PROGRAMFILES");
-                    case SpecialFolder.UserProfile:
-                        return GetHome();
-                    case SpecialFolder.CommonApplicationData:
-                        if (RuntimeEnvironmentHelper.IsWindows)
-                        {
-                            return FirstNonEmpty(
-                                () => GetEnvironmentVariable("PROGRAMDATA"),
-                                () => GetEnvironmentVariable("ALLUSERSPROFILE"));
-                        }
-                        else
-                        {
-                            return "/usr/share";
-                        }
-                    case SpecialFolder.ApplicationData:
-                        if (RuntimeEnvironmentHelper.IsWindows)
-                        {
-                            return GetEnvironmentVariable("APPDATA");
-                        }
-                        else
-                        {
-                            return FirstNonEmpty(
-                                () => GetEnvironmentVariable("XDG_CONFIG_HOME"),
-                                () => Path.Combine(GetHome(), ".config"));
-                        }
-                    case SpecialFolder.LocalApplicationData:
-                        if (RuntimeEnvironmentHelper.IsWindows)
-                        {
-                            return GetEnvironmentVariable("LOCALAPPDATA");
-                        }
-                        else
-                        {
-                            return FirstNonEmpty(
-                                () => GetEnvironmentVariable("XDG_DATA_HOME"),
-                                () => Path.Combine(GetHome(), ".local", "share"));
-                        }
-                    default:
-                        return null;
-                }
-            }
-
-            private static string GetHome()
-            {
-                if (RuntimeEnvironmentHelper.IsWindows)
-                {
-                    return FirstNonEmpty(
-                        () => GetEnvironmentVariable("USERPROFILE"),
-                        () => GetEnvironmentVariable("HOMEDRIVE") + GetEnvironmentVariable("HOMEPATH"));
+                    return userProfile;
                 }
                 else
                 {
-                    return GetEnvironmentVariable("HOME");
+                    return Environment.GetEnvironmentVariable("HOMEDRIVE") + Environment.GetEnvironmentVariable("HOMEPATH");
                 }
             }
-
-            private static string FirstNonEmpty(params Func<string>[] providers)
+            else
             {
-                foreach (var p in providers)
-                {
-                    var value = p();
-                    if (!string.IsNullOrEmpty(value))
-                    {
-                        return value;
-                    }
-                }
-                return null;
-            }
-
-            public enum SpecialFolder
-            {
-                ProgramFilesX86,
-                ProgramFiles,
-                UserProfile,
-                CommonApplicationData,
-                ApplicationData,
-                LocalApplicationData
+                return Environment.GetEnvironmentVariable("HOME");
             }
         }
-#endif
+
+
+        /// <summary>
+        /// Since <see cref="Environment.SpecialFolder"/> is not available on .NET Core, we have to
+        /// make our own and re-implement the functionality. On .NET Framework, we can use the
+        /// built-in functionality.
+        /// </summary>
+        private enum SpecialFolder
+        {
+            ProgramFilesX86,
+            ProgramFiles,
+            UserProfile,
+            CommonApplicationData,
+            ApplicationData,
+            LocalApplicationData
+        }
     }
 }

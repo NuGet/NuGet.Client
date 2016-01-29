@@ -15,7 +15,7 @@ namespace NuGet.Protocol.Core.Types
         {
             if (context == null)
             {
-                throw new InvalidOperationException(nameof(context));
+                throw new ArgumentNullException(nameof(context));
             }
 
             MaxAge = context.ListMaxAgeTimeSpan;
@@ -26,7 +26,7 @@ namespace NuGet.Protocol.Core.Types
         {
             if (context == null)
             {
-                throw new InvalidOperationException(nameof(context));
+                throw new ArgumentNullException(nameof(context));
             }
 
             MaxAge = overrideMaxAge;

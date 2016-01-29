@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.ProjectManagement
@@ -49,7 +50,7 @@ namespace NuGet.ProjectManagement
             return Task.FromResult(Enumerable.Empty<PackageReference>());
         }
 
-        public override async Task<bool> InstallPackageAsync(
+        public override Task<bool> InstallPackageAsync(
             PackageIdentity packageIdentity,
             DownloadResourceResult downloadResourceResult,
             INuGetProjectContext nuGetProjectContext,
@@ -79,7 +80,7 @@ namespace NuGet.ProjectManagement
             if (PackageExists(packageIdentity))
             {
                 nuGetProjectContext.Log(MessageLevel.Info, Strings.PackageAlreadyExistsInFolder, packageIdentity, Root);
-                return false;
+                return Task.FromResult(false);
             }
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AddingPackageToFolder, packageIdentity, Path.GetFullPath(Root));
@@ -90,7 +91,7 @@ namespace NuGet.ProjectManagement
             if (downloadResourceResult.PackageReader != null)
             {
                 addedPackageFilesList.AddRange(
-                    await PackageExtractor.ExtractPackageAsync(
+                    PackageExtractor.ExtractPackage(
                         downloadResourceResult.PackageReader,
                         downloadResourceResult.PackageStream,
                         PackagePathResolver,
@@ -100,7 +101,7 @@ namespace NuGet.ProjectManagement
             else
             {
                 addedPackageFilesList.AddRange(
-                    await PackageExtractor.ExtractPackageAsync(
+                    PackageExtractor.ExtractPackage(
                         downloadResourceResult.PackageStream,
                         PackagePathResolver,
                         nuGetProjectContext.PackageExtractionContext ?? new PackageExtractionContext(),
@@ -108,7 +109,7 @@ namespace NuGet.ProjectManagement
             }
 
             var packageSaveMode = GetPackageSaveMode(nuGetProjectContext);
-            if (packageSaveMode.HasFlag(PackageSaveModes.Nupkg))
+            if (packageSaveMode.HasFlag(PackageSaveMode.Nupkg))
             {
                 var packageFilePath = GetInstalledPackageFilePath(packageIdentity);
                 if (File.Exists(packageFilePath))
@@ -121,7 +122,7 @@ namespace NuGet.ProjectManagement
             FileSystemUtility.PendAddFiles(addedPackageFilesList, Root, nuGetProjectContext);
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.AddedPackageToFolder, packageIdentity, Path.GetFullPath(Root));
-            return true;
+            return Task.FromResult(true);
         }
 
         public override Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
@@ -138,19 +139,23 @@ namespace NuGet.ProjectManagement
             return !string.IsNullOrEmpty(GetInstalledPackageFilePath(packageIdentity));
         }
 
-        public async Task<bool> CopySatelliteFilesAsync(PackageIdentity packageIdentity,
+        public Task<bool> CopySatelliteFilesAsync(PackageIdentity packageIdentity,
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-            var copiedSatelliteFiles = await PackageExtractor.CopySatelliteFilesAsync(
+            var xmlDocFileSaveMode = nuGetProjectContext.PackageExtractionContext?.XmlDocFileSaveMode ??
+                PackageExtractionBehavior.XmlDocFileSaveMode;
+
+            var copiedSatelliteFiles = PackageExtractor.CopySatelliteFiles(
                 packageIdentity,
                 PackagePathResolver,
                 GetPackageSaveMode(nuGetProjectContext),
+                xmlDocFileSaveMode,
                 token);
 
             FileSystemUtility.PendAddFiles(copiedSatelliteFiles, Root, nuGetProjectContext);
 
-            return copiedSatelliteFiles.Any();
+            return Task.FromResult(copiedSatelliteFiles.Any());
         }
 
         public string GetInstalledPackageFilePath(PackageIdentity packageIdentity)
@@ -171,14 +176,12 @@ namespace NuGet.ProjectManagement
             if (File.Exists(packageFilePath))
             {
                 var packageDirectoryPath = Path.GetDirectoryName(packageFilePath);
-                using (var packageStream = File.OpenRead(packageFilePath))
+                using (var packageReader = new PackageArchiveReader(packageFilePath))
                 {
                     var installedSatelliteFilesPair = PackageHelper.GetInstalledSatelliteFiles(
-                        packageStream,
-                        packageIdentity,
+                        packageReader,
                         PackagePathResolver,
                         GetPackageSaveMode(nuGetProjectContext));
-
                     var runtimePackageDirectory = installedSatelliteFilesPair.Item1;
                     var installedSatelliteFiles = installedSatelliteFilesPair.Item2;
                     if (!string.IsNullOrEmpty(runtimePackageDirectory))
@@ -197,7 +200,7 @@ namespace NuGet.ProjectManagement
 
                     // Get all the package files before deleting the package file
                     var installedPackageFiles = PackageHelper.GetInstalledPackageFiles(
-                        packageStream,
+                        packageReader,
                         packageIdentity,
                         PackagePathResolver,
                         GetPackageSaveMode(nuGetProjectContext));
@@ -232,9 +235,9 @@ namespace NuGet.ProjectManagement
             return Task.FromResult(true);
         }
 
-        private PackageSaveModes GetPackageSaveMode(INuGetProjectContext nuGetProjectContext)
+        private PackageSaveMode GetPackageSaveMode(INuGetProjectContext nuGetProjectContext)
         {
-            return nuGetProjectContext.PackageExtractionContext?.PackageSaveMode ?? PackageSaveModes.Nupkg;
+            return nuGetProjectContext.PackageExtractionContext?.PackageSaveMode ?? PackageSaveMode.Defaultv2;
         }
     }
 }

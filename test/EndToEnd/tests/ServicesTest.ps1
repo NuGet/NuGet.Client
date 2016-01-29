@@ -256,7 +256,33 @@ function Test-InstallPackageAPIEmptyVersion
     Assert-Package $p owin 1.0.0
 }
 
-function Test-InstallPackageAPIBadSource
+function Test-InstallPackageAPIAllSource
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallPackageApi("All", "owin", "1.0.0", $false) 
+
+    # Assert
+    Assert-Package $p owin 1.0.0
+}
+
+function Test-InstallPackageAPIInvalidSource
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act&Assert
+    Assert-Throws { [API.Test.InternalAPITestHook]::InstallPackageApi("invalid", "owin", "1.0.0", $false) } "Exception calling `"InstallPackageApi`" with `"4`" argument(s): `"The specified source 'invalid' is invalid. Please provide a valid source.`r`nParameter name: source`""
+    Assert-NoPackage $p "owin"
+}
+
+function Test-InstallPackageAPIUnreachableSource
 {
     param($context)
 
@@ -268,7 +294,7 @@ function Test-InstallPackageAPIBadSource
     Assert-NoPackage $p "owin"
 }
 
-function Test-InstallPackageAPI_FWLinkSource
+function InstallPackageAPI_FWLinkSource
 {
     param($context)
 
@@ -459,5 +485,68 @@ function Test-InstallPackageAPIBindingRedirect
     Assert-BindingRedirect $p app.config B '0.0.0.0-2.0.0.0' '2.0.0.0'
 }
 
+function Test-ExecuteInitPS1OnClassLibrary
+{
+    param($context)
 
+    # Arrange
+    $global:PackageInitPS1Var = 0
+    $p = New-ClassLibrary
+
+    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryPath
+
+    Assert-True ($global:PackageInitPS1Var -eq 1)
+
+    # Act
+    $result = [API.Test.InternalAPITestHook]::ExecuteInitScript("PackageInitPS1","1.0.0")
+
+    Assert-True $result
+
+    Assert-True ($global:PackageInitPS1Var -eq 1)
+}
+
+function Test-ExecuteInitPS1OnUAP
+{
+    param($context)
+
+    # Arrange
+    $global:PackageInitPS1Var = 0
+    $p = New-BuildIntegratedProj UAPApp
+
+    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryPath
+
+    Assert-True ($global:PackageInitPS1Var -eq 1)
+
+    # Act
+    $result = [API.Test.InternalAPITestHook]::ExecuteInitScript("PackageInitPS1","1.0.0")
+
+    Assert-True $result
+
+    Assert-True ($global:PackageInitPS1Var -eq 1)
+}
+
+# NOTE: The following test does not work since ExecuteInitScript needs the powershell pipeline to be free
+#       for it execute scripts. But, under Run-Test, the pipeline is already busy.
+function ExecuteInitPS1OnAspNetCore
+{
+    param($context)
+
+    # Set DNX packages folder to be NUGET global packages folder
+    $env:DNX_PACKAGES = "$env:USERPROFILE\.nuget\packages"
+
+    # Arrange
+    $global:PackageInitPS1Var = 0
+    $p = New-DNXClassLibrary
+
+    Install-Package PackageInitPS1 -Project $p.Name -Source $context.RepositoryPath
+
+    Assert-True ($global:PackageInitPS1Var -eq 0)
+
+    # Act
+    $result = [API.Test.InternalAPITestHook]::ExecuteInitScript("PackageInitPS1","1.0.0")
+
+    Assert-True $result
+
+    Assert-True ($global:PackageInitPS1Var -eq 1)
+}
 

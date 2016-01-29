@@ -2677,13 +2677,13 @@ function Test-InstallPackageWithLeadingZeroInVersion
 
     # Act
     $p | Install-Package -IgnoreDependencies Moq -Version 4.1.1309.0919
-    $p | Install-Package -IgnoreDependencies EyeSoft.Wpf.Facilities -Version 0.2.2.0000
+    $p | Install-Package -IgnoreDependencies EyeSoft.Wpf.Facilities -Version 0.2.3.690
     $p | Install-Package -IgnoreDependencies CraigsUtilityLibrary-Reflection -Version 3.0.0001
     $p | Install-Package -IgnoreDependencies JSLess -Version 0.01
 
     # Assert
     Assert-Package $p Moq '4.1.1309.0919'
-    Assert-Package $p EyeSoft.Wpf.Facilities 0.2.2.0000
+    Assert-Package $p EyeSoft.Wpf.Facilities 0.2.3.690
     Assert-Package $p CraigsUtilityLibrary-Reflection 3.0.0001
     Assert-Package $p JSLess 0.01
 }

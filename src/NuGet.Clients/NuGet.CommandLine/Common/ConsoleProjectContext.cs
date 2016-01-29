@@ -29,7 +29,7 @@ namespace NuGet.CommandLine
             {
                 case ProjectManagement.MessageLevel.Debug:
                 case ProjectManagement.MessageLevel.Info:
-                    _logger.LogInformation(message);
+                    _logger.LogMinimal(message);
                     break;
                 case ProjectManagement.MessageLevel.Warning:
                     _logger.LogWarning(message);
@@ -49,5 +49,7 @@ namespace NuGet.CommandLine
         {
             return ProjectManagement.FileConflictAction.IgnoreAll;
         }
+
+        public NuGetActionType ActionType { get; set; }
     }
 }

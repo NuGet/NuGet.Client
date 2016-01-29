@@ -1,7 +1,7 @@
-﻿using NuGet.Logging;
-using NuGet.Packaging.Core;
-using System;
+﻿using System;
 using System.Globalization;
+using NuGet.Logging;
+using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging
 {
@@ -11,16 +11,18 @@ namespace NuGet.Packaging
         public string PackagesDirectory { get; }
         public ILogger Logger { get; }
         public bool FixNuspecIdCasing { get; }
-        public bool ExtractNuspecOnly { get; }
+        public PackageSaveMode PackageSaveMode { get; }
         public bool NormalizeFileNames { get; }
+        public XmlDocFileSaveMode XmlDocFileSaveMode { get; set; }
 
         public VersionFolderPathContext(
             PackageIdentity package,
             string packagesDirectory,
             ILogger logger,
             bool fixNuspecIdCasing,
-            bool extractNuspecOnly,
-            bool normalizeFileNames)
+            PackageSaveMode packageSaveMode,
+            bool normalizeFileNames,
+            XmlDocFileSaveMode xmlDocFileSaveMode)
         {
             if (package == null)
             {
@@ -44,8 +46,9 @@ namespace NuGet.Packaging
             PackagesDirectory = packagesDirectory;
             Logger = logger;
             FixNuspecIdCasing = fixNuspecIdCasing;
-            ExtractNuspecOnly = extractNuspecOnly;
+            PackageSaveMode = packageSaveMode;
             NormalizeFileNames = normalizeFileNames;
+            XmlDocFileSaveMode = xmlDocFileSaveMode;
         }
     }
 }

@@ -16,14 +16,17 @@ namespace NuGet.Test
         // 1. lib/uap10, 
         // 2. then lib/win81, 
         // 3. then lib/wpa81, 
-        // 4. then lib/dotnet5.3, 
-        // 5. then portable-win81+*, etc
+        // 4. then lib/netstandard1.2, 
+        // 5. then lib/dotnet5.3, 
+        // 6. then portable-win81+*, etc
         [InlineData("uap10.0", "uap10.0,win81,wpa81,dotnet5.4,portable-win81+net45", "uap10.0")]
         [InlineData("uap10.0", "win81,wpa81,dotnet5.4,portable-win81+net45", "win81")]
         [InlineData("uap10.0", "wpa81,dotnet5.4,portable-win81+net45", "wpa81")]
         [InlineData("uap10.0", "dotnet5.4,portable-win81+net45", "dotnet5.4")]
         [InlineData("uap10.0", "portable-win81+net45", "portable-win81+net45")]
         [InlineData("uap10.0", "dotnet5.6,dotnet5.5,dotnet5.4,portable-win81+net45", "dotnet5.6")]
+        [InlineData("uap10.0", "netstandard1.5,dotnet5.6,dotnet5.5,dotnet5.4,portable-win81+net45", "netstandard1.5")]
+        [InlineData("uap10.0", "netstandard1.4,dotnet5.6,dotnet5.5,dotnet5.4,portable-win81+net45", "netstandard1.4")]
         [InlineData("uap10.0", "dotnet5.4,dotnet,portable-win81+net45", "dotnet5.4")]
         [InlineData("uap10.0", "dotnet,portable-win81+net45", "dotnet")]
         [InlineData("uap10.0", "wpa81,dotnet5.3,portable-win81+net45", "wpa81")]
@@ -34,6 +37,9 @@ namespace NuGet.Test
         [InlineData("uap10.0", "dotnet6.0,portable-win81+net45", "portable-win81+net45")]
         [InlineData("uap10.0", "dotnet6.0,portable-win81+net45+sl5,portable-win81+net45", "portable-win81+net45")]
         [InlineData("uap10.0", "dotnet6.0,portable-win81+net45+sl5,portable-uap11.0", "portable-win81+net45+sl5")]
+        [InlineData("uap10.0", "netstandard7.0,dotnet6.0,portable-win81+net45", "portable-win81+net45")]
+        [InlineData("uap10.0", "netstandard7.0,dotnet6.0,portable-win81+net45+sl5,portable-win81+net45", "portable-win81+net45")]
+        [InlineData("uap10.0", "netstandard7.0,dotnet6.0,portable-win81+net45+sl5,portable-uap11.0", "portable-win81+net45+sl5")]
         // Same TFM wins
         [InlineData("net461", "net462,net461,net46,net45,net4,net2,dotnet6.0,dotnet5.5,dotnet5.4,dotnet5.3,dotnet,portable-net45+win8,portable-net45+win8+wpa81", "net461")]
         [InlineData("net461", "net46,net45,net4,net2,dotnet6.0,dotnet5.5,dotnet5.4,dotnet5.3,dotnet,portable-net45+win8,portable-net45+win8+wpa81", "net46")]
@@ -48,6 +54,40 @@ namespace NuGet.Test
         [InlineData("net461", "portable-net45+win8,portable-net45+win8+wpa81", "portable-net45+win8")]
         [InlineData("net461", "portable-net45+win8+wpa81,native", "portable-net45+win8+wpa81")]
         [InlineData("net7", "dotnet6.0,dotnet5.6,dotnet5.5,dotnet5.4,portable-net45+win8", "dotnet5.6")]
+        // netstandard
+        [InlineData("netstandard1.5", "net4,netstandard7.0,netstandard1.4", "netstandard1.4")]
+        [InlineData("netstandard1.5", "net4,netstandard7.0,netstandard1.5", "netstandard1.5")]
+        [InlineData("netstandard1.5", "net4,netstandard7.0,netstandard1.6", null)]
+        [InlineData("netstandard1.5", "net4,netstandard7.0,netstandard0.0", "netstandard")]
+        [InlineData("netstandard1.5", "dotnet5.6,netstandard1.4", "netstandard1.4")]
+        [InlineData("netstandard1.5", "dotnet1.3,netstandard1.4", "netstandard1.4")]
+        [InlineData("netstandard1.5", "dotnet5.6,netstandard0.1", "netstandard0.1")]
+        [InlineData("netstandard1.5", "dotnet5.6,netstandard0.0", "netstandard")]
+        [InlineData("netstandard1.5", "dotnet5.6", null)]
+        [InlineData("netstandard7.0", "netstandard6.0,netstandard1.0", "netstandard6.0")]
+        // netstandardapp
+        [InlineData("netstandardapp1.5", "net4,netstandardapp1.5,netstandardapp1.4", "netstandardapp1.5")]
+        [InlineData("netstandardapp1.5", "net4,netstandard1.4,netstandardapp1.3,dotnet5.6", "netstandardapp1.3")]
+        [InlineData("netstandardapp1.5", "dotnet5.6,netstandard1.4", "netstandard1.4")]
+        [InlineData("netstandardapp1.5", "dotnet5.6,netstandard1.3,netstandard1.2", "netstandard1.3")]
+        [InlineData("netstandardapp1.5", "net4,dotnet5.3", null)]
+        [InlineData("netstandardapp1.5", "net4", null)]
+        [InlineData("netstandardapp1.0", "net4,dotnet5.3", null)]
+        [InlineData("netstandardapp1.2", "netstandardapp1.2,netstandardapp1.1", "netstandardapp1.2")]
+        [InlineData("netstandardapp1.0", "netstandardapp1.2,netstandardapp1.0", "netstandardapp1.0")]
+        [InlineData("netstandardapp1.5", "netstandardapp1.2,netstandardapp1.1", "netstandardapp1.2")]
+        [InlineData("netstandardapp1.0", "dotnet5.2,dotnet", null)]
+        // PCL
+        [InlineData("portable-net45", "portable-net45+netcore45,portable-net45+netcore45+wpa81", "portable-net45+netcore45")]
+        [InlineData("portable-net45+netcore45", "portable-net45+netcore45,netstandard1.2", "portable-net45+netcore45")]
+        [InlineData("portable-net45+netcore45", "portable-net45+netcore45,netstandard1.1.1", "portable-net45+netcore45")]
+        [InlineData("portable-net45+netcore45", "portable-net45+netcore45,dotnet5.2", "portable-net45+netcore45")]
+        [InlineData("portable-net45+netcore45", "portable-net45+netcore45,dotnet5.1", "portable-net45+netcore45")]
+        [InlineData("portable-net45+netcore45", "portable-net45+netcore45+wpa81,netstandard1.1,dotnet5.1", "portable-net45+netcore45+wpa81")]
+        [InlineData("portable-net45+netcore45", "portable-net45+netcore45+wpa81,netstandard1.1", "portable-net45+netcore45+wpa81")]
+        [InlineData("portable-net45+netcore45", "portable-net45+netcore45+wpa81,netstandard1.0", "portable-net45+netcore45+wpa81")]
+        [InlineData("portable-net45+netcore45", "netstandard1.1,dotnet5.1", "netstandard1.1")]
+        [InlineData("portable-net45+netcore45+bad", "netstandard1.0", null)]
         // Additional tests
         [InlineData("dotnet5.5", "dotnet6.0,dotnet5.4,portable-net45+win8", "dotnet5.4")]
         [InlineData("dotnet7", "dotnet6.0,dotnet5.4,portable-net45+win8", "dotnet6.0")]
@@ -56,8 +96,14 @@ namespace NuGet.Test
         [InlineData("uap10.0", "uap10.1,dotnet5.7,dotnet5.6.0.1,dotnet6.0,dnxcore50,native", null)]
         [InlineData("dotnet", "", null)]
         [InlineData("dotnet5.4", "", null)]
+        [InlineData("netstandard", "", null)]
+        [InlineData("netstandard1.0", "", null)]
+        [InlineData("netstandard1.5", "", null)]
         [InlineData("uap10.0", "", null)]
         [InlineData("net461", "", null)]
+        [InlineData("unsupported", "any", "any")]
+        [InlineData("any", "any", "any")]
+        [InlineData("any", "unsupported", "unsupported")]
         public void FrameworkReducer_GetNearestWithGenerations(
             string projectFramework,
             string packageFrameworks,

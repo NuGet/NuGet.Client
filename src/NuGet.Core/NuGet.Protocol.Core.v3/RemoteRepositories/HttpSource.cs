@@ -26,7 +26,8 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private readonly Func<Task<HttpHandlerResource>> _messageHandlerFactory;
         private readonly Uri _baseUri;
 
-        private const int ConcurrencyLimit = 128;
+        // In order to avoid too many open files error, set concurrent requests number to 64 on Mac
+        private readonly static int ConcurrencyLimit= RuntimeEnvironmentHelper.IsMacOSX? 64 : 128;
 
         // Limiting concurrent requests to limit the amount of files open at a time on Mac OSX
         // the default is 256 which is easy to hit if we don't limit concurrency
@@ -60,7 +61,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             var result = await TryCache(uri, cacheKey, context, cancellationToken);
             if (result.Stream != null)
             {
-                Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture, "  {0} {1}", "CACHE", uri));
+                Logger.LogInformation(string.Format(CultureInfo.InvariantCulture, "  {0} {1}", "CACHE", uri));
                 return result;
             }
 
@@ -70,7 +71,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             {
                 Logger.LogVerbose($"Current http requests queued: {_throttle.CurrentCount + 1}");
 
-                Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture, "  {0} {1}.", "GET", uri));
+                Logger.LogInformation(string.Format(CultureInfo.InvariantCulture, "  {0} {1}.", "GET", uri));
 
                 ICredentials credentials = CredentialStore.Instance.GetCredentials(_baseUri);
 
@@ -138,7 +139,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
                             await CreateCacheFile(result, response, context, cancellationToken);
 
-                            Logger.LogVerbose(string.Format(CultureInfo.InvariantCulture,
+                            Logger.LogInformation(string.Format(CultureInfo.InvariantCulture,
                                 "  {1} {0} {2}ms", uri, response.StatusCode.ToString(), sw.ElapsedMilliseconds.ToString()));
 
                             return result;
@@ -176,7 +177,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             // The update of a cached file is divided into two steps:
             // 1) Delete the old file. 2) Create a new file with the same name.
             // To prevent race condition among multiple processes, here we use a lock to make the update atomic.
-            return ConcurrencyUtilities.ExecuteWithFileLocked(result.CacheFileName,
+            return ConcurrencyUtilities.ExecuteWithFileLockedAsync(result.CacheFileName,
                 action: async token =>
                 {
                     using (var stream = new FileStream(
@@ -246,7 +247,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
             // Acquire the lock on a file before we open it to prevent this process
             // from opening a file deleted by the logic in HttpSource.GetAsync() in another process
-            return await ConcurrencyUtilities.ExecuteWithFileLocked(cacheFile,
+            return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(cacheFile,
                 action: cancellationToken =>
                 {
                     if (File.Exists(cacheFile))

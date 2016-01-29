@@ -261,6 +261,22 @@ namespace NuGet.Frameworks
         }
 
         /// <summary>
+        /// True if the framework is only used for compilation, not for execution.
+        /// Ex: dotnet, netstandard, portable-*
+        /// </summary>
+        public bool IsCompileOnly
+        {
+            get
+            {
+                return FrameworkConstants.FrameworkIdentifiers.NetPlatform
+                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
+                    || FrameworkConstants.FrameworkIdentifiers.NetStandard
+                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
+                    || IsPCL;
+            } 
+        }
+
+        /// <summary>
         /// True if the framework is packages based.
         /// Ex: dotnet, dnxcore
         /// </summary>
@@ -268,9 +284,13 @@ namespace NuGet.Frameworks
         {
             get
             {
-                return FrameworkConstants.FrameworkIdentifiers.NetPlatform
+                return FrameworkConstants.FrameworkIdentifiers.DnxCore
                     .Equals(Framework, StringComparison.OrdinalIgnoreCase)
-                    || FrameworkConstants.FrameworkIdentifiers.DnxCore
+                    || FrameworkConstants.FrameworkIdentifiers.NetPlatform
+                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
+                    || FrameworkConstants.FrameworkIdentifiers.NetStandard
+                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
+                    || FrameworkConstants.FrameworkIdentifiers.NetStandardApp
                     .Equals(Framework, StringComparison.OrdinalIgnoreCase);
             }
         }

@@ -165,4 +165,7 @@
   <data name="InvalidPackageList" xml:space="preserve">
     <value>Package list contains invalid or duplicate entries.</value>
   </data>
+  <data name="InvalidSource" xml:space="preserve">
+    <value>The specified source '{0}' is invalid. Please provide a valid source.</value>
+  </data>
 </root>

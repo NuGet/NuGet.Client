@@ -64,12 +64,15 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
                     catch (XmlException ex)
                     {
                         var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, id + "." + version, _source);
-                        throw new NuGetProtocolException(message, ex);
+                        var inner = new PackagingException(message, ex);
+
+                        throw new FatalProtocolException(message, inner);
                     }
                     catch (PackagingException ex)
                     {
                         var message = string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, id + "." + version, _source);
-                        throw new NuGetProtocolException(message, ex);
+
+                        throw new FatalProtocolException(message, ex);
                     }
 
                     dependencyInfo = GetDependencyInfo(nuspecReader);

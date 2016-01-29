@@ -13,19 +13,38 @@ namespace NuGet.LibraryModel
 
         public VersionRange VersionRange { get; set; }
 
-        public string TypeConstraint { get; set; }
+        public LibraryDependencyTarget TypeConstraint { get; set; } = LibraryDependencyTarget.All;
 
         public override string ToString()
         {
             var output = Name;
             if (VersionRange != null)
             {
-                output += " " + VersionRange.ToString();
+                output = $"{output} {VersionRange.ToNonSnapshotRange().PrettyPrint()}";
             }
-            if (!string.IsNullOrEmpty(TypeConstraint))
+
+            // Append the type constraint in a user friendly way if one exists
+            var contraintString = string.Empty;
+
+            switch (TypeConstraint)
             {
-                output = TypeConstraint + "/" + output;
+                case LibraryDependencyTarget.Reference:
+                    contraintString = LibraryTypes.Reference;
+                    break;
+                case LibraryDependencyTarget.ExternalProject:
+                    contraintString = LibraryTypes.ExternalProject;
+                    break;
+                case LibraryDependencyTarget.Project:
+                case LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject:
+                    contraintString = LibraryTypes.Project;
+                    break;
             }
+
+            if (!string.IsNullOrEmpty(contraintString))
+            {
+                output = $"{contraintString}/{output}";
+            }
+
             return output;
         }
 
@@ -63,36 +82,42 @@ namespace NuGet.LibraryModel
             return sb.ToString();
         }
 
+        /// <summary>
+        /// True if the type constraint allows the flag.
+        /// </summary>
+        public bool TypeConstraintAllows(LibraryDependencyTarget flag)
+        {
+            return (TypeConstraint & flag) == flag;
+        }
+
+        /// <summary>
+        /// True if any flags are allowed by the constraint.
+        /// </summary>
+        public bool TypeConstraintAllowsAnyOf(LibraryDependencyTarget flag)
+        {
+            return (TypeConstraint & flag) != LibraryDependencyTarget.None;
+        }
+
         public bool Equals(LibraryRange other)
         {
             if (ReferenceEquals(null, other))
             {
                 return false;
             }
+
             if (ReferenceEquals(this, other))
             {
                 return true;
             }
-            return string.Equals(Name, other.Name) &&
-                   Equals(VersionRange, other.VersionRange) &&
-                   Equals(TypeConstraint, other.TypeConstraint);
+
+            return TypeConstraint == other.TypeConstraint
+                && string.Equals(Name, other.Name)
+                && Equals(VersionRange, other.VersionRange);
         }
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
-            {
-                return false;
-            }
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-            if (obj.GetType() != this.GetType())
-            {
-                return false;
-            }
-            return Equals((LibraryRange)obj);
+            return Equals(obj as LibraryRange);
         }
 
         public override int GetHashCode()
@@ -101,7 +126,7 @@ namespace NuGet.LibraryModel
             {
                 return ((Name != null ? Name.GetHashCode() : 0) * 397) ^
                        (VersionRange != null ? VersionRange.GetHashCode() : 0) ^
-                       (TypeConstraint != null ? TypeConstraint.GetHashCode() : 0);
+                       TypeConstraint.GetHashCode();
             }
         }
 

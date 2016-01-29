@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
 
 namespace NuGet.CommandLine
 {
@@ -133,7 +134,7 @@ namespace NuGet.CommandLine
             {
                 try
                 {
-                    var packageReader = new PackageReader(packageStream);
+                    var packageReader = new PackageArchiveReader(packageStream, leaveStreamOpen: true);
                     var packageIdentity = packageReader.GetIdentity();
 
                     bool isValidPackage;
@@ -153,7 +154,7 @@ namespace NuGet.CommandLine
                             }
                             else
                             {
-                                logger.LogInformation(message);
+                                logger.LogMinimal(message);
                             }
                         }
                         else
@@ -176,15 +177,20 @@ namespace NuGet.CommandLine
                     else
                     {
                         packageStream.Seek(0, SeekOrigin.Begin);
+                        var packageSaveMode = offlineFeedAddContext.Expand
+                            ? PackageSaveMode.Defaultv3
+                            : PackageSaveMode.Nuspec | PackageSaveMode.Nupkg;
+
                         var versionFolderPathContext = new VersionFolderPathContext(
                             packageIdentity,
                             source,
                             logger,
                             fixNuspecIdCasing: false,
-                            extractNuspecOnly: !offlineFeedAddContext.Expand,
-                            normalizeFileNames: true);
+                            packageSaveMode: packageSaveMode,
+                            normalizeFileNames: true,
+                            xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
 
-                        await NuGetPackageUtils.InstallFromSourceAsync(
+                        await PackageExtractor.InstallFromSourceAsync(
                             stream => packageStream.CopyToAsync(stream),
                             versionFolderPathContext,
                             token);
@@ -195,7 +201,7 @@ namespace NuGet.CommandLine
                             packagePath,
                             source);
 
-                        logger.LogInformation(message);
+                        logger.LogMinimal(message);
                     }
                 }
                 catch (InvalidDataException)

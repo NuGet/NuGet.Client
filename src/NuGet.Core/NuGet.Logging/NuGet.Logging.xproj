@@ -5,16 +5,10 @@
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
   <Import Project="$(VSToolsPath)\DNX\Microsoft.DNX.Props" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="..\..\..\build\Common.xproj.props" Condition="Exists('..\..\..\Build\Common.xproj.props')" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>c1c5b715-cd4c-44c2-b074-ba638612ac2f</ProjectGuid>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
-  </PropertyGroup>
-  <PropertyGroup>
-    <SchemaVersion>2.0</SchemaVersion>
-  </PropertyGroup>
   <Import Project="$(VSToolsPath)\DNX\Microsoft.DNX.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(EnlistmentRoot)\build\common.xproj.targets" Condition="'$(EnlistmentRoot)' != ''"/>
 </Project>

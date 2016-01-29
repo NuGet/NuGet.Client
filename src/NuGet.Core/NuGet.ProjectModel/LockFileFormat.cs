@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
-using NuGet.LibraryModel;
 using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -110,7 +110,9 @@ namespace NuGet.ProjectModel
             }
             catch (Exception ex)
             {
-                log.LogError(Strings.FormatLog_ErrorReadingLockFile(path, ex.Message));
+                log.LogError(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Log_ErrorReadingLockFile,
+                    path, ex.Message));
 
                 // Ran into parsing errors, mark it as unlocked and out-of-date
                 return new LockFile

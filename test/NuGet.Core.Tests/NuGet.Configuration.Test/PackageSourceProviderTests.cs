@@ -2011,7 +2011,7 @@ namespace NuGet.Configuration.Test
 </configuration>
 ";
                 File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), configContents);
-
+                
                 var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
                    configFileName: "NuGet.config",
                    machineWideSettings: null,

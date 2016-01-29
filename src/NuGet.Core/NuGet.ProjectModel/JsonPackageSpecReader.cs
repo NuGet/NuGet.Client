@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -59,7 +60,6 @@ namespace NuGet.ProjectModel
             var authors = rawPackageSpec["authors"];
             var owners = rawPackageSpec["owners"];
             var tags = rawPackageSpec["tags"];
-            var buildVersion = Environment.GetEnvironmentVariable("DNX_BUILD_VERSION");
 
             packageSpec.Name = name;
             packageSpec.FilePath = Path.GetFullPath(packageSpecPath);
@@ -72,7 +72,7 @@ namespace NuGet.ProjectModel
             {
                 try
                 {
-                    packageSpec.Version = SpecifySnapshot(version.Value<string>(), buildVersion);
+                    packageSpec.Version = SpecifySnapshot(version.Value<string>(), snapshotValue: string.Empty);
                 }
                 catch (Exception ex)
                 {
@@ -196,6 +196,13 @@ namespace NuGet.ProjectModel
                     var dependencyExcludeFlagsValue = LibraryIncludeFlags.None;
                     var suppressParentFlagsValue = LibraryIncludeFlagUtils.DefaultSuppressParent;
 
+                    // This method handles both the dependencies and framework assembly sections.
+                    // Framework references should be limited to references.
+                    // Dependencies should allow everything but framework references.
+                    var targetFlagsValue = isGacOrFrameworkReference
+                                                    ? LibraryDependencyTarget.Reference
+                                                    : ~LibraryDependencyTarget.Reference;
+
                     string dependencyVersionValue = null;
                     var dependencyVersionToken = dependencyValue;
 
@@ -235,6 +242,26 @@ namespace NuGet.ProjectModel
                         {
                             suppressParentFlagsValue = LibraryIncludeFlagUtils.GetFlags(strings);
                         }
+
+                        var targetToken = dependencyValue["target"];
+
+                        if (targetToken != null)
+                        {
+                            var targetString = targetToken.Value<string>();
+
+                            targetFlagsValue = LibraryDependencyTargetUtils.Parse(targetString);
+
+                            // Verify that the value specified is package, project, or external project
+                            if (!ValidateDependencyTarget(targetFlagsValue))
+                            {
+                                var message = string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.InvalidDependencyTarget,
+                                    targetString);
+
+                                throw FileFormatException.Create(message, targetToken, packageSpecPath);
+                            }
+                        }
                     }
 
                     VersionRange dependencyVersionRange = null;
@@ -262,7 +289,7 @@ namespace NuGet.ProjectModel
                         LibraryRange = new LibraryRange()
                         {
                             Name = dependency.Key,
-                            TypeConstraint = isGacOrFrameworkReference ? LibraryTypes.Reference : null,
+                            TypeConstraint = targetFlagsValue,
                             VersionRange = dependencyVersionRange,
                         },
                         Type = dependencyTypeValue,
@@ -295,6 +322,22 @@ namespace NuGet.ProjectModel
             result = values
                 .SelectMany(value => value.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries));
             return true;
+        }
+
+        private static bool ValidateDependencyTarget(LibraryDependencyTarget targetValue)
+        {
+            var isValid = false;
+
+            switch (targetValue)
+            {
+                case LibraryDependencyTarget.Package:
+                case LibraryDependencyTarget.Project:
+                case LibraryDependencyTarget.ExternalProject:
+                    isValid = true;
+                    break;
+            }
+
+            return isValid;
         }
 
         private static void BuildTargetFrameworks(PackageSpec packageSpec, JObject rawPackageSpec)

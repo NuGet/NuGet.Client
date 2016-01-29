@@ -154,7 +154,7 @@ namespace NuGet.CommandLine
         {
             BuildProject();
 
-            Logger.LogInformation(
+            Logger.LogMinimal(
                 string.Format(
                     CultureInfo.CurrentCulture,
                     LocalizedResourceManager.GetString("PackagingFilesFromOutputPath"),
@@ -290,7 +290,7 @@ namespace NuGet.CommandLine
             {
                 if (TargetFramework != null)
                 {
-                    Logger.LogInformation(
+                    Logger.LogMinimal(
                         string.Format(
                             CultureInfo.CurrentCulture,
                             LocalizedResourceManager.GetString("BuildingProjectTargetingFramework"),
@@ -787,7 +787,7 @@ namespace NuGet.CommandLine
             {
                 return;
             }
-            Logger.LogInformation(LocalizedResourceManager.GetString("UsingPackagesConfigForDependencies"));
+            Logger.LogMinimal(LocalizedResourceManager.GetString("UsingPackagesConfigForDependencies"));
 
             // Get the solution repository
             IPackageRepository repository = GetPackagesRepository();
@@ -968,7 +968,7 @@ namespace NuGet.CommandLine
                 return null;
             }
 
-            Logger.LogInformation(
+            Logger.LogMinimal(
                 string.Format(
                     CultureInfo.CurrentCulture,
                     LocalizedResourceManager.GetString("UsingNuspecForMetadata"),
@@ -1050,7 +1050,7 @@ namespace NuGet.CommandLine
 
                 if (!File.Exists(fullPath))
                 {
-                    Logger.LogInformation(
+                    Logger.LogMinimal(
                         string.Format(
                             CultureInfo.CurrentCulture,
                             LocalizedResourceManager.GetString("Warning_FileDoesNotExist"),
@@ -1084,7 +1084,7 @@ namespace NuGet.CommandLine
                     var isEqual = ContentEquals(targetFile, fullPath);
                     if (isEqual)
                     {
-                        Logger.LogInformation(
+                        Logger.LogMinimal(
                             string.Format(
                                 CultureInfo.CurrentCulture,
                                 LocalizedResourceManager.GetString("PackageCommandFileFromDependencyIsNotChanged"),
@@ -1092,7 +1092,7 @@ namespace NuGet.CommandLine
                         continue;
                     }
 
-                    Logger.LogInformation(
+                    Logger.LogMinimal(
                         string.Format(
                             CultureInfo.CurrentCulture,
                             LocalizedResourceManager.GetString("PackageCommandFileFromDependencyIsChanged"),

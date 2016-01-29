@@ -25,7 +25,7 @@ namespace Test.Utility
             return FileConflictAction.IgnoreAll;
         }
 
-        public PackageExtractionContext PackageExtractionContext { get; set; }
+        public PackageExtractionContext PackageExtractionContext { get; set; } = new PackageExtractionContext();
 
         public ISourceControlManagerProvider SourceControlManagerProvider { get; set; }
 
@@ -43,6 +43,8 @@ namespace Test.Utility
         public void ReportError(string message)
         {
         }
+
+        public NuGetActionType ActionType { get; set; }
     }
 
     public class TestExecutionContext : ExecutionContext

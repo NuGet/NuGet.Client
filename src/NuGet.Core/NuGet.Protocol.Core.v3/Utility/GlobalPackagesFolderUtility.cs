@@ -7,6 +7,7 @@ using NuGet.Configuration;
 using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageExtraction;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol.Core.v3
@@ -72,6 +73,7 @@ namespace NuGet.Protocol.Core.v3
         public static async Task<DownloadResourceResult> AddPackageAsync(PackageIdentity packageIdentity,
             Stream packageStream,
             ISettings settings,
+            ILogger logger,
             CancellationToken token)
         {
             if (packageIdentity == null)
@@ -98,12 +100,13 @@ namespace NuGet.Protocol.Core.v3
             var versionFolderPathContext = new VersionFolderPathContext(
                 packageIdentity,
                 globalPackagesFolder,
-                NullLogger.Instance,
+                logger,
                 fixNuspecIdCasing: false,
-                extractNuspecOnly: false,
-                normalizeFileNames: false);
+                packageSaveMode: PackageSaveMode.Defaultv3,
+                normalizeFileNames: false,
+                xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
 
-            await NuGetPackageUtils.InstallFromSourceAsync(
+            await PackageExtractor.InstallFromSourceAsync(
                 stream => packageStream.CopyToAsync(stream),
                 versionFolderPathContext,
                 token: token);

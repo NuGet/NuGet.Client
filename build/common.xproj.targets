@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PublishDestination>$(EnlistmentRoot)\Nupkgs</PublishDestination>
+    <PublishDestination>$([System.IO.Path]::GetFullPath( $(PublishDestination) ))</PublishDestination>
+  </PropertyGroup>
+
+  <UsingTask
+    TaskName="SetEnvironmentVariableTask"
+    TaskFactory="CodeTaskFactory"
+    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+
+    <ParameterGroup>
+      <Name ParameterType="System.String" Required="true" />
+      <Value ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+
+    <Task>
+      <Using Namespace="System" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          Environment.SetEnvironmentVariable(Name, Value);
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="SetBuildEnvironmentVariables">
+    <Message Text="Setting buid environment variables to #$(BuildNumber)..." Condition="'$(ProduceOutputsOnBuild)' == 'true'" Importance="high"/>
+    <SetEnvironmentVariableTask Name="DNX_BUILD_VERSION" Value="$(ReleaseLabel)-$(BuildNumber)" />
+    <SetEnvironmentVariableTask Name="DNX_ASSEMBLY_FILE_VERSION" Value="$(BuildNumber)" />
+  </Target>
+
+  <Target Name="PublishToFileSystem">
+    <Error Condition="'$(PublishDestination)'==''" Text="The PublishDestination property must be set to the intended publishing destination." />
+    <Message Text="Publishing '$(MSBuildProjectName)' package files to '$(PublishDestination)'..." Condition="'$(ProduceOutputsOnBuild)' == 'true'" Importance="high"/>
+    <MakeDir Condition="!Exists($(PublishDestination))" Directories="$(PublishDestination)" />
+    <ItemGroup>
+      <NupkgFiles Include="$(OutputPath)**\*.nupkg" />
+    </ItemGroup>
+    <MakeDir Directories="$(PublishDestination)" />
+    <Move SourceFiles="@(NupkgFiles)" DestinationFolder="$(PublishDestination)" />
+  </Target>
+
+  <PropertyGroup>
+    <BuildDependsOn>SetBuildEnvironmentVariables;$(BuildDependsOn);PublishToFileSystem</BuildDependsOn>
+  </PropertyGroup>
+</Project>

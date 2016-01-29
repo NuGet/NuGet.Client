@@ -30,7 +30,8 @@ namespace NuGet.Commands
                 defaultPackagePathResolver,
                 correctedPackageName,
                 dependencyType: dependencyType,
-                targetFrameworkOverride: null);
+                targetFrameworkOverride: null,
+                dependencies: null);
         }
 
         public static LockFileTargetLibrary CreateLockFileTargetLibrary(
@@ -40,7 +41,8 @@ namespace NuGet.Commands
             VersionFolderPathResolver defaultPackagePathResolver,
             string correctedPackageName,
             LibraryIncludeFlags dependencyType,
-            NuGetFramework targetFrameworkOverride)
+            NuGetFramework targetFrameworkOverride,
+            IEnumerable<LibraryDependency> dependencies)
         {
             var lockFileLib = new LockFileTargetLibrary();
 
@@ -61,9 +63,8 @@ namespace NuGet.Commands
             // If the previous LockFileLibrary was given, use that to find the file list. Otherwise read the nupkg.
             if (library == null)
             {
-                using (var nupkgStream = File.OpenRead(package.ZipPath))
+                using (var packageReader = new PackageArchiveReader(package.ZipPath))
                 {
-                    var packageReader = new PackageReader(nupkgStream);
                     if (Path.DirectorySeparatorChar != '/')
                     {
                         files = packageReader
@@ -93,40 +94,33 @@ namespace NuGet.Commands
 
             contentItems.Load(files);
 
-            NuspecReader nuspec = null;
+            // This will throw an appropriate error if the nuspec is missing
+            var nuspec = package.Nuspec;
 
-            var nuspecPath = defaultPackagePathResolver.GetManifestFilePath(package.Id, package.Version);
-
-            if (File.Exists(nuspecPath))
+            if (dependencies == null)
             {
-                using (var stream = File.OpenRead(nuspecPath))
+                var dependencySet = nuspec
+                    .GetDependencyGroups()
+                    .GetNearest(framework);
+
+                if (dependencySet != null)
                 {
-                    nuspec = new NuspecReader(stream);
+                    var set = dependencySet.Packages;
+
+                    if (set != null)
+                    {
+                        lockFileLib.Dependencies = set.ToList();
+                    }
                 }
             }
             else
             {
-                var dir = defaultPackagePathResolver.GetPackageDirectory(package.Id, package.Version);
-                var folderReader = new PackageFolderReader(dir);
-
-                using (var stream = folderReader.GetNuspec())
-                {
-                    nuspec = new NuspecReader(stream);
-                }
-            }
-
-            var dependencySet = nuspec
-                .GetDependencyGroups()
-                .GetNearest(framework);
-
-            if (dependencySet != null)
-            {
-                var set = dependencySet.Packages;
-
-                if (set != null)
-                {
-                    lockFileLib.Dependencies = set.ToList();
-                }
+                // Filter the dependency set down to packages and projects.
+                // Framework references will not be displayed
+                lockFileLib.Dependencies = dependencies
+                    .Where(ld => ld.LibraryRange.TypeConstraintAllowsAnyOf(LibraryDependencyTarget.PackageProjectExternal))
+                    .Select(ld => new PackageDependency(ld.Name, ld.LibraryRange.VersionRange))
+                    .ToList();
             }
 
             var referenceSet = nuspec.GetReferenceGroups().GetNearest(framework);
@@ -135,11 +129,8 @@ namespace NuGet.Commands
                 referenceFilter = new HashSet<string>(referenceSet.Items, StringComparer.OrdinalIgnoreCase);
             }
 
-            // TODO: Remove this when we do #596
-            // ASP.NET Core isn't compatible with generic PCL profiles
-            if (!string.Equals(framework.Framework, FrameworkConstants.FrameworkIdentifiers.AspNetCore, StringComparison.OrdinalIgnoreCase)
-                &&
-                !string.Equals(framework.Framework, FrameworkConstants.FrameworkIdentifiers.DnxCore, StringComparison.OrdinalIgnoreCase))
+            // Exclude framework references for package based frameworks.
+            if (!framework.IsPackageBased)
             {
                 var frameworkAssemblies = nuspec.GetFrameworkReferenceGroups().GetNearest(framework);
                 if (frameworkAssemblies != null)
@@ -279,7 +270,7 @@ namespace NuGet.Commands
                 Debug.Assert(!string.IsNullOrEmpty(fileName));
                 Debug.Assert(firstItem.Path.IndexOf('/') > 0);
 
-                var emptyDir = firstItem.Path.Substring(0, firstItem.Path.Length - fileName.Length) 
+                var emptyDir = firstItem.Path.Substring(0, firstItem.Path.Length - fileName.Length)
                     + PackagingCoreConstants.EmptyFolder;
 
                 group.Clear();

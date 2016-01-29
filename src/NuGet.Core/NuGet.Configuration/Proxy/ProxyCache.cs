@@ -86,13 +86,13 @@ namespace NuGet.Configuration
         public WebProxy GetUserConfiguredProxy()
         {
             // Try reading from the settings. The values are stored as 3 config values http_proxy, http_proxy_user, http_proxy_password
-            var host = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationContants.HostKey);
+            var host = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationConstants.HostKey);
             if (!String.IsNullOrEmpty(host))
             {
                 // The host is the minimal value we need to assume a user configured proxy.
                 var webProxy = new WebProxy(host);
-                var userName = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationContants.UserKey);
-                var password = SettingsUtility.GetDecryptedValue(_settings, SettingsUtility.ConfigSection, ConfigurationContants.PasswordKey);
+                var userName = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationConstants.UserKey);
+                var password = SettingsUtility.GetDecryptedValue(_settings, SettingsUtility.ConfigSection, ConfigurationConstants.PasswordKey);
 
                 if (!String.IsNullOrEmpty(userName)
                     && !String.IsNullOrEmpty(password))
@@ -103,7 +103,7 @@ namespace NuGet.Configuration
             }
 
             // Next try reading from the environment variable http_proxy. This would be specified as http://<username>:<password>@proxy.com
-            host = _environment.GetEnvironmentVariable(ConfigurationContants.HostKey);
+            host = _environment.GetEnvironmentVariable(ConfigurationConstants.HostKey);
             Uri uri;
             if (!String.IsNullOrEmpty(host)
                 && Uri.TryCreate(host, UriKind.Absolute, out uri))

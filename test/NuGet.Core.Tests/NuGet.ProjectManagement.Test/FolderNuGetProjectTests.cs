@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
@@ -288,13 +289,11 @@ namespace ProjectManagement.Test
                     "lib/net40/test40.dll",
                     "lib/net40/test40b.dll",
                     "lib/net45/test45.dll"
-               };
+                };
 
-                foreach (var entry in expectedEntries)
-                {
-                    Assert.True(testSourceControlManager.PendAddedFiles.Contains(
-                        Path.Combine(packageInstallPath, entry)));
-                }
+                Assert.All(
+                    expectedEntries.Select(e => Path.Combine(packageInstallPath, e.Replace('/', Path.DirectorySeparatorChar))),
+                    item => Assert.Contains(item, testSourceControlManager.PendAddedFiles));
             }
         }
 

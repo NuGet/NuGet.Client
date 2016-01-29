@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
+using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -77,15 +78,14 @@ namespace NuGet.PackageManagement.UI
             var userAction = UserAction.CreateInstallAction(
                 model.Id,
                 model.SelectedVersion.Version);
-            ExecuteUserAction(userAction);
+            ExecuteUserAction(userAction, NuGetActionType.Install);
         }
 
         private void ProjectUninstallButtonClicked(object sender, EventArgs e)
         {
             var model = (PackageDetailControlModel)DataContext;
-            var userAction = UserAction.CreateUnInstallAction(model.Id);
-
-            ExecuteUserAction(userAction);
+            var userAction = UserAction.CreateUnInstallAction(model.Id);            
+            ExecuteUserAction(userAction, NuGetActionType.Uninstall);
         }
 
 
@@ -96,7 +96,7 @@ namespace NuGet.PackageManagement.UI
                 model.Id,
                 model.SelectedVersion.Version);
 
-            ExecuteUserAction(userAction);
+            ExecuteUserAction(userAction, NuGetActionType.Install);
         }
 
         private void SolutionUninstallButtonClicked(object sender, EventArgs e)
@@ -105,10 +105,10 @@ namespace NuGet.PackageManagement.UI
 
             var userAction = UserAction.CreateUnInstallAction(model.Id);
 
-            ExecuteUserAction(userAction);
+            ExecuteUserAction(userAction, NuGetActionType.Uninstall);
         }
 
-        private void ExecuteUserAction(UserAction action)
+        private void ExecuteUserAction(UserAction action, NuGetActionType actionType)
         {
             Control.ExecuteAction(
                 () =>
@@ -130,6 +130,7 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.ForceRemove = model.Options.ForceRemove;
                     nugetUi.Projects = model.GetSelectedProjects(action);
                     nugetUi.DisplayPreviewWindow = model.Options.ShowPreviewWindow;
+                    nugetUi.ProgressWindow.ActionType = actionType;
                 });
         }
 

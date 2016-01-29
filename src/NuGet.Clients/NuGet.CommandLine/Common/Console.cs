@@ -373,6 +373,11 @@ namespace NuGet.Common
             }
         }
 
+        public void LogMinimal(string data)
+        {
+            LogInformation(data);
+        }
+
         public void LogWarning(string data)
         {
             WriteWarning(data);
@@ -381,6 +386,12 @@ namespace NuGet.Common
         public void LogError(string data)
         {
             WriteError(data);
+        }
+
+        public void LogSummary(string data)
+        {
+            // Treat Summary as Debug
+            LogDebug(data);
         }
     }
 }

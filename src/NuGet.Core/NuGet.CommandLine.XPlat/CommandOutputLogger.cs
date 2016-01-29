@@ -12,15 +12,6 @@ namespace NuGet.CommandLine.XPlat
     /// </summary>
     internal class CommandOutputLogger : ILogger
     {
-        private enum LogLevel
-        {
-            Debug = 0,
-            Verbose = 1,
-            Information = 2,
-            Warning = 3,
-            Error = 4
-        }
-
         private static readonly bool _useConsoleColor = true;
         private Lazy<LogLevel> _verbosity;
 
@@ -31,7 +22,7 @@ namespace NuGet.CommandLine.XPlat
             _verbosity = new Lazy<LogLevel>(() =>
             {
                 LogLevel level;
-                if (!Enum.TryParse(verbosity.Value(), out level))
+                if (!Enum.TryParse(value: verbosity.Value(), ignoreCase: true, result: out level))
                 {
                     level = LogLevel.Information;
                 }
@@ -49,9 +40,19 @@ namespace NuGet.CommandLine.XPlat
             LogInternal(LogLevel.Error, data);
         }
 
+        public void LogSummary(string data)
+        {
+            Console.WriteLine(data);
+        }
+
         public void LogInformation(string data)
         {
             LogInternal(LogLevel.Information, data);
+        }
+
+        public void LogMinimal(string data)
+        {
+            LogInternal(LogLevel.Minimal, data);
         }
 
         public void LogVerbose(string data)
@@ -66,7 +67,7 @@ namespace NuGet.CommandLine.XPlat
 
         private void LogInternal(LogLevel logLevel, string message)
         {
-            if(logLevel < Verbosity)
+            if (logLevel < Verbosity)
             {
                 return;
             }
@@ -79,17 +80,20 @@ namespace NuGet.CommandLine.XPlat
                     case LogLevel.Debug:
                         caption = "debug";
                         break;
+                    case LogLevel.Verbose:
+                        caption = "trace";
+                        break;
                     case LogLevel.Information:
                         caption = "info ";
+                        break;
+                    case LogLevel.Minimal:
+                        caption = "log  ";
                         break;
                     case LogLevel.Warning:
                         caption = "warn ";
                         break;
                     case LogLevel.Error:
                         caption = "error";
-                        break;
-                    case LogLevel.Verbose:
-                        caption = "trace";
                         break;
                 }
             }

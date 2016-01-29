@@ -80,7 +80,8 @@ namespace NuGet.VisualStudio
         {
             IEnumerable<string> sources = null;
 
-            if (!String.IsNullOrEmpty(source))
+            if (!String.IsNullOrEmpty(source) &&
+                !StringComparer.OrdinalIgnoreCase.Equals("All", source)) // "All" was supported in V2
             {
                 sources = new[] { source };
             }
@@ -115,18 +116,18 @@ namespace NuGet.VisualStudio
         {
             if (String.IsNullOrEmpty(keyName))
             {
-                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "keyName");
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(keyName));
             }
 
             if (project == null)
             {
-                throw new ArgumentNullException("project");
+                throw new ArgumentNullException(nameof(project));
             }
 
             if (packageVersions == null
                 || !packageVersions.Any())
             {
-                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "packageVersions");
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageVersions));
             }
 
             PumpingJTF.Run(() =>
@@ -155,17 +156,17 @@ namespace NuGet.VisualStudio
         {
             if (String.IsNullOrEmpty(extensionId))
             {
-                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "extensionId");
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(extensionId));
             }
 
             if (project == null)
             {
-                throw new ArgumentNullException("project");
+                throw new ArgumentNullException(nameof(project));
             }
 
             if (!packageVersions.Any())
             {
-                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "packageVersions");
+                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageVersions));
             }
 
             PumpingJTF.Run(() =>
@@ -259,6 +260,14 @@ namespace NuGet.VisualStudio
 
             if (repo == null)
             {
+                Uri result;
+                if (!Uri.TryCreate(source, UriKind.Absolute, out result))
+                {
+                    throw new ArgumentException(
+                        String.Format(VsResources.InvalidSource, source),
+                        nameof(source));
+                }
+
                 var newSource = new Configuration.PackageSource(source);
 
                 repo = _sourceRepositoryProvider.CreateRepository(newSource);

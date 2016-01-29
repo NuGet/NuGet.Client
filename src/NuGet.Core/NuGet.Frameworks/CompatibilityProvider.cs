@@ -71,10 +71,9 @@ namespace NuGet.Frameworks
 
             if (result == null)
             {
-                // PCL compat logic
-                if (target.IsPCL
-                    || candidate.IsPCL)
+                if (target.IsPCL || candidate.IsPCL)
                 {
+                    // PCL compat logic
                     result = IsPCLCompatible(target, candidate);
                 }
                 else
@@ -114,17 +113,15 @@ namespace NuGet.Frameworks
             return null;
         }
 
-        private bool? IsPCLCompatible(NuGetFramework target, NuGetFramework candidate)
+        private bool IsPCLCompatible(NuGetFramework target, NuGetFramework candidate)
         {
-            // TODO: PCLs can only depend on other PCLs?
-            if (target.IsPCL
-                && !candidate.IsPCL)
+            if (target.IsPCL && !candidate.IsPCL)
             {
-                return false;
+                return IsCompatibleWithTarget(target, candidate);
             }
 
-            IEnumerable<NuGetFramework> targetFrameworks = null;
-            IEnumerable<NuGetFramework> candidateFrameworks = null;
+            IEnumerable<NuGetFramework> targetFrameworks;
+            IEnumerable<NuGetFramework> candidateFrameworks;
 
             if (target.IsPCL)
             {
@@ -150,13 +147,13 @@ namespace NuGet.Frameworks
             return PCLInnerCompare(targetFrameworks, candidateFrameworks);
         }
 
-        private bool? PCLInnerCompare(IEnumerable<NuGetFramework> profileFrameworks, IEnumerable<NuGetFramework> otherProfileFrameworks)
+        private bool PCLInnerCompare(IEnumerable<NuGetFramework> targetFrameworks, IEnumerable<NuGetFramework> candidateFrameworks)
         {
             // TODO: Does this check need to make sure multiple frameworks aren't matched against a single framework from the other list?
-            return profileFrameworks.Count() <= otherProfileFrameworks.Count() && profileFrameworks.All(f => otherProfileFrameworks.Any(ff => IsCompatible(f, ff)));
+            return targetFrameworks.Count() <= candidateFrameworks.Count() && targetFrameworks.All(f => candidateFrameworks.Any(ff => IsCompatible(f, ff)));
         }
 
-        private bool? IsCompatibleWithTarget(NuGetFramework target, NuGetFramework candidate)
+        private bool IsCompatibleWithTarget(NuGetFramework target, NuGetFramework candidate)
         {
             // find all possible substitutions
             var targetSet = new List<NuGetFramework>() { target };
@@ -182,12 +179,7 @@ namespace NuGet.Frameworks
             // compare the frameworks
             return (NuGetFramework.FrameworkNameComparer.Equals(target, candidate)
                 && StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile)
-                && IsVersionCompatible(target, candidate));
-        }
-
-        private static bool IsVersionCompatible(NuGetFramework target, NuGetFramework candidate)
-        {
-            return IsVersionCompatible(target.Version, candidate.Version);
+                && IsVersionCompatible(target.Version, candidate.Version));
         }
 
         private static bool IsVersionCompatible(Version target, Version candidate)

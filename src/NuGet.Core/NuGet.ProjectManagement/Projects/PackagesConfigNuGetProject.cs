@@ -184,7 +184,7 @@ namespace NuGet.ProjectManagement
                 {
                     // Matching packageReference is found and is the only entry
                     // Then just delete the packages.config file 
-                    if (installedPackagesList.Count == 1)
+                    if (installedPackagesList.Count == 1 && nuGetProjectContext.ActionType == NuGetActionType.Uninstall)
                     {
                         FileSystemUtility.DeleteFile(FullPath, nuGetProjectContext);
                     }
@@ -283,8 +283,6 @@ namespace NuGet.ProjectManagement
             return new List<PackageReference>();
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
-            Justification = "Disposing the PackageReader will dispose the backing stream that we want to leave open.")]
         private static bool CheckDevelopmentDependency(DownloadResourceResult downloadResourceResult)
         {
             bool isDevelopmentDependency = false;
@@ -299,10 +297,11 @@ namespace NuGet.ProjectManagement
                 }
                 else
                 {
-                    var packageZipArchive = new ZipArchive(downloadResourceResult.PackageStream, ZipArchiveMode.Read, leaveOpen: true);
-                    var packageReader = new PackageReader(packageZipArchive);
-                    var nuspecReader = new NuspecReader(packageReader.GetNuspec());
-                    isDevelopmentDependency = nuspecReader.GetDevelopmentDependency();
+                    using (var packageReader = new PackageArchiveReader(downloadResourceResult.PackageStream, leaveStreamOpen: true))
+                    {
+                        var nuspecReader = new NuspecReader(packageReader.GetNuspec());
+                        isDevelopmentDependency = nuspecReader.GetDevelopmentDependency();
+                    }
                 }
             }
             catch { }

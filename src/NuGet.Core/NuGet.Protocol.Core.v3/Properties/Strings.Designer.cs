@@ -154,6 +154,16 @@ namespace NuGet.Protocol.Core.v3
             return string.Format(CultureInfo.CurrentCulture, GetString("Log_FileIsCorrupt"), p0);
         }
 
+        internal static string Log_FailedToGetNupkgStream
+        {
+            get { return GetString("Log_FailedToGetNupkgStream"); }
+        }
+
+        internal static string Log_FailedToGetNuspecStream
+        {
+            get { return GetString("Log_FailedToGetNuspecStream"); }
+        }
+
         /// <summary>
         /// Retrying '{0}' for source {1}.
         /// </summary>

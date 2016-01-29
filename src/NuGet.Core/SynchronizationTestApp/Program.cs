@@ -47,7 +47,7 @@ namespace SynchronizationTestApp
 
             _client = new TcpClient();
 
-            var lockedTask = ConcurrencyUtilities.ExecuteWithFileLocked(filename, WaitInALock, CancellationToken.None);
+            var lockedTask = ConcurrencyUtilities.ExecuteWithFileLockedAsync(filename, WaitInALock, CancellationToken.None);
 
             try
             {
@@ -78,8 +78,11 @@ namespace SynchronizationTestApp
                 await writer.WriteLineAsync("Locked");
                 await writer.FlushAsync();
 
-                await reader.ReadLineAsync();
-
+                // ReadLine is blocked on Mac, skip it here
+                if (!RuntimeEnvironmentHelper.IsMacOSX)
+                {
+                    await reader.ReadLineAsync();
+                }
                 if (_abandonLock)
                 {
                     // Kill the process so if the locking mechanism doesn't deal with abandoned locks

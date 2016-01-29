@@ -26,14 +26,15 @@ namespace NuGet.Packaging.Test
                 }
 
                 stream.Seek(0, SeekOrigin.Begin);
-                var reader = new PackageReader(stream);
+                using (var reader = new PackageArchiveReader(stream))
+                {
+                    // Act
+                    var nuspec = new BinaryReader(reader.GetNuspec());
 
-                // Act
-                var nuspec = new BinaryReader(reader.GetNuspec());
-
-                // Assert
-                Assert.NotNull(nuspec);
-                Assert.Equal(5, nuspec.ReadBytes(4096).Length);
+                    // Assert
+                    Assert.NotNull(nuspec);
+                    Assert.Equal(5, nuspec.ReadBytes(4096).Length);
+                }
             }
         }
 
@@ -50,14 +51,14 @@ namespace NuGet.Packaging.Test
                     zip.AddEntry("content/package.nuspec", new byte[0]);
                 }
 
-                var reader = new PackageReader(stream);
-
                 // Act
-                var nuspec = new BinaryReader(reader.GetNuspec());
-
-                // Assert
-                Assert.NotNull(nuspec);
-                Assert.Equal(5, nuspec.ReadBytes(4096).Length);
+                using (var reader = new PackageArchiveReader(stream))
+                using (var nuspec = new BinaryReader(reader.GetNuspec()))
+                {
+                    // Assert
+                    Assert.NotNull(nuspec);
+                    Assert.Equal(5, nuspec.ReadBytes(4096).Length);
+                }
             }
         }
 
@@ -73,21 +74,14 @@ namespace NuGet.Packaging.Test
                     zip.AddEntry("content/package.nuspec", new byte[0]);
                 }
 
-                var reader = new PackageReader(stream);
-                var threwPackagingException = false;
-
-                // Act
-                try
+                using (var reader = new PackageArchiveReader(stream))
                 {
-                    var nuspec = reader.GetNuspec();
-                }
-                catch (PackagingException)
-                {
-                    threwPackagingException = true;
-                }
+                    // Act
+                    var exception = Assert.Throws<PackagingException>(() => reader.GetNuspec());
 
-                // Assert
-                Assert.True(threwPackagingException);
+                    // Assert
+                    Assert.Equal("Nuspec file does not exist in package.", exception.Message);
+                }
             }
         }
 
@@ -104,21 +98,14 @@ namespace NuGet.Packaging.Test
                     zip.AddEntry("package2.nuspec", new byte[0]);
                 }
 
-                var reader = new PackageReader(stream);
-                var threwPackagingException = false;
-
-                // Act
-                try
+                using (var reader = new PackageArchiveReader(stream))
                 {
-                    var nuspec = reader.GetNuspec();
-                }
-                catch (PackagingException)
-                {
-                    threwPackagingException = true;
-                }
+                    // Act
+                    var exception = Assert.Throws<PackagingException>(() => reader.GetNuspec());
 
-                // Assert
-                Assert.True(threwPackagingException);
+                    // Assert
+                    Assert.Equal("Package contains multiple nuspec files.", exception.Message);
+                }
             }
         }
 
@@ -133,21 +120,14 @@ namespace NuGet.Packaging.Test
                     zip.AddEntry("lib/net45/a.dll", new byte[0]);
                 }
 
-                var reader = new PackageReader(stream);
-                var threwPackagingException = false;
-
-                // Act
-                try
+                using (var reader = new PackageArchiveReader(stream))
                 {
-                    var nuspec = reader.GetNuspec();
-                }
-                catch (PackagingException)
-                {
-                    threwPackagingException = true;
-                }
+                    // Act
+                    var exception = Assert.Throws<PackagingException>(() => reader.GetNuspec());
 
-                // Assert
-                Assert.True(threwPackagingException);
+                    // Assert
+                    Assert.Equal("Nuspec file does not exist in package.", exception.Message);
+                }
             }
         }
 
@@ -167,21 +147,14 @@ namespace NuGet.Packaging.Test
                     zip.AddEntry("blah.nuspecc", new byte[0]);
                 }
 
-                var reader = new PackageReader(stream);
-                var threwPackagingException = false;
-
-                // Act
-                try
+                using (var reader = new PackageArchiveReader(stream))
                 {
-                    var nuspec = reader.GetNuspec();
-                }
-                catch (PackagingException)
-                {
-                    threwPackagingException = true;
-                }
+                    // Act
+                    var exception = Assert.Throws<PackagingException>(() => reader.GetNuspec());
 
-                // Assert
-                Assert.True(threwPackagingException);
+                    // Assert
+                    Assert.Equal("Nuspec file does not exist in package.", exception.Message);
+                }
             }
         }
 
@@ -197,14 +170,15 @@ namespace NuGet.Packaging.Test
                     zip.AddEntry("package%20.nuspec", new byte[5]);
                 }
 
-                var reader = new PackageReader(stream);
+                using (var reader = new PackageArchiveReader(stream))
+                {
+                    // Act
+                    var nuspec = new BinaryReader(reader.GetNuspec());
 
-                // Act
-                var nuspec = new BinaryReader(reader.GetNuspec());
-
-                // Assert
-                Assert.NotNull(nuspec);
-                Assert.Equal(5, nuspec.ReadBytes(4096).Length);
+                    // Assert
+                    Assert.NotNull(nuspec);
+                    Assert.Equal(5, nuspec.ReadBytes(4096).Length);
+                }
             }
         }
 
@@ -217,9 +191,8 @@ namespace NuGet.Packaging.Test
             using (var path = TestPackages.GetNearestReferenceFilteringPackage())
             {
                 using (var zip = TestPackages.GetZip(path.File))
-                using (var reader = new PackageReader(zip))
+                using (var reader = new PackageArchiveReader(zip))
                 {
-
                     // Act
                     var references = reader.GetReferenceItems();
                     var netResult = NuGetFrameworkUtility.GetNearest<FrameworkSpecificGroup>(references, NuGetFramework.Parse("net45"));
@@ -243,7 +216,7 @@ namespace NuGet.Packaging.Test
             {
                 var zip = TestPackages.GetZip(packageFile);
 
-                using (PackageReader reader = new PackageReader(zip))
+                using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
                     var groups = reader.GetReferenceItems().ToArray();
 
@@ -272,7 +245,7 @@ namespace NuGet.Packaging.Test
             {
                 var zip = TestPackages.GetZip(packageFile);
 
-                using (PackageReader reader = new PackageReader(zip))
+                using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
                     var groups = reader.GetReferenceItems().ToArray();
 
@@ -302,7 +275,7 @@ namespace NuGet.Packaging.Test
             {
                 var zip = TestPackages.GetZip(packageFile);
 
-                using (PackageReader reader = new PackageReader(zip))
+                using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
                     var groups = reader.GetReferenceItems().ToArray();
 
@@ -320,7 +293,7 @@ namespace NuGet.Packaging.Test
             {
                 var zip = TestPackages.GetZip(packageFile);
 
-                using (PackageReader reader = new PackageReader(zip))
+                using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
                     var groups = reader.GetReferenceItems().ToArray();
 
@@ -344,7 +317,7 @@ namespace NuGet.Packaging.Test
             {
                 var zip = TestPackages.GetZip(packageFile);
 
-                using (PackageReader reader = new PackageReader(zip))
+                using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
                     var version = reader.GetMinClientVersion();
 
@@ -360,7 +333,7 @@ namespace NuGet.Packaging.Test
             {
                 var zip = TestPackages.GetZip(packageFile);
 
-                using (PackageReader reader = new PackageReader(zip))
+                using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
                     var groups = reader.GetContentItems().ToArray();
 
@@ -376,7 +349,7 @@ namespace NuGet.Packaging.Test
             {
                 var zip = TestPackages.GetZip(packageFile);
 
-                using (PackageReader reader = new PackageReader(zip))
+                using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
                     var groups = reader.GetContentItems().ToArray();
 
@@ -392,7 +365,7 @@ namespace NuGet.Packaging.Test
             {
                 var zip = TestPackages.GetZip(packageFile);
 
-                using (PackageReader reader = new PackageReader(zip))
+                using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
                     var groups = reader.GetContentItems().ToArray();
 
@@ -413,7 +386,7 @@ namespace NuGet.Packaging.Test
             {
                 var zip = TestPackages.GetZip(packageFile);
 
-                using (PackageReader reader = new PackageReader(zip))
+                using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
                     var groups = reader.GetReferenceItems().ToArray();
 
@@ -432,7 +405,7 @@ namespace NuGet.Packaging.Test
             {
                 var zip = TestPackages.GetZip(packageFile);
 
-                using (PackageReader reader = new PackageReader(zip))
+                using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
                     var groups = reader.GetReferenceItems().ToArray();
 
@@ -457,7 +430,7 @@ namespace NuGet.Packaging.Test
             {
                 var zip = TestPackages.GetZip(packageFile);
 
-                using (PackageReader reader = new PackageReader(zip))
+                using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
                     var groups = reader.GetReferenceItems().ToArray();
 
@@ -486,7 +459,7 @@ namespace NuGet.Packaging.Test
             {
                 var zip = TestPackages.GetZip(packageFile);
 
-                using (PackageReader reader = new PackageReader(zip))
+                using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
                     string[] frameworks = reader.GetSupportedFrameworks().Select(f => f.DotNetFrameworkName).ToArray();
 

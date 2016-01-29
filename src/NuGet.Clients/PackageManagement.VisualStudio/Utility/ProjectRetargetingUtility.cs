@@ -108,28 +108,22 @@ namespace NuGet.PackageManagement.VisualStudio
 
             try
             {
-                using (var packageStream = File.OpenRead(packageFilePath))
+                using (var packageReader = new PackageArchiveReader(packageFilePath))
                 {
-                    packageStream.Seek(0, SeekOrigin.Begin);
-                    var zipArchive = new ZipArchive(packageStream);
+                    var libItemGroups = packageReader.GetLibItems();
+                    var referenceItemGroups = packageReader.GetReferenceItems();
+                    var frameworkReferenceGroups = packageReader.GetFrameworkItems();
+                    var contentFileGroups = packageReader.GetContentItems();
+                    var buildFileGroups = packageReader.GetBuildItems();
+                    var toolItemGroups = packageReader.GetToolItems();
 
-                    using (var packageReader = new PackageReader(zipArchive))
-                    {
-                        var libItemGroups = packageReader.GetLibItems();
-                        var referenceItemGroups = packageReader.GetReferenceItems();
-                        var frameworkReferenceGroups = packageReader.GetFrameworkItems();
-                        var contentFileGroups = packageReader.GetContentItems();
-                        var buildFileGroups = packageReader.GetBuildItems();
-                        var toolItemGroups = packageReader.GetToolItems();
-
-                        isAllItemsCompatible = IsNearestFrameworkSpecificGroupEqual(libItemGroups, newProjectFramework, oldProjectFramework)
-                            && IsNearestFrameworkSpecificGroupEqual(referenceItemGroups, newProjectFramework, oldProjectFramework)
-                            && IsNearestFrameworkSpecificGroupEqual(frameworkReferenceGroups, newProjectFramework, oldProjectFramework)
-                            && IsNearestFrameworkSpecificGroupEqual(contentFileGroups, newProjectFramework, oldProjectFramework)
-                            && IsNearestFrameworkSpecificGroupEqual(buildFileGroups, newProjectFramework, oldProjectFramework)
-                            && IsNearestFrameworkSpecificGroupEqual(toolItemGroups, newProjectFramework, oldProjectFramework);
-                    }
-                };
+                    isAllItemsCompatible = IsNearestFrameworkSpecificGroupEqual(libItemGroups, newProjectFramework, oldProjectFramework)
+                        && IsNearestFrameworkSpecificGroupEqual(referenceItemGroups, newProjectFramework, oldProjectFramework)
+                        && IsNearestFrameworkSpecificGroupEqual(frameworkReferenceGroups, newProjectFramework, oldProjectFramework)
+                        && IsNearestFrameworkSpecificGroupEqual(contentFileGroups, newProjectFramework, oldProjectFramework)
+                        && IsNearestFrameworkSpecificGroupEqual(buildFileGroups, newProjectFramework, oldProjectFramework)
+                        && IsNearestFrameworkSpecificGroupEqual(toolItemGroups, newProjectFramework, oldProjectFramework);
+                }
             }
             catch (Exception ex)
             {

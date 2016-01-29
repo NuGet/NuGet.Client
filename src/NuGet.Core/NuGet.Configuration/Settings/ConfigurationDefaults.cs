@@ -21,7 +21,7 @@ namespace NuGet.Configuration
         private static ConfigurationDefaults InitializeInstance()
         {
             var machineWideSettingsDir = NuGetEnvironment.GetFolderPath(NuGetFolderPath.MachineWideSettingsBaseDirectory);
-            return new ConfigurationDefaults(machineWideSettingsDir, ConfigurationContants.ConfigurationDefaultsFile);
+            return new ConfigurationDefaults(machineWideSettingsDir, ConfigurationConstants.ConfigurationDefaultsFile);
         }
 
         // TODO: Make this internal again
@@ -62,8 +62,8 @@ namespace NuGet.Configuration
                 if (_defaultPackageSources == null)
                 {
                     _defaultPackageSources = new List<PackageSource>();
-                    var disabledPackageSources = _settingsManager.GetSettingValues(ConfigurationContants.DisabledPackageSources);
-                    var packageSources = _settingsManager.GetSettingValues(ConfigurationContants.PackageSources);
+                    var disabledPackageSources = _settingsManager.GetSettingValues(ConfigurationConstants.DisabledPackageSources);
+                    var packageSources = _settingsManager.GetSettingValues(ConfigurationConstants.PackageSources);
 
                     foreach (var settingValue in packageSources)
                     {
@@ -86,7 +86,7 @@ namespace NuGet.Configuration
                     && !_defaultPackageSourceInitialized)
                 {
                     _defaultPackageSourceInitialized = true;
-                    _defaultPushSource = _settingsManager.GetValue(ConfigurationContants.Config, ConfigurationContants.DefaultPushSource);
+                    _defaultPushSource = _settingsManager.GetValue(ConfigurationConstants.Config, ConfigurationConstants.DefaultPushSource);
                 }
                 return _defaultPushSource;
             }
@@ -94,7 +94,7 @@ namespace NuGet.Configuration
 
         public string DefaultPackageRestoreConsent
         {
-            get { return _settingsManager.GetValue(ConfigurationContants.PackageRestore, ConfigurationContants.enabled); }
+            get { return _settingsManager.GetValue(ConfigurationConstants.PackageRestore, ConfigurationConstants.enabled); }
         }
     }
 }

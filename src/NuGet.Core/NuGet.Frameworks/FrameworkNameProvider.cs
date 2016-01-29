@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 
 namespace NuGet.Frameworks
 {
@@ -28,20 +26,26 @@ namespace NuGet.Frameworks
         private readonly Dictionary<int, HashSet<NuGetFramework>> _portableFrameworks;
         private readonly Dictionary<int, HashSet<NuGetFramework>> _portableOptionalFrameworks;
 
+        // PCL compatibility mappings
+        private readonly Dictionary<int, HashSet<FrameworkRange>> _portableCompatibilityMappings;
+
         // equivalent frameworks
         private readonly Dictionary<NuGetFramework, HashSet<NuGetFramework>> _equivalentFrameworks;
 
         // equivalent profiles
         private readonly Dictionary<string, Dictionary<string, HashSet<string>>> _equivalentProfiles;
 
-        // all compatibility mappings
+        // non-PCL compatibility mappings
         private readonly Dictionary<string, HashSet<OneWayCompatibilityMappingEntry>> _compatibilityMappings;
 
         // subsets, net -> netcore
         private readonly Dictionary<string, HashSet<string>> _subSetFrameworks;
 
-        // framework ordering
-        private readonly List<string> _frameworkPrecedence = new List<string>();
+        // framework ordering (for non-package based frameworks)
+        private readonly Dictionary<string, int> _nonPackageBasedFrameworkPrecedence;
+
+        // framework ordering (for package based frameworks)
+        private readonly Dictionary<string, int> _packageBasedFrameworkPrecedence;
 
         // Rewrite mappings
         private readonly Dictionary<NuGetFramework, NuGetFramework> _shortNameRewrites;
@@ -59,7 +63,10 @@ namespace NuGet.Frameworks
             _equivalentFrameworks = new Dictionary<NuGetFramework, HashSet<NuGetFramework>>(NuGetFramework.Comparer);
             _equivalentProfiles = new Dictionary<string, Dictionary<string, HashSet<string>>>(StringComparer.OrdinalIgnoreCase);
             _subSetFrameworks = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+            _nonPackageBasedFrameworkPrecedence = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            _packageBasedFrameworkPrecedence = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             _compatibilityMappings = new Dictionary<string, HashSet<OneWayCompatibilityMappingEntry>>(StringComparer.OrdinalIgnoreCase);
+            _portableCompatibilityMappings = new Dictionary<int, HashSet<FrameworkRange>>();
             _shortNameRewrites = new Dictionary<NuGetFramework, NuGetFramework>(NuGetFramework.Comparer);
             _fullNameRewrites = new Dictionary<NuGetFramework, NuGetFramework>(NuGetFramework.Comparer);
 
@@ -167,11 +174,19 @@ namespace NuGet.Frameworks
                     versionParts.Pop();
                 }
 
-                // Always use decimals and 2+ digits for dotnet if the version is > 0.0
+                // Always use decimals and 2+ digits for dotnet, netstandard, or netstandardapp
                 // if any parts of the version are over 9 we need to use decimals
                 if (string.Equals(
                         framework,
                         FrameworkConstants.FrameworkIdentifiers.NetPlatform,
+                        StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(
+                        framework,
+                        FrameworkConstants.FrameworkIdentifiers.NetStandard,
+                        StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(
+                        framework,
+                        FrameworkConstants.FrameworkIdentifiers.NetStandardApp,
                         StringComparison.OrdinalIgnoreCase)
                     || versionParts.Any(x => x > 9))
                 {
@@ -408,8 +423,6 @@ namespace NuGet.Frameworks
 
             var shortNames = shortPortableProfiles.Split(new char[] { '+' }, StringSplitOptions.RemoveEmptyEntries);
 
-            Debug.Assert(shortNames.Length > 0);
-
             var result = new List<NuGetFramework>();
             foreach (var name in shortNames)
             {
@@ -420,24 +433,45 @@ namespace NuGet.Frameworks
             return result.Count > 0;
         }
 
-        public bool TryGetPortableFrameworks(string profile, bool includeOptional, out IEnumerable<NuGetFramework> frameworks)
+        public bool TryGetPortableCompatibilityMappings(int profile, out IEnumerable<FrameworkRange> supportedFrameworkRanges)
+        {
+            HashSet<FrameworkRange> entries;
+            if (_portableCompatibilityMappings.TryGetValue(profile, out entries))
+            {
+                supportedFrameworkRanges = entries;
+                return supportedFrameworkRanges.Any();
+            }
+
+            supportedFrameworkRanges = null;
+            return false;
+        }
+
+        public bool TryGetPortableProfileNumber(string profile, out int profileNumber)
         {
             // attempt to parse the profile for a number
             if (profile.StartsWith("Profile", StringComparison.OrdinalIgnoreCase))
             {
                 var trimmed = profile.Substring(7, profile.Length - 7);
+                return Int32.TryParse(trimmed, out profileNumber);
+            }
 
-                var profileNum = -1;
-                if (Int32.TryParse(trimmed, out profileNum)
-                    && TryGetPortableFrameworks(profileNum, includeOptional, out frameworks))
+            profileNumber = -1;
+            return false;
+        }
+
+        public bool TryGetPortableFrameworks(string profile, bool includeOptional, out IEnumerable<NuGetFramework> frameworks)
+        {
+            // attempt to parse the profile for a number
+            int profileNum;
+            if (TryGetPortableProfileNumber(profile, out profileNum))
+            {
+                if (TryGetPortableFrameworks(profileNum, includeOptional, out frameworks))
                 {
                     return true;
                 }
-                else
-                {
-                    frameworks = Enumerable.Empty<NuGetFramework>();
-                    return false;
-                }
+
+                frameworks = Enumerable.Empty<NuGetFramework>();
+                return false;
             }
 
             // treat the profile as a list of frameworks
@@ -545,7 +579,8 @@ namespace NuGet.Frameworks
                     AddSubSetFrameworks(mapping.SubSetFrameworks);
 
                     // add framework ordering rules
-                    AddFrameworkPrecedenceMappings(mapping.FrameworkPrecedence);
+                    AddFrameworkPrecedenceMappings(_nonPackageBasedFrameworkPrecedence, mapping.NonPackageBasedFrameworkPrecedence);
+                    AddFrameworkPrecedenceMappings(_packageBasedFrameworkPrecedence, mapping.PackageBasedFrameworkPrecedence);
 
                     // add rewrite rules
                     AddShortNameRewriteMappings(mapping.ShortNameReplacements);
@@ -563,8 +598,11 @@ namespace NuGet.Frameworks
                     // populate portable framework names
                     AddPortableProfileMappings(portableMapping.ProfileFrameworks);
 
-                    // populate optional frameworks
+                    // populate portable optional frameworks
                     AddPortableOptionalFrameworks(portableMapping.ProfileOptionalFrameworks);
+
+                    // populate portable compatibility mappings
+                    AddPortableCompatibilityMappings(portableMapping.CompatibilityMappings);
                 }
             }
         }
@@ -802,10 +840,37 @@ namespace NuGet.Frameworks
             }
         }
 
-        // Ordered lists of framework identifiers
-        public void AddFrameworkPrecedenceMappings(IEnumerable<string> mappings)
+        private void AddPortableCompatibilityMappings(IEnumerable<KeyValuePair<int, FrameworkRange>> mappings)
         {
-            _frameworkPrecedence.AddRange(mappings);
+            if (mappings != null)
+            {
+                foreach (var mapping in mappings)
+                {
+                    HashSet<FrameworkRange> entries;
+                    if (!_portableCompatibilityMappings.TryGetValue(mapping.Key, out entries))
+                    {
+                        entries = new HashSet<FrameworkRange>(new FrameworkRangeComparer());
+                        _portableCompatibilityMappings.Add(mapping.Key, entries);
+                    }
+
+                    entries.Add(mapping.Value);
+                }
+            }
+        }
+
+        // Ordered lists of framework identifiers
+        public void AddFrameworkPrecedenceMappings(IDictionary<string, int> destination, IEnumerable<string> mappings)
+        {
+            if (mappings != null)
+            {
+                foreach (var framework in mappings)
+                {
+                    if (!destination.ContainsKey(framework))
+                    {
+                        destination.Add(framework, destination.Count);
+                    }
+                }
+            }
         }
 
         public bool TryGetCompatibilityMappings(NuGetFramework framework, out IEnumerable<FrameworkRange> supportedFrameworkRanges)
@@ -834,27 +899,46 @@ namespace NuGet.Frameworks
             return false;
         }
 
-        // Order the frameworks if rules exist, this is used to break ties between equally compatible frameworks
-        // EX: UAP -> Win81, WPA81
+        /// <summary>
+        /// The ascending order of frameworks should be based on the the following ordered groups:
+        /// 
+        /// 1. Non-package-based frameworks in <see cref="IFrameworkMappings.NonPackageBasedFrameworkPrecedence"/>.
+        /// 2. Other non-package-based frameworks.
+        /// 3. Package-based frameworks in <see cref="IFrameworkMappings.PackageBasedFrameworkPrecedence"/>.
+        /// 4. Other package-based frameworks.
+        /// 
+        /// For group #1 and #3, the order within the group is based on the order of the respective precedence list.
+        /// For group #2 and #4, the order is the original order in the incoming list. This should later be made
+        /// consistent between different input orderings by using the <see cref="NuGetFrameworkSorter"/>.
+        /// </summary>
         public int CompareFrameworks(NuGetFramework x, NuGetFramework y)
         {
-            // Using the ordered list of frameworks choose the framework that matches first
-            if (!StringComparer.OrdinalIgnoreCase.Equals(x.Framework, y.Framework))
+            if (StringComparer.OrdinalIgnoreCase.Equals(x.Framework, y.Framework))
             {
-                foreach (string identifier in _frameworkPrecedence)
-                {
-                    if (StringComparer.OrdinalIgnoreCase.Equals(x.Framework, identifier))
-                    {
-                        return -1;
-                    }
-                    else if (StringComparer.OrdinalIgnoreCase.Equals(y.Framework, identifier))
-                    {
-                        return 1;
-                    }
-                }
+                return 0;
             }
 
-            return 0;
+            if (x.IsPackageBased != y.IsPackageBased)
+            {
+                // non-package based always come before package based
+                return x.IsPackageBased.CompareTo(y.IsPackageBased);
+            }
+
+            var precedence = x.IsPackageBased ? _packageBasedFrameworkPrecedence : _nonPackageBasedFrameworkPrecedence;
+
+            int xIndex;
+            if (!precedence.TryGetValue(x.Framework, out xIndex))
+            {
+                xIndex = int.MaxValue;
+            }
+
+            int yIndex;
+            if (!precedence.TryGetValue(y.Framework, out yIndex))
+            {
+                yIndex = int.MaxValue;
+            }
+
+            return xIndex.CompareTo(yIndex);
         }
 
         public NuGetFramework GetShortNameReplacement(NuGetFramework framework)

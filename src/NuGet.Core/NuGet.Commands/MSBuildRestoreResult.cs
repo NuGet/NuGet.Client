@@ -44,9 +44,9 @@ namespace NuGet.Commands
         /// </summary>
         public IEnumerable<string> Targets { get; }
 
-        public MSBuildRestoreResult(string projectName, string projectDirectory)
+        public MSBuildRestoreResult(string projectName, string projectDirectory, bool success)
         {
-            Success = false;
+            Success = success;
             ProjectName = projectName;
             ProjectDirectory = projectDirectory;
             RepositoryRoot = string.Empty;
@@ -75,7 +75,7 @@ namespace NuGet.Commands
                 var name = $"{ProjectName}.nuget.targets";
                 var path = Path.Combine(ProjectDirectory, name);
 
-                log.LogInformation(Strings.FormatLog_GeneratingMsBuildFile(name));
+                log.LogMinimal(Strings.FormatLog_GeneratingMsBuildFile(name));
                 GenerateMSBuildErrorFile(path);
             }
             else
@@ -88,7 +88,7 @@ namespace NuGet.Commands
 
                 if (Targets.Any())
                 {
-                    log.LogInformation(Strings.FormatLog_GeneratingMsBuildFile(targetsName));
+                    log.LogMinimal(Strings.FormatLog_GeneratingMsBuildFile(targetsName));
 
                     GenerateImportsFile(targetsPath, Targets);
                 }
@@ -99,7 +99,7 @@ namespace NuGet.Commands
 
                 if (Props.Any())
                 {
-                    log.LogInformation(Strings.FormatLog_GeneratingMsBuildFile(propsName));
+                    log.LogMinimal(Strings.FormatLog_GeneratingMsBuildFile(propsName));
 
                     GenerateImportsFile(propsPath, Props);
                 }

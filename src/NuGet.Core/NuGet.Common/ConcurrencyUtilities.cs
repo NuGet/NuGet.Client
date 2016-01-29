@@ -14,7 +14,7 @@ namespace NuGet.Common
 {
     public static class ConcurrencyUtilities
     {
-        public async static Task<T> ExecuteWithFileLocked<T>(string filePath,
+        public async static Task<T> ExecuteWithFileLockedAsync<T>(string filePath,
             Func<CancellationToken, Task<T>> action,
             CancellationToken token)
         {
@@ -47,7 +47,7 @@ namespace NuGet.Common
 
                 try
                 {
-                    await fs.WriteAsync(bytes, 0, bytes.Length, token);
+                    fs.Write(bytes, 0, bytes.Length);
                 }
                 catch
                 {
@@ -71,15 +71,6 @@ namespace NuGet.Common
                 }
 
                 _basePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), "lock");
-
-                //if (RuntimeEnvironmentHelper.IsWindows || !Directory.Exists("/var/lock/"))
-                //{
-                //    _basePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), "lock");
-                //}
-                //else
-                //{
-                //    _basePath = "/var/lock/nuget/";
-                //}
 
                 Directory.CreateDirectory(_basePath);
 

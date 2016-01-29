@@ -44,12 +44,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             }
         }
 
-        public override SourceCacheContext CacheContext
-        {
-            get { return base.CacheContext; }
-            set { base.CacheContext = value; }
-        }
-
         public override async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken cancellationToken)
         {
             var result = await EnsurePackagesAsync(id, cancellationToken);
@@ -149,7 +143,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
             // Acquire the lock on a file before we open it to prevent this process
             // from opening a file deleted by the logic in HttpSource.GetAsync() in another process
-            return await ConcurrencyUtilities.ExecuteWithFileLocked(result.TempFileName,
+            return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(result.TempFileName,
                 action: token =>
                 {
                     return Task.FromResult(
@@ -168,7 +162,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     using (var data = await _httpSource.GetAsync(
                         package.ContentUri,
                         "nupkg_" + package.Identity.Id + "." + package.Identity.Version.ToNormalizedString(),
-                        CreateCacheContext(CacheContext, retry),
+                        CreateCacheContext(retry),
                         cancellationToken))
                     {
                         return new NupkgEntry
@@ -180,7 +174,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 catch (Exception ex) when (retry < 2)
                 {
                     var message = Strings.FormatLog_FailedToDownloadPackage(package.ContentUri) + Environment.NewLine + ex.Message;
-                    Logger.LogInformation(message);
+                    Logger.LogMinimal(message);
                 }
                 catch (Exception ex) when (retry == 2)
                 {

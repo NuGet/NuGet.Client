@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "3.4.0-*",
   "dependencies": {
     "NuGet.Frameworks": "3.4.0-*",
@@ -10,7 +10,15 @@
     "test": "xunit.runner.dnx"
   },
   "frameworks": {
-    "dnx451": {},
-    "dnxcore50": {}
+    "dnx451": {
+      "dependencies": {
+        "Moq": "4.2.1510.2205"
+      }
+    },
+    "dnxcore50": {
+      "dependencies": {
+        "moq.netcore": "4.4.0-beta8"
+      }
+    }
   }
 }

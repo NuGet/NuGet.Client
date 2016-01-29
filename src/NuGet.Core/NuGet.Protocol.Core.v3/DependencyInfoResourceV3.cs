@@ -89,7 +89,7 @@ namespace NuGet.Protocol.Core.v3
                 // Wrap exceptions coming from the server with a user friendly message
                 var error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, package, _source);
 
-                throw new NuGetProtocolException(error, ex);
+                throw new FatalProtocolException(error, ex);
             }
         }
 
@@ -128,9 +128,9 @@ namespace NuGet.Protocol.Core.v3
             catch (Exception ex)
             {
                 // Wrap exceptions coming from the server with a user friendly message
-                var error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, packageId, _source);
+                var error = string.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, packageId, _source);
 
-                throw new NuGetProtocolException(error, ex);
+                throw new FatalProtocolException(error, ex);
             }
         }
 
@@ -155,9 +155,9 @@ namespace NuGet.Protocol.Core.v3
             catch (Exception ex)
             {
                 // Wrap exceptions coming from the server with a user friendly message
-                var error = String.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, packageId, _source);
+                var error = string.Format(CultureInfo.CurrentUICulture, Strings.Protocol_PackageMetadataError, packageId, _source);
 
-                throw new NuGetProtocolException(error, ex);
+                throw new FatalProtocolException(error, ex);
             }
         }
 

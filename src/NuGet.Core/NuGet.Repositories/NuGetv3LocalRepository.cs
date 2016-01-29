@@ -2,22 +2,37 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using NuGet.Packaging;
 using NuGet.Versioning;
 
 namespace NuGet.Repositories
 {
+    /// <summary>
+    /// Caches package info from the global packages folder in memory.
+    /// Packages not yet in the cache will be retrieved from disk.
+    /// </summary>
     public class NuGetv3LocalRepository
     {
-        private readonly Dictionary<string, IEnumerable<LocalPackageInfo>> _cache = new Dictionary<string, IEnumerable<LocalPackageInfo>>(StringComparer.OrdinalIgnoreCase);
+        private readonly ConcurrentDictionary<string, IEnumerable<LocalPackageInfo>> _cache
+            = new ConcurrentDictionary<string, IEnumerable<LocalPackageInfo>>(StringComparer.OrdinalIgnoreCase);
         private readonly bool _checkPackageIdCase;
+        private readonly VersionFolderPathResolver _pathResolver;
+
+        public NuGetv3LocalRepository(string path)
+            : this(path, checkPackageIdCase: false)
+        {
+        }
 
         public NuGetv3LocalRepository(string path, bool checkPackageIdCase)
         {
             RepositoryRoot = path;
             _checkPackageIdCase = checkPackageIdCase;
+
+            _pathResolver = new VersionFolderPathResolver(path);
         }
 
         public string RepositoryRoot { get; }
@@ -26,11 +41,11 @@ namespace NuGet.Repositories
         {
             if (string.IsNullOrEmpty(packageId))
             {
-                throw new ArgumentNullException("packageId");
+                throw new ArgumentNullException(nameof(packageId));
             }
 
             // packages\{packageId}\{version}\{packageId}.nuspec
-            return GetOrAdd(packageId, id =>
+            return _cache.GetOrAdd(packageId, id =>
                 {
                     var packages = new List<LocalPackageInfo>();
 
@@ -69,7 +84,17 @@ namespace NuGet.Repositories
                             id = Path.GetFileNameWithoutExtension(manifestFileName);
                         }
 
-                        packages.Add(new LocalPackageInfo(id, version, fullVersionDir));
+                        var hashPath = _pathResolver.GetHashPath(id, version);
+
+                        // The hash file is written last. If this file does not exist then the package is
+                        // incomplete and should not be used.
+                        if (File.Exists(hashPath))
+                        {
+                            var manifestPath = _pathResolver.GetManifestFilePath(id, version);
+                            var zipPath = _pathResolver.GetPackageFilePath(id, version);
+
+                            packages.Add(new LocalPackageInfo(id, version, fullVersionDir, manifestPath, zipPath));
+                        }
                     }
 
                     return packages;
@@ -82,27 +107,10 @@ namespace NuGet.Repositories
         /// </summary>
         public void ClearCacheForIds(IEnumerable<string> packageIds)
         {
-            lock (_cache)
+            foreach (var packageId in packageIds)
             {
-                foreach (var packageId in packageIds)
-                {
-                    _cache.Remove(packageId);
-                }
-            }
-        }
-
-        private IEnumerable<LocalPackageInfo> GetOrAdd(string packageId, Func<string, List<LocalPackageInfo>> factory)
-        {
-            lock (_cache)
-            {
-                IEnumerable<LocalPackageInfo> results;
-                if (!_cache.TryGetValue(packageId, out results))
-                {
-                    results = factory(packageId);
-                    _cache[packageId] = results;
-                }
-
-                return results;
+                IEnumerable<LocalPackageInfo> packages;
+                _cache.TryRemove(packageId, out packages);
             }
         }
     }

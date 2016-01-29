@@ -79,9 +79,7 @@ namespace NuGet.PackageManagement.VisualStudio
             nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.InstallingPackage, packageIdentity);
 
             packageStream.Seek(0, SeekOrigin.Begin);
-            var zipArchive = new ZipArchive(packageStream);
-            PackageReader packageReader = new PackageReader(zipArchive);
-            var packageSupportedFrameworks = packageReader.GetSupportedFrameworks();
+            var packageSupportedFrameworks = GetSupportedFrameworks(packageStream);
             var projectFrameworks = _project.GetSupportedFrameworksAsync(token)
                 .Result
                 .Select(f => NuGetFramework.Parse(f.FullName));
@@ -101,6 +99,14 @@ namespace NuGet.PackageManagement.VisualStudio
                 progress: null,
                 cancellationToken: token);
             return true;
+        }
+
+        private static IEnumerable<NuGetFramework> GetSupportedFrameworks(Stream packageStream)
+        {
+            using (var packageReader = new PackageArchiveReader(packageStream, leaveStreamOpen: true))
+            {
+                return packageReader.GetSupportedFrameworks();
+            }
         }
 
         public override async Task<bool> UninstallPackageAsync(PackageIdentity packageIdentity, INuGetProjectContext nuGetProjectContext, CancellationToken token)
@@ -139,10 +145,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     // otherwise, item is the file name of the nupkg file
                     var fileName = item as string;
-                    using (var fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read))
+                    using (var packageReader = new PackageArchiveReader(fileName))
                     {
-                        var zipArchive = new ZipArchive(fileStream);
-                        var packageReader = new PackageReader(zipArchive);
                         identity = packageReader.GetIdentity();
                     }
                 }

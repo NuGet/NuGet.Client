@@ -106,7 +106,7 @@ namespace NuGet.ProjectManagement
         }
 
         internal static void AddFiles(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem,
-            PackageReaderBase packageReader,
+            IPackageCoreReader packageReader,
             FrameworkSpecificGroup frameworkSpecificGroup,
             IDictionary<FileTransformExtensions, IPackageFileTransformer> fileTransformers)
         {
@@ -240,11 +240,8 @@ namespace NuGet.ProjectManagement
                                 var matchingFiles = new List<InternalZipFileInfo>();
                                 foreach (var otherPackagePath in otherPackagesPath)
                                 {
-                                    using (var otherPackageStream = File.OpenRead(otherPackagePath))
+                                    using (var otherPackageZipReader = new PackageArchiveReader(otherPackagePath))
                                     {
-                                        var otherPackageZipArchive = new ZipArchive(otherPackageStream);
-                                        var otherPackageZipReader = new PackageReader(otherPackageZipArchive);
-
                                         // use the project framework to find the group that would have been installed
                                         var mostCompatibleContentFilesGroup = GetMostCompatibleGroup(
                                             projectFramework,
@@ -557,7 +554,7 @@ namespace NuGet.ProjectManagement
             }
 
             // Assume nupkg and nuspec as the save mode for identifying valid package files
-            return items.Where(i => PackageHelper.IsPackageFile(i, PackageSaveModes.Nupkg | PackageSaveModes.Nuspec));
+            return items.Where(i => PackageHelper.IsPackageFile(i, PackageSaveMode.Defaultv3));
         }
 
         internal static void AddFile(IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem, string path, Action<Stream> writeToStream)

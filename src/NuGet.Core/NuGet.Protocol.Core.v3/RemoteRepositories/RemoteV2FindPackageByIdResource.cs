@@ -56,12 +56,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             }
         }
 
-        public override SourceCacheContext CacheContext
-        {
-            get { return base.CacheContext; }
-            set { base.CacheContext = value; }
-        }
-
         public bool IgnoreFailure { get; set; }
 
         public override async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken cancellationToken)
@@ -140,7 +134,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         using (var data = await _httpSource.GetAsync(
                             uri,
                             $"list_{id}_page{page}",
-                            CreateCacheContext(CacheContext, retry),
+                            CreateCacheContext(retry),
                             cancellationToken))
                         {
                             try
@@ -175,7 +169,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                             }
                             catch (XmlException)
                             {
-                                Logger.LogInformation($"The XML file {data.CacheFileName} is corrupt.");
+                                Logger.LogMinimal($"The XML file {data.CacheFileName} is corrupt.");
                                 throw;
                             }
                         }
@@ -185,7 +179,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 }
                 catch (Exception ex) when (retry < 2)
                 {
-                    Logger.LogInformation(string.Format("Warning: FindPackagesById: {1}\r\n  {0}", ex.Message, id));
+                    Logger.LogMinimal(string.Format("Warning: FindPackagesById: {1}\r\n  {0}", ex.Message, id));
                 }
                 catch (Exception ex) when (retry == 2)
                 {
@@ -201,7 +195,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
                     Logger.LogError(message + Environment.NewLine + ex.Message);
 
-                    throw new NuGetProtocolException(message, ex);
+                    throw new FatalProtocolException(message, ex);
                 }
             }
             return null;
@@ -240,7 +234,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
             // Acquire the lock on a file before we open it to prevent this process
             // from opening a file deleted by the logic in HttpSource.GetAsync() in another process
-            return await ConcurrencyUtilities.ExecuteWithFileLocked(result.TempFileName,
+            return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(result.TempFileName,
                 action: token =>
                 {
                     return Task.FromResult(
@@ -259,7 +253,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     using (var data = await _httpSource.GetAsync(
                         package.ContentUri,
                         "nupkg_" + package.Id + "." + package.Version,
-                        CreateCacheContext(CacheContext, retry),
+                        CreateCacheContext(retry),
                         cancellationToken))
                     {
                         return new NupkgEntry
@@ -271,7 +265,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 catch (TaskCanceledException ex) when (retry < 2)
                 {
                     // Requests can get cancelled if we got the data from elsewhere, no reason to warn.
-                    Logger.LogInformation(string.Format("Warning: DownloadPackageAsync: {1}\r\n  {0}", ex.Message, package.ContentUri));
+                    Logger.LogMinimal(string.Format("Warning: DownloadPackageAsync: {1}\r\n  {0}", ex.Message, package.ContentUri));
                 }
                 catch (Exception ex)
                 {
@@ -281,7 +275,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     }
                     else
                     {
-                        Logger.LogInformation(string.Format("Warning: DownloadPackageAsync: {1}\r\n  {0}", ex.Message, package.ContentUri));
+                        Logger.LogMinimal(string.Format("Warning: DownloadPackageAsync: {1}\r\n  {0}", ex.Message, package.ContentUri));
                     }
                 }
             }

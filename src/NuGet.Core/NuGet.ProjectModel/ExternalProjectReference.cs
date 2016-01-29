@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace NuGet.ProjectModel
@@ -10,7 +11,7 @@ namespace NuGet.ProjectModel
     /// <summary>
     /// Represents a reference to a project produced by an external build system, such as msbuild.
     /// </summary>
-    public class ExternalProjectReference
+    public class ExternalProjectReference : IEquatable<ExternalProjectReference>
     {
         /// <summary>
         /// Represents a reference to a project produced by an external build system, such as msbuild.
@@ -60,5 +61,51 @@ namespace NuGet.ProjectModel
         /// Path to msbuild project file. Ex: xproj, csproj
         /// </summary>
         public string MSBuildProjectPath { get; }
+
+        /// <summary>
+        /// Project name from the package spec or msbuild file.
+        /// </summary>
+        public string ProjectName
+        {
+            get
+            {
+                // project.json name goes first
+                // use the msbuild file path for non-project.json projects
+                // fallback to the given unique name
+                return PackageSpec?.Name
+                        ?? Path.GetFileNameWithoutExtension(MSBuildProjectPath)
+                        ?? UniqueName;
+            }
+        }
+
+        public override string ToString()
+        {
+            return UniqueName;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as ExternalProjectReference);
+        }
+
+        public override int GetHashCode()
+        {
+            return StringComparer.Ordinal.GetHashCode(UniqueName);
+        }
+
+        public bool Equals(ExternalProjectReference other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            return UniqueName.Equals(other.UniqueName, StringComparison.Ordinal);
+        }
     }
 }

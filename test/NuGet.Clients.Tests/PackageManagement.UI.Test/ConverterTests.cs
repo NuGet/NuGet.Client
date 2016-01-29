@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,7 +33,7 @@ namespace PackageManagement.UI.Test
         [InlineData(1234000000, "1.23G")]
         public void DownloadCountToStringTest(int num, string expected)
         {
-            var s = UIUtility.NumberToString(num);
+            var s = UIUtility.NumberToString(num, CultureInfo.InvariantCulture); // force '.' decimal separator
             Assert.Equal(expected, s);
         }
     }

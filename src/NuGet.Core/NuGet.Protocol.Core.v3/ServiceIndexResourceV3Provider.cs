@@ -143,12 +143,12 @@ namespace NuGet.Protocol.Core.v3
                                         CultureInfo.CurrentCulture,
                                         Strings.Protocol_UnsupportedVersion,
                                         (string)versionToken);
-                                    throw new NuGetProtocolException(errorMessage);
+                                    throw new FatalProtocolException(errorMessage);
                                 }
                             }
                             else
                             {
-                                throw new NuGetProtocolException(Strings.Protocol_MissingVersion);
+                                throw new FatalProtocolException(Strings.Protocol_MissingVersion);
                             }
 
                             // cache the value even if it is null to avoid checking it again later

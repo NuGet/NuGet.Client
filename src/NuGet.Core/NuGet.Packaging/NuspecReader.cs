@@ -42,11 +42,29 @@ namespace NuGet.Packaging
         private readonly IFrameworkNameProvider _frameworkProvider;
 
         /// <summary>
+        /// Nuspec file reader.
+        /// </summary>
+        public NuspecReader(string path)
+            : this(path, DefaultFrameworkNameProvider.Instance)
+        {
+        }
+
+        /// <summary>
+        /// Nuspec file reader.
+        /// </summary>
+        public NuspecReader(string path, IFrameworkNameProvider frameworkProvider)
+            : base(path)
+        {
+            _frameworkProvider = frameworkProvider;
+        }
+
+
+        /// <summary>
         /// Nuspec file reader
         /// </summary>
         /// <param name="stream">Nuspec file stream.</param>
         public NuspecReader(Stream stream)
-            : this(stream, DefaultFrameworkNameProvider.Instance)
+            : this(stream, DefaultFrameworkNameProvider.Instance, leaveStreamOpen: false)
         {
 
         }
@@ -66,8 +84,8 @@ namespace NuGet.Packaging
         /// </summary>
         /// <param name="stream">Nuspec file stream.</param>
         /// <param name="frameworkProvider">Framework mapping provider for NuGetFramework parsing.</param>
-        public NuspecReader(Stream stream, IFrameworkNameProvider frameworkProvider)
-            : base(stream)
+        public NuspecReader(Stream stream, IFrameworkNameProvider frameworkProvider, bool leaveStreamOpen)
+            : base(stream, leaveStreamOpen)
         {
             _frameworkProvider = frameworkProvider;
         }
@@ -286,7 +304,9 @@ namespace NuGet.Packaging
                 if (include == null)
                 {
                     // Invalid include
-                    var message = Strings.FormatInvalidNuspecEntry(
+                    var message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidNuspecEntry,
                         filesNode.ToString().Trim(),
                         GetIdentity());
 

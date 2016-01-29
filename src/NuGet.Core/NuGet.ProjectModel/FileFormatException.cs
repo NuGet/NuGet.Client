@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -49,7 +50,8 @@ namespace NuGet.ProjectModel
         {
             var lineInfo = (IJsonLineInfo)value;
 
-            var message = Strings.FormatLog_ErrorReadingProjectJsonWithLocation(
+            var message = string.Format(CultureInfo.CurrentCulture,
+                Strings.Log_ErrorReadingProjectJsonWithLocation,
                 path,
                 lineInfo.LineNumber,
                 lineInfo.LinePosition,
@@ -76,12 +78,21 @@ namespace NuGet.ProjectModel
             string message;
             if (jex == null)
             {
-                message = Strings.FormatLog_ErrorReadingProjectJson(path, exception.Message);
+                message = string.Format(CultureInfo.CurrentCulture,
+                    Strings.Log_ErrorReadingProjectJson,
+                    path,
+                    exception.Message);
+
                 return new FileFormatException(message, exception).WithFilePath(path);
             }
             else
             {
-                message = Strings.FormatLog_ErrorReadingProjectJsonWithLocation(path, jex.LineNumber, jex.LinePosition, exception.Message);
+                message = string.Format(CultureInfo.CurrentCulture,
+                    Strings.Log_ErrorReadingProjectJsonWithLocation,
+                    path, jex.LineNumber,
+                    jex.LinePosition,
+                    exception.Message);
+
                 return new FileFormatException(message, exception)
                     .WithFilePath(path)
                     .WithLineInfo(jex);

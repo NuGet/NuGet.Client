@@ -29,7 +29,7 @@ namespace NuGet.Configuration
         /// NuGet config names with casing ordered by precedence.
         /// </summary>
         public static readonly string[] OrderedSettingsFileNames =
-            RuntimeEnvironmentHelper.IsWindows ?
+            (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsMacOSX) ?
             new[] { DefaultSettingsFileName } :
             new[]
             {
@@ -98,16 +98,16 @@ namespace NuGet.Configuration
 
         /// <summary>
         /// Loads user settings from the NuGet configuration files. The method walks the directory
-        /// tree in <paramref name="fileSystem" /> up to its root, and reads each NuGet.config file
+        /// tree in <paramref name="root" /> up to its root, and reads each NuGet.config file
         /// it finds in the directories. It then reads the user specific settings,
         /// which is file <paramref name="configFileName" />
-        /// in <paramref name="fileSystem" /> if <paramref name="configFileName" /> is not null,
+        /// in <paramref name="root" /> if <paramref name="configFileName" /> is not null,
         /// If <paramref name="configFileName" /> is null, the user specific settings file is
         /// %AppData%\NuGet\NuGet.config.
         /// After that, the machine wide settings files are added.
         /// </summary>
         /// <remarks>
-        /// For example, if <paramref name="fileSystem" /> is c:\dir1\dir2, <paramref name="configFileName" />
+        /// For example, if <paramref name="root" /> is c:\dir1\dir2, <paramref name="configFileName" />
         /// is "userConfig.file", the files loaded are (in the order that they are loaded):
         /// c:\dir1\dir2\nuget.config
         /// c:\dir1\nuget.config
@@ -115,7 +115,7 @@ namespace NuGet.Configuration
         /// c:\dir1\dir2\userConfig.file
         /// machine wide settings (e.g. c:\programdata\NuGet\Config\*.config)
         /// </remarks>
-        /// <param name="fileSystem">
+        /// <param name="root">
         /// The file system to walk to find configuration files.
         /// Can be null.
         /// </param>
@@ -234,13 +234,13 @@ namespace NuGet.Configuration
                     var disabledSources = new List<SettingValue>();
                     foreach (var setting in machineWideSettings.Settings)
                     {
-                        var values = setting.GetSettingValues(ConfigurationContants.PackageSources, isPath: true);
+                        var values = setting.GetSettingValues(ConfigurationConstants.PackageSources, isPath: true);
                         foreach (var value in values)
                         {
                             disabledSources.Add(new SettingValue(value.Key, "true", origin: setting, isMachineWide: true, priority: 0));
                         }
                     }
-                    appDataSettings.UpdateSections(ConfigurationContants.DisabledPackageSources, disabledSources);
+                    appDataSettings.UpdateSections(ConfigurationConstants.DisabledPackageSources, disabledSources);
                 }
                 else
                 {
@@ -290,7 +290,7 @@ namespace NuGet.Configuration
             }
 
             var settingFiles = new List<Settings>();
-            var basePath = Path.Combine("NuGet","Config");
+            var basePath = Path.Combine("nuget", "Config");
             var combinedPath = Path.Combine(paths);
 
             while (true)
@@ -546,9 +546,9 @@ namespace NuGet.Configuration
         {
             foreach (var existingAttribute in element.Attributes())
             {
-                if (!string.Equals(existingAttribute.Name.LocalName, ConfigurationContants.KeyAttribute, StringComparison.OrdinalIgnoreCase)
+                if (!string.Equals(existingAttribute.Name.LocalName, ConfigurationConstants.KeyAttribute, StringComparison.OrdinalIgnoreCase)
                     &&
-                    !string.Equals(existingAttribute.Name.LocalName, ConfigurationContants.ValueAttribute, StringComparison.OrdinalIgnoreCase)
+                    !string.Equals(existingAttribute.Name.LocalName, ConfigurationConstants.ValueAttribute, StringComparison.OrdinalIgnoreCase)
                     &&
                     !attributes.ContainsKey(existingAttribute.Name.LocalName))
                 {
@@ -557,8 +557,8 @@ namespace NuGet.Configuration
                 }
             }
 
-            element.SetAttributeValue(ConfigurationContants.KeyAttribute, key);
-            element.SetAttributeValue(ConfigurationContants.ValueAttribute, value);
+            element.SetAttributeValue(ConfigurationConstants.KeyAttribute, key);
+            element.SetAttributeValue(ConfigurationConstants.ValueAttribute, value);
 
             if (attributes != null)
             {
@@ -712,7 +712,7 @@ namespace NuGet.Configuration
                 }
                 else if (elementName.Equals("add", StringComparison.OrdinalIgnoreCase)
                          &&
-                         XElementUtility.GetOptionalAttributeValue(element, ConfigurationContants.KeyAttribute).Equals(key, StringComparison.OrdinalIgnoreCase))
+                         XElementUtility.GetOptionalAttributeValue(element, ConfigurationConstants.KeyAttribute).Equals(key, StringComparison.OrdinalIgnoreCase))
                 {
                     result = element;
                 }
@@ -728,7 +728,7 @@ namespace NuGet.Configuration
             }
 
             // Return the optional value which if not there will be null;
-            var value = XElementUtility.GetOptionalAttributeValue(element, ConfigurationContants.ValueAttribute);
+            var value = XElementUtility.GetOptionalAttributeValue(element, ConfigurationConstants.ValueAttribute);
             if (!isPath
                 || String.IsNullOrEmpty(value))
             {
@@ -801,8 +801,8 @@ namespace NuGet.Configuration
 
         private SettingValue ReadSettingsValue(XElement element, bool isPath)
         {
-            var keyAttribute = element.Attribute(ConfigurationContants.KeyAttribute);
-            var valueAttribute = element.Attribute(ConfigurationContants.ValueAttribute);
+            var keyAttribute = element.Attribute(ConfigurationConstants.KeyAttribute);
+            var valueAttribute = element.Attribute(ConfigurationConstants.ValueAttribute);
 
             if (keyAttribute == null
                 || String.IsNullOrEmpty(keyAttribute.Value)
@@ -830,9 +830,9 @@ namespace NuGet.Configuration
             foreach (var attribute in element.Attributes())
             {
                 // Add all attributes other than ConfigurationContants.KeyAttribute and ConfigurationContants.ValueAttribute to AdditionalValues
-                if (!string.Equals(attribute.Name.LocalName, ConfigurationContants.KeyAttribute, StringComparison.Ordinal)
+                if (!string.Equals(attribute.Name.LocalName, ConfigurationConstants.KeyAttribute, StringComparison.Ordinal)
                     &&
-                    !string.Equals(attribute.Name.LocalName, ConfigurationContants.ValueAttribute, StringComparison.Ordinal))
+                    !string.Equals(attribute.Name.LocalName, ConfigurationConstants.ValueAttribute, StringComparison.Ordinal))
                 {
                     settingValue.AdditionalData[attribute.Name.LocalName] = attribute.Value;
                 }
@@ -845,11 +845,11 @@ namespace NuGet.Configuration
         {
             if (String.IsNullOrEmpty(key))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, ConfigurationContants.KeyAttribute);
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, ConfigurationConstants.KeyAttribute);
             }
             if (value == null)
             {
-                throw new ArgumentNullException(ConfigurationContants.ValueAttribute);
+                throw new ArgumentNullException(ConfigurationConstants.ValueAttribute);
             }
 
             var element = FindElementByKey(sectionElement, key, null);
@@ -1042,7 +1042,7 @@ namespace NuGet.Configuration
             {
                 return false;
             }
-            else if (RuntimeEnvironmentHelper.IsWindows)
+            else if (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsMacOSX)
             {
                 return path1.Equals(path2, StringComparison.OrdinalIgnoreCase);
             }
