@@ -23,13 +23,10 @@ namespace NuGet.ProjectModel.Test
                     }
                 }");
 
-            // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", "project.json");
-            var importFramework = spec.TargetFrameworks.First().Imports.ToList();
+            // Act & Assert
+            var ex = Assert.Throws<FileFormatException>(() => JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", "project.json"));
+            Assert.Equal("The value of import frameworks in 'project.json' is not a specific framework", ex.InnerException.Message);
 
-            // Assert
-            Assert.Equal(3, importFramework.Count);
-            Assert.Equal(NuGetFramework.UnsupportedFramework.DotNetFrameworkName,importFramework[2].DotNetFrameworkName);
         }
 
         [Fact]
@@ -54,6 +51,33 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.Equal(0, importFramework.Count);
+        }
+
+        [Fact]
+        public void ImportFramwork_SingleImport()
+        {
+            var configJson = JObject.Parse(@"
+                {
+                    ""dependencies"": {
+                        ""Newtonsoft.Json"": ""7.0.1""
+                    },
+                    ""frameworks"": {
+                        ""netstandard1.2"": {
+                            ""imports"": [""dotnet5.3""],
+                            ""warn"": false
+                        }
+                    }
+                }");
+
+            // Act
+            var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", "project.json");
+            var importFramework = spec.TargetFrameworks.First().Imports.ToList();
+            var expectedFramework = NuGetFramework.Parse("dotnet5.3");
+
+            // Assert
+            Assert.Equal(1, importFramework.Count);
+            Assert.True(importFramework[0].Equals(expectedFramework));
+           
         }
     }
 }

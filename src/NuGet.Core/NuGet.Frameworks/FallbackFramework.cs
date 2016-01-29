@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using NuGet.Shared;
 using System.Linq;
+using NuGet.Shared;
 
 namespace NuGet.Frameworks
 {
     public class FallbackFramework : NuGetFramework, IEquatable<FallbackFramework>
     {
         /// <summary>
-        /// Secondary framework to fall back to.
+        /// List of frameworks to fall back to.
         /// </summary>
         public IEnumerable<NuGetFramework> Fallback { get; }
 
@@ -60,8 +60,7 @@ namespace NuGet.Frameworks
             }
 
             return NuGetFramework.Comparer.Equals(this, other)
-                && Fallback.All(p => other.Fallback.Contains(p, NuGetFramework.Comparer))
-                && other.Fallback.All(p => Fallback.Contains(p, NuGetFramework.Comparer));
+                && Fallback.SequenceEqual(other.Fallback);
         }
     }
 }

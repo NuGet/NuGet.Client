@@ -41,7 +41,7 @@ namespace NuGet.Commands.Test
                         }
                     }
                 }");
-                
+
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
@@ -52,10 +52,10 @@ namespace NuGet.Commands.Test
                 var lockFileFormat = new LockFileFormat();
                 var logger = new TestLogger();
                 var command = new RestoreCommand(logger, request);
-                var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"),new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
+                var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
 
                 // Act
-                
+
                 var result = await command.ExecuteAsync();
                 result.Commit(logger);
                 var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, framework, null);
@@ -95,7 +95,7 @@ namespace NuGet.Commands.Test
                         }
                     }
                 }");
-                
+
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
