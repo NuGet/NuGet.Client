@@ -11,19 +11,11 @@ namespace NuGet.Protocol.Core.v3
 {
     public class SearchLatestResourceV3Provider : ResourceProvider
     {
-        private readonly DataClient _client;
-
         public SearchLatestResourceV3Provider()
-            : this(new DataClient())
-        {
-        }
-
-        public SearchLatestResourceV3Provider(DataClient client)
             : base(typeof(SearchLatestResource),
                   nameof(SearchLatestResourceV3Provider),
                   "SearchLatestResourceV2Provider")
         {
-            _client = client;
         }
 
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)

@@ -27,15 +27,8 @@ namespace NuGet.Protocol.Core.v3
 
             var clientHandler = TryGetCredentialAndProxy(source.PackageSource);
 
-            if (clientHandler == null)
-            {
-                curResource = DataClient.DefaultHandler;
-            }
-            else
-            {
-                // replace the handler with the proxy aware handler
-                curResource = DataClient.CreateHandler(clientHandler);
-            }
+            // replace the handler with the proxy aware handler
+            curResource = DataClient.CreateHandler(clientHandler);
 
             return Task.FromResult(new Tuple<bool, INuGetResource>(curResource != null, curResource));
         }
@@ -44,7 +37,9 @@ namespace NuGet.Protocol.Core.v3
 
         private HttpClientHandler TryGetCredentialAndProxy(PackageSource packageSource)
         {
-            return new HttpClientHandler();
+            var handler = new HttpClientHandler();
+            handler.AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate);
+            return handler;
         }
 #else
 
@@ -79,7 +74,8 @@ namespace NuGet.Protocol.Core.v3
             return new CredentialPromptWebRequestHandler()
             {
                 Proxy = proxy,
-                Credentials = credential
+                Credentials = credential,
+                AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate)
             };
         }
 
