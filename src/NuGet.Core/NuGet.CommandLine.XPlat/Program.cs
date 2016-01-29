@@ -188,11 +188,11 @@ namespace NuGet.CommandLine.XPlat
                         // Throttle and wait for a task to finish if we have hit the limit
                         if (restoreTasks.Count == maxTasks)
                         {
-                            success &= await CompleteTask(restoreTasks);
+                            success &= await CompleteTaskAsync(restoreTasks);
                         }
 
                         // Start a new restore
-                        var task = Task.Run(async () => await ExecuteRestore(
+                        var task = Task.Run(async () => await ExecuteRestoreAsync(
                             sources,
                             packagesDirectory,
                             fallBack,
@@ -208,7 +208,7 @@ namespace NuGet.CommandLine.XPlat
                     // Wait for all restores to finish
                     while (restoreTasks.Count > 0)
                     {
-                        success &= await CompleteTask(restoreTasks);
+                        success &= await CompleteTaskAsync(restoreTasks);
                     }
 
                     // Return 0 if all restores were successful
@@ -253,7 +253,7 @@ namespace NuGet.CommandLine.XPlat
         /// <summary>
         /// Removes a task from the list and returns the success flag.
         /// </summary>
-        private static async Task<bool> CompleteTask(List<Task<int>> restoreTasks)
+        private static async Task<bool> CompleteTaskAsync(List<Task<int>> restoreTasks)
         {
             var doneTask = await Task.WhenAny(restoreTasks);
             restoreTasks.Remove(doneTask);
@@ -293,7 +293,7 @@ namespace NuGet.CommandLine.XPlat
             return Directory.GetFiles(path, "project.json", SearchOption.AllDirectories);
         }
 
-        private static async Task<int> ExecuteRestore
+        private static async Task<int> ExecuteRestoreAsync
             (CommandOption sources,
             CommandOption packagesDirectory,
             CommandOption fallBack,
