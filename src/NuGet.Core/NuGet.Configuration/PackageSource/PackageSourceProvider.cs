@@ -109,14 +109,14 @@ namespace NuGet.Configuration
         public IEnumerable<PackageSource> LoadPackageSources()
         {
             var settingsValue = new List<SettingValue>();
-            var sourceSettingValues = Settings.GetSettingValues(ConfigurationContants.PackageSources, isPath: true) ??
+            var sourceSettingValues = Settings.GetSettingValues(ConfigurationConstants.PackageSources, isPath: true) ??
                                       Enumerable.Empty<SettingValue>();
 
             // Order the list so that they are ordered in priority order
             var settingValues = sourceSettingValues.OrderByDescending(setting => setting.Priority);
 
             // get list of disabled packages
-            var disabledSetting = Settings.GetSettingValues(ConfigurationContants.DisabledPackageSources) ?? Enumerable.Empty<SettingValue>();
+            var disabledSetting = Settings.GetSettingValues(ConfigurationConstants.DisabledPackageSources) ?? Enumerable.Empty<SettingValue>();
 
             var disabledSources = new Dictionary<string, SettingValue>(StringComparer.OrdinalIgnoreCase);
             foreach (var setting in disabledSetting)
@@ -196,7 +196,7 @@ namespace NuGet.Configuration
         {
             string protocolVersionString;
             int protocolVersion;
-            if (setting.AdditionalData.TryGetValue(ConfigurationContants.ProtocolVersionAttribute, out protocolVersionString)
+            if (setting.AdditionalData.TryGetValue(ConfigurationConstants.ProtocolVersionAttribute, out protocolVersionString)
                 &&
                 int.TryParse(protocolVersionString, out protocolVersion))
             {
@@ -254,21 +254,21 @@ namespace NuGet.Configuration
                 return environmentCredentials;
             }
 
-            var values = Settings.GetNestedValues(ConfigurationContants.CredentialsSectionName, sourceName);
+            var values = Settings.GetNestedValues(ConfigurationConstants.CredentialsSectionName, sourceName);
             if (values != null
                 && values.Any())
             {
-                var userName = values.FirstOrDefault(k => k.Key.Equals(ConfigurationContants.UsernameToken, StringComparison.OrdinalIgnoreCase)).Value;
+                var userName = values.FirstOrDefault(k => k.Key.Equals(ConfigurationConstants.UsernameToken, StringComparison.OrdinalIgnoreCase)).Value;
 
                 if (!String.IsNullOrEmpty(userName))
                 {
-                    var encryptedPassword = values.FirstOrDefault(k => k.Key.Equals(ConfigurationContants.PasswordToken, StringComparison.OrdinalIgnoreCase)).Value;
+                    var encryptedPassword = values.FirstOrDefault(k => k.Key.Equals(ConfigurationConstants.PasswordToken, StringComparison.OrdinalIgnoreCase)).Value;
                     if (!String.IsNullOrEmpty(encryptedPassword))
                     {
                         return new PackageSourceCredential(userName, EncryptionUtility.DecryptString(encryptedPassword), isPasswordClearText: false);
                     }
 
-                    var clearTextPassword = values.FirstOrDefault(k => k.Key.Equals(ConfigurationContants.ClearTextPasswordToken, StringComparison.Ordinal)).Value;
+                    var clearTextPassword = values.FirstOrDefault(k => k.Key.Equals(ConfigurationConstants.ClearTextPasswordToken, StringComparison.Ordinal)).Value;
                     if (!String.IsNullOrEmpty(clearTextPassword))
                     {
                         return new PackageSourceCredential(userName, clearTextPassword, isPasswordClearText: true);
@@ -445,7 +445,7 @@ namespace NuGet.Configuration
             // and write the new ones
             var sourcesToWrite = sources.Where(s => !s.IsMachineWide && s.IsPersistable);
 
-            var existingSettings = (Settings.GetSettingValues(ConfigurationContants.PackageSources, isPath: true) ??
+            var existingSettings = (Settings.GetSettingValues(ConfigurationConstants.PackageSources, isPath: true) ??
                                     Enumerable.Empty<SettingValue>()).Where(setting => !setting.IsMachineWide).ToList();
             var minPriority = 0;
 
@@ -457,7 +457,7 @@ namespace NuGet.Configuration
 
             existingSettings.RemoveAll(setting => !sources.Any(s => string.Equals(s.Name, setting.Key, StringComparison.OrdinalIgnoreCase)));
             var existingSettingsLookup = existingSettings.ToLookup(setting => setting.Key, StringComparer.OrdinalIgnoreCase);
-            var existingDisabledSources = Settings.GetSettingValues(ConfigurationContants.DisabledPackageSources) ??
+            var existingDisabledSources = Settings.GetSettingValues(ConfigurationConstants.DisabledPackageSources) ??
                                           Enumerable.Empty<SettingValue>();
             var existingDisabledSourcesLookup = existingDisabledSources.ToLookup(setting => setting.Key, StringComparer.OrdinalIgnoreCase);
 
@@ -501,7 +501,7 @@ namespace NuGet.Configuration
 
                     if (source.ProtocolVersion != PackageSource.DefaultProtocolVersion)
                     {
-                        settingValue.AdditionalData[ConfigurationContants.ProtocolVersionAttribute] =
+                        settingValue.AdditionalData[ConfigurationConstants.ProtocolVersionAttribute] =
                             source.ProtocolVersion.ToString(CultureInfo.InvariantCulture);
                     }
 
@@ -546,20 +546,20 @@ namespace NuGet.Configuration
             }
 
             // Write the updates to the nearest settings file.
-            Settings.UpdateSections(ConfigurationContants.PackageSources, sourceSettings);
+            Settings.UpdateSections(ConfigurationConstants.PackageSources, sourceSettings);
 
             // overwrite new values for the <disabledPackageSources> section
-            Settings.UpdateSections(ConfigurationContants.DisabledPackageSources, sourcesToDisable);
+            Settings.UpdateSections(ConfigurationConstants.DisabledPackageSources, sourcesToDisable);
 
             // Overwrite the <packageSourceCredentials> section
-            Settings.DeleteSection(ConfigurationContants.CredentialsSectionName);
+            Settings.DeleteSection(ConfigurationConstants.CredentialsSectionName);
 
             var sourceWithCredentials = sources.Where(s => !String.IsNullOrEmpty(s.UserName) && !String.IsNullOrEmpty(s.Password));
             foreach (var source in sourceWithCredentials)
             {
-                Settings.SetNestedValues(ConfigurationContants.CredentialsSectionName, source.Name, new[]
+                Settings.SetNestedValues(ConfigurationConstants.CredentialsSectionName, source.Name, new[]
                     {
-                        new KeyValuePair<string, string>(ConfigurationContants.UsernameToken, source.UserName),
+                        new KeyValuePair<string, string>(ConfigurationConstants.UsernameToken, source.UserName),
                         ReadPasswordValues(source)
                     });
             }
@@ -580,7 +580,7 @@ namespace NuGet.Configuration
 
         private static KeyValuePair<string, string> ReadPasswordValues(PackageSource source)
         {
-            var passwordToken = source.IsPasswordClearText ? ConfigurationContants.ClearTextPasswordToken : ConfigurationContants.PasswordToken;
+            var passwordToken = source.IsPasswordClearText ? ConfigurationConstants.ClearTextPasswordToken : ConfigurationConstants.PasswordToken;
             var passwordValue = source.IsPasswordClearText ? source.Password : EncryptionUtility.EncryptString(source.Password);
 
             return new KeyValuePair<string, string>(passwordToken, passwordValue);
@@ -593,7 +593,7 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException("source");
             }
 
-            Settings.SetValue(ConfigurationContants.DisabledPackageSources, source.Name, "true");
+            Settings.SetValue(ConfigurationConstants.DisabledPackageSources, source.Name, "true");
         }
 
         public bool IsPackageSourceEnabled(PackageSource source)
@@ -603,7 +603,7 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException("source");
             }
 
-            var value = Settings.GetValue(ConfigurationContants.DisabledPackageSources, source.Name);
+            var value = Settings.GetValue(ConfigurationConstants.DisabledPackageSources, source.Name);
 
             // It doesn't matter what value it is.
             // As long as the package source name is persisted in the <disabledPackageSources> section, the source is disabled.
@@ -617,7 +617,7 @@ namespace NuGet.Configuration
         {
             get
             {
-                var activeSource = Settings.GetSettingValues(ConfigurationContants.ActivePackageSourceSectionName).FirstOrDefault();
+                var activeSource = Settings.GetSettingValues(ConfigurationConstants.ActivePackageSourceSectionName).FirstOrDefault();
                 if (activeSource == null)
                 {
                     return null;
@@ -635,8 +635,8 @@ namespace NuGet.Configuration
         {
             try
             {
-                Settings.DeleteSection(ConfigurationContants.ActivePackageSourceSectionName);
-                Settings.SetValue(ConfigurationContants.ActivePackageSourceSectionName, source.Name, source.Source);
+                Settings.DeleteSection(ConfigurationConstants.ActivePackageSourceSectionName);
+                Settings.SetValue(ConfigurationConstants.ActivePackageSourceSectionName, source.Name, source.Source);
             }
             catch (Exception)
             {
