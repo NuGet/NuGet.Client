@@ -12,17 +12,9 @@ namespace NuGet.Protocol.VisualStudio
 {
     public class UIMetadataResourceV3Provider : ResourceProvider
     {
-        private readonly DataClient _client;
-
         public UIMetadataResourceV3Provider()
-            : this(new DataClient())
-        {
-        }
-
-        public UIMetadataResourceV3Provider(DataClient client)
             : base(typeof(UIMetadataResource), "UIMetadataResourceV3Provider", "UIMetadataResourceV2Provider")
         {
-            _client = client;
         }
 
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
@@ -34,8 +26,11 @@ namespace NuGet.Protocol.VisualStudio
                 var regResource = await source.GetResourceAsync<RegistrationResourceV3>();
                 var reportAbuseResource = await source.GetResourceAsync<ReportAbuseResourceV3>();
 
+                var handlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
+                var client = new DataClient(handlerResource.MessageHandler);
+
                 // construct a new resource
-                curResource = new UIMetadataResourceV3(_client, regResource, reportAbuseResource);
+                curResource = new UIMetadataResourceV3(client, regResource, reportAbuseResource);
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);
