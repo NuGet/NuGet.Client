@@ -537,7 +537,6 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = Util.GetNuGetExePath();
 
-            IPrincipal getUser = null;
             IPrincipal putUser = null;
 
             using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+using System.Threading;
 
 namespace NuGet.CommandLine
 {
@@ -41,10 +42,9 @@ namespace NuGet.CommandLine
             var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
 
             var sourceRepository = sourceRepositoryProvider.CreateRepository(packageSource);
-            //TODO: rename it.
+            //TODO: rename the resource.
             PushCommandResource pushCommandResource = await sourceRepository.GetResourceAsync<PushCommandResource>();
 
-            var userAgent = UserAgent.CreateUserAgentString(CommandLineConstants.UserAgent);
             var gallery = pushCommandResource.GetPackageUploader();
 
             //If the user did not pass an API Key look in the config file
@@ -58,7 +58,9 @@ namespace NuGet.CommandLine
             if (NonInteractive || Console.Confirm(String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("DeleteCommandConfirm"), packageId, packageVersion, sourceDisplayName)))
             {
                 Console.WriteLine(LocalizedResourceManager.GetString("DeleteCommandDeletingPackage"), packageId, packageVersion, sourceDisplayName);
-                await gallery.DeletePackage(apiKey, packageId, packageVersion, Console);
+                var userAgent = UserAgent.CreateUserAgentString(CommandLineConstants.UserAgent);
+                //TODO: confirm, no timeout on delete command?
+                await gallery.DeletePackage(apiKey, packageId, packageVersion, userAgent, Console, CancellationToken.None);
                 Console.WriteLine(LocalizedResourceManager.GetString("DeleteCommandDeletedPackage"), packageId, packageVersion);
             }
             else

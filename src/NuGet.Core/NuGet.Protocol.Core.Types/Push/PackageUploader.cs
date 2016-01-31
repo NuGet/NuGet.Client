@@ -22,15 +22,15 @@ namespace NuGet
         private const int MaxRediretionCount = 20;
         private readonly Func<Task<HttpHandlerResource>> _messageHandlerFactory;
         private readonly Func<Uri, CancellationToken, Task<ICredentials>> _promptForCredentials;
-        private readonly Action<Uri, ICredentials>  _credentialsSuccessfullyUsed;
+        private readonly Action<Uri, ICredentials> _credentialsSuccessfullyUsed;
 
         private Uri _baseUri;
         private Uri _source;
 
-        public PackageUploader(string source, 
+        public PackageUploader(string source,
             Func<Task<HttpHandlerResource>> messageHandlerFactory,
             Func<Uri, CancellationToken, Task<ICredentials>> promptForCredentials,
-            Action<Uri, ICredentials>  credentialsSuccessfullyUsed)
+            Action<Uri, ICredentials> credentialsSuccessfullyUsed)
         {
             if (String.IsNullOrEmpty(source))
             {
@@ -51,7 +51,12 @@ namespace NuGet
         /// <param name="package">The package to be pushed.</param>
         /// <param name="timeout">Time in milliseconds to timeout the server request.</param>
         /// <param name="disableBuffering">Indicates if HttpWebRequest buffering should be disabled.</param>
-        public async Task PushPackage(string apiKey, string pathToPackage, long packageSize, ILogger logger, string userAgent, CancellationToken token)
+        public async Task PushPackage(string apiKey, 
+            string pathToPackage, 
+            long packageSize, 
+            string userAgent, 
+            ILogger logger, 
+            CancellationToken token)
         {
             if (_source.IsFile)
             {
@@ -59,7 +64,7 @@ namespace NuGet
             }
             else
             {
-                await PushPackageToServer(apiKey, pathToPackage, packageSize, logger, userAgent, token);
+                await PushPackageToServer(apiKey, pathToPackage, packageSize, userAgent, logger, token);
             }
         }
 
@@ -75,8 +80,8 @@ namespace NuGet
             string apiKey,
             string pathToPackage,
             long packageSzie,
-            ILogger logger,
             string userAgent,
+            ILogger logger,
             CancellationToken token)
         {
             ICredentials credentials = CredentialStore.Instance.GetCredentials(_baseUri);
@@ -87,6 +92,7 @@ namespace NuGet
                 using (var fileStream = new FileStream(pathToPackage, FileMode.Open, FileAccess.Read, FileShare.Read))
                 using (var request = new HttpRequestMessage(HttpMethod.Put, GetServiceEndpointUrl(string.Empty)))
                 {
+                    UserAgent.SetUserAgent(client, userAgent);
                     if (credentials != null)
                     {
                         handlerResource.ClientHandler.Credentials = credentials;
@@ -164,7 +170,12 @@ namespace NuGet
         /// <param name="apiKey">API key to be used to delete the package.</param>
         /// <param name="packageId">The package Id.</param>
         /// <param name="packageVersion">The package version.</param>
-        public async Task DeletePackage(string apiKey, string packageId, string packageVersion, ILogger logger)
+        public async Task DeletePackage(string apiKey, 
+            string packageId, 
+            string packageVersion, 
+            string userAgent,
+            ILogger logger, 
+            CancellationToken token)
         {
             var sourceUri = GetServiceEndpointUrl(string.Empty);
             if (sourceUri.IsFile)
@@ -176,7 +187,7 @@ namespace NuGet
             }
             else
             {
-                await DeletePackageFromServer(apiKey, packageId, packageVersion, logger);
+                await DeletePackageFromServer(apiKey, packageId, packageVersion, userAgent, logger, token);
             }
         }
 
@@ -186,23 +197,65 @@ namespace NuGet
         /// <param name="apiKey">API key to be used to delete the package.</param>
         /// <param name="packageId">The package Id.</param>
         /// <param name="packageVersion">The package Id.</param>
-        private async Task DeletePackageFromServer(string apiKey, string packageId, string packageVersion, ILogger logger)
+        private async Task DeletePackageFromServer(string apiKey, 
+            string packageId, 
+            string packageVersion, 
+            string userAgent,
+            ILogger logger,
+            CancellationToken token)
         {
             // Review: Do these values need to be encoded in any way?
             var url = String.Join("/", packageId, packageVersion);
-            using (var client = new HttpClient())
-            using (var request = new HttpRequestMessage(HttpMethod.Delete, GetServiceEndpointUrl(url)))
+            ICredentials credentials = CredentialStore.Instance.GetCredentials(_baseUri);
+            while (true)
             {
-                //request.Headers.Add("Content-Type", "text/html");
-                if (!string.IsNullOrEmpty(apiKey))
+                HttpHandlerResource handlerResource = await _messageHandlerFactory();
+                using (var client = new HttpClient(handlerResource.ClientHandler))
+                using (var request = new HttpRequestMessage(HttpMethod.Delete, GetServiceEndpointUrl(url)))
                 {
-                    request.Headers.Add(ApiKeyHeader, apiKey);
-                }
+                    UserAgent.SetUserAgent(client, userAgent);
+                    if (credentials != null)
+                    {
+                        handlerResource.ClientHandler.Credentials = credentials;
+                    }
+                    else
+                    {
+                        handlerResource.ClientHandler.UseDefaultCredentials = true;
+                    }
+                    STSAuthHelper.PrepareSTSRequest(_baseUri, CredentialStore.Instance, request);
+                    if (!string.IsNullOrEmpty(apiKey))
+                    {
+                        request.Headers.Add(ApiKeyHeader, apiKey);
+                    }
 
-                logger.LogDebug(string.Format(CultureInfo.CurrentCulture, "Delete: {0}", request.RequestUri));
-                using (var response = await client.SendAsync(request))
-                {
-                    response.EnsureSuccessStatusCode();
+                    using (var response = await client.SendAsync(request))
+                    {
+                        if (response.StatusCode == HttpStatusCode.Unauthorized)
+                        {
+                            if (STSAuthHelper.TryRetrieveSTSToken(_baseUri, CredentialStore.Instance, response))
+                            {
+                                continue;
+                            }
+
+                            if (_promptForCredentials != null)
+                            {
+                                credentials = await _promptForCredentials(_baseUri, token);
+                            }
+
+                            if (credentials != null)
+                            {
+                                continue;
+                            }
+                        }
+
+                        if (_credentialsSuccessfullyUsed != null && credentials != null)
+                        {
+                            _credentialsSuccessfullyUsed(_baseUri, credentials);
+
+                        }
+                        response.EnsureSuccessStatusCode();
+                        break;
+                    }
                 }
             }
         }

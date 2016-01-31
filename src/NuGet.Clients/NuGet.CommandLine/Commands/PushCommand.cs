@@ -70,7 +70,6 @@ namespace NuGet.CommandLine
             {
                 timeout = TimeSpan.FromMinutes(5); // Default to 5 minutes
             }
-
             var tokenSource = new CancellationTokenSource();
             tokenSource.CancelAfter(timeout);
 
@@ -203,8 +202,8 @@ namespace NuGet.CommandLine
                 apiKey,
                 packageToPush,
                 new FileInfo(packageToPush).Length,
-                Console, 
                 userAgent,
+                Console, 
                 token);
 
             Console.WriteLine(LocalizedResourceManager.GetString("PushCommandPackagePushed"));
