@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
+using System.Net;
 
 namespace NuGet.Protocol.Core.v3
 {
@@ -30,11 +31,30 @@ namespace NuGet.Protocol.Core.v3
                 // Returning null here will result in ListCommandResource
                 // getting returned for this very v3 package source as if it was a v2 package source
                 var baseUrl = serviceIndex[ServiceTypes.PackagePublish].FirstOrDefault();
-                pushCommandResource = new PushCommandResource(baseUrl?.AbsoluteUri);
+                pushCommandResource = new PushCommandResource(baseUrl?.AbsoluteUri, 
+                    async (baseUri, cancellationToken) => {
+                        ICredentials credentials = null;
+                        if (HttpHandlerResourceV3.PromptForCredentials != null)
+                        {
+                            credentials = await HttpHandlerResourceV3.PromptForCredentials(baseUri, cancellationToken);
+                        }
+                        return credentials;
+                    },
+                    (baseUri, credentials) => {
+                        if (HttpHandlerResourceV3.CredentialsSuccessfullyUsed != null && credentials != null)
+                        { 
+                            HttpHandlerResourceV3.CredentialsSuccessfullyUsed(baseUri, credentials);
+                        }
+
+                    },
+                    async () => (await source.GetResourceAsync<HttpHandlerResource>(token))
+                 );
             }
 
             var result = new Tuple<bool, INuGetResource>(pushCommandResource != null, pushCommandResource);
             return result;
         }
+
+        
     }
 }

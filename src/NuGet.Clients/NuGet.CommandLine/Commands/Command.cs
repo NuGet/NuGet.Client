@@ -166,10 +166,12 @@ namespace NuGet.CommandLine
                 v2ProxyCache?.Add(proxy);
             };
             
+            NuGet.Protocol.Core.v2.HttpHandlerResourceV2.PromptForCredentials = 
             NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForCredentials =
                 async (uri, cancellationToken) => await credentialService.GetCredentials(
                     uri, proxy: null, isProxy: false, cancellationToken: cancellationToken);
 
+            NuGet.Protocol.Core.v2.HttpHandlerResourceV2.CredentialsSuccessfullyUsed =
             NuGet.Protocol.Core.v3.HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
             {
                 NuGet.CredentialStore.Instance.Add(uri, credentials);

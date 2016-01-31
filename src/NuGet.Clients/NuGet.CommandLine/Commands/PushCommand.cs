@@ -18,6 +18,8 @@ namespace NuGet.CommandLine
         UsageSummaryResourceName = "PushCommandUsageSummary", UsageExampleResourceName = "PushCommandUsageExamples")]
     public class PushCommand : Command
     {
+        private PushCommandResource _pushCommandResource;
+
         [Option(typeof(NuGetCommand), "PushCommandSourceDescription", AltName = "src")]
         public string Source { get; set; }
 
@@ -37,8 +39,14 @@ namespace NuGet.CommandLine
 
             // Don't push symbols by default
             string source = ResolveSource(packagePath, ConfigurationDefaults.Instance.DefaultPushSource);
-            var pushEndpoint = await GetPushEndpointAsync(source);
 
+            await GetPushCommandResource(source);
+
+            string pushEndpoint = string.Empty;
+            if (_pushCommandResource != null)
+            {
+                pushEndpoint = _pushCommandResource.GetPushEndpoint();
+            }
             if (string.IsNullOrEmpty(pushEndpoint))
             {
                 var message = string.Format(
@@ -89,22 +97,14 @@ namespace NuGet.CommandLine
             }
         }
 
-        private async Task<string> GetPushEndpointAsync(string source)
+        private async Task GetPushCommandResource(string source)
         {
             var packageSource = new Configuration.PackageSource(source);
 
             var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
 
             var sourceRepository = sourceRepositoryProvider.CreateRepository(packageSource);
-            var pushCommandResource = await sourceRepository.GetResourceAsync<PushCommandResource>();
-
-            if (pushCommandResource != null)
-            {
-                var pushEndpoint = pushCommandResource.GetPushEndpoint();
-                return pushEndpoint;
-            }
-
-            return source;
+            _pushCommandResource = await sourceRepository.GetResourceAsync<PushCommandResource>();
         }
 
         private string ResolveSource(string packagePath, string configurationDefaultPushSource = null)
@@ -171,8 +171,7 @@ namespace NuGet.CommandLine
 
         private async Task PushPackage(string packagePath, string source, string apiKey, CancellationToken token)
         {
-            var userAgent = UserAgent.CreateUserAgentString(CommandLineConstants.UserAgent);
-            var packageServer = new PackageUploader(source, userAgent, Console);
+            var packageServer = _pushCommandResource.GetPackageUploader();
 
             IEnumerable<string> packagesToPush = GetPackagesToPush(packagePath);
 
@@ -194,6 +193,7 @@ namespace NuGet.CommandLine
             IPackage package;
             var sourceUri = new Uri(source);
             package = new OptimizedZipPackage(packageToPush);
+            var userAgent = UserAgent.CreateUserAgentString(CommandLineConstants.UserAgent);
 
             string sourceName = CommandLineUtility.GetSourceDisplayName(source);
             Console.WriteLine(LocalizedResourceManager.GetString("PushCommandPushingPackage"),
@@ -203,6 +203,8 @@ namespace NuGet.CommandLine
                 apiKey,
                 packageToPush,
                 new FileInfo(packageToPush).Length,
+                Console, 
+                userAgent,
                 token);
 
             Console.WriteLine(LocalizedResourceManager.GetString("PushCommandPackagePushed"));

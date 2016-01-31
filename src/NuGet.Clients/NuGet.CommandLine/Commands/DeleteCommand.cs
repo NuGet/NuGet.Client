@@ -36,8 +36,16 @@ namespace NuGet.CommandLine
 
             //If the user passed a source use it for the gallery location
             string source = SourceProvider.ResolveAndValidateSource(Source) ?? NuGetConstants.DefaultGalleryServerUrl;
+            var packageSource = new Configuration.PackageSource(source);
+
+            var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
+
+            var sourceRepository = sourceRepositoryProvider.CreateRepository(packageSource);
+            //TODO: rename it.
+            PushCommandResource pushCommandResource = await sourceRepository.GetResourceAsync<PushCommandResource>();
+
             var userAgent = UserAgent.CreateUserAgentString(CommandLineConstants.UserAgent);
-            var gallery = new PackageUploader(source, userAgent, Console);
+            var gallery = pushCommandResource.GetPackageUploader();
 
             //If the user did not pass an API Key look in the config file
             string apiKey = GetApiKey(source);
@@ -50,7 +58,7 @@ namespace NuGet.CommandLine
             if (NonInteractive || Console.Confirm(String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("DeleteCommandConfirm"), packageId, packageVersion, sourceDisplayName)))
             {
                 Console.WriteLine(LocalizedResourceManager.GetString("DeleteCommandDeletingPackage"), packageId, packageVersion, sourceDisplayName);
-                await gallery.DeletePackage(apiKey, packageId, packageVersion);
+                await gallery.DeletePackage(apiKey, packageId, packageVersion, Console);
                 Console.WriteLine(LocalizedResourceManager.GetString("DeleteCommandDeletedPackage"), packageId, packageVersion);
             }
             else
