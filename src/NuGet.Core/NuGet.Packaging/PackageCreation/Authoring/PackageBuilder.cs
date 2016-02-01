@@ -4,9 +4,11 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.IO.Packaging;
+using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using NuGet.Packaging.PackageCreation.Resources;
+using NuGet.Versioning;
 
 namespace NuGet
 {
@@ -253,37 +255,32 @@ namespace NuGet
             ValidateDependencySets(Version, DependencySets);
             ValidateReferenceAssemblies(Files, PackageAssemblyReferences);
 
-            using (Package package = Package.Open(stream, FileMode.Create))
+            using (var package = new ZipArchive(stream, ZipArchiveMode.Create))
             {
                 // Validate and write the manifest
                 WriteManifest(package, DetermineMinimumSchemaVersion(Files, DependencySets));
 
                 // Write the files to the package
-                WriteFiles(package);
+                var extensions = WriteFiles(package);
 
-                // Copy the metadata properties back to the package
-                package.PackageProperties.Creator = String.Join(",", Authors);
-                package.PackageProperties.Description = Description;
-                package.PackageProperties.Identifier = Id;
-                package.PackageProperties.Version = Version.ToString();
-                package.PackageProperties.Language = Language;
-                package.PackageProperties.Keywords = ((IPackageMetadata)this).Tags;
-                package.PackageProperties.Title = Title;
-                package.PackageProperties.LastModifiedBy = CreatorInfo();
+                extensions.Add("nuspec");
+
+                WriteOpcContentTypes(package, extensions);
             }
         }
 
         private static string CreatorInfo()
         {
             List<string> creatorInfo = new List<string>();
-            var assembly = typeof(PackageBuilder).Assembly;
+            var assembly = typeof(PackageBuilder).GetTypeInfo().Assembly;
             creatorInfo.Add(assembly.FullName);
+#if DNX451 // CORECLR_TODO: Environment.OSVersion
             creatorInfo.Add(Environment.OSVersion.ToString());
+#endif
 
-            var attributes = assembly.GetCustomAttributes(typeof(System.Runtime.Versioning.TargetFrameworkAttribute), true);
-            if (attributes.Length > 0)
+            var attribute = assembly.GetCustomAttributes<System.Runtime.Versioning.TargetFrameworkAttribute>().FirstOrDefault();
+            if (attribute != null)
             {
-                var attribute = (System.Runtime.Versioning.TargetFrameworkAttribute)attributes[0];
                 creatorInfo.Add(attribute.FrameworkDisplayName);
             }
 
@@ -374,7 +371,7 @@ namespace NuGet
                 PackageIdValidator.ValidatePackageId(dep.Id);
             }
 
-            if (String.IsNullOrEmpty(version.SpecialVersion))
+            if (!version.IsPrerelease)
             {
                 // If we are creating a production package, do not allow any of the dependencies to be a prerelease version.
                 var prereleaseDependency = dependencies.SelectMany(set => set.Dependencies).FirstOrDefault(IsPrereleaseDependency);
@@ -467,25 +464,25 @@ namespace NuGet
             }
         }
 
-        private void WriteManifest(Package package, int minimumManifestVersion)
+        private void WriteManifest(ZipArchive package, int minimumManifestVersion)
         {
-            Uri uri = UriUtility.CreatePartUri(Id + Constants.ManifestExtension);
+            string path = Id + Constants.ManifestExtension;
 
-            // Create the manifest relationship
-            package.CreateRelationship(uri, TargetMode.Internal, Constants.PackageRelationshipNamespace + ManifestRelationType);
+            WriteOpcManifestRelationship(package, path);
 
-            // Create the part
-            PackagePart packagePart = package.CreatePart(uri, DefaultContentType, CompressionOption.Maximum);
+            ZipArchiveEntry entry = package.CreateEntry(path, CompressionLevel.Optimal);
 
-            using (Stream stream = packagePart.GetStream())
+            using (Stream stream = entry.Open())
             {
                 Manifest manifest = Manifest.Create(this);
                 manifest.Save(stream, minimumManifestVersion);
             }
         }
 
-        private void WriteFiles(Package package)
+        private HashSet<string> WriteFiles(ZipArchive package)
         {
+            var extensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
             // Add files that might not come from expanding files on disk
             foreach (IPackageFile file in new HashSet<IPackageFile>(Files))
             {
@@ -494,19 +491,22 @@ namespace NuGet
                     try
                     {
                         CreatePart(package, file.Path, stream);
+                        var fileExtension = Path.GetExtension(file.Path);
+
+                        // We have files without extension (e.g. the executables for Nix)
+                        if (!string.IsNullOrEmpty(fileExtension))
+                        {
+                            extensions.Add(fileExtension.Substring(1));
+                        }
                     }
                     catch
                     {
-                        Console.WriteLine(file.Path);
                         throw;
                     }
                 }
             }
 
-            foreach (var file in package.GetParts().GroupBy(s => s.Uri).Where(_ => _.Count() > 1))
-            {
-                Console.WriteLine(file.Key);
-            }
+            return extensions;
         }
 
         private void AddFiles(string basePath, string source, string destination, string exclude = null)
@@ -592,18 +592,15 @@ namespace NuGet
             }
         }
 
-        private static void CreatePart(Package package, string path, Stream sourceStream)
+        private static void CreatePart(ZipArchive package, string path, Stream sourceStream)
         {
-            if (PackageHelper.IsPackageManifest(path, package.PackageProperties.Identifier))
+            if (PackageHelper.IsManifest(path))
             {
                 return;
             }
 
-            Uri uri = UriUtility.CreatePartUri(path);
-
-            // Create the part
-            PackagePart packagePart = package.CreatePart(uri, DefaultContentType, CompressionOption.Maximum);
-            using (Stream stream = packagePart.GetStream())
+            var entry = package.CreateEntry(PathUtility.GetPathWithForwardSlashes(path), CompressionLevel.Optimal);
+            using (var stream = entry.Open())
             {
                 sourceStream.CopyTo(stream);
             }
@@ -632,7 +629,51 @@ namespace NuGet
 
         private static bool ValidateSpecialVersionLength(SemanticVersion version)
         {
-            return version == null || version.SpecialVersion == null || version.SpecialVersion.Length <= 20;
+            if (!version.IsPrerelease)
+            {
+                return true;
+            }
+
+            return version == null || version.Release.Length <= 20;
+        }
+
+        private void WriteOpcManifestRelationship(ZipArchive package, string path)
+        {
+            ZipArchiveEntry relsEntry = package.CreateEntry("_rels/.rels", CompressionLevel.Optimal);
+
+            using (var writer = new StreamWriter(relsEntry.Open()))
+            {
+                writer.Write(String.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
+<Relationships xmlns=""http://schemas.openxmlformats.org/package/2006/relationships"">
+    <Relationship Type=""http://schemas.microsoft.com/packaging/2010/07/manifest"" Target=""/{0}"" Id=""{1}"" />
+</Relationships>", path, GenerateRelationshipId()));
+                writer.Flush();
+            }
+        }
+
+        private static void WriteOpcContentTypes(ZipArchive package, HashSet<string> extensions)
+        {
+            // OPC backwards compatibility
+            ZipArchiveEntry relsEntry = package.CreateEntry("[Content_Types].xml", CompressionLevel.Optimal);
+
+            using (var writer = new StreamWriter(relsEntry.Open()))
+            {
+                writer.Write(@"<?xml version=""1.0"" encoding=""utf-8""?>
+<Types xmlns=""http://schemas.openxmlformats.org/package/2006/content-types"">
+    <Default Extension=""rels"" ContentType=""application/vnd.openxmlformats-package.relationships+xml"" />");
+                foreach (var extension in extensions)
+                {
+                    writer.Write(@"<Default Extension=""" + extension + @""" ContentType=""application/octet"" />");
+                }
+                writer.Write("</Types>");
+                writer.Flush();
+            }
+        }
+
+        // Generate a relationship id for compatibility
+        private string GenerateRelationshipId()
+        {
+            return "R" + Guid.NewGuid().ToString("N").Substring(0, 16);
         }
     }
 }

@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using NuGet.Packaging.PackageCreation.Resources;
 using CompatibilityMapping = System.Collections.Generic.Dictionary<string, string[]>;
+using NuGet.Versioning;
 
 namespace NuGet
 {
