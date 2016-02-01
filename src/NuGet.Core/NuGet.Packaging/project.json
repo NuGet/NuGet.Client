@@ -16,12 +16,14 @@
   },
   "dependencies": {
     "NuGet.Common": "3.4.0-*",
+    "NuGet.Frameworks": "3.4.0-*",
     "NuGet.Shared": {
       "type": "build",
       "version": "3.4.0-*"
     },
     "NuGet.Packaging.Core": "3.4.0-*",
-    "NuGet.Logging": "3.4.0-*"
+    "NuGet.Logging": "3.4.0-*",
+    "NuGet.Versioning": "3.4.0-*"
   },
   "frameworks": {
     "net45": {
