@@ -13,9 +13,9 @@ using NuGet.Versioning;
 using NuGet.Configuration;
 using NuGet.Protocol.Core;
 
-namespace NuGet
+namespace NuGet.Protocol.Core.Types
 {
-    public class PackageUploader
+    public class PackageUpdater
     {
         private const string ServiceEndpoint = "/api/v2/package";
         private const string ApiKeyHeader = "X-NuGet-ApiKey";
@@ -27,7 +27,7 @@ namespace NuGet
         private Uri _baseUri;
         private Uri _source;
 
-        public PackageUploader(string source,
+        public PackageUpdater(string source,
             Func<Task<HttpHandlerResource>> messageHandlerFactory,
             Func<Uri, CancellationToken, Task<ICredentials>> promptForCredentials,
             Action<Uri, ICredentials> credentialsSuccessfullyUsed)

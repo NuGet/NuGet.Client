@@ -17,7 +17,7 @@ using System.ServiceModel.Security;
 using System.Text;
 using NuGet.Configuration;
 
-namespace NuGet.Protocol.Core
+namespace NuGet.Protocol.Core.Types
 {
     public class STSAuthHelper
     {

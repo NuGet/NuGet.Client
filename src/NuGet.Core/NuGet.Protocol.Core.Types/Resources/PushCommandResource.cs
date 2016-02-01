@@ -27,9 +27,9 @@ namespace NuGet.Protocol.Core.Types
             _messageHandlerFactory = messageHandlerFactory;
         }
 
-        public PackageUploader GetPackageUploader()
+        public PackageUpdater GetPackageUpdater()
         {
-            return new PackageUploader(_pushEndpoint, 
+            return new PackageUpdater(_pushEndpoint, 
                 _messageHandlerFactory, 
                 _promptForCredentials, 
                 _credentialsSuccessfullyUsed);

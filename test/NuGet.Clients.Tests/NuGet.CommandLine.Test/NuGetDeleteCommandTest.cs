@@ -9,7 +9,7 @@ namespace NuGet.CommandLine.Test
     public class NuGetDeleteCommandTest
     {
         // Tests deleting a package from a source that is a file system directory.
-        [Fact]
+        [Fact(Skip = "NYI. Will be completed shortly")]
         public void DeleteCommand_DeleteFromFileSystemSource()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -38,7 +38,7 @@ namespace NuGet.CommandLine.Test
 
         // Same as DeleteCommand_DeleteFromFileSystemSource, except that the directory is specified
         // in unix style.
-        [Fact]
+        [Fact(Skip = "NYI. Will be completed shortly")]
         public void DeleteCommand_DeleteFromFileSystemSourceUnixStyle()
         {
             var nugetexe = Util.GetNuGetExePath();

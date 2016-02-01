@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Protocol.Core;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine
@@ -170,7 +171,7 @@ namespace NuGet.CommandLine
 
         private async Task PushPackage(string packagePath, string source, string apiKey, CancellationToken token)
         {
-            var packageServer = _pushCommandResource.GetPackageUploader();
+            var packageServer = _pushCommandResource.GetPackageUpdater();
 
             IEnumerable<string> packagesToPush = GetPackagesToPush(packagePath);
 
@@ -184,19 +185,17 @@ namespace NuGet.CommandLine
 
         private async Task PushPackageCore(string source,
             string apiKey,
-            PackageUploader packageServer,
+            PackageUpdater packageServer,
             string packageToPush,
             CancellationToken token)
         {
             // Push the package to the server
-            IPackage package;
             var sourceUri = new Uri(source);
-            package = new OptimizedZipPackage(packageToPush);
             var userAgent = UserAgent.CreateUserAgentString(CommandLineConstants.UserAgent);
 
             string sourceName = CommandLineUtility.GetSourceDisplayName(source);
             Console.WriteLine(LocalizedResourceManager.GetString("PushCommandPushingPackage"),
-                package.GetFullName(), sourceName);
+                Path.GetFileName(packageToPush), sourceName);
 
             await packageServer.PushPackage(
                 apiKey,

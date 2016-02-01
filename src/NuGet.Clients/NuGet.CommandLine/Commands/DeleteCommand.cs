@@ -45,7 +45,7 @@ namespace NuGet.CommandLine
             //TODO: rename the resource.
             PushCommandResource pushCommandResource = await sourceRepository.GetResourceAsync<PushCommandResource>();
 
-            var gallery = pushCommandResource.GetPackageUploader();
+            var gallery = pushCommandResource.GetPackageUpdater();
 
             //If the user did not pass an API Key look in the config file
             string apiKey = GetApiKey(source);
