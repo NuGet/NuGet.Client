@@ -8,11 +8,11 @@ namespace NuGet.Frameworks
     public class FallbackFramework : NuGetFramework, IEquatable<FallbackFramework>
     {
         /// <summary>
-        /// List of frameworks to fall back to.
+        /// List framework to fall back to.
         /// </summary>
-        public IEnumerable<NuGetFramework> Fallback { get; }
+        public IReadOnlyList<NuGetFramework> Fallback { get; }
 
-        public FallbackFramework(NuGetFramework framework, IEnumerable<NuGetFramework> fallbackFramework)
+        public FallbackFramework(NuGetFramework framework, IReadOnlyList<NuGetFramework> fallbackFrameworks)
             : base(framework)
         {
             if (framework == null)
@@ -20,12 +20,17 @@ namespace NuGet.Frameworks
                 throw new ArgumentNullException(nameof(framework));
             }
 
-            if (fallbackFramework == null)
+            if (fallbackFrameworks == null)
             {
-                throw new ArgumentNullException(nameof(fallbackFramework));
+                throw new ArgumentNullException(nameof(fallbackFrameworks));
             }
 
-            Fallback = fallbackFramework;
+            if (fallbackFrameworks.Count == 0)
+            {
+                throw new ArgumentException("Empty fallbackFrameworks is invalid",nameof(fallbackFrameworks));
+            }
+
+            Fallback = fallbackFrameworks;
         }
 
         public override bool Equals(object obj)

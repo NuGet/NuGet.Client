@@ -126,4 +126,7 @@
   <data name="Log_ErrorReadingProjectJsonWithLocation" xml:space="preserve">
     <value>Error reading '{0}' at line {1} column {2} : {3}</value>
   </data>
+  <data name="Log_InvalidImportFramework" xml:space="preserve">
+    <value>The value of import frameworks: '{0}' in '{1}' is not a specific framework.</value>
+  </data>
 </root>

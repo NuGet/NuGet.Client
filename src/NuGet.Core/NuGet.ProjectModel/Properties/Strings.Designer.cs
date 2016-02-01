@@ -50,6 +50,11 @@ namespace NuGet.ProjectModel
             get { return GetString("Log_ErrorReadingProjectJsonWithLocation"); }
         }
 
+        internal static string Log_InvalidImportFramework
+        {
+            get { return GetString("Log_InvalidImportFramework"); }
+        }
+
         /// <summary>
         /// Error reading '{0}' at line {1} column {2} : {3}
         /// </summary>
