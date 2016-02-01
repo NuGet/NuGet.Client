@@ -25,7 +25,7 @@ namespace NuGet.ProjectModel.Test
 
             // Act & Assert
             var ex = Assert.Throws<FileFormatException>(() => JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", "project.json"));
-            Assert.Equal("The value of import frameworks in 'project.json' is not a specific framework", ex.InnerException.Message);
+            Assert.Equal("The value of import frameworks: '[  \"dotnet5.3\",  \"portable-net452+win81\",  \"furtureFramework\"]' in 'project.json' is not a specific framework.", ex.InnerException.Message);
 
         }
 

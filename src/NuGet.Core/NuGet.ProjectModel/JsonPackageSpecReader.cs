@@ -289,7 +289,7 @@ namespace NuGet.ProjectModel
             }
             else
             {
-                values = token.Value<List<string>>();
+                values = token.Value<string[]>();
             }
             result = values
                 .SelectMany(value => value.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries));
@@ -311,10 +311,16 @@ namespace NuGet.ProjectModel
                         token.Value<string>()
                     };
             }
-            else
+            else if(token.Type == JTokenType.Array)
             {
                 values = token.ValueAsArray<string>();
             }
+            else
+            {
+                result = null;
+                return false;
+            }
+
             result = values;
             return true;
         }
@@ -368,7 +374,7 @@ namespace NuGet.ProjectModel
             // If a fallback framework exists, update the framework to contain both.
             var updatedFramework = frameworkName;
 
-            if (importFramework != null)
+            if (importFramework.Count != 0)
             {
                 updatedFramework = new FallbackFramework(frameworkName, importFramework);
             }
@@ -405,7 +411,7 @@ namespace NuGet.ProjectModel
 
         private static List<NuGetFramework> GetImports(JObject properties, PackageSpec packageSpec)
         {
-            List<NuGetFramework> framework = null;
+            List<NuGetFramework> framework = new List<NuGetFramework>();
 
             var importsProperty = properties["imports"];
 
@@ -418,10 +424,11 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            if (framework != null && framework.Any(p => !p.IsSpecificFramework))
+            if (framework.Any(p => !p.IsSpecificFramework))
             {
                 throw FileFormatException.Create(
-                           string.Format("The value of import frameworks in '{0}' is not a specific framework", PackageSpec.PackageSpecFileName),
+                           string.Format(Strings.Log_InvalidImportFramework, importsProperty.ToString().Replace(Environment.NewLine,""),
+                                            PackageSpec.PackageSpecFileName),
                            importsProperty,
                            packageSpec.FilePath);
             }
