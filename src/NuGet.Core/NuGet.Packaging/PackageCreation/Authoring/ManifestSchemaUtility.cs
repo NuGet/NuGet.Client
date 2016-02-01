@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Schema;
-using NuGet.Resources;
+using NuGet.Packaging.PackageCreation.Resources;
 
 namespace NuGet
 {

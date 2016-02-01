@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using NuGet.Resources;
+using NuGet.Packaging.PackageCreation.Resources;
 
 namespace NuGet
 {

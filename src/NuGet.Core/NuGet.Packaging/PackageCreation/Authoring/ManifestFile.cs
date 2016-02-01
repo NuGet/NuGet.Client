@@ -5,7 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
-using NuGet.Resources;
+using NuGet.Packaging.PackageCreation.Resources;
 
 namespace NuGet
 {

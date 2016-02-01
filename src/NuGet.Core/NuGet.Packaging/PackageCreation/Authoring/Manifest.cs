@@ -10,7 +10,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
 using System.Xml.Serialization;
-using NuGet.Resources;
+using NuGet.Packaging.PackageCreation.Resources;
 
 namespace NuGet
 {

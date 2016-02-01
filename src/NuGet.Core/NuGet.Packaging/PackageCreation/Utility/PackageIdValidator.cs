@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using NuGet.Resources;
+using NuGet.Packaging.PackageCreation.Resources;
 
 namespace NuGet
 {

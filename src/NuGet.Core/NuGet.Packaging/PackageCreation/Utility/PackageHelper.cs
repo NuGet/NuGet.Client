@@ -4,7 +4,7 @@ using System.IO;
 using System.IO.Packaging;
 using System.Linq;
 using System.Runtime.Versioning;
-using NuGet.Resources;
+using NuGet.Packaging.PackageCreation.Resources;
 
 namespace NuGet
 {

@@ -1,4 +1,4 @@
-using NuGet.Resources;
+using NuGet.Packaging.PackageCreation.Resources;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

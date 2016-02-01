@@ -8,7 +8,7 @@ using System.Linq;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Text.RegularExpressions;
-using NuGet.Resources;
+using NuGet.Packaging.PackageCreation.Resources;
 using CompatibilityMapping = System.Collections.Generic.Dictionary<string, string[]>;
 
 namespace NuGet
