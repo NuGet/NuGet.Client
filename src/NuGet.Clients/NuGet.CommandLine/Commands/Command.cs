@@ -146,6 +146,7 @@ namespace NuGet.CommandLine
             // We need to sync the v2 proxy cache and v3 proxy cache so that the user will not
             // get prompted twice for the same authenticated proxy.
             var v2ProxyCache = NuGet.ProxyCache.Instance as IProxyCache;
+            NuGet.Protocol.Core.v2.HttpHandlerResourceV2.PromptForProxyCredentials =
             NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForProxyCredentials =
                 async (uri, proxy, cancellationToken) =>
             {
@@ -166,10 +167,12 @@ namespace NuGet.CommandLine
                 v2ProxyCache?.Add(proxy);
             };
             
+            NuGet.Protocol.Core.v2.HttpHandlerResourceV2.PromptForCredentials = 
             NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForCredentials =
                 async (uri, cancellationToken) => await credentialService.GetCredentials(
                     uri, proxy: null, isProxy: false, cancellationToken: cancellationToken);
 
+            NuGet.Protocol.Core.v2.HttpHandlerResourceV2.CredentialsSuccessfullyUsed =
             NuGet.Protocol.Core.v3.HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
             {
                 NuGet.CredentialStore.Instance.Add(uri, credentials);
