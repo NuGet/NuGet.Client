@@ -1051,6 +1051,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void PushCommand_PushToServerV3()
         {
+            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
 
             using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
@@ -1131,6 +1132,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void PushCommand_PushToServerV3_NoPushEndpoint()
         {
+            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
             using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
 
@@ -1197,6 +1199,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void PushCommand_PushToServerV3_Unavailable()
         {
+            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
 
             using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
@@ -1260,6 +1263,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void PushCommand_PushToServerV3_ApiKey()
         {
+            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
             using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
 
@@ -1348,6 +1352,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void PushCommand_PushToServerV3_ApiKeyFromConfig()
         {
+            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
             using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
             {
@@ -1459,6 +1464,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void PushCommand_DefaultPushSource()
         {
+            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
             using (var randomDirectory = TestFileSystemUtility.CreateRandomTestFolder())
 
@@ -1737,6 +1743,7 @@ namespace NuGet.CommandLine.Test
         [InlineData("https://invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org/v3/index.json")]
         public void PushCommand_InvalidInput_V3_NonExistent(string invalidInput)
         {
+            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
             using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
 
@@ -1775,6 +1782,7 @@ namespace NuGet.CommandLine.Test
         [InlineData("https://api.nuget.org/v4/index.json")]
         public void PushCommand_InvalidInput_V3_NotFound(string invalidInput)
         {
+            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
             using (var packagesDirectory = TestFileSystemUtility.CreateRandomTestFolder())
 

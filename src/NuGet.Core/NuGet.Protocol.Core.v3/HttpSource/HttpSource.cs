@@ -28,7 +28,6 @@ namespace NuGet.Protocol
         private readonly Func<Task<HttpHandlerResource>> _messageHandlerFactory;
         private readonly Uri _baseUri;
         private HttpClient _httpClient;
-        private bool _disposed;
         private int _authRetries;
         private HttpHandlerResource _httpHandler;
         private Guid _lastAuthId = Guid.NewGuid();

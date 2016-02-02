@@ -21,6 +21,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesWithAllMissingPackages()
         {
             // Arrange
+            Util.ClearWebCache();
             var testCount = 100;
 
             using (var server2 = new MockServer())
@@ -132,6 +133,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesWithPartialMissingPackages()
         {
             // Arrange
+            Util.ClearWebCache();
             var testCount = 100;
 
             using (var server2 = new MockServer())
@@ -269,6 +271,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesMainlyV3()
         {
             // Arrange
+            Util.ClearWebCache();
             var testCount = 100;
 
             using (var server2 = new MockServer())
@@ -396,6 +399,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesMainlyV2()
         {
             // Arrange
+            Util.ClearWebCache();
             var testCount = 100;
 
             using (var server2 = new MockServer())
@@ -522,6 +526,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_CancelPackageDownloadForV3()
         {
             // Arrange
+            Util.ClearWebCache();
             using (var server2 = new MockServer())
             using (var server = new MockServer())
             using (var workingPath = CreateMixedConfigAndJson())
@@ -621,6 +626,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_CancelPackageDownloadForV2()
         {
             // Arrange
+            Util.ClearWebCache();
             using (var server2 = new MockServer())
             using (var server = new MockServer())
             using (var workingPath = CreateMixedConfigAndJson())
@@ -715,6 +721,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_RestoreSolutionMultipleSourcesV2V3AndLocal()
         {
             // Arrange
+            Util.ClearWebCache();
             using (var server2 = new MockServer())
             using (var server = new MockServer())
             using (var workingPath = CreateMixedConfigAndJson())
@@ -850,6 +857,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_InstallVersionFromV3()
         {
             // Arrange
+            Util.ClearWebCache();
             using (var server = new MockServer())
             using (var workingPath = CreateMixedConfigAndJson())
             {
@@ -974,6 +982,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_InstallLatestFromV3()
         {
             // Arrange
+            Util.ClearWebCache();
             using (var server = new MockServer())
             using (var workingPath = CreateMixedConfigAndJson())
             {
@@ -1035,6 +1044,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_RestoreSolutionMultipleSourcesV2V3()
         {
             // Arrange
+            Util.ClearWebCache();
             using (var server2 = new MockServer())
             using (var server = new MockServer())
             using (var workingPath = CreateMixedConfigAndJson())
@@ -1160,6 +1170,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_RestoreSolutionMultipleSourcesTwoV3()
         {
             // Arrange
+            Util.ClearWebCache();
             using (var server2 = new MockServer())
             using (var server = new MockServer())
             using (var workingPath = CreateMixedConfigAndJson())
@@ -1232,6 +1243,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_RestoreSolutionV3WithoutFlatContainer()
         {
             // Arrange
+            Util.ClearWebCache();
             using (var server = new MockServer())
             using (var workingPath = CreateMixedConfigAndJson())
             {
@@ -1288,6 +1300,7 @@ namespace NuGet.CommandLine.Test
         public void NetworkCallCount_RestoreSolutionWithPackagesConfigAndProjectJsonV3()
         {
             // Arrange
+            Util.ClearWebCache();
             using (var server = new MockServer())
             using (var workingPath = CreateMixedConfigAndJson())
             {
