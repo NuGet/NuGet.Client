@@ -168,6 +168,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to The NuGet configuration file to use..
+        /// </summary>
+        internal static string Restore_Switch_ConfigFile_Description {
+            get {
+                return ResourceManager.GetString("Restore_Switch_ConfigFile_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Disables restoring multiple projects in parallel..
         /// </summary>
         internal static string Restore_Switch_DisableParallel_Description {
