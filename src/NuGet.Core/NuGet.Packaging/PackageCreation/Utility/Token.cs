@@ -1,4 +1,4 @@
-﻿namespace NuGet
+﻿namespace NuGet.Packaging
 {
     public class Token
     {

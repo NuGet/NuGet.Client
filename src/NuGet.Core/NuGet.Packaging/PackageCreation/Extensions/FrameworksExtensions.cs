@@ -4,7 +4,7 @@
 using System.Runtime.Versioning;
 using NuGet.Frameworks;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     public static class FrameworksExtensions
     {

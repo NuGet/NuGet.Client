@@ -1,7 +1,7 @@
 ﻿
 using NuGet.Versioning;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     public interface IPackageName
     {

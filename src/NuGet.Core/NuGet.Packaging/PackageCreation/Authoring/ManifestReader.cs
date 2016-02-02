@@ -12,7 +12,7 @@ using System.Runtime.Versioning;
 using NuGet.Packaging.Core;
 using NuGet.Frameworks;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     internal static class ManifestReader
     {

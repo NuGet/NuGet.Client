@@ -8,7 +8,7 @@ using System.Xml.Linq;
 
 using NuGet.Packaging.Core;
 
-namespace NuGet.Xml
+namespace NuGet.Packaging.Xml
 {
     internal static class PackageMetadataXmlExtensions
     {

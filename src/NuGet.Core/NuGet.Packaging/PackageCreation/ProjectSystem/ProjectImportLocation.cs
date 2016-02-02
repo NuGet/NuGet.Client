@@ -1,5 +1,5 @@
 ﻿
-namespace NuGet
+namespace NuGet.Packaging
 {
     public enum ProjectImportLocation
     {

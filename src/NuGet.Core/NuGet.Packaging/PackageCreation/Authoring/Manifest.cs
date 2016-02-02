@@ -13,7 +13,7 @@ using System.Xml.Schema;
 using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Xml;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     public class Manifest
     {

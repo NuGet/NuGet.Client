@@ -1,5 +1,5 @@
 ﻿
-namespace NuGet
+namespace NuGet.Packaging
 {
     internal static class ObjectExtensions
     {

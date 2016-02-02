@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading;
 using NuGet.Packaging.PackageCreation.Resources;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     public static class FileSystemExtensions
     {

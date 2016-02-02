@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.Versioning;
 using NuGet.Packaging.PackageCreation.Resources;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     /// <summary>
     /// Represent one profile of the .NET Portable library

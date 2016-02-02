@@ -8,7 +8,7 @@ using System.Linq;
 using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Versioning;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     public class ManifestMetadata : IPackageMetadata
 #if DNX451

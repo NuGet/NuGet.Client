@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     public sealed class FileTransformExtensions : IEquatable<FileTransformExtensions>
     {

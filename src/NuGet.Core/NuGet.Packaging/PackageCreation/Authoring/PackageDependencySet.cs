@@ -4,7 +4,7 @@ using System.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     public class PackageDependencySet
     {

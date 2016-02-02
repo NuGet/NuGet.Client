@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     public static class StreamExtensions
     {

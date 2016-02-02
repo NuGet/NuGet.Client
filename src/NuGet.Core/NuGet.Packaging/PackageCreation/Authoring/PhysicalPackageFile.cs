@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Versioning;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     public class PhysicalPackageFile : IPackageFile
     {

@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     /// <summary>
     /// This class is used to parse string into tokens.    

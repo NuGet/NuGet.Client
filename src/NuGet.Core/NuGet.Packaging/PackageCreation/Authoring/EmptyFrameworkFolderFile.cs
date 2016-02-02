@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     /// <summary>
     /// Represents an empty framework folder in NuGet 2.0+ packages. 

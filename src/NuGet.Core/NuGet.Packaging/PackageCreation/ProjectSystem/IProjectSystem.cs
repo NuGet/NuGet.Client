@@ -1,7 +1,7 @@
 using System.IO;
 using System.Runtime.Versioning;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     public interface IProjectSystem : IFileSystem, IPropertyProvider
     {

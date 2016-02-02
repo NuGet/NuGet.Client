@@ -6,7 +6,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     /// <summary>
     /// Simple token replacement system for content files.

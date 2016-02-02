@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     internal sealed class ManifestVersionAttribute : Attribute

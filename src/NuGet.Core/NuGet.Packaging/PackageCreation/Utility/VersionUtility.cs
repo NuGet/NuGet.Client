@@ -12,7 +12,7 @@ using NuGet.Packaging.PackageCreation.Resources;
 using CompatibilityMapping = System.Collections.Generic.Dictionary<string, string[]>;
 using NuGet.Versioning;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     public static class VersionUtility
     {

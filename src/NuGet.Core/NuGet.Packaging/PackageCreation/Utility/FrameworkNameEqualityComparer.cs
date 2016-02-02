@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.Versioning;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     /// <summary>
     /// The default comparer of FrameworkName performs case-sensitive comparison. This class does case-insensitive comparison.

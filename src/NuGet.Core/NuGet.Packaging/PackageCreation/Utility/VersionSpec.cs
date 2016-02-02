@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Text;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     public class VersionSpec : IVersionSpec
     {

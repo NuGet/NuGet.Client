@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 #endif
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     public class ManifestFile
 #if DNX451

@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using NuGet.Packaging.PackageCreation.Resources;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     public static class PackageIdValidator
     {

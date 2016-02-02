@@ -4,7 +4,7 @@ using System.Linq;
 
 using NuGet.Packaging.PackageCreation.Resources;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     internal static class ManifestSchemaUtility
     {

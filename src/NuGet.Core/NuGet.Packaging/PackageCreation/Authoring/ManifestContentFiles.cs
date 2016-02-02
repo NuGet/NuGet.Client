@@ -1,6 +1,6 @@
 ﻿using System.Xml.Serialization;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     public class ManifestContentFiles
     {

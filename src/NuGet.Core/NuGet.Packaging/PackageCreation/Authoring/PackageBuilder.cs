@@ -11,7 +11,7 @@ using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Versioning;
 using NuGet.Packaging.Core;
 
-namespace NuGet
+namespace NuGet.Packaging
 {
     public class PackageBuilder : IPackageBuilder
     {
