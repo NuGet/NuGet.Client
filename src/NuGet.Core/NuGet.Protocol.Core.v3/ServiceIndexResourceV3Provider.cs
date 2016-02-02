@@ -42,18 +42,18 @@ namespace NuGet.Protocol.Core.v3
         // An exception will be thrown on failure.
         private async Task<JObject> GetIndexJson(SourceRepository source, Logging.ILogger log, CancellationToken token)
         {
-            var uri = new Uri(source.PackageSource.Source);
+            var url = source.PackageSource.Source;
             var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
             var client = httpSourceResource.HttpSource;
 
-            using (var response = await client.GetAsync(uri, log, token))
-            {
-                response.EnsureSuccessStatusCode();
+            // Use default caching
+            var cacheContext = new HttpSourceCacheContext();
 
-                if (response.IsSuccessStatusCode)
+            using (var sourceResponse = await client.GetAsync(url, "service_index", cacheContext, log, token))
+            {
+                if (sourceResponse.Stream != null)
                 {
-                    using (var stream = await response.Content.ReadAsStreamAsync())
-                    using (var reader = new StreamReader(stream))
+                    using (var reader = new StreamReader(sourceResponse.Stream))
                     using (var jsonReader = new JsonTextReader(reader))
                     {
                         return JObject.Load(jsonReader);
