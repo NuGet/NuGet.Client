@@ -19,7 +19,7 @@ namespace NuGet.Protocol.Core.v2
             _repository = resource.V2Client;
         }
 
-        public override async Task<IEnumerable<ServerPackageMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
+        public override async Task<IEnumerable<ServerPackageMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, Logging.ILogger log, CancellationToken cancellationToken)
         {
             return await Task.Run(() =>
                 {

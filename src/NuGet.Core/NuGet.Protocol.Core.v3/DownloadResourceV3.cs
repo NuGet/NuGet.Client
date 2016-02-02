@@ -21,13 +21,13 @@ namespace NuGet.Protocol.Core.v3
     public class DownloadResourceV3 : DownloadResource
     {
         private readonly RegistrationResourceV3 _regResource;
-        private readonly HttpClient _client;
+        private readonly HttpSource _client;
         private readonly string _packageBaseAddressUrl;
 
         /// <summary>
         /// Download packages using the download url found in the registration resource.
         /// </summary>
-        public DownloadResourceV3(HttpClient client, RegistrationResourceV3 regResource)
+        public DownloadResourceV3(HttpSource client, RegistrationResourceV3 regResource)
             : this(client)
         {
             if (regResource == null)
@@ -41,7 +41,7 @@ namespace NuGet.Protocol.Core.v3
         /// <summary>
         /// Download packages using the package base address container resource.
         /// </summary>
-        public DownloadResourceV3(HttpClient client, string packageBaseAddress)
+        public DownloadResourceV3(HttpSource client, string packageBaseAddress)
             : this(client)
         {
             if (packageBaseAddress == null)
@@ -52,7 +52,7 @@ namespace NuGet.Protocol.Core.v3
             _packageBaseAddressUrl = packageBaseAddress.TrimEnd('/');
         }
 
-        private DownloadResourceV3(HttpClient client)
+        private DownloadResourceV3(HttpSource client)
         {
             if (client == null)
             {
@@ -68,7 +68,7 @@ namespace NuGet.Protocol.Core.v3
         /// 2. A url will be constructed for the flat container location if the source has that resource.
         /// 3. The download url will be found in the registration blob as a fallback.
         /// </summary>
-        private async Task<Uri> GetDownloadUrl(PackageIdentity identity, CancellationToken token)
+        private async Task<Uri> GetDownloadUrl(PackageIdentity identity, Logging.ILogger log, CancellationToken token)
         {
             Uri downloadUri = null;
             var sourcePackage = identity as SourcePackageDependencyInfo;
@@ -90,7 +90,7 @@ namespace NuGet.Protocol.Core.v3
             else if (_regResource != null)
             {
                 // Read the url from the registration information
-                var blob = await _regResource.GetPackageMetadata(identity, token);
+                var blob = await _regResource.GetPackageMetadata(identity, log, token);
 
                 if (blob != null
                     && blob["packageContent"] != null)
@@ -123,7 +123,6 @@ namespace NuGet.Protocol.Core.v3
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            var uri = await GetDownloadUrl(identity, token);
             if (uri != null)
             {
                 return await GetDownloadResultAsync(identity, uri, settings, logger, token);
@@ -156,7 +155,7 @@ namespace NuGet.Protocol.Core.v3
             {
                 try
                 {
-                    using (var packageStream = await _client.GetStreamAsync(uri))
+                    using (var packageStream = await _client.GetStreamAsync(uri, log, token))
                     {
                         var downloadResult = await GlobalPackagesFolderUtility.AddPackageAsync(identity,
                             packageStream,

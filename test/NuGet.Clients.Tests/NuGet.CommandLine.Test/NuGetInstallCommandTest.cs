@@ -1133,7 +1133,8 @@ namespace NuGet.CommandLine.Test
                         "-Source ",
                         serverV3.Uri + "a/b/c/index.json",
                         "-ConfigFile",
-                        configFileName
+                        configFileName,
+                        "-Verbosity detailed"
                     };
                     var result = CommandRunner.Run(
                         nugetexe,

@@ -21,6 +21,7 @@ namespace NuGet.DependencyResolver
         private readonly ILogger _logger;
         private readonly SourceCacheContext _cacheContext;
         private FindPackageByIdResource _findPackagesByIdResource;
+        private readonly SemaphoreSlim _resourceLock = new SemaphoreSlim(1, 1);
 
         public SourceRepositoryDependencyProvider(
             SourceRepository sourceRepository,
@@ -139,9 +140,21 @@ namespace NuGet.DependencyResolver
         {
             if (_findPackagesByIdResource == null)
             {
-                _findPackagesByIdResource = await _sourceRepository.GetResourceAsync<FindPackageByIdResource>();
-                _findPackagesByIdResource.Logger = _logger;
-                _findPackagesByIdResource.CacheContext = _cacheContext;
+                // Avoid multiple instances of the same resource
+                await _resourceLock.WaitAsync();
+                try
+                {
+                    if (_findPackagesByIdResource == null)
+                    {
+                        _findPackagesByIdResource = await _sourceRepository.GetResourceAsync<FindPackageByIdResource>();
+                        _findPackagesByIdResource.Logger = _logger;
+                        _findPackagesByIdResource.CacheContext = _cacheContext;
+                    }
+                }
+                finally
+                {
+                    _resourceLock.Release();
+                }
             }
         }
     }

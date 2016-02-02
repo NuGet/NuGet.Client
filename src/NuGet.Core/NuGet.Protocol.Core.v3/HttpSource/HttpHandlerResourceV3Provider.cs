@@ -9,12 +9,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3.Data;
+using NuGet.Protocol.Core.v3;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     public class HttpHandlerResourceV3Provider : ResourceProvider
     {
+        // Only one source may prompt at a time
+        private readonly static SemaphoreSlim _credentialPromptLock = new SemaphoreSlim(1, 1);
+        internal const int MaxAuthRetries = 10;
+
         public HttpHandlerResourceV3Provider()
             : base(typeof(HttpHandlerResource),
                   nameof(HttpHandlerResourceV3Provider),
@@ -28,16 +32,30 @@ namespace NuGet.Protocol.Core.v3
 
             HttpHandlerResourceV3 curResource = null;
 
-            var clientHandler = CreateCredentialHandler(source.PackageSource);
+            if (source.PackageSource.IsHttp)
+            {
+                var clientHandler = CreateCredentialHandler(source.PackageSource);
 
-            // replace the handler with the proxy aware handler
-            curResource = DataClient.CreateHandler(clientHandler);
+                // replace the handler with the proxy aware handler
+                curResource = CreateHandler(source.PackageSource);
+            }
 
             return Task.FromResult(new Tuple<bool, INuGetResource>(curResource != null, curResource));
         }
 
+        private static HttpHandlerResourceV3 CreateHandler(PackageSource packageSource)
+        {
+            var handler = CreateCredentialHandler(packageSource);
+
+            var retryHandler = new RetryHandler(handler, maxTries: 3);
+
+            var resource = new HttpHandlerResourceV3(handler, retryHandler);
+
+            return resource;
+        }
+
 #if DNXCORE50
-        private HttpClientHandler CreateCredentialHandler(PackageSource packageSource)
+        public static HttpClientHandler CreateCredentialHandler(PackageSource packageSource)
         {
             var handler = new HttpClientHandler();
             handler.AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate);
@@ -45,7 +63,7 @@ namespace NuGet.Protocol.Core.v3
         }
 #else
 
-        private HttpClientHandler CreateCredentialHandler(PackageSource packageSource)
+        public static HttpClientHandler CreateCredentialHandler(PackageSource packageSource)
         {
             var uri = new Uri(packageSource.Source);
             var proxy = ProxyCache.Instance.GetProxy(uri);
@@ -78,6 +96,8 @@ namespace NuGet.Protocol.Core.v3
 
         private class CredentialPromptWebRequestHandler : WebRequestHandler
         {
+            private int _authRetries;
+
             public CredentialPromptWebRequestHandler(IWebProxy proxy, ICredentials credentials)
             {
                 Proxy = proxy;
@@ -105,17 +125,41 @@ namespace NuGet.Protocol.Core.v3
                         if (ProxyAuthenticationRequired(ex) &&
                             HttpHandlerResourceV3.PromptForProxyCredentials != null)
                         {
-                            // prompt use for proxy credentials.
-                            var credentials = await HttpHandlerResourceV3
-                                .PromptForProxyCredentials(request.RequestUri, Proxy, cancellationToken);
+                            ICredentials currentCredentials = Proxy.Credentials;
 
-                            if (credentials == null)
+                            try
                             {
-                                throw;
-                            }
+                                await _credentialPromptLock.WaitAsync();
 
-                            // use the user provider credential to send the request again.
-                            Proxy.Credentials = credentials;
+                                // Check if the credentials have already changed
+                                if (!object.ReferenceEquals(currentCredentials, Proxy.Credentials))
+                                {
+                                    continue;
+                                }
+
+                                // Limit the number of retries
+                                _authRetries++;
+                                if (_authRetries >= MaxAuthRetries)
+                                {
+                                    throw;
+                                }
+
+                                // prompt use for proxy credentials.
+                                var credentials = await HttpHandlerResourceV3
+                                    .PromptForProxyCredentials(request.RequestUri, Proxy, cancellationToken);
+
+                                if (credentials == null)
+                                {
+                                    throw;
+                                }
+
+                                // use the user provided credential to send the request again.
+                                Proxy.Credentials = credentials;
+                            }
+                            finally
+                            {
+                                _credentialPromptLock.Release();
+                            }
                         }
                         else
                         {

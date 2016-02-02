@@ -22,7 +22,7 @@ namespace Test.Utility
         /// </summary>
         public static TestHttpHandlerProvider CreateHttpHandler(Dictionary<string, string> responses)
         {
-            return new TestHttpHandlerProvider(new TestMessageHandler(responses));
+            return new TestHttpHandlerProvider(() => new TestMessageHandler(responses));
         }
 
         /// <summary>
@@ -38,17 +38,17 @@ namespace Test.Utility
 
     public class TestHttpHandlerProvider : ResourceProvider
     {
-        private HttpClientHandler _messageHandler;
+        private Func<HttpClientHandler> _messageHandlerFactory;
 
-        public TestHttpHandlerProvider(HttpClientHandler messageHandler)
+        public TestHttpHandlerProvider(Func<HttpClientHandler> messageHandlerFactory)
             : base(typeof(HttpHandlerResource), "testhandler", NuGetResourceProviderPositions.First)
         {
-            _messageHandler = messageHandler;
+            _messageHandlerFactory = messageHandlerFactory;
         }
 
         public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
-            var result = new Tuple<bool, INuGetResource>(true, new TestHttpHandler(_messageHandler));
+            var result = new Tuple<bool, INuGetResource>(true, new TestHttpHandler(_messageHandlerFactory()));
             return Task.FromResult(result);
         }
     }

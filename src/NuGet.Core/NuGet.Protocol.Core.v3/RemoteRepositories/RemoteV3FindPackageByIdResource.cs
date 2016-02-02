@@ -40,7 +40,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             set
             {
                 base.Logger = value;
-                _httpSource.Logger = value;
             }
         }
 
@@ -100,7 +99,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             // This is invoked from inside a lock.
             await EnsureDependencyProvider(cancellationToken);
 
-            return await _dependencyInfoResource.ResolvePackages(id, cancellationToken);
+            return await _dependencyInfoResource.ResolvePackages(id, Logger, cancellationToken);
         }
 
         private async Task EnsureDependencyProvider(CancellationToken cancellationToken)
@@ -163,6 +162,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         package.ContentUri,
                         "nupkg_" + package.Identity.Id + "." + package.Identity.Version.ToNormalizedString(),
                         CreateCacheContext(retry),
+                        Logger,
                         cancellationToken))
                     {
                         return new NupkgEntry

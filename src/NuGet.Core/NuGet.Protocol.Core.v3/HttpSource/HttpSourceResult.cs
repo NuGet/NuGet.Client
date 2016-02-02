@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 
-namespace NuGet.Protocol.Core.v3.RemoteRepositories
+namespace NuGet.Protocol
 {
     internal class HttpSourceResult : IDisposable
     {

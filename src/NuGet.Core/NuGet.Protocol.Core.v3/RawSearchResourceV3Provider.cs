@@ -29,10 +29,10 @@ namespace NuGet.Protocol.Core.v3
 
                 if (endpoints.Length > 0)
                 {
-                    var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
+                    var client = HttpSource.Create(source);
 
                     // construct a new resource
-                    curResource = new RawSearchResourceV3(messageHandlerResource.MessageHandler, endpoints);
+                    curResource = new RawSearchResourceV3(client, endpoints);
                 }
             }
 

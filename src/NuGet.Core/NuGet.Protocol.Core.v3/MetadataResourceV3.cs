@@ -19,9 +19,9 @@ namespace NuGet.Protocol.Core.v3
     public class MetadataResourceV3 : MetadataResource
     {
         private RegistrationResourceV3 _regResource;
-        private HttpClient _client;
+        private HttpSource _client;
 
-        public MetadataResourceV3(HttpClient client, RegistrationResourceV3 regResource)
+        public MetadataResourceV3(HttpSource client, RegistrationResourceV3 regResource)
             : base()
         {
             if (client == null)
@@ -43,7 +43,7 @@ namespace NuGet.Protocol.Core.v3
         /// </summary>
         /// <param name="includePrerelease">include versions with prerelease labels</param>
         /// <param name="includeUnlisted">not implemented yet</param>
-        public override async Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, CancellationToken token)
+        public override async Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, Logging.ILogger log, CancellationToken token)
         {
             var results = new List<KeyValuePair<string, NuGetVersion>>();
 
@@ -52,7 +52,7 @@ namespace NuGet.Protocol.Core.v3
                 IEnumerable<NuGetVersion> allVersions;
                 try
                 {
-                    var catalogEntries = await _regResource.GetPackageMetadata(id, includePrerelease, includeUnlisted, token);
+                    var catalogEntries = await _regResource.GetPackageMetadata(id, includePrerelease, includeUnlisted, log, token);
                     allVersions = catalogEntries.Select(p => NuGetVersion.Parse(p["version"].ToString()));
                 }
                 catch (Exception ex)
@@ -69,27 +69,27 @@ namespace NuGet.Protocol.Core.v3
             return results;
         }
 
-        public override async Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, CancellationToken token)
+        public override async Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, Logging.ILogger log, CancellationToken token)
         {
             // TODO: get the url and just check the headers?
-            var metadata = await _regResource.GetPackageMetadata(identity, token);
+            var metadata = await _regResource.GetPackageMetadata(identity, log, token);
 
             // TODO: listed check
             return metadata != null;
         }
 
-        public override async Task<bool> Exists(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
+        public override async Task<bool> Exists(string packageId, bool includePrerelease, bool includeUnlisted, Logging.ILogger log, CancellationToken token)
         {
-            var entries = await GetVersions(packageId, includePrerelease, includeUnlisted, token);
+            var entries = await GetVersions(packageId, includePrerelease, includeUnlisted, log, token);
 
             return entries != null && entries.Any();
         }
 
-        public override async Task<IEnumerable<NuGetVersion>> GetVersions(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
+        public override async Task<IEnumerable<NuGetVersion>> GetVersions(string packageId, bool includePrerelease, bool includeUnlisted, Logging.ILogger log, CancellationToken token)
         {
             var results = new List<NuGetVersion>();
 
-            var entries = await _regResource.GetPackageEntries(packageId, includeUnlisted, token);
+            var entries = await _regResource.GetPackageEntries(packageId, includeUnlisted, log, token);
 
             foreach (var catalogEntry in entries)
             {

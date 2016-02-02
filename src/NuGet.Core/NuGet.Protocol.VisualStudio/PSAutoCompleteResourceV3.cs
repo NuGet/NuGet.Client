@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
-using NuGet.Protocol.Core.v3.Data;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.VisualStudio
@@ -18,9 +17,9 @@ namespace NuGet.Protocol.VisualStudio
     {
         private readonly RegistrationResourceV3 _regResource;
         private readonly ServiceIndexResourceV3 _serviceIndex;
-        private readonly DataClient _client;
+        private readonly HttpSource _client;
 
-        public PSAutoCompleteResourceV3(DataClient client, ServiceIndexResourceV3 serviceIndex, RegistrationResourceV3 regResource)
+        public PSAutoCompleteResourceV3(HttpSource client, ServiceIndexResourceV3 serviceIndex, RegistrationResourceV3 regResource)
             : base()
         {
             _regResource = regResource;
@@ -48,7 +47,7 @@ namespace NuGet.Protocol.VisualStudio
             queryUrl.Query = queryString;
 
             var queryUri = queryUrl.Uri;
-            var results = await _client.GetJObjectAsync(queryUri, token);
+            var results = await _client.GetJObjectAsync(queryUri, Logging.NullLogger.Instance, token);
             token.ThrowIfCancellationRequested();
             if (results == null)
             {
@@ -80,7 +79,7 @@ namespace NuGet.Protocol.VisualStudio
             CancellationToken token)
         {
             //*TODOs : Take prerelease as parameter. Also it should return both listed and unlisted for powershell ?
-            var packages = await _regResource.GetPackageMetadata(packageId, includePrerelease, false, token);
+            var packages = await _regResource.GetPackageMetadata(packageId, includePrerelease, false, Logging.NullLogger.Instance, token);
             var versions = new List<NuGetVersion>();
             foreach (var package in packages)
             {

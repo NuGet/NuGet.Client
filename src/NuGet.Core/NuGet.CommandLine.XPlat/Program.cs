@@ -15,6 +15,7 @@ using Microsoft.Extensions.PlatformAbstractions;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.DependencyResolver;
 using NuGet.Logging;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
@@ -54,6 +55,8 @@ namespace NuGet.CommandLine.XPlat
             var verbosity = app.Option(VerbosityOption, Strings.Switch_Verbosity, CommandOptionType.SingleValue);
 
             SetConnectionLimit();
+
+            SetUserAgent();
 
             app.Command("restore", restore =>
             {
@@ -153,9 +156,11 @@ namespace NuGet.CommandLine.XPlat
                     }
 
                     var localCaches = new Dictionary<string, NuGetv3LocalRepository>(StringComparer.Ordinal);
+                    var remoteProviders = new Dictionary<PackageSource, IRemoteDependencyProvider>();
 
                     var restoreSummaries = new List<RestoreSummary>();
                     var restoreTasks = new List<Task<RestoreSummary>>(maxTasks);
+                    var cacheContext = new SourceCacheContext();
 
                     foreach (var inputPath in inputValues)
                     {
@@ -176,9 +181,34 @@ namespace NuGet.CommandLine.XPlat
                             globalFolderPath = SettingsUtility.GetGlobalPackagesFolder(settings);
                         }
 
+                        var sharedCache = new RestoreCommandSharedCache();
+
                         // Find the shared local cache for globalFolderPath
                         // The global folder may differ between projects
                         NuGetv3LocalRepository localCache;
+                        if (!localCaches.TryGetValue(globalFolderPath, out localCache))
+                        {
+                            localCache = new NuGetv3LocalRepository(globalFolderPath);
+                            localCaches.Add(globalFolderPath, localCache);
+                        }
+
+                        sharedCache.LocalCache = localCache;
+
+                        var packageSources = GetSources(sources, fallBack, settings);
+
+                        foreach (var source in packageSources)
+                        {
+                            IRemoteDependencyProvider provider;
+                            if (!remoteProviders.TryGetValue(source.PackageSource, out provider))
+                            {
+                                provider = new SourceRepositoryDependencyProvider(source, Log, cacheContext);
+                                remoteProviders.Add(source.PackageSource, provider);
+                            }
+
+                            sharedCache.RemoteProviders.Add(provider);
+                        }
+
+                        // Create the shared resources up front so that all projects use the same one
                         if (!localCaches.TryGetValue(globalFolderPath, out localCache))
                         {
                             localCache = new NuGetv3LocalRepository(globalFolderPath);
@@ -194,11 +224,11 @@ namespace NuGet.CommandLine.XPlat
 
                         // Start a new restore
                         var task = Task.Run(async () => await ExecuteRestoreAsync(
-                            sources,
+                            packageSources,
                             packagesDirectory,
                             fallBack,
                             runtime,
-                            localCache,
+                            sharedCache,
                             settings,
                             isParallel,
                             inputPath));
@@ -271,6 +301,13 @@ namespace NuGet.CommandLine.XPlat
             return exitCode;
         }
 
+        private static void SetUserAgent()
+        {
+            UserAgent.UserAgentString
+                = UserAgent.CreateUserAgentString(
+                    $"NuGet xplat");
+        }
+
         /// <summary>
         /// Removes a task from the list and returns the restore summary.
         /// </summary>
@@ -313,11 +350,11 @@ namespace NuGet.CommandLine.XPlat
         }
 
         private static async Task<RestoreSummary> ExecuteRestoreAsync
-            (CommandOption sources,
+            (List<SourceRepository> sources,
             CommandOption packagesDirectory,
             CommandOption fallBack,
             CommandOption runtime,
-            NuGetv3LocalRepository localCache,
+            RestoreCommandSharedCache sharedCache,
             ISettings settings,
             bool isParallel,
             string inputPath)
@@ -364,6 +401,7 @@ namespace NuGet.CommandLine.XPlat
 
                 project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(file), Path.GetFileName(projectPath), file);
             }
+
             Log.LogVerbose(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Log_LoadedProject,
@@ -376,18 +414,18 @@ namespace NuGet.CommandLine.XPlat
                 Strings.Log_FoundProjectRoot,
                 rootDirectory));
 
-            var packageSources = GetSources(sources, fallBack, settings);
-
             using (var request = new RestoreRequest(
                 project,
-                packageSources,
-                localCache.RepositoryRoot))
+                sources,
+                sharedCache.LocalCache.RepositoryRoot))
             {
                 // Resolve the packages directory
                 Log.LogVerbose(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Log_UsingPackagesDirectory,
                     request.PackagesDirectory));
+
+                request.SharedCache = sharedCache;
 
                 if (externalProjects != null)
                 {

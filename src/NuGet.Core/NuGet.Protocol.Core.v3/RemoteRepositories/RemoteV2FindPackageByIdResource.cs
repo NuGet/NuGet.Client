@@ -52,7 +52,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             set
             {
                 base.Logger = value;
-                _httpSource.Logger = value;
             }
         }
 
@@ -135,6 +134,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                             uri,
                             $"list_{id}_page{page}",
                             CreateCacheContext(retry),
+                            Logger,
                             cancellationToken))
                         {
                             try
@@ -254,6 +254,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         package.ContentUri,
                         "nupkg_" + package.Id + "." + package.Version,
                         CreateCacheContext(retry),
+                        Logger,
                         cancellationToken))
                     {
                         return new NupkgEntry

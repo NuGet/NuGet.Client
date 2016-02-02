@@ -4,13 +4,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Globalization;
-using System.Net;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3.Data;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.v3
@@ -41,55 +40,29 @@ namespace NuGet.Protocol.Core.v3
 
         // Read the source's end point to get the index json.
         // An exception will be thrown on failure.
-        private async Task<JObject> GetIndexJson(SourceRepository source, CancellationToken token)
+        private async Task<JObject> GetIndexJson(SourceRepository source, Logging.ILogger log, CancellationToken token)
         {
             var uri = new Uri(source.PackageSource.Source);
-            ICredentials credentials = CredentialStore.Instance.GetCredentials(uri);
-            while (true)
-            {
-                var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
-                if (credentials != null)
-                {
-                    messageHandlerResource.ClientHandler.Credentials = credentials;
-                }
-                else
-                {
-                    messageHandlerResource.ClientHandler.UseDefaultCredentials = true;
-                }
 
-                using (var client = new DataClient(messageHandlerResource))
+            using (var client = HttpSource.Create(source))
+            {
+                using (var response = await client.GetAsync(uri, log, token))
                 {
-                    var response = await client.GetAsync(uri, token);
+                    response.EnsureSuccessStatusCode();
 
                     if (response.IsSuccessStatusCode)
                     {
-                        if (HttpHandlerResourceV3.CredentialsSuccessfullyUsed != null && credentials != null)
+                        using (var stream = await response.Content.ReadAsStreamAsync())
+                        using (var reader = new StreamReader(stream))
+                        using (var jsonReader = new JsonTextReader(reader))
                         {
-                            HttpHandlerResourceV3.CredentialsSuccessfullyUsed(uri, credentials);
+                            return JObject.Load(jsonReader);
                         }
-
-                        var text = await response.Content.ReadAsStringAsync();
-                        return JObject.Parse(text);
-                    }
-                    else if (response.StatusCode == HttpStatusCode.Unauthorized)
-                    {
-                        credentials = null;
-                        if (HttpHandlerResourceV3.PromptForCredentials != null)
-                        {
-                            credentials = await HttpHandlerResourceV3.PromptForCredentials(uri, token);
-                        }
-
-                        if (credentials == null)
-                        {
-                            response.EnsureSuccessStatusCode();
-                        }
-                    }
-                    else
-                    {
-                        response.EnsureSuccessStatusCode();
                     }
                 }
             }
+
+            return null;
         }
 
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
@@ -123,7 +96,7 @@ namespace NuGet.Protocol.Core.v3
                         if (!_cache.TryGetValue(url, out cacheInfo) ||
                             entryValidCutoff > cacheInfo.CachedTime)
                         {
-                            var json = await GetIndexJson(source, token);
+                            var json = await GetIndexJson(source, Logging.NullLogger.Instance, token);
 
                             // Use SemVer instead of NuGetVersion, the service index should always be
                             // in strict SemVer format

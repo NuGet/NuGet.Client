@@ -5,7 +5,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3.Data;
 
 namespace NuGet.Protocol.Core.v3
 {
@@ -25,8 +24,7 @@ namespace NuGet.Protocol.Core.v3
 
             if (regResource != null)
             {
-                var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
-                var client = new DataClient(messageHandlerResource);
+                var client = HttpSource.Create(source);
 
                 curResource = new MetadataResourceV3(client, regResource);
             }

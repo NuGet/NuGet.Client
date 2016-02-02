@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
-using NuGet.Protocol.Core.v3.Data;
 
 namespace NuGet.Protocol.VisualStudio
 {
@@ -26,8 +25,7 @@ namespace NuGet.Protocol.VisualStudio
             if (serviceIndex != null)
             {
                 var regResource = await source.GetResourceAsync<RegistrationResourceV3>(token);
-                var handlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
-                var client = new DataClient(handlerResource.MessageHandler);
+                var client = HttpSource.Create(source);
 
                 // construct a new resource
                 curResource = new PSAutoCompleteResourceV3(client, serviceIndex, regResource);

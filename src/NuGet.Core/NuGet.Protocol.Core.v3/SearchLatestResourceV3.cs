@@ -23,11 +23,11 @@ namespace NuGet.Protocol.Core.v3
             _searchResource = searchResource;
         }
 
-        public override async Task<IEnumerable<ServerPackageMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
+        public override async Task<IEnumerable<ServerPackageMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, Logging.ILogger log, CancellationToken cancellationToken)
         {
             var results = new List<ServerPackageMetadata>();
 
-            var searchResultJsonObjects = await _searchResource.Search(searchTerm, filters, skip, take, cancellationToken);
+            var searchResultJsonObjects = await _searchResource.Search(searchTerm, filters, skip, take, log, cancellationToken);
 
             foreach (var package in searchResultJsonObjects)
             {

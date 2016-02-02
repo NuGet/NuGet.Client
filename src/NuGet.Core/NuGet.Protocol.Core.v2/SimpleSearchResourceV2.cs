@@ -24,7 +24,7 @@ namespace NuGet.Protocol.Core.v2
             V2Client = resource.V2Client;
         }
 
-        public override Task<IEnumerable<SimpleSearchMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
+        public override Task<IEnumerable<SimpleSearchMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, Logging.ILogger log, CancellationToken cancellationToken)
         {
             var query = V2Client.Search(
                 searchTerm,

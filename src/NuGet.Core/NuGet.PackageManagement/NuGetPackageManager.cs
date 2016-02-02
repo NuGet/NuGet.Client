@@ -164,12 +164,15 @@ namespace NuGet.PackageManagement
             INuGetProjectContext nuGetProjectContext, IEnumerable<SourceRepository> primarySources,
             IEnumerable<SourceRepository> secondarySources, CancellationToken token)
         {
+            var log = new LoggerAdapter(nuGetProjectContext);
+
             // Step-1 : Get latest version for packageId
             var latestVersion = await GetLatestVersionAsync(
                 packageId,
                 nuGetProject,
                 resolutionContext,
                 primarySources,
+                log,
                 token);
 
             if (latestVersion == null)
@@ -252,12 +255,16 @@ namespace NuGet.PackageManagement
             {
                 throw new ArgumentNullException(nameof(nuGetProjectContext));
             }
+
+            var log = new LoggerAdapter(nuGetProjectContext);
+
             // Step-1 : Get latest version for packageId
             var latestVersion = await GetLatestVersionAsync(
                 packageId,
                 nuGetProject,
                 resolutionContext,
                 primarySourceRepository,
+                log,
                 token);
 
             if (latestVersion == null)
@@ -435,6 +442,8 @@ namespace NuGet.PackageManagement
         {
             var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
 
+            var log = new LoggerAdapter(nuGetProjectContext);
+
             var actions = new List<NuGetProjectAction>();
 
             if (packageIdentities.Count == 0 && packageId == null)
@@ -452,6 +461,7 @@ namespace NuGet.PackageManagement
                         nuGetProject,
                         resolutionContext,
                         primarySources,
+                        log,
                         token);
 
                     if (latestVersion != null && latestVersion > installedPackage.PackageIdentity.Version)
@@ -496,6 +506,7 @@ namespace NuGet.PackageManagement
                         nuGetProject,
                         resolutionContext,
                         primarySources,
+                        log,
                         token);
 
                     if (latestVersion == null)
@@ -570,6 +581,8 @@ namespace NuGet.PackageManagement
                 IEnumerable<SourceRepository> secondarySources,
                 CancellationToken token)
         {
+            var log = new LoggerAdapter(nuGetProjectContext);
+
             var projectInstalledPackageReferences = await nuGetProject.GetInstalledPackagesAsync(token);
             var oldListOfInstalledPackages = projectInstalledPackageReferences.Select(p => p.PackageIdentity);
 
@@ -689,7 +702,7 @@ namespace NuGet.PackageManagement
                     var packages = new List<SourcePackageDependencyInfo>();
                     foreach (var installedPackage in projectInstalledPackageReferences)
                     {
-                        var packageInfo = await packagesFolderResource.ResolvePackage(installedPackage.PackageIdentity, targetFramework, token);
+                        var packageInfo = await packagesFolderResource.ResolvePackage(installedPackage.PackageIdentity, targetFramework, log, token);
                         availablePackageDependencyInfoWithSourceSet.Add(packageInfo);
                     }
                 }
@@ -1255,7 +1268,7 @@ namespace NuGet.PackageManagement
                 var metadataResource = await sourceRepository.GetResourceAsync<MetadataResource>();
                 if (metadataResource != null)
                 {
-                    var task = Task.Run(() => metadataResource.Exists(packageIdentity, tokenSource.Token), tokenSource.Token);
+                    var task = Task.Run(() => metadataResource.Exists(packageIdentity, logger, tokenSource.Token), tokenSource.Token);
                     results.Enqueue(new KeyValuePair<SourceRepository, Task<bool>>(sourceRepository, task));
                 }
             }
@@ -1415,6 +1428,7 @@ namespace NuGet.PackageManagement
             nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.AttemptingToGatherDependencyInfo, packageIdentity, projectName, packageReferenceTargetFramework);
 
             // TODO: IncludePrerelease is a big question mark
+            var log = new LoggerAdapter(nuGetProjectContext);
             var installedPackageIdentities = (await nuGetProject.GetInstalledPackagesAsync(token)).Select(pr => pr.PackageIdentity);
             var dependencyInfoFromPackagesFolder = await GetDependencyInfoFromPackagesFolder(installedPackageIdentities,
                 packageReferenceTargetFramework);
@@ -1440,7 +1454,7 @@ namespace NuGet.PackageManagement
 
                 foreach (var package in packageIdentities)
                 {
-                    var packageDependencyInfo = await dependencyInfoResource.ResolvePackage(package, nuGetFramework, CancellationToken.None);
+                    var packageDependencyInfo = await dependencyInfoResource.ResolvePackage(package, nuGetFramework, Logging.NullLogger.Instance, CancellationToken.None);
                     if (packageDependencyInfo != null)
                     {
                         results.Add(packageDependencyInfo);
@@ -2132,6 +2146,7 @@ namespace NuGet.PackageManagement
             NuGetFramework framework,
             ResolutionContext resolutionContext,
             SourceRepository primarySourceRepository,
+            Logging.ILogger log,
             CancellationToken token)
         {
             return GetLatestVersionAsync(
@@ -2139,6 +2154,7 @@ namespace NuGet.PackageManagement
                 framework,
                 resolutionContext,
                 new List<SourceRepository> { primarySourceRepository },
+                log,
                 token);
         }
 
@@ -2147,6 +2163,7 @@ namespace NuGet.PackageManagement
             NuGetProject project,
             ResolutionContext resolutionContext,
             SourceRepository primarySourceRepository,
+            Logging.ILogger log,
             CancellationToken token)
         {
             NuGetFramework framework;
@@ -2161,6 +2178,7 @@ namespace NuGet.PackageManagement
                 framework,
                 resolutionContext,
                 new List<SourceRepository> { primarySourceRepository },
+                log,
                 token);
         }
 
@@ -2169,6 +2187,7 @@ namespace NuGet.PackageManagement
             NuGetProject project,
             ResolutionContext resolutionContext,
             IEnumerable<SourceRepository> sources,
+            Logging.ILogger log,
             CancellationToken token)
         {
             var tasks = new List<Task<NuGetVersion>>();
@@ -2180,7 +2199,7 @@ namespace NuGet.PackageManagement
                 framework = NuGetFramework.AnyFramework;
             }
 
-            return await GetLatestVersionAsync(packageId, framework, resolutionContext, sources, token);
+            return await GetLatestVersionAsync(packageId, framework, resolutionContext, sources, log, token);
         }
 
         public static async Task<NuGetVersion> GetLatestVersionAsync(
@@ -2188,6 +2207,7 @@ namespace NuGet.PackageManagement
             NuGetFramework framework,
             ResolutionContext resolutionContext,
             IEnumerable<SourceRepository> sources,
+            Logging.ILogger log,
             CancellationToken token)
         {
             var tasks = new List<Task<NuGetVersion>>();
@@ -2195,7 +2215,7 @@ namespace NuGet.PackageManagement
             foreach (var source in sources)
             {
                 tasks.Add(Task.Run(async ()
-                    => await GetLatestVersionCoreAsync(packageId, framework, resolutionContext, source, token)));
+                    => await GetLatestVersionCoreAsync(packageId, framework, resolutionContext, source, log, token)));
             }
 
             var versions = await Task.WhenAll(tasks);
@@ -2207,6 +2227,7 @@ namespace NuGet.PackageManagement
             NuGetFramework framework,
             ResolutionContext resolutionContext,
             SourceRepository source,
+            Logging.ILogger log,
             CancellationToken token)
         {
             var dependencyInfoResource = await source.GetResourceAsync<DependencyInfoResource>();
@@ -2214,7 +2235,7 @@ namespace NuGet.PackageManagement
             // Resolve the package for the project framework and cache the results in the
             // resolution context for the gather to use during the next step.
             // Using the metadata resource will result in multiple calls to the same url during an install.
-            var packages = await dependencyInfoResource.ResolvePackages(packageId, framework, token);
+            var packages = await dependencyInfoResource.ResolvePackages(packageId, framework, log, token);
             packages = packages.Select(package =>
             {
                 package.SetIncludePrereleaseForDependencies();
