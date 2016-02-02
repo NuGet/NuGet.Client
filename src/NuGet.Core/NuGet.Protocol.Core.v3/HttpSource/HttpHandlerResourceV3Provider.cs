@@ -67,7 +67,6 @@ namespace NuGet.Protocol
         {
             var uri = new Uri(packageSource.Source);
             var proxy = ProxyCache.Instance.GetProxy(uri);
-            var credential = CredentialStore.Instance.GetCredentials(uri);
 
             if (proxy != null
                 && proxy.Credentials == null)
@@ -75,33 +74,22 @@ namespace NuGet.Protocol
                 proxy.Credentials = CredentialCache.DefaultCredentials;
             }
 
-            if (credential == null
-                && !String.IsNullOrEmpty(packageSource.UserName)
-                && !String.IsNullOrEmpty(packageSource.Password))
-            {
-                credential = new NetworkCredential(packageSource.UserName, packageSource.Password);
-            }
-
             if (proxy != null)
             {
                 ProxyCache.Instance.Add(proxy);
             }
-            if (credential != null)
-            {
-                CredentialStore.Instance.Add(uri, credential);
-            }
 
-            return new CredentialPromptWebRequestHandler(proxy, credential);
+            return new CredentialPromptWebRequestHandler(proxy);
         }
 
         private class CredentialPromptWebRequestHandler : WebRequestHandler
         {
             private int _authRetries;
+            private Guid _lastAuthId = Guid.NewGuid();
 
-            public CredentialPromptWebRequestHandler(IWebProxy proxy, ICredentials credentials)
+            public CredentialPromptWebRequestHandler(IWebProxy proxy)
             {
                 Proxy = proxy;
-                Credentials = credentials;
                 AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate);
             }
 
@@ -110,6 +98,9 @@ namespace NuGet.Protocol
             {
                 while (true)
                 {
+                    // Store the auth start before sending the request
+                    var beforeAuthId = _lastAuthId;
+
                     try
                     {
                         var response = await base.SendAsync(request, cancellationToken);
@@ -132,7 +123,7 @@ namespace NuGet.Protocol
                                 await _credentialPromptLock.WaitAsync();
 
                                 // Check if the credentials have already changed
-                                if (!object.ReferenceEquals(currentCredentials, Proxy.Credentials))
+                                if (beforeAuthId != _lastAuthId)
                                 {
                                     continue;
                                 }
@@ -155,6 +146,9 @@ namespace NuGet.Protocol
 
                                 // use the user provided credential to send the request again.
                                 Proxy.Credentials = credentials;
+
+                                // Mark that the credentials have been updated
+                                _lastAuthId = Guid.NewGuid();
                             }
                             finally
                             {

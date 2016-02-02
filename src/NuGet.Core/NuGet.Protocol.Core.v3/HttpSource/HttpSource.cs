@@ -30,6 +30,9 @@ namespace NuGet.Protocol
         private HttpClient _httpClient;
         private bool _disposed;
         private int _authRetries;
+        private HttpHandlerResource _httpHandler;
+        private Guid _lastAuthId = Guid.NewGuid();
+        private readonly PackageSource _packageSource;
 
         // Only one thread may re-create the http client at a time.
         private readonly SemaphoreSlim _httpClientLock = new SemaphoreSlim(1, 1);
@@ -48,15 +51,10 @@ namespace NuGet.Protocol
                 : null;
 
         public HttpSource(PackageSource source, Func<Task<HttpHandlerResource>> messageHandlerFactory)
-            : this(source.Source, messageHandlerFactory)
         {
-        }
-
-        public HttpSource(string sourceUrl, Func<Task<HttpHandlerResource>> messageHandlerFactory)
-        {
-            if (sourceUrl == null)
+            if (source == null)
             {
-                throw new ArgumentNullException(nameof(sourceUrl));
+                throw new ArgumentNullException(nameof(source));
             }
 
             if (messageHandlerFactory == null)
@@ -64,7 +62,8 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(messageHandlerFactory));
             }
 
-            _baseUri = new Uri(sourceUrl);
+            _packageSource = source;
+            _baseUri = new Uri(source.Source);
             _messageHandlerFactory = messageHandlerFactory;
         }
 
@@ -140,12 +139,12 @@ namespace NuGet.Protocol
                 request.RequestUri));
 
             // Read the response headers before reading the entire stream to avoid timeouts from large packages.
-            Func<Task<HttpResponseMessage>> throttleRequest = () => SendWithCredentialSupportAsync(
+            Func<Task<HttpResponseMessage>> throttledRequest = () => SendWithCredentialSupportAsync(
                     request,
                     HttpCompletionOption.ResponseHeadersRead,
                     cancellationToken);
 
-            var response = await GetThrottled(throttleRequest, log);
+            var response = await GetThrottled(throttledRequest, log);
 
             return response;
         }
@@ -206,12 +205,8 @@ namespace NuGet.Protocol
             HttpResponseMessage response = null;
             ICredentials promptCredentials = null;
 
-            // Keep a local copy of the http client, this allows the thread to check if another thread has
-            // already added new credentials.
-            var httpClient = _httpClient;
-
             // Create the http client on the first call
-            if (httpClient == null)
+            if (_httpClient == null)
             {
                 await _httpClientLock.WaitAsync();
                 try
@@ -240,8 +235,11 @@ namespace NuGet.Protocol
                     response.Dispose();
                 }
 
+                // store the auth state before sending the request
+                var beforeLockId = _lastAuthId;
+
                 // Read the response headers before reading the entire stream to avoid timeouts from large packages.
-                response = await httpClient.SendAsync(
+                response = await _httpClient.SendAsync(
                     request,
                     HttpCompletionOption.ResponseHeadersRead,
                     cancellationToken);
@@ -258,7 +256,7 @@ namespace NuGet.Protocol
                         await _httpClientLock.WaitAsync();
 
                         // Auth may have happened on another thread, if so just continue
-                        if (!object.ReferenceEquals(httpClient, _httpClient))
+                        if (beforeLockId != _lastAuthId)
                         {
                             continue;
                         }
@@ -285,7 +283,7 @@ namespace NuGet.Protocol
                         {
                             // The user entered credentials, create a new message handler that includes
                             // these and retry.
-                            await UpdateHttpClient();
+                            await UpdateHttpClient(promptCredentials);
                             continue;
                         }
                     }
@@ -329,32 +327,43 @@ namespace NuGet.Protocol
 
         private async Task UpdateHttpClient()
         {
+            // Get package source credentials
             var credentials = CredentialStore.Instance.GetCredentials(_baseUri);
-            var handlerResource = await _messageHandlerFactory();
+
+            if (credentials == null
+                && !String.IsNullOrEmpty(_packageSource.UserName)
+                && !String.IsNullOrEmpty(_packageSource.Password))
+            {
+                credentials = new NetworkCredential(_packageSource.UserName, _packageSource.Password);
+            }
 
             if (credentials != null)
             {
-                handlerResource.ClientHandler.Credentials = credentials;
-            }
-            else
-            {
-                handlerResource.ClientHandler.UseDefaultCredentials = true;
+                CredentialStore.Instance.Add(_baseUri, credentials);
             }
 
-            var httpClient = new HttpClient(handlerResource.MessageHandler);
+            await UpdateHttpClient(credentials);
+        }
+
+        private async Task UpdateHttpClient(ICredentials credentials)
+        {
+            if (_httpHandler == null)
+            {
+                _httpHandler = await _messageHandlerFactory();
+            }
+
+            _httpHandler.ClientHandler.Credentials = credentials;
+            _httpHandler.ClientHandler.UseDefaultCredentials = (credentials == null);
+
+            var httpClient = new HttpClient(_httpHandler.MessageHandler);
 
             // Set user agent
             UserAgent.SetUserAgent(httpClient, UserAgent.UserAgentString);
 
-            var oldClient = _httpClient;
             _httpClient = httpClient;
 
-            if (oldClient != null)
-            {
-                // clean up the old client
-                oldClient.CancelPendingRequests();
-                oldClient.Dispose();
-            }
+            // Mark that auth has been updated
+            _lastAuthId = Guid.NewGuid();
         }
 
         private static Task CreateCacheFile(
@@ -560,16 +569,6 @@ namespace NuGet.Protocol
             }
 
             return clone;
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing && !_disposed)
-            {
-                _disposed = true;
-
-                Dispose();
-            }
         }
 
         public void Dispose()
