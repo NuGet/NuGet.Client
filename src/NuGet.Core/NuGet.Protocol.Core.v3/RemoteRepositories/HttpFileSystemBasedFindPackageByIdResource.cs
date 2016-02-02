@@ -38,7 +38,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
         public HttpFileSystemBasedFindPackageByIdResource(
             IReadOnlyList<Uri> baseUris,
-            Func<Task<HttpHandlerResource>> handlerFactory)
+            HttpSource httpSource)
         {
             if (baseUris == null)
             {
@@ -54,7 +54,8 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 .Take(MaxRetries)
                 .Select(uri => uri.OriginalString.EndsWith("/", StringComparison.Ordinal) ? uri : new Uri(uri.OriginalString + "/"))
                 .ToList();
-            _httpSource = new HttpSource(_baseUris[0].OriginalString, handlerFactory);
+
+            _httpSource = httpSource;
         }
 
         public override ILogger Logger
@@ -63,7 +64,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             set
             {
                 base.Logger = value;
-                _httpSource.Logger = value;
             }
         }
 
@@ -139,6 +139,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     using (var data = await _httpSource.GetAsync(uri,
                         $"list_{id}",
                         CreateCacheContext(retry),
+                        Logger,
                         ignoreNotFounds: true,
                         cancellationToken: cancellationToken))
                     {
@@ -251,6 +252,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         package.ContentUri,
                         "nupkg_" + package.Id + "." + package.Version.ToNormalizedString(),
                         CreateCacheContext(retry),
+                        Logger,
                         cancellationToken))
                     {
                         return new NupkgEntry

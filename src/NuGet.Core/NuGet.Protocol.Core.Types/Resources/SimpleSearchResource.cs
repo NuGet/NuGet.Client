@@ -15,6 +15,6 @@ namespace NuGet.Protocol.Core.Types
         /// <summary>
         /// Returns search entries
         /// </summary>
-        public abstract Task<IEnumerable<SimpleSearchMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken);
+        public abstract Task<IEnumerable<SimpleSearchMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, Logging.ILogger log, CancellationToken cancellationToken);
     }
 }

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.DependencyResolver;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
@@ -100,7 +101,15 @@ namespace NuGet.CommandLine
 
                 Console.PrintPackageSources(packageSources);
 
-                var localCache = new NuGetv3LocalRepository(packagesDir);
+                var sharedCache = new RestoreCommandSharedCache();
+                sharedCache.LocalCache = new NuGetv3LocalRepository(packagesDir);
+                var cacheContext = new SourceCacheContext();
+
+                foreach (var source in repositories)
+                {
+                    var provider = new SourceRepositoryDependencyProvider(source, Console, cacheContext);
+                    sharedCache.RemoteProviders.Add(provider);
+                }
 
                 var isParallel = !DisableParallelProcessing && !RuntimeEnvironmentHelper.IsMono;
 
@@ -133,10 +142,9 @@ namespace NuGet.CommandLine
 
                         var newTask = Task.Run(async () => await PerformNuGetV3RestoreAsync(
                             file,
-                            packageSources,
                             restoreInputs.ProjectReferenceLookup,
                             repositories,
-                            localCache));
+                            sharedCache));
 
                         tasks.Add(newTask);
                     }
@@ -195,10 +203,9 @@ namespace NuGet.CommandLine
 
         private async Task<bool> PerformNuGetV3RestoreAsync(
             string inputPath,
-            IReadOnlyCollection<Configuration.PackageSource> packageSources,
             ProjectReferenceCache projectReferences,
             SourceRepository[] repositories,
-            NuGetv3LocalRepository localCache)
+            RestoreCommandSharedCache sharedCache)
         {
             var inputFileName = Path.GetFileName(inputPath);
             var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(inputPath));
@@ -230,6 +237,7 @@ namespace NuGet.CommandLine
             }
 
             var success = false;
+            var localCache = sharedCache.LocalCache;
 
             if (projectJsonPath != null && File.Exists(projectJsonPath))
             {
@@ -259,7 +267,7 @@ namespace NuGet.CommandLine
                     packagesDirectory: null))
                 {
                     request.PackagesDirectory = localCache.RepositoryRoot;
-                    request.SharedLocalCache = localCache;
+                    request.SharedCache = sharedCache;
 
                     var packageSaveMode = EffectivePackageSaveMode;
                     if (packageSaveMode != Packaging.PackageSaveMode.None)

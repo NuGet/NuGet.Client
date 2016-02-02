@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NuGet.Protocol.Core.v3.Data
+namespace NuGet.Protocol.Core.v3
 {
     public class RetryHandler : DelegatingHandler
     {

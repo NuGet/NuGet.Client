@@ -34,7 +34,7 @@ namespace NuGet.Protocol.VisualStudio
         {
             var searchResults = new List<UISearchMetadata>();
 
-            var searchResultJsonObjects = await _searchResource.Search(searchTerm, filters, skip, take, cancellationToken);
+            var searchResultJsonObjects = await _searchResource.Search(searchTerm, filters, skip, take, Logging.NullLogger.Instance, cancellationToken);
 
             foreach (var searchResultJson in searchResultJsonObjects)
             {

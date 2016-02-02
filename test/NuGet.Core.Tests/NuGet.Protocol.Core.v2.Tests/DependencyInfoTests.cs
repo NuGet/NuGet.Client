@@ -26,7 +26,7 @@ namespace NuGet.Protocol.Core.v2.Tests
             var dep2 = new PackageIdentity("xunit.assert", NuGetVersion.Parse("2.1.0-beta1-build2945"));
 
             // Act
-            var result = await resource.ResolvePackage(package, NuGetFramework.Parse("net45"), CancellationToken.None);
+            var result = await resource.ResolvePackage(package, NuGetFramework.Parse("net45"), Logging.NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.Equal(package, result, PackageIdentity.Comparer);
@@ -48,7 +48,7 @@ namespace NuGet.Protocol.Core.v2.Tests
             var filterRange = new VersionRange(NuGetVersion.Parse("2.0.0-rc4-build2924"), true, NuGetVersion.Parse("2.1.0-beta1-build2945"), true);
 
             // Act
-            var results = await resource.ResolvePackages("xunit", NuGetFramework.Parse("net45"), CancellationToken.None);
+            var results = await resource.ResolvePackages("xunit", NuGetFramework.Parse("net45"), Logging.NullLogger.Instance, CancellationToken.None);
 
             var filtered = results.Where(result => filterRange.Satisfies(result.Version));
 
@@ -71,7 +71,7 @@ namespace NuGet.Protocol.Core.v2.Tests
             var package = new PackageIdentity("nuget.core", NuGetVersion.Parse("1.0.0-notfound"));
 
             // Act
-            var result = await resource.ResolvePackage(package, NuGetFramework.Parse("net45"), CancellationToken.None);
+            var result = await resource.ResolvePackage(package, NuGetFramework.Parse("net45"), Logging.NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.Null(result);
@@ -87,7 +87,7 @@ namespace NuGet.Protocol.Core.v2.Tests
             var package = new PackageIdentity("nuget.notfound", NuGetVersion.Parse("1.0.0-blah"));
 
             // Act
-            var results = await resource.ResolvePackages("nuget.notfound", NuGetFramework.Parse("net45"), CancellationToken.None);
+            var results = await resource.ResolvePackages("nuget.notfound", NuGetFramework.Parse("net45"), Logging.NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.Equal(0, results.Count());

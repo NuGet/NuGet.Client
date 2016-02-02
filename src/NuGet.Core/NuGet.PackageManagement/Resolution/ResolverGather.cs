@@ -261,7 +261,7 @@ namespace NuGet.PackageManagement
                 // Skip installed packages which are targets, this is important for upgrade and reinstall
                 if (!allPrimaryTargets.Contains(installedPackage.Id))
                 {
-                    var packageInfo = await _packagesFolderResource.ResolvePackage(installedPackage, _context.TargetFramework, token);
+                    var packageInfo = await _packagesFolderResource.ResolvePackage(installedPackage, _context.TargetFramework, _context.Log, token);
 
                     // Installed packages should exist, but if they do not an attempt will be made to find them in the sources.
                     if (packageInfo != null)
@@ -453,7 +453,7 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Call the DependencyInfoResource safely
         /// </summary>
-        private static async Task<List<SourcePackageDependencyInfo>> GatherPackageFromSourceAsync(
+        private async Task<List<SourcePackageDependencyInfo>> GatherPackageFromSourceAsync(
             string packageId,
             NuGetVersion version,
             DependencyInfoResource resource,
@@ -471,7 +471,7 @@ namespace NuGet.PackageManagement
                 if (version == null)
                 {
                     // find all versions of a package
-                    var packages = await resource.ResolvePackages(packageId, targetFramework, token);
+                    var packages = await resource.ResolvePackages(packageId, targetFramework, _context.Log, token);
                     packages = packages.Select(package =>
                     {
                         package.SetIncludePrereleaseForDependencies();
@@ -484,7 +484,7 @@ namespace NuGet.PackageManagement
                 {
                     // find a single package id and version
                     var identity = new PackageIdentity(packageId, version);
-                    var package = await resource.ResolvePackage(identity, targetFramework, token);
+                    var package = await resource.ResolvePackage(identity, targetFramework, _context.Log, token);
 
                     if (package != null)
                     {

@@ -408,6 +408,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void ListCommand_Prerelease()
         {
+            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
 
             using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
@@ -465,6 +466,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void ListCommand_AllVersionsPrerelease()
         {
+            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
 
             using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
@@ -521,6 +523,8 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void ListCommand_SimpleV3()
         {
+            Util.ClearWebCache();
+
             var nugetexe = Util.GetNuGetExePath();
 
             using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
@@ -619,6 +623,7 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void ListCommand_SimpleV3_NoListEndpoint()
         {
+            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
             using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
@@ -675,6 +680,8 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void ListCommand_UnavailableV3()
         {
+            Util.ClearWebCache();
+
             var nugetexe = Util.GetNuGetExePath();
             using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
 
@@ -727,6 +734,8 @@ namespace NuGet.CommandLine.Test
         [InlineData("invalid")]
         public void ListCommand_InvalidInput_NonSource(string invalidInput)
         {
+            Util.ClearWebCache();
+
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
 
@@ -758,6 +767,7 @@ namespace NuGet.CommandLine.Test
         public void ListCommand_InvalidInput_V2_NonExistent(string invalidInput)
         {
             // Arrange
+            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
 
             // Act
@@ -812,6 +822,7 @@ namespace NuGet.CommandLine.Test
         public void ListCommand_InvalidInput_V3_NonExistent(string invalidInput)
         {
             // Arrange
+            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
 
             // Act
@@ -838,6 +849,7 @@ namespace NuGet.CommandLine.Test
         public void ListCommand_InvalidInput_V3_NotFound(string invalidInput)
         {
             // Arrange
+            Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
 
             // Act

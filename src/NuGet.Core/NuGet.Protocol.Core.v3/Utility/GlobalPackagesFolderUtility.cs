@@ -107,7 +107,7 @@ namespace NuGet.Protocol.Core.v3
                 xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
 
             await PackageExtractor.InstallFromSourceAsync(
-                stream => packageStream.CopyToAsync(stream),
+                stream => packageStream.CopyToAsync(stream, bufferSize: 8192, cancellationToken: token),
                 versionFolderPathContext,
                 token: token);
 

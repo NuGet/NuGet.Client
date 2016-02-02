@@ -21,7 +21,7 @@ namespace NuGet.Protocol.Core.v3
     /// </summary>
     public sealed class DependencyInfoResourceV3 : DependencyInfoResource
     {
-        private readonly HttpClient _client;
+        private readonly HttpSource _client;
         private readonly RegistrationResourceV3 _regResource;
         private readonly SourceRepository _source;
 
@@ -30,7 +30,7 @@ namespace NuGet.Protocol.Core.v3
         /// </summary>
         /// <param name="client">Http client</param>
         /// <param name="regResource">Registration blob resource</param>
-        public DependencyInfoResourceV3(HttpClient client, RegistrationResourceV3 regResource, SourceRepository source)
+        public DependencyInfoResourceV3(HttpSource client, RegistrationResourceV3 regResource, SourceRepository source)
         {
             if (client == null)
             {
@@ -62,7 +62,7 @@ namespace NuGet.Protocol.Core.v3
         /// Returns dependency info for the given package if it exists. If the package is not found null is
         /// returned.
         /// </returns>
-        public override async Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, CancellationToken token)
+        public override async Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, Logging.ILogger log, CancellationToken token)
         {
             try
             {
@@ -73,7 +73,7 @@ namespace NuGet.Protocol.Core.v3
 
                 // Retrieve the registration blob
                 var singleVersion = new VersionRange(minVersion: package.Version, includeMinVersion: true, maxVersion: package.Version, includeMaxVersion: true);
-                var regInfo = await ResolverMetadataClient.GetRegistrationInfo(_client, uri, singleVersion, projectFramework, token);
+                var regInfo = await ResolverMetaDataClient.GetRegistrationInfo(_client, uri, singleVersion, projectFramework, log, token);
 
                 // regInfo is null if the server returns a 404 for the package to indicate that it does not exist
                 if (regInfo != null)
@@ -101,7 +101,7 @@ namespace NuGet.Protocol.Core.v3
         /// <param name="projectFramework">project target framework. This is used for finding the dependency group</param>
         /// <param name="token">cancellation token</param>
         /// <returns>available packages and their dependencies</returns>
-        public override async Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, CancellationToken token)
+        public override async Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, Logging.ILogger log, CancellationToken token)
         {
             try
             {
@@ -111,7 +111,7 @@ namespace NuGet.Protocol.Core.v3
                 var uri = _regResource.GetUri(packageId);
 
                 // Retrieve the registration blob
-                var regInfo = await ResolverMetadataClient.GetRegistrationInfo(_client, uri, VersionRange.All, projectFramework, token);
+                var regInfo = await ResolverMetaDataClient.GetRegistrationInfo(_client, uri, VersionRange.All, projectFramework, log, token);
 
                 // regInfo is null if the server returns a 404 for the package to indicate that it does not exist
                 if (regInfo != null)
@@ -142,7 +142,7 @@ namespace NuGet.Protocol.Core.v3
         /// <param name="projectFramework">project target framework. This is used for finding the dependency group</param>
         /// <param name="token">cancellation token</param>
         /// <returns>available packages and their dependencies</returns>
-        public override Task<IEnumerable<RemoteSourceDependencyInfo>> ResolvePackages(string packageId, CancellationToken token)
+        public override Task<IEnumerable<RemoteSourceDependencyInfo>> ResolvePackages(string packageId, Logging.ILogger log, CancellationToken token)
         {
             try
             {
@@ -150,7 +150,7 @@ namespace NuGet.Protocol.Core.v3
                 var uri = _regResource.GetUri(packageId);
 
                 // Retrieve the registration blob
-                return ResolverMetadataClient.GetDependencies(_client, uri, VersionRange.All, token);
+                return ResolverMetaDataClient.GetDependencies(_client, uri, VersionRange.All, log, token);
             }
             catch (Exception ex)
             {

@@ -32,11 +32,11 @@ namespace NuGet.Protocol.Core.v3
         /// <summary>
         /// Basic search
         /// </summary>
-        public override async Task<IEnumerable<SimpleSearchMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
+        public override async Task<IEnumerable<SimpleSearchMetadata>> Search(string searchTerm, SearchFilter filters, int skip, int take, Logging.ILogger log, CancellationToken cancellationToken)
         {
             var results = new List<SimpleSearchMetadata>();
 
-            foreach (var result in await _rawSearch.Search(searchTerm, filters, skip, take, cancellationToken))
+            foreach (var result in await _rawSearch.Search(searchTerm, filters, skip, take, log, cancellationToken))
             {
                 var version = NuGetVersion.Parse(result["version"].ToString());
                 var identity = new PackageIdentity(result["id"].ToString(), version);

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Configuration;
+using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
@@ -129,12 +130,10 @@ namespace NuGet.Commands
         public XmlDocFileSaveMode XmlDocFileSaveMode { get; set; } = PackageExtractionBehavior.XmlDocFileSaveMode;
 
         /// <summary>
-        /// A <see cref="NuGetv3LocalRepository"/> repository may be passed in as part of the request.
-        /// This allows multiple restores to share the same cache for the global packages folder
-        /// and reduce disk hits.
+        /// SharedCache contains resources that are shared between project restores.
+        /// This includes both remote and local package providers.
         /// </summary>
-        /// <remarks>This is optional and may be null.</remarks>
-        public NuGetv3LocalRepository SharedLocalCache { get; set; }
+        public RestoreCommandSharedCache SharedCache { get; set; } = new RestoreCommandSharedCache();
 
         public void Dispose()
         {

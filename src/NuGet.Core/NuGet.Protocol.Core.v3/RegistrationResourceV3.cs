@@ -22,9 +22,9 @@ namespace NuGet.Protocol.Core.v3
     /// </summary>
     public class RegistrationResourceV3 : INuGetResource
     {
-        private readonly HttpClient _client;
+        private readonly HttpSource _client;
 
-        public RegistrationResourceV3(HttpClient client, Uri baseUrl)
+        public RegistrationResourceV3(HttpSource client, Uri baseUrl)
         {
             if (client == null)
             {
@@ -97,31 +97,31 @@ namespace NuGet.Protocol.Core.v3
         /// Returns the registration blob for the id and version
         /// </summary>
         /// <remarks>The inlined entries are potentially going away soon</remarks>
-        public virtual async Task<JObject> GetPackageMetadata(PackageIdentity identity, CancellationToken token)
+        public virtual async Task<JObject> GetPackageMetadata(PackageIdentity identity, Logging.ILogger log, CancellationToken token)
         {
-            return (await GetPackageMetadata(identity.Id, new VersionRange(identity.Version, true, identity.Version, true), true, true, token)).SingleOrDefault();
+            return (await GetPackageMetadata(identity.Id, new VersionRange(identity.Version, true, identity.Version, true), true, true, log, token)).SingleOrDefault();
         }
 
         /// <summary>
         /// Returns inlined catalog entry items for each registration blob
         /// </summary>
         /// <remarks>The inlined entries are potentially going away soon</remarks>
-        public virtual async Task<IEnumerable<JObject>> GetPackageMetadata(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
+        public virtual async Task<IEnumerable<JObject>> GetPackageMetadata(string packageId, bool includePrerelease, bool includeUnlisted, Logging.ILogger log, CancellationToken token)
         {
-            return await GetPackageMetadata(packageId, VersionRange.All, includePrerelease, includeUnlisted, token);
+            return await GetPackageMetadata(packageId, VersionRange.All, includePrerelease, includeUnlisted, log, token);
         }
 
         /// <summary>
         /// Returns inlined catalog entry items for each registration blob
         /// </summary>
         /// <remarks>The inlined entries are potentially going away soon</remarks>
-        public virtual async Task<IEnumerable<JObject>> GetPackageMetadata(string packageId, VersionRange range, bool includePrerelease, bool includeUnlisted, CancellationToken token)
+        public virtual async Task<IEnumerable<JObject>> GetPackageMetadata(string packageId, VersionRange range, bool includePrerelease, bool includeUnlisted, Logging.ILogger log, CancellationToken token)
         {
             var results = new List<JObject>();
 
             var registrationUri = GetUri(packageId);
 
-            var ranges = await Utils.LoadRanges(_client, registrationUri, range, token);
+            var ranges = await Utils.LoadRanges(_client, registrationUri, range, log, token);
 
             foreach (var rangeObj in ranges)
             {
@@ -157,9 +157,9 @@ namespace NuGet.Protocol.Core.v3
         /// <summary>
         /// Returns all index entries of type Package within the given range and filters
         /// </summary>
-        public virtual Task<IEnumerable<JObject>> GetPackageEntries(string packageId, bool includeUnlisted, CancellationToken token)
+        public virtual Task<IEnumerable<JObject>> GetPackageEntries(string packageId, bool includeUnlisted, Logging.ILogger log, CancellationToken token)
         {
-            return GetPackageMetadata(packageId, VersionRange.All, true, includeUnlisted, token);
+            return GetPackageMetadata(packageId, VersionRange.All, true, includeUnlisted, log, token);
         }
     }
 }

@@ -11,7 +11,6 @@ using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.v3;
-using NuGet.Protocol.Core.v3.Data;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.VisualStudio
@@ -20,9 +19,9 @@ namespace NuGet.Protocol.VisualStudio
     {
         private readonly RegistrationResourceV3 _regResource;
         private readonly ReportAbuseResourceV3 _reportAbuseResource;
-        private readonly DataClient _client;
+        private readonly HttpSource _client;
 
-        public UIMetadataResourceV3(DataClient client, RegistrationResourceV3 regResource, ReportAbuseResourceV3 reportAbuseResource)
+        public UIMetadataResourceV3(HttpSource client, RegistrationResourceV3 regResource, ReportAbuseResourceV3 reportAbuseResource)
             : base()
         {
             _regResource = regResource;
@@ -42,7 +41,7 @@ namespace NuGet.Protocol.VisualStudio
                 // find the range of versions we need
                 var range = new VersionRange(versions.First().Version, true, versions.Last().Version, true, true);
 
-                var metadataList = await _regResource.GetPackageMetadata(group.Key, range, true, true, token);
+                var metadataList = await _regResource.GetPackageMetadata(group.Key, range, true, true, Logging.NullLogger.Instance, token);
 
                 results.AddRange(metadataList.Select(item => ParseMetadata(item)));
             }
@@ -52,7 +51,7 @@ namespace NuGet.Protocol.VisualStudio
 
         public override async Task<IEnumerable<UIPackageMetadata>> GetMetadata(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken token)
         {
-            var metadataList = await _regResource.GetPackageMetadata(packageId, includePrerelease, includeUnlisted, token);
+            var metadataList = await _regResource.GetPackageMetadata(packageId, includePrerelease, includeUnlisted, Logging.NullLogger.Instance, token);
             return metadataList.Select(item => ParseMetadata(item));
         }
 

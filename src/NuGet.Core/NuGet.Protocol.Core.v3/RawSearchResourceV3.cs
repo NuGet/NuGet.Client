@@ -10,21 +10,20 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3.Data;
 
 namespace NuGet.Protocol.Core.v3
 {
     public class RawSearchResourceV3 : INuGetResource
     {
-        private readonly DataClient _client;
+        private readonly HttpSource _client;
         private readonly Uri[] _searchEndpoints;
 
-        public RawSearchResourceV3(HttpMessageHandler handler, IEnumerable<Uri> searchEndpoints)
+        public RawSearchResourceV3(HttpSource client, IEnumerable<Uri> searchEndpoints)
             : base()
         {
-            if (handler == null)
+            if (client == null)
             {
-                throw new ArgumentNullException("handler");
+                throw new ArgumentNullException(nameof(client));
             }
 
             if (searchEndpoints == null)
@@ -32,11 +31,11 @@ namespace NuGet.Protocol.Core.v3
                 throw new ArgumentNullException("searchEndpoints");
             }
 
-            _client = new DataClient(handler);
+            _client = client;
             _searchEndpoints = searchEndpoints.ToArray();
         }
 
-        public virtual async Task<JObject> SearchPage(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
+        public virtual async Task<JObject> SearchPage(string searchTerm, SearchFilter filters, int skip, int take, Logging.ILogger log, CancellationToken cancellationToken)
         {
             for (var i = 0; i < _searchEndpoints.Length; i++)
             {
@@ -79,7 +78,7 @@ namespace NuGet.Protocol.Core.v3
                     JObject searchJson = null;
                     try
                     {
-                        searchJson = await _client.GetJObjectAsync(queryUrl.Uri, cancellationToken);
+                        searchJson = await _client.GetJObjectAsync(queryUrl.Uri, log, cancellationToken);
                     }
                     catch when (i < _searchEndpoints.Length - 1)
                     {
@@ -105,9 +104,9 @@ namespace NuGet.Protocol.Core.v3
             throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
         }
 
-        public virtual async Task<IEnumerable<JObject>> Search(string searchTerm, SearchFilter filters, int skip, int take, CancellationToken cancellationToken)
+        public virtual async Task<IEnumerable<JObject>> Search(string searchTerm, SearchFilter filters, int skip, int take, Logging.ILogger log, CancellationToken cancellationToken)
         {
-            var results = await SearchPage(searchTerm, filters, skip, take, cancellationToken);
+            var results = await SearchPage(searchTerm, filters, skip, take, log, cancellationToken);
 
             var data = results.GetJArray("data");
             if (data == null)
