@@ -153,6 +153,9 @@
   <data name="Restore_Description" xml:space="preserve">
     <value>Restores packages for a project and writes a lock file.</value>
   </data>
+  <data name="Restore_Switch_ConfigFile_Description" xml:space="preserve">
+    <value>The NuGet configuration file to use.</value>
+  </data>
   <data name="Restore_Switch_DisableParallel_Description" xml:space="preserve">
     <value>Disables restoring multiple projects in parallel.</value>
   </data>
