@@ -107,41 +107,39 @@ function RealTimeLogResults
                 }
 
                 $currentTestTime = 0
-
-                $logContent = Get-Content $log
-                $logContentLastLine = $logContent[-1]
-                if (($logContentLastLine -is [string]) -and $logContentLastLine.Contains("Tests and/or Test cases, "))
-                {
-                    # RUN HAS COMPLETED
-
-                    if ($logContentLastLine.Contains(", 0 Failed"))
-                    {
-                        Write-Host -ForegroundColor Green $logContentLastLine
-                    }
-                    else
-                    {
-                        Write-Error $logContentLastLine
-                    }
-
-                    $resultsFile = Join-Path $currentBinFolder results.html
-                    if (Test-Path $resultsFile)
-                    {
-                        Start-Process $resultsFile
-                        return $resultsFile
-                    }
-                    else
-                    {
-                        return $testResults
-                    }
-                }
-                else
-                {
-                    $currentTestId = $content.Count
-                }
+                $currentTestId = $content.Count
             }
             else
             {
-                Write-Host "Current Test is $($currentTestId) and current test time is $($currentTestTime)"
+                Write-Host "Current Test is ${currentTestId} and current test time is ${currentTestTime}"
+            }
+
+            $logContent = Get-Content $log
+            $logContentLastLine = $logContent[-1]
+            if (($logContentLastLine -is [string]) -and $logContentLastLine.Contains("Tests and/or Test cases, ")`
+                    -and $content.Count -eq $currentTestId -and $logContent.Length -eq (2 + $currentTestId))
+            {
+                # RUN HAS COMPLETED
+
+                if ($logContentLastLine.Contains(", 0 Failed"))
+                {
+                    Write-Host -ForegroundColor Green $logContentLastLine
+                }
+                else
+                {
+                    Write-Error $logContentLastLine
+                }
+
+                $resultsFile = Join-Path $currentBinFolder results.html
+                if (Test-Path $resultsFile)
+                {
+                    Start-Process $resultsFile
+                    return $resultsFile
+                }
+                else
+                {
+                    return $testResults
+                }
             }
         }
     }
