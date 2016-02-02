@@ -123,6 +123,8 @@ namespace NuGet.Protocol.Core.v3
                 throw new ArgumentNullException(nameof(logger));
             }
 
+            var uri = await GetDownloadUrl(identity, logger, token);
+
             if (uri != null)
             {
                 return await GetDownloadResultAsync(identity, uri, settings, logger, token);
@@ -155,7 +157,7 @@ namespace NuGet.Protocol.Core.v3
             {
                 try
                 {
-                    using (var packageStream = await _client.GetStreamAsync(uri, log, token))
+                    using (var packageStream = await _client.GetStreamAsync(uri, logger, token))
                     {
                         var downloadResult = await GlobalPackagesFolderUtility.AddPackageAsync(identity,
                             packageStream,
