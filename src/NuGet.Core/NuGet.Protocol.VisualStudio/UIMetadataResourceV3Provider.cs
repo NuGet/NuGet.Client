@@ -25,10 +25,10 @@ namespace NuGet.Protocol.VisualStudio
                 var regResource = await source.GetResourceAsync<RegistrationResourceV3>();
                 var reportAbuseResource = await source.GetResourceAsync<ReportAbuseResourceV3>();
 
-                var client = HttpSource.Create(source);
+                var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
 
                 // construct a new resource
-                curResource = new UIMetadataResourceV3(client, regResource, reportAbuseResource);
+                curResource = new UIMetadataResourceV3(httpSourceResource.HttpSource, regResource, reportAbuseResource);
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);

@@ -26,10 +26,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
         private DependencyInfoResource _dependencyInfoResource;
 
-        public RemoteV3FindPackageByIdResource(SourceRepository sourceRepository, Func<Task<HttpHandlerResource>> handlerFactory)
+        public RemoteV3FindPackageByIdResource(SourceRepository sourceRepository, HttpSource httpSource)
         {
             SourceRepository = sourceRepository;
-            _httpSource = new HttpSource(sourceRepository.PackageSource.Source, handlerFactory);
+            _httpSource = httpSource;
         }
 
         public SourceRepository SourceRepository { get; }

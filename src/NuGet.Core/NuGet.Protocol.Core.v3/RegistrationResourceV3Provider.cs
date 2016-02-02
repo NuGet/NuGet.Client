@@ -27,10 +27,10 @@ namespace NuGet.Protocol.Core.v3
             {
                 var baseUrl = serviceIndex[ServiceTypes.RegistrationsBaseUrl].FirstOrDefault();
 
-                var client = HttpSource.Create(source);
+                var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
 
                 // construct a new resource
-                regResource = new RegistrationResourceV3(client, baseUrl);
+                regResource = new RegistrationResourceV3(httpSourceResource.HttpSource, baseUrl);
             }
 
             return new Tuple<bool, INuGetResource>(regResource != null, regResource);

@@ -36,10 +36,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private readonly Dictionary<string, Task<NupkgEntry>> _nupkgCache = new Dictionary<string, Task<NupkgEntry>>(StringComparer.OrdinalIgnoreCase);
         private bool _ignored;
 
-        public RemoteV2FindPackageByIdResource(PackageSource packageSource, Func<Task<HttpHandlerResource>> handlerFactory)
+        public RemoteV2FindPackageByIdResource(PackageSource packageSource, HttpSource httpSource)
         {
             _baseUri = packageSource.Source.EndsWith("/") ? packageSource.Source : (packageSource.Source + "/");
-            _httpSource = new HttpSource(_baseUri, handlerFactory);
+            _httpSource = httpSource;
 
             PackageSource = packageSource;
         }

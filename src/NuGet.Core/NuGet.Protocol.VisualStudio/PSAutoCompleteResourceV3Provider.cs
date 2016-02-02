@@ -25,10 +25,10 @@ namespace NuGet.Protocol.VisualStudio
             if (serviceIndex != null)
             {
                 var regResource = await source.GetResourceAsync<RegistrationResourceV3>(token);
-                var client = HttpSource.Create(source);
+                var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
 
                 // construct a new resource
-                curResource = new PSAutoCompleteResourceV3(client, serviceIndex, regResource);
+                curResource = new PSAutoCompleteResourceV3(httpSourceResource.HttpSource, serviceIndex, regResource);
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);

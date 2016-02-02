@@ -32,8 +32,7 @@ namespace NuGet.Protocol
         private int _authRetries;
 
         // Only one thread may re-create the http client at a time.
-        private readonly object _httpClientLockObject = new object();
-        private SemaphoreSlim _httpClientLock;
+        private readonly SemaphoreSlim _httpClientLock = new SemaphoreSlim(1, 1);
 
         // In order to avoid too many open files error, set concurrent requests number to 16 on Mac
         private readonly static int ConcurrencyLimit = 16;
@@ -214,19 +213,18 @@ namespace NuGet.Protocol
             // Create the http client on the first call
             if (httpClient == null)
             {
-                await HttpClientLock.WaitAsync();
+                await _httpClientLock.WaitAsync();
                 try
                 {
                     // Double check
                     if (_httpClient == null)
                     {
-                        _httpClient = await CreateHttpClient();
-                        httpClient = _httpClient;
+                        await UpdateHttpClient();
                     }
                 }
                 finally
                 {
-                    HttpClientLock.Release();
+                    _httpClientLock.Release();
                 }
             }
 
@@ -257,7 +255,7 @@ namespace NuGet.Protocol
                     try
                     {
                         // Only one request may prompt and attempt to auth at a time
-                        await HttpClientLock.WaitAsync();
+                        await _httpClientLock.WaitAsync();
 
                         // Auth may have happened on another thread, if so just continue
                         if (!object.ReferenceEquals(httpClient, _httpClient))
@@ -276,8 +274,7 @@ namespace NuGet.Protocol
                         if (STSAuthHelper.TryRetrieveSTSToken(_baseUri, CredentialStore.Instance, response))
                         {
                             // Auth token found, create a new message handler and retry.
-                            httpClient = await CreateHttpClient();
-                            _httpClient = httpClient;
+                            await UpdateHttpClient();
                             continue;
                         }
 
@@ -288,14 +285,13 @@ namespace NuGet.Protocol
                         {
                             // The user entered credentials, create a new message handler that includes
                             // these and retry.
-                            httpClient = await CreateHttpClient();
-                            _httpClient = httpClient;
+                            await UpdateHttpClient();
                             continue;
                         }
                     }
                     finally
                     {
-                        HttpClientLock.Release();
+                        _httpClientLock.Release();
                     }
                 }
 
@@ -331,7 +327,7 @@ namespace NuGet.Protocol
             return promptCredentials;
         }
 
-        private async Task<HttpClient> CreateHttpClient()
+        private async Task UpdateHttpClient()
         {
             var credentials = CredentialStore.Instance.GetCredentials(_baseUri);
             var handlerResource = await _messageHandlerFactory();
@@ -350,7 +346,15 @@ namespace NuGet.Protocol
             // Set user agent
             UserAgent.SetUserAgent(httpClient, UserAgent.UserAgentString);
 
-            return httpClient;
+            var oldClient = _httpClient;
+            _httpClient = httpClient;
+
+            if (oldClient != null)
+            {
+                // clean up the old client
+                oldClient.CancelPendingRequests();
+                oldClient.Dispose();
+            }
         }
 
         private static Task CreateCacheFile(
@@ -527,52 +531,6 @@ namespace NuGet.Protocol
             return false;
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing && !_disposed)
-            {
-                _disposed = true;
-
-                Dispose();
-            }
-        }
-
-        public void Dispose()
-        {
-            if (_httpClient != null)
-            {
-                _httpClient.Dispose();
-            }
-
-            if (_httpClientLock != null)
-            {
-                _httpClientLock.Dispose();
-            }
-        }
-
-        /// <summary>
-        /// The http client lock is only used during authentication. For this reason it 
-        /// should be created on demand.
-        /// </summary>
-        private SemaphoreSlim HttpClientLock
-        {
-            get
-            {
-                if (_httpClientLock == null)
-                {
-                    lock (_httpClientLockObject)
-                    {
-                        if (_httpClientLock == null)
-                        {
-                            _httpClientLock = new SemaphoreSlim(1, 1);
-                        }
-                    }
-                }
-
-                return _httpClientLock;
-            }
-        }
-
         public static HttpSource Create(SourceRepository source)
         {
             Func<Task<HttpHandlerResource>> factory = () => source.GetResourceAsync<HttpHandlerResource>();
@@ -602,6 +560,26 @@ namespace NuGet.Protocol
             }
 
             return clone;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing && !_disposed)
+            {
+                _disposed = true;
+
+                Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            if (_httpClient != null)
+            {
+                _httpClient.Dispose();
+            }
+
+            _httpClientLock.Dispose();
         }
     }
 }

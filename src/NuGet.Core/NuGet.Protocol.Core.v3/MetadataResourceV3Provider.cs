@@ -24,9 +24,9 @@ namespace NuGet.Protocol.Core.v3
 
             if (regResource != null)
             {
-                var client = HttpSource.Create(source);
+                var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
 
-                curResource = new MetadataResourceV3(client, regResource);
+                curResource = new MetadataResourceV3(httpSourceResource.HttpSource, regResource);
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);

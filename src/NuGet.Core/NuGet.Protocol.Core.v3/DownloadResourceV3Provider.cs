@@ -24,9 +24,8 @@ namespace NuGet.Protocol.Core.v3
 
             if (serviceIndex != null)
             {
-                Func<Task<HttpHandlerResource>> messageHandlerFactory = () => source.GetResourceAsync<HttpHandlerResource>(token);
-
-                var client = HttpSource.Create(source);
+                var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
+                var client = httpSourceResource.HttpSource;
 
                 // If index.json contains a flat container resource use that to directly
                 // construct package download urls.

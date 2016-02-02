@@ -43,21 +43,20 @@ namespace NuGet.Protocol.Core.v3
         private async Task<JObject> GetIndexJson(SourceRepository source, Logging.ILogger log, CancellationToken token)
         {
             var uri = new Uri(source.PackageSource.Source);
+            var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
+            var client = httpSourceResource.HttpSource;
 
-            using (var client = HttpSource.Create(source))
+            using (var response = await client.GetAsync(uri, log, token))
             {
-                using (var response = await client.GetAsync(uri, log, token))
-                {
-                    response.EnsureSuccessStatusCode();
+                response.EnsureSuccessStatusCode();
 
-                    if (response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)
+                {
+                    using (var stream = await response.Content.ReadAsStreamAsync())
+                    using (var reader = new StreamReader(stream))
+                    using (var jsonReader = new JsonTextReader(reader))
                     {
-                        using (var stream = await response.Content.ReadAsStreamAsync())
-                        using (var reader = new StreamReader(stream))
-                        using (var jsonReader = new JsonTextReader(reader))
-                        {
-                            return JObject.Load(jsonReader);
-                        }
+                        return JObject.Load(jsonReader);
                     }
                 }
             }
