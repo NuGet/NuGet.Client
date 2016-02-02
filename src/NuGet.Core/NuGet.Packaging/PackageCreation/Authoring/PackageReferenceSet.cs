@@ -1,66 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Runtime.Versioning;
+using NuGet.Frameworks;
 
 namespace NuGet
 {
-    public class PackageReferenceSet : IFrameworkTargetable
+    public class PackageReferenceSet
     {
-        private readonly FrameworkName _targetFramework;
-        private readonly ICollection<string> _references;
+        public PackageReferenceSet(IEnumerable<string> references)
+            : this((NuGetFramework)null, references)
+        {
+        }
 
-        public PackageReferenceSet(FrameworkName targetFramework, IEnumerable<string> references)
+        public PackageReferenceSet(string targetFramework, IEnumerable<string> references)
+            : this(targetFramework != null ? NuGetFramework.Parse(targetFramework) : null, references)
+        {
+        }
+
+        public PackageReferenceSet(NuGetFramework targetFramework, IEnumerable<string> references)
         {
             if (references == null)
             {
-                throw new ArgumentNullException("references");
+                throw new ArgumentNullException(nameof(references));
             }
 
-            _targetFramework = targetFramework;
-            _references = new ReadOnlyCollection<string>(references.ToList());
+            TargetFramework = targetFramework;
+            References = references.ToArray();
         }
 
-        public PackageReferenceSet(ManifestReferenceSet manifestReferenceSet)
-        {
-            if (manifestReferenceSet == null) 
-            {
-                throw new ArgumentNullException("manifestReferenceSet");
-            }
+        public IReadOnlyCollection<string> References { get; }
 
-            if (!String.IsNullOrEmpty(manifestReferenceSet.TargetFramework))
-            {
-                _targetFramework = VersionUtility.ParseFrameworkName(manifestReferenceSet.TargetFramework);
-            }
-
-            _references = new ReadOnlyHashSet<string>(manifestReferenceSet.References.Select(r => r.File), StringComparer.OrdinalIgnoreCase);
-        }
-
-        public ICollection<string> References
-        {
-            get
-            {
-                return _references;
-            }
-        }
-
-        public FrameworkName TargetFramework
-        {
-            get { return _targetFramework; }
-        }
-
-        public IEnumerable<FrameworkName> SupportedFrameworks
-        {
-            get
-            {
-                if (TargetFramework == null)
-                {
-                    yield break;
-                }
-
-                yield return TargetFramework;
-            }
-        }
+        public NuGetFramework TargetFramework { get; }
     }
 }

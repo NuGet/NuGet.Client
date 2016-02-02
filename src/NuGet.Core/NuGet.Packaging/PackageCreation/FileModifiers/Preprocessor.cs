@@ -11,19 +11,8 @@ namespace NuGet
     /// <summary>
     /// Simple token replacement system for content files.
     /// </summary>
-    public class Preprocessor : IPackageFileTransformer
+    public class Preprocessor
     {
-        public void TransformFile(IPackageFile file, string targetPath, IProjectSystem projectSystem)
-        {
-            ProjectSystemExtensions.TryAddFile(projectSystem, targetPath, () => Process(file, projectSystem).AsStream());
-        }
-
-        public void RevertFile(IPackageFile file, string targetPath, IEnumerable<IPackageFile> matchingFiles, IProjectSystem projectSystem)
-        {
-            Func<Stream> streamFactory = () => Process(file, projectSystem).AsStream();
-            FileSystemExtensions.DeleteFileSafe(projectSystem, targetPath, streamFactory);
-        }
-
         internal static string Process(IPackageFile file, IPropertyProvider propertyProvider)
         {
             using (var stream = file.GetStream())

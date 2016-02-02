@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Versioning;
+using NuGet.Packaging.Core;
 
 namespace NuGet
 {
@@ -450,9 +451,9 @@ namespace NuGet
             DependencySets.AddRange(metadata.DependencySets);
             FrameworkReferences.AddRange(metadata.FrameworkAssemblies);
 
-            if (manifestMetadata.ReferenceSets != null)
+            if (manifestMetadata.PackageAssemblyReferences != null)
             {
-                PackageAssemblyReferences.AddRange(manifestMetadata.ReferenceSets.Select(r => new PackageReferenceSet(r)));
+                PackageAssemblyReferences.AddRange(manifestMetadata.PackageAssemblyReferences);
             }
         }
 
@@ -618,13 +619,8 @@ namespace NuGet
 
         private static bool IsPrereleaseDependency(PackageDependency dependency)
         {
-            var versionSpec = dependency.VersionSpec;
-            if (versionSpec != null)
-            {
-                return (versionSpec.MinVersion != null && !String.IsNullOrEmpty(dependency.VersionSpec.MinVersion.SpecialVersion)) ||
-                       (versionSpec.MaxVersion != null && !String.IsNullOrEmpty(dependency.VersionSpec.MaxVersion.SpecialVersion));
-            }
-            return false;
+            return dependency.VersionRange.MinVersion?.IsPrerelease == true ||
+                   dependency.VersionRange.MaxVersion?.IsPrerelease == true;
         }
 
         private static bool ValidateSpecialVersionLength(SemanticVersion version)

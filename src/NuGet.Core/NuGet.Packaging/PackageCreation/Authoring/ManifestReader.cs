@@ -7,6 +7,10 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using NuGet.Packaging.PackageCreation.Resources;
+using NuGet.Versioning;
+using System.Runtime.Versioning;
+using NuGet.Packaging.Core;
+using NuGet.Frameworks;
 
 namespace NuGet
 {
@@ -23,32 +27,22 @@ namespace NuGet
                     String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredElementMissing, "metadata"));
             }
 
-            return new Manifest
-            {
-                Metadata = ReadMetadata(metadataElement),
-                Files = ReadFilesList(document.Root.ElementsNoNamespace("files").FirstOrDefault())
-            };
+            return new Manifest(
+                ReadMetadata(metadataElement),
+                ReadFilesList(document.Root.ElementsNoNamespace("files").FirstOrDefault()));
         }
 
         private static ManifestMetadata ReadMetadata(XElement xElement)
         {
             var manifestMetadata = new ManifestMetadata();
-            manifestMetadata.DependencySets = new List<ManifestDependencySet>();
-            manifestMetadata.ReferenceSets = new List<ManifestReferenceSet>();
-            manifestMetadata.MinClientVersionString = xElement.GetOptionalAttributeValue("minClientVersion");
+            manifestMetadata.MinClientVersionString = (string)xElement.Attribute("minClientVersion");
 
             // we store all child elements under <metadata> so that we can easily check for required elements.
             var allElements = new HashSet<string>();
 
-            XNode node = xElement.FirstNode;
-            while (node != null)
+            foreach (var element in xElement.Elements())
             {
-                var element = node as XElement;
-                if (element != null)
-                {
-                    ReadMetadataValue(manifestMetadata, element, allElements);
-                }
-                node = node.NextNode;
+                ReadMetadataValue(manifestMetadata, element, allElements);
             }
 
             // now check for required elements, which include <id>, <version>, <authors> and <description>
@@ -64,7 +58,6 @@ namespace NuGet
             return manifestMetadata;
         }
 
-        [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]    
         private static void ReadMetadataValue(ManifestMetadata manifestMetadata, XElement element, HashSet<string> allElements)
         {
             if (element.Value == null)
@@ -81,22 +74,22 @@ namespace NuGet
                     manifestMetadata.Id = value;
                     break;
                 case "version":
-                    manifestMetadata.Version = value;
+                    manifestMetadata.Version = NuGetVersion.Parse(value);
                     break;
                 case "authors":
-                    manifestMetadata.Authors = value;
+                    manifestMetadata.Authors = value?.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                     break;
                 case "owners":
-                    manifestMetadata.Owners = value;
+                    manifestMetadata.Owners = value?.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                     break;
                 case "licenseUrl":
-                    manifestMetadata.LicenseUrl = value;
+                    manifestMetadata.LicenseUrl = new Uri(value);
                     break;
                 case "projectUrl":
-                    manifestMetadata.ProjectUrl = value;
+                    manifestMetadata.ProjectUrl = new Uri(value);
                     break;
                 case "iconUrl":
-                    manifestMetadata.IconUrl = value;
+                    manifestMetadata.IconUrl = new Uri(value);
                     break;
                 case "requireLicenseAcceptance":
                     manifestMetadata.RequireLicenseAcceptance = XmlConvert.ToBoolean(value);
@@ -132,7 +125,7 @@ namespace NuGet
                     manifestMetadata.FrameworkAssemblies = ReadFrameworkAssemblies(element);
                     break;
                 case "references":
-                    manifestMetadata.ReferenceSets = ReadReferenceSets(element);
+                    manifestMetadata.PackageAssemblyReferences = ReadReferenceSets(element);
                     break;
                 case "contentFiles":
                     manifestMetadata.ContentFiles = ReadContentFiles(element);
@@ -166,11 +159,11 @@ namespace NuGet
             return contentFileSets;
         }
 
-        private static List<ManifestReferenceSet> ReadReferenceSets(XElement referencesElement)
+        private static List<PackageReferenceSet> ReadReferenceSets(XElement referencesElement)
         {
             if (!referencesElement.HasElements)
             {
-                return new List<ManifestReferenceSet>(0);
+                return new List<PackageReferenceSet>(0);
             }
 
             if (referencesElement.ElementsNoNamespace("group").Any() &&
@@ -183,31 +176,24 @@ namespace NuGet
             if (references.Count > 0)
             {
                 // old format, <reference> is direct child of <references>
-                var referenceSet = new ManifestReferenceSet
-                {
-                    References = references
-                };
-                return new List<ManifestReferenceSet> { referenceSet };
+                var referenceSet = new PackageReferenceSet(references);
+                return new List<PackageReferenceSet> { referenceSet };
             }
             else
             {
                 var groups = referencesElement.ElementsNoNamespace("group");
                 return (from element in groups
-                        select new ManifestReferenceSet
-                        {
-                            TargetFramework = element.GetOptionalAttributeValue("targetFramework").SafeTrim(),
-                            References = ReadReference(element, throwIfEmpty: true)
-                        }).ToList();
+                        select new PackageReferenceSet(element.GetOptionalAttributeValue("targetFramework")?.Trim(),
+                            ReadReference(element, throwIfEmpty: true))).ToList();
             }
         }
 
-        public static List<ManifestReference> ReadReference(XElement referenceElement, bool throwIfEmpty)
+        public static List<string> ReadReference(XElement referenceElement, bool throwIfEmpty)
         {
-            var references = (from element in referenceElement.ElementsNoNamespace("reference")
-                              let fileAttribute = element.Attribute("file")
-                              where fileAttribute != null && !String.IsNullOrEmpty(fileAttribute.Value)
-                              select new ManifestReference { File = fileAttribute.Value.SafeTrim() }
-                             ).ToList();
+            var references = referenceElement.ElementsNoNamespace("reference")
+                                             .Select(element => ((string)element.Attribute("file"))?.Trim())
+                                             .Where(file => file != null)
+                                             .ToList();
 
             if (throwIfEmpty && references.Count == 0)
             {
@@ -217,28 +203,26 @@ namespace NuGet
             return references;
         }
 
-        private static List<ManifestFrameworkAssembly> ReadFrameworkAssemblies(XElement frameworkElement)
+        private static List<FrameworkAssemblyReference> ReadFrameworkAssemblies(XElement frameworkElement)
         {
             if (!frameworkElement.HasElements)
             {
-                return new List<ManifestFrameworkAssembly>(0);
+                return new List<FrameworkAssemblyReference>(0);
             }
 
             return (from element in frameworkElement.ElementsNoNamespace("frameworkAssembly")
                     let assemblyNameAttribute = element.Attribute("assemblyName")
                     where assemblyNameAttribute != null && !String.IsNullOrEmpty(assemblyNameAttribute.Value)
-                    select new ManifestFrameworkAssembly
-                    {
-                        AssemblyName = assemblyNameAttribute.Value.SafeTrim(),
-                        TargetFramework = element.GetOptionalAttributeValue("targetFramework").SafeTrim()
-                    }).ToList();
+                    select new FrameworkAssemblyReference(assemblyNameAttribute.Value?.Trim(),
+                        new[] { NuGetFramework.Parse(element.GetOptionalAttributeValue("targetFramework")?.Trim()) })
+                    ).ToList();
         }
 
-        private static List<ManifestDependencySet> ReadDependencySets(XElement dependenciesElement)
+        private static List<PackageDependencySet> ReadDependencySets(XElement dependenciesElement)
         {
             if (!dependenciesElement.HasElements)
             {
-                return new List<ManifestDependencySet>();
+                return new List<PackageDependencySet>();
             }
 
             // Disallow the <dependencies> element to contain both <dependency> and 
@@ -250,42 +234,35 @@ namespace NuGet
             }
 
             var dependencies = ReadDependencies(dependenciesElement);
-            if (dependencies.Count > 0)
+            if (dependencies.Any())
             {
                 // old format, <dependency> is direct child of <dependencies>
-                var dependencySet = new ManifestDependencySet
-                {
-                    Dependencies = dependencies
-                };
-                return new List<ManifestDependencySet> { dependencySet };
+                var dependencySet = new PackageDependencySet(dependencies);
+                return new List<PackageDependencySet> { dependencySet };
             }
             else
             {
                 var groups = dependenciesElement.ElementsNoNamespace("group");
                 return (from element in groups
-                        select new ManifestDependencySet
-                        {
-                            TargetFramework = element.GetOptionalAttributeValue("targetFramework").SafeTrim(),
-                            Dependencies = ReadDependencies(element)
-                        }).ToList();
+                        select new PackageDependencySet(
+                            element.GetOptionalAttributeValue("targetFramework")?.Trim(),
+                            ReadDependencies(element))
+                       ).ToList();
             }
         }
 
-        private static List<ManifestDependency> ReadDependencies(XElement containerElement)
+        private static List<PackageDependency> ReadDependencies(XElement containerElement)
         {
-
-
             // element is <dependency>
             return (from element in containerElement.ElementsNoNamespace("dependency")
                     let idElement = element.Attribute("id")
                     where idElement != null && !String.IsNullOrEmpty(idElement.Value)
-                    select new ManifestDependency
-                    {
-                        Id = idElement.Value.SafeTrim(),
-                        Version = element.GetOptionalAttributeValue("version").SafeTrim(),
-                        Include = element.GetOptionalAttributeValue("include").SafeTrim(),
-                        Exclude = element.GetOptionalAttributeValue("exclude").SafeTrim(),
-                    }).ToList();
+                    select new PackageDependency(
+                        idElement.Value?.Trim(),
+                        VersionRange.Parse(element.GetOptionalAttributeValue("version")?.Trim()),
+                        element.GetOptionalAttributeValue("include")?.Trim()?.Split(',').Select(a => a.Trim()).ToArray(),
+                        element.GetOptionalAttributeValue("exclude")?.Trim()?.Split(',').Select(a => a.Trim()).ToArray()
+                    )).ToList();
         }
 
         private static List<ManifestFile> ReadFilesList(XElement xElement)

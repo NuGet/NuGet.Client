@@ -1,30 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#if DNX451
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Xml.Serialization;
-using NuGet.Packaging.PackageCreation.Resources;
+#endif
 
 namespace NuGet
 {
-    [XmlType("file")]
-    public class ManifestFile : IValidatableObject
+    public class ManifestFile
+#if DNX451
+        : IValidatableObject
+#endif
     {
+#if DNX451
         private static readonly char[] _invalidTargetChars = Path.GetInvalidFileNameChars().Except(new[] { '\\', '/', '.' }).ToArray();
         private static readonly char[] _invalidSourceCharacters = Path.GetInvalidPathChars();
+#endif
 
-        [Required(ErrorMessageResourceType = typeof(NuGetResources), ErrorMessageResourceName = "Manifest_RequiredMetadataMissing")]
-        [XmlAttribute("src")]
         public string Source { get; set; }
 
-        [XmlAttribute("target")]
         public string Target { get; set; }
 
-        [XmlAttribute("exclude")]
         public string Exclude { get; set; }
 
+#if DNX451
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (!String.IsNullOrEmpty(Source) && Source.IndexOfAny(_invalidSourceCharacters) != -1)
@@ -42,5 +38,6 @@ namespace NuGet
                 yield return new ValidationResult(String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_ExcludeContainsInvalidCharacters, Exclude));
             }
         }
+#endif
     }
 }
