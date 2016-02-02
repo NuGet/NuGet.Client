@@ -102,9 +102,8 @@ namespace NuGet.CommandLine.Test
             int bodyEndIndex = Find(buffer, 0, delimiter);
             if (bodyEndIndex == -1)
             {
-                //TODO: chat with nuget team for what to do here.
-                //The Microsoft.AspNet.WebUtilities::MultipartReader is for 4.5.1, but
-                //the test project is for 4.5
+                //Patch, to deal with new binary format coming with the HttpClient
+                //from dnxcore50
                 byte[] delimiter2 = Encoding.UTF8.GetBytes("\r\n--");
                 bodyEndIndex = Find(buffer, 0, delimiter2);
                 if (bodyEndIndex == -1)
