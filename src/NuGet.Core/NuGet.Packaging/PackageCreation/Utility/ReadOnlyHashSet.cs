@@ -13,7 +13,7 @@ namespace NuGet.Packaging
         {
             if (items == null)
             {
-                throw new ArgumentNullException("items");
+                throw new ArgumentNullException(nameof(items));
             }
 
             _backingSet = new HashSet<T>(items);
@@ -23,12 +23,12 @@ namespace NuGet.Packaging
         {
             if (items == null)
             {
-                throw new ArgumentNullException("items");
+                throw new ArgumentNullException(nameof(items));
             }
 
             if (comparer == null)
             {
-                throw new ArgumentNullException("comparer");
+                throw new ArgumentNullException(nameof(comparer));
             }
 
             _backingSet = new HashSet<T>(items, comparer);
@@ -38,7 +38,7 @@ namespace NuGet.Packaging
         {
             if (backingSet == null)
             {
-                throw new ArgumentNullException("backingSet");
+                throw new ArgumentNullException(nameof(backingSet));
             }
 
             _backingSet = backingSet;

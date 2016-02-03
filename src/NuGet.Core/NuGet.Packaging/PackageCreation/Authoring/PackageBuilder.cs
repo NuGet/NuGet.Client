@@ -600,7 +600,7 @@ namespace NuGet.Packaging
                 return;
             }
 
-            var entry = package.CreateEntry(PathUtility.GetPathWithForwardSlashes(path), CompressionLevel.Optimal);
+            var entry = package.CreateEntry(PackageCreation.PathUtility.GetPathWithForwardSlashes(path), CompressionLevel.Optimal);
             using (var stream = entry.Open())
             {
                 sourceStream.CopyTo(stream);

@@ -1,10 +1,12 @@
-using NuGet.Packaging.PackageCreation.Resources;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+
+using NuGet.Packaging.PackageCreation;
+using NuGet.Packaging.PackageCreation.Resources;
 
 namespace NuGet.Packaging
 {

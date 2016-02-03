@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using NuGet.Packaging.PackageCreation.Resources;
 using CompatibilityMapping = System.Collections.Generic.Dictionary<string, string[]>;
 using NuGet.Versioning;
+using NuGet.Frameworks;
 
 namespace NuGet.Packaging
 {
@@ -36,20 +37,14 @@ namespace NuGet.Packaging
             "Microsoft.Security",
             "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
             Justification = "The type FrameworkName is immutable.")]
-        public static readonly FrameworkName EmptyFramework = new FrameworkName("NoFramework", new Version());
+        public static readonly FrameworkName EmptyFramework = new FrameworkName("NoFramework", new Version(0, 0));
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage(
             "Microsoft.Security",
             "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
             Justification = "The type FrameworkName is immutable.")]
-        public static readonly FrameworkName NativeProjectFramework = new FrameworkName("Native", new Version());
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage(
-            "Microsoft.Security",
-            "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes",
-            Justification = "The type FrameworkName is immutable.")]
-        public static readonly FrameworkName UnsupportedFrameworkName = new FrameworkName("Unsupported", new Version());
-        private static readonly Version _emptyVersion = new Version();
+        public static readonly FrameworkName UnsupportedFrameworkName = new FrameworkName("Unsupported", new Version(0, 0));
+        private static readonly Version _emptyVersion = new Version(0, 0);
 
         private static readonly Dictionary<string, string> _knownIdentifiers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) {
             // FYI, the keys are CASE-INSENSITIVE
@@ -224,24 +219,6 @@ namespace NuGet.Packaging
             { AspNetFrameworkIdentifier, new FrameworkName(NetFrameworkIdentifier, MaxVersion) },
         };
 
-        public static Version DefaultTargetFrameworkVersion
-        {
-            get
-            {
-                // We need to parse the version name out from the mscorlib's assembly name since
-                // we can't call GetName() in medium trust
-                return typeof(string).Assembly.GetName().Version;
-            }
-        }
-
-        public static FrameworkName DefaultTargetFramework
-        {
-            get
-            {
-                return new FrameworkName(NetFrameworkIdentifier, DefaultTargetFrameworkVersion);
-            }
-        }
-
         /// <summary>
         /// This function tries to normalize a string that represents framework version names into
         /// something a framework name that the package manager understands.
@@ -250,7 +227,7 @@ namespace NuGet.Packaging
         {
             if (frameworkName == null)
             {
-                throw new ArgumentNullException("frameworkName");
+                throw new ArgumentNullException(nameof(frameworkName));
             }
 
             // {Identifier}{Version}-{Profile}
@@ -384,240 +361,11 @@ namespace NuGet.Packaging
             }
         }
 
-        /// <summary>
-        /// Trims trailing zeros in revision and build.
-        /// </summary>
-        public static Version TrimVersion(Version version)
-        {
-            if (version == null)
-            {
-                throw new ArgumentNullException("version");
-            }
-
-            if (version.Build == 0 && version.Revision == 0)
-            {
-                version = new Version(version.Major, version.Minor);
-            }
-            else if (version.Revision == 0)
-            {
-                version = new Version(version.Major, version.Minor, version.Build);
-            }
-
-            return version;
-        }
-
-        /// <summary>
-        /// The version string is either a simple version or an arithmetic range
-        /// e.g.
-        ///      1.0         --> 1.0 ≤ x
-        ///      (,1.0]      --> x ≤ 1.0
-        ///      (,1.0)      --> x &lt; 1.0
-        ///      [1.0]       --> x == 1.0
-        ///      (1.0,)      --> 1.0 &lt; x
-        ///      (1.0, 2.0)   --> 1.0 &lt; x &lt; 2.0
-        ///      [1.0, 2.0]   --> 1.0 ≤ x ≤ 2.0
-        /// </summary>
-        public static IVersionSpec ParseVersionSpec(string value)
-        {
-            IVersionSpec versionInfo;
-            if (!TryParseVersionSpec(value, out versionInfo))
-            {
-                throw new ArgumentException(
-                    String.Format(CultureInfo.CurrentCulture,
-                     NuGetResources.InvalidVersionString, value));
-            }
-
-            return versionInfo;
-        }
-
-        public static bool TryParseVersionSpec(string value, out IVersionSpec result)
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException("value");
-            }
-
-            var versionSpec = new VersionSpec();
-            value = value.Trim();
-
-            // First, try to parse it as a plain version string
-            SemanticVersion version;
-            if (SemanticVersion.TryParse(value, out version))
-            {
-                // A plain version is treated as an inclusive minimum range
-                result = new VersionSpec
-                {
-                    MinVersion = version,
-                    IsMinInclusive = true
-                };
-
-                return true;
-            }
-
-            // It's not a plain version, so it must be using the bracket arithmetic range syntax
-
-            result = null;
-
-            // Fail early if the string is too short to be valid
-            if (value.Length < 3)
-            {
-                return false;
-            }
-
-            // The first character must be [ ot (
-            switch (value.First())
-            {
-                case '[':
-                    versionSpec.IsMinInclusive = true;
-                    break;
-                case '(':
-                    versionSpec.IsMinInclusive = false;
-                    break;
-                default:
-                    return false;
-            }
-
-            // The last character must be ] ot )
-            switch (value.Last())
-            {
-                case ']':
-                    versionSpec.IsMaxInclusive = true;
-                    break;
-                case ')':
-                    versionSpec.IsMaxInclusive = false;
-                    break;
-                default:
-                    return false;
-            }
-
-            // Get rid of the two brackets
-            value = value.Substring(1, value.Length - 2);
-
-            // Split by comma, and make sure we don't get more than two pieces
-            string[] parts = value.Split(',');
-            if (parts.Length > 2)
-            {
-                return false;
-            }
-            else if (parts.All(String.IsNullOrEmpty))
-            {
-                // If all parts are empty, then neither of upper or lower bounds were specified. Version spec is of the format (,]
-                return false;
-            }
-
-            // If there is only one piece, we use it for both min and max
-            string minVersionString = parts[0];
-            string maxVersionString = (parts.Length == 2) ? parts[1] : parts[0];
-
-            // Only parse the min version if it's non-empty
-            if (!String.IsNullOrWhiteSpace(minVersionString))
-            {
-                if (!TryParseVersion(minVersionString, out version))
-                {
-                    return false;
-                }
-                versionSpec.MinVersion = version;
-            }
-
-            // Same deal for max
-            if (!String.IsNullOrWhiteSpace(maxVersionString))
-            {
-                if (!TryParseVersion(maxVersionString, out version))
-                {
-                    return false;
-                }
-                versionSpec.MaxVersion = version;
-            }
-
-            // Successful parse!
-            result = versionSpec;
-            return true;
-        }
-
-        /// <summary>
-        /// The safe range is defined as the highest build and revision for a given major and minor version
-        /// </summary>
-        public static IVersionSpec GetSafeRange(SemanticVersion version)
-        {
-            return new VersionSpec
-            {
-                IsMinInclusive = true,
-                MinVersion = version,
-                MaxVersion = new SemanticVersion(new Version(version.Version.Major, version.Version.Minor + 1))
-            };
-        }
-
-        public static string PrettyPrint(IVersionSpec versionSpec)
-        {
-            if (versionSpec.MinVersion != null && versionSpec.IsMinInclusive && versionSpec.MaxVersion == null && !versionSpec.IsMaxInclusive)
-            {
-                return String.Format(CultureInfo.InvariantCulture, "({0} {1})", GreaterThanOrEqualTo, versionSpec.MinVersion);
-            }
-
-            if (versionSpec.MinVersion != null && versionSpec.MaxVersion != null && versionSpec.MinVersion == versionSpec.MaxVersion && versionSpec.IsMinInclusive && versionSpec.IsMaxInclusive)
-            {
-                return String.Format(CultureInfo.InvariantCulture, "(= {0})", versionSpec.MinVersion);
-            }
-
-            var versionBuilder = new StringBuilder();
-            if (versionSpec.MinVersion != null)
-            {
-                if (versionSpec.IsMinInclusive)
-                {
-                    versionBuilder.AppendFormat(CultureInfo.InvariantCulture, "({0} ", GreaterThanOrEqualTo);
-                }
-                else
-                {
-                    versionBuilder.Append("(> ");
-                }
-                versionBuilder.Append(versionSpec.MinVersion);
-            }
-
-            if (versionSpec.MaxVersion != null)
-            {
-                if (versionBuilder.Length == 0)
-                {
-                    versionBuilder.Append("(");
-                }
-                else
-                {
-                    versionBuilder.Append(" && ");
-                }
-
-                if (versionSpec.IsMaxInclusive)
-                {
-                    versionBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0} ", LessThanOrEqualTo);
-                }
-                else
-                {
-                    versionBuilder.Append("< ");
-                }
-                versionBuilder.Append(versionSpec.MaxVersion);
-            }
-
-            if (versionBuilder.Length > 0)
-            {
-                versionBuilder.Append(")");
-            }
-
-            return versionBuilder.ToString();
-        }
-
-        public static string GetFrameworkString(FrameworkName frameworkName)
-        {
-            string name = frameworkName.Identifier + frameworkName.Version;
-            if (String.IsNullOrEmpty(frameworkName.Profile))
-            {
-                return name;
-            }
-            return name + "-" + frameworkName.Profile;
-        }
-
         public static string GetShortFrameworkName(FrameworkName frameworkName)
         {
             if (frameworkName == null)
             {
-                throw new ArgumentNullException("frameworkName");
+                throw new ArgumentNullException(nameof(frameworkName));
             }
 
             // Do a reverse lookup in _frameworkNameAlias. This is so that we can produce the more user-friendly
@@ -663,7 +411,7 @@ namespace NuGet.Packaging
             else
             {
                 // only show version part if it's > 0.0.0.0
-                if (frameworkName.Version > new Version())
+                if (frameworkName.Version > new Version(0, 0))
                 {
                     // Remove the . from versions
                     if (frameworkName.Version.Major > 9 
@@ -742,11 +490,6 @@ namespace NuGet.Packaging
             return sb.ToString();
         }
 
-        public static string GetTargetFrameworkLogString(FrameworkName targetFramework)
-        {
-            return (targetFramework == null || targetFramework == VersionUtility.EmptyFramework) ? NuGetResources.Debug_TargetFrameworkInfo_NotFrameworkSpecific : String.Empty;
-        }
-
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "1#")]
         public static FrameworkName ParseFrameworkNameFromFilePath(string filePath, out string effectivePath)
         {
@@ -788,12 +531,6 @@ namespace NuGet.Packaging
             return null;
         }
 
-        public static FrameworkName ParseFrameworkFolderName(string path)
-        {
-            string effectivePath;
-            return ParseFrameworkFolderName(path, strictParsing: true, effectivePath: out effectivePath);
-        }
-
         /// <summary>
         /// Parses the specified string into FrameworkName object.
         /// </summary>
@@ -832,59 +569,6 @@ namespace NuGet.Packaging
             return null;
         }
 
-        [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
-        public static bool TryGetCompatibleItems<T>(FrameworkName projectFramework, IEnumerable<T> items, out IEnumerable<T> compatibleItems) where T : IFrameworkTargetable
-        {
-            if (!items.Any())
-            {
-                compatibleItems = Enumerable.Empty<T>();
-                return true;
-            }
-
-            // Not all projects have a framework, we need to consider those projects.
-            var internalProjectFramework = projectFramework ?? EmptyFramework;
-
-            // Turn something that looks like this:
-            // item -> [Framework1, Framework2, Framework3] into
-            // [{item, Framework1}, {item, Framework2}, {item, Framework3}]
-            var normalizedItems = from item in items
-                                  let frameworks = (item.SupportedFrameworks != null && item.SupportedFrameworks.Any()) ? item.SupportedFrameworks : new FrameworkName[] { null }
-                                  from framework in frameworks
-                                  select new
-                                  {
-                                      Item = item,
-                                      TargetFramework = framework
-                                  };
-
-            // Group references by target framework (if there is no target framework we assume it is the default)
-            var frameworkGroups = normalizedItems.GroupBy(g => g.TargetFramework, g => g.Item).ToList();
-
-            // Try to find the best match
-            // Not all projects have a framework, we need to consider those projects.
-            compatibleItems = (from g in frameworkGroups
-                               where g.Key != null && IsCompatible(internalProjectFramework, g.Key)
-                               orderby GetProfileCompatibility(internalProjectFramework, g.Key) descending
-                               select g).FirstOrDefault();
-
-            bool hasItems = compatibleItems != null && compatibleItems.Any();
-            if (!hasItems)
-            {
-                // if there's no matching profile, fall back to the items without target framework
-                // because those are considered to be compatible with any target framework
-                compatibleItems = frameworkGroups.Where(g => g.Key == null).SelectMany(g => g);
-                hasItems = compatibleItems != null && compatibleItems.Any();
-            }
-
-            if (!hasItems)
-            {
-                compatibleItems = null;
-            }
-
-            return hasItems;
-        }
-
-        
-
         internal static Version NormalizeVersion(Version version)
         {
             return new Version(version.Major,
@@ -902,27 +586,6 @@ namespace NuGet.Packaging
             }
 
             return framework;
-        }
-
-        /// <summary>
-        /// Returns all possible versions for a version. i.e. 1.0 would return 1.0, 1.0.0, 1.0.0.0
-        /// </summary>
-        internal static IEnumerable<SemanticVersion> GetPossibleVersions(SemanticVersion semVer)
-        {
-            // Trim the version so things like 1.0.0.0 end up being 1.0
-            Version version = TrimVersion(semVer.Version);
-
-            yield return new SemanticVersion(version, semVer.SpecialVersion);
-
-            if (version.Build == -1 && version.Revision == -1)
-            {
-                yield return new SemanticVersion(new Version(version.Major, version.Minor, 0), semVer.SpecialVersion);
-                yield return new SemanticVersion(new Version(version.Major, version.Minor, 0, 0), semVer.SpecialVersion);
-            }
-            else if (version.Revision == -1)
-            {
-                yield return new SemanticVersion(new Version(version.Major, version.Minor, version.Build, 0), semVer.SpecialVersion);
-            }
         }
 
         public static bool IsCompatible(FrameworkName projectFrameworkName, IEnumerable<FrameworkName> packageSupportedFrameworks)
@@ -1043,220 +706,6 @@ namespace NuGet.Packaging
             }
         }
 
-        /// <summary>
-        /// Given 2 framework names, this method returns a number which determines how compatible
-        /// the names are. The higher the number the more compatible the frameworks are.
-        /// </summary>
-        private static long GetProfileCompatibility(FrameworkName projectFrameworkName, FrameworkName packageTargetFrameworkName)
-        {
-            projectFrameworkName = NormalizeFrameworkName(projectFrameworkName);
-            packageTargetFrameworkName = NormalizeFrameworkName(packageTargetFrameworkName);
-
-            if (packageTargetFrameworkName.IsPortableFramework())
-            {
-                if (projectFrameworkName.IsPortableFramework())
-                {
-                    return GetCompatibilityBetweenPortableLibraryAndPortableLibrary(projectFrameworkName, packageTargetFrameworkName);
-                }
-                else
-                {
-                    // we divide by 2 to ensure Portable framework has less compatibility value than specific framework.
-                    return GetCompatibilityBetweenPortableLibraryAndNonPortableLibrary(projectFrameworkName, packageTargetFrameworkName) / 2;
-                }
-            }
-
-            long compatibility = 0;
-
-            // Calculate the "distance" between the target framework version and the project framework version.
-            // When comparing two framework candidates, we pick the one with higher version.
-            compatibility += CalculateVersionDistance(
-                projectFrameworkName.Version,
-                GetEffectiveFrameworkVersion(projectFrameworkName, packageTargetFrameworkName));
-
-            // Things with matching profiles are more compatible than things without.
-            // This means that if we have net40 and net40-client assemblies and the target framework is
-            // net40, both sets of assemblies are compatible but we prefer net40 since it matches
-            // the profile exactly.
-            if (packageTargetFrameworkName.Profile.Equals(projectFrameworkName.Profile, StringComparison.OrdinalIgnoreCase))
-            {
-                compatibility++;
-            }
-
-            // this is to give specific profile higher compatibility than portable profile
-            if (packageTargetFrameworkName.Identifier.Equals(projectFrameworkName.Identifier, StringComparison.OrdinalIgnoreCase))
-            {
-                // Let's say a package has two framework folders: 'net40' and 'portable-net45+wp8'.
-                // The package is installed into a net45 project. We want to pick the 'net40' folder, even though
-                // the 'net45' in portable folder has a matching version with the project's framework.
-                //
-                // So, in order to achieve that, here we give the folder that has matching identifer with the project's 
-                // framework identifier a compatibility score of 10, to make sure it weighs more than the compatibility of matching version.
-
-                compatibility += 10 * (1L << 32);
-            }
-
-            return compatibility;
-        }
-
-        private static long CalculateVersionDistance(Version projectVersion, Version targetFrameworkVersion)
-        {
-            // the +5 is to counter the profile compatibility increment (+1)
-            const long MaxValue = 1L << 32 + 5;
-
-            // calculate the "distance" between 2 versions
-            var distance = (projectVersion.Major - targetFrameworkVersion.Major) * 255L * 255 * 255 +
-                           (projectVersion.Minor - targetFrameworkVersion.Minor) * 255L * 255 +
-                           (projectVersion.Build - targetFrameworkVersion.Build) * 255L +
-                           (projectVersion.Revision - targetFrameworkVersion.Revision);
-
-            Debug.Assert(MaxValue >= distance);
-
-            // the closer the versions are, the higher the returned value is.
-            return MaxValue - distance;
-        }
-
-        private static Version GetEffectiveFrameworkVersion(FrameworkName projectFramework, FrameworkName targetFrameworkVersion)
-        {
-            if (targetFrameworkVersion.IsPortableFramework())
-            {
-                NetPortableProfile profile = NetPortableProfile.Parse(targetFrameworkVersion.Profile);
-                if (profile != null)
-                {
-                    // if it's a portable library, return the version of the matching framework
-                    var compatibleFramework = profile.SupportedFrameworks.FirstOrDefault(f => VersionUtility.IsCompatible(projectFramework, f));
-                    if (compatibleFramework != null)
-                    {
-                        return compatibleFramework.Version;
-                    }
-                }
-            }
-
-            return targetFrameworkVersion.Version;
-        }
-
-        /// <summary>
-        /// Attempt to calculate how compatible a portable framework folder is to a portable project.
-        /// The two portable frameworks passed to this method MUST be compatible with each other.
-        /// </summary>
-        /// <remarks>
-        /// The returned score will be negative value.
-        /// </remarks>
-        internal static int GetCompatibilityBetweenPortableLibraryAndPortableLibrary(FrameworkName projectFrameworkName, FrameworkName packageTargetFrameworkName)
-        {
-            // Algorithms: Give a score from 0 to N indicating how close *in version* each package platform is the project’s platforms 
-            // and then choose the folder with the lowest score. If the score matches, choose the one with the least platforms.
-            // 
-            // For example:
-            // 
-            // Project targeting: .NET 4.5 + SL5 + WP71
-            // 
-            // Package targeting:
-            // .NET 4.5 (0) + SL5 (0) + WP71 (0)                            == 0
-            // .NET 4.5 (0) + SL5 (0) + WP71 (0) + Win8 (0)                 == 0
-            // .NET 4.5 (0) + SL4 (1) + WP71 (0) + Win8 (0)                 == 1
-            // .NET 4.0 (1) + SL4 (1) + WP71 (0) + Win8 (0)                 == 2
-            // .NET 4.0 (1) + SL4 (1) + WP70 (1) + Win8 (0)                 == 3
-            // 
-            // Above, there’s two matches with the same result, choose the one with the least amount of platforms.
-            // 
-            // There will be situations, however, where there is still undefined behavior, such as:
-            // 
-            // .NET 4.5 (0) + SL4 (1) + WP71 (0)                            == 1
-            // .NET 4.0 (1) + SL5 (0) + WP71 (0)                            == 1
-
-            NetPortableProfile projectFrameworkProfile = NetPortableProfile.Parse(projectFrameworkName.Profile);
-            Debug.Assert(projectFrameworkProfile != null);
-
-            NetPortableProfile packageTargetFrameworkProfile = NetPortableProfile.Parse(packageTargetFrameworkName.Profile, treatOptionalFrameworksAsSupportedFrameworks: true);
-            Debug.Assert(packageTargetFrameworkProfile != null);
-
-            int nonMatchingCompatibleFrameworkCount = 0;
-            int inCompatibleOptionalFrameworkCount = 0;
-            foreach (var supportedPackageTargetFramework in packageTargetFrameworkProfile.SupportedFrameworks)
-            {
-                var compatibleProjectFramework = projectFrameworkProfile.SupportedFrameworks.FirstOrDefault(f => IsCompatible(f, supportedPackageTargetFramework));
-                if (compatibleProjectFramework != null && compatibleProjectFramework.Version > supportedPackageTargetFramework.Version)
-                {
-                    nonMatchingCompatibleFrameworkCount++;
-                }
-            }
-
-            foreach (var optionalProjectFramework in projectFrameworkProfile.OptionalFrameworks)
-            {
-                var compatiblePackageTargetFramework = packageTargetFrameworkProfile.SupportedFrameworks.FirstOrDefault(f => IsCompatible(f, optionalProjectFramework));
-                if (compatiblePackageTargetFramework == null || compatiblePackageTargetFramework.Version > optionalProjectFramework.Version)
-                {
-                    inCompatibleOptionalFrameworkCount++;
-                }
-                else if (compatiblePackageTargetFramework != null && compatiblePackageTargetFramework.Version < optionalProjectFramework.Version)
-                {
-                    // we check again if the package version < project version, because, if they are equal, they are matching compatible frameworks
-                    // neither inCompatibleOptionalFrameworkCount nor nonMatchingCompatibleFrameworkCount should be incremented
-                    nonMatchingCompatibleFrameworkCount++;
-                }
-            }
-
-            // The following is the maximum project framework count which is also the maximum possible incompatibilities
-            int maxPossibleIncompatibleFrameworkCount = 1 + projectFrameworkProfile.SupportedFrameworks.Count + projectFrameworkProfile.OptionalFrameworks.Count;
-
-            // This is to ensure that profile with compatible optional frameworks wins over profiles without, even, when supported frameworks are highly compatible
-            // If there are no incompatible optional frameworks, the score below will be simply nonMatchingCompatibleFrameworkCount
-            // For example, Let Project target net45+sl5+monotouch+monoandroid. And, Package has 4 profiles, (THIS EXAMPLE IS LIKELY NOT A REAL_WORLD SCENARIO :))
-            // A: net45+sl5, B: net40+sl5+monotouch, C: net40+sl4+monotouch+monoandroid, D: net40+sl4+monotouch+monoandroid+wp71
-            // At this point, Compatibility is as follows. C = D > B > A. Scores for A = (5 * 2 + 0), B = (5 * 1 + 1), C = (5 * 0 + 2), D = (5 * 0 + 2)
-            // The scores are 10, 6, 2 and 2. Both C and D are the most compatible with a score of 2
-            // Clearly, having more number of frameworks, supported and optional, that are compatible is preferred over most compatible supported frameworks alone
-            int score = maxPossibleIncompatibleFrameworkCount * inCompatibleOptionalFrameworkCount +
-                nonMatchingCompatibleFrameworkCount;
-
-            // This is to ensure that if two portable frameworks have the same score,
-            // we pick the one that has less number of supported platforms.
-            // In the example described in comments above, both C and D had an equal score of 2. With the following correction, new scores are as follows
-            // A = (10 * 50 + 2), B = (6 * 50 + 3), C = (2 * 50 + 4), D = (2 * 50 + 5)
-            // A = 502, B = 303, C = 104, D = 105. And, C has the lowest score and the most compatible
-            score = score * 50 + packageTargetFrameworkProfile.SupportedFrameworks.Count;
-
-            // Our algorithm returns lowest score for the most compatible framework. 
-            // However, the caller of this method expects it to have the highest score. 
-            // Hence, we return the negative value of score here.
-            return -score;
-        }
-
-        internal static long GetCompatibilityBetweenPortableLibraryAndNonPortableLibrary(FrameworkName projectFrameworkName, FrameworkName packagePortableFramework)
-        {
-            NetPortableProfile packageFrameworkProfile = NetPortableProfile.Parse(packagePortableFramework.Profile, treatOptionalFrameworksAsSupportedFrameworks: true);
-            if (packageFrameworkProfile == null)
-            {
-                // defensive coding, this should never happen
-                Debug.Fail("'portableFramework' is not a valid portable framework.");
-                return long.MinValue;
-            }
-
-            // among the supported frameworks by the Portable library, pick the one that is compatible with 'projectFrameworkName'
-            var compatibleFramework = packageFrameworkProfile.SupportedFrameworks.FirstOrDefault(f => IsCompatible(projectFrameworkName, f));
-
-            if (compatibleFramework != null)
-            {
-                var score = GetProfileCompatibility(projectFrameworkName, compatibleFramework);
-
-                // This is to ensure that if two portable frameworks have the same score,
-                // we pick the one that has less number of supported platforms.
-                // The *2 is to make up for the /2 to which the result of this method is subject.
-                score -= (packageFrameworkProfile.SupportedFrameworks.Count * 2);
-
-                return score;
-            }
-            else if(NetPortableProfileTable.HasCompatibleProfileWith(packageFrameworkProfile, projectFrameworkName))
-            {
-                // Get the list of portable profiles that supports projectFrameworkName
-                // And, see if there is atleast 1 profile which is compatible with packageFrameworkProfile
-                // If so, return 0 - (packageFrameworkProfile.SupportedFrameworks.Count * 2)
-                return 0 - (packageFrameworkProfile.SupportedFrameworks.Count * 2);
-            }
-
-            return long.MinValue;
-        }
-
         private static bool TryParseVersion(string versionString, out SemanticVersion version)
         {
             version = null;
@@ -1266,7 +715,7 @@ namespace NuGet.Packaging
                 int versionNumber;
                 if (Int32.TryParse(versionString, out versionNumber) && versionNumber > 0)
                 {
-                    version = new SemanticVersion(new Version(versionNumber, 0));
+                    version = new SemanticVersion(versionNumber, 0, 0);
                 }
             }
             return version != null;

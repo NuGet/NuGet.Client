@@ -1,15 +1,10 @@
 ﻿using System;
 using System.IO;
 
-namespace NuGet.Packaging
+namespace NuGet.Packaging.PackageCreation
 {
     public static class PackageHelper
     {
-        public static bool IsManifest(string path)
-        {
-            return Path.GetExtension(path).Equals(Constants.ManifestExtension, StringComparison.OrdinalIgnoreCase);
-        }
-
         public static bool IsPackageFile(string path)
         {
             return Path.GetExtension(path).Equals(Constants.PackageExtension, StringComparison.OrdinalIgnoreCase);

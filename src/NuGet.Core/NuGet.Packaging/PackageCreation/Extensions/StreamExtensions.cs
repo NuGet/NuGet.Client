@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace NuGet.Packaging
+namespace NuGet.Packaging.PackageCreation
 {
     public static class StreamExtensions
     {
@@ -42,7 +42,7 @@ namespace NuGet.Packaging
                 }
                 finally 
                 {
-                    stream.Close();
+                    stream.Dispose();
                 }
             }
 
@@ -55,16 +55,6 @@ namespace NuGet.Packaging
             {
                 return streamReader.ReadToEnd();
             }
-        }
-
-        public static Stream AsStream(this string value)
-        {
-            return AsStream(value, Encoding.UTF8);
-        }
-
-        public static Stream AsStream(this string value, Encoding encoding)
-        {
-            return new MemoryStream(encoding.GetBytes(value));
         }
 
         /// <summary>

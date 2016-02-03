@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Versioning;
 using NuGet.Packaging.PackageCreation.Resources;
+using NuGet.Shared;
+using System.IO;
 
 namespace NuGet.Packaging
 {
@@ -31,42 +33,41 @@ namespace NuGet.Packaging
         /// Creates a portable profile for the given framework version, profile name and 
         /// supported frameworks.
         /// </summary>
-        /// <param name="version">.NET framework version that the profile belongs to, like "v4.0".</param>
+        /// <param name="frameworkDirectory">.NET framework version that the profile belongs to, like "v4.0".</param>
         /// <param name="name">Name of the portable profile, like "win+net45".</param>
         /// <param name="supportedFrameworks">Supported frameworks.</param>
         /// <param name="optionalFrameworks">Optional frameworks.</param>
-        public NetPortableProfile(string version, string name, IEnumerable<FrameworkName> supportedFrameworks, IEnumerable<FrameworkName> optionalFrameworks)
+        public NetPortableProfile(string frameworkDirectory, string name, IEnumerable<FrameworkName> supportedFrameworks, IEnumerable<FrameworkName> optionalFrameworks)
         {
-            if (String.IsNullOrEmpty(version))
+            if (String.IsNullOrEmpty(frameworkDirectory))
             {
-                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "version");
+                throw new ArgumentNullException(nameof(frameworkDirectory));
             }
             if (String.IsNullOrEmpty(name))
             {
-                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "name");
+                throw new ArgumentNullException(nameof(name));
             }
 
             if (supportedFrameworks == null)
             {
-                throw new ArgumentNullException("supportedFrameworks");
+                throw new ArgumentNullException(nameof(supportedFrameworks));
             }
 
             var frameworks = supportedFrameworks.ToList();
             if (frameworks.Any(f => f == null))
             {
-                throw new ArgumentException(NuGetResources.SupportedFrameworkIsNull, "supportedFrameworks");
+                throw new ArgumentException(NuGetResources.SupportedFrameworkIsNull, nameof(supportedFrameworks));
             }
 
             if (frameworks.Count == 0)
             {
-                throw new ArgumentOutOfRangeException("supportedFrameworks");
+                throw new ArgumentOutOfRangeException(nameof(supportedFrameworks));
             }
 
             Name = name;
             SupportedFrameworks = new ReadOnlyHashSet<FrameworkName>(frameworks);
-            OptionalFrameworks = (optionalFrameworks == null || optionalFrameworks.IsEmpty()) ? new ReadOnlyHashSet<FrameworkName>(Enumerable.Empty<FrameworkName>())
-                : new ReadOnlyHashSet<FrameworkName>(optionalFrameworks);
-            FrameworkVersion = version;
+            OptionalFrameworks = new ReadOnlyHashSet<FrameworkName>(optionalFrameworks ?? Enumerable.Empty<FrameworkName>());
+            FrameworkVersion = new DirectoryInfo(frameworkDirectory).Name.TrimStart('v');
         }
 
         /// <summary>
@@ -121,27 +122,27 @@ namespace NuGet.Packaging
             }
         }
 
-        public bool IsCompatibleWith(NetPortableProfile projectFrameworkProfile)
+        public bool IsCompatibleWith(NetPortableProfile other)
         {
-            if (projectFrameworkProfile == null)
+            if (other == null)
             {
-                throw new ArgumentNullException("projectFrameworkProfile");
+                throw new ArgumentNullException(nameof(other));
             }
 
-            return projectFrameworkProfile.SupportedFrameworks.All(
+            return other.SupportedFrameworks.All(
                 projectFramework => this.SupportedFrameworks.Any(
                     packageFramework => VersionUtility.IsCompatible(projectFramework, packageFramework)));
         }
 
-        public bool IsCompatibleWith(FrameworkName projectFramework)
+        public bool IsCompatibleWith(FrameworkName framework)
         {
-            if (projectFramework == null)
+            if (framework == null)
             {
-                throw new ArgumentNullException("projectFramework");
+                throw new ArgumentNullException(nameof(framework));
             }
 
-            return SupportedFrameworks.Any(packageFramework => VersionUtility.IsCompatible(projectFramework, packageFramework))
-                || NetPortableProfileTable.HasCompatibleProfileWith(this, projectFramework);
+            return SupportedFrameworks.Any(packageFramework => VersionUtility.IsCompatible(framework, packageFramework))
+                || NetPortableProfileTable.HasCompatibleProfileWith(this, framework);
         }
 
         /// <summary>
@@ -152,7 +153,7 @@ namespace NuGet.Packaging
         {
             if (String.IsNullOrEmpty(profileValue))
             {
-                throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, "profileValue");
+                throw new ArgumentNullException(nameof(profileValue));
             }
 
             // Previously, only the full "ProfileXXX" long .NET name could be used for this method.

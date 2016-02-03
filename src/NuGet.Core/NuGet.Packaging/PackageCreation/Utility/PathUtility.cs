@@ -1,4 +1,4 @@
-﻿namespace NuGet.Packaging
+﻿namespace NuGet.Packaging.PackageCreation
 {
     public static class PathUtility
     {

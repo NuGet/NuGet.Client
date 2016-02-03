@@ -1,17 +1,13 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 #if DNX451
 using System.ComponentModel.DataAnnotations;
 #endif
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using System.Xml.Schema;
-using NuGet.Packaging.PackageCreation.Resources;
-using NuGet.Xml;
+
+using NuGet.Packaging.Xml;
 
 namespace NuGet.Packaging
 {

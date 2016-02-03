@@ -1,3 +1,4 @@
+using NuGet.Frameworks;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,11 +30,7 @@ namespace NuGet.Packaging
         /// <summary>
         /// Path on disk
         /// </summary>
-        public string SourcePath
-        {
-            get;
-            set;
-        }
+        public string SourcePath { get; set; }
 
         /// <summary>
         /// Path in package
@@ -75,13 +72,13 @@ namespace NuGet.Packaging
             get { return _targetFramework; }
         }
 
-        public IEnumerable<FrameworkName> SupportedFrameworks
+        public IEnumerable<NuGetFramework> SupportedFrameworks
         {
             get
             {
                 if (TargetFramework != null)
                 {
-                    yield return TargetFramework;
+                    yield return NuGetFramework.Parse(TargetFramework.Identifier);
                 }
                 yield break;
             }
