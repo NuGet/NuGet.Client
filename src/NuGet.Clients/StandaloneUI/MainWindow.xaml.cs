@@ -105,7 +105,7 @@ namespace StandaloneUI
 
             using (var catalog = new AggregateCatalog(
                 new AssemblyCatalog(Assembly.Load(assemblyName)),
-                new DirectoryCatalog(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.dll")))
+                new DirectoryCatalog(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "NuGet.*.dll")))
             {
                 var container = new CompositionContainer(catalog);
 
