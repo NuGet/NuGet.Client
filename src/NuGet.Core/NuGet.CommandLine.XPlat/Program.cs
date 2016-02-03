@@ -181,8 +181,6 @@ namespace NuGet.CommandLine.XPlat
                             globalFolderPath = SettingsUtility.GetGlobalPackagesFolder(settings);
                         }
 
-                        var sharedCache = new RestoreCommandSharedCache();
-
                         // Find the shared local cache for globalFolderPath
                         // The global folder may differ between projects
                         NuGetv3LocalRepository localCache;
@@ -192,28 +190,9 @@ namespace NuGet.CommandLine.XPlat
                             localCaches.Add(globalFolderPath, localCache);
                         }
 
-                        sharedCache.LocalCache = localCache;
+                        var sharedCache = new RestoreCommandSharedCache(localCache);
 
                         var packageSources = GetSources(sources, fallBack, settings);
-
-                        foreach (var source in packageSources)
-                        {
-                            IRemoteDependencyProvider provider;
-                            if (!remoteProviders.TryGetValue(source.PackageSource, out provider))
-                            {
-                                provider = new SourceRepositoryDependencyProvider(source, Log, cacheContext);
-                                remoteProviders.Add(source.PackageSource, provider);
-                            }
-
-                            sharedCache.RemoteProviders.Add(provider);
-                        }
-
-                        // Create the shared resources up front so that all projects use the same one
-                        if (!localCaches.TryGetValue(globalFolderPath, out localCache))
-                        {
-                            localCache = new NuGetv3LocalRepository(globalFolderPath);
-                            localCaches.Add(globalFolderPath, localCache);
-                        }
 
                         // Throttle and wait for a task to finish if we have hit the limit
                         if (restoreTasks.Count == maxTasks)

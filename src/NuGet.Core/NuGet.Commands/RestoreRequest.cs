@@ -5,14 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Configuration;
-using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
-using NuGet.Repositories;
 
 namespace NuGet.Commands
 {

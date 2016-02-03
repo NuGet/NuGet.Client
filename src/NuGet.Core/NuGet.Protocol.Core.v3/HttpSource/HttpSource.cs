@@ -104,12 +104,14 @@ namespace NuGet.Protocol
                     HttpCompletionOption.ResponseHeadersRead,
                     cancellationToken);
 
+            var logFormat = "  {1} {0} {2}ms";
+
             using (var response = await GetThrottled(throttleRequest, log))
             {
                 if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
                 {
                     log.LogInformation(string.Format(CultureInfo.InvariantCulture,
-                        "  {1} {0} {2}ms", uri, response.StatusCode.ToString(), sw.ElapsedMilliseconds.ToString()));
+                        logFormat, uri, response.StatusCode.ToString(), sw.ElapsedMilliseconds.ToString()));
                     return new HttpSourceResult();
                 }
 
@@ -118,7 +120,7 @@ namespace NuGet.Protocol
                 await CreateCacheFile(result, response, cacheContext, cancellationToken);
 
                 log.LogInformation(string.Format(CultureInfo.InvariantCulture,
-                    "  {1} {0} {2}ms", uri, response.StatusCode.ToString(), sw.ElapsedMilliseconds.ToString()));
+                    logFormat, uri, response.StatusCode.ToString(), sw.ElapsedMilliseconds.ToString()));
 
                 return result;
             }
@@ -128,7 +130,7 @@ namespace NuGet.Protocol
         /// Wraps logging of the initial request and throttling.
         /// This method does not use the cache.
         /// </summary>
-        private async Task<HttpResponseMessage> GetAsync(
+        private async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             ILogger log,
             CancellationToken cancellationToken)
@@ -160,8 +162,6 @@ namespace NuGet.Protocol
                 {
                     await _throttle.WaitAsync();
 
-                    log.LogVerbose($"Current http requests queued: {_throttle.CurrentCount + 1}");
-
                     return await request();
                 }
                 finally
@@ -175,7 +175,7 @@ namespace NuGet.Protocol
         {
             var request = new HttpRequestMessage(HttpMethod.Get, uri);
 
-            return GetAsync(request, log, token);
+            return SendAsync(request, log, token);
         }
 
         public async Task<Stream> GetStreamAsync(Uri uri, ILogger log, CancellationToken token)
@@ -186,13 +186,29 @@ namespace NuGet.Protocol
             return await response.Content.ReadAsStreamAsync();
         }
 
-        public async Task<JObject> GetJObjectAsync(Uri uri, ILogger log, CancellationToken token)
+        public Task<JObject> GetJObjectAsync(Uri uri, ILogger log, CancellationToken token)
         {
-            using (var stream = await GetStreamAsync(uri, log, token))
-            using (var reader = new StreamReader(stream))
-            using (var jsonReader = new JsonTextReader(reader))
+            return GetJObjectAsync(uri, ignoreNotFounds: false, log: log, token: token);
+        }
+
+        /// <summary>
+        /// Returns a json object from the url or null if a 404 was encountered.
+        /// </summary>
+        public async Task<JObject> GetJObjectAsync(Uri uri, bool ignoreNotFounds, ILogger log, CancellationToken token)
+        {
+            using (var response = await GetAsync(uri, log, token))
             {
-                return JObject.Load(jsonReader);
+                if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return null;
+                }
+
+                using (var stream = await response.Content.ReadAsStreamAsync())
+                using (var reader = new StreamReader(stream))
+                using (var jsonReader = new JsonTextReader(reader))
+                {
+                    return JObject.Load(jsonReader);
+                }
             }
         }
 
@@ -357,7 +373,7 @@ namespace NuGet.Protocol
             var httpClient = new HttpClient(_httpHandler.MessageHandler);
 
             // Set user agent
-            UserAgent.SetUserAgent(httpClient, UserAgent.UserAgentString);
+            UserAgent.SetUserAgent(httpClient);
 
             _httpClient = httpClient;
 

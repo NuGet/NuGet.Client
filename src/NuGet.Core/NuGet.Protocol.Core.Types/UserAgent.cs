@@ -78,6 +78,15 @@ namespace NuGet.Protocol.Core.Types
         }
 
         /// <summary>
+        /// Set user agent string on HttpClient to the static string.
+        /// </summary>
+        /// <param name="client">Http client</param>
+        public static void SetUserAgent(HttpClient client)
+        {
+            SetUserAgent(client, UserAgentString);
+        }
+
+        /// <summary>
         /// Set user agent string on HttpClient.
         /// </summary>
         /// <param name="client">Http client</param>

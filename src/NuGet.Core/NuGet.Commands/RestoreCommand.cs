@@ -68,7 +68,7 @@ namespace NuGet.Commands
         public async Task<RestoreResult> ExecuteAsync(CancellationToken token)
         {
             // Use the shared cache if one was provided, otherwise create a new one.
-            var localRepository = _request.SharedCache.LocalCache ?? new NuGetv3LocalRepository(_request.PackagesDirectory);
+            var localRepository = _request.SharedCache?.LocalCache ?? new NuGetv3LocalRepository(_request.PackagesDirectory);
 
             var projectLockFilePath = string.IsNullOrEmpty(_request.LockFilePath) ?
                 Path.Combine(_request.Project.BaseDirectory, LockFileFormat.LockFileName) :
@@ -240,22 +240,11 @@ namespace NuGet.Commands
             context.LocalLibraryProviders.Add(
                 new SourceRepositoryDependencyProvider(nugetRepository, _logger, _request.CacheContext));
 
-            if (_request.SharedCache.RemoteProviders.Any())
+            // Create new remote providers since none were given
+            foreach (var provider in _request.Sources.Select(s =>
+                CreateProviderFromSource(s, _request.CacheContext)))
             {
-                // Use the existing remote providers if they were created for us
-                foreach (var provider in _request.SharedCache.RemoteProviders)
-                {
-                    context.RemoteLibraryProviders.Add(provider);
-                }
-            }
-            else
-            {
-                // Create new remote providers since none were given
-                foreach (var provider in _request.Sources.Select(s => 
-                    CreateProviderFromSource(s, _request.CacheContext)))
-                {
-                    context.RemoteLibraryProviders.Add(provider);
-                }
+                context.RemoteLibraryProviders.Add(provider);
             }
 
             var remoteWalker = new RemoteDependencyWalker(context);

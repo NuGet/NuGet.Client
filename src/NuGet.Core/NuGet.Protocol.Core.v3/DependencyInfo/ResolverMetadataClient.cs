@@ -20,7 +20,7 @@ using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.v3.DependencyInfo
 {
-    internal static class ResolverMetaDataClient
+    internal static class ResolverMetadataClient
     {
         /// <summary>
         /// Retrieve the <see cref="RemoteSourceDependencyInfo" /> for a registration.

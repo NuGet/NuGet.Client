@@ -82,8 +82,8 @@ namespace NuGet.Protocol.Core.v2
 
             var iconUrl = package.IconUrl;
             var identity = new PackageIdentity(id, version);
-            var searchMetaData = new SimpleSearchMetadata(identity, summary, nuGetVersions);
-            return searchMetaData;
+            var searchMetadata = new SimpleSearchMetadata(identity, summary, nuGetVersions);
+            return searchMetadata;
         }
     }
 }

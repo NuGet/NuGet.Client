@@ -23,30 +23,6 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
             return new VersionRange(range.MinVersion, range.IsMinInclusive, range.MaxVersion, range.IsMaxInclusive, includePrerelease);
         }
 
-        public static async Task<JObject> LoadResource(
-            HttpSource httpClient,
-            Uri uri,
-            ILogger log,
-            CancellationToken token)
-        {
-            using (var response = await httpClient.GetAsync(uri, log, token))
-            {
-                if (response.StatusCode == HttpStatusCode.NotFound)
-                {
-                    return null;
-                }
-
-                response.EnsureSuccessStatusCode();
-
-                using (var stream = await response.Content.ReadAsStreamAsync())
-                using (var reader = new StreamReader(stream))
-                using (var jsonReader = new JsonTextReader(reader))
-                {
-                    return JObject.Load(jsonReader);
-                }
-            }
-        }
-
         public async static Task<IEnumerable<JObject>> LoadRanges(
             HttpSource httpClient,
             Uri registrationUri,
@@ -54,7 +30,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
             ILogger log,
             CancellationToken token)
         {
-            var index = await LoadResource(httpClient, registrationUri, log, token);
+            var index = await httpClient.GetJObjectAsync(registrationUri, log, token);
 
             if (index == null)
             {
@@ -78,7 +54,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
                     {
                         var rangeUri = item["@id"].ToObject<Uri>();
 
-                        rangeTasks.Add(LoadResource(httpClient, rangeUri, log, token));
+                        rangeTasks.Add(httpClient.GetJObjectAsync(rangeUri, log, token));
                     }
                     else
                     {

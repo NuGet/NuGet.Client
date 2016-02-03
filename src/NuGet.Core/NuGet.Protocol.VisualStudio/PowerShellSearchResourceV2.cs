@@ -94,9 +94,9 @@ namespace NuGet.Protocol.VisualStudio
             var versions = new Lazy<Task<IEnumerable<NuGetVersion>>>(() =>
                     GetVersionInfoAsync(package, filters, cancellationToken));
 
-            var searchMetaData = new PSSearchMetadata(identity, versions, summary);
+            var searchMetadata = new PSSearchMetadata(identity, versions, summary);
 
-            return searchMetaData;
+            return searchMetadata;
         }
 
         public Task<IEnumerable<NuGetVersion>> GetVersionInfoAsync(IPackage package,

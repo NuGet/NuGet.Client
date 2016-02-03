@@ -101,15 +101,8 @@ namespace NuGet.CommandLine
 
                 Console.PrintPackageSources(packageSources);
 
-                var sharedCache = new RestoreCommandSharedCache();
-                sharedCache.LocalCache = new NuGetv3LocalRepository(packagesDir);
-                var cacheContext = new SourceCacheContext();
-
-                foreach (var source in repositories)
-                {
-                    var provider = new SourceRepositoryDependencyProvider(source, Console, cacheContext);
-                    sharedCache.RemoteProviders.Add(provider);
-                }
+                var localCache = new NuGetv3LocalRepository(packagesDir);
+                var sharedCache = new RestoreCommandSharedCache(localCache);
 
                 var isParallel = !DisableParallelProcessing && !RuntimeEnvironmentHelper.IsMono;
 
