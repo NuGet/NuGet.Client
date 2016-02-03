@@ -30,7 +30,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
             ILogger log,
             CancellationToken token)
         {
-            var index = await httpClient.GetJObjectAsync(registrationUri, log, token);
+            var index = await httpClient.GetJObjectAsync(registrationUri, ignoreNotFounds: true, log: log, token: token);
 
             if (index == null)
             {
@@ -54,7 +54,11 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
                     {
                         var rangeUri = item["@id"].ToObject<Uri>();
 
-                        rangeTasks.Add(httpClient.GetJObjectAsync(rangeUri, log, token));
+                        rangeTasks.Add(httpClient.GetJObjectAsync(
+                            rangeUri,
+                            ignoreNotFounds: true,
+                            log: log,
+                            token: token));
                     }
                     else
                     {

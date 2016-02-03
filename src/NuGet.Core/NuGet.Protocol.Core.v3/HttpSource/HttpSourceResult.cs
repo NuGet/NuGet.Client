@@ -6,7 +6,7 @@ using System.IO;
 
 namespace NuGet.Protocol
 {
-    internal class HttpSourceResult : IDisposable
+    public class HttpSourceResult : IDisposable
     {
         public string CacheFileName { get; set; }
         public Stream Stream { get; set; }

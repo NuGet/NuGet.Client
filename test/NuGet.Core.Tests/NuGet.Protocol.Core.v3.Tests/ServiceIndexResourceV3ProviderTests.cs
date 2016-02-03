@@ -60,10 +60,10 @@ namespace NuGet.Protocol.Core.v3.Tests
             // Arrange
             var source = "https://does-not-exist.server/does-not-exist.json";
             // This will return a 404 - NotFound.
-            var handlerProvider = StaticHttpHandler.CreateHttpHandler(new Dictionary<string, string> { { source, string.Empty } });
+            var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, string.Empty } });
             var provider = new ServiceIndexResourceV3Provider();
             var sourceRepository = new SourceRepository(new PackageSource(source),
-                new INuGetResourceProvider[] { handlerProvider, provider });
+                new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act
             await Assert.ThrowsAsync<HttpRequestException>(async () =>
@@ -81,10 +81,10 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
         {
             // Arrange
             var source = "https://fake.server/users.json";
-            var handlerProvider = StaticHttpHandler.CreateHttpHandler(new Dictionary<string, string> { { source, content } });
+            var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
             var provider = new ServiceIndexResourceV3Provider();
             var sourceRepository = new SourceRepository(new PackageSource(source),
-                new INuGetResourceProvider[] { handlerProvider, provider });
+                new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act and assert
             await Assert.ThrowsAsync<JsonReaderException>(async () =>
@@ -100,10 +100,10 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
         {
             // Arrange
             var source = "https://fake.server/users.json";
-            var handlerProvider = StaticHttpHandler.CreateHttpHandler(new Dictionary<string, string> { { source, content } });
+            var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
             var provider = new ServiceIndexResourceV3Provider();
             var sourceRepository = new SourceRepository(new PackageSource(source),
-                new INuGetResourceProvider[] { handlerProvider, provider });
+                new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act
             NuGetProtocolException ex = await Assert.ThrowsAsync<FatalProtocolException>(async () =>
@@ -123,10 +123,10 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
         {
             // Arrange
             var source = "https://fake.server/users.json";
-            var handlerProvider = StaticHttpHandler.CreateHttpHandler(new Dictionary<string, string> { { source, content } });
+            var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
             var provider = new ServiceIndexResourceV3Provider();
             var sourceRepository = new SourceRepository(new PackageSource(source),
-                new INuGetResourceProvider[] { handlerProvider, provider });
+                new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act
             NuGetProtocolException ex = await Assert.ThrowsAsync<FatalProtocolException>(async () =>
@@ -144,10 +144,10 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
             // Arrange
             var source = "https://some-site.org/test.json";
             var content = @"{ version: '3.1.0-beta' }";
-            var handlerProvider = StaticHttpHandler.CreateHttpHandler(new Dictionary<string, string> { { source, content } });
+            var httpProvider = StaticHttpSource.CreateHttpSource(new Dictionary<string, string> { { source, content } });
             var provider = new ServiceIndexResourceV3Provider();
             var sourceRepository = new SourceRepository(new PackageSource(source),
-                new INuGetResourceProvider[] { handlerProvider, provider });
+                new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act
             var result = await provider.TryCreate(sourceRepository, default(CancellationToken));

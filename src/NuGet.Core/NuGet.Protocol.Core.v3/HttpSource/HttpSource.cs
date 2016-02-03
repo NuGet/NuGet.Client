@@ -457,7 +457,7 @@ namespace NuGet.Protocol
                 token: cancellationToken);
         }
 
-        private async Task<HttpSourceResult> TryCache(string uri,
+        protected virtual async Task<HttpSourceResult> TryCache(string uri,
             string cacheKey,
             HttpSourceCacheContext context,
             CancellationToken token)
