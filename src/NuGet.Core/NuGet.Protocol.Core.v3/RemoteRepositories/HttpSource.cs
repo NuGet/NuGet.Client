@@ -27,7 +27,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private readonly Uri _baseUri;
 
         // In order to avoid too many open files error, set concurrent requests number to 64 on Mac
-        private readonly static int ConcurrencyLimit= RuntimeEnvironmentHelper.IsMacOSX? 64 : 128;
+        private readonly static int ConcurrencyLimit = RuntimeEnvironmentHelper.IsMacOSX ? 16 : 128;
 
         // Limiting concurrent requests to limit the amount of files open at a time on Mac OSX
         // the default is 256 which is easy to hit if we don't limit concurrency
@@ -236,7 +236,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             var baseFolderName = RemoveInvalidFileNameChars(ComputeHash(_baseUri.OriginalString));
             var baseFileName = RemoveInvalidFileNameChars(cacheKey) + ".dat";
             var cacheAgeLimit = context.MaxAge;
-            var cacheFolder =  Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.HttpCacheDirectory), baseFolderName);
+            var cacheFolder = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.HttpCacheDirectory), baseFolderName);
             var cacheFile = Path.Combine(cacheFolder, baseFileName);
 
             if (!Directory.Exists(cacheFolder)
