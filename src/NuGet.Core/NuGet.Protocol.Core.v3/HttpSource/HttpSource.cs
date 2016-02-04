@@ -129,7 +129,7 @@ namespace NuGet.Protocol
         /// Wraps logging of the initial request and throttling.
         /// This method does not use the cache.
         /// </summary>
-        private async Task<HttpResponseMessage> SendAsync(
+        internal async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             ILogger log,
             CancellationToken cancellationToken)
