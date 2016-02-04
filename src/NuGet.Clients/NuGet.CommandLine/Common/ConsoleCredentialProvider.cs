@@ -35,6 +35,7 @@ namespace NuGet
             {
                 throw new ArgumentNullException(nameof(uri));
             }
+
             if (nonInteractive)
             {
                 return Task.FromResult(

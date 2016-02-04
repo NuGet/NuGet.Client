@@ -24,8 +24,6 @@
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
-        "System.IdentityModel": "",
-        "System.ServiceModel": "",
         "System.Net.Http": ""
       }
     },

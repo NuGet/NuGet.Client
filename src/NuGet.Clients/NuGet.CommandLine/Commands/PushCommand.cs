@@ -43,7 +43,7 @@ namespace NuGet.CommandLine
             string pushEndpoint = string.Empty;
             if (_pushCommandResource != null)
             {
-                pushEndpoint = _pushCommandResource.GetPushEndpoint();
+                pushEndpoint = _pushCommandResource.PushEndpoint;
             }
             if (string.IsNullOrEmpty(pushEndpoint))
             {
@@ -168,37 +168,31 @@ namespace NuGet.CommandLine
 
         private async Task PushPackage(string packagePath, string source, string apiKey, CancellationToken token)
         {
-            var packageServer = _pushCommandResource.GetPackageUpdater();
-
             IEnumerable<string> packagesToPush = GetPackagesToPush(packagePath);
 
             EnsurePackageFileExists(packagePath, packagesToPush);
 
             foreach (string packageToPush in packagesToPush)
             {
-                await PushPackageCore(source, apiKey, packageServer, packageToPush, token);
+                await PushPackageCore(source, apiKey, packageToPush, token);
             }
         }
 
         private async Task PushPackageCore(string source,
             string apiKey,
-            PackageUpdater packageServer,
             string packageToPush,
             CancellationToken token)
         {
             // Push the package to the server
             var sourceUri = new Uri(source);
-            var userAgent = UserAgent.CreateUserAgentString(CommandLineConstants.UserAgent);
-
             string sourceName = CommandLineUtility.GetSourceDisplayName(source);
             Console.WriteLine(LocalizedResourceManager.GetString("PushCommandPushingPackage"),
                 Path.GetFileName(packageToPush), sourceName);
 
-            await packageServer.PushPackage(
+            await _pushCommandResource.PushPackage(
                 apiKey,
                 packageToPush,
                 new FileInfo(packageToPush).Length,
-                userAgent,
                 Console, 
                 token);
 
