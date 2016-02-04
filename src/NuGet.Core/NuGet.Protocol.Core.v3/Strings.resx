@@ -135,6 +135,9 @@
   <data name="DownloadActionHandler_NoDownloadUrl" xml:space="preserve">
     <value>No download URL could be found for {0}.</value>
   </data>
+  <data name="Http_Timeout" xml:space="preserve">
+    <value>The HTTP request to '{0} {1}' has timed out.</value>
+  </data>
   <data name="InvalidVersionFolder" xml:space="preserve">
     <value>The folder '{0}' contains an invalid version.</value>
   </data>

@@ -33,6 +33,7 @@ namespace NuGet.Protocol
         private Guid _lastAuthId = Guid.NewGuid();
         private readonly PackageSource _packageSource;
         private readonly string _logFormat = "  {0} {1} {2}" + Strings.Milliseconds;
+        private readonly RetryLoop _retryLoop;
 
         // Only one thread may re-create the http client at a time.
         private readonly SemaphoreSlim _httpClientLock = new SemaphoreSlim(1, 1);
@@ -65,6 +66,7 @@ namespace NuGet.Protocol
             _packageSource = source;
             _baseUri = new Uri(source.Source);
             _messageHandlerFactory = messageHandlerFactory;
+            _retryLoop = new RetryLoop(3, TimeSpan.FromSeconds(100), TimeSpan.FromMilliseconds(200));
         }
 
         internal Task<HttpSourceResult> GetAsync(string uri,
@@ -253,16 +255,17 @@ namespace NuGet.Protocol
                 var beforeLockId = _lastAuthId;
 
                 // Read the response headers before reading the entire stream to avoid timeouts from large packages.
-                response = await _httpClient.SendAsync(
+                response = await _retryLoop.SendAsync(
+                    _httpClient,
                     request,
-                    HttpCompletionOption.ResponseHeadersRead,
+                    completionOption,
                     cancellationToken);
 
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     // Create a copy of the request for the next call.
                     // Requests may only be sent once.
-                    request = CloneRequest(request);
+                    request = request.Clone();
 
                     try
                     {
@@ -365,6 +368,7 @@ namespace NuGet.Protocol
             {
                 _httpHandler = await _messageHandlerFactory();
                 _httpClient = new HttpClient(_httpHandler.MessageHandler);
+                _httpClient.Timeout = Timeout.InfiniteTimeSpan;
 
                 // Set user agent
                 UserAgent.SetUserAgent(_httpClient);
@@ -556,30 +560,6 @@ namespace NuGet.Protocol
             Func<Task<HttpHandlerResource>> factory = () => source.GetResourceAsync<HttpHandlerResource>();
 
             return new HttpSource(source.PackageSource, factory);
-        }
-
-        /// <summary>
-        /// Clones an <see cref="HttpRequestMessage" /> request.
-        /// </summary>
-        public static HttpRequestMessage CloneRequest(HttpRequestMessage request)
-        {
-            var clone = new HttpRequestMessage(request.Method, request.RequestUri)
-            {
-                Content = request.Content,
-                Version = request.Version
-            };
-
-            foreach (var header in request.Headers)
-            {
-                clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
-            }
-
-            foreach (var property in request.Properties)
-            {
-                clone.Properties.Add(property);
-            }
-
-            return clone;
         }
 
         public void Dispose()

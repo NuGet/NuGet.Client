@@ -37,7 +37,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             new ConcurrentDictionary<string, Task<SortedDictionary<NuGetVersion, PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Task<NupkgEntry>> _nupkgCache = new Dictionary<string, Task<NupkgEntry>>();
         private readonly IReadOnlyList<Uri> _baseUris;
-        private bool _ignored;
 
         public HttpFileSystemBasedFindPackageByIdResource(
             IReadOnlyList<Uri> baseUris,
@@ -69,8 +68,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 base.Logger = value;
             }
         }
-
-        public bool IgnoreFailure { get; set; }
 
         public override async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken cancellationToken)
         {
@@ -120,17 +117,12 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
             for (var retry = 0; retry != 3; ++retry)
             {
-                if (_ignored)
-                {
-                    return result;
-                }
-
                 var baseUri = _baseUris[retry % _baseUris.Count].OriginalString;
+                var uri = baseUri + id.ToLowerInvariant() + "/index.json";
+                var results = new List<PackageInfo>();
 
                 try
                 {
-                    var uri = baseUri + id.ToLowerInvariant() + "/index.json";
-                    var results = new List<PackageInfo>();
 
                     using (var data = await _httpSource.GetAsync(uri,
                         $"list_{id}",
@@ -175,21 +167,14 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 }
                 catch (Exception ex) when (retry < 2)
                 {
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingFindPackagesById, nameof(FindPackagesByIdAsync), baseUri) + Environment.NewLine + ex.Message;
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingFindPackagesById, nameof(FindPackagesByIdAsync), uri) + Environment.NewLine + ex.Message;
                     Logger.LogMinimal(message);
                 }
                 catch (Exception ex) when (retry == 2)
                 {
                     // Fail silently by returning empty result list
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, baseUri);
-                    if (IgnoreFailure)
-                    {
-                        _ignored = true;
-                        Logger.LogWarning(message);
-                        return new SortedDictionary<NuGetVersion, PackageInfo>();
-                    }
-
-                    Logger.LogError(message + Environment.NewLine + ex.Message);
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, uri) + Environment.NewLine + ex.Message;
+                    Logger.LogError(message);
 
                     throw new FatalProtocolException(message, ex);
                 }
