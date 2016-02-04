@@ -37,13 +37,8 @@ namespace NuGet.Commands
         private readonly ConcurrentDictionary<PackageIdentity, RuntimeGraph> _runtimeGraphCacheByPackage
             = new ConcurrentDictionary<PackageIdentity, RuntimeGraph>(PackageIdentity.Comparer);
 
-        public RestoreCommand(ILogger logger, RestoreRequest request)
+        public RestoreCommand(RestoreRequest request)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
@@ -56,7 +51,7 @@ namespace NuGet.Commands
                 throw new ArgumentOutOfRangeException(nameof(_request.LockFileVersion));
             }
 
-            _logger = logger;
+            _logger = request.Log;
             _request = request;
         }
 
@@ -68,7 +63,7 @@ namespace NuGet.Commands
         public async Task<RestoreResult> ExecuteAsync(CancellationToken token)
         {
             // Use the shared cache if one was provided, otherwise create a new one.
-            var localRepository = _request.SharedLocalCache ?? new NuGetv3LocalRepository(_request.PackagesDirectory);
+            var localRepository = _request.DependencyProviders.GlobalPackages;
 
             var projectLockFilePath = string.IsNullOrEmpty(_request.LockFilePath) ?
                 Path.Combine(_request.Project.BaseDirectory, LockFileFormat.LockFileName) :
@@ -187,10 +182,6 @@ namespace NuGet.Commands
 
             _logger.LogMinimal(Strings.FormatLog_RestoringPackages(_request.Project.FilePath));
 
-            // Load repositories
-            var projectResolver = new PackageSpecResolver(_request.Project);
-            var nugetRepository = Repository.Factory.GetCoreV3(_request.PackagesDirectory);
-
             // External references
             var updatedExternalProjects = new List<ExternalProjectReference>(_request.ExternalProjects);
 
@@ -234,13 +225,20 @@ namespace NuGet.Commands
                 }
             }
 
+            // Load repositories
+
+            // the external project provider is specific to the current restore project
+            var projectResolver = new PackageSpecResolver(_request.Project);
             context.ProjectLibraryProviders.Add(
                     new PackageSpecReferenceDependencyProvider(projectResolver, updatedExternalProjects));
 
-            context.LocalLibraryProviders.Add(
-                new SourceRepositoryDependencyProvider(nugetRepository, _logger, _request.CacheContext));
+            // providers must be given by the request so that they can be shared
+            foreach (var provider in _request.DependencyProviders.LocalProviders)
+            {
+                context.LocalLibraryProviders.Add(provider);
+            }
 
-            foreach (var provider in _request.Sources.Select(s => CreateProviderFromSource(s, _request.CacheContext)))
+            foreach (var provider in _request.DependencyProviders.RemoteProviders)
             {
                 context.RemoteLibraryProviders.Add(provider);
             }

@@ -78,20 +78,19 @@ namespace NuGet.Protocol.Core.Types
         }
 
         /// <summary>
-        /// Set user agent string on HttpClient.
+        /// Set user agent string on HttpClient to the static string.
         /// </summary>
         /// <param name="client">Http client</param>
-        /// <param name="userAgent">User agent string</param>
-        public static void SetUserAgent(HttpClient client, string userAgent)
+        public static void SetUserAgent(HttpClient client)
         {
             if (client == null)
             {
                 throw new ArgumentNullException(nameof(client));
             }
 
-            if (!string.IsNullOrEmpty(userAgent))
+            if (!string.IsNullOrEmpty(UserAgentString))
             {
-                client.DefaultRequestHeaders.Add("user-agent", userAgent);
+                client.DefaultRequestHeaders.Add("user-agent", UserAgentString);
             }
         }
 

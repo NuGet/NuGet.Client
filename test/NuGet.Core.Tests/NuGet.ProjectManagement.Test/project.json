@@ -10,6 +10,7 @@
     "test": "xunit.runner.dnx"
   },
   "frameworks": {
-    "dnx451": {}
+    "dnx451": {
+    }
   }
 }

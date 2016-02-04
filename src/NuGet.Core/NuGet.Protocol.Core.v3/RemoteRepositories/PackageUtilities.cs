@@ -48,7 +48,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                     var fileStream = nupkgStream as FileStream;
                     if (fileStream != null)
                     {
-                        report.LogWarning(Strings.FormatLog_FileIsCorrupt(fileStream.Name));
+                        report.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_FileIsCorrupt, fileStream.Name));
                     }
                     throw;
                 }

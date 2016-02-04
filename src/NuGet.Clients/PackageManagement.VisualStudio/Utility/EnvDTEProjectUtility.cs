@@ -1291,7 +1291,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Check if the project has an unsupported project capability, such as, "SharedAssetsProject"
         /// </summary>
-        private static bool HasUnsupportedProjectCapability(EnvDTEProject envDTEProject)
+        public static bool HasUnsupportedProjectCapability(EnvDTEProject envDTEProject)
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 

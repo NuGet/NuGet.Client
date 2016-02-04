@@ -1507,7 +1507,7 @@ namespace NuGet.Commands.Test
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource(repository));
 
-            var request = new RestoreRequest(spec1, sources, packagesDir);
+            var request = new RestoreRequest(spec1, sources, packagesDir, logger);
             request.LockFilePath = Path.Combine(testProject1Dir, "project.lock.json");
 
             request.ExternalProjects = new List<ExternalProjectReference>()
@@ -1525,7 +1525,7 @@ namespace NuGet.Commands.Test
                     Enumerable.Empty<string>())
             };
 
-            var command = new RestoreCommand(logger, request);
+            var command = new RestoreCommand(request);
 
             // Act
             var result = await command.ExecuteAsync();
@@ -1579,7 +1579,7 @@ namespace NuGet.Commands.Test
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource(repository));
 
-            var request = new RestoreRequest(spec1, sources, packagesDir);
+            var request = new RestoreRequest(spec1, sources, packagesDir, logger);
             request.LockFilePath = Path.Combine(testProject1Dir, "project.lock.json");
             request.ExternalProjects = new List<ExternalProjectReference>()
             {
@@ -1588,7 +1588,7 @@ namespace NuGet.Commands.Test
                 new ExternalProjectReference("TestProject3", spec3, null, Enumerable.Empty<string>())
             };
 
-            var command = new RestoreCommand(logger, request);
+            var command = new RestoreCommand(request);
 
             // Act
             var result = await command.ExecuteAsync();
@@ -1618,7 +1618,7 @@ namespace NuGet.Commands.Test
             var specPath = Path.Combine(testProjectDir, "project.json");
             var spec = JsonPackageSpecReader.GetPackageSpec(configJson, "TestProject", specPath);
 
-            var request = new RestoreRequest(spec, sources, packagesDir);
+            var request = new RestoreRequest(spec, sources, packagesDir, logger);
             request.LockFilePath = Path.Combine(testProjectDir, "project.lock.json");
 
             request.ExternalProjects.Add(
@@ -1629,7 +1629,7 @@ namespace NuGet.Commands.Test
                     new string[] { }));
 
 
-            var command = new RestoreCommand(logger, request);
+            var command = new RestoreCommand(request);
 
             // Act
             var result = await command.ExecuteAsync();

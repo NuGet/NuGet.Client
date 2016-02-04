@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3.Data;
 
 namespace NuGet.Protocol.Core.v3
 {
@@ -28,12 +27,10 @@ namespace NuGet.Protocol.Core.v3
             {
                 var baseUrl = serviceIndex[ServiceTypes.RegistrationsBaseUrl].FirstOrDefault();
 
-                var messageHandlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
-
-                var client = new DataClient(messageHandlerResource);
+                var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
 
                 // construct a new resource
-                regResource = new RegistrationResourceV3(client, baseUrl);
+                regResource = new RegistrationResourceV3(httpSourceResource.HttpSource, baseUrl);
             }
 
             return new Tuple<bool, INuGetResource>(regResource != null, regResource);

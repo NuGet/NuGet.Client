@@ -3,12 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using NuGet.Logging;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.v3.DependencyInfo
@@ -21,49 +23,14 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
             return new VersionRange(range.MinVersion, range.IsMinInclusive, range.MaxVersion, range.IsMaxInclusive, includePrerelease);
         }
 
-        public static async Task<JObject> GetJObjectAsync(HttpClient httpClient, Uri registrationUri)
-        {
-            var json = await httpClient.GetStringAsync(registrationUri);
-            return JObject.Parse(json);
-        }
-
-        public static string Indent(int depth)
-        {
-            return new string(Enumerable.Repeat(' ', depth).ToArray());
-        }
-
-        public static async Task<JObject> LoadResource(HttpClient httpClient, Uri uri, CancellationToken token)
-        {
-            var response = await httpClient.GetAsync(uri, token);
-
-            if (response.StatusCode == HttpStatusCode.NotFound)
-            {
-                return null;
-            }
-
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            var obj = JObject.Parse(json);
-
-            return obj;
-        }
-
-        public static async Task<bool> ResourceExists(HttpClient httpClient, Uri uri, CancellationToken token)
-        {
-            using (var response = await httpClient.GetAsync(uri, token))
-            {
-                return response.IsSuccessStatusCode;
-            }
-        }
-
         public async static Task<IEnumerable<JObject>> LoadRanges(
-            HttpClient httpClient,
+            HttpSource httpClient,
             Uri registrationUri,
             VersionRange range,
+            ILogger log,
             CancellationToken token)
         {
-            var index = await LoadResource(httpClient, registrationUri, token);
+            var index = await httpClient.GetJObjectAsync(registrationUri, ignoreNotFounds: true, log: log, token: token);
 
             if (index == null)
             {
@@ -87,7 +54,11 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
                     {
                         var rangeUri = item["@id"].ToObject<Uri>();
 
-                        rangeTasks.Add(LoadResource(httpClient, rangeUri, token));
+                        rangeTasks.Add(httpClient.GetJObjectAsync(
+                            rangeUri,
+                            ignoreNotFounds: true,
+                            log: log,
+                            token: token));
                     }
                     else
                     {

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -36,10 +37,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private readonly Dictionary<string, Task<NupkgEntry>> _nupkgCache = new Dictionary<string, Task<NupkgEntry>>(StringComparer.OrdinalIgnoreCase);
         private bool _ignored;
 
-        public RemoteV2FindPackageByIdResource(PackageSource packageSource, Func<Task<HttpHandlerResource>> handlerFactory)
+        public RemoteV2FindPackageByIdResource(PackageSource packageSource, HttpSource httpSource)
         {
             _baseUri = packageSource.Source.EndsWith("/") ? packageSource.Source : (packageSource.Source + "/");
-            _httpSource = new HttpSource(_baseUri, handlerFactory);
+            _httpSource = httpSource;
 
             PackageSource = packageSource;
         }
@@ -52,7 +53,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             set
             {
                 base.Logger = value;
-                _httpSource.Logger = value;
             }
         }
 
@@ -135,6 +135,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                             uri,
                             $"list_{id}_page{page}",
                             CreateCacheContext(retry),
+                            Logger,
                             cancellationToken))
                         {
                             try
@@ -184,7 +185,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 catch (Exception ex) when (retry == 2)
                 {
                     // Fail silently by returning empty result list
-                    var message = Strings.FormatLog_FailedToRetrievePackage(_baseUri);
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, _baseUri);
 
                     if (IgnoreFailure)
                     {
@@ -254,6 +255,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         package.ContentUri,
                         "nupkg_" + package.Id + "." + package.Version,
                         CreateCacheContext(retry),
+                        Logger,
                         cancellationToken))
                     {
                         return new NupkgEntry

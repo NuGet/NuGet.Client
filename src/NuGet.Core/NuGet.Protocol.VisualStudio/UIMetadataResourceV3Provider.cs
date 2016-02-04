@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
-using NuGet.Protocol.Core.v3.Data;
 
 namespace NuGet.Protocol.VisualStudio
 {
@@ -26,11 +25,10 @@ namespace NuGet.Protocol.VisualStudio
                 var regResource = await source.GetResourceAsync<RegistrationResourceV3>();
                 var reportAbuseResource = await source.GetResourceAsync<ReportAbuseResourceV3>();
 
-                var handlerResource = await source.GetResourceAsync<HttpHandlerResource>(token);
-                var client = new DataClient(handlerResource.MessageHandler);
+                var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
 
                 // construct a new resource
-                curResource = new UIMetadataResourceV3(client, regResource, reportAbuseResource);
+                curResource = new UIMetadataResourceV3(httpSourceResource.HttpSource, regResource, reportAbuseResource);
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);

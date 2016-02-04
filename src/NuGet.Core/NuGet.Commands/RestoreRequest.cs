@@ -6,37 +6,74 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
-using NuGet.Repositories;
 
 namespace NuGet.Commands
 {
     public class RestoreRequest : IDisposable
     {
         public static readonly int DefaultDegreeOfConcurrency = 16;
+        private readonly bool _disposeProviders;
 
-        public RestoreRequest(PackageSpec project, IEnumerable<PackageSource> sources, string packagesDirectory)
+        public RestoreRequest(
+            PackageSpec project,
+            IEnumerable<PackageSource> sources,
+            string packagesDirectory,
+            ILogger log)
             : this(
                   project,
                   sources.Select(source => Repository.Factory.GetCoreV3(source.Source)),
-                  packagesDirectory)
+                  packagesDirectory,
+                  log)
         {
         }
 
-        public RestoreRequest(PackageSpec project, IEnumerable<SourceRepository> sources, string packagesDirectory)
+        public RestoreRequest(
+            PackageSpec project,
+            IEnumerable<SourceRepository> sources,
+            string packagesDirectory,
+            ILogger log)
+            : this(project,
+                  RestoreCommandProviders.Create(packagesDirectory,
+                    sources,
+                    new SourceCacheContext(),
+                    log),
+                  log)
+        {
+        }
+
+        public RestoreRequest(
+            PackageSpec project,
+            RestoreCommandProviders dependencyProviders,
+            ILogger log)
+            : this(project, dependencyProviders, log, disposeProviders: true)
+        {
+        }
+
+        public RestoreRequest(
+            PackageSpec project,
+            RestoreCommandProviders dependencyProviders,
+            ILogger log,
+            bool disposeProviders)
         {
             if (project == null)
             {
                 throw new ArgumentNullException(nameof(project));
             }
 
-            if (sources == null)
+            if (dependencyProviders == null)
             {
-                throw new ArgumentNullException(nameof(sources));
+                throw new ArgumentNullException(nameof(dependencyProviders));
+            }
+
+            if (log == null)
+            {
+                throw new ArgumentNullException(nameof(log));
             }
 
             Project = project;
@@ -44,12 +81,16 @@ namespace NuGet.Commands
             ExternalProjects = new List<ExternalProjectReference>();
             CompatibilityProfiles = new HashSet<FrameworkRuntimePair>();
 
-            PackagesDirectory = packagesDirectory;
+            PackagesDirectory = dependencyProviders.GlobalPackages.RepositoryRoot;
 
-            CacheContext = new SourceCacheContext();
+            Log = log;
 
-            Sources = sources.ToList();
+            DependencyProviders = dependencyProviders;
+
+            _disposeProviders = disposeProviders;
         }
+
+        public ILogger Log { get; set; }
 
         /// <summary>
         /// The project to perform the restore on
@@ -57,14 +98,9 @@ namespace NuGet.Commands
         public PackageSpec Project { get; }
 
         /// <summary>
-        /// The complete list of sources to retrieve packages from (excluding caches)
-        /// </summary>
-        public IReadOnlyList<SourceRepository> Sources { get; }
-
-        /// <summary>
         /// The directory in which to install packages
         /// </summary>
-        public string PackagesDirectory { get; set; }
+        public string PackagesDirectory { get; }
 
         /// <summary>
         /// A list of projects provided by external build systems (i.e. MSBuild)
@@ -90,11 +126,6 @@ namespace NuGet.Commands
         /// run without concurrency.
         /// </summary>
         public int MaxDegreeOfConcurrency { get; set; } = DefaultDegreeOfConcurrency;
-
-        /// <summary>
-        /// Cache settings
-        /// </summary>
-        public SourceCacheContext CacheContext { get; }
 
         /// <summary>
         /// Additional compatibility profiles to check compatibility with.
@@ -129,16 +160,17 @@ namespace NuGet.Commands
         public XmlDocFileSaveMode XmlDocFileSaveMode { get; set; } = PackageExtractionBehavior.XmlDocFileSaveMode;
 
         /// <summary>
-        /// A <see cref="NuGetv3LocalRepository"/> repository may be passed in as part of the request.
-        /// This allows multiple restores to share the same cache for the global packages folder
-        /// and reduce disk hits.
+        /// This contains resources that are shared between project restores.
+        /// This includes both remote and local package providers.
         /// </summary>
-        /// <remarks>This is optional and may be null.</remarks>
-        public NuGetv3LocalRepository SharedLocalCache { get; set; }
+        public RestoreCommandProviders DependencyProviders { get; set; }
 
         public void Dispose()
         {
-            CacheContext.Dispose();
+            if (_disposeProviders)
+            {
+                DependencyProviders.Dispose();
+            }
         }
     }
 }

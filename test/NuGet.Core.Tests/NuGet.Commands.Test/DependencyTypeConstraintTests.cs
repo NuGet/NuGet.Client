@@ -57,13 +57,13 @@ namespace NuGet.Commands.Test
 
                 await GlobalFolderUtility.AddPackageToGlobalFolderAsync(project1PackagePath, packagesDir);
 
-                var request = new RestoreRequest(spec1, sources, packagesDir.FullName);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
                 result.Commit(logger);
@@ -152,13 +152,13 @@ namespace NuGet.Commands.Test
 
                 await GlobalFolderUtility.AddPackageToGlobalFolderAsync(packageAPath, packagesDir);
 
-                var request = new RestoreRequest(spec1, sources, packagesDir.FullName);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
                 result.Commit(logger);
@@ -257,7 +257,8 @@ namespace NuGet.Commands.Test
 
                 await GlobalFolderUtility.AddPackageToGlobalFolderAsync(packageAPath, packagesDir);
 
-                var request = new RestoreRequest(spec1, sources, packagesDir.FullName);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
 
                 request.ExternalProjects.Add(
                     new ExternalProjectReference("project1", spec1, project1CSProjPath, new string[] { "packageA" }));
@@ -267,8 +268,7 @@ namespace NuGet.Commands.Test
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
                 result.Commit(logger);
@@ -371,13 +371,13 @@ namespace NuGet.Commands.Test
 
                 await GlobalFolderUtility.AddPackageToGlobalFolderAsync(packageAPath, packagesDir);
 
-                var request = new RestoreRequest(spec1, sources, packagesDir.FullName);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
                 result.Commit(logger);
@@ -474,13 +474,13 @@ namespace NuGet.Commands.Test
 
                 await GlobalFolderUtility.AddPackageToGlobalFolderAsync(packageAPath, packagesDir);
 
-                var request = new RestoreRequest(spec1, sources, packagesDir.FullName);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
                 result.Commit(logger);

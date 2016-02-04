@@ -781,5 +781,18 @@ EndProject";
                   <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
                  </Project>".Replace("$NAME$", projectName);
         }
+
+        public static void ClearWebCache()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            var r = CommandRunner.Run(
+            nugetexe,
+            ".",
+            "locals http-cache -Clear",
+            waitForExit: true);
+
+            Assert.Equal(0, r.Item1);
+        }
     }
 }

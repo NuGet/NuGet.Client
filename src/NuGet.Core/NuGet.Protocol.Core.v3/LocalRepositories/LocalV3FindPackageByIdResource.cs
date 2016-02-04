@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -9,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -19,13 +21,23 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
 {
     public class LocalV3FindPackageByIdResource : FindPackageByIdResource
     {
-        private readonly object _lock = new object();
-        private readonly Dictionary<string, List<PackageInfo>> _cache = new Dictionary<string, List<PackageInfo>>(StringComparer.Ordinal);
+        // Use cache insensitive compare for windows
+        private readonly ConcurrentDictionary<string, List<PackageInfo>> _cache 
+            = new ConcurrentDictionary<string, List<PackageInfo>>(
+                RuntimeEnvironmentHelper.IsWindows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+
         private readonly string _source;
+        private readonly VersionFolderPathResolver _resolver;
 
         public LocalV3FindPackageByIdResource(PackageSource source)
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
             _source = source.Source;
+            _resolver = new VersionFolderPathResolver(source.Source);
         }
 
         public override Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken token)
@@ -89,17 +101,12 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
 
         private List<PackageInfo> GetPackageInfos(string id)
         {
-            List<PackageInfo> packages;
+            return _cache.GetOrAdd(id, (keyId) => GetPackageInfosCore(keyId));
+        }
 
-            lock (_lock)
-            {
-                if (_cache.TryGetValue(id, out packages))
-                {
-                    return packages;
-                }
-            }
-
-            packages = new List<PackageInfo>();
+        private List<PackageInfo> GetPackageInfosCore(string id)
+        {
+            var packages = new List<PackageInfo>();
             var idDir = new DirectoryInfo(Path.Combine(_source, id));
 
             if (idDir.Exists)
@@ -113,10 +120,17 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
                     NuGetVersion version;
                     if (!NuGetVersion.TryParse(versionPart, out version))
                     {
+                        Logger.LogWarning(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.InvalidVersionFolder,
+                            versionDir.FullName));
+
                         continue;
                     }
 
-                    if (!versionDir.GetFiles("*.nupkg.sha512").Any())
+                    var hashPath = _resolver.GetHashPath(id, version);
+
+                    if (!File.Exists(hashPath))
                     {
                         // Writing the marker file is the last operation performed by NuGetPackageUtils.InstallFromStream. We'll use the
                         // presence of the file to denote the package was successfully installed.
@@ -129,11 +143,6 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
                         NuGetVersion = version
                     });
                 }
-            }
-
-            lock (_lock)
-            {
-                _cache[id] = packages;
             }
 
             return packages;

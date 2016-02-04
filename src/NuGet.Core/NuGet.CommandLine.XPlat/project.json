@@ -26,7 +26,8 @@
     "dnx451": {
       "frameworkAssemblies": {
         "Microsoft.Build.Framework": "14.0.0",
-        "Microsoft.Build": "14.0.0"
+        "Microsoft.Build": "14.0.0",
+        "System.Collections": ""
       }
     },
     "dnxcore50": {

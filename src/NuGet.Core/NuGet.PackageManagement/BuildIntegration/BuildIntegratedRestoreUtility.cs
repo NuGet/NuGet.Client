@@ -54,23 +54,31 @@ namespace NuGet.PackageManagement
             Action<SourceCacheContext> cacheContextModifier,
             CancellationToken token)
         {
-            // Restore
-            var result = await RestoreAsync(
-                project,
-                project.PackageSpec,
-                context,
-                sources,
-                effectiveGlobalPackagesFolder,
-                cacheContextModifier,
-                token);
+            using (var cacheContext = new SourceCacheContext())
+            {
+                cacheContextModifier(cacheContext);
 
-            // Throw before writing if this has been canceled
-            token.ThrowIfCancellationRequested();
+                var providers = RestoreCommandProviders.Create(effectiveGlobalPackagesFolder,
+                    sources,
+                    cacheContext,
+                    context.Logger);
 
-            // Write out the lock file and msbuild files
-            result.Commit(context.Logger);
+                // Restore
+                var result = await RestoreAsync(
+                    project,
+                    project.PackageSpec,
+                    context,
+                    providers,
+                    token);
 
-            return result;
+                // Throw before writing if this has been canceled
+                token.ThrowIfCancellationRequested();
+
+                // Write out the lock file and msbuild files
+                result.Commit(context.Logger);
+
+                return result;
+            }
         }
 
         /// <summary>
@@ -80,9 +88,7 @@ namespace NuGet.PackageManagement
             BuildIntegratedNuGetProject project,
             PackageSpec packageSpec,
             ExternalProjectReferenceContext context,
-            IEnumerable<SourceRepository> sources,
-            string effectiveGlobalPackagesFolder,
-            Action<SourceCacheContext> cacheContextModifier,
+            RestoreCommandProviders providers,
             CancellationToken token)
         {
             // Restoring packages
@@ -91,15 +97,10 @@ namespace NuGet.PackageManagement
                 Strings.BuildIntegratedPackageRestoreStarted,
                 project.ProjectName));
 
-            using (var request = new RestoreRequest(packageSpec, sources, effectiveGlobalPackagesFolder))
+            using (var request = new RestoreRequest(packageSpec, providers, logger, disposeProviders: false))
             {
                 request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
                 request.LockFileVersion = await GetLockFileVersion(project, context);
-
-                if (cacheContextModifier != null)
-                {
-                    cacheContextModifier(request.CacheContext);
-                }
 
                 // Add the existing lock file if it exists
                 var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(project.JsonConfigPath);
@@ -112,7 +113,7 @@ namespace NuGet.PackageManagement
 
                 token.ThrowIfCancellationRequested();
 
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
 
                 // Execute the restore
                 var result = await command.ExecuteAsync(token);

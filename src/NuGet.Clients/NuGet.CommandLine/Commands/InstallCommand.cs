@@ -233,6 +233,7 @@ namespace NuGet.CommandLine
                     folderProject,
                     resolutionContext,
                     primaryRepositories,
+                    Console,
                     CancellationToken.None);
 
                 if (version == null)

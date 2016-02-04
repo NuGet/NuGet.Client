@@ -321,7 +321,7 @@ namespace NuGetVSExtension
                     }
                 }
 
-                var enabledSources = SourceRepositoryProvider.GetRepositories();
+                var enabledSources = SourceRepositoryProvider.GetRepositories().ToList();
 
                 // Cache p2ps discovered from DTE 
                 var referenceContext = new ExternalProjectReferenceContext(logger: this);
@@ -351,6 +351,11 @@ namespace NuGetVSExtension
                         Token = threadedWaitDialogSession.UserCancellationToken;
                         ThreadedWaitDialogProgress = threadedWaitDialogSession.Progress;
 
+                        // Cache resources between requests
+                        var providerCache = new RestoreCommandProvidersCache();
+                        var tasks = new List<Task<KeyValuePair<string, Exception>>>();
+                        var maxTasks = 4;
+
                         // Restore packages and create the lock file for each project
                         foreach (var project in buildEnabledProjects)
                         {
@@ -359,35 +364,32 @@ namespace NuGetVSExtension
                             _hasMissingPackages = true;
                             _displayRestoreSummary = true;
 
+                            if (tasks.Count >= maxTasks)
+                            {
+                                await ProcessTask(tasks);
+                            }
+
                             // Skip further restores if the user has clicked cancel
                             if (!Token.IsCancellationRequested)
                             {
                                 var projectName = NuGetProject.GetUniqueNameOrName(project);
 
-                                try
-                                {
-                                    // Restore and create a project.lock.json file
+                                // Restore and create a project.lock.json file
+                                tasks.Add(RestoreProject(projectName, async () =>
                                     await BuildIntegratedProjectRestoreAsync(
                                         project,
                                         solutionDirectory,
                                         enabledSources,
                                         referenceContext,
-                                        Token);
-                                }
-                                catch (Exception ex)
-                                {
-                                    // Allow other projects to be restored when a single project fails.
-                                    // If an unexpected exception occurs from the RestoreCommand
-                                    // log it to the console and error window.
-                                    LogException(ex, logError: true);
-                                    _hasErrors = true;
-                                }
-
-                                WriteLine(
-                                    VerbosityLevel.Normal,
-                                    Resources.PackageRestoreFinishedForProject,
-                                    projectName);
+                                        providerCache,
+                                        Token)));
                             }
+                        }
+
+                        // Wait for the remaining tasks
+                        while (tasks.Count > 0)
+                        {
+                            await ProcessTask(tasks);
                         }
 
                         if (Token.IsCancellationRequested)
@@ -397,6 +399,42 @@ namespace NuGetVSExtension
                     }
                 }
             }
+        }
+
+        private async Task ProcessTask(List<Task<KeyValuePair<string, Exception>>> tasks)
+        {
+            var task = await Task.WhenAny(tasks);
+            tasks.Remove(task);
+
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (task.Result.Value != null)
+            {
+                // Allow other projects to be restored when a single project fails.
+                // If an unexpected exception occurs from the RestoreCommand
+                // log it to the console and error window.
+                LogException(task.Result.Value, logError: true);
+                _hasErrors = true;
+            }
+
+            WriteLine(
+                VerbosityLevel.Normal,
+                Resources.PackageRestoreFinishedForProject,
+                task.Result.Key);
+        }
+
+        private async Task<KeyValuePair<string, Exception>> RestoreProject(string projectName, Func<Task> action)
+        {
+            try
+            {
+                await action();
+            }
+            catch (Exception ex)
+            {
+                return new KeyValuePair<string, Exception>(projectName, ex);
+            }
+
+            return new KeyValuePair<string, Exception>(projectName, null);
         }
 
         /// <summary>
@@ -464,8 +502,9 @@ namespace NuGetVSExtension
         private async Task BuildIntegratedProjectRestoreAsync(
             BuildIntegratedNuGetProject project,
             string solutionDirectory,
-            IEnumerable<SourceRepository> enabledSources,
+            List<SourceRepository> enabledSources,
             ExternalProjectReferenceContext context,
+            RestoreCommandProvidersCache providerCache,
             CancellationToken token)
         {
             // Go off the UI thread to perform I/O operations
@@ -477,21 +516,29 @@ namespace NuGetVSExtension
                                                     SolutionManager?.SolutionDirectory,
                                                     Settings);
 
-            // Pass down the CancellationToken from the dialog
-            var restoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(project,
+            using (var cacheContext = new SourceCacheContext())
+            {
+                providerCache.GetOrCreate(effectiveGlobalPackagesFolder,
+                    enabledSources,
+                    cacheContext,
+                    context.Logger);
+
+                // Pass down the CancellationToken from the dialog
+                var restoreResult = await BuildIntegratedRestoreUtility.RestoreAsync(project,
                 context,
                 enabledSources,
                 effectiveGlobalPackagesFolder,
                 token);
 
-            if (!restoreResult.Success)
-            {
-                // Mark this as having errors
-                _hasErrors = true;
+                if (!restoreResult.Success)
+                {
+                    // Mark this as having errors
+                    _hasErrors = true;
 
-                // Invalidate cached results for the project. This will cause it to restore the next time.
-                _buildIntegratedCache.Remove(projectName);
-                await BuildIntegratedProjectReportErrorAsync(projectName, restoreResult, token);
+                    // Invalidate cached results for the project. This will cause it to restore the next time.
+                    _buildIntegratedCache.Remove(projectName);
+                    await BuildIntegratedProjectReportErrorAsync(projectName, restoreResult, token);
+                }
             }
         }
 

@@ -17,6 +17,7 @@ namespace NuGet.DependencyResolver
 {
     public class SourceRepositoryDependencyProvider : IRemoteDependencyProvider
     {
+        private readonly object _lock = new object();
         private readonly SourceRepository _sourceRepository;
         private readonly ILogger _logger;
         private readonly SourceCacheContext _cacheContext;
@@ -139,9 +140,17 @@ namespace NuGet.DependencyResolver
         {
             if (_findPackagesByIdResource == null)
             {
-                _findPackagesByIdResource = await _sourceRepository.GetResourceAsync<FindPackageByIdResource>();
-                _findPackagesByIdResource.Logger = _logger;
-                _findPackagesByIdResource.CacheContext = _cacheContext;
+                var resource = await _sourceRepository.GetResourceAsync<FindPackageByIdResource>();
+                resource.Logger = _logger;
+                resource.CacheContext = _cacheContext;
+
+                lock (_lock)
+                {
+                    if (_findPackagesByIdResource == null)
+                    {
+                        _findPackagesByIdResource = resource;
+                    }
+                }
             }
         }
     }

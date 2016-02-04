@@ -64,15 +64,15 @@ namespace NuGet.Commands.Test
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
-                var request = new RestoreRequest(spec1, sources, packagesDir.FullName);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 SimpleTestPackageUtility.CreateFullPackage(packageSource.FullName, "packageA", "4.0.0");
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
                 result.Commit(logger);
@@ -118,13 +118,13 @@ namespace NuGet.Commands.Test
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
 
-                var request = new RestoreRequest(spec1, sources, packagesDir.FullName);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
                 result.Commit(logger);
@@ -161,13 +161,13 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
 
                 // Act
@@ -215,13 +215,13 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("netstandard1.2"), new List<NuGetFramework> { NuGetFramework.Parse("dotnet5.3"),
                                                                                                                          NuGetFramework.Parse("portable-net452+win81")});
 
@@ -271,24 +271,24 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
                 var result = await command.ExecuteAsync();
                 result.Commit(logger);
                 logger.Clear();
 
                 // Act
-                request = new RestoreRequest(spec, sources, packagesDir);
+                request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
                 request.ExistingLockFile = result.LockFile;
-                command = new RestoreCommand(logger, request);
+                command = new RestoreCommand(request);
                 result = await command.ExecuteAsync();
                 result.Commit(logger);
 
@@ -344,9 +344,9 @@ namespace NuGet.Commands.Test
                 Assert.True(fileSize == 0, "Dummy nupkg file bigger than expected");
 
                 // create the request
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
 
                 // Act
                 var result = await command.ExecuteAsync();
@@ -384,13 +384,13 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
                 var warning = "Package 'Newtonsoft.Json 7.0.1' was restored using '.NETPortable,Version=v0.0,Profile=net452+win81' instead the project target framework '.NETPlatform,Version=v5.0'. This may cause compatibility problems.";
 
@@ -434,13 +434,13 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
 
                 // Act
@@ -486,13 +486,13 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
                 var result = await command.ExecuteAsync();
                 result.Commit(logger);
@@ -530,13 +530,13 @@ namespace NuGet.Commands.Test
                 AddDependency(spec, "nEwTonSoft.JSon", "6.0.8");
                 AddDependency(spec, "json-ld.net", "1.0.4");
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
 
                 // Act
                 var result = await command.ExecuteAsync();
@@ -581,13 +581,13 @@ namespace NuGet.Commands.Test
                 AddDependency(spec, "nEwTonSoft.JSon", "4.0.1");
                 AddDependency(spec, "dotNetRDF", "1.0.8.3533");
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
 
                 // Act
                 var result = await command.ExecuteAsync();
@@ -615,13 +615,13 @@ namespace NuGet.Commands.Test
 
                 AddDependency(spec, "NuGet.Versioning", "1.0.7");
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
 
                 var lockFilePath = Path.Combine(projectDir, "project.lock.json");
@@ -633,14 +633,14 @@ namespace NuGet.Commands.Test
                 var lockFormat = new LockFileFormat();
                 lockFormat.Write(File.OpenWrite(lockFilePath), modifiedLockFile);
 
-                request = new RestoreRequest(spec, sources, packagesDir);
+                request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 // Act
                 request.ExistingLockFile = modifiedLockFile;
 
-                command = new RestoreCommand(logger, request);
+                command = new RestoreCommand(request);
                 result = await command.ExecuteAsync();
                 result.Commit(logger);
 
@@ -667,13 +667,13 @@ namespace NuGet.Commands.Test
 
                 AddDependency(spec, "NuGet.Versioning", "1.0.7");
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 result.Commit(logger);
 
@@ -684,13 +684,13 @@ namespace NuGet.Commands.Test
                 File.AppendAllText(lockFilePath, whitespace);
 
                 // Act
-                request = new RestoreRequest(spec, sources, packagesDir);
+                request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
                 var previousLockFile = result.LockFile;
                 request.ExistingLockFile = result.LockFile;
 
-                command = new RestoreCommand(logger, request);
+                command = new RestoreCommand(request);
                 result = await command.ExecuteAsync();
                 result.Commit(logger, true);
 
@@ -717,13 +717,13 @@ namespace NuGet.Commands.Test
 
                 AddDependency(spec, "NuGet.Versioning", "1.0.7");
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 result.Commit(logger);
 
@@ -732,7 +732,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var lastDate = File.GetLastWriteTime(lockFilePath);
 
-                request = new RestoreRequest(spec, sources, packagesDir);
+                request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
                 var previousLockFile = result.LockFile;
@@ -745,7 +745,7 @@ namespace NuGet.Commands.Test
                 // wait half a second to make sure the time difference can be picked up
                 await Task.Delay(500);
 
-                command = new RestoreCommand(logger, request);
+                command = new RestoreCommand(request);
                 result = await command.ExecuteAsync();
                 result.Commit(logger);
 
@@ -780,15 +780,15 @@ namespace NuGet.Commands.Test
 
                 AddDependency(spec, "NuGet.Versioning", "1.0.7");
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var installed = result.GetAllInstalled();
                 var unresolved = result.GetAllUnresolved();
@@ -823,15 +823,15 @@ namespace NuGet.Commands.Test
 
                 AddDependency(spec, "WebGrease", "1.6.0");
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var installed = result.GetAllInstalled();
                 var unresolved = result.GetAllUnresolved();
@@ -887,7 +887,8 @@ namespace NuGet.Commands.Test
 
                 var specPath1 = Path.Combine(project1.FullName, "project.json");
                 var spec1 = JsonPackageSpecReader.GetPackageSpec(project1Json, "project1", specPath1);
-                var request = new RestoreRequest(spec1, sources, packagesDir.FullName);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec1, sources, packagesDir.FullName, logger);
 
                 request.LockFilePath = Path.Combine(project1.FullName, "project.lock.json");
 
@@ -913,8 +914,7 @@ namespace NuGet.Commands.Test
                 SimpleTestPackageUtility.CreatePackages(packages, packageSource.FullName);
                  
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
                 var installed = result.GetAllInstalled();
@@ -943,15 +943,15 @@ namespace NuGet.Commands.Test
 
                 AddDependency(spec, "Moon.Owin.Localization", "1.3.1");
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var installed = result.GetAllInstalled();
                 var unresolved = result.GetAllUnresolved();
@@ -985,16 +985,17 @@ namespace NuGet.Commands.Test
 
                 AddDependency(spec, "NuGet.Versioning", "1.0.7");
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var firstRun = await command.ExecuteAsync();
 
                 // Act
-                command = new RestoreCommand(logger, request);
+                request = new RestoreRequest(spec, sources, packagesDir, logger);
+                command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var installed = result.GetAllInstalled();
                 var unresolved = result.GetAllUnresolved();
@@ -1023,13 +1024,13 @@ namespace NuGet.Commands.Test
 
                 AddDependency(spec, "NuGet.Versioning", "1.0.7");
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var nuspecPath = Path.Combine(packagesDir, "NuGet.Versioning", "1.0.7", "NuGet.Versioning.nuspec");
 
@@ -1055,13 +1056,13 @@ namespace NuGet.Commands.Test
 
                 AddDependency(spec, "owin", "1.0");
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var nuspecPath = Path.Combine(packagesDir, "owin", "1.0.0", "owin.nuspec");
 
@@ -1085,15 +1086,15 @@ namespace NuGet.Commands.Test
 
                 AddDependency(spec, "Newtonsoft.Json", "7.0.0"); // 7.0.0 does not exist so we'll bump up to 7.0.1
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var installed = result.GetAllInstalled();
                 var unresolved = result.GetAllUnresolved();
@@ -1122,15 +1123,15 @@ namespace NuGet.Commands.Test
 
                 AddDependency(spec, "Newtonsoft.Json", "7.0.1");
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var installed = result.GetAllInstalled();
                 var unresolved = result.GetAllUnresolved();
@@ -1165,15 +1166,15 @@ namespace NuGet.Commands.Test
 
                 AddDependency(spec, "NuGet.Core", "2.8.3");
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var installed = result.GetAllInstalled();
                 var unresolved = result.GetAllUnresolved();
@@ -1210,15 +1211,15 @@ namespace NuGet.Commands.Test
 
                 AddDependency(spec, "NotARealPackage.ThisShouldNotExists.DontCreateIt.Seriously.JustDontDoIt.Please", "2.8.3");
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var installed = result.GetAllInstalled();
                 var unresolved = result.GetAllUnresolved();
@@ -1258,15 +1259,15 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var installed = result.GetAllInstalled();
                 var unresolved = result.GetAllUnresolved();
@@ -1305,15 +1306,15 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
 
                 // Assert
@@ -1350,15 +1351,15 @@ namespace NuGet.Commands.Test
                 var specPath = Path.Combine(projectDir, "TestProject", "project.json");
                 var spec = JsonPackageSpecReader.GetPackageSpec(project, "TestProject", specPath);
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.LockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 var lockFileFormat = new LockFileFormat();
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var installed = result.GetAllInstalled();
                 var unresolved = result.GetAllUnresolved();
@@ -1441,13 +1442,13 @@ namespace NuGet.Commands.Test
                 var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory");
                 Assert.True(lockFile.IsLocked); // Just to make sure no-one accidentally unlocks it :)
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.ExistingLockFile = lockFile;
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var installed = result.GetAllInstalled();
 
@@ -1526,13 +1527,13 @@ namespace NuGet.Commands.Test
                 var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory");
                 Assert.True(lockFile.IsLocked); // Just to make sure no-one accidentally unlocks it :)
 
-                var request = new RestoreRequest(spec, sources, packagesDir);
+                var logger = new TestLogger();
+                var request = new RestoreRequest(spec, sources, packagesDir, logger);
 
                 request.ExistingLockFile = lockFile;
 
                 // Act
-                var logger = new TestLogger();
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var installed = result.GetAllInstalled();
 

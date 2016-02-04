@@ -140,6 +140,12 @@ namespace NuGet.PackageManagement.VisualStudio
                             // Skip missing references
                             if (childReference.SourceProject != null)
                             {
+                                if (EnvDTEProjectUtility.HasUnsupportedProjectCapability(childReference.SourceProject))
+                                {
+                                    // Skip this shared project
+                                    continue;
+                                }
+
                                 var childName = EnvDTEProjectUtility.GetFullProjectPath(childReference.SourceProject);
 
                                 // Skip projects which have ReferenceOutputAssembly=false

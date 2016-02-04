@@ -25,9 +25,11 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
             if (serviceIndexResource != null)
             {
+                var httpSourceResource = await sourceRepository.GetResourceAsync<HttpSourceResource>(token);
+
                 resource = new RemoteV3FindPackageByIdResource(
                     sourceRepository,
-                    async () => (await sourceRepository.GetResourceAsync<HttpHandlerResource>(token)));
+                    httpSourceResource.HttpSource);
             }
 
             return Tuple.Create(resource != null, resource);

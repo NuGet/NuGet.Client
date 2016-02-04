@@ -320,7 +320,7 @@ namespace NuGet.VisualStudio
 
                     foreach (var resource in metadataResources)
                     {
-                        tasks.Add(resource.GetVersions(dep.Id, token));
+                        tasks.Add(resource.GetVersions(dep.Id, Logging.NullLogger.Instance, token));
                     }
 
                     var versions = await Task.WhenAll(tasks.ToArray());

@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
+using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -26,12 +27,13 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
         /// </summary>
         /// <returns>Returns an empty sequence if the package does not exist.</returns>
         public static async Task<IEnumerable<RemoteSourceDependencyInfo>> GetDependencies(
-            HttpClient httpClient,
+            HttpSource httpClient,
             Uri registrationUri,
             VersionRange range,
+            ILogger log,
             CancellationToken token)
         {
-            var ranges = await Utils.LoadRanges(httpClient, registrationUri, range, token);
+            var ranges = await Utils.LoadRanges(httpClient, registrationUri, range, log, token);
 
             var results = new HashSet<RemoteSourceDependencyInfo>();
             foreach (var rangeObj in ranges)
@@ -112,15 +114,16 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
         /// </summary>
         /// <returns>Returns Null if the package does not exist</returns>
         public static async Task<RegistrationInfo> GetRegistrationInfo(
-            HttpClient httpClient,
+            HttpSource httpClient,
             Uri registrationUri,
             VersionRange range,
             NuGetFramework projectTargetFramework,
+            ILogger log,
             CancellationToken token)
         {
             var frameworkComparer = new NuGetFrameworkFullComparer();
             var frameworkReducer = new FrameworkReducer();
-            var dependencies = await GetDependencies(httpClient, registrationUri, range, token);
+            var dependencies = await GetDependencies(httpClient, registrationUri, range, log, token);
 
             var result = new HashSet<RegistrationInfo>();
             var registrationInfo = new RegistrationInfo();

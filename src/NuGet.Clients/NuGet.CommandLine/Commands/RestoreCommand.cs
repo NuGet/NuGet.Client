@@ -12,6 +12,7 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Logging;
+using NuGet.DependencyResolver;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
@@ -86,7 +87,7 @@ namespace NuGet.CommandLine
                 // Convert package sources to repositories
                 var sourceProvider = GetSourceRepositoryProvider();
                 var repositories = GetPackageSources(Settings).Select(source => sourceProvider.CreateRepository(source))
-                    .ToArray();
+                    .ToList();
 
                 // Resolve the packages directory
                 var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(Settings);
@@ -99,53 +100,64 @@ namespace NuGet.CommandLine
 
                 var packageSources = GetPackageSources(Settings);
 
-                var localCache = new NuGetv3LocalRepository(packagesDir);
+                var providerCache = new RestoreCommandProvidersCache();
 
-                var isParallel = !DisableParallelProcessing && !RuntimeEnvironmentHelper.IsMono;
-
-                int maxTasks = isParallel ? MaxDegreesOfConcurrency : 1;
-
-                if (maxTasks < 1)
+                using (var cacheContext = new SourceCacheContext())
                 {
-                    maxTasks = 1;
-                }
+                    var isParallel = !DisableParallelProcessing && !RuntimeEnvironmentHelper.IsMono;
 
-                // Throttle the tasks so no more than 16 run at a time, so memory doesn't accumulate.
-                // This should make large project (over 100 project.json files) allocate reasonable
-                // amounts of memory.
-                var tasks = new List<Task<RestoreSummary>>();
-                int restoreCount = restoreInputs.V3RestoreFiles.Count;
+                    int maxTasks = isParallel ? MaxDegreesOfConcurrency : 1;
 
-                int currentFileIndex = 0;
-
-                do
-                {
-                    Debug.Assert(tasks.Count < maxTasks);
-
-                    // Fill with max of 16 tasks upfront (or 1 if parallel restore is disabled)
-                    // then add one by one as they get completed.
-                    int newTasks = maxTasks - tasks.Count;
-
-                    for (int i = 0; currentFileIndex < restoreCount && i < newTasks; i++, currentFileIndex++)
+                    if (maxTasks < 1)
                     {
-                        var file = restoreInputs.V3RestoreFiles[currentFileIndex];
-
-                        var newTask = Task.Run(async () => await PerformNuGetV3RestoreAsync(
-                            file,
-                            packageSources,
-                            restoreInputs.ProjectReferenceLookup,
-                            repositories,
-                            localCache));
-
-                        tasks.Add(newTask);
+                        maxTasks = 1;
                     }
 
-                    var task = await Task.WhenAny(tasks);
+                    // Throttle the tasks so no more than 16 run at a time, so memory doesn't accumulate.
+                    // This should make large project (over 100 project.json files) allocate reasonable
+                    // amounts of memory.
+                    var tasks = new List<Task<RestoreSummary>>();
+                    int restoreCount = restoreInputs.V3RestoreFiles.Count;
 
-                    restoreSummaries.Add(task.Result);
-                    tasks.Remove(task);
+                    int currentFileIndex = 0;
+
+                    do
+                    {
+                        Debug.Assert(tasks.Count < maxTasks);
+
+                        // Fill with max of 16 tasks upfront (or 1 if parallel restore is disabled)
+                        // then add one by one as they get completed.
+                        int newTasks = maxTasks - tasks.Count;
+
+                        for (int i = 0; currentFileIndex < restoreCount && i < newTasks; i++, currentFileIndex++)
+                        {
+                            var file = restoreInputs.V3RestoreFiles[currentFileIndex];
+
+                            var collectorLogger = new CollectorLogger(Console);
+
+                            var sharedCache = providerCache.GetOrCreate(
+                                packagesDir,
+                                repositories,
+                                cacheContext,
+                                collectorLogger);
+
+                            var newTask = Task.Run(async () => await PerformNuGetV3RestoreAsync(
+                                file,
+                                restoreInputs.ProjectReferenceLookup,
+                                repositories,
+                                sharedCache,
+                                collectorLogger));
+
+                            tasks.Add(newTask);
+                        }
+
+                        var task = await Task.WhenAny(tasks);
+
+                        restoreSummaries.Add(task.Result);
+                        tasks.Remove(task);
+                    }
+                    while (tasks.Count > 0 || currentFileIndex < restoreCount);
                 }
-                while (tasks.Count > 0 || currentFileIndex < restoreCount);
             }
 
             RestoreSummary.Log(Console, restoreSummaries);
@@ -196,10 +208,10 @@ namespace NuGet.CommandLine
 
         private async Task<RestoreSummary> PerformNuGetV3RestoreAsync(
             string inputPath,
-            IReadOnlyCollection<Configuration.PackageSource> packageSources,
             ProjectReferenceCache projectReferences,
-            SourceRepository[] repositories,
-            NuGetv3LocalRepository localCache)
+            List<SourceRepository> repositories,
+            RestoreCommandProviders sharedCache,
+            CollectorLogger logger)
         {
             var inputFileName = Path.GetFileName(inputPath);
             var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(inputPath));
@@ -213,7 +225,7 @@ namespace NuGet.CommandLine
             if (BuildIntegratedProjectUtility.IsProjectConfig(inputPath))
             {
                 // Restore a project.json file using the directory as the Id
-                Console.LogVerbose($"Reading project file {Arguments[0]}");
+                logger.LogVerbose($"Reading project file {Arguments[0]}");
 
                 projectJsonPath = inputPath;
                 projectName = Path.GetFileName(projectDirectory);
@@ -235,7 +247,7 @@ namespace NuGet.CommandLine
                 return new RestoreSummary(false);
             }
 
-            Console.LogVerbose($"Reading project file {inputPath}");
+            logger.LogVerbose($"Reading project file {inputPath}");
 
             packageSpec = projectReferences.GetProjectJson(projectJsonPath);
 
@@ -246,23 +258,21 @@ namespace NuGet.CommandLine
                     projectJsonPath);
             }
 
-            Console.LogVerbose($"Loaded project {packageSpec.Name} from {packageSpec.FilePath}");
+            logger.LogVerbose($"Loaded project {packageSpec.Name} from {packageSpec.FilePath}");
 
             // Resolve the root directory
             var rootDirectory = PackageSpecResolver.ResolveRootDirectory(inputPath);
-            Console.LogVerbose($"Found project root directory: {rootDirectory}");
+            logger.LogVerbose($"Found project root directory: {rootDirectory}");
 
-            Console.LogVerbose($"Using packages directory: {localCache.RepositoryRoot}");
+            logger.LogVerbose($"Using packages directory: {sharedCache.GlobalPackages.RepositoryRoot}");
 
             // Create a restore request
             using (var request = new RestoreRequest(
                 packageSpec,
-                repositories,
-                packagesDirectory: null))
+                sharedCache,
+                logger,
+                disposeProviders: false))
             {
-                request.PackagesDirectory = localCache.RepositoryRoot;
-                request.SharedLocalCache = localCache;
-
                 var packageSaveMode = EffectivePackageSaveMode;
                 if (packageSaveMode != Packaging.PackageSaveMode.None)
                 {
@@ -278,15 +288,15 @@ namespace NuGet.CommandLine
                     request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
                 }
 
-                request.CacheContext.NoCache = NoCache;
+                sharedCache.CacheContext.NoCache = NoCache;
 
                 // Read the existing lock file, this is needed to support IsLocked=true
                 var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(projectJsonPath);
                 request.LockFilePath = lockFilePath;
-                request.ExistingLockFile = BuildIntegratedRestoreUtility.GetLockFile(lockFilePath, Console);
+                request.ExistingLockFile = BuildIntegratedRestoreUtility.GetLockFile(lockFilePath, logger);
 
                 // Resolve the packages directory
-                Console.LogVerbose($"Using packages directory: {request.PackagesDirectory}");
+                logger.LogVerbose($"Using packages directory: {request.PackagesDirectory}");
 
                 // Find all external references
                 var externalProjectReferences = projectReferences.GetReferences(inputPath);
@@ -312,10 +322,9 @@ namespace NuGet.CommandLine
                 CheckRequireConsent();
 
                 // Run the restore
-                var logger = new CollectorLogger(Console);
-                var command = new NuGet.Commands.RestoreCommand(logger, request);
+                var command = new NuGet.Commands.RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                result.Commit(Console);
+                result.Commit(logger);
 
                 return new RestoreSummary(result, inputPath, Settings, repositories, logger.Errors);
             }

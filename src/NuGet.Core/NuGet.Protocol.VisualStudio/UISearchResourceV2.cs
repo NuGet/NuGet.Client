@@ -115,7 +115,7 @@ namespace NuGet.Protocol.VisualStudio
             var versions = new Lazy<Task<IEnumerable<VersionInfo>>>(() =>
                 GetVersionInfoAsync(package, filters, CancellationToken.None));
 
-            var searchMetaData = new UISearchMetadata(
+            var searchMetadata = new UISearchMetadata(
                 identity,
                 title,
                 summary,
@@ -125,7 +125,7 @@ namespace NuGet.Protocol.VisualStudio
                 versions,
                 UIMetadataResourceV2.GetVisualStudioUIPackageMetadata(package));
 
-            return searchMetaData;
+            return searchMetadata;
         }
 
         public Task<IEnumerable<VersionInfo>> GetVersionInfoAsync(IPackage package,

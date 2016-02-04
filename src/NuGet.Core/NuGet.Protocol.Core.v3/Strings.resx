@@ -135,6 +135,9 @@
   <data name="DownloadActionHandler_NoDownloadUrl" xml:space="preserve">
     <value>No download URL could be found for {0}.</value>
   </data>
+  <data name="InvalidVersionFolder" xml:space="preserve">
+    <value>The folder '{0}' contains an invalid version.</value>
+  </data>
   <data name="Log_FailedToDownloadPackage" xml:space="preserve">
     <value>Failed to download package from '{0}'.</value>
   </data>
@@ -152,6 +155,9 @@
   </data>
   <data name="Log_RetryingFindPackagesById" xml:space="preserve">
     <value>Retrying '{0}' for source {1}.</value>
+  </data>
+  <data name="Milliseconds" xml:space="preserve">
+    <value>ms</value>
   </data>
   <data name="NuGetRepository_CannotCreateAggregateRepo" xml:space="preserve">
     <value>Cannot create a NuGet Repository from the Aggregate Source</value>
