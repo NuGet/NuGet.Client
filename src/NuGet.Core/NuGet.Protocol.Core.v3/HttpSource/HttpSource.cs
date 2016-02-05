@@ -30,6 +30,7 @@ namespace NuGet.Protocol
         private HttpClient _httpClient;
         private int _authRetries;
         private HttpHandlerResource _httpHandler;
+        private CredentialHelper _credentials;
         private Guid _lastAuthId = Guid.NewGuid();
         private readonly PackageSource _packageSource;
         private readonly string _requestLogFormat = "  {0} {1}";
@@ -279,7 +280,7 @@ namespace NuGet.Protocol
 
                         // Give up after 3 tries.
                         _authRetries++;
-                        if (_authRetries >= HttpHandlerResourceV3Provider.MaxAuthRetries)
+                        if (_authRetries > HttpHandlerResourceV3Provider.MaxAuthRetries)
                         {
                             return response;
                         }
@@ -369,12 +370,16 @@ namespace NuGet.Protocol
                 _httpClient = new HttpClient(_httpHandler.MessageHandler);
                 _httpClient.Timeout = Timeout.InfiniteTimeSpan;
 
+                // Create a new wrapper for ICredentials that can be modified
+                _credentials = new CredentialHelper();
+                _httpHandler.ClientHandler.Credentials = _credentials;
+
                 // Set user agent
                 UserAgent.SetUserAgent(_httpClient);
             }
 
-            _httpHandler.ClientHandler.Credentials = credentials;
-            _httpHandler.ClientHandler.UseDefaultCredentials = (credentials == null);
+            // Modify the credentials on the current handler
+            _credentials.Credentials = credentials;
 
             // Mark that auth has been updated
             _lastAuthId = Guid.NewGuid();
