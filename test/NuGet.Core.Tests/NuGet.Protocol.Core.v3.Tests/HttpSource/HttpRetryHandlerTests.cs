@@ -9,10 +9,10 @@ using Xunit;
 
 namespace NuGet.Protocol.Core.v3.Tests
 {
-    public class RetryLoopTests
+    public class HttpRetryHandlerTests
     {
         [Fact]
-        public async Task RetryLoop_DifferentRequestInstanceEachTime()
+        public async Task HttpRetryHandler_DifferentRequestInstanceEachTime()
         {
             // Arrange
             var requests = new HashSet<HttpRequestMessage>();
@@ -21,15 +21,15 @@ namespace NuGet.Protocol.Core.v3.Tests
                 requests.Add(request);
                 return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
             };
-            
-            var retryLoop = new RetryLoop(5, Timeout.InfiniteTimeSpan, TimeSpan.Zero);
+
+            var retryLoop = new HttpRetryHandler { MaxTries = 5, RequestTimeout = Timeout.InfiniteTimeSpan, RetryDelay = TimeSpan.Zero };
             var testHandler = new TestHandler(handler);
             var httpClient = new HttpClient(testHandler);
 
             // Act
             await retryLoop.SendAsync(
                 httpClient,
-                new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
+                () => new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
                 HttpCompletionOption.ResponseHeadersRead,
                 CancellationToken.None);
 
@@ -38,7 +38,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
-        public async Task RetryLoop_AppliesTimeoutToRequestsIndividually()
+        public async Task HttpRetryHandler_AppliesTimeoutToRequestsIndividually()
         {
             // Arrange
             int hits = 0;
@@ -50,14 +50,14 @@ namespace NuGet.Protocol.Core.v3.Tests
                 return new HttpResponseMessage(HttpStatusCode.InternalServerError);
             };
 
-            var retryLoop = new RetryLoop(5, TimeSpan.FromMilliseconds(100), TimeSpan.Zero);
+            var retryLoop = new HttpRetryHandler { MaxTries = 5, RequestTimeout = TimeSpan.FromMilliseconds(100), RetryDelay = TimeSpan.Zero };
             var testHandler = new TestHandler(handler);
             var httpClient = new HttpClient(testHandler);
 
             // Act
             var response = await retryLoop.SendAsync(
                 httpClient,
-                new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
+                () => new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
                 HttpCompletionOption.ResponseHeadersRead,
                 CancellationToken.None);
 
@@ -66,7 +66,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
-        public async Task RetryLoop_CancelsRequestAfterTimeout()
+        public async Task HttpRetryHandler_CancelsRequestAfterTimeout()
         {
             // Arrange
             CancellationToken requestToken = CancellationToken.None;
@@ -77,14 +77,14 @@ namespace NuGet.Protocol.Core.v3.Tests
                 return new HttpResponseMessage(HttpStatusCode.OK);
             };
 
-            var retryLoop = new RetryLoop(1, TimeSpan.FromMilliseconds(100), TimeSpan.Zero);
+            var retryLoop = new HttpRetryHandler { MaxTries = 1, RequestTimeout = TimeSpan.FromMilliseconds(100), RetryDelay = TimeSpan.Zero };
             var testHandler = new TestHandler(handler);
             var httpClient = new HttpClient(testHandler);
 
             // Act
             Func<Task> actionAsync = () => retryLoop.SendAsync(
                 httpClient,
-                new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
+                () => new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
                 HttpCompletionOption.ResponseHeadersRead,
                 CancellationToken.None);
 
@@ -95,7 +95,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
-        public async Task RetryLoop_ThrowsTimeoutExceptionForTimeout()
+        public async Task HttpRetryHandler_ThrowsTimeoutExceptionForTimeout()
         {
             // Arrange
             Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> handler = async (request, token) =>
@@ -104,14 +104,14 @@ namespace NuGet.Protocol.Core.v3.Tests
                 return new HttpResponseMessage(HttpStatusCode.OK);
             };
 
-            var retryLoop = new RetryLoop(1, TimeSpan.Zero, TimeSpan.Zero);
+            var retryLoop = new HttpRetryHandler { MaxTries = 1, RequestTimeout = TimeSpan.Zero, RetryDelay = TimeSpan.Zero };
             var testHandler = new TestHandler(handler);
             var httpClient = new HttpClient(testHandler);
 
             // Act
             Func<Task> actionAsync = () => retryLoop.SendAsync(
                 httpClient,
-                new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
+                () => new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
                 HttpCompletionOption.ResponseHeadersRead,
                 CancellationToken.None);
 
@@ -120,7 +120,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
-        public async Task RetryLoop_MultipleTriesTimed()
+        public async Task HttpRetryHandler_MultipleTriesTimed()
         {
             // Arrange
             Func<HttpRequestMessage, HttpResponseMessage> handler = request =>
@@ -132,7 +132,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             var retryDelay = TimeSpan.FromMilliseconds(50);
             var minTime = GetRetryMinTime(maxTries, retryDelay);
 
-            var retryLoop = new RetryLoop(maxTries, Timeout.InfiniteTimeSpan, retryDelay);
+            var retryLoop = new HttpRetryHandler { MaxTries = maxTries, RequestTimeout = Timeout.InfiniteTimeSpan, RetryDelay = retryDelay };
             var testHandler = new TestHandler(handler);
             var httpClient = new HttpClient(testHandler);
 
@@ -141,7 +141,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             timer.Start();
             await retryLoop.SendAsync(
                 httpClient,
-                new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
+                () => new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
                 HttpCompletionOption.ResponseHeadersRead,
                 CancellationToken.None);
             timer.Stop();
@@ -153,7 +153,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
-        public async Task RetryLoop_MultipleTriesNoSuccess()
+        public async Task HttpRetryHandler_MultipleTriesNoSuccess()
         {
             // Arrange
             var hits = 0;
@@ -165,14 +165,14 @@ namespace NuGet.Protocol.Core.v3.Tests
                 return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
             };
 
-            var retryLoop = new RetryLoop(5, Timeout.InfiniteTimeSpan, TimeSpan.Zero);
+            var retryLoop = new HttpRetryHandler { MaxTries = 5, RequestTimeout = Timeout.InfiniteTimeSpan, RetryDelay = TimeSpan.Zero };
             var testHandler = new TestHandler(handler);
             var httpClient = new HttpClient(testHandler);
 
             // Act
             await retryLoop.SendAsync(
                 httpClient,
-                new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
+                () => new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
                 HttpCompletionOption.ResponseHeadersRead,
                 CancellationToken.None);
 
@@ -181,7 +181,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
-        public async Task RetryLoop_MultipleSuccessFirstVerifySingleHit()
+        public async Task HttpRetryHandler_MultipleSuccessFirstVerifySingleHit()
         {
             // Arrange
             var hits = 0;
@@ -192,14 +192,14 @@ namespace NuGet.Protocol.Core.v3.Tests
                 return new HttpResponseMessage(HttpStatusCode.OK);
             };
 
-            var retryLoop = new RetryLoop(5, Timeout.InfiniteTimeSpan, TimeSpan.Zero);
+            var retryLoop = new HttpRetryHandler { MaxTries = 5, RequestTimeout = Timeout.InfiniteTimeSpan, RetryDelay = TimeSpan.Zero };
             var testHandler = new TestHandler(handler);
             var httpClient = new HttpClient(testHandler);
 
             // Act
             var response = await retryLoop.SendAsync(
                 httpClient,
-                new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
+                () => new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
                 HttpCompletionOption.ResponseHeadersRead,
                 CancellationToken.None);
 
@@ -209,7 +209,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
-        public async Task RetryLoop_404VerifySingleHit()
+        public async Task HttpRetryHandler_404VerifySingleHit()
         {
             // Arrange
             var hits = 0;
@@ -220,14 +220,14 @@ namespace NuGet.Protocol.Core.v3.Tests
                 return new HttpResponseMessage(HttpStatusCode.OK);
             };
 
-            var retryLoop = new RetryLoop(5, Timeout.InfiniteTimeSpan, TimeSpan.Zero);
+            var retryLoop = new HttpRetryHandler { MaxTries = 5, RequestTimeout = Timeout.InfiniteTimeSpan, RetryDelay = TimeSpan.Zero };
             var testHandler = new TestHandler(handler);
             var httpClient = new HttpClient(testHandler);
 
             // Act
             var response = await retryLoop.SendAsync(
                 httpClient,
-                new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
+                () => new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
                 HttpCompletionOption.ResponseHeadersRead,
                 CancellationToken.None);
 
@@ -237,7 +237,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
-        public async Task RetryLoop_MultipleTriesUntilSuccess()
+        public async Task HttpRetryHandler_MultipleTriesUntilSuccess()
         {
             // Arrange
             var tries = 0;
@@ -259,14 +259,14 @@ namespace NuGet.Protocol.Core.v3.Tests
                 }
             };
 
-            var retryLoop = new RetryLoop(5, Timeout.InfiniteTimeSpan, TimeSpan.Zero);
+            var retryLoop = new HttpRetryHandler { MaxTries = 5, RequestTimeout = Timeout.InfiniteTimeSpan, RetryDelay = TimeSpan.Zero };
             var testHandler = new TestHandler(handler);
             var httpClient = new HttpClient(testHandler);
 
             // Act
             var response = await retryLoop.SendAsync(
                 httpClient,
-                new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
+                () => new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
                 HttpCompletionOption.ResponseHeadersRead,
                 CancellationToken.None);
 

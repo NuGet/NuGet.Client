@@ -32,8 +32,9 @@ namespace NuGet.Protocol
         private HttpHandlerResource _httpHandler;
         private Guid _lastAuthId = Guid.NewGuid();
         private readonly PackageSource _packageSource;
-        private readonly string _logFormat = "  {0} {1} {2}" + Strings.Milliseconds;
-        private readonly RetryLoop _retryLoop;
+        private readonly string _requestLogFormat = "  {0} {1}";
+        private readonly string _responseLogFormat = "  {0} {1} {2}" + Strings.Milliseconds;
+        private readonly HttpRetryHandler _retryHandler;
 
         // Only one thread may re-create the http client at a time.
         private readonly SemaphoreSlim _httpClientLock = new SemaphoreSlim(1, 1);
@@ -66,7 +67,7 @@ namespace NuGet.Protocol
             _packageSource = source;
             _baseUri = new Uri(source.Source);
             _messageHandlerFactory = messageHandlerFactory;
-            _retryLoop = new RetryLoop(3, TimeSpan.FromSeconds(100), TimeSpan.FromMilliseconds(200));
+            _retryHandler = new HttpRetryHandler();
         }
 
         internal Task<HttpSourceResult> GetAsync(string uri,
@@ -94,25 +95,25 @@ namespace NuGet.Protocol
             var result = await TryCache(uri, cacheKey, cacheContext, cancellationToken);
             if (result.Stream != null)
             {
-                log.LogInformation(string.Format(CultureInfo.InvariantCulture, "  {0} {1}", "CACHE", uri));
+                log.LogInformation(string.Format(CultureInfo.InvariantCulture, _requestLogFormat, "CACHE", uri));
                 return result;
             }
 
-            var request = new HttpRequestMessage(HttpMethod.Get, uri);
-            log.LogInformation(string.Format(CultureInfo.InvariantCulture, "  {0} {1}", "GET", uri));
+            log.LogInformation(string.Format(CultureInfo.InvariantCulture, _requestLogFormat, "GET", uri));
+            Func<HttpRequestMessage> requestFactory = () => new HttpRequestMessage(HttpMethod.Get, uri);
 
             // Read the response headers before reading the entire stream to avoid timeouts from large packages.
             Func<Task<HttpResponseMessage>> throttleRequest = () => SendWithCredentialSupportAsync(
-                    request,
+                    requestFactory,
                     HttpCompletionOption.ResponseHeadersRead,
                     cancellationToken);
 
-            using (var response = await GetThrottled(throttleRequest, log))
+            using (var response = await GetThrottled(throttleRequest))
             {
                 if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
                 {
                     log.LogInformation(string.Format(CultureInfo.InvariantCulture,
-                        _logFormat, response.StatusCode.ToString(), uri, sw.ElapsedMilliseconds.ToString()));
+                        _responseLogFormat, response.StatusCode, uri, sw.ElapsedMilliseconds));
                     return new HttpSourceResult();
                 }
 
@@ -121,7 +122,7 @@ namespace NuGet.Protocol
                 await CreateCacheFile(result, response, cacheContext, cancellationToken);
 
                 log.LogInformation(string.Format(CultureInfo.InvariantCulture,
-                    _logFormat, response.StatusCode.ToString(), uri, sw.ElapsedMilliseconds.ToString()));
+                    _responseLogFormat, response.StatusCode, uri, sw.ElapsedMilliseconds));
 
                 return result;
             }
@@ -132,26 +133,21 @@ namespace NuGet.Protocol
         /// This method does not use the cache.
         /// </summary>
         private async Task<HttpResponseMessage> SendAsync(
-            HttpRequestMessage request,
-            ILogger log,
+            Func<HttpRequestMessage> requestFactory,
             CancellationToken cancellationToken)
         {
-            log.LogInformation(string.Format(CultureInfo.InvariantCulture, "  {0} {1}",
-                request.Method.Method.ToUpperInvariant(),
-                request.RequestUri));
-
             // Read the response headers before reading the entire stream to avoid timeouts from large packages.
             Func<Task<HttpResponseMessage>> throttledRequest = () => SendWithCredentialSupportAsync(
-                    request,
+                    requestFactory,
                     HttpCompletionOption.ResponseHeadersRead,
                     cancellationToken);
 
-            var response = await GetThrottled(throttledRequest, log);
+            var response = await GetThrottled(throttledRequest);
 
             return response;
         }
 
-        private static async Task<HttpResponseMessage> GetThrottled(Func<Task<HttpResponseMessage>> request, ILogger log)
+        private static async Task<HttpResponseMessage> GetThrottled(Func<Task<HttpResponseMessage>> request)
         {
             if (_throttle == null)
             {
@@ -174,9 +170,11 @@ namespace NuGet.Protocol
 
         public Task<HttpResponseMessage> GetAsync(Uri uri, ILogger log, CancellationToken token)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            log.LogInformation(string.Format(CultureInfo.InvariantCulture, _requestLogFormat, "GET", uri));
 
-            return SendAsync(request, log, token);
+            Func<HttpRequestMessage> requestFactory = () => new HttpRequestMessage(HttpMethod.Get, uri);
+
+            return SendAsync(requestFactory, token);
         }
 
         public async Task<Stream> GetStreamAsync(Uri uri, ILogger log, CancellationToken token)
@@ -214,7 +212,7 @@ namespace NuGet.Protocol
         }
 
         private async Task<HttpResponseMessage> SendWithCredentialSupportAsync(
-            HttpRequestMessage request,
+            Func<HttpRequestMessage> requestFactory,
             HttpCompletionOption completionOption,
             CancellationToken cancellationToken)
         {
@@ -240,7 +238,12 @@ namespace NuGet.Protocol
             }
 
             // Update the request for STS
-            STSAuthHelper.PrepareSTSRequest(_baseUri, CredentialStore.Instance, request);
+            Func<HttpRequestMessage> requestWithStsFactory = () =>
+            {
+                var request = requestFactory();
+                STSAuthHelper.PrepareSTSRequest(_baseUri, CredentialStore.Instance, request);
+                return request;
+            };
 
             // Authorizing may take multiple attempts
             while (true)
@@ -255,18 +258,14 @@ namespace NuGet.Protocol
                 var beforeLockId = _lastAuthId;
 
                 // Read the response headers before reading the entire stream to avoid timeouts from large packages.
-                response = await _retryLoop.SendAsync(
+                response = await _retryHandler.SendAsync(
                     _httpClient,
-                    request,
+                    requestWithStsFactory,
                     completionOption,
                     cancellationToken);
 
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
-                    // Create a copy of the request for the next call.
-                    // Requests may only be sent once.
-                    request = request.Clone();
-
                     try
                     {
                         // Only one request may prompt and attempt to auth at a time

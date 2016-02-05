@@ -10,31 +10,42 @@ using NuGet.Protocol.Core.v3;
 
 namespace NuGet.Protocol
 {
-    public class RetryLoop
+    public class HttpRetryHandler
     {
-        private readonly int _maxTries;
-        private readonly TimeSpan _requestTimeout;
-        private readonly TimeSpan _retryDelay;
-
         /// <summary>
-        /// The <see cref="RetryLoop"/> is for retrying and HTTP request if it times out, has any exception,
+        /// The <see cref="HttpRetryHandler"/> is for retrying and HTTP request if it times out, has any exception,
         /// or returns a status code of 500 or greater.
         /// </summary>
-        /// <param name="maxTries">
-        /// The maximum number of times to try the request. This value includes the initial attempt.
-        /// </param>
-        /// <param name="requestTimeout">How long to wait on the request to come back with a response.</param>
-        /// <param name="retryDelay">How long to wait before trying again after a failed request.</param>
-        public RetryLoop(int maxTries, TimeSpan requestTimeout, TimeSpan retryDelay)
+        public HttpRetryHandler()
         {
-            _maxTries = maxTries;
-            _requestTimeout = requestTimeout;
-            _retryDelay = retryDelay;
+            MaxTries = 3;
+            RequestTimeout = TimeSpan.FromSeconds(100);
+            RetryDelay = TimeSpan.FromMilliseconds(200);
         }
 
+        /// <summary>The maximum number of times to try the request. This value includes the initial attempt.</summary>
+        /// <remarks>This API is intended only for testing purposes and should not be used in product code.</remarks>
+        public int MaxTries { get; set; }
+
+        /// <summary>How long to wait on the request to come back with a response.</summary>
+        /// <summary>This API is intended only for testing purposes and should not be used in product code.</summary>
+        public TimeSpan RequestTimeout { get; set; }
+
+        /// <summary>How long to wait before trying again after a failed request.</summary>
+        /// <summary>This API is intended only for testing purposes and should not be used in product code.</summary>
+        public TimeSpan RetryDelay { get; set; }
+
+        /// <summary>
+        /// Make an HTTP request while retrying after failed attempts or timeouts.
+        /// </summary>
+        /// <remarks>
+        /// This method accepts a factory to create instances of the <see cref="HttpRequestMessage"/> because
+        /// requests cannot always be used. For example, suppose the request is a POST and contains content
+        /// of a stream that can only be consumed once.
+        /// </remarks>
         public async Task<HttpResponseMessage> SendAsync(
             HttpClient client,
-            HttpRequestMessage request,
+            Func<HttpRequestMessage> requestFactory,
             HttpCompletionOption completionOption,
             CancellationToken cancellationToken)
         {
@@ -42,16 +53,16 @@ namespace NuGet.Protocol
             HttpResponseMessage response = null;
             var success = false;
 
-            while (tries < _maxTries && !success)
+            while (tries < MaxTries && !success)
             {
                 if (tries > 0)
                 {
-                    request = request.Clone();
-                    await Task.Delay(_retryDelay, cancellationToken);
+                    await Task.Delay(RetryDelay, cancellationToken);
                 }
 
                 tries++;
                 success = true;
+                var request = requestFactory();
 
                 try
                 {
@@ -72,7 +83,7 @@ namespace NuGet.Protocol
                     using (var responseTcs = new CancellationTokenSource())
                     using (cancellationToken.Register(() => responseTcs.Cancel()))
                     {
-                        var timeoutTask = Task.Delay(_requestTimeout, timeoutTcs.Token);
+                        var timeoutTask = Task.Delay(RequestTimeout, timeoutTcs.Token);
                         var responseTask = client.SendAsync(request, completionOption, responseTcs.Token);
 
                         if (timeoutTask == await Task.WhenAny(responseTask, timeoutTask))
@@ -80,7 +91,7 @@ namespace NuGet.Protocol
                             responseTcs.Cancel();
                             success = false;
 
-                            if (tries >= _maxTries)
+                            if (tries >= MaxTries)
                             {
                                 var message = string.Format(CultureInfo.CurrentCulture, Strings.Http_Timeout, request.Method, request.RequestUri);
                                 throw new TimeoutException(message);
@@ -103,7 +114,7 @@ namespace NuGet.Protocol
                 {
                     success = false;
 
-                    if (tries >= _maxTries)
+                    if (tries >= MaxTries)
                     {
                         throw;
                     }
