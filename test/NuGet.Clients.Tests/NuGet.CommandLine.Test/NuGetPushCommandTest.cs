@@ -77,7 +77,8 @@ namespace NuGet.CommandLine.Test
         public void PushCommand_PushToFileSystemSourceUncStyle()
         {
             // UNC only works in Windows. So skip this test if we're running on Unix,
-            if (Path.DirectorySeparatorChar == '/')
+            if (Environment.OSVersion.Platform == PlatformID.MacOSX ||
+                  Environment.OSVersion.Platform == PlatformID.Unix)
             {
                 return;
             }
