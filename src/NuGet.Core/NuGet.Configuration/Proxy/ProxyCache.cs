@@ -100,7 +100,7 @@ namespace NuGet.Configuration
                     webProxy.Credentials = new NetworkCredential(userName, password);
                 }
                 
-                var noProxy = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationContants.NoProxy);
+                var noProxy = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationConstants.NoProxy);
                 if (!String.IsNullOrEmpty(noProxy))
                 {
                     // split comma-separated list of domains
@@ -126,7 +126,7 @@ namespace NuGet.Configuration
                     }
                 }
                 
-                var noProxy = _environment.GetEnvironmentVariable(ConfigurationContants.NoProxy);
+                var noProxy = _environment.GetEnvironmentVariable(ConfigurationConstants.NoProxy);
                 if (!String.IsNullOrEmpty(noProxy))
                 {
                     // split comma-separated list of domains
