@@ -189,7 +189,10 @@ namespace NuGet.Commands
             {
                 // There should be at most one match in the external projects.
                 var rootProjectMatches = _request.ExternalProjects.Where(proj =>
-                     string.Equals(_request.Project.Name, proj.PackageSpec?.Name, StringComparison.OrdinalIgnoreCase))
+                     string.Equals(
+                         _request.Project.Name,
+                         proj.PackageSpecProjectName,
+                         StringComparison.OrdinalIgnoreCase))
                      .ToList();
 
                 if (rootProjectMatches.Count > 1)
