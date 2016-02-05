@@ -19,5 +19,12 @@ namespace NuGet.Configuration
 
         
         public static readonly string FeedName = "nuget.org";
+
+        public static readonly string DefaultConfigContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""nuget.org"" value=""https://api.nuget.org/v3/index.json"" protocolVersion=""3"" />
+  </packageSources>
+</configuration>";
     }
 }

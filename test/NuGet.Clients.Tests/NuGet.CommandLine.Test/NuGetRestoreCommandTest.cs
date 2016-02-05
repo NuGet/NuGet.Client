@@ -1492,6 +1492,7 @@ EndProject";
             {
                 // Create an empty config file and pass it as -ConfigFile switch.
                 // This imitates the scenario where there is a machine without a default nuget.config under %APPDATA%
+                // In this case, nuget will not create default nuget.config for user.
                 var config = string.Format(
     @"<?xml version='1.0' encoding='utf - 8'?>
 <configuration/>
@@ -1527,7 +1528,47 @@ EndProject";
                 Environment.SetEnvironmentVariable("PATH", path);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
+                var expectedPath = Path.Combine(
+                    randomTestFolder,
+                    "Newtonsoft.Json.7.0.1",
+                    "Newtonsoft.Json.7.0.1.nupkg");
+
+                Assert.False(File.Exists(expectedPath));
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_OnCleanMachine()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packagesConfigFileName = Path.Combine(randomTestFolder, "packages.config");
+                File.WriteAllText(
+                    packagesConfigFileName,
+@"<packages>
+  <package id=""Newtonsoft.Json"" version=""7.0.1"" targetFramework=""net45"" />
+</packages>");
+
+                string[] args
+                    = new string[]
+                    {
+                        "restore",
+                        "-PackagesDirectory",
+                        "."
+                    };
+
+                // Act
+                var path = Environment.GetEnvironmentVariable("PATH");
+                Environment.SetEnvironmentVariable("PATH", null);
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    randomTestFolder,
+                    string.Join(" ", args),
+                    waitForExit: true);
+                Environment.SetEnvironmentVariable("PATH", path);
+
+                // Assert
                 var expectedPath = Path.Combine(
                     randomTestFolder,
                     "Newtonsoft.Json.7.0.1",

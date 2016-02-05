@@ -75,7 +75,7 @@ namespace NuGet.Configuration
             Root = root;
             FileName = fileName;
             XDocument config = null;
-            ExecuteSynchronized(() => config = XmlUtility.GetOrCreateDocument("configuration", ConfigFilePath));
+            ExecuteSynchronized(() => config = XmlUtility.GetOrCreateDocument(NuGetConstants.DefaultConfigContent, ConfigFilePath));
             ConfigXDocument = config;
             IsMachineWideSettings = isMachineWideSettings;
         }

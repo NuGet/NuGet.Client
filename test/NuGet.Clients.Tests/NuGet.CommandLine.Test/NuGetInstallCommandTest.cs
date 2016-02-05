@@ -1156,6 +1156,7 @@ namespace NuGet.CommandLine.Test
             {
                 // Create an empty config file and pass it as -ConfigFile switch.
                 // This imitates the scenario where there is a machine without a default nuget.config under %APPDATA%
+                // In this case, nuget will not create default nuget.config for user.
                 var config = string.Format(
     @"<?xml version='1.0' encoding='utf - 8'?>
 <configuration/>
@@ -1170,6 +1171,34 @@ namespace NuGet.CommandLine.Test
                         "7.0.1",
                         "-ConfigFile",
                         configFileName
+                };
+
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    randomTestFolder,
+                    string.Join(" ", args),
+                    true);
+
+                var expectedPath = Path.Combine(
+                    randomTestFolder,
+                    "Newtonsoft.Json.7.0.1",
+                    "Newtonsoft.Json.7.0.1.nupkg");
+
+                Assert.False(File.Exists(expectedPath), "nuget.exe installed Newtonsoft.Json.7.0.1");
+            }
+        }
+
+        [Fact]
+        public void TestInstallOnCleanMachine()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                string[] args = new string[]
+                {
+                        "install Newtonsoft.Json",
+                        "-version",
+                        "7.0.1"
                 };
 
                 var result = CommandRunner.Run(
