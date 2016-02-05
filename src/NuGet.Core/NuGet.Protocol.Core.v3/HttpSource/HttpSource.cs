@@ -361,17 +361,21 @@ namespace NuGet.Protocol
 
         private async Task UpdateHttpClient(ICredentials credentials)
         {
-            if (_httpHandler == null)
-            {
-                _httpHandler = await _messageHandlerFactory();
-                _httpClient = new HttpClient(_httpHandler.MessageHandler);
+            // Once an http handler has been used for requests the credentials may not be changed.
+            // Since another caller may still be holding an active response stream open
+            // it is not possible to safely dispose of the existing client when creating a new one.
 
-                // Set user agent
-                UserAgent.SetUserAgent(_httpClient);
-            }
+            var httpHandler = await _messageHandlerFactory();
+            httpHandler.ClientHandler.Credentials = credentials;
+            httpHandler.ClientHandler.UseDefaultCredentials = (credentials == null);
 
-            _httpHandler.ClientHandler.Credentials = credentials;
-            _httpHandler.ClientHandler.UseDefaultCredentials = (credentials == null);
+            var httpClient = new HttpClient(httpHandler.MessageHandler);
+
+            // Set user agent
+            UserAgent.SetUserAgent(httpClient);
+
+            _httpHandler = httpHandler;
+            _httpClient = httpClient;
 
             // Mark that auth has been updated
             _lastAuthId = Guid.NewGuid();
