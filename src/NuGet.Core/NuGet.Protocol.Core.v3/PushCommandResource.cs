@@ -152,6 +152,10 @@ namespace NuGet.Protocol.Core.Types
             var url = String.Join("/", packageId, packageVersion);
             using (var request = new HttpRequestMessage(HttpMethod.Delete, GetServiceEndpointUrl(url)))
             {
+                if (!string.IsNullOrEmpty(apiKey))
+                {
+                    request.Headers.Add(ApiKeyHeader, apiKey);
+                }
                 var response = await  _httpSource.SendAsync(request, logger, token);
                 response.EnsureSuccessStatusCode();
             }

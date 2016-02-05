@@ -73,16 +73,9 @@ namespace NuGet.CommandLine.Test
 
         // Same as PushCommand_PushToFileSystemSource, except that the directory is specified
         // in UNC format.
-        [Fact]
+        [WindowsNTFactAttribute]
         public void PushCommand_PushToFileSystemSourceUncStyle()
         {
-            // UNC only works in Windows. So skip this test if we're running on Unix,
-            if (Environment.OSVersion.Platform == PlatformID.MacOSX ||
-                  Environment.OSVersion.Platform == PlatformID.Unix)
-            {
-                return;
-            }
-
             var nugetexe = Util.GetNuGetExePath();
 
             using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
