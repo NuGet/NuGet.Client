@@ -2153,6 +2153,26 @@ namespace NuGet.Configuration.Test
             Assert.Equal(expectedPath, globalPackagesFolderPath);
         }
 
+        [Fact]
+        public void CreateNewConfigFileIfNoConfig()
+        {
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Act
+                Settings settings = new Settings(mockBaseDirectory);
+
+                // Assert
+                var text = File.ReadAllText(Path.Combine(mockBaseDirectory, "NuGet.Config")).Replace("\r\n", "\n");
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""nuget.org"" value=""https://api.nuget.org/v3/index.json"" protocolVersion=""3"" />
+  </packageSources>
+</configuration>".Replace("\r\n","\n");
+        Assert.Equal(result, text);
+            }
+        }
+
         private void AssertEqualCollections(IList<SettingValue> actual, string[] expected)
         {
             Assert.Equal(actual.Count, expected.Length / 2);

@@ -75,7 +75,7 @@ namespace NuGet.Configuration
             Root = root;
             FileName = fileName;
             XDocument config = null;
-            ExecuteSynchronized(() => config = XmlUtility.GetOrCreateDocument("configuration", ConfigFilePath));
+            ExecuteSynchronized(() => config = XmlUtility.GetOrCreateDocument(CreateDefaultConfig(), ConfigFilePath));
             ConfigXDocument = config;
             IsMachineWideSettings = isMachineWideSettings;
         }
@@ -155,7 +155,8 @@ namespace NuGet.Configuration
                 root,
                 configFileName,
                 machineWideSettings,
-                loadAppDataSettings: true);
+                loadAppDataSettings: true,
+                useTestingGlobalPath : false);
         }
 
         /// <summary>
@@ -165,7 +166,8 @@ namespace NuGet.Configuration
             string root,
             string configFileName,
             IMachineWideSettings machineWideSettings,
-            bool loadAppDataSettings)
+            bool loadAppDataSettings,
+            bool useTestingGlobalPath)
         {
             {
                 // Walk up the tree to find a config file; also look in .nuget subdirectories
@@ -183,7 +185,7 @@ namespace NuGet.Configuration
 
                 if (loadAppDataSettings)
                 {
-                    LoadUserSpecificSettings(validSettingFiles, root, configFileName, machineWideSettings);
+                    LoadUserSpecificSettings(validSettingFiles, root, configFileName, machineWideSettings, useTestingGlobalPath);
                 }
 
                 if (machineWideSettings != null)
@@ -224,7 +226,8 @@ namespace NuGet.Configuration
             List<Settings> validSettingFiles,
             string root,
             string configFileName,
-            IMachineWideSettings machineWideSettings
+            IMachineWideSettings machineWideSettings,
+            bool useTestingGlobalPath
             )
         {
             if (root == null)
@@ -238,8 +241,16 @@ namespace NuGet.Configuration
             Settings appDataSettings = null;
             if (configFileName == null)
             {
-                var userSettingsDir = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
-                var defaultSettingsFilePath = Path.Combine(userSettingsDir, DefaultSettingsFileName);
+                var defaultSettingsFilePath = String.Empty;
+                if (useTestingGlobalPath)
+                {
+                    defaultSettingsFilePath = Path.Combine(root, "TestingGlobalPath");
+                }
+                else
+                {
+                    var userSettingsDir = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+                    defaultSettingsFilePath = Path.Combine(userSettingsDir, DefaultSettingsFileName);
+                }
 
                 if (!File.Exists(defaultSettingsFilePath) && machineWideSettings != null)
                 {
@@ -1082,6 +1093,16 @@ namespace NuGet.Configuration
             {
                 return path1.Equals(path2);
             }
+        }
+
+        private static XDocument CreateDefaultConfig()
+        {
+            return new XDocument(new XElement("configuration",
+                                 new XElement(ConfigurationConstants.PackageSources,
+                                 new XElement("add", 
+                                 new XAttribute(ConfigurationConstants.KeyAttribute, NuGetConstants.FeedName),
+                                 new XAttribute(ConfigurationConstants.ValueAttribute, NuGetConstants.V3FeedUrl),
+                                 new XAttribute(ConfigurationConstants.ProtocolVersionAttribute, "3")))));
         }
     }
 }
