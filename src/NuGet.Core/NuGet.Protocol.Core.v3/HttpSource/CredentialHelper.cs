@@ -20,7 +20,8 @@ namespace NuGet.Protocol
 
             if (currentCredentials == null)
             {
-                result = new NetworkCredential();
+                // This is used to match the value of HttpClientHandler.UseDefaultCredentials = true
+                result = CredentialCache.DefaultNetworkCredentials;
             }
             else
             {

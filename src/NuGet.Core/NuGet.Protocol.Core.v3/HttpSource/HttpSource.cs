@@ -281,7 +281,7 @@ namespace NuGet.Protocol
 
                         // Give up after 3 tries.
                         _authRetries++;
-                        if (_authRetries >= HttpHandlerResourceV3Provider.MaxAuthRetries)
+                        if (_authRetries > HttpHandlerResourceV3Provider.MaxAuthRetries)
                         {
                             return response;
                         }
@@ -381,7 +381,6 @@ namespace NuGet.Protocol
 
             // Modify the credentials on the current handler
             _credentials.Credentials = credentials;
-            _httpHandler.ClientHandler.UseDefaultCredentials = (credentials == null);
 
             // Mark that auth has been updated
             _lastAuthId = Guid.NewGuid();
