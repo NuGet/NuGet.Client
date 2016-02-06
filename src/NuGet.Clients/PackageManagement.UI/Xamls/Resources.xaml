@@ -6,9 +6,6 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Tools:StyleKeyConverter
     x:Key="StyleKeyConverter" />
-  <BitmapImage
-    x:Key="BitmapImage_DefaultIcon"
-    UriSource="../Resources/packageicon.png" />
 
   <Tools:PackageStatusToInstallImageVisibilityConverter
     x:Key="PackageStatusToInstallImageVis" />
@@ -119,27 +116,10 @@
       Property="HorizontalAlignment"
       Value="Center" />
     <Setter
-      Property="StretchDirection"
-      Value="DownOnly" />
+      Property="Height"
+      Value="32" />
     <Setter
-      Property="Stretch"
-      Value="Fill" />
-    <Style.Triggers>
-      <EventTrigger
-        RoutedEvent="ImageFailed">
-        <BeginStoryboard>
-          <Storyboard>
-            <ObjectAnimationUsingKeyFrames
-              Storyboard.TargetProperty="Source"
-              FillBehavior="HoldEnd">
-              <DiscreteObjectKeyFrame
-                KeyTime="0:0:0"
-                Value="{StaticResource BitmapImage_DefaultIcon}">
-              </DiscreteObjectKeyFrame>
-            </ObjectAnimationUsingKeyFrames>
-          </Storyboard>
-        </BeginStoryboard>
-      </EventTrigger>
-    </Style.Triggers>
-  </Style>
+      Property="Width"
+      Value="32" />
+    </Style>
 </ResourceDictionary>
