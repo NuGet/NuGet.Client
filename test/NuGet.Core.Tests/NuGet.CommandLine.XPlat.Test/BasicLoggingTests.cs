@@ -69,6 +69,29 @@ namespace NuGet.CommandLine.XPlat.Test
         }
 
         [Fact]
+        public void BasicLogging_RestoreConfigFile_ExitCode()
+        {
+            // Arrange
+            var log = new TestLogger();
+            Program.Log = log;
+
+            var args = new string[]
+            {
+                "restore",
+                "--configfile",
+                "MyNuGet.config",
+            };
+
+            // Act
+            var exitCode = Program.Main(args);
+
+            // Assert
+            Assert.Equal(1, exitCode);
+            Assert.Equal(1, log.Errors);
+            Assert.Contains("MyNuGet.config", log.Messages.ToArray()[1]); // file does not exist
+        }
+
+        [Fact]
         public void BasicLogging_RestoreUnknownOption_ExitCode()
         {
             // Arrange

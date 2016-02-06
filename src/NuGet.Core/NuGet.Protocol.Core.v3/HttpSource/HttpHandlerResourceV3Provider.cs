@@ -45,11 +45,12 @@ namespace NuGet.Protocol
 
         private static HttpHandlerResourceV3 CreateHandler(PackageSource packageSource)
         {
-            var handler = CreateCredentialHandler(packageSource);
+            var clientHandler = CreateCredentialHandler(packageSource);
 
-            var retryHandler = new RetryHandler(handler, maxTries: 3);
+            // HTTP handler pipeline can be injected here, around the client handler
+            var messageHandler = clientHandler;
 
-            var resource = new HttpHandlerResourceV3(handler, retryHandler);
+            var resource = new HttpHandlerResourceV3(clientHandler, messageHandler);
 
             return resource;
         }

@@ -114,6 +114,15 @@ namespace NuGet.Protocol.Core.v3 {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to The HTTP request to &apos;{0} {1}&apos; has timed out..
+        /// </summary>
+        internal static string Http_Timeout {
+            get {
+                return ResourceManager.GetString("Http_Timeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to The folder &apos;{0}&apos; contains an invalid version..
         /// </summary>
         internal static string InvalidVersionFolder {

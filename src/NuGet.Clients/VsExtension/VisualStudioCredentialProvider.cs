@@ -125,7 +125,7 @@ namespace NuGetVSExtension
             {
                 // Clear out the current credentials because the user might have clicked cancel
                 // and we don't want to use the currently set credentials if they are wrong.
-                return null;
+                throw new OperationCanceledException();
             }
             // Get the new credentials from the proxy instance
             return System.Threading.Tasks.Task.FromResult(WebRequest.DefaultWebProxy.Credentials);

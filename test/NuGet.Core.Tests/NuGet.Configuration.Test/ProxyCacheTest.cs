@@ -65,6 +65,7 @@ namespace NuGet.Configuration.Test
             settings.Setup(s => s.GetValue("config", "http_proxy", false)).Returns(host);
             settings.Setup(s => s.GetValue("config", "http_proxy.user", false)).Returns(user);
             settings.Setup(s => s.GetValue("config", "http_proxy.password", false)).Returns(_password);
+            settings.Setup(s => s.GetValue("config", "no_proxy", false)).Returns("");
             var environment = Mock.Of<IEnvironmentVariableReader>();
             var proxyCache = new ProxyCache(settings.Object, environment);
 
@@ -84,6 +85,7 @@ namespace NuGet.Configuration.Test
             settings.Setup(s => s.GetValue("config", "http_proxy", false)).Returns(host);
             settings.Setup(s => s.GetValue("config", "http_proxy.user", false)).Returns<string>(null);
             settings.Setup(s => s.GetValue("config", "http_proxy.password", false)).Returns<string>(null);
+            settings.Setup(s => s.GetValue("config", "no_proxy", false)).Returns("");
             var environment = Mock.Of<IEnvironmentVariableReader>();
             var proxyCache = new ProxyCache(settings.Object, environment);
 
@@ -122,6 +124,7 @@ namespace NuGet.Configuration.Test
             var settings = Mock.Of<ISettings>();
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
             environment.Setup(s => s.GetEnvironmentVariable("http_proxy")).Returns("http://localhost:8081");
+            environment.Setup(s => s.GetEnvironmentVariable("no_proxy")).Returns("");
 
             var proxyCache = new ProxyCache(settings, environment.Object);
 
@@ -141,6 +144,7 @@ namespace NuGet.Configuration.Test
             var settings = Mock.Of<ISettings>();
             var environment = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
             environment.Setup(s => s.GetEnvironmentVariable("http_proxy")).Returns(input);
+            environment.Setup(s => s.GetEnvironmentVariable("no_proxy")).Returns("");
 
             var proxyCache = new ProxyCache(settings, environment.Object);
 

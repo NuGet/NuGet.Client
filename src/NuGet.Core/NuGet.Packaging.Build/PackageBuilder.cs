@@ -76,7 +76,10 @@ namespace NuGet.Packaging.Build
                 var entry = package.CreateEntry(file.Path, CompressionLevel.Optimal);
                 using (var stream = entry.Open())
                 {
-                    file.GetStream().CopyTo(stream);
+                    using (var sourceStream = file.GetStream())
+                    {
+                        sourceStream.CopyTo(stream);
+                    }
                 }
 
                 extensions.Add(Path.GetExtension(file.Path).Substring(1));

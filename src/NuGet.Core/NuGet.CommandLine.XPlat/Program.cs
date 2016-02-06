@@ -88,6 +88,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.Restore_Switch_Runtime_Description,
                     CommandOptionType.MultipleValue);
 
+                var configFile = restore.Option(
+                    "--configfile <file>",
+                    Strings.Restore_Switch_ConfigFile_Description,
+                    CommandOptionType.SingleValue);
+
                 verbosity = restore.Option(VerbosityOption,
                     Strings.Switch_Verbosity,
                     CommandOptionType.SingleValue);
@@ -166,8 +171,9 @@ namespace NuGet.CommandLine.XPlat
                             // Global folder
                             // Load settings based on the current project path.
                             var projectDir = Path.GetDirectoryName(inputPath);
+                            string configFileName = configFile.HasValue() ? configFile.Value() : null;
                             var settings = Settings.LoadDefaultSettings(projectDir,
-                                configFileName: null,
+                                configFileName,
                                 machineWideSettings: null);
 
                             var globalFolderPath = string.Empty;
