@@ -105,6 +105,7 @@ namespace NuGet.Protocol
             // Read the response headers before reading the entire stream to avoid timeouts from large packages.
             Func<Task<HttpResponseMessage>> throttleRequest = () => SendWithCredentialSupportAsync(
                     request,
+                    null,
                     HttpCompletionOption.ResponseHeadersRead,
                     cancellationToken);
 
@@ -132,8 +133,17 @@ namespace NuGet.Protocol
         /// Wraps logging of the initial request and throttling.
         /// This method does not use the cache.
         /// </summary>
+        private async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            ILogger log,
+            CancellationToken cancellationToken)
+        {
+            return await SendAsync(request, null, log, cancellationToken);
+        }
+
         internal async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
+            Func<HttpRequestMessage, HttpRequestMessage> factoryToRecreateRequestOnRetry,
             ILogger log,
             CancellationToken cancellationToken)
         {
@@ -144,6 +154,7 @@ namespace NuGet.Protocol
             // Read the response headers before reading the entire stream to avoid timeouts from large packages.
             Func<Task<HttpResponseMessage>> throttledRequest = () => SendWithCredentialSupportAsync(
                     request,
+                    factoryToRecreateRequestOnRetry,
                     HttpCompletionOption.ResponseHeadersRead,
                     cancellationToken);
 
@@ -216,6 +227,7 @@ namespace NuGet.Protocol
 
         private async Task<HttpResponseMessage> SendWithCredentialSupportAsync(
             HttpRequestMessage request,
+            Func<HttpRequestMessage, HttpRequestMessage> factoryToRecreateRequestOnRetry,
             HttpCompletionOption completionOption,
             CancellationToken cancellationToken)
         {
@@ -259,6 +271,7 @@ namespace NuGet.Protocol
                 response = await _retryLoop.SendAsync(
                     _httpClient,
                     request,
+                    factoryToRecreateRequestOnRetry,
                     completionOption,
                     cancellationToken);
 
@@ -266,7 +279,14 @@ namespace NuGet.Protocol
                 {
                     // Create a copy of the request for the next call.
                     // Requests may only be sent once.
-                    request = request.Clone();
+                    if (factoryToRecreateRequestOnRetry != null)
+                    {
+                        request = factoryToRecreateRequestOnRetry(request);
+                    }
+                    else
+                    {
+                        request = request.Clone();
+                    }
 
                     try
                     {

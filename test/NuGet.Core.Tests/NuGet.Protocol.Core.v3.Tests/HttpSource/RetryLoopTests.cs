@@ -30,6 +30,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             await retryLoop.SendAsync(
                 httpClient,
                 new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
+                null,
                 HttpCompletionOption.ResponseHeadersRead,
                 CancellationToken.None);
 
@@ -58,6 +59,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             var response = await retryLoop.SendAsync(
                 httpClient,
                 new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
+                null,
                 HttpCompletionOption.ResponseHeadersRead,
                 CancellationToken.None);
 
@@ -85,6 +87,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             Func<Task> actionAsync = () => retryLoop.SendAsync(
                 httpClient,
                 new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
+                null,
                 HttpCompletionOption.ResponseHeadersRead,
                 CancellationToken.None);
 
@@ -112,6 +115,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             Func<Task> actionAsync = () => retryLoop.SendAsync(
                 httpClient,
                 new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
+                null,
                 HttpCompletionOption.ResponseHeadersRead,
                 CancellationToken.None);
 
@@ -142,6 +146,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             await retryLoop.SendAsync(
                 httpClient,
                 new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
+                null,
                 HttpCompletionOption.ResponseHeadersRead,
                 CancellationToken.None);
             timer.Stop();
@@ -173,6 +178,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             await retryLoop.SendAsync(
                 httpClient,
                 new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
+                null,
                 HttpCompletionOption.ResponseHeadersRead,
                 CancellationToken.None);
 
@@ -200,6 +206,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             var response = await retryLoop.SendAsync(
                 httpClient,
                 new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
+                null,
                 HttpCompletionOption.ResponseHeadersRead,
                 CancellationToken.None);
 
@@ -228,6 +235,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             var response = await retryLoop.SendAsync(
                 httpClient,
                 new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
+                null,
                 HttpCompletionOption.ResponseHeadersRead,
                 CancellationToken.None);
 
@@ -267,6 +275,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             var response = await retryLoop.SendAsync(
                 httpClient,
                 new HttpRequestMessage(HttpMethod.Get, "https://test.local/test.json"),
+                null,
                 HttpCompletionOption.ResponseHeadersRead,
                 CancellationToken.None);
 

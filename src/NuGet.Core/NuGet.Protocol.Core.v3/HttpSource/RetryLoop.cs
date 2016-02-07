@@ -35,6 +35,7 @@ namespace NuGet.Protocol
         public async Task<HttpResponseMessage> SendAsync(
             HttpClient client,
             HttpRequestMessage request,
+            Func<HttpRequestMessage, HttpRequestMessage> factoryToRecreateRequestOnRetry,
             HttpCompletionOption completionOption,
             CancellationToken cancellationToken)
         {
@@ -46,7 +47,14 @@ namespace NuGet.Protocol
             {
                 if (tries > 0)
                 {
-                    request = request.Clone();
+                    if (factoryToRecreateRequestOnRetry != null)
+                    {
+                        request = factoryToRecreateRequestOnRetry(request);
+                    }
+                    else
+                    {
+                        request = request.Clone();
+                    }
                     await Task.Delay(_retryDelay, cancellationToken);
                 }
 

@@ -80,17 +80,17 @@ namespace NuGet.CommandLine
                     await PushSymbols(packagePath, tokenSource.Token);
                 }
             }
-            catch (HttpRequestException exception)
+            catch (Exception ex)
             {
-                //WebException contains more detail, so surface it.
-                if (exception.InnerException is WebException)
+                if (ex is AggregateException && ex.InnerException != null)
                 {
-                    throw exception.InnerException;
+                    ex = ex.InnerException;
                 }
-                else
+                if (ex is HttpRequestException && ex.InnerException is WebException)
                 {
-                    throw exception;
+                    ex = ex.InnerException;
                 }
+                throw ex;
             }
         }
 
