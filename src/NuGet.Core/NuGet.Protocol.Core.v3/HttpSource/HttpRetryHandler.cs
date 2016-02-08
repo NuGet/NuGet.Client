@@ -100,8 +100,7 @@ namespace NuGet.Protocol
                         else
                         {
                             timeoutTcs.Cancel();
-                            cancellationToken.ThrowIfCancellationRequested();
-                            response = responseTask.Result;
+                            response = await responseTask;
 
                             if ((int)response.StatusCode >= 500)
                             {
