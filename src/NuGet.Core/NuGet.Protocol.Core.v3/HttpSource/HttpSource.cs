@@ -105,7 +105,7 @@ namespace NuGet.Protocol
             // Read the response headers before reading the entire stream to avoid timeouts from large packages.
             Func<Task<HttpResponseMessage>> throttleRequest = () => SendWithCredentialSupportAsync(
                     request,
-                    null,
+                    req => { return request.Clone(); },
                     HttpCompletionOption.ResponseHeadersRead,
                     cancellationToken);
 
@@ -138,7 +138,10 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken cancellationToken)
         {
-            return await SendAsync(request, null, log, cancellationToken);
+            return await SendAsync(request, 
+                reg => { return request.Clone(); }, 
+                log, 
+                cancellationToken);
         }
 
         internal async Task<HttpResponseMessage> SendAsync(
@@ -279,14 +282,7 @@ namespace NuGet.Protocol
                 {
                     // Create a copy of the request for the next call.
                     // Requests may only be sent once.
-                    if (factoryToRecreateRequestOnRetry != null)
-                    {
-                        request = factoryToRecreateRequestOnRetry(request);
-                    }
-                    else
-                    {
-                        request = request.Clone();
-                    }
+                    request = factoryToRecreateRequestOnRetry(request);
 
                     try
                     {

@@ -47,14 +47,7 @@ namespace NuGet.Protocol
             {
                 if (tries > 0)
                 {
-                    if (factoryToRecreateRequestOnRetry != null)
-                    {
-                        request = factoryToRecreateRequestOnRetry(request);
-                    }
-                    else
-                    {
-                        request = request.Clone();
-                    }
+                    request = factoryToRecreateRequestOnRetry(request);
                     await Task.Delay(_retryDelay, cancellationToken);
                 }
 

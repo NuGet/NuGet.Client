@@ -104,13 +104,16 @@ namespace NuGet.Protocol.Core.Types
                 //this should dispose the content, the file stream underneath, and everything.
                 currentRequest.Dispose();
             }
+
             var fileStream = new FileStream(pathToPackage, FileMode.Open, FileAccess.Read, FileShare.Read);
             var request = new HttpRequestMessage(HttpMethod.Put, GetServiceEndpointUrl(string.Empty));
             var content = new MultipartFormDataContent();
+
             var packageContent = new StreamContent(fileStream);
             packageContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
             content.Add(packageContent, "package", "package.nupkg");
             request.Content = content;
+
             if (!string.IsNullOrEmpty(apiKey))
             {
                 request.Headers.Add(ApiKeyHeader, apiKey);
