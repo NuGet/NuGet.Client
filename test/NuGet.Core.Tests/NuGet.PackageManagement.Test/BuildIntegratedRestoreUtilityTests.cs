@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -23,6 +24,185 @@ namespace NuGet.Test
 {
     public class BuildIntegratedRestoreUtilityTests
     {
+        [Fact]
+        public void BuildIntegratedRestoreUtility_GetExternalClosure_Empty()
+        {
+            // Arrange
+            var references = new HashSet<ExternalProjectReference>();
+
+            // Act
+            var closure = BuildIntegratedRestoreUtility.GetExternalClosure("test", references);
+
+            // Assert
+            Assert.Equal(0, closure.Count);
+        }
+
+        [Fact]
+        public void BuildIntegratedRestoreUtility_GetExternalClosure_NotFound()
+        {
+            // Arrange
+            var references = new HashSet<ExternalProjectReference>()
+            {
+                CreateReference("a", "b"),
+                CreateReference("b")
+            };
+
+            // Act
+            var closure = BuildIntegratedRestoreUtility.GetExternalClosure("z", references);
+
+            // Assert
+            Assert.Equal(0, closure.Count);
+        }
+
+        [Fact]
+        public void BuildIntegratedRestoreUtility_GetExternalClosure_Single()
+        {
+            // Arrange
+            var references = new HashSet<ExternalProjectReference>()
+            {
+                CreateReference("a", "b"),
+                CreateReference("b")
+            };
+
+            // Act
+            var closure = BuildIntegratedRestoreUtility.GetExternalClosure("b", references);
+
+            // Assert
+            Assert.Equal("b", closure.Single().UniqueName);
+        }
+
+        [Fact]
+        public void BuildIntegratedRestoreUtility_GetExternalClosure_Basic()
+        {
+            // Arrange
+            var references = new HashSet<ExternalProjectReference>()
+            {
+                CreateReference("a", "b", "c"),
+                CreateReference("b"),
+                CreateReference("c", "d"),
+                CreateReference("d")
+            };
+
+            // Act
+            var closure = BuildIntegratedRestoreUtility.GetExternalClosure("a", references);
+
+            // Assert
+            Assert.Equal(4, closure.Count);
+        }
+
+        [Fact]
+        public void BuildIntegratedRestoreUtility_GetExternalClosure_Subset()
+        {
+            // Arrange
+            var references = new HashSet<ExternalProjectReference>()
+            {
+                CreateReference("a", "b", "c"),
+                CreateReference("b"),
+                CreateReference("c", "d"),
+                CreateReference("d")
+            };
+
+            // Act
+            var closure = BuildIntegratedRestoreUtility.GetExternalClosure("c", references);
+
+            // Assert
+            Assert.Equal(2, closure.Count);
+        }
+
+        [Fact]
+        public void BuildIntegratedRestoreUtility_GetExternalClosure_Cycle()
+        {
+            // Arrange
+            var references = new HashSet<ExternalProjectReference>()
+            {
+                CreateReference("a", "b"),
+                CreateReference("b", "a")
+            };
+
+            // Act
+            var closure = BuildIntegratedRestoreUtility.GetExternalClosure("a", references);
+
+            // Assert
+            Assert.Equal(2, closure.Count);
+        }
+
+        [Fact]
+        public void BuildIntegratedRestoreUtility_GetExternalClosure_Overlapping()
+        {
+            // Arrange
+            var references = new HashSet<ExternalProjectReference>()
+            {
+                CreateReference("a", "b", "c"),
+                CreateReference("b", "d", "c"),
+                CreateReference("c", "d"),
+                CreateReference("d", "e"),
+                CreateReference("e"),
+            };
+
+            // Act
+            var closure = BuildIntegratedRestoreUtility.GetExternalClosure("a", references);
+
+            // Assert
+            Assert.Equal(5, closure.Count);
+        }
+
+        [Fact]
+        public void BuildIntegratedRestoreUtility_GetExternalClosure_OverlappingSubSet()
+        {
+            // Arrange
+            var references = new HashSet<ExternalProjectReference>()
+            {
+                CreateReference("a", "b", "c"),
+                CreateReference("b", "d", "c"),
+                CreateReference("c", "d"),
+                CreateReference("d", "e"),
+                CreateReference("e"),
+            };
+
+            // Act
+            var closure = BuildIntegratedRestoreUtility.GetExternalClosure("b", references);
+
+            // Assert
+            Assert.Equal(4, closure.Count);
+        }
+
+        [Fact]
+        public void BuildIntegratedRestoreUtility_GetExternalClosure_MissingReference()
+        {
+            // Arrange
+            var references = new HashSet<ExternalProjectReference>()
+            {
+                CreateReference("a", "b", "c"),
+                CreateReference("b", "d", "c"),
+                CreateReference("c", "d"),
+                CreateReference("d", "e"),
+            };
+
+            // Act
+            var closure = BuildIntegratedRestoreUtility.GetExternalClosure("b", references);
+
+            // Assert
+            Assert.Equal(3, closure.Count);
+        }
+
+        private static ExternalProjectReference CreateReference(string name)
+        {
+            return new ExternalProjectReference(
+                uniqueName: name,
+                packageSpec: null,
+                msbuildProjectPath: name,
+                projectReferences: new List<string>());
+        }
+
+        private static ExternalProjectReference CreateReference(string name, params string[] children)
+        {
+            return new ExternalProjectReference(
+                uniqueName: name,
+                packageSpec: null,
+                msbuildProjectPath: name,
+                projectReferences: children.ToList());
+        }
+
         [Fact]
         public async Task BuildIntegratedRestoreUtility_RestoreProjectNameProjectJson()
         {

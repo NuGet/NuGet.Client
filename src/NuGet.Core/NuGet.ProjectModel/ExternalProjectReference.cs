@@ -11,18 +11,38 @@ namespace NuGet.ProjectModel
     /// <summary>
     /// Represents a reference to a project produced by an external build system, such as msbuild.
     /// </summary>
-    public class ExternalProjectReference : IEquatable<ExternalProjectReference>
+    public class ExternalProjectReference : IEquatable<ExternalProjectReference>, IComparable<ExternalProjectReference>
     {
+        private PackageSpec _packageSpec;
+
         /// <summary>
         /// Represents a reference to a project produced by an external build system, such as msbuild.
         /// </summary>
         /// <param name="uniqueName">unique project name or full path</param>
-        /// <param name="packageSpec">project.json file or null if none exists</param>
+        /// <param name="packageSpec">project.json package spec.</param>
         /// <param name="msbuildProjectPath">project file if one exists</param>
         /// <param name="projectReferences">unique names of the referenced projects</param>
         public ExternalProjectReference(
-            string uniqueName, 
+            string uniqueName,
             PackageSpec packageSpec,
+            string msbuildProjectPath,
+            IEnumerable<string> projectReferences)
+            : this(uniqueName, packageSpec?.Name, packageSpec?.FilePath, msbuildProjectPath, projectReferences)
+        {
+            _packageSpec = packageSpec;
+        }
+
+        /// <summary>
+        /// Represents a reference to a project produced by an external build system, such as msbuild.
+        /// </summary>
+        /// <param name="uniqueName">unique project name or full path</param>
+        /// <param name="packageSpecPath">project.json file path or null if none exists</param>
+        /// <param name="msbuildProjectPath">project file if one exists</param>
+        /// <param name="projectReferences">unique names of the referenced projects</param>
+        public ExternalProjectReference(
+            string uniqueName,
+            string packageSpecProjectName,
+            string packageSpecPath,
             string msbuildProjectPath,
             IEnumerable<string> projectReferences)
         {
@@ -37,8 +57,9 @@ namespace NuGet.ProjectModel
             }
 
             UniqueName = uniqueName;
-            PackageSpec = packageSpec;
+            PackageSpecPath = packageSpecPath;
             MSBuildProjectPath = msbuildProjectPath;
+            PackageSpecProjectName = packageSpecProjectName;
             ExternalProjectReferences = projectReferences.ToList();
         }
 
@@ -50,7 +71,18 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// The path to the project.json file representing the NuGet dependencies of the project
         /// </summary>
-        public PackageSpec PackageSpec { get; }
+        public PackageSpec PackageSpec
+        {
+            get
+            {
+                if (_packageSpec == null && PackageSpecPath != null && PackageSpecProjectName != null)
+                {
+                    _packageSpec = JsonPackageSpecReader.GetPackageSpec(PackageSpecProjectName, PackageSpecPath);
+                }
+
+                return _packageSpec;
+            }
+        }
 
         /// <summary>
         /// A list of other external projects this project references. Uses the UniqueName.
@@ -63,6 +95,18 @@ namespace NuGet.ProjectModel
         public string MSBuildProjectPath { get; }
 
         /// <summary>
+        /// Path to project.json
+        /// </summary>
+        /// <remarks>This may be null for projects that do not contain project.json.</remarks>
+        public string PackageSpecPath { get; }
+
+        /// <summary>
+        /// Project name used for project.json
+        /// </summary>
+        /// <remarks>This may be null for projects that do not contain project.json.</remarks>
+        public string PackageSpecProjectName { get; }
+
+        /// <summary>
         /// Project name from the package spec or msbuild file.
         /// </summary>
         public string ProjectName
@@ -72,7 +116,7 @@ namespace NuGet.ProjectModel
                 // project.json name goes first
                 // use the msbuild file path for non-project.json projects
                 // fallback to the given unique name
-                return PackageSpec?.Name
+                return PackageSpecProjectName
                         ?? Path.GetFileNameWithoutExtension(MSBuildProjectPath)
                         ?? UniqueName;
             }
@@ -106,6 +150,11 @@ namespace NuGet.ProjectModel
             }
 
             return UniqueName.Equals(other.UniqueName, StringComparison.Ordinal);
+        }
+
+        public int CompareTo(ExternalProjectReference other)
+        {
+            return StringComparer.Ordinal.Compare(UniqueName, other?.UniqueName);
         }
     }
 }

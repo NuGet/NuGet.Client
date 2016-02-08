@@ -181,7 +181,16 @@ namespace NuGet.PackageManagement
                 // Get all project.json file paths in the closure
                 var closure = await project.GetProjectReferenceClosureAsync(context);
 
-                var files = new List<string>();
+                var files = new HashSet<string>(StringComparer.Ordinal);
+
+                // Store the last modified date of the project.json file
+                // If there are any changes a restore is needed
+                var lastModified = DateTimeOffset.MinValue;
+
+                if (File.Exists(project.JsonConfigPath))
+                {
+                    lastModified = File.GetLastWriteTimeUtc(project.JsonConfigPath);
+                }
 
                 foreach (var reference in closure)
                 {
@@ -190,26 +199,16 @@ namespace NuGet.PackageManagement
                         files.Add(reference.MSBuildProjectPath);
                     }
 
-                    if (reference.PackageSpec != null)
+                    if (reference.PackageSpecPath != null)
                     {
-                        Debug.Assert(reference.PackageSpec.FilePath != null, "Empty project.json path");
-                        files.Add(reference.PackageSpec.FilePath);
+                        files.Add(reference.PackageSpecPath);
                     }
-                }
-
-                var supportsProfiles = Enumerable.Empty<string>();
-
-                if (project.PackageSpec != null)
-                {
-                    supportsProfiles = project.PackageSpec.RuntimeGraph.Supports.Keys
-                        .OrderBy(p => p, StringComparer.Ordinal)
-                        .ToArray();
                 }
 
                 var projectInfo = new BuildIntegratedProjectCacheEntry(
                     project.JsonConfigPath,
                     files,
-                    supportsProfiles);
+                    lastModified);
 
                 var uniqueName = project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
 
@@ -244,16 +243,15 @@ namespace NuGet.PackageManagement
                     return true;
                 }
 
-                if (!item.Value.ReferenceClosure.OrderBy(s => s, StringComparer.Ordinal)
-                    .SequenceEqual(projectInfo.ReferenceClosure.OrderBy(s => s, StringComparer.Ordinal)))
+                if (item.Value.ProjectConfigLastModified?.Equals(projectInfo.ProjectConfigLastModified) == true)
                 {
-                    // The project closure has changed
+                    // project.json has been modified
                     return true;
                 }
 
-                if (!Enumerable.SequenceEqual(item.Value.SupportsProfiles, projectInfo.SupportsProfiles))
+                if (!item.Value.ReferenceClosure.SetEquals(projectInfo.ReferenceClosure))
                 {
-                    // Supports nodes have changes. Compatibility checks need to be done during the restore.
+                    // The project closure has changed
                     return true;
                 }
             }
@@ -395,9 +393,9 @@ namespace NuGet.PackageManagement
 
                     // find all projects which have a child reference matching the same project.json path as the target
                     if (closure.Any(reference =>
-                        reference.PackageSpec != null &&
+                        reference.PackageSpecPath != null &&
                         string.Equals(targetProjectJson,
-                            Path.GetFullPath(reference.PackageSpec.FilePath),
+                            Path.GetFullPath(reference.PackageSpecPath),
                             StringComparison.OrdinalIgnoreCase)))
                     {
                         parents.Add(project);
@@ -467,6 +465,49 @@ namespace NuGet.PackageManagement
             }
 
             return version;
+        }
+
+        /// <summary>
+        /// Find the project closure from a larger set of references.
+        /// </summary>
+        public static ISet<ExternalProjectReference> GetExternalClosure(
+            string rootUniqueName,
+            ISet<ExternalProjectReference> references)
+        {
+            var closure = new HashSet<ExternalProjectReference>();
+
+            // Start with the parent node
+            var parent = references.FirstOrDefault(project =>
+                    rootUniqueName.Equals(project.UniqueName, StringComparison.Ordinal));
+
+            if (parent != null)
+            {
+                closure.Add(parent);
+            }
+
+            // Loop adding child projects each time
+            var notDone = true;
+            while (notDone)
+            {
+                notDone = false;
+
+                foreach (var childName in closure
+                    .Where(project => project.ExternalProjectReferences != null)
+                    .SelectMany(project => project.ExternalProjectReferences)
+                    .ToArray())
+                {
+                    var child = references.FirstOrDefault(project =>
+                        childName.Equals(project.UniqueName, StringComparison.Ordinal));
+
+                    // Continue until nothing new is added
+                    if (child != null)
+                    {
+                        notDone |= closure.Add(child);
+                    }
+                }
+            }
+
+            return closure;
         }
     }
 }
