@@ -1538,47 +1538,6 @@ EndProject";
         }
 
         [Fact]
-        public void RestoreCommand_OnCleanMachine()
-        {
-            var nugetexe = Util.GetNuGetExePath();
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                var packagesConfigFileName = Path.Combine(randomTestFolder, "packages.config");
-                File.WriteAllText(
-                    packagesConfigFileName,
-@"<packages>
-  <package id=""Newtonsoft.Json"" version=""7.0.1"" targetFramework=""net45"" />
-</packages>");
-
-                string[] args
-                    = new string[]
-                    {
-                        "restore",
-                        "-PackagesDirectory",
-                        "."
-                    };
-
-                // Act
-                var path = Environment.GetEnvironmentVariable("PATH");
-                Environment.SetEnvironmentVariable("PATH", null);
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    randomTestFolder,
-                    string.Join(" ", args),
-                    waitForExit: true);
-                Environment.SetEnvironmentVariable("PATH", path);
-
-                // Assert
-                var expectedPath = Path.Combine(
-                    randomTestFolder,
-                    "Newtonsoft.Json.7.0.1",
-                    "Newtonsoft.Json.7.0.1.nupkg");
-
-                Assert.True(File.Exists(expectedPath));
-            }
-        }
-
-        [Fact]
         public void RestoreCommand_LegacySolutionLevelPackages_SolutionDirectory()
         {
             using (var randomRepositoryPath = TestFileSystemUtility.CreateRandomTestFolder())

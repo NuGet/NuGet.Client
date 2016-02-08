@@ -1187,33 +1187,5 @@ namespace NuGet.CommandLine.Test
                 Assert.False(File.Exists(expectedPath), "nuget.exe installed Newtonsoft.Json.7.0.1");
             }
         }
-
-        [Fact]
-        public void TestInstallOnCleanMachine()
-        {
-            var nugetexe = Util.GetNuGetExePath();
-            using (var randomTestFolder = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                string[] args = new string[]
-                {
-                        "install Newtonsoft.Json",
-                        "-version",
-                        "7.0.1"
-                };
-
-                var result = CommandRunner.Run(
-                    nugetexe,
-                    randomTestFolder,
-                    string.Join(" ", args),
-                    true);
-
-                var expectedPath = Path.Combine(
-                    randomTestFolder,
-                    "Newtonsoft.Json.7.0.1",
-                    "Newtonsoft.Json.7.0.1.nupkg");
-
-                Assert.True(File.Exists(expectedPath), "nuget.exe did not install Newtonsoft.Json.7.0.1");
-            }
-        }
     }
 }

@@ -2207,7 +2207,7 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
                                   configFileName: null,
                                   machineWideSettings: null,
-                                  loadAppDataSettings: true);
+                                  loadAppDataSettings: false);
                 var packageSourceProvider = new PackageSourceProvider(settings);
 
                 // Act
@@ -2237,7 +2237,7 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
                                   configFileName: null,
                                   machineWideSettings: null,
-                                  loadAppDataSettings: true);
+                                  loadAppDataSettings: false);
                 var packageSourceProvider = new PackageSourceProvider(settings);
 
                 // Act
