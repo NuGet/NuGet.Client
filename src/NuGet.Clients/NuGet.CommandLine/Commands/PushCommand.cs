@@ -82,10 +82,6 @@ namespace NuGet.CommandLine
             }
             catch (Exception ex)
             {
-                if (ex is AggregateException)
-                {
-                    ex = (ex as AggregateException).Flatten().InnerExceptions.FirstOrDefault();
-                }
                 if (ex is HttpRequestException && ex.InnerException is WebException)
                 {
                     ex = ex.InnerException;
