@@ -2229,7 +2229,7 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSources>
       <clear />
-      <add key=""test"" value=""C:\Temp\Nuget"" />
+      <add key=""test"" value=""https://nuget/test"" />
     </packageSources>
 </configuration>
 ";
@@ -2245,7 +2245,7 @@ namespace NuGet.Configuration.Test
 
                 // Assert
                 Assert.Equal(1, sources.Count);
-                Assert.Equal(@"C:\Temp\Nuget", sources[0].Source);
+                Assert.Equal(@"https://nuget/test", sources[0].Source);
                 Assert.Equal("test", sources[0].Name);
             }
         }
