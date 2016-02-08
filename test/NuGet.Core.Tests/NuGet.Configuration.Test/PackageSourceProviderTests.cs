@@ -317,7 +317,8 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(rootPath,
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false);
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var packageSourceList = packageSourceProvider.LoadPackageSources().ToList();
 
@@ -360,7 +361,8 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(rootPath,
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false);
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var packageSourceList = packageSourceProvider.LoadPackageSources().ToList();
 
@@ -408,7 +410,8 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(rootPath,
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false);
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var packageSourceList = packageSourceProvider.LoadPackageSources().ToList();
 
@@ -460,7 +463,8 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(rootPath,
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false);
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var packageSourceList = packageSourceProvider.LoadPackageSources().ToList();
 
@@ -511,7 +515,8 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(rootPath,
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false);
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var packageSourceList = packageSourceProvider.LoadPackageSources().ToList();
 
@@ -565,7 +570,8 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(rootPath,
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false);
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
 
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var packageSourceList = packageSourceProvider.LoadPackageSources().ToList();
@@ -625,7 +631,8 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(rootPath,
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false);
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
 
                 var expectedDisabledSources = settings.GetSettingValues("disabledPackageSources")?.ToList();
 
@@ -638,7 +645,8 @@ namespace NuGet.Configuration.Test
                 var newSettings = Settings.LoadDefaultSettings(rootPath,
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false);
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
 
                 var actualDisabledSources = newSettings.GetSettingValues("disabledPackageSources").ToList();
 
@@ -676,7 +684,8 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(rootPath,
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false);
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
 
                 var disabledSources = settings.GetSettingValues("disabledPackageSources")?.ToList();
 
@@ -701,7 +710,8 @@ namespace NuGet.Configuration.Test
                 var newSettings = Settings.LoadDefaultSettings(rootPath,
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false);
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
 
                 // Main Assert
                 disabledSources = newSettings.GetSettingValues("disabledPackageSources")?.ToList();
@@ -1549,7 +1559,8 @@ namespace NuGet.Configuration.Test
                     Path.Combine(mockBaseDirectory, @"a\b\c"),
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false);
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
 
                 var provider = CreatePackageSourceProvider(settings);
                 // Act
@@ -1588,7 +1599,8 @@ namespace NuGet.Configuration.Test
                     Path.Combine(mockBaseDirectory, "a", "b", "c"),
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false);
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
 
                 var provider = CreatePackageSourceProvider(settings);
 
@@ -1620,7 +1632,8 @@ namespace NuGet.Configuration.Test
                     mockBaseDirectory,
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false);
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
 
                 var provider = CreatePackageSourceProvider(settings);
 
@@ -1652,7 +1665,8 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
                    configFileName: "NuGet.config",
                    machineWideSettings: null,
-                   loadAppDataSettings: true);
+                   loadAppDataSettings: true,
+                   useTestingGlobalPath: false);
                 var packageSourceProvider = new PackageSourceProvider(settings);
 
                 // Act
@@ -1699,7 +1713,8 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(rootPath,
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false);
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
                 var packageSourceProvider = new PackageSourceProvider(settings);
 
                 // Act - 1
@@ -1761,7 +1776,8 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(rootPath,
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false);
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
                 var packageSourceProvider = new PackageSourceProvider(settings);
 
                 // Act - 1
@@ -1835,7 +1851,8 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(rootPath,
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false);
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
                 var packageSourceProvider = new PackageSourceProvider(settings);
 
                 // Act - 1
@@ -1911,7 +1928,8 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(rootPath,
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false);
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
                 var packageSourceProvider = new PackageSourceProvider(settings);
 
                 // Act - 1
@@ -1985,7 +2003,8 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(rootPath,
                     configFileName: null,
                     machineWideSettings: null,
-                    loadAppDataSettings: false);
+                    loadAppDataSettings: false,
+                    useTestingGlobalPath: false);
                 var packageSourceProvider = new PackageSourceProvider(settings);
 
                 // Act - 1
@@ -2065,7 +2084,8 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
                    configFileName: null,
                    machineWideSettings: m.Object,
-                   loadAppDataSettings: false);
+                   loadAppDataSettings: false,
+                   useTestingGlobalPath: false);
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var sources = packageSourceProvider.LoadPackageSources().ToList();
 
@@ -2115,7 +2135,8 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
                    configFileName: null,
                    machineWideSettings: m.Object,
-                   loadAppDataSettings: false);
+                   loadAppDataSettings: false,
+                   useTestingGlobalPath: false);
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var sources = packageSourceProvider.LoadPackageSources().ToList();
 
@@ -2133,7 +2154,7 @@ namespace NuGet.Configuration.Test
             }
         }
 
-        [Fact(Skip = "Test currently failing")]
+        [Fact]
         public void DisabledMachineWideSourceByDefault()
         {
             using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
@@ -2159,9 +2180,10 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
                       configFileName: null,
                       machineWideSettings: m.Object,
-                      loadAppDataSettings: true);
+                      loadAppDataSettings: true,
+                      useTestingGlobalPath: true);
                 var packageSourceProvider = new PackageSourceProvider(settings);
-                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                var sources = packageSourceProvider.LoadPackageSources().Where(p => p.IsMachineWide).ToList();
 
                 // Assert
                 Assert.False(sources[0].IsEnabled);
@@ -2169,7 +2191,7 @@ namespace NuGet.Configuration.Test
             }
         }
 
-        [Fact(Skip = "Test currently failing")]
+        [Fact]
         public void DisabledMachineWideSourceByDefaultWithNull()
         {
             using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
@@ -2178,14 +2200,15 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
                                   configFileName: null,
                                   machineWideSettings: null,
-                                  loadAppDataSettings: true);
+                                  loadAppDataSettings: true,
+                                  useTestingGlobalPath: true);
                 var packageSourceProvider = new PackageSourceProvider(settings);
 
                 // Act
                 var sources = packageSourceProvider.LoadPackageSources().ToList();
 
                 // Assert
-                Assert.Equal(2, sources.Count);
+                Assert.Equal(1, sources.Count);
             }
         }
 
@@ -2207,7 +2230,8 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
                                   configFileName: null,
                                   machineWideSettings: null,
-                                  loadAppDataSettings: false);
+                                  loadAppDataSettings: true,
+                                  useTestingGlobalPath: true);
                 var packageSourceProvider = new PackageSourceProvider(settings);
 
                 // Act
@@ -2237,7 +2261,8 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
                                   configFileName: null,
                                   machineWideSettings: null,
-                                  loadAppDataSettings: false);
+                                  loadAppDataSettings: true,
+                                  useTestingGlobalPath: true);
                 var packageSourceProvider = new PackageSourceProvider(settings);
 
                 // Act
