@@ -24,7 +24,10 @@ namespace NuGet.Protocol.Core.Types
             HttpSource httpSource)
         {
             PushEndpoint = pushEndpoint;
-            _source = new Uri(pushEndpoint);
+            if (!string.IsNullOrEmpty(pushEndpoint))
+            {
+                _source = new Uri(pushEndpoint);
+            }
             _httpSource = httpSource;
         }
 
@@ -70,25 +73,50 @@ namespace NuGet.Protocol.Core.Types
             ILogger logger,
             CancellationToken token)
         {
-            using (var fileStream = new FileStream(pathToPackage, FileMode.Open, FileAccess.Read, FileShare.Read))
-            using (var request = new HttpRequestMessage(HttpMethod.Put, GetServiceEndpointUrl(string.Empty)))
+            HttpRequestMessage request = null;
+            HttpResponseMessage response = null;
+
+            try
             {
-                if (!string.IsNullOrEmpty(apiKey))
-                {
-                    request.Headers.Add(ApiKeyHeader, apiKey);
-                }
-
-                using (var content = new MultipartFormDataContent())
-                using (var packageContent = new StreamContent(fileStream))
-                {
-                    packageContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
-                    content.Add(packageContent, "package", "package.nupkg");
-                    request.Content = content;
-
-                    var response = await _httpSource.SendAsync(request, logger, token);
-                    response.EnsureSuccessStatusCode();
-                }
+                response = await _httpSource.SendAsync(
+                    () => { return request = CreateRequest(request, pathToPackage, apiKey); },
+                    token);
             }
+            finally
+            {
+                if (request != null)
+                {
+                    request.Dispose();
+                }
+            };
+
+            response.EnsureSuccessStatusCode();
+        }
+
+        private HttpRequestMessage CreateRequest(HttpRequestMessage currentRequest, 
+            string pathToPackage,
+            string apiKey)
+        {
+            if (currentRequest != null)
+            {
+                //this should dispose the content, the file stream underneath, and everything.
+                currentRequest.Dispose();
+            }
+
+            var fileStream = new FileStream(pathToPackage, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var request = new HttpRequestMessage(HttpMethod.Put, GetServiceEndpointUrl(string.Empty));
+            var content = new MultipartFormDataContent();
+
+            var packageContent = new StreamContent(fileStream);
+            packageContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/octet-stream");
+            content.Add(packageContent, "package", "package.nupkg");
+            request.Content = content;
+
+            if (!string.IsNullOrEmpty(apiKey))
+            {
+                request.Headers.Add(ApiKeyHeader, apiKey);
+            }
+            return request;
         }
 
         /// <summary>
@@ -148,17 +176,26 @@ namespace NuGet.Protocol.Core.Types
             ILogger logger,
             CancellationToken token)
         {
-            // Review: Do these values need to be encoded in any way?
-            var url = String.Join("/", packageId, packageVersion);
-            using (var request = new HttpRequestMessage(HttpMethod.Delete, GetServiceEndpointUrl(url)))
-            {
-                if (!string.IsNullOrEmpty(apiKey))
-                {
-                    request.Headers.Add(ApiKeyHeader, apiKey);
-                }
-                var response = await  _httpSource.SendAsync(request, logger, token);
-                response.EnsureSuccessStatusCode();
-            }
+            HttpRequestMessage request = null;
+
+            var response = await _httpSource.SendAsync(
+                ()=> {
+                    if (request != null)
+                    {
+                        request.Dispose();
+                    }
+                    var url = String.Join("/", packageId, packageVersion);
+                    request = new HttpRequestMessage(HttpMethod.Delete, GetServiceEndpointUrl(url));
+                    if (!string.IsNullOrEmpty(apiKey))
+                    {
+                        request.Headers.Add(ApiKeyHeader, apiKey);
+                    }
+                    return request;
+                }, 
+                token);
+
+            request.Dispose();
+            response.EnsureSuccessStatusCode();
         }
 
         /// <summary>

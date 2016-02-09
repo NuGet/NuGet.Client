@@ -20,8 +20,8 @@ namespace NuGet.Protocol.Core.v3
             CancellationToken token)
         {
             HttpSource httpSource = null;
-            string sourceUri = source?.PackageSource?.Source;
-            if (!string.IsNullOrEmpty(sourceUri) && !(new Uri(sourceUri)).IsFile)
+            string sourceUri = source.PackageSource?.Source;
+            if (source.PackageSource.IsHttp)
             {
                 var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
                 httpSource = httpSourceResource.HttpSource;
