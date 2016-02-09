@@ -72,7 +72,7 @@ namespace NuGet.Commands
             Errors = errors.ToArray();
         }
 
-        public static void Log(ILogger logger, IEnumerable<RestoreSummary> restoreSummaries)
+        public static void Log(ILogger logger, IEnumerable<RestoreSummary> restoreSummaries, bool showInformation)
         {
             if (!restoreSummaries.Any())
             {
@@ -98,47 +98,50 @@ namespace NuGet.Commands
                 }
             }
 
-            // Display the information summary
-            var configFiles = restoreSummaries
-                .SelectMany(summary => summary.ConfigFiles)
-                .Distinct();
-
-            if (configFiles.Any())
+            if (showInformation)
             {
-                logger.LogSummary(string.Empty);
-                logger.LogSummary(Strings.Log_ConfigFileSummary);
-                foreach (var configFile in configFiles)
+                // Display the information summary
+                var configFiles = restoreSummaries
+                    .SelectMany(summary => summary.ConfigFiles)
+                    .Distinct();
+
+                if (configFiles.Any())
                 {
-                    logger.LogSummary($"    {configFile}");
+                    logger.LogSummary(string.Empty);
+                    logger.LogSummary(Strings.Log_ConfigFileSummary);
+                    foreach (var configFile in configFiles)
+                    {
+                        logger.LogSummary($"    {configFile}");
+                    }
                 }
-            }
 
-            var feedsUsed = restoreSummaries
-                .SelectMany(summary => summary.FeedsUsed)
-                .Distinct();
+                var feedsUsed = restoreSummaries
+                    .SelectMany(summary => summary.FeedsUsed)
+                    .Distinct();
 
-            if (feedsUsed.Any())
-            {
-                logger.LogSummary(string.Empty);
-                logger.LogSummary(Strings.Log_FeedsUsedSummary);
-                foreach (var feedUsed in feedsUsed)
+                if (feedsUsed.Any())
                 {
-                    logger.LogSummary($"    {feedUsed}");
+                    logger.LogSummary(string.Empty);
+                    logger.LogSummary(Strings.Log_FeedsUsedSummary);
+                    foreach (var feedUsed in feedsUsed)
+                    {
+                        logger.LogSummary($"    {feedUsed}");
+                    }
                 }
-            }
 
-            var installed = restoreSummaries
-                .GroupBy(summary => summary.InputPath, summary => summary.InstallCount)
-                .Select(group => new KeyValuePair<string, int>(group.Key, group.Sum()))
-                .Where(pair => pair.Value > 0);
+                var installed = restoreSummaries
+                    .GroupBy(summary => summary.InputPath, summary => summary.InstallCount)
+                    .Select(group => new KeyValuePair<string, int>(group.Key, group.Sum()))
+                    .Where(pair => pair.Value > 0);
 
-            if (installed.Any())
-            {
-                logger.LogSummary(string.Empty);
-                logger.LogSummary(Strings.Log_InstalledSummary);
-                foreach (var pair in installed)
+                if (installed.Any())
                 {
-                    logger.LogSummary("    " + Strings.FormatLog_InstalledSummaryCount(pair.Value, pair.Key));
+                    logger.LogSummary(string.Empty);
+                    logger.LogSummary(Strings.Log_InstalledSummary);
+                    foreach (var pair in installed)
+                    {
+                        logger.LogSummary("    " + Strings.FormatLog_InstalledSummaryCount(pair.Value, pair.Key));
+                    }
                 }
             }
         }

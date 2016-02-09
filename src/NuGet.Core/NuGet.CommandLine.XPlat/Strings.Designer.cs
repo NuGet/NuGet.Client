@@ -222,7 +222,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Warning, Error..
+        ///    Looks up a localized string similar to The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Minimal, Warning, Error..
         /// </summary>
         internal static string Switch_Verbosity {
             get {

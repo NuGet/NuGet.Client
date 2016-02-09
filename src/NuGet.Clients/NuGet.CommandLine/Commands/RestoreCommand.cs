@@ -160,7 +160,7 @@ namespace NuGet.CommandLine
                 }
             }
 
-            RestoreSummary.Log(Console, restoreSummaries);
+            RestoreSummary.Log(Console, restoreSummaries, Verbosity != Verbosity.Quiet);
 
             if (restoreSummaries.Any(x => !x.Success))
             {
@@ -518,7 +518,7 @@ namespace NuGet.CommandLine
                 else if (File.Exists(Constants.PackageReferenceFile)) // look for packages.config file
                 {
                     var packagesConfigFileFullPath = Path.GetFullPath(Constants.PackageReferenceFile);
-                    if (Verbosity == NuGet.Verbosity.Detailed)
+                    if (Verbosity == Verbosity.Detailed)
                     {
                         Console.WriteLine(
                             LocalizedResourceManager.GetString(

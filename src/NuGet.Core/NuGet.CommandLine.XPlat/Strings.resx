@@ -172,7 +172,7 @@
     <value>Specifies a NuGet package source to use during the restore.</value>
   </data>
   <data name="Switch_Verbosity" xml:space="preserve">
-    <value>The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Warning, Error.</value>
+    <value>The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Minimal, Warning, Error.</value>
     <comment>The allowed values should not be localized as they are Enum variants</comment>
   </data>
 </root>

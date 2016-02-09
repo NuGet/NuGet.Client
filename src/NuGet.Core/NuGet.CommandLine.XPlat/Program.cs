@@ -93,19 +93,21 @@ namespace NuGet.CommandLine.XPlat
                     Strings.Restore_Switch_ConfigFile_Description,
                     CommandOptionType.SingleValue);
 
-                verbosity = restore.Option(VerbosityOption,
+                verbosity = restore.Option(
+                    VerbosityOption,
                     Strings.Switch_Verbosity,
                     CommandOptionType.SingleValue);
 
-                EnsureLog(verbosity);
 
                 var argRoot = restore.Argument(
                     "[root]",
                     Strings.Restore_Arg_ProjectName_Description,
                     multipleValues: true);
 
-                restore.OnExecute((Func<Task<int>>)(async () =>
+                restore.OnExecute(async () =>
                 {
+                    EnsureLog(GetLogLevel(verbosity));
+
                     // Ignore casing on windows
                     var comparer = RuntimeEnvironmentHelper.IsWindows ?
                         StringComparer.OrdinalIgnoreCase
@@ -226,11 +228,11 @@ namespace NuGet.CommandLine.XPlat
                             restoreSummaries.Add(restoreSummary);
                         }
 
-                        RestoreSummary.Log(Log, restoreSummaries);
+                        RestoreSummary.Log(Log, restoreSummaries, GetLogLevel(verbosity) < LogLevel.Minimal);
 
                         return restoreSummaries.All(x => x.Success) ? 0 : 1;
                     }
-                }));
+                });
             }));
 
             app.OnExecute(() =>
@@ -247,7 +249,7 @@ namespace NuGet.CommandLine.XPlat
             }
             catch (Exception e)
             {
-                EnsureLog(verbosity);
+                EnsureLog(GetLogLevel(verbosity));
 
                 // Log the error
                 Log.LogError(ExceptionUtilities.DisplayMessage(e));
@@ -266,7 +268,18 @@ namespace NuGet.CommandLine.XPlat
 
             return exitCode;
         }
-		
+
+        private static LogLevel GetLogLevel(CommandOption verbosity)
+        {
+            LogLevel level;
+            if (!Enum.TryParse(value: verbosity.Value(), ignoreCase: true, result: out level))
+            {
+                level = LogLevel.Information;
+            }
+
+            return level;
+        }
+
         private static void SetUserAgent()
         {
             UserAgent.UserAgentString
@@ -281,13 +294,13 @@ namespace NuGet.CommandLine.XPlat
             return await doneTask;
         }
 
-        private static void EnsureLog(CommandOption verbosity)
+        private static void EnsureLog(LogLevel logLevel)
         {
             // Set up logging.
             // For tests this will already be set.
             if (Log == null)
             {
-                Log = new CommandOutputLogger(verbosity);
+                Log = new CommandOutputLogger(logLevel);
             }
         }
 
@@ -428,7 +441,7 @@ namespace NuGet.CommandLine.XPlat
                 var result = await command.ExecuteAsync();
 
                 // Commit the result
-                logger.LogMinimal(Strings.Log_Committing);
+                logger.LogInformation(Strings.Log_Committing);
                 result.Commit(logger);
 
                 sw.Stop();

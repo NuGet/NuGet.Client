@@ -13,21 +13,11 @@ namespace NuGet.CommandLine.XPlat
     internal class CommandOutputLogger : ILogger
     {
         private static readonly bool _useConsoleColor = true;
-        private Lazy<LogLevel> _verbosity;
+        private readonly LogLevel _logLevel;
 
-        private LogLevel Verbosity { get { return _verbosity.Value; } }
-
-        internal CommandOutputLogger(CommandOption verbosity)
+        internal CommandOutputLogger(LogLevel logLevel)
         {
-            _verbosity = new Lazy<LogLevel>(() =>
-            {
-                LogLevel level;
-                if (!Enum.TryParse(value: verbosity.Value(), ignoreCase: true, result: out level))
-                {
-                    level = LogLevel.Information;
-                }
-                return level;
-            });
+            _logLevel = logLevel;
         }
 
         public void LogDebug(string data)
@@ -67,7 +57,7 @@ namespace NuGet.CommandLine.XPlat
 
         private void LogInternal(LogLevel logLevel, string message)
         {
-            if (logLevel < Verbosity)
+            if (logLevel < _logLevel)
             {
                 return;
             }
