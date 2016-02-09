@@ -940,6 +940,52 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public async Task IncludeType_ProjectToProjectReferenceWithBuildTypeDependencyApplied()
+        {
+            // Restore Project1
+            // Project2 has only build dependencies
+            // Project1 -> Project2 -(suppress: all)-> packageX -> packageY -> packageB
+
+            // Arrange
+            var logger = new TestLogger();
+            var framework = "net46";
+
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var configJson2 = @"{
+                    ""dependencies"": {
+                        ""packageX"": {
+                            ""version"": ""1.0.0"",
+                            ""type"": ""build""
+                        }
+                    },
+                    ""frameworks"": {
+                    ""net46"": {}
+                    }
+                }";
+
+                var configJson1 = @"{
+                    ""dependencies"": {
+                    },
+                    ""frameworks"": {
+                    ""net46"": {}
+                    }
+                }";
+
+                var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
+
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+                // Assert
+                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+                Assert.Equal(0, logger.Errors);
+                Assert.Equal(0, logger.Warnings);
+                Assert.Equal(0, target.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
+                Assert.Equal(0, result.LockFile.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
+            }
+        }
+
+        [Fact]
         public async Task IncludeType_ProjectIncludesOnlyCompile()
         {
             // Arrange
