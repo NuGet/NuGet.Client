@@ -243,7 +243,7 @@ namespace NuGet.PackageManagement
                     return true;
                 }
 
-                if (item.Value.ProjectConfigLastModified?.Equals(projectInfo.ProjectConfigLastModified) == true)
+                if (item.Value.ProjectConfigLastModified?.Equals(projectInfo.ProjectConfigLastModified) != true)
                 {
                     // project.json has been modified
                     return true;

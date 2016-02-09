@@ -628,6 +628,7 @@ namespace NuGet.Test
                 };
 
                 File.WriteAllText(randomConfig, configJson.ToString());
+                Thread.Sleep(2000);
                 File.WriteAllText(randomConfig2, configJson.ToString());
 
                 var projectTargetFramework = NuGetFramework.Parse("netcore50");
