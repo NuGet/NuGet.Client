@@ -226,6 +226,14 @@ namespace NuGet.ProjectModel
                         if (TryGetStringEnumerable(dependencyValue["type"], out strings))
                         {
                             dependencyTypeValue = LibraryDependencyType.Parse(strings);
+
+                            // Types are used at pack time, they should be translated to suppressParent to 
+                            // provide a matching effect for project to project references.
+                            // This should be set before suppressParent is checked.
+                            if (!dependencyTypeValue.Contains(LibraryDependencyTypeFlag.BecomesNupkgDependency))
+                            {
+                                suppressParentFlagsValue = LibraryIncludeFlags.All;
+                            }
                         }
 
                         if (TryGetStringEnumerable(dependencyValue["include"], out strings))
@@ -240,6 +248,7 @@ namespace NuGet.ProjectModel
 
                         if (TryGetStringEnumerable(dependencyValue["suppressParent"], out strings))
                         {
+                            // This overrides any settings that came from the type property.
                             suppressParentFlagsValue = LibraryIncludeFlagUtils.GetFlags(strings);
                         }
 
