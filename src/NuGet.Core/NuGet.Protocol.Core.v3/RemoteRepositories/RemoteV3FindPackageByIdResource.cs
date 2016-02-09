@@ -174,12 +174,16 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 }
                 catch (Exception ex) when (retry < 2)
                 {
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToDownloadPackage, package.ContentUri) + Environment.NewLine + ex.Message;
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToDownloadPackage, package.ContentUri)
+                        + Environment.NewLine
+                        + ExceptionUtilities.DisplayMessage(ex);
                     Logger.LogMinimal(message);
                 }
                 catch (Exception ex) when (retry == 2)
                 {
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToDownloadPackage, package.ContentUri) + Environment.NewLine + ex.Message;
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToDownloadPackage, package.ContentUri)
+                        + Environment.NewLine
+                        + ExceptionUtilities.DisplayMessage(ex);
                     Logger.LogError(message);
                 }
             }

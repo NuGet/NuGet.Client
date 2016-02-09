@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
@@ -77,16 +78,17 @@ namespace NuGet.Protocol.Core.v2
                     }
                     catch (IOException ex) when (ex.InnerException is SocketException && i < 2)
                     {
-                        string message = string.Format(Strings.Warning_ErrorDownloading,
-                            identity,
-                            displayUri,
-                            ExceptionUtilities.DisplayMessage(ex));
-
+                        string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorDownloading, identity, displayUri)
+                            + Environment.NewLine
+                            + ExceptionUtilities.DisplayMessage(ex);
                         logger.LogWarning(message);
                     }
                     catch (Exception ex)
                     {
-                        throw new FatalProtocolException(ex);
+                        string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorDownloading, identity, displayUri);
+                        logger.LogError(message + Environment.NewLine + ExceptionUtilities.DisplayMessage(ex));
+
+                        throw new FatalProtocolException(message, ex);
                     }
                 }
 
@@ -255,8 +257,7 @@ namespace NuGet.Protocol.Core.v2
                 try
                 {
                     repository.PackageDownloader.ProgressAvailable += progressHandler;
-
-                    logger.LogVerbose($"  GET: {downloadUri}");
+                    
                     repository.PackageDownloader.DownloadPackage(downloadClient, packageName, stream);
                 }
                 catch (Exception ex) when (ex is OperationCanceledException ||

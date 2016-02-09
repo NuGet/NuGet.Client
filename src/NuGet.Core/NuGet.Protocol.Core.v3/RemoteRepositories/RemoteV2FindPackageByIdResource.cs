@@ -35,7 +35,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         private readonly HttpSource _httpSource;
         private readonly Dictionary<string, Task<IEnumerable<PackageInfo>>> _packageVersionsCache = new Dictionary<string, Task<IEnumerable<PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Task<NupkgEntry>> _nupkgCache = new Dictionary<string, Task<NupkgEntry>>(StringComparer.OrdinalIgnoreCase);
-        private bool _ignored;
 
         public RemoteV2FindPackageByIdResource(PackageSource packageSource, HttpSource httpSource)
         {
@@ -55,8 +54,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 base.Logger = value;
             }
         }
-
-        public bool IgnoreFailure { get; set; }
 
         public override async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken cancellationToken)
         {
@@ -114,14 +111,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         {
             for (var retry = 0; retry != 3; ++retry)
             {
-                if (_ignored)
-                {
-                    return new List<PackageInfo>();
-                }
+                var uri = _baseUri + "FindPackagesById()?id='" + id + "'";
 
                 try
                 {
-                    var uri = _baseUri + "FindPackagesById()?id='" + id + "'";
                     var results = new List<PackageInfo>();
                     var page = 1;
                     while (true)
@@ -180,25 +173,21 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 }
                 catch (Exception ex) when (retry < 2)
                 {
-                    Logger.LogMinimal(string.Format("Warning: FindPackagesById: {1}\r\n  {0}", ex.Message, id));
+                    string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingFindPackagesById, nameof(FindPackagesByIdAsyncCore), uri)
+                        + Environment.NewLine
+                        + ExceptionUtilities.DisplayMessage(ex);
+                    Logger.LogMinimal(message);
                 }
                 catch (Exception ex) when (retry == 2)
                 {
                     // Fail silently by returning empty result list
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, _baseUri);
-
-                    if (IgnoreFailure)
-                    {
-                        _ignored = true;
-                        Logger.LogWarning(message);
-                        return Enumerable.Empty<PackageInfo>();
-                    }
-
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, uri);
                     Logger.LogError(message + Environment.NewLine + ex.Message);
 
                     throw new FatalProtocolException(message, ex);
                 }
             }
+
             return null;
         }
 
@@ -264,23 +253,28 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         };
                     }
                 }
-                catch (TaskCanceledException ex) when (retry < 2)
+                catch (TaskCanceledException) when (retry < 2)
                 {
                     // Requests can get cancelled if we got the data from elsewhere, no reason to warn.
-                    Logger.LogMinimal(string.Format("Warning: DownloadPackageAsync: {1}\r\n  {0}", ex.Message, package.ContentUri));
+                    string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_CanceledNupkgDownload, package.ContentUri);
+                    Logger.LogMinimal(message);
                 }
                 catch (Exception ex)
                 {
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToDownloadPackage, package.ContentUri)
+                        + Environment.NewLine
+                        + ExceptionUtilities.DisplayMessage(ex);
                     if (retry == 2)
                     {
-                        Logger.LogError(string.Format("Error: DownloadPackageAsync: {1}\r\n  {0}", ex.Message, package.ContentUri));
+                        Logger.LogError(message);
                     }
                     else
                     {
-                        Logger.LogMinimal(string.Format("Warning: DownloadPackageAsync: {1}\r\n  {0}", ex.Message, package.ContentUri));
+                        Logger.LogMinimal(message);
                     }
                 }
             }
+
             return null;
         }
 

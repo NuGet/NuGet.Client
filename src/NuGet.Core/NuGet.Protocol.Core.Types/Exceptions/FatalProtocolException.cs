@@ -8,11 +8,6 @@ namespace NuGet.Protocol.Core.Types
 {
     public class FatalProtocolException : NuGetProtocolException
     {
-        public FatalProtocolException(Exception innerException) :
-            base(ExceptionUtilities.DisplayMessage(innerException), innerException)
-        {
-        }
-
         public FatalProtocolException(string message) : base(message)
         {
         }

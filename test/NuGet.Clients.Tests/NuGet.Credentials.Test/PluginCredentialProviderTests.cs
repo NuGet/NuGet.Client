@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using Moq;
 using Xunit;
 
@@ -25,7 +26,7 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public async void WhenProxyRequest_ReturnNull()
+        public async Task WhenProxyRequest_ReturnNull()
         {
             var provider = _mockProvider;
             var uri = new Uri("http://host/");
@@ -44,7 +45,7 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public async void CreatesExpectedCredentialRequest()
+        public async Task CreatesExpectedCredentialRequest()
         {
             var provider = _mockProvider;
             var uri = new Uri("http://host/");
@@ -63,7 +64,7 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public async void WhenResponseContainsAbort_ThenThrow()
+        public async Task WhenResponseContainsAbort_ThenThrow()
         {
             var provider = _mockProvider;
             var uri = new Uri("http://host/");
@@ -82,7 +83,7 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public async void WhenResponseContainsAbortAndAbortMessage_ThenThrow()
+        public async Task WhenResponseContainsAbortAndAbortMessage_ThenThrow()
         {
             var provider = _mockProvider;
             var uri = new Uri("http://host/");
@@ -102,7 +103,7 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public async void WhenResponseContainsUsername_ReturnCredential()
+        public async Task WhenResponseContainsUsername_ReturnCredential()
         {
             var provider = _mockProvider;
             var uri = new Uri("http://host/");
@@ -121,7 +122,7 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public async void WhenResponseContainsPassword_ReturnCredential()
+        public async Task WhenResponseContainsPassword_ReturnCredential()
         {
             var provider = _mockProvider;
             var uri = new Uri("http://host/");

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Net.Sockets;
@@ -151,8 +152,6 @@ namespace NuGet.Protocol.Core.v3
                 return packageFromGlobalPackages;
             }
 
-            logger.LogVerbose($"  GET: {uri}");
-
             for (int i = 0; i < 3; i++)
             {
                 try
@@ -170,13 +169,17 @@ namespace NuGet.Protocol.Core.v3
                 }
                 catch (IOException ex) when (ex.InnerException is SocketException && i < 2)
                 {
-                    string message = $"Error downloading {identity} from {uri} {ExceptionUtilities.DisplayMessage(ex)}";
-
+                    string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorDownloading, identity, uri)
+                        + Environment.NewLine
+                        + ExceptionUtilities.DisplayMessage(ex);
                     logger.LogWarning(message);
                 }
                 catch (Exception ex)
                 {
-                    throw new FatalProtocolException(ex);
+                    string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorDownloading, identity, uri);
+                    logger.LogError(message + Environment.NewLine + ExceptionUtilities.DisplayMessage(ex));
+
+                    throw new FatalProtocolException(message, ex);
                 }
             }
 

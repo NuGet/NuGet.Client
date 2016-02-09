@@ -21,7 +21,60 @@ namespace NuGet.Commands.Test
         private readonly int DefaultTimeOut = (int)TimeSpan.FromMinutes(5).TotalMilliseconds;
 
         [Fact]
-        public async void ConcurrencyUtilityBlocksInProc()
+        public async Task ConcurrencyUtilities_WaitAcquiresLock()
+        {
+            // Arrange
+            string fileId = Guid.NewGuid().ToString();
+
+            var ctsA = new CancellationTokenSource(DefaultTimeOut);
+            var ctsB = new CancellationTokenSource(TimeSpan.Zero);
+            var expected = 3;
+
+            // Act
+            var actual = await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
+                fileId,
+                async tA =>
+                {
+                    try
+                    {
+                        await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
+                            fileId,
+                            tB => Task.FromResult(0),
+                            ctsB.Token);
+                        Assert.False(true, "Waiting with a timeout for a lock that has not been released should fail.");
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
+
+                    return expected;
+                },
+                ctsA.Token);
+
+            // Assert
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public async Task ConcurrencyUtilities_ZeroTimeoutStillGetsLock()
+        {
+            // Arrange
+            string fileId = Guid.NewGuid().ToString();
+            var cts = new CancellationTokenSource(TimeSpan.Zero);
+            var expected = 3;
+
+            // Act
+            var actual = await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
+                fileId,
+                token => Task.FromResult(expected),
+                cts.Token);
+
+            // Assert
+            Assert.Equal(actual, expected);
+        }
+
+        [Fact]
+        public async Task ConcurrencyUtilityBlocksInProc()
         {
             // Arrange
             string fileId = nameof(ConcurrencyUtilityBlocksInProc);
@@ -67,7 +120,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async void ConcurrencyUtilityBlocksOutOfProc()
+        public async Task ConcurrencyUtilityBlocksOutOfProc()
         {
             // Arrange
             string fileId = Guid.NewGuid().ToString();
@@ -129,7 +182,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async void ConcurrencyUtilityDoesntBlocksInProc()
+        public async Task ConcurrencyUtilityDoesntBlocksInProc()
         {
             // Arrange
             string fileId = nameof(ConcurrencyUtilityDoesntBlocksInProc);
@@ -177,7 +230,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async void CrashingCommand()
+        public async Task CrashingCommand()
         {
             // Arrange
 

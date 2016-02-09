@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Text;
 
@@ -19,6 +21,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(exception));
             }
 
+            // use overloads
             var aggregate = exception as AggregateException;
 
             if (aggregate != null)
@@ -26,14 +29,15 @@ namespace NuGet.Common
                 return DisplayMessage(aggregate);
             }
 
-            var target = exception as TargetInvocationException;
+            var targetInvocation = exception as TargetInvocationException;
 
-            if (target != null)
+            if (targetInvocation != null)
             {
-                return DisplayMessage(target);
+                return DisplayMessage(targetInvocation);
             }
 
-            return exception.Message;
+            // fall back to simply exploring all inner exceptions
+            return JoinMessages(GetMessages(exception));
         }
 
         public static string DisplayMessage(AggregateException exception)
@@ -43,26 +47,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(exception));
             }
 
-            var inners = exception.Flatten().InnerExceptions;
-
-            switch (inners?.Count)
-            {
-                case null:
-                case 0:
-                    return exception.Message;
-                case 1:
-                    return DisplayMessage(inners[0]);
-                default:
-                    var builder = new StringBuilder();
-                    builder.AppendLine(exception.Message);
-                    foreach (var inner in inners)
-                    {
-                        builder.Append("  ");
-                        builder.AppendLine(DisplayMessage(inner));
-                    }
-
-                    return builder.ToString();
-            }
+            return JoinMessages(GetMessages(exception));
         }
 
         public static string DisplayMessage(TargetInvocationException exception)
@@ -72,14 +57,92 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(exception));
             }
 
+            return JoinMessages(GetMessages(exception));
+        }
+
+        private static IEnumerable<string> GetMessages(AggregateException exception)
+        {
+            // try to avoid using the AggregateException message
+            var inners = exception.Flatten().InnerExceptions;
+
+            switch (inners?.Count)
+            {
+                case null:
+                case 0:
+                    yield return exception.Message;
+
+                    break;
+
+                default:
+                    foreach (var inner in inners)
+                    {
+                        foreach (var message in GetMessages(inner))
+                        {
+                            yield return message;
+                        }
+                    }
+
+                    break;
+            }
+        }
+
+        private static IEnumerable<string> GetMessages(TargetInvocationException exception)
+        {
+            // try to avoid using the TargetInvocationException message
             if (exception.InnerException != null)
             {
-                return DisplayMessage(exception.InnerException);
+                return GetMessages(exception.InnerException);
             }
-            else
+
+            return new[] { exception.Message };
+        }
+
+        private static IEnumerable<string> GetMessages(Exception exception)
+        {
+            Exception current = exception;
+            while (current != null)
             {
-                return exception.Message;
+                if (current.Message != null)
+                {
+                    yield return current.Message;
+                }
+
+                current = current.InnerException;
             }
+        }
+
+        private static IEnumerable<string> GetLines(string input)
+        {
+            using (var reader = new StringReader(input))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    yield return line;
+                }
+            }
+        }
+
+        private static string JoinMessages(IEnumerable<string> messages)
+        {
+            var builder = new StringBuilder();
+            foreach (var message in messages)
+            {
+                // indent all but the first message
+                bool indent = builder.Length > 0;
+
+                foreach (var line in GetLines(message))
+                {
+                    if (indent)
+                    {
+                        builder.Append("  ");
+                    }
+
+                    builder.AppendLine(line);
+                }
+            }
+
+            return builder.ToString().TrimEnd();
         }
     }
 }

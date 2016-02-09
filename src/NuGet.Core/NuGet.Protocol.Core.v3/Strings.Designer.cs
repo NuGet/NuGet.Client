@@ -114,7 +114,7 @@ namespace NuGet.Protocol.Core.v3 {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to The HTTP request to &apos;{0} {1}&apos; has timed out..
+        ///    Looks up a localized string similar to The HTTP request to &apos;{0} {1}&apos; has timed out after {2}{3}..
         /// </summary>
         internal static string Http_Timeout {
             get {
@@ -128,6 +128,24 @@ namespace NuGet.Protocol.Core.v3 {
         internal static string InvalidVersionFolder {
             get {
                 return ResourceManager.GetString("InvalidVersionFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Downloading a package from &apos;{0}&apos; was canceled..
+        /// </summary>
+        internal static string Log_CanceledNupkgDownload {
+            get {
+                return ResourceManager.GetString("Log_CanceledNupkgDownload", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Error downloading &apos;{0}&apos; from &apos;{1}&apos;..
+        /// </summary>
+        internal static string Log_ErrorDownloading {
+            get {
+                return ResourceManager.GetString("Log_ErrorDownloading", resourceCulture);
             }
         }
         

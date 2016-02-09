@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
+using System.Text;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Logging;
 
@@ -91,7 +93,33 @@ namespace NuGet.CommandLine.XPlat
             {
                 caption = logLevel.ToString().ToLowerInvariant();
             }
-            Console.WriteLine($"{caption}: {message}");
+
+            if (message.IndexOf('\n') >= 0)
+            {
+                Console.Write(PrefixAllLines(caption, message));
+            }
+            else
+            {
+                Console.WriteLine($"{caption}: {message}");
+            }
+        }
+
+        private static string PrefixAllLines(string caption, string message)
+        {
+            // handle messages with multiple lines
+            var builder = new StringBuilder();
+            using (var reader = new StringReader(message))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    builder.Append(caption);
+                    builder.Append(": ");
+                    builder.AppendLine(line);
+                }
+            }
+
+            return builder.ToString();
         }
     }
 }

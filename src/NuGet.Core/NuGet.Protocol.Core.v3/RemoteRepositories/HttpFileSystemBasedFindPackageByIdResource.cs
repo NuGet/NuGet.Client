@@ -167,14 +167,16 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 }
                 catch (Exception ex) when (retry < 2)
                 {
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingFindPackagesById, nameof(FindPackagesByIdAsync), uri) + Environment.NewLine + ex.Message;
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingFindPackagesById, nameof(FindPackagesByIdAsync), uri)
+                        + Environment.NewLine
+                        + ExceptionUtilities.DisplayMessage(ex);
                     Logger.LogMinimal(message);
                 }
                 catch (Exception ex) when (retry == 2)
                 {
                     // Fail silently by returning empty result list
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, uri) + Environment.NewLine + ex.Message;
-                    Logger.LogError(message);
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, uri);
+                    Logger.LogError(message + Environment.NewLine + ExceptionUtilities.DisplayMessage(ex));
 
                     throw new FatalProtocolException(message, ex);
                 }
@@ -250,12 +252,16 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 }
                 catch (Exception ex) when (retry < 2)
                 {
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToDownloadPackage, package.ContentUri) + Environment.NewLine + ex.Message;
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToDownloadPackage, package.ContentUri)
+                        + Environment.NewLine
+                        + ExceptionUtilities.DisplayMessage(ex); 
                     Logger.LogMinimal(message);
                 }
                 catch (Exception ex) when (retry == 2)
                 {
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToDownloadPackage, package.ContentUri) + Environment.NewLine + ex.Message;
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToDownloadPackage, package.ContentUri)
+                        + Environment.NewLine
+                        + ExceptionUtilities.DisplayMessage(ex);
                     Logger.LogError(message);
                 }
             }

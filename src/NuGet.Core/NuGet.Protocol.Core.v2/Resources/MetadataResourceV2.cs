@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -76,7 +77,8 @@ namespace NuGet.Protocol.Core.v2
             }
             catch (Exception ex)
             {
-                throw new FatalProtocolException(string.Format(Strings.Protocol_PackageMetadataError,
+                throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Protocol_PackageMetadataError,
                     packageId,
                     V2Client.Source),
                     ex);

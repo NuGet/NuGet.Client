@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Protocol.Core.v3;
 
 namespace NuGet.Protocol
@@ -93,7 +94,13 @@ namespace NuGet.Protocol
 
                             if (tries >= MaxTries)
                             {
-                                var message = string.Format(CultureInfo.CurrentCulture, Strings.Http_Timeout, request.Method, request.RequestUri);
+                                var message = string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.Http_Timeout,
+                                    request.Method,
+                                    request.RequestUri,
+                                    (int) RequestTimeout.TotalMilliseconds,
+                                    Strings.Milliseconds);
                                 throw new TimeoutException(message);
                             }
                         }

@@ -136,10 +136,16 @@
     <value>No download URL could be found for {0}.</value>
   </data>
   <data name="Http_Timeout" xml:space="preserve">
-    <value>The HTTP request to '{0} {1}' has timed out.</value>
+    <value>The HTTP request to '{0} {1}' has timed out after {2}{3}.</value>
   </data>
   <data name="InvalidVersionFolder" xml:space="preserve">
     <value>The folder '{0}' contains an invalid version.</value>
+  </data>
+  <data name="Log_CanceledNupkgDownload" xml:space="preserve">
+    <value>Downloading a package from '{0}' was canceled.</value>
+  </data>
+  <data name="Log_ErrorDownloading" xml:space="preserve">
+    <value>Error downloading '{0}' from '{1}'.</value>
   </data>
   <data name="Log_FailedToDownloadPackage" xml:space="preserve">
     <value>Failed to download package from '{0}'.</value>

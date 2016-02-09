@@ -4,7 +4,8 @@
     "NuGet.Protocol.Test.Utility": "1.0.0-*",
     "xunit": "2.1.0",
     "xunit.runner.dnx": "2.1.0-rc1-build204",
-    "NuGet.Test.Utility": "3.4.0-*"
+    "NuGet.Test.Utility": "3.4.0-*",
+    "NuGet.Test.Server": "3.4.0-*"
   },
   "commands": {
     "test": "xunit.runner.dnx"
@@ -14,7 +15,8 @@
     "dnxcore50": {
       "imports": [ "portable-net45+win8" ],
       "dependencies": {
-        "System.Collections": "4.0.10-beta-23109"
+        "System.Collections": "4.0.10-beta-23109",
+        "System.Net.Requests": "4.0.11-beta-23516"
       }
     }
   }
