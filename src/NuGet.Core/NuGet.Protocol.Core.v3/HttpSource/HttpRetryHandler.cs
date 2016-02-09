@@ -63,66 +63,68 @@ namespace NuGet.Protocol
 
                 tries++;
                 success = true;
-                var request = requestFactory();
 
-                try
+                using (var request = requestFactory())
                 {
-                    /*
-                     * Implement timeout. Two operations are started and run in parallel:
-                     *
-                     *   1) The HTTP request sent in by the caller is sent to HttpClient.
-                     *   2) A timer that fires after the duration of the timeout.
-                     *
-                     * If the timeout occurs first, the HTTP request should be cancelled. If the 
-                     * HTTP request completes before the timeout, the timeout should be cancelled.
-                     * If the timeout occurs first, consider this request a failure and, if all
-                     * retries are exhausted, throw a timeout exception to be clear to the user
-                     * what happened. If the request completes first, it could be that the response
-                     * came back or that the caller cancelled the request.
-                     */
-                    using (var timeoutTcs = new CancellationTokenSource())
-                    using (var responseTcs = new CancellationTokenSource())
-                    using (cancellationToken.Register(() => responseTcs.Cancel()))
+                    try
                     {
-                        var timeoutTask = Task.Delay(RequestTimeout, timeoutTcs.Token);
-                        var responseTask = client.SendAsync(request, completionOption, responseTcs.Token);
-
-                        if (timeoutTask == await Task.WhenAny(responseTask, timeoutTask))
+                        /*
+                         * Implement timeout. Two operations are started and run in parallel:
+                         *
+                         *   1) The HTTP request sent in by the caller is sent to HttpClient.
+                         *   2) A timer that fires after the duration of the timeout.
+                         *
+                         * If the timeout occurs first, the HTTP request should be cancelled. If the 
+                         * HTTP request completes before the timeout, the timeout should be cancelled.
+                         * If the timeout occurs first, consider this request a failure and, if all
+                         * retries are exhausted, throw a timeout exception to be clear to the user
+                         * what happened. If the request completes first, it could be that the response
+                         * came back or that the caller cancelled the request.
+                         */
+                        using (var timeoutTcs = new CancellationTokenSource())
+                        using (var responseTcs = new CancellationTokenSource())
+                        using (cancellationToken.Register(() => responseTcs.Cancel()))
                         {
-                            responseTcs.Cancel();
-                            success = false;
+                            var timeoutTask = Task.Delay(RequestTimeout, timeoutTcs.Token);
+                            var responseTask = client.SendAsync(request, completionOption, responseTcs.Token);
 
-                            if (tries >= MaxTries)
+                            if (timeoutTask == await Task.WhenAny(responseTask, timeoutTask))
                             {
-                                var message = string.Format(
-                                    CultureInfo.CurrentCulture,
-                                    Strings.Http_Timeout,
-                                    request.Method,
-                                    request.RequestUri,
-                                    (int) RequestTimeout.TotalMilliseconds,
-                                    Strings.Milliseconds);
-                                throw new TimeoutException(message);
-                            }
-                        }
-                        else
-                        {
-                            timeoutTcs.Cancel();
-                            response = await responseTask;
-
-                            if ((int)response.StatusCode >= 500)
-                            {
+                                responseTcs.Cancel();
                                 success = false;
+
+                                if (tries >= MaxTries)
+                                {
+                                    var message = string.Format(
+                                        CultureInfo.CurrentCulture,
+                                        Strings.Http_Timeout,
+                                        request.Method,
+                                        request.RequestUri,
+                                        (int)RequestTimeout.TotalMilliseconds,
+                                        Strings.Milliseconds);
+                                    throw new TimeoutException(message);
+                                }
+                            }
+                            else
+                            {
+                                timeoutTcs.Cancel();
+                                response = await responseTask;
+
+                                if ((int)response.StatusCode >= 500)
+                                {
+                                    success = false;
+                                }
                             }
                         }
                     }
-                }
-                catch
-                {
-                    success = false;
-
-                    if (tries >= MaxTries)
+                    catch
                     {
-                        throw;
+                        success = false;
+
+                        if (tries >= MaxTries)
+                        {
+                            throw;
+                        }
                     }
                 }
             }

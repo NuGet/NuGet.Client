@@ -17,7 +17,9 @@ namespace NuGet.Configuration
         public static readonly string ReadmeFileName = "readme.txt";
         public static readonly string NuGetSolutionSettingsFolder = ".nuget";
 
-        
+        public static readonly string PackageExtension = ".nupkg";
+        public static readonly string SymbolsExtension = ".symbols" + PackageExtension;
+
         public static readonly string FeedName = "nuget.org";
 
         public static readonly string DefaultConfigContent = @"<?xml version=""1.0"" encoding=""utf-8""?>

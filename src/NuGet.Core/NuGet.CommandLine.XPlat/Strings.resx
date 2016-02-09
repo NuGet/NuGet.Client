@@ -117,8 +117,26 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ApiKey_Description" xml:space="preserve">
+    <value>The API key for the server.</value>
+  </data>
   <data name="App_FullName" xml:space="preserve">
     <value>NuGet Command Line</value>
+  </data>
+  <data name="ConsoleConfirmMessage" xml:space="preserve">
+    <value>{0} (y/N) </value>
+  </data>
+  <data name="ConsoleConfirmMessageAccept" xml:space="preserve">
+    <value>y</value>
+  </data>
+  <data name="Delete_Description" xml:space="preserve">
+    <value>Deletes a package from the server.</value>
+  </data>
+  <data name="Delete_MissingArguments" xml:space="preserve">
+    <value>Please provide arguments for package id and package version.</value>
+  </data>
+  <data name="Delete_PackageIdAndVersion_Description" xml:space="preserve">
+    <value>The Package Id and version.</value>
   </data>
   <data name="Log_Committing" xml:space="preserve">
     <value>Committing restore...</value>
@@ -147,6 +165,24 @@
   <data name="Log_UsingPackagesDirectory" xml:space="preserve">
     <value>Using packages directory: {0}.</value>
   </data>
+  <data name="NoApiKeyFound" xml:space="preserve">
+    <value>No API Key was provided and no API Key could be found for {0}. To save an API Key for a source use the 'setApiKey' command.</value>
+  </data>
+  <data name="NonInteractive_Description" xml:space="preserve">
+    <value>Do not prompt for user input or confirmations.</value>
+  </data>
+  <data name="Push_Description" xml:space="preserve">
+    <value>Pushes a package to the server and publishes it.</value>
+  </data>
+  <data name="Push_MissingArguments" xml:space="preserve">
+    <value>Please specify the path to the package.</value>
+  </data>
+  <data name="Push_Package_ApiKey_Description" xml:space="preserve">
+    <value>Specify the path to the package and your API key to push the package to the server.</value>
+  </data>
+  <data name="Push_Timeout_Description" xml:space="preserve">
+    <value>Specifies the timeout for pushing to a server in seconds. Defaults to 300 seconds (5 minutes).</value>
+  </data>
   <data name="Restore_Arg_ProjectName_Description" xml:space="preserve">
     <value>List of projects and project folders to restore. Each value can be: a path to a project.json or global.json file, or a folder to recursively search for project.json files.</value>
   </data>
@@ -171,8 +207,17 @@
   <data name="Restore_Switch_Source_Description" xml:space="preserve">
     <value>Specifies a NuGet package source to use during the restore.</value>
   </data>
+  <data name="Source_Description" xml:space="preserve">
+    <value>Specifies the server URL</value>
+  </data>
   <data name="Switch_Verbosity" xml:space="preserve">
     <value>The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Minimal, Warning, Error.</value>
     <comment>The allowed values should not be localized as they are Enum variants</comment>
+  </data>
+  <data name="Error_MissingSourceParameter" xml:space="preserve">
+    <value>Source parameter was not specified.</value>
+  </data>
+  <data name="Push_InvalidTimeout" xml:space="preserve">
+    <value>Invalid timeout parameter value.</value>
   </data>
 </root>

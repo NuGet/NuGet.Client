@@ -1097,7 +1097,7 @@ namespace NuGet.CommandLine.Test
                             "push",
                             packageFileName,
                             "-Source",
-                            serverV3.Uri + "index.json"
+                            serverV3.Uri + "index.json" 
                     };
 
                     var result = CommandRunner.Run(
@@ -1109,15 +1109,15 @@ namespace NuGet.CommandLine.Test
                     serverV3.Stop();
 
                     // Assert
-                    Assert.True(result.Item1 == 0, result.Item2 + " " + result.Item3);
+                    Assert.True(result.Item1 == 1, result.Item2 + " " + result.Item3);
 
                     var expectedOutput =
                         string.Format(
-                      "WARNING: This version of nuget.exe does not support pushing packages to package source '{0}'.",
+                      "ERROR: This version of nuget.exe does not support updating packages to package source '{0}'.",
                       serverV3.Uri + "index.json");
 
                     // Verify that the output contains the expected output
-                    Assert.True(result.Item2.Contains(expectedOutput));
+                    Assert.True(result.Item3.Contains(expectedOutput));
                 }
             }
         }
@@ -1388,7 +1388,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void PushCommand_DefaultPushSource()
+        public void PushCommand_FailWhenNoSourceSpecified()
         {
             Util.ClearWebCache();
             var nugetexe = Util.GetNuGetExePath();
@@ -1399,66 +1399,24 @@ namespace NuGet.CommandLine.Test
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", randomDirectory);
                 string outputFileName = Path.Combine(randomDirectory, "t1.nupkg");
 
-                // Server setup
-                using (var serverV2 = new MockServer())
+                // Act
+                string[] args = new string[]
                 {
-                    serverV2.Get.Add("/push", r => "OK");
-                    serverV2.Put.Add("/push", r =>
-                    {
-                        byte[] buffer = MockServer.GetPushedPackage(r);
-                        using (var of = new FileStream(outputFileName, FileMode.Create))
-                        {
-                            of.Write(buffer, 0, buffer.Length);
-                        }
+                        "push",
+                        packageFileName,
+                        "-ApiKey",
+                        "blah-blah"
+                };
 
-                        return HttpStatusCode.Created;
-                    });
+                var result = CommandRunner.Run(
+                                nugetexe,
+                                Directory.GetCurrentDirectory(),
+                                string.Join(" ", args),
+                                true);
 
-                    serverV2.Start();
-
-                    var config = string.Format(@"<?xml version='1.0' encoding='utf-8'?>
-                                                    <configuration>
-                                                      <packageSources>
-                                                        <add key='nuget.org' value='{0}' />
-                                                      </packageSources>
-                                                      <packageRestore>
-                                                        <add key='enabled' value='True' />
-                                                        <add key='automatic' value='True' />
-                                                      </packageRestore>
-                                                      <config>
-                                                        <add key='DefaultPushSource' value='{1}' />
-                                                      </config>
-                                                    </configuration>",
-                                                serverV2.Uri + "push",
-                                                serverV2.Uri + "push");
-
-                    string configFileName = Path.Combine(randomDirectory, "nuget.config");
-                    File.WriteAllText(configFileName, config);
-
-                    // Act
-                    string[] args = new string[]
-                    {
-                            "push",
-                            packageFileName,
-                            "-ConfigFile",
-                            configFileName,
-                            "-ApiKey",
-                            "blah-blah"
-                    };
-
-                    var result = CommandRunner.Run(
-                                    nugetexe,
-                                    Directory.GetCurrentDirectory(),
-                                    string.Join(" ", args),
-                                    true);
-                    serverV2.Stop();
-
-                    // Assert
-                    Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
-                    var output = result.Item2;
-                    Assert.Contains("Your package was pushed.", output);
-                    AssertFileEqual(packageFileName, outputFileName);
-                }
+                // Assert
+                Assert.True(1 == result.Item1, result.Item2 + " " + result.Item3);
+                Assert.Contains("Source parameter was not specified", result.Item3);
             }
         }
 

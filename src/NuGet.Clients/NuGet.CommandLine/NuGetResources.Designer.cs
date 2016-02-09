@@ -1861,15 +1861,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Delete canceled.
-        /// </summary>
-        public static string DeleteCommandCanceled {
-            get {
-                return ResourceManager.GetString("DeleteCommandCanceled", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to 已取消删除.
         /// </summary>
         public static string DeleteCommandCanceled_chs {
@@ -1983,15 +1974,6 @@ namespace NuGet.CommandLine {
         public static string DeleteCommandCanceled_trk {
             get {
                 return ResourceManager.GetString("DeleteCommandCanceled_trk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} {1} will be deleted from the {2}. Would you like to continue?.
-        /// </summary>
-        public static string DeleteCommandConfirm {
-            get {
-                return ResourceManager.GetString("DeleteCommandConfirm", resourceCulture);
             }
         }
         
@@ -2113,15 +2095,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} {1} was deleted successfully..
-        /// </summary>
-        public static string DeleteCommandDeletedPackage {
-            get {
-                return ResourceManager.GetString("DeleteCommandDeletedPackage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to 已成功删除 {0} {1}。.
         /// </summary>
         public static string DeleteCommandDeletedPackage_chs {
@@ -2235,15 +2208,6 @@ namespace NuGet.CommandLine {
         public static string DeleteCommandDeletedPackage_trk {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletedPackage_trk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Deleting {0} {1} from the {2}..
-        /// </summary>
-        public static string DeleteCommandDeletingPackage {
-            get {
-                return ResourceManager.GetString("DeleteCommandDeletingPackage", resourceCulture);
             }
         }
         
@@ -2802,6 +2766,15 @@ namespace NuGet.CommandLine {
         public static string Error_InvalidMsbuildVersion {
             get {
                 return ResourceManager.GetString("Error_InvalidMsbuildVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Source parameter was not specified.
+        /// </summary>
+        public static string Error_MissingSourceParameter {
+            get {
+                return ResourceManager.GetString("Error_MissingSourceParameter", resourceCulture);
             }
         }
         
@@ -6289,15 +6262,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No API Key was provided and no API Key could be found for {0}. To save an API Key for a source use the &apos;setApiKey&apos; command..
-        /// </summary>
-        public static string NoApiKeyFound {
-            get {
-                return ResourceManager.GetString("NoApiKeyFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to 未提供 API 密钥并且找不到 {0} 的 API 密钥。若要保存源的 API 密钥，请使用 &quot;setApiKey&quot; 命令。.
         /// </summary>
         public static string NoApiKeyFound_chs {
@@ -8971,15 +8935,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This version of nuget.exe does not support pushing packages to package source &apos;{0}&apos;..
-        /// </summary>
-        public static string PushCommand_PushNotSupported {
-            get {
-                return ResourceManager.GetString("PushCommand_PushNotSupported", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to There is no default source, please specify a source..
         /// </summary>
         public static string PushCommandNoSourceError {
@@ -9106,15 +9061,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Your package was pushed..
-        /// </summary>
-        public static string PushCommandPackagePushed {
-            get {
-                return ResourceManager.GetString("PushCommandPackagePushed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to 已推送你的程序包。.
         /// </summary>
         public static string PushCommandPackagePushed_chs {
@@ -9228,15 +9174,6 @@ namespace NuGet.CommandLine {
         public static string PushCommandPackagePushed_trk {
             get {
                 return ResourceManager.GetString("PushCommandPackagePushed_trk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Pushing {0} to {1}....
-        /// </summary>
-        public static string PushCommandPushingPackage {
-            get {
-                return ResourceManager.GetString("PushCommandPushingPackage", resourceCulture);
             }
         }
         
@@ -13934,15 +13871,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to File does not exist ({0})..
-        /// </summary>
-        public static string UnableToFindFile {
-            get {
-                return ResourceManager.GetString("UnableToFindFile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to 文件不存在({0})。.
         /// </summary>
         public static string UnableToFindFile_chs {
@@ -17458,15 +17386,6 @@ namespace NuGet.CommandLine {
         public static string Warning_SemanticVersionTitle_trk {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionTitle_trk", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Found symbols package &apos;{0}&apos;, but no API key was specified for the symbol server. To save an API Key, run &apos;NuGet.exe setApiKey [your API key from http://www.NuGet.org]&apos;..
-        /// </summary>
-        public static string Warning_SymbolServerNotConfigured {
-            get {
-                return ResourceManager.GetString("Warning_SymbolServerNotConfigured", resourceCulture);
             }
         }
         

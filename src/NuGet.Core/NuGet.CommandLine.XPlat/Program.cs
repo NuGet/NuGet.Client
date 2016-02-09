@@ -58,6 +58,16 @@ namespace NuGet.CommandLine.XPlat
 
             SetUserAgent();
 
+            //register push and delete command
+            new PushCommand(app, () => {
+                EnsureLog(GetLogLevel(verbosity));
+                return Log;
+            });
+            new DeleteCommand(app, () => {
+                EnsureLog(GetLogLevel(verbosity));
+                return Log;
+            });
+
             app.Command("restore", (Action<CommandLineApplication>)(restore =>
             {
                 restore.Description = Strings.Restore_Description;

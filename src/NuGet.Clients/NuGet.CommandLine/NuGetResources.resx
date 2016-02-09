@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="DeleteCommandDeletedPackage" xml:space="preserve">
-    <value>{0} {1} was deleted successfully.</value>
-  </data>
   <data name="InvalidOptionValueError" xml:space="preserve">
     <value>Invalid option value: '{0} {1}'</value>
   </data>
@@ -137,9 +134,6 @@
   </data>
   <data name="PackageCommandSuccess" xml:space="preserve">
     <value>Successfully created package '{0}'.</value>
-  </data>
-  <data name="PushCommandPushingPackage" xml:space="preserve">
-    <value>Pushing {0} to {1}...</value>
   </data>
   <data name="PushCommandNoSourceError" xml:space="preserve">
     <value>There is no default source, please specify a source.</value>
@@ -198,12 +192,6 @@
   <data name="ConsoleConfirmMessageAccept" xml:space="preserve">
     <value>y</value>
   </data>
-  <data name="DeleteCommandCanceled" xml:space="preserve">
-    <value>Delete canceled</value>
-  </data>
-  <data name="DeleteCommandConfirm" xml:space="preserve">
-    <value>{0} {1} will be deleted from the {2}. Would you like to continue?</value>
-  </data>
   <data name="AmbiguousCommand" xml:space="preserve">
     <value>Ambiguous command '{0}'. Possible values: {1}.</value>
   </data>
@@ -212,9 +200,6 @@
   </data>
   <data name="InstallCommandNothingToInstall" xml:space="preserve">
     <value>All packages listed in {0} are already installed.</value>
-  </data>
-  <data name="NoApiKeyFound" xml:space="preserve">
-    <value>No API Key was provided and no API Key could be found for {0}. To save an API Key for a source use the 'setApiKey' command.</value>
   </data>
   <data name="SetApiKeyCommandApiKeySaved" xml:space="preserve">
     <value>The API Key '{0}' was saved for {1}.</value>
@@ -251,9 +236,6 @@
   </data>
   <data name="PackageCommandAttemptingToBuildSymbolsPackage" xml:space="preserve">
     <value>Attempting to build symbols package for '{0}'.</value>
-  </data>
-  <data name="Warning_SymbolServerNotConfigured" xml:space="preserve">
-    <value>Found symbols package '{0}', but no API key was specified for the symbol server. To save an API Key, run 'NuGet.exe setApiKey [your API key from http://www.NuGet.org]'.</value>
   </data>
   <data name="UsingNuspecForMetadata" xml:space="preserve">
     <value>Using '{0}' for metadata.</value>
@@ -417,14 +399,8 @@
   <data name="PackageCommandFileFromDependencyIsChanged" xml:space="preserve">
     <value>File from dependency is changed. Adding file '{0}'.</value>
   </data>
-  <data name="PushCommandPackagePushed" xml:space="preserve">
-    <value>Your package was pushed.</value>
-  </data>
   <data name="PackageCommandFileFromDependencyIsNotChanged" xml:space="preserve">
     <value>File from dependency is not changed. File '{0}' is not added.</value>
-  </data>
-  <data name="UnableToFindFile" xml:space="preserve">
-    <value>File does not exist ({0}).</value>
   </data>
   <data name="SourcesCommandUpdateSuccessful" xml:space="preserve">
     <value>Package source "{0}" was successfully updated.</value>
@@ -440,9 +416,6 @@
   </data>
   <data name="Error_CannotPromptForInput" xml:space="preserve">
     <value>Cannot prompt for input in non-interactive mode.</value>
-  </data>
-  <data name="DeleteCommandDeletingPackage" xml:space="preserve">
-    <value>Deleting {0} {1} from the {2}.</value>
   </data>
   <data name="Option_VerboseDeprecated" xml:space="preserve">
     <value>Option 'Verbose' has been deprecated. Use 'Verbosity' instead.</value>
@@ -6055,9 +6028,6 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="ListCommand_ListNotSupported" xml:space="preserve">
     <value>This version of nuget.exe does not support listing packages from package source '{0}'.</value>
   </data>
-  <data name="PushCommand_PushNotSupported" xml:space="preserve">
-    <value>This version of nuget.exe does not support pushing packages to package source '{0}'.</value>
-  </data>
   <data name="MSBuildAutoDetection" xml:space="preserve">
     <value>MSBuild auto-detection: using msbuild version '{0}' from '{1}'.</value>
   </data>
@@ -6141,5 +6111,8 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   </data>
   <data name="LocalsCommand_LocalsPartiallyCleared" xml:space="preserve">
     <value>Local resources partially cleared.</value>
+  </data>
+  <data name="Error_MissingSourceParameter" xml:space="preserve">
+    <value>Source parameter was not specified.</value>
   </data>
 </root>

@@ -96,6 +96,51 @@ namespace NuGet.Protocol.Core.v3 {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to the symbol server.
+        /// </summary>
+        internal static string DefaultSymbolServer {
+            get {
+                return ResourceManager.GetString("DefaultSymbolServer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Delete canceled.
+        /// </summary>
+        internal static string DeleteCommandCanceled {
+            get {
+                return ResourceManager.GetString("DeleteCommandCanceled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to {0} {1} will be deleted from the {2}. Would you like to continue?.
+        /// </summary>
+        internal static string DeleteCommandConfirm {
+            get {
+                return ResourceManager.GetString("DeleteCommandConfirm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to {0} {1} was deleted successfully..
+        /// </summary>
+        internal static string DeleteCommandDeletedPackage {
+            get {
+                return ResourceManager.GetString("DeleteCommandDeletedPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Deleting {0} {1} from the {2}..
+        /// </summary>
+        internal static string DeleteCommandDeletingPackage {
+            get {
+                return ResourceManager.GetString("DeleteCommandDeletingPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to The download URL for {0} &apos;{1}&apos; is invalid..
         /// </summary>
         internal static string DownloadActionHandler_InvalidDownloadUrl {
@@ -128,6 +173,15 @@ namespace NuGet.Protocol.Core.v3 {
         internal static string InvalidVersionFolder {
             get {
                 return ResourceManager.GetString("InvalidVersionFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to the NuGet gallery.
+        /// </summary>
+        internal static string LiveFeed {
+            get {
+                return ResourceManager.GetString("LiveFeed", resourceCulture);
             }
         }
         
@@ -213,6 +267,15 @@ namespace NuGet.Protocol.Core.v3 {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to No API Key was provided and no API Key could be found for {0}. To save an API Key for a source use the &apos;setApiKey&apos; command..
+        /// </summary>
+        internal static string NoApiKeyFound {
+            get {
+                return ResourceManager.GetString("NoApiKeyFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Cannot create a NuGet Repository from the Aggregate Source.
         /// </summary>
         internal static string NuGetRepository_CannotCreateAggregateRepo {
@@ -245,6 +308,15 @@ namespace NuGet.Protocol.Core.v3 {
         internal static string PackageActionDescriptionWrapper_UnrecognizedAction {
             get {
                 return ResourceManager.GetString("PackageActionDescriptionWrapper_UnrecognizedAction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to ERROR: This version of nuget.exe does not support updating packages to package source &apos;{0}&apos;..
+        /// </summary>
+        internal static string PackageServerEndpoint_NotSupported {
+            get {
+                return ResourceManager.GetString("PackageServerEndpoint_NotSupported", resourceCulture);
             }
         }
         
@@ -330,6 +402,24 @@ namespace NuGet.Protocol.Core.v3 {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Your package was pushed..
+        /// </summary>
+        internal static string PushCommandPackagePushed {
+            get {
+                return ResourceManager.GetString("PushCommandPackagePushed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Pushing {0} to {1}....
+        /// </summary>
+        internal static string PushCommandPushingPackage {
+            get {
+                return ResourceManager.GetString("PushCommandPushingPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to The &apos;{0}&apos; installation feature was required by a package but is not supported on the current host..
         /// </summary>
         internal static string RequiredFeatureUnsupportedException_DefaultMessageWithFeature {
@@ -344,6 +434,24 @@ namespace NuGet.Protocol.Core.v3 {
         internal static string RequiredFeatureUnsupportedException_DefaultMessageWithoutFeature {
             get {
                 return ResourceManager.GetString("RequiredFeatureUnsupportedException_DefaultMessageWithoutFeature", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to File does not exist ({0})..
+        /// </summary>
+        internal static string UnableToFindFile {
+            get {
+                return ResourceManager.GetString("UnableToFindFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Found symbols package &apos;{0}&apos;, but no API key was specified for the symbol server. To save an API Key, run &apos;NuGet.exe setApiKey [your API key from http://www.NuGet.org]&apos;..
+        /// </summary>
+        internal static string Warning_SymbolServerNotConfigured {
+            get {
+                return ResourceManager.GetString("Warning_SymbolServerNotConfigured", resourceCulture);
             }
         }
     }
