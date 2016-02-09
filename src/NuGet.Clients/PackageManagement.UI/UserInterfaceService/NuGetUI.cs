@@ -168,18 +168,18 @@ namespace NuGet.PackageManagement.UI
             this._context.SolutionManager.OnActionsExecuted(actions);
         }
 
-        public SourceRepository ActiveSource
+        public IEnumerable<SourceRepository> ActiveSources
         {
             get
             {
-                SourceRepository source = null;
+                IEnumerable<SourceRepository> sources = null;
 
                 if (PackageManagerControl != null)
                 {
-                    UIDispatcher.Invoke(() => { source = PackageManagerControl.ActiveSource; });
+                    UIDispatcher.Invoke(() => { sources = PackageManagerControl.ActiveSources; });
                 }
 
-                return source;
+                return sources;
             }
         }
 

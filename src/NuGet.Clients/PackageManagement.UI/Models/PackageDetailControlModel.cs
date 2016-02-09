@@ -25,7 +25,7 @@ namespace NuGet.PackageManagement.UI
 
         public async override Task SetCurrentPackage(
             PackageItemListViewModel searchResultPackage,
-            Filter filter)
+            ItemFilter filter)
         {
             await base.SetCurrentPackage(searchResultPackage, filter);
 

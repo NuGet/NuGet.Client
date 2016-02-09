@@ -3,12 +3,11 @@
 
 namespace NuGet.PackageManagement.UI
 {
-    public enum LoadingStatus
+    public enum ItemFilter
     {
-        Ready,
-        Loading,
-        NoMoreItems,
-        NoItemsFound,
-        ErrorOccured
+        All,
+        Installed,
+        UpdatesAvailable,
+        Consolidate
     }
 }

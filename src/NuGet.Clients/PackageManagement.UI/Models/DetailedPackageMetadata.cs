@@ -29,7 +29,9 @@ namespace NuGet.PackageManagement.UI
             Tags = serverData.Tags;
             DownloadCount = downloadCount;
             Published = serverData.Published;
-            DependencySets = serverData.DependencySets.Select(e => new PackageDependencySetMetadata(e));
+            DependencySets = serverData.DependencySets?
+                .Select(e => new PackageDependencySetMetadata(e))
+                ?? new PackageDependencySetMetadata[] { };
             HasDependencies = DependencySets.Any(
                 dependencySet => dependencySet.Dependencies != null && dependencySet.Dependencies.Count > 0);
         }

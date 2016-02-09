@@ -28,8 +28,8 @@ namespace NuGet.Protocol.VisualStudio
         {
             yield return new Lazy<INuGetResourceProvider>(() => new AutoCompleteResourceV2Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new AutoCompleteResourceV3Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new UIMetadataResourceV2Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new UIMetadataResourceV3Provider());
+            yield return new Lazy<INuGetResourceProvider>(() => new PackageMetadataResourceV2Provider());
+            yield return new Lazy<INuGetResourceProvider>(() => new PackageMetadataResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new PackageSearchResourceV2Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new PackageSearchResourceV3Provider());
 

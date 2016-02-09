@@ -416,8 +416,8 @@ namespace NuGet.PackageManagement.UI
         // auto select projects based on the current tab and currently selected package
         private void AutoSelectProjects()
         {
-            if (_filter == Filter.Consolidate ||
-                _filter == Filter.UpdatesAvailable)
+            if (_filter == ItemFilter.Consolidate ||
+                _filter == ItemFilter.UpdatesAvailable)
             {
                 foreach (var project in _projects)
                 {
@@ -426,14 +426,14 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public override void OnFilterChanged(Filter? previousFilter, Filter currentFilter)
+        public override void OnFilterChanged(ItemFilter? previousFilter, ItemFilter currentFilter)
         {
             base.OnFilterChanged(previousFilter, currentFilter);
 
             // clear selection if filter is changed from Consolidate/UpdateAvailable
             // to Browse/Install.
-            if ((previousFilter == Filter.Consolidate || previousFilter == Filter.UpdatesAvailable) &&
-                (_filter == Filter.All || _filter == Filter.Installed))
+            if ((previousFilter == ItemFilter.Consolidate || previousFilter == ItemFilter.UpdatesAvailable) &&
+                (_filter == ItemFilter.All || _filter == ItemFilter.Installed))
             {
                 foreach (var project in _projects)
                 {

@@ -9,9 +9,9 @@ using NuGet.Protocol.Core.v2;
 
 namespace NuGet.Protocol.VisualStudio
 {
-    public class UIMetadataResourceV2Provider : V2ResourceProvider
+    public class PackageMetadataResourceV2Provider : V2ResourceProvider
     {
-        public UIMetadataResourceV2Provider()
+        public PackageMetadataResourceV2Provider()
             : base(typeof(PackageMetadataResource))
         {
         }

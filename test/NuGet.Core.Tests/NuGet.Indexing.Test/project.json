@@ -2,8 +2,8 @@
   "version": "3.4.0-*",
   "dependencies": {
     "Moq": "4.2.1507.118",
+    "NuGet.Indexing": "3.4.0-*",
     "NuGet.Protocol.VisualStudio": "3.4.0-*",
-    "NuGet.Protocol.Test.Utility": "1.0.0-*",
     "xunit": "2.1.0",
     "xunit.runner.dnx": "2.1.0-rc1-build204"
   },
@@ -11,6 +11,6 @@
     "test": "xunit.runner.dnx"
   },
   "frameworks": {
-    "dnx451": {}
+    "dnx451": { }
   }
 }

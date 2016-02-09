@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement.UI
 
         public event EventHandler<EventArgs> ControlSelected;
 
-        public Filter Filter
+        public ItemFilter Filter
         {
             get;
             set;

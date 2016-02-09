@@ -56,7 +56,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public Filter Filter
+        public ItemFilter Filter
         {
             get
             {
@@ -90,7 +90,7 @@ namespace NuGet.PackageManagement.UI
                     // tab.
                     if (_selectedFilter == _labelConsolidate)
                     {
-                        SelectFilter(Filter.Installed);
+                        SelectFilter(ItemFilter.Installed);
                     }
                 }
                 else
@@ -161,7 +161,7 @@ namespace NuGet.PackageManagement.UI
 
         public event EventHandler<EventArgs> SourceRepoListSelectionChanged;
 
-        public void SelectFilter(Filter selectedFilter)
+        public void SelectFilter(ItemFilter selectedFilter)
         {
             if (_selectedFilter != null)
             {
@@ -170,19 +170,19 @@ namespace NuGet.PackageManagement.UI
 
             switch (selectedFilter)
             {
-                case Filter.All:
+                case ItemFilter.All:
                     _selectedFilter = _labelBrowse;
                     break;
 
-                case Filter.Installed:
+                case ItemFilter.Installed:
                     _selectedFilter = _labelInstalled;
                     break;
 
-                case Filter.UpdatesAvailable:
+                case ItemFilter.UpdatesAvailable:
                     _selectedFilter = _labelUpgradeAvailable;
                     break;
 
-                case Filter.Consolidate:
+                case ItemFilter.Consolidate:
                     if (_isSolution)
                     {
                         _selectedFilter = _labelConsolidate;
@@ -204,12 +204,12 @@ namespace NuGet.PackageManagement.UI
 
     public class FilterChangedEventArgs : EventArgs
     {
-        public Filter? PreviousFilter
+        public ItemFilter? PreviousFilter
         {
             get;
         }
 
-        public FilterChangedEventArgs(Filter? previousFilter)
+        public FilterChangedEventArgs(ItemFilter? previousFilter)
         {
             PreviousFilter = previousFilter;
         }

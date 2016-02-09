@@ -32,10 +32,10 @@ namespace NuGet.PackageManagement.UI
         protected PackageItemListViewModel _searchResultPackage;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
-        protected Filter _filter;
+        protected ItemFilter _filter;
 
         private Dictionary<NuGetVersion, DetailedPackageMetadata> _metadataDict;
-        
+
         protected DetailControlModel(IEnumerable<NuGetProject> nugetProjects)
         {
             _nugetProjects = nugetProjects;
@@ -64,14 +64,14 @@ namespace NuGet.PackageManagement.UI
         /// <param name="filter">The current filter. This will used to select the default action.</param>
         public async virtual Task SetCurrentPackage(
             PackageItemListViewModel searchResultPackage,
-            Filter filter)
+            ItemFilter filter)
         {
             _searchResultPackage = searchResultPackage;
             _filter = filter;
             OnPropertyChanged("Id");
             OnPropertyChanged("IconUrl");
 
-            var versions = await searchResultPackage.Versions.Value;
+            var versions = await searchResultPackage.GetVersionsAsync();
 
             _allPackageVersions = versions.Select(v => v.Version).ToList();
 
@@ -83,7 +83,7 @@ namespace NuGet.PackageManagement.UI
         {
         }
 
-        public virtual void OnFilterChanged(Filter? previousFilter, Filter currentFilter)
+        public virtual void OnFilterChanged(ItemFilter? previousFilter, ItemFilter currentFilter)
         {
             _filter = currentFilter;
         }
@@ -224,7 +224,7 @@ namespace NuGet.PackageManagement.UI
                     _selectedVersion = value;
 
                     DetailedPackageMetadata packageMetadata;
-                    if (_metadataDict != null && 
+                    if (_metadataDict != null &&
                         _selectedVersion != null &&
                         _metadataDict.TryGetValue(_selectedVersion.Version, out packageMetadata))
                     {
@@ -263,41 +263,32 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public async Task LoadPackageMetadaAsync(PackageMetadataResource metadataResource, CancellationToken token)
+        public async Task LoadPackageMetadaAsync(IPackageMetadataProvider metadataProvider, CancellationToken token)
         {
-            var versions = await _searchResultPackage.Versions.Value;
+            var versions = await _searchResultPackage.GetVersionsAsync();
 
-            var downloadCountDict = versions.ToDictionary(
-                v => v.Version,
-                v => v.DownloadCount);
-
-            var dict = new Dictionary<NuGetVersion, DetailedPackageMetadata>();
-            if (metadataResource != null)
+            var packages = Enumerable.Empty<IPackageSearchMetadata>();
+            try
             {
                 // load up the full details for each version
-                try
-                {
-                    var metadata = await metadataResource.GetMetadataAsync(Id, true, false, token);
-                    foreach (var item in metadata)
-                    {
-                        if (!dict.ContainsKey(item.Identity.Version))
-                        {
-                            long? downloadCount;
-                            if (!downloadCountDict.TryGetValue(item.Identity.Version, out downloadCount))
-                            {
-                                downloadCount = 0;
-                            }
-                            dict.Add(item.Identity.Version, new DetailedPackageMetadata(item, downloadCount));
-                        }
-                    }
-                }
-                catch (InvalidOperationException)
-                {
-                    // Ignore failures.
-                }
+                packages = await metadataProvider?.GetPackageMetadataListAsync(Id, true, false, token);
+            }
+            catch (InvalidOperationException)
+            {
+                // Ignore failures.
             }
 
-            _metadataDict = dict;
+            var uniquePackages = packages
+                .GroupBy(m => m.Identity.Version, (v, ms) => ms.First());
+
+            var s = uniquePackages
+                .GroupJoin(
+                    versions,
+                    m => m.Identity.Version,
+                    d => d.Version,
+                    (m, d) => new DetailedPackageMetadata(m, d.FirstOrDefault()?.DownloadCount));
+
+            _metadataDict = s.ToDictionary(m => m.Version);
 
             DetailedPackageMetadata p;
             if (SelectedVersion != null

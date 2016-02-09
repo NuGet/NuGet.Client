@@ -152,14 +152,13 @@ namespace NuGet.PackageManagement.UI
                         includePrelease: includePrerelease,
                         includeUnlisted: true,
                         versionConstraints: VersionConstraints.None);
-                    var sources = new SourceRepository[] { uiService.ActiveSource };
                     var actions = await _packageManager.PreviewUpdatePackagesAsync(
                         packagesToUpdateInProject,
                         project,
                         resolutionContext,
                         uiService.ProgressWindow,
-                        sources,
-                        sources,
+                        uiService.ActiveSources,
+                        uiService.ActiveSources,
                         token);
                     resolvedActions.AddRange(actions.Select(action => new ResolvedAction(project, action))
                         .ToList());
@@ -332,7 +331,7 @@ namespace NuGet.PackageManagement.UI
                         new PackageIdentity(userAction.PackageId, userAction.Version),
                         resolutionContext,
                         projectContext,
-                        uiService.ActiveSource,
+                        uiService.ActiveSources,
                         null,
                         token);
                     results.AddRange(actions.Select(a => new ResolvedAction(target, a)));

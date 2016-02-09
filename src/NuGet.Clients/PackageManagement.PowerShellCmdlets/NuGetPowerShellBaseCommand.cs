@@ -38,7 +38,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         private readonly BlockingCollection<Message> _blockingCollection = new BlockingCollection<Message>();
         private readonly Semaphore _scriptEndSemaphore = new Semaphore(0, Int32.MaxValue);
-        private readonly ISourceRepositoryProvider _resourceRepositoryProvider;
+        private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ICommonOperations _commonOperations;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
 
@@ -58,7 +58,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected NuGetPowerShellBaseCommand()
         {
-            _resourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
+            _sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
             ConfigSettings = ServiceLocator.GetInstance<Configuration.ISettings>();
             VsSolutionManager = ServiceLocator.GetInstance<ISolutionManager>();
             DTE = ServiceLocator.GetInstance<DTE>();
@@ -83,7 +83,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected NuGetPackageManager PackageManager
         {
             get { return new NuGetPackageManager(
-                _resourceRepositoryProvider,
+                _sourceRepositoryProvider,
                 ConfigSettings,
                 VsSolutionManager,
                 _deleteOnRestartManager); }
@@ -253,7 +253,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             if (!string.IsNullOrEmpty(source))
             {
-                var packageSources = _resourceRepositoryProvider?.PackageSourceProvider?.LoadPackageSources();
+                var packageSources = _sourceRepositoryProvider?.PackageSourceProvider?.LoadPackageSources();
 
                 // Look through all available sources (including those disabled) by matching source name and url
                 var matchingSource = packageSources
@@ -263,7 +263,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                 if (matchingSource != null)
                 {
-                    ActiveSourceRepository = _resourceRepositoryProvider?.CreateRepository(matchingSource);
+                    ActiveSourceRepository = _sourceRepositoryProvider?.CreateRepository(matchingSource);
                 }
                 else
                 {
@@ -271,7 +271,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     ActiveSourceRepository = CreateRepositoryFromSource(source);
                 }
 
-                EnabledSourceRepositories = _resourceRepositoryProvider?.GetRepositories()
+                EnabledSourceRepositories = _sourceRepositoryProvider?.GetRepositories()
                     .Where(r => r.PackageSource.IsEnabled)
                     .ToList();
             }
@@ -288,7 +288,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
 
             var packageSource = new Configuration.PackageSource(source);
-            var repository = _resourceRepositoryProvider.CreateRepository(packageSource);
+            var repository = _sourceRepositoryProvider.CreateRepository(packageSource);
             var resource = repository.GetResource<PackageSearchResource>();
 
             // resource can be null here for relative path package source.
@@ -311,7 +311,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
             }
 
-            var sourceRepo = _resourceRepositoryProvider.CreateRepository(packageSource);
+            var sourceRepo = _sourceRepositoryProvider.CreateRepository(packageSource);
             // Right now if packageSource is invalid, CreateRepository will not throw. Instead, resource returned is null.
             var newResource = repository.GetResource<PackageSearchResource>();
             if (newResource == null)
