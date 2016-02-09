@@ -30,7 +30,16 @@ namespace NuGet.Protocol.Core.v3
                 // Returning null here will result in ListCommandResource
                 // getting returned for this very v3 package source as if it was a v2 package source
                 var baseUrl = serviceIndex[ServiceTypes.PackagePublish].FirstOrDefault();
-                pushCommandResource = new PushCommandResource(baseUrl?.AbsoluteUri);
+
+                HttpSource httpSource = null;
+                string sourceUri = baseUrl?.AbsoluteUri;
+                if (!string.IsNullOrEmpty(sourceUri) && !(new Uri(sourceUri)).IsFile)
+                {
+                    var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
+                    httpSource = httpSourceResource.HttpSource;
+                }
+
+                pushCommandResource = new PushCommandResource(sourceUri, httpSource);
             }
 
             var result = new Tuple<bool, INuGetResource>(pushCommandResource != null, pushCommandResource);
