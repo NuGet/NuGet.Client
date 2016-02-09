@@ -1156,6 +1156,7 @@ namespace NuGet.CommandLine.Test
             {
                 // Create an empty config file and pass it as -ConfigFile switch.
                 // This imitates the scenario where there is a machine without a default nuget.config under %APPDATA%
+                // In this case, nuget will not create default nuget.config for user.
                 var config = string.Format(
     @"<?xml version='1.0' encoding='utf - 8'?>
 <configuration/>
@@ -1183,7 +1184,7 @@ namespace NuGet.CommandLine.Test
                     "Newtonsoft.Json.7.0.1",
                     "Newtonsoft.Json.7.0.1.nupkg");
 
-                Assert.True(File.Exists(expectedPath), "nuget.exe did not install Newtonsoft.Json.7.0.1");
+                Assert.False(File.Exists(expectedPath), "nuget.exe installed Newtonsoft.Json.7.0.1");
             }
         }
     }

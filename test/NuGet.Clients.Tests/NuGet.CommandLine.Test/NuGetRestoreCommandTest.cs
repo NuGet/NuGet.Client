@@ -1492,6 +1492,7 @@ EndProject";
             {
                 // Create an empty config file and pass it as -ConfigFile switch.
                 // This imitates the scenario where there is a machine without a default nuget.config under %APPDATA%
+                // In this case, nuget will not create default nuget.config for user.
                 var config = string.Format(
     @"<?xml version='1.0' encoding='utf - 8'?>
 <configuration/>
@@ -1527,13 +1528,12 @@ EndProject";
                 Environment.SetEnvironmentVariable("PATH", path);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
                 var expectedPath = Path.Combine(
                     randomTestFolder,
                     "Newtonsoft.Json.7.0.1",
                     "Newtonsoft.Json.7.0.1.nupkg");
 
-                Assert.True(File.Exists(expectedPath));
+                Assert.False(File.Exists(expectedPath));
             }
         }
 
