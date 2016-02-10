@@ -290,6 +290,23 @@ namespace NuGet.ProjectModel
                         }
                     }
 
+                    // Projects and References may have empty version ranges, Packages may not
+                    if (dependencyVersionRange == null)
+                    {
+                        if ((targetFlagsValue & LibraryDependencyTarget.Package) == LibraryDependencyTarget.Package)
+                        {
+                            throw FileFormatException.Create(
+                                Strings.MissingVersionProperty,
+                                dependency.Value,
+                                packageSpecPath);
+                        }
+                        else
+                        {
+                            // Projects and references with no version property allow all versions
+                            dependencyVersionRange = VersionRange.All;
+                        }
+                    }
+
                     // the dependency flags are: Include flags - Exclude flags
                     var includeFlags = dependencyIncludeFlagsValue & ~dependencyExcludeFlagsValue;
 
