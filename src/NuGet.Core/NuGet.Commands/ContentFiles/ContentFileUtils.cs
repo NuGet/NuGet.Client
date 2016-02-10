@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.FileSystemGlobbing;
@@ -256,7 +257,7 @@ namespace NuGet.Commands
                 if (normalizedAction == null)
                 {
                     // Throw an error containing the package identity, invalid action, and file where it occurred.
-                    var message = Strings.FormatError_UnknownBuildAction(nuspec.GetIdentity(), action, file);
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Error_UnknownBuildAction, nuspec.GetIdentity(), action, file);
                     throw new PackagingException(message);
                 }
 

@@ -132,4 +132,7 @@
   <data name="Log_InvalidImportFramework" xml:space="preserve">
     <value>Imports contains an invalid framework: '{0}' in '{1}'.</value>
   </data>
+  <data name="MissingVersionProperty" xml:space="preserve">
+    <value>Package dependencies must specify a version range.</value>
+  </data>
 </root>

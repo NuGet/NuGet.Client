@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Configuration;
@@ -88,7 +89,7 @@ namespace NuGet.Commands
                 }
 
                 logger.LogSummary(string.Empty);
-                logger.LogSummary(Strings.FormatLog_ErrorSummary(restoreSummary.InputPath));
+                logger.LogSummary(string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorSummary, restoreSummary.InputPath));
                 foreach (var error in restoreSummary.Errors)
                 {
                     foreach (var line in IndentLines(error))
@@ -140,7 +141,7 @@ namespace NuGet.Commands
                     logger.LogSummary(Strings.Log_InstalledSummary);
                     foreach (var pair in installed)
                     {
-                        logger.LogSummary("    " + Strings.FormatLog_InstalledSummaryCount(pair.Value, pair.Key));
+                        logger.LogSummary("    " + string.Format(CultureInfo.CurrentCulture, Strings.Log_InstalledSummaryCount, pair.Value, pair.Key));
                     }
                 }
             }

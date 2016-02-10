@@ -103,5 +103,14 @@ namespace NuGet.ProjectModel {
                 return ResourceManager.GetString("Log_InvalidImportFramework", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Package dependencies must specify a version range..
+        /// </summary>
+        internal static string MissingVersionProperty {
+            get {
+                return ResourceManager.GetString("MissingVersionProperty", resourceCulture);
+            }
+        }
     }
 }
