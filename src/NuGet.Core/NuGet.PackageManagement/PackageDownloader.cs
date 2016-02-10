@@ -49,62 +49,78 @@ namespace NuGet.PackageManagement
             var failedTasks = new List<Task<DownloadResourceResult>>();
             var tasksLookup = new Dictionary<Task<DownloadResourceResult>, SourceRepository>();
 
-            using (var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token))
-            {
-                // Create a group of local sources that will go first, then everything else.
-                var groups = new Queue<List<SourceRepository>>();
-                var localGroup = new List<SourceRepository>();
-                var otherGroup = new List<SourceRepository>();
+            var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+            // Create a group of local sources that will go first, then everything else.
+            var groups = new Queue<List<SourceRepository>>();
+            var localGroup = new List<SourceRepository>();
+            var otherGroup = new List<SourceRepository>();
 
-                foreach (var source in sources)
+            foreach (var source in sources)
+            {
+                if (source.PackageSource.IsLocal)
                 {
-                    if (source.PackageSource.IsLocal)
+                    localGroup.Add(source);
+                }
+                else
+                {
+                    otherGroup.Add(source);
+                }
+            }
+
+            groups.Enqueue(localGroup);
+            groups.Enqueue(otherGroup);
+
+            while (groups.Count > 0)
+            {
+                token.ThrowIfCancellationRequested();
+
+                var sourceGroup = groups.Dequeue();
+                var tasks = new List<Task<DownloadResourceResult>>();
+
+                foreach (var source in sourceGroup)
+                {
+                    var task = GetDownloadResourceResultAsync(source, packageIdentity, settings, logger, linkedTokenSource.Token);
+                    tasksLookup.Add(task, source);
+                    tasks.Add(task);
+                }
+
+                while (tasks.Any())
+                {
+                    var completedTask = await Task.WhenAny(tasks);
+
+                    if (completedTask.Status == TaskStatus.RanToCompletion)
                     {
-                        localGroup.Add(source);
+                        tasks.Remove(completedTask);
+
+                        // Cancel the other tasks, since, they may still be running
+                        linkedTokenSource.Cancel();
+
+                        if (tasks.Any())
+                        {
+                            // NOTE: Create a Task out of remainingTasks which waits for all the tasks to complete
+                            // and disposes the linked token source safely. One of the tasks could try to access its
+                            // incoming CancellationToken to register a callback. If the linkedTokenSource was
+                            // disposed before being accessed, it will throw an ObjectDisposedException.
+                            // At the same time, we do not want to wait for all the tasks to complete before
+                            // disposing the linked token source. So, we start off a new Task which waits for all
+                            // the tasks to complete and then disposes the LinkedTokenSource.
+                            var remainingTasks = Task.Run(async () =>
+                            {
+                                await Task.WhenAll(tasks);
+                                linkedTokenSource.Dispose();
+                            });
+                        }
+
+                        return completedTask.Result;
                     }
                     else
                     {
-                        otherGroup.Add(source);
-                    }
-                }
+                        token.ThrowIfCancellationRequested();
 
-                groups.Enqueue(localGroup);
-                groups.Enqueue(otherGroup);
-
-                while (groups.Count > 0)
-                {
-                    token.ThrowIfCancellationRequested();
-
-                    var sourceGroup = groups.Dequeue();
-                    var tasks = new List<Task<DownloadResourceResult>>();
-
-                    foreach (var source in sourceGroup)
-                    {
-                        var task = GetDownloadResourceResultAsync(source, packageIdentity, settings, logger, linkedTokenSource.Token);
-                        tasksLookup.Add(task, source);
-                        tasks.Add(task);
-                    }
-
-                    while (tasks.Any())
-                    {
-                        var completedTask = await Task.WhenAny(tasks);
-
-                        if (completedTask.Status == TaskStatus.RanToCompletion)
-                        {
-                            // Cancel the other tasks, since, they may still be running
-                            linkedTokenSource.Cancel();
-
-                            return completedTask.Result;
-                        }
-                        else
-                        {
-                            token.ThrowIfCancellationRequested();
-
-                            // In this case, completedTask did not run to completion.
-                            // That is, it faulted or got canceled. Remove it, and try Task.WhenAny again
-                            tasks.Remove(completedTask);
-                            failedTasks.Add(completedTask);
-                        }
+                        // In this case, completedTask did not run to completion.
+                        // That is, it faulted or got canceled. Remove it, and try Task.WhenAny again
+                        tasks.Remove(completedTask);
+                        failedTasks.Add(completedTask);
                     }
                 }
             }
