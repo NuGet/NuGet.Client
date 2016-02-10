@@ -449,11 +449,11 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Get the package metadata to see if RequireLicenseAcceptance is true
         /// </summary>
-        private async Task<List<UIPackageMetadata>> GetPackageMetadataAsync(IEnumerable<PackageIdentity> packages, CancellationToken token)
+        private async Task<List<IPackageSearchMetadata>> GetPackageMetadataAsync(IEnumerable<PackageIdentity> packages, CancellationToken token)
         {
             var sources = _sourceProvider.GetRepositories().Where(e => e.PackageSource.IsEnabled);
 
-            var results = new List<UIPackageMetadata>();
+            var results = new List<IPackageSearchMetadata>();
             foreach (var package in packages)
             {
                 var metadata = await GetPackageMetadataAsync(sources, package, token);
@@ -469,7 +469,7 @@ namespace NuGet.PackageManagement.UI
             return results;
         }
 
-        private static async Task<UIPackageMetadata> GetPackageMetadataAsync(
+        private static async Task<IPackageSearchMetadata> GetPackageMetadataAsync(
             IEnumerable<SourceRepository> sources,
             PackageIdentity package,
             CancellationToken token)
@@ -478,7 +478,7 @@ namespace NuGet.PackageManagement.UI
 
             foreach (var source in sources)
             {
-                var metadataResource = source.GetResource<UIMetadataResource>();
+                var metadataResource = source.GetResource<PackageMetadataResource>();
                 if (metadataResource == null)
                 {
                     continue;
@@ -486,7 +486,7 @@ namespace NuGet.PackageManagement.UI
 
                 try
                 {
-                    var r = await metadataResource.GetMetadata(
+                    var r = await metadataResource.GetMetadataAsync(
                         package.Id,
                         includePrerelease: true,
                         includeUnlisted: true,

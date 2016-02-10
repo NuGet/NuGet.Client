@@ -30,7 +30,7 @@ namespace NuGet.Protocol.VisualStudio.Tests
         {
             // Arrange
             var source = StaticHttpHandler.CreateSource(sourceUrl, Repository.Provider.GetVisualStudio(), ResponsesDict);
-            var resource = await source.GetResourceAsync<PSAutoCompleteResource>();
+            var resource = await source.GetResourceAsync<AutoCompleteResource>();
             Assert.NotNull(resource);
 
             // Act
@@ -49,7 +49,7 @@ namespace NuGet.Protocol.VisualStudio.Tests
         {
             // Arrange
             var source = StaticHttpHandler.CreateSource(sourceUrl, Repository.Provider.GetVisualStudio(), ResponsesDict);
-            var resource = await source.GetResourceAsync<PSAutoCompleteResource>();
+            var resource = await source.GetResourceAsync<AutoCompleteResource>();
             Assert.NotNull(resource);
 
             // Act

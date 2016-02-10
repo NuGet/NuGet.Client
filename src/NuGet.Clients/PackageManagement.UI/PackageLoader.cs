@@ -100,7 +100,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             // normal search
-            var searchResource = await _sourceRepository.GetResourceAsync<UISearchResource>();
+            var searchResource = await _sourceRepository.GetResourceAsync<PackageSearchResource>();
 
             // search in source
             if (searchResource == null)
@@ -113,7 +113,7 @@ namespace NuGet.PackageManagement.UI
                 searchFilter.IncludePrerelease = _option.IncludePrerelease;
                 searchFilter.SupportedFrameworks = GetSupportedFrameworks();
 
-                var searchResults = await searchResource.Search(
+                var searchResults = await searchResource.SearchAsync(
                     _searchText,
                     searchFilter,
                     startIndex,
@@ -240,20 +240,20 @@ namespace NuGet.PackageManagement.UI
                 .Take(_option.PageSize + 1)
                 .ToArray();
 
-            var results = new List<UISearchMetadata>();
+            var results = new List<IPackageSearchMetadata>();
             var localResource = await _packageManager.PackagesFolderSourceRepository
-                .GetResourceAsync<UIMetadataResource>();
+                .GetResourceAsync<PackageMetadataResource>();
 
-            // UIMetadataResource may not be available
+            // PackageMetadataResource may not be available
             // Given that this is the 'Installed' filter, we ignore failures in reaching the remote server
-            // Instead, we will use the local UIMetadataResource
-            UIMetadataResource metadataResource;
+            // Instead, we will use the local PackageMetadataResource
+            PackageMetadataResource metadataResource;
             try
             {
                 metadataResource =
                 _sourceRepository == null ?
                 null :
-                await _sourceRepository.GetResourceAsync<UIMetadataResource>();
+                await _sourceRepository.GetResourceAsync<PackageMetadataResource>();
             }
             catch (Exception ex)
             {
@@ -265,7 +265,7 @@ namespace NuGet.PackageManagement.UI
             // create tasks to get metadata in parallel
             var bag = new ConcurrentBag<PackageIdentity>(installedPackages);
             var tasks = new List<Task>();
-            var metadataList = new ConcurrentQueue<UISearchMetadata>();
+            var metadataList = new ConcurrentQueue<IPackageSearchMetadata>();
             for (int i = 0; i < MaxDegreeOfParallelism; ++i)
             {
                 tasks.Add(Task.Run(async () =>
@@ -345,14 +345,14 @@ namespace NuGet.PackageManagement.UI
                 .Take(_option.PageSize + 1)
                 .ToArray();
 
-            var results = new List<UISearchMetadata>();
+            var results = new List<IPackageSearchMetadata>();
             var localResource = await _packageManager.PackagesFolderSourceRepository
-                .GetResourceAsync<UIMetadataResource>();
+                .GetResourceAsync<PackageMetadataResource>();
 
-            // UIMetadataResource may not be available
+            // PackageMetadataResource may not be available
             // Given that this is the 'Installed' filter, we ignore failures in reaching the remote server
-            // Instead, we will use the local UIMetadataResource
-            UIMetadataResource metadataResource;
+            // Instead, we will use the local PackageMetadataResource
+            PackageMetadataResource metadataResource;
             try
             {
                 if (_sourceRepository == null)
@@ -361,7 +361,7 @@ namespace NuGet.PackageManagement.UI
                 }
                 else
                 {
-                    metadataResource = await _sourceRepository.GetResourceAsync<UIMetadataResource>();
+                    metadataResource = await _sourceRepository.GetResourceAsync<PackageMetadataResource>();
                 }
             }
             catch (Exception ex)
@@ -374,7 +374,7 @@ namespace NuGet.PackageManagement.UI
             // create tasks to get metadata in parallel
             var bag = new ConcurrentBag<PackageIdentity>(packagesNeedingConsolidation);
             var tasks = new List<Task>();
-            var metadataList = new ConcurrentQueue<UISearchMetadata>();
+            var metadataList = new ConcurrentQueue<IPackageSearchMetadata>();
             for (int i = 0; i < MaxDegreeOfParallelism; ++i)
             {
                 tasks.Add(Task.Run(async () =>
@@ -404,97 +404,51 @@ namespace NuGet.PackageManagement.UI
 
         // Gets the package metadata from the local resource when the remote source
         // is not available.
-        private static async Task<UISearchMetadata> GetPackageMetadataWhenRemoteSourceUnavailable(
-            UIMetadataResource localResource,
+        private static async Task<IPackageSearchMetadata> GetPackageMetadataWhenRemoteSourceUnavailable(
+            PackageMetadataResource localResource,
             PackageIdentity identity,
             CancellationToken cancellationToken)
         {
-            UIPackageMetadata packageMetadata = null;
-            if (localResource != null)
-            {
-                var localMetadata = await localResource.GetMetadata(
-                    identity.Id,
-                    includePrerelease: true,
-                    includeUnlisted: true,
-                    token: cancellationToken);
-                packageMetadata = localMetadata.FirstOrDefault(p => p.Identity.Version == identity.Version);
-            }
+            var localPackages = await localResource?.GetMetadataAsync(
+                identity.Id,
+                includePrerelease: true,
+                includeUnlisted: true,
+                token: cancellationToken);
 
-            string summary = string.Empty;
-            string title = identity.Id;
-            string author = string.Empty;
-            if (packageMetadata != null)
-            {
-                summary = packageMetadata.Summary;
-                if (string.IsNullOrEmpty(summary))
-                {
-                    summary = packageMetadata.Description;
-                }
-                if (!string.IsNullOrEmpty(packageMetadata.Title))
-                {
-                    title = packageMetadata.Title;
-                }
+            var packageMetadata = localPackages?.FirstOrDefault(p => p.Identity.Version == identity.Version);
 
-                author = string.Join(", ", packageMetadata.Authors);
-            }
-
-            var versions = new List<VersionInfo>
+            var versions = new[]
             {
                 new VersionInfo(identity.Version, downloadCount: null)
             };
 
-            return new UISearchMetadata(
-                identity,
-                title: title,
-                summary: summary,
-                author: author,
-                downloadCount: packageMetadata?.DownloadCount,
-                iconUrl: packageMetadata?.IconUrl,
-                versions: ToLazyTask(versions),
-                latestPackageMetadata: null);
+            return packageMetadata?.WithVersions(versions);
         }
 
-        private async Task<UISearchMetadata> GetPackageMetadataFromMetadataResourceAsync(
-            UIMetadataResource metadataResource,
+        private async Task<IPackageSearchMetadata> GetPackageMetadataFromMetadataResourceAsync(
+            PackageMetadataResource metadataResource,
             PackageIdentity identity,
             CancellationToken cancellationToken)
         {
-            var uiPackageMetadatas = await metadataResource.GetMetadata(
+            var packages = await metadataResource?.GetMetadataAsync(
                 identity.Id,
-                _option.IncludePrerelease,
+                includePrerelease: true,
                 includeUnlisted: false,
                 token: cancellationToken);
-            var packageMetadata = uiPackageMetadatas.FirstOrDefault(p => p.Identity.Version == identity.Version);
 
-            string summary = string.Empty;
-            string title = identity.Id;
-            string author = string.Empty;
-            if (packageMetadata != null)
+            if (packages?.FirstOrDefault() == null)
             {
-                summary = packageMetadata.Summary;
-                if (string.IsNullOrEmpty(summary))
-                {
-                    summary = packageMetadata.Description;
-                }
-                if (!string.IsNullOrEmpty(packageMetadata.Title))
-                {
-                    title = packageMetadata.Title;
-                }
-
-                author = string.Join(", ", packageMetadata.Authors);
+                return null;
             }
 
-            var versions = uiPackageMetadatas.OrderByDescending(m => m.Identity.Version)
+            var packageMetadata = packages
+                .FirstOrDefault(p => p.Identity.Version == identity.Version)
+                ?? PackageSearchMetadataBuilder.FromIdentity(identity).Build();
+
+            var versions = packages.OrderByDescending(m => m.Identity.Version)
                 .Select(m => new VersionInfo(m.Identity.Version, m.DownloadCount));
-            return new UISearchMetadata(
-                identity,
-                title: title,
-                summary: summary,
-                author: author,
-                downloadCount: packageMetadata?.DownloadCount,
-                iconUrl: packageMetadata?.IconUrl,
-                versions: ToLazyTask(versions),
-                latestPackageMetadata: packageMetadata);
+
+            return packageMetadata.WithVersions(versions);
         }
 
         /// <summary>
@@ -505,9 +459,9 @@ namespace NuGet.PackageManagement.UI
         /// <param name="identity">The installed package.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>The metadata of the package.</returns>
-        private async Task<UISearchMetadata> GetPackageMetadataAsync(
-            UIMetadataResource localResource,
-            UIMetadataResource metadataResource,
+        private async Task<IPackageSearchMetadata> GetPackageMetadataAsync(
+            PackageMetadataResource localResource,
+            PackageMetadataResource metadataResource,
             PackageIdentity identity,
             CancellationToken cancellationToken)
         {
@@ -575,10 +529,10 @@ namespace NuGet.PackageManagement.UI
         }
 
         // Returns the list of installed packages that have updates available.
-        public async Task<List<UISearchMetadata>> GetPackagesWithUpdatesAsync(CancellationToken ct)
+        public async Task<List<IPackageSearchMetadata>> GetPackagesWithUpdatesAsync(CancellationToken ct)
         {
-            var packagesWithUpdates = new List<UISearchMetadata>();
-            var metadataResource = await _sourceRepository.GetResourceAsync<UIMetadataResource>();
+            var packagesWithUpdates = new List<IPackageSearchMetadata>();
+            var metadataResource = await _sourceRepository.GetResourceAsync<PackageMetadataResource>();
 
             if (metadataResource == null)
             {
@@ -594,7 +548,7 @@ namespace NuGet.PackageManagement.UI
                 // only release packages respect the prerel option
                 var includePre = _option.IncludePrerelease;
 
-                var data = await metadataResource.GetMetadata(package.Id, includePre, false, ct);
+                var data = await metadataResource.GetMetadataAsync(package.Id, includePre, false, ct);
                 var highest = data.OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease).FirstOrDefault();
 
                 if (highest != null)
@@ -605,22 +559,7 @@ namespace NuGet.PackageManagement.UI
                             .OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease)
                             .Select(e => new VersionInfo(e.Identity.Version, e.DownloadCount));
 
-                        var lazyVersions = ToLazyTask(allVersions);
-
-                        var summary = string.IsNullOrEmpty(highest.Summary) ? highest.Description : highest.Summary;
-
-                        var title = string.IsNullOrEmpty(highest.Title) ? highest.Identity.Id : highest.Title;
-
-                        var searchMetadata = new UISearchMetadata(
-                            highest.Identity,
-                            title,
-                            summary,
-                            string.Join(", ", highest.Authors),
-                            highest.DownloadCount,
-                            highest.IconUrl,
-                            lazyVersions,
-                            highest);
-                        packagesWithUpdates.Add(searchMetadata);
+                        packagesWithUpdates.Add(highest.WithVersions(allVersions));
                     }
                 }
             }
@@ -649,7 +588,7 @@ namespace NuGet.PackageManagement.UI
                 searchResultPackage.Id = package.Identity.Id;
                 searchResultPackage.Version = package.Identity.Version;
                 searchResultPackage.IconUrl = package.IconUrl;
-                searchResultPackage.Author = package.Author;
+                searchResultPackage.Author = package.Authors;
                 searchResultPackage.DownloadCount = package.DownloadCount;
 
                 if (!_isSolution && _installedPackageIds.Contains(searchResultPackage.Id))
@@ -667,7 +606,7 @@ namespace NuGet.PackageManagement.UI
 
                 var versionList = new Lazy<Task<IEnumerable<VersionInfo>>>(async () =>
                 {
-                    var versions = await package.Versions.Value;
+                    var versions = await package.GetVersionsAsync();
 
                     var filteredVersions = versions
                             .Where(v => !v.Version.IsPrerelease || _option.IncludePrerelease)

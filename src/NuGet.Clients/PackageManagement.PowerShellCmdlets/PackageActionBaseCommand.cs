@@ -11,6 +11,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Resolver;
 using Task = System.Threading.Tasks.Task;
@@ -164,7 +165,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 return;
             }
 
-            var resource = ActiveSourceRepository.GetResource<UIMetadataResource>();
+            var resource = ActiveSourceRepository.GetResource<PackageMetadataResource>();
             if (resource == null)
             {
                 return;
@@ -172,7 +173,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             var metadata = ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                var result = await resource.GetMetadata(
+                var result = await resource.GetMetadataAsync(
                     Id,
                     includePrerelease: true,
                     includeUnlisted: false,

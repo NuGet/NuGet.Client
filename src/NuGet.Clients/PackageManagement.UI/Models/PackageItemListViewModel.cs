@@ -6,10 +6,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Threading.Tasks;
-using System.Windows;
-using NuGet.Protocol.VisualStudio;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
 {

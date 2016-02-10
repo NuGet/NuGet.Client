@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
 
@@ -24,7 +25,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Get the view of PowerShellPackage. Used for Get-Package -Updates command.
         /// </summary>
-        internal static PowerShellUpdatePackage GetPowerShellPackageUpdateView(PSSearchMetadata data, NuGetVersion version, VersionType versionType, NuGetProject project)
+        internal static PowerShellUpdatePackage GetPowerShellPackageUpdateView(IPackageSearchMetadata data, NuGetVersion version, VersionType versionType, NuGetProject project)
         {
             var package = new PowerShellUpdatePackage()
             {
@@ -33,8 +34,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 ProjectName = project.GetMetadata<string>(NuGetProjectMetadataKeys.Name),
                 AsyncLazyVersions = new AsyncLazy<IEnumerable<NuGetVersion>>(async delegate
                 {
-                    var results = (await data.Versions.Value) ?? Enumerable.Empty<NuGetVersion>();
-                    results = results.OrderByDescending(v => v)
+                    var versions = (await data.GetVersionsAsync()) ?? Enumerable.Empty<VersionInfo>();
+                    var results = versions.Select(v => v.Version).OrderByDescending(v => v)
                                     .Where(r => r > version)
                                     .ToArray();
 

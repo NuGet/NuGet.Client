@@ -288,8 +288,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
 
             var packageSource = new Configuration.PackageSource(source);
-            SourceRepository repository = _resourceRepositoryProvider.CreateRepository(packageSource);
-            PSSearchResource resource = repository.GetResource<PSSearchResource>();
+            var repository = _resourceRepositoryProvider.CreateRepository(packageSource);
+            var resource = repository.GetResource<PackageSearchResource>();
 
             // resource can be null here for relative path package source.
             if (resource == null)
@@ -313,7 +313,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             var sourceRepo = _resourceRepositoryProvider.CreateRepository(packageSource);
             // Right now if packageSource is invalid, CreateRepository will not throw. Instead, resource returned is null.
-            PSSearchResource newResource = repository.GetResource<PSSearchResource>();
+            var newResource = repository.GetResource<PackageSearchResource>();
             if (newResource == null)
             {
                 // Try to create Uri again to throw UriFormat exception for invalid source input.
@@ -533,7 +533,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Get list of packages from the remote package source. Used for Get-Package -ListAvailable.
         /// </summary>
-        protected async Task<IEnumerable<PSSearchMetadata>> GetPackagesFromRemoteSourceAsync(string packageId,
+        protected async Task<IEnumerable<IPackageSearchMetadata>> GetPackagesFromRemoteSourceAsync(string packageId,
             IEnumerable<string> targetFrameworks,
             bool includePrerelease,
             int skip,
@@ -544,13 +544,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             searchfilter.SupportedFrameworks = targetFrameworks;
             searchfilter.IncludeDelisted = false;
 
-            var packages = Enumerable.Empty<PSSearchMetadata>();
+            var packages = Enumerable.Empty<IPackageSearchMetadata>();
 
-            var resource = await ActiveSourceRepository.GetResourceAsync<PSSearchResource>();
+            var resource = await ActiveSourceRepository.GetResourceAsync<PackageSearchResource>();
 
             if (resource != null)
             {
-                packages = await resource.Search(packageId, searchfilter, skip, take, Token);
+                packages = await resource.SearchAsync(packageId, searchfilter, skip, take, Token);
             }
 
             return packages;

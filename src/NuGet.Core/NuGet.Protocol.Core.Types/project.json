@@ -14,12 +14,13 @@
     "warningsAsErrors": true
   },
   "dependencies": {
+    "NuGet.Common": "3.4.0-*",
+    "NuGet.Configuration": "3.4.0-*",
+    "NuGet.Packaging": "3.4.0-*",
     "NuGet.Shared": {
       "type": "build",
       "version": "3.4.0-*"
-    },
-    "NuGet.Configuration": "3.4.0-*",
-    "NuGet.Packaging": "3.4.0-*"
+    }
   },
   "frameworks": {
     "net45": {

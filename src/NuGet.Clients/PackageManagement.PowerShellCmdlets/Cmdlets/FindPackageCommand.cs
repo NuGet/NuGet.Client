@@ -7,6 +7,7 @@ using System.Linq;
 using System.Management.Automation;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
 
@@ -138,7 +139,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected void FindPackageStartWithId(bool excludeVersionInfo)
         {
-            var autoCompleteResource = ActiveSourceRepository.GetResource<PSAutoCompleteResource>(Token);
+            var autoCompleteResource = ActiveSourceRepository.GetResource<AutoCompleteResource>(Token);
             var packageIds = ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 var result = await autoCompleteResource.IdStartsWith(Id, IncludePrerelease.IsPresent, Token);
@@ -199,7 +200,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Get IPowerShellPackage from the remote package source
         /// </summary>
-        private PowerShellPackage GetIPowerShellPackageFromRemoteSource(PSAutoCompleteResource autoCompleteResource, string id)
+        private PowerShellPackage GetIPowerShellPackageFromRemoteSource(AutoCompleteResource autoCompleteResource, string id)
         {
             AsyncLazy<IEnumerable<NuGetVersion>> asyncLazyVersions = null;
 

@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
 using Task = System.Threading.Tasks.Task;
@@ -194,18 +195,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             var projectHasUpdates = false;
             var packages = new List<PowerShellUpdatePackage>();
 
-            var metadataTasks = new List<Tuple<Task<PSSearchMetadata>, Packaging.PackageReference>>();
+            var metadataTasks = new List<Tuple<Task<IPackageSearchMetadata>, Packaging.PackageReference>>();
 
             foreach (var installedPackage in installedPackages)
             {
-               var task = Task.Run<PSSearchMetadata>(async () =>
+               var task = Task.Run<IPackageSearchMetadata>(async () =>
                {
                    var results = await GetPackagesFromRemoteSourceAsync(installedPackage.PackageIdentity.Id, frameworks, IncludePrerelease.IsPresent, Skip, First);
                    var metadata = results.Where(p => string.Equals(p.Identity.Id, installedPackage.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
 
                    if (metadata != null)
                    {
-                       await metadata.Versions.Value;
+                       await metadata.GetVersionsAsync();
                    }
 
                    return metadata;
@@ -260,7 +261,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Output packages found from the current remote source
         /// </summary>
-        private void WritePackagesFromRemoteSource(IEnumerable<PSSearchMetadata> packages, bool outputWarning = false)
+        private void WritePackagesFromRemoteSource(IEnumerable<IPackageSearchMetadata> packages, bool outputWarning = false)
         {
             // Write warning message for Get-Package -ListAvaialble -Filter being obsolete
             // and will be replaced by Find-Package [-Id]
@@ -290,7 +291,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Output packages found from the current remote source with specified page size
         /// e.g. Get-Package -ListAvailable -PageSize 20
         /// </summary>
-        private void WriteMoreRemotePackagesWithPaging(IEnumerable<PSSearchMetadata> packagesToDisplay)
+        private void WriteMoreRemotePackagesWithPaging(IEnumerable<IPackageSearchMetadata> packagesToDisplay)
         {
             // Display more packages with paging
             var pageNumber = 1;
@@ -321,7 +322,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
         }
 
-        private void WritePackages(IEnumerable<PSSearchMetadata> packages, VersionType versionType)
+        private void WritePackages(IEnumerable<IPackageSearchMetadata> packages, VersionType versionType)
         {
             var view = PowerShellRemotePackage.GetPowerShellPackageView(packages, versionType);
 

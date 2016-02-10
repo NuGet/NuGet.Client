@@ -1,9 +1,11 @@
 ﻿{
   "dependencies": {
-    "NuGet.Protocol.VisualStudio": "3.4.0-*",
-    "NuGet.Resolver": "3.4.0-*",
-    "NuGet.ProjectManagement": "3.4.0-*",
-    "NuGet.PackageManagement": "3.4.0-*",
+    "Microsoft.VisualStudio.OLE.Interop": "7.10.6070",
+    "Microsoft.VisualStudio.Shell.14.0": "14.0.23107",
+    "Microsoft.VisualStudio.Shell.Immutable.10.0": "10.0.30319",
+    "Microsoft.VisualStudio.Shell.Immutable.11.0": "11.0.50727",
+    "Microsoft.VisualStudio.Shell.Immutable.12.0": "12.0.21003",
+    "Microsoft.VisualStudio.Shell.Immutable.14.0": "14.0.23107",
     "Microsoft.VisualStudio.Shell.Interop": "7.10.6071",
     "Microsoft.VisualStudio.Shell.Interop.10.0": "10.0.30319",
     "Microsoft.VisualStudio.Shell.Interop.11.0": "11.0.61030",
@@ -11,12 +13,10 @@
     "Microsoft.VisualStudio.Shell.Interop.8.0": "8.0.50727",
     "Microsoft.VisualStudio.Shell.Interop.9.0": "9.0.30729",
     "Microsoft.VisualStudio.Threading": "14.0.50702",
-    "Microsoft.VisualStudio.OLE.Interop": "7.10.6070",
-    "Microsoft.VisualStudio.Shell.14.0": "14.0.23107",
-    "Microsoft.VisualStudio.Shell.Immutable.10.0": "10.0.30319",
-    "Microsoft.VisualStudio.Shell.Immutable.11.0": "11.0.50727",
-    "Microsoft.VisualStudio.Shell.Immutable.12.0": "12.0.21003",
-    "Microsoft.VisualStudio.Shell.Immutable.14.0": "14.0.23107"
+    "NuGet.PackageManagement": "3.4.0-*",
+    "NuGet.ProjectManagement": "3.4.0-*",
+    "NuGet.Protocol.Core.Types": "3.4.0-*",
+    "NuGet.Resolver": "3.4.0-*"
   },
   "frameworks": {
     "net45": {}

@@ -1,13 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
-using NuGet.Common;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -24,7 +22,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         internal VsMachineWideSettings(DTE dte)
         {
-            var baseDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.MachineWideSettingsBaseDirectory);
+            var baseDirectory = Common.NuGetEnvironment.GetFolderPath(Common.NuGetFolderPath.MachineWideSettingsBaseDirectory);
             _settings = new AsyncLazy<IEnumerable<Configuration.Settings>>(async () =>
                 {
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();

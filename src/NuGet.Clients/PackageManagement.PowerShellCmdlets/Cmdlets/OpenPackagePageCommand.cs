@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.ProjectManagement;
+using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
 
@@ -52,13 +53,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             Preprocess();
 
-            UIPackageMetadata package = null;
+            IPackageSearchMetadata package = null;
             try
             {
-                UIMetadataResource resource = ActiveSourceRepository.GetResource<UIMetadataResource>();
+                PackageMetadataResource resource = ActiveSourceRepository.GetResource<PackageMetadataResource>();
                 var metadata = ThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    var result = await resource.GetMetadata(Id, IncludePrerelease.IsPresent, false, CancellationToken.None);
+                    var result = await resource.GetMetadataAsync(Id, IncludePrerelease.IsPresent, false, CancellationToken.None);
                     return result;
                 });
 
