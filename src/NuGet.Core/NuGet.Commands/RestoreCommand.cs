@@ -750,10 +750,13 @@ namespace NuGet.Commands
 
                             // Find all dependencies which would be in the nuspec
                             // Include dependencies with no constraints, or package/project/external
+                            // Exclude suppressed dependencies, the top level project is not written 
+                            // as a target so the node depth does not matter.
                             Dependencies = graphItem.Data.Dependencies
                                 .Where(
                                     d => (d.LibraryRange.TypeConstraintAllowsAnyOf(
-                                        LibraryDependencyTarget.PackageProjectExternal)))
+                                        LibraryDependencyTarget.PackageProjectExternal))
+                                        && d.SuppressParent != LibraryIncludeFlags.All)
                                 .Select(d => GetDependencyVersionRange(d))
                                 .ToList()
                         };
