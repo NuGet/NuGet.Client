@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -75,7 +76,7 @@ namespace NuGet.Commands
                 var name = $"{ProjectName}.nuget.targets";
                 var path = Path.Combine(ProjectDirectory, name);
 
-                log.LogMinimal(Strings.FormatLog_GeneratingMsBuildFile(name));
+                log.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_GeneratingMsBuildFile, name));
                 GenerateMSBuildErrorFile(path);
             }
             else
@@ -88,7 +89,7 @@ namespace NuGet.Commands
 
                 if (Targets.Any())
                 {
-                    log.LogMinimal(Strings.FormatLog_GeneratingMsBuildFile(targetsName));
+                    log.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_GeneratingMsBuildFile, targetsName));
 
                     GenerateImportsFile(targetsPath, Targets);
                 }
@@ -99,7 +100,7 @@ namespace NuGet.Commands
 
                 if (Props.Any())
                 {
-                    log.LogMinimal(Strings.FormatLog_GeneratingMsBuildFile(propsName));
+                    log.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_GeneratingMsBuildFile, propsName));
 
                     GenerateImportsFile(propsPath, Props);
                 }
