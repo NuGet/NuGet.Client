@@ -2018,7 +2018,62 @@ namespace NuGet.Configuration.Test
                 Assert.NotNull(ex);
                 Assert.IsAssignableFrom<InvalidOperationException>(ex);
                 Assert.Equal(String.Format(@"File '{0}' does not exist.", Path.Combine(mockBaseDirectory, "user.config")), ex.Message);
-            } }
+            }
+        }
+
+        // Tests that when configFileName is not null, machineWideSettings and
+        // NuGet.Config files in base directory ancestors are ignored.
+        [Fact]
+        public void UserSpecifiedConfigFileIgnoresOtherSettings()
+        {
+            // Arrange
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var environmentFileContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <SectionName>
+    <add key=""environment"" value=""true"" />
+  </SectionName>
+</configuration>";
+                var machineConfigFileContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <SectionName>
+    <add key=""machine"" value=""true"" />
+  </SectionName>
+</configuration>";
+                var userFileContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <SectionName>
+    <add key=""user"" value=""true"" />
+  </SectionName>
+</configuration>";
+
+                ConfigurationFileTestUtility.CreateConfigurationFile("NuGet.Config", Path.Combine(mockBaseDirectory, "a", "b"), environmentFileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("NuGet.Config", Path.Combine(mockBaseDirectory, "a"), environmentFileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("NuGet.Config", Path.Combine(mockBaseDirectory), environmentFileContent);
+
+                ConfigurationFileTestUtility.CreateConfigurationFile("NuGet.Config", Path.Combine(mockBaseDirectory, "machine"), machineConfigFileContent);
+
+                ConfigurationFileTestUtility.CreateConfigurationFile("NuGet.Config", Path.Combine(mockBaseDirectory, "nuget"), userFileContent);
+
+                var m = new Mock<IMachineWideSettings>();
+                m.SetupGet(obj => obj.Settings).Returns(
+                    Settings.LoadMachineWideSettings(mockBaseDirectory, "machine"));
+
+                // Act and assert
+                var settings = Settings.LoadDefaultSettings(
+                    Path.Combine(mockBaseDirectory, "a", "b"),
+                    Path.Combine(mockBaseDirectory, "nuget", "NuGet.Config"),
+                    m.Object);
+
+                var machineValue = settings.GetValue("SectionName", "machine");
+                Assert.Null(machineValue);
+                var environmentValue = settings.GetValue("SectionName", "environment");
+                Assert.Null(environmentValue);
+                var userFileValue = settings.GetValue("SectionName", "user");
+                Assert.Equal("true", userFileValue);
+            }
+        }
 
         // Tests the scenario where there are two user settings, both created
         // with the same machine wide settings.
