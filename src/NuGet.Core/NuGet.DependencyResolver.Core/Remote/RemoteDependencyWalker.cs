@@ -316,7 +316,7 @@ namespace NuGet.DependencyResolver
             }
         }
 
-        public Task<GraphItem<RemoteResolveResult>> FindLibraryCached(
+        private Task<GraphItem<RemoteResolveResult>> FindLibraryCached(
             ConcurrentDictionary<LibraryRangeCacheKey, Task<GraphItem<RemoteResolveResult>>> cache,
             LibraryRange libraryRange,
             NuGetFramework framework,
@@ -512,7 +512,7 @@ namespace NuGet.DependencyResolver
             }
         }
 
-        public Task<RemoteMatch> FindProjectMatch(
+        private Task<RemoteMatch> FindProjectMatch(
             LibraryRange libraryRange,
             NuGetFramework framework,
             GraphEdge<RemoteResolveResult> outerEdge,

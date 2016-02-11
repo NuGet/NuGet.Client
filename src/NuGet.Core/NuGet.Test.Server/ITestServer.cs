@@ -6,7 +6,8 @@ namespace NuGet.Test.Server
     public enum TestServerMode
     {
         ConnectFailure,
-        ServerProtocolViolation
+        ServerProtocolViolation,
+        NameResolutionFailure
     }
 
     public interface ITestServer

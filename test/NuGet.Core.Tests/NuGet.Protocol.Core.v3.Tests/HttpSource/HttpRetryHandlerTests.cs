@@ -65,6 +65,29 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
+        public async Task HttpRetryHandler_HandlesNameResolutionFailure()
+        {
+            // https://github.com/NuGet/Home/issues/2096
+            if (!RuntimeEnvironmentHelper.IsWindows)
+            {
+                return;
+            }
+
+            // Arrange
+            var server = new UnknownDnsServer { Mode = TestServerMode.NameResolutionFailure };
+
+            // Act & Assert
+            var exception = await ThrowsException<HttpRequestException>(server);
+#if DNXCORE50
+            Assert.NotNull(exception.InnerException);
+            Assert.Equal("The server name or address could not be resolved", exception.InnerException.Message);
+#else
+            var innerException = Assert.IsType<WebException>(exception.InnerException);
+            Assert.Equal(WebExceptionStatus.NameResolutionFailure, innerException.Status);
+#endif
+        }
+
+        [Fact]
         public async Task HttpRetryHandler_DifferentRequestInstanceEachTime()
         {
             // Arrange
