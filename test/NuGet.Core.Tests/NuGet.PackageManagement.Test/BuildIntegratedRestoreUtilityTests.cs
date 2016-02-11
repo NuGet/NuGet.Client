@@ -427,7 +427,7 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public async Task BuildIntegratedRestoreUtility_IsRestoreRequiredWithFloatingVersion()
+        public async Task BuildIntegratedRestoreUtility_IsRestoreNotRequiredWithFloatingVersion()
         {
             // Arrange
             var projectName = "testproj";
@@ -479,7 +479,7 @@ namespace NuGet.Test
                 var b = await BuildIntegratedRestoreUtility.IsRestoreRequired(projects, resolver, context);
 
                 // Assert
-                Assert.True(b);
+                Assert.False(b);
             }
         }
 
