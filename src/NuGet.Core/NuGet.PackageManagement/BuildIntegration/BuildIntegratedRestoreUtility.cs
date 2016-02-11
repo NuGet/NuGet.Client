@@ -273,32 +273,9 @@ namespace NuGet.PackageManagement
         {
             var hashesChecked = new HashSet<string>();
 
-            var packageSpecs = new Dictionary<string, PackageSpec>();
-
-            // Load all package specs and validate them first for floating versions and supports.
-            foreach (var project in projects)
-            {
-                var path = project.JsonConfigPath;
-
-                if (!packageSpecs.ContainsKey(path))
-                {
-                    var packageSpec = project.PackageSpec;
-
-                    if (packageSpec.Dependencies.Any(dependency => dependency.LibraryRange.VersionRange.IsFloating))
-                    {
-                        // Floating dependencies need to be checked each time
-                        return true;
-                    }
-
-                    packageSpecs.Add(path, packageSpec);
-                }
-            }
-
             // Validate project.lock.json files
             foreach (var project in projects)
             {
-                var packageSpec = packageSpecs[project.JsonConfigPath];
-
                 var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(project.JsonConfigPath);
 
                 if (!File.Exists(lockFilePath))
@@ -308,9 +285,11 @@ namespace NuGet.PackageManagement
                 }
 
                 var lockFileFormat = new LockFileFormat();
-                var lockFile = lockFileFormat.Read(lockFilePath);
+                var lockFile = lockFileFormat.Read(lockFilePath, referenceContext.Logger);
 
                 var lockFileVersion = await GetLockFileVersion(project, referenceContext);
+
+                var packageSpec = referenceContext.GetOrCreateSpec(project.ProjectName, project.JsonConfigPath);
 
                 if (!lockFile.IsValidForPackageSpec(packageSpec, lockFileVersion))
                 {
