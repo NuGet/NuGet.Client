@@ -184,7 +184,7 @@ namespace NuGet.Configuration
                     LoadUserSpecificSettings(validSettingFiles, root, configFileName, machineWideSettings);
                 }
 
-                if (machineWideSettings != null)
+                if (machineWideSettings != null && string.IsNullOrEmpty(configFileName))
                 {
                     validSettingFiles.AddRange(
                         machineWideSettings.Settings.Select(
