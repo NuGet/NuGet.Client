@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using NuGet.Common;
 using Mvs = Microsoft.VisualStudio.Shell;
 using Resx = NuGet.PackageManagement.UI;
 
@@ -185,7 +186,8 @@ namespace NuGet.PackageManagement.UI
                     var message = string.Format(
                             CultureInfo.CurrentCulture,
                             Resx.Resources.Text_ErrorOccurred,
-                            ex.Message);
+                            Environment.NewLine,
+                            ExceptionUtilities.DisplayMessage(ex));
 
                     _loadingStatusIndicator.Status = LoadingStatus.ErrorOccured;
                     _loadingStatusIndicator.ErrorMessage = message;

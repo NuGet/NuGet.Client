@@ -235,7 +235,7 @@
     <value>Error occurred. Retry</value>
   </data>
   <data name="Text_ErrorOccurred" xml:space="preserve">
-    <value>Error occured:\n{0}</value>
+    <value>Error occured:{0}{1}</value>
   </data>
   <data name="Label_Solution" xml:space="preserve">
     <value>Solution '{0}'</value>
