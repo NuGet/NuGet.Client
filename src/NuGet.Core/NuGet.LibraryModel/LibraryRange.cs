@@ -52,31 +52,39 @@ namespace NuGet.LibraryModel
         {
             var sb = new StringBuilder();
             sb.Append(Name);
-            sb.Append(" ");
 
-            if (VersionRange == null)
+            if (VersionRange != null)
             {
-                return sb.ToString();
-            }
+                if (VersionRange.HasLowerBound)
+                {
+                    sb.Append(" ");
 
-            var minVersion = VersionRange.MinVersion;
-            var maxVersion = VersionRange.MaxVersion;
+                    if (VersionRange.IsMinInclusive)
+                    {
+                        sb.Append(">= ");
+                    }
+                    else
+                    {
+                        sb.Append("> ");
+                    }
 
-            sb.Append(">= ");
+                    if (VersionRange.IsFloating)
+                    {
+                        sb.Append(VersionRange.Float.ToString());
+                    }
+                    else
+                    {
+                        sb.Append(VersionRange.MinVersion.ToNormalizedString());
+                    }
+                }
 
-            if (VersionRange.IsFloating)
-            {
-                sb.Append(VersionRange.Float.ToString());
-            }
-            else
-            {
-                sb.Append(minVersion.ToString());
-            }
+                if (VersionRange.HasUpperBound)
+                {
+                    sb.Append(" ");
 
-            if (maxVersion != null)
-            {
-                sb.Append(VersionRange.IsMaxInclusive ? "<= " : "< ");
-                sb.Append(maxVersion.Version.ToString());
+                    sb.Append(VersionRange.IsMaxInclusive ? "<= " : "< ");
+                    sb.Append(VersionRange.MaxVersion.ToNormalizedString());
+                }
             }
 
             return sb.ToString();
