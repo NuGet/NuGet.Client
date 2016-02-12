@@ -6058,9 +6058,6 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="Source_NotFound" xml:space="preserve">
     <value>Source '{0}' is not found.</value>
   </data>
-  <data name="AddCommand_SuccessfullyAdded" xml:space="preserve">
-    <value>Successfully added package '{0}' to feed '{1}'.</value>
-  </data>
   <data name="AddCommand_PackageAlreadyExists" xml:space="preserve">
     <value>Package '{0}' already exists at feed '{1}'.</value>
   </data>

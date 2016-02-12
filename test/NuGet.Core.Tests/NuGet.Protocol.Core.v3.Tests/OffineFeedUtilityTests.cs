@@ -1,7 +1,8 @@
-﻿using System.IO;
+﻿using System;
 using Xunit;
+using NuGet.Protocol.Core.Types;
 
-namespace NuGet.CommandLine.Test
+namespace NuGet.Protocol.Core.v3.Tests
 {
     public class OffineFeedUtilityTests
     {
@@ -11,10 +12,10 @@ namespace NuGet.CommandLine.Test
         public void OfflineFeedUtility_ThrowIfInvalid_Throws_PathInvalid(string path)
         {
             // Act & Assert
-            var expectedMessage = string.Format(NuGetResources.Path_Invalid, path);
+            var expectedMessage = string.Format("'{0}' is not a valid path.", path);
 
             var exception
-                = Assert.Throws<CommandLineException>(() => OfflineFeedUtility.ThrowIfInvalid(path));
+                = Assert.Throws<ArgumentException>(() => OfflineFeedUtility.ThrowIfInvalid(path));
 
             Assert.Equal(expectedMessage, exception.Message);
         }
@@ -25,10 +26,10 @@ namespace NuGet.CommandLine.Test
         public void OfflineFeedUtility_ThrowIfInvalid_Throws_Path_Invalid_NotFileNotUnc(string path)
         {
             // Act & Assert
-            var expectedMessage = string.Format(NuGetResources.Path_Invalid_NotFileNotUnc, path);
+            var expectedMessage = string.Format("'{0}' should be a local path or a UNC share path.", path);
 
             var exception
-                = Assert.Throws<CommandLineException>(() => OfflineFeedUtility.ThrowIfInvalid(path));
+                = Assert.Throws<ArgumentException>(() => OfflineFeedUtility.ThrowIfInvalid(path));
 
             Assert.Equal(expectedMessage, exception.Message);
         }
@@ -48,19 +49,13 @@ namespace NuGet.CommandLine.Test
         [InlineData("foobardoesnotexist\\A.nupkg", false)]
         public void OfflineFeedUtility_ThrowIfInvalidOrNotFound_Throws(string path, bool isDirectory)
         {
-            // Arrange
-            var nameOfNotFoundErrorResource
-                = isDirectory
-                ? nameof(NuGetResources.InitCommand_FeedIsNotFound) : nameof(NuGetResources.NupkgPath_NotFound);
-
             // Act & Assert
-            var expectedMessage = string.Format(NuGetResources.Path_Invalid_NotFileNotUnc, path);
             var exception
-                = Assert.Throws<CommandLineException>(()
+                = Assert.Throws<ArgumentException>(()
                     => OfflineFeedUtility.ThrowIfInvalidOrNotFound(
                         path,
                         isDirectory,
-                        nameOfNotFoundErrorResource));
+                        "some exception message"));
         }
     }
 }

@@ -166,7 +166,7 @@ namespace NuGet.Protocol.Core.Types
 
             if (IsFileSource())
             {
-                PushPackageToFileSystem(sourceUri, packageToPush);
+                await PushPackageToFileSystem(sourceUri, packageToPush, log, token);
             }
             else
             {
@@ -275,18 +275,34 @@ namespace NuGet.Protocol.Core.Types
             return request;
         }
 
-        private void PushPackageToFileSystem(Uri sourceUri, string pathToPackage)
+        private async Task PushPackageToFileSystem(Uri sourceUri, 
+            string pathToPackage,
+            ILogger log, 
+            CancellationToken token)
         {
             string root = sourceUri.LocalPath;
             var reader = new PackageArchiveReader(pathToPackage);
             var packageIdentity = reader.GetIdentity();
 
-            //TODD: support V3 repo style if detect it is
-            var pathResolver = new PackagePathResolver(root, useSideBySidePaths: true);
-            var packageFileName = pathResolver.GetPackageFileName(packageIdentity);
-
-            var fullPath = Path.Combine(root, packageFileName);
-            File.Copy(pathToPackage, fullPath, overwrite: true);
+            if (IsV2LocalRepository(root))
+            {
+                var pathResolver = new PackagePathResolver(root, useSideBySidePaths: true);
+                var packageFileName = pathResolver.GetPackageFileName(packageIdentity);
+                
+                var fullPath = Path.Combine(root, packageFileName);
+                File.Copy(pathToPackage, fullPath, overwrite: true);
+            }
+            else
+            {
+                var context = new OfflineFeedAddContext(pathToPackage, 
+                    root, 
+                    log, 
+                    throwIfSourcePackageIsInvalid:true, 
+                    throwIfPackageExistsAndInvalid: false, 
+                    throwIfPackageExists: false, 
+                    expand: true);
+                await OfflineFeedUtility.AddPackageToSource(context, token);
+            }
         }
 
         // Deletes a package from a Http server or file system
@@ -340,21 +356,49 @@ namespace NuGet.Protocol.Core.Types
             var resolver = new PackagePathResolver(sourceuri.AbsolutePath, useSideBySidePaths: true);
             resolver.GetPackageFileName(new Packaging.Core.PackageIdentity(packageId, new NuGetVersion(packageVersion)));
             var packageIdentity = new PackageIdentity(packageId, new NuGetVersion(packageVersion));
-            var packageFileName = resolver.GetPackageFileName(packageIdentity);
-
-            var fullPath = Path.Combine(root, packageFileName);
-            MakeFileWritable(fullPath);
-            File.Delete(fullPath);
+            if (IsV2LocalRepository(root))
+            {
+                var packageFileName = resolver.GetPackageFileName(packageIdentity);
+                var nupkgFilePath = Path.Combine(root, packageFileName);
+                if (!File.Exists(nupkgFilePath))
+                {
+                    throw new ArgumentException(Strings.DeletePackage_NotFound);
+                }
+                ForceDeleteFile(nupkgFilePath);
+            }
+            else
+            {
+                string packageDirectory = OfflineFeedUtility.GetPackageDirectory(packageIdentity, root);
+                if (!Directory.Exists(packageDirectory))
+                {
+                    throw new ArgumentException(Strings.DeletePackage_NotFound);
+                }
+                ForceDeleteDirectory(packageDirectory);
+            }
         }
 
-        // Remove the read-only flag.
-        private void MakeFileWritable(string fullPath)
+        // Remove the read-only flag and delete
+        private void ForceDeleteFile(string fullPath)
         {
             var attributes = File.GetAttributes(fullPath);
             if (attributes.HasFlag(FileAttributes.ReadOnly))
             {
                 File.SetAttributes(fullPath, attributes & ~FileAttributes.ReadOnly);
             }
+            File.Delete(fullPath);
+        }
+
+        //Remove read-only flags from all files under a folder and delete
+        public static void ForceDeleteDirectory(string path)
+        {
+            var directory = new DirectoryInfo(path) { Attributes = FileAttributes.Normal };
+
+            foreach (var info in directory.GetFileSystemInfos("*", SearchOption.AllDirectories))
+            {
+                info.Attributes = FileAttributes.Normal;
+            }
+
+            directory.Delete(true);
         }
 
         // Calculates the URL to the package to.
@@ -562,6 +606,38 @@ namespace NuGet.Protocol.Core.Types
                 _path = path;
                 _isFile = isFile;
             }
+        }
+
+        private bool IsV2LocalRepository(string root)
+        {
+            if (!Directory.Exists(root) ||
+                Directory.GetFiles(root, "*.nupkg").Any())
+            {
+                // If the repository does not exist or if there are .nupkg in the path, this is a v2-style repository.
+                return true;
+            }
+ 
+            foreach (var idDirectory in Directory.GetDirectories(root))
+            {
+                if (Directory.GetFiles(idDirectory, "*.nupkg").Any() ||
+                    Directory.GetFiles(idDirectory, "*.nuspec").Any())
+                {
+                    // ~/Foo/Foo.1.0.0.nupkg (LocalPackageRepository with PackageSaveModes.Nupkg) or 
+                    // ~/Foo/Foo.1.0.0.nuspec (LocalPackageRepository with PackageSaveMode.Nuspec)
+                    return true;
+                }
+                var idDirectoryName = Path.GetFileName(idDirectory);
+                foreach (var versionDirectoryPath in Directory.GetDirectories(idDirectory))
+                {
+                    if (Directory.GetFiles(versionDirectoryPath, idDirectoryName + NuGetConstants.ManifestExtension).Any())
+                    {
+                        // If we have files in the format {packageId}/{version}/{packageId}.nuspec, assume it's an expanded package repository.
+                        return false;
+                    }
+                }
+            }
+ 
+            return true;
         }
     }
 }
