@@ -14,9 +14,9 @@ namespace NuGet.CommandLine.Test
         private readonly string _originalCredentialProvidersEnvar =
             Environment.GetEnvironmentVariable(ExtensionLocator.CredentialProvidersEnvar);
 
-        // Tests pushing to a source that is a file system directory.
+        // Tests pushing to a source that is a v2 file system directory.
         [Fact]
-        public void PushCommand_PushToFileSystemSource()
+        public void PushCommand_PushToV2FileSystemSource()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -39,6 +39,43 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(Path.Combine(source, "testPackage1.1.1.0.nupkg")));
                 var output = result.Item2;
                 Assert.DoesNotContain("WARNING: No API Key was provided", output);
+            }
+        }
+
+        [Fact]
+        public void PushCommand_PushToV3FileSystemSource()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                //drop dummy artifacts to make it a V3
+                var dummyPackageName = "foo";
+                Directory.CreateDirectory(Path.Combine(source.Path, dummyPackageName));
+                var f = Directory.CreateDirectory(Path.Combine(source.Path, dummyPackageName, "1.0.0"));
+                File.WriteAllText(Path.Combine(f.FullName, dummyPackageName + ".nuspec"), "some text");
+
+                // Arrange
+                var version = "1.1.0";
+                var packageId = "testPackage1";
+                var packageFileName = Util.CreateTestPackage(packageId, version, packageDirectory);
+
+                // Act
+                string[] args = new string[] { "push", packageFileName, "-Source", source };
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    true);
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                var basename = string.Format("{0}.{1}.", packageId, version);
+                var baseFolder = string.Format("{0}\\{1}\\", packageId, version);
+                Assert.True(File.Exists(Path.Combine(source, baseFolder + packageId + ".nuspec")));
+                Assert.True(File.Exists(Path.Combine(source, baseFolder + basename + "nupkg")));
+                Assert.True(File.Exists(Path.Combine(source, baseFolder + basename + "nupkg.sha512")));
             }
         }
 

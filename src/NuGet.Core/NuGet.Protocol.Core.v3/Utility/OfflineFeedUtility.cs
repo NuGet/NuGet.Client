@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
+using NuGet.Protocol.Core.v3;
 
-namespace NuGet.CommandLine
+namespace NuGet.Protocol.Core.Types
 {
     public static class OfflineFeedUtility
     {
@@ -29,15 +30,9 @@ namespace NuGet.CommandLine
             }
 
             var versionFolderPathResolver = new VersionFolderPathResolver(offlineFeed, normalizePackageId: true);
-
-            var nupkgFilePath
-                = versionFolderPathResolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version);
-
-            var hashFilePath
-                = versionFolderPathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
-
-            var nuspecFilePath
-                = versionFolderPathResolver.GetManifestFilePath(packageIdentity.Id, packageIdentity.Version);
+            string nupkgFilePath = versionFolderPathResolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version);
+            string hashFilePath = versionFolderPathResolver.GetHashPath(packageIdentity.Id, packageIdentity.Version);
+            string nuspecFilePath = versionFolderPathResolver.GetManifestFilePath(packageIdentity.Id, packageIdentity.Version);
 
             var nupkgFileExists = File.Exists(nupkgFilePath);
 
@@ -68,23 +63,29 @@ namespace NuGet.CommandLine
             isValidPackage = false;
             return false;
         }
+        public static string GetPackageDirectory(PackageIdentity packageIdentity, string offlineFeed)
+        {
+            var versionFolderPathResolver = new VersionFolderPathResolver(offlineFeed, normalizePackageId: true);
+            return Path.GetDirectoryName(
+                versionFolderPathResolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version));
+        }
 
         public static void ThrowIfInvalid(string path)
         {
             Uri pathUri;
             if (!Uri.TryCreate(path, UriKind.RelativeOrAbsolute, out pathUri))
             {
-                throw new CommandLineException(
-                    LocalizedResourceManager.GetString(nameof(NuGetResources.Path_Invalid)),
-                    path);
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Path_Invalid,
+                    path));
             }
 
             var invalidPathChars = Path.GetInvalidPathChars();
             if (invalidPathChars.Any(p => path.Contains(p)))
             {
-                throw new CommandLineException(
-                    LocalizedResourceManager.GetString(nameof(NuGetResources.Path_Invalid)),
-                    path);
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Path_Invalid,
+                    path));
             }
 
             if (!pathUri.IsAbsoluteUri)
@@ -95,20 +96,20 @@ namespace NuGet.CommandLine
 
             if (!pathUri.IsFile && !pathUri.IsUnc)
             {
-                throw new CommandLineException(
-                    LocalizedResourceManager.GetString(nameof(NuGetResources.Path_Invalid_NotFileNotUnc)),
-                    path);
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                    Strings.Path_Invalid_NotFileNotUnc,
+                    path));
             }
         }
 
         public static void ThrowIfInvalidOrNotFound(
             string path,
             bool isDirectory,
-            string nameOfNotFoundErrorResource)
+            string resourceString)
         {
-            if (nameOfNotFoundErrorResource == null)
+            if (resourceString == null)
             {
-                throw new ArgumentNullException(nameof(nameOfNotFoundErrorResource));
+                throw new ArgumentNullException(nameof(resourceString));
             }
 
             ThrowIfInvalid(path);
@@ -116,9 +117,9 @@ namespace NuGet.CommandLine
             if ((isDirectory && !Directory.Exists(path)) ||
                 (!isDirectory && !File.Exists(path)))
             {
-                throw new CommandLineException(
-                    LocalizedResourceManager.GetString(nameOfNotFoundErrorResource),
-                    path);
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                    resourceString,
+                    path));
             }
         }
 
@@ -145,12 +146,13 @@ namespace NuGet.CommandLine
                         {
                             var message = string.Format(
                                 CultureInfo.CurrentCulture,
-                                LocalizedResourceManager.GetString(
-                                nameof(NuGetResources.AddCommand_PackageAlreadyExists)), packageIdentity, source);
+                                Strings.AddPackage_PackageAlreadyExists,
+                                packageIdentity, 
+                                source);
 
                             if (offlineFeedAddContext.ThrowIfPackageExists)
                             {
-                                throw new CommandLineException(message);
+                                throw new ArgumentException(message);
                             }
                             else
                             {
@@ -159,14 +161,14 @@ namespace NuGet.CommandLine
                         }
                         else
                         {
-                            var message = string.Format(
-                                CultureInfo.CurrentCulture,
-                                LocalizedResourceManager.GetString(
-                                nameof(NuGetResources.AddCommand_ExistingPackageInvalid)), packageIdentity, source);
+                            var message = string.Format(CultureInfo.CurrentCulture,
+                                Strings.AddPackage_ExistingPackageInvalid, 
+                                packageIdentity, 
+                                source);
 
                             if (offlineFeedAddContext.ThrowIfPackageExistsAndInvalid)
                             {
-                                throw new CommandLineException(message);
+                                throw new ArgumentException(message);
                             }
                             else
                             {
@@ -197,7 +199,7 @@ namespace NuGet.CommandLine
 
                         var message = string.Format(
                             CultureInfo.CurrentCulture,
-                            LocalizedResourceManager.GetString(nameof(NuGetResources.AddCommand_SuccessfullyAdded)),
+                            Strings.AddPackage_SuccessfullyAdded,
                             packagePath,
                             source);
 
@@ -208,12 +210,12 @@ namespace NuGet.CommandLine
                 {
                     var message = string.Format(
                         CultureInfo.CurrentCulture,
-                        LocalizedResourceManager.GetString(nameof(NuGetResources.NupkgPath_InvalidNupkg)),
+                        Strings.NupkgPath_Invalid,
                         packagePath);
 
                     if (offlineFeedAddContext.ThrowIfSourcePackageIsInvalid)
                     {
-                        throw new CommandLineException(message);
+                        throw new ArgumentException(message);
                     }
                     else
                     {

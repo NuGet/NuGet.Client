@@ -88,15 +88,6 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Successfully added package &apos;{0}&apos; to feed &apos;{1}&apos;..
-        /// </summary>
-        public static string AddCommand_SuccessfullyAdded {
-            get {
-                return ResourceManager.GetString("AddCommand_SuccessfullyAdded", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Add file &apos;{0}&apos; to package as &apos;{1}&apos;.
         /// </summary>
         public static string AddFileToPackage {
@@ -2770,7 +2761,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Source parameter was not specified.
+        ///   Looks up a localized string similar to Source parameter was not specified..
         /// </summary>
         public static string Error_MissingSourceParameter {
             get {
