@@ -478,7 +478,7 @@ namespace NuGet.Packaging.Test
             {
                 var zip = TestPackages.GetZip(packageFile);
 
-                using (PackageReader reader = new PackageReader(zip))
+                using (PackageArchiveReader reader = new PackageArchiveReader(zip))
                 {
                     Assert.Throws<FrameworkException>(
                         () => reader.GetSupportedFrameworks());
