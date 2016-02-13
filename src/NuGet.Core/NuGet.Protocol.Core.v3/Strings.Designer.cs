@@ -87,6 +87,42 @@ namespace NuGet.Protocol.Core.v3 {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Package &apos;{0}&apos; already exists at feed &apos;{1}&apos; and is invalid..
+        /// </summary>
+        internal static string AddPackage_ExistingPackageInvalid {
+            get {
+                return ResourceManager.GetString("AddPackage_ExistingPackageInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Package &apos;{0}&apos; already exists at feed &apos;{1}&apos;..
+        /// </summary>
+        internal static string AddPackage_PackageAlreadyExists {
+            get {
+                return ResourceManager.GetString("AddPackage_PackageAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Successfully added package &apos;{0}&apos; to feed &apos;{1}&apos;..
+        /// </summary>
+        internal static string AddPackage_SuccessfullyAdded {
+            get {
+                return ResourceManager.GetString("AddPackage_SuccessfullyAdded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Argument can not be null or empty..
+        /// </summary>
+        internal static string Argument_Cannot_Be_Null_Or_Empty {
+            get {
+                return ResourceManager.GetString("Argument_Cannot_Be_Null_Or_Empty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Argument cannot be null or empty..
         /// </summary>
         internal static string ArgumentCannotBeNullOrEmpty {
@@ -137,6 +173,15 @@ namespace NuGet.Protocol.Core.v3 {
         internal static string DeleteCommandDeletingPackage {
             get {
                 return ResourceManager.GetString("DeleteCommandDeletingPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Not Found..
+        /// </summary>
+        internal static string DeletePackage_NotFound {
+            get {
+                return ResourceManager.GetString("DeletePackage_NotFound", resourceCulture);
             }
         }
         
@@ -294,6 +339,15 @@ namespace NuGet.Protocol.Core.v3 {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to &apos;{0}&apos; is not a valid nupkg file..
+        /// </summary>
+        internal static string NupkgPath_Invalid {
+            get {
+                return ResourceManager.GetString("NupkgPath_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to One or more URIs must be specified..
         /// </summary>
         internal static string OneOrMoreUrisMustBeSpecified {
@@ -317,6 +371,24 @@ namespace NuGet.Protocol.Core.v3 {
         internal static string PackageServerEndpoint_NotSupported {
             get {
                 return ResourceManager.GetString("PackageServerEndpoint_NotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to &apos;{0}&apos; is not a valid path..
+        /// </summary>
+        internal static string Path_Invalid {
+            get {
+                return ResourceManager.GetString("Path_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to &apos;{0}&apos; should be a local path or a UNC share path..
+        /// </summary>
+        internal static string Path_Invalid_NotFileNotUnc {
+            get {
+                return ResourceManager.GetString("Path_Invalid_NotFileNotUnc", resourceCulture);
             }
         }
         

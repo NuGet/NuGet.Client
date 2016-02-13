@@ -10,7 +10,7 @@ namespace NuGet.CommandLine.Test
     {
         // Tests deleting a package from a source that is a file system directory.
         [Fact]
-        public void DeleteCommand_DeleteFromFileSystemSource()
+        public void DeleteCommand_DeleteFromV2FileSystemSource()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -33,6 +33,96 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, r.Item1);
                 Assert.False(File.Exists(packageFileName));
+            }
+        }
+
+        [Fact]
+        public void DeleteCommand_DeleteReadOnlyFromV2FileSystemSource()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", source);
+                Assert.True(File.Exists(packageFileName));
+                File.SetAttributes(packageFileName, 
+                    File.GetAttributes(packageFileName) | FileAttributes.ReadOnly);
+                // Act
+                string[] args = new string[] {
+                    "delete", "testPackage1", "1.1.0",
+                    "-Source", source, "-NonInteractive" };
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    String.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                Assert.False(File.Exists(packageFileName));
+            }
+        }
+
+        [Fact]
+        public void DeleteCommand_DeleteFromV3FileSystemSource()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                //drop dummy artifacts to make it a V3
+                var dummyPackageName = "foo";
+                var version = "1.0.0";
+                var packageFolder = Directory.CreateDirectory(Path.Combine(source.Path, dummyPackageName));
+                var packageVersionFolder = Directory.CreateDirectory(Path.Combine(packageFolder.FullName, "1.0.0"));
+                File.WriteAllText(Path.Combine(packageVersionFolder.FullName, dummyPackageName + ".nuspec"), "dummy text");
+                Assert.True(Directory.Exists(packageVersionFolder.FullName));
+                // Act
+                string[] args = new string[] {
+                    "delete", "foo", version,
+                    "-Source", source, "-NonInteractive" };
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    String.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                //The specific version folder should be gone.
+                Assert.False(Directory.Exists(packageVersionFolder.FullName));
+            }
+        }
+
+        [Fact]
+        public void DeleteCommand_DeleteReadOnlyFileFromV3FileSystemSource()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var source = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                //drop dummy artifacts to make it a V3
+                var dummyPackageName = "foo";
+                var version = "1.0.0";
+                var packageFolder = Directory.CreateDirectory(Path.Combine(source.Path, dummyPackageName));
+                var packageVersionFolder = Directory.CreateDirectory(Path.Combine(packageFolder.FullName, "1.0.0"));
+                var dummyNuspec = Path.Combine(packageVersionFolder.FullName, dummyPackageName + ".nuspec");
+                File.WriteAllText(dummyNuspec, "dummy text");
+                File.SetAttributes(dummyNuspec, File.GetAttributes(dummyNuspec) | FileAttributes.ReadOnly);
+                // Act
+                string[] args = new string[] {
+                    "delete", "foo", version,
+                    "-Source", source, "-NonInteractive" };
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    String.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                Assert.False(Directory.Exists(packageVersionFolder.FullName));
             }
         }
 

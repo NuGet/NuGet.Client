@@ -249,4 +249,28 @@
   <data name="LiveFeed" xml:space="preserve">
     <value>the NuGet gallery</value>
   </data>
+  <data name="AddPackage_ExistingPackageInvalid" xml:space="preserve">
+    <value>Package '{0}' already exists at feed '{1}' and is invalid.</value>
+  </data>
+  <data name="AddPackage_PackageAlreadyExists" xml:space="preserve">
+    <value>Package '{0}' already exists at feed '{1}'.</value>
+  </data>
+  <data name="AddPackage_SuccessfullyAdded" xml:space="preserve">
+    <value>Successfully added package '{0}' to feed '{1}'.</value>
+  </data>
+  <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
+    <value>Argument can not be null or empty.</value>
+  </data>
+  <data name="DeletePackage_NotFound" xml:space="preserve">
+    <value>Not Found.</value>
+  </data>
+  <data name="NupkgPath_Invalid" xml:space="preserve">
+    <value>'{0}' is not a valid nupkg file.</value>
+  </data>
+  <data name="Path_Invalid" xml:space="preserve">
+    <value>'{0}' is not a valid path.</value>
+  </data>
+  <data name="Path_Invalid_NotFileNotUnc" xml:space="preserve">
+    <value>'{0}' should be a local path or a UNC share path.</value>
+  </data>
 </root>
