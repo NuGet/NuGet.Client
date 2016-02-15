@@ -139,7 +139,7 @@
     <value>When updating multiple packages, dependency behavior has to be DependencyBehavior.Highest</value>
   </data>
   <data name="NoLatestVersionFound" xml:space="preserve">
-    <value>No latest version found for the '{0}' for the given source repositories and resolution context</value>
+    <value>No latest version found for '{0}' for the given source repositories and resolution context</value>
   </data>
   <data name="NoNuGetProjectWithSpecifiedName" xml:space="preserve">
     <value>No NuGetProject is available with specified name '{0}'</value>
