@@ -24,6 +24,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
+using NuGetUIThreadHelper = NuGet.PackageManagement.UI.NuGetUIThreadHelper;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
@@ -173,7 +174,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             var prompt = "PM>";
 
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 try
                 {
@@ -207,7 +208,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public void Initialize(IConsole console)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     ActiveConsole = console;
                     if (_initialized.HasValue)
@@ -222,7 +223,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     {
                         try
                         {
-                            Tuple<RunspaceDispatcher, NuGetPSHost> result = _runspaceManager.GetRunspace(console, _name);
+                            var result = _runspaceManager.GetRunspace(console, _name);
                             Runspace = result.Item1;
                             _nugetHost = result.Item2;
 
@@ -643,9 +644,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             Debug.Assert(_solutionManager != null);
 
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     var allProjects = _solutionManager.GetNuGetProjects();
                     _projectSafeNames = allProjects.Select(_solutionManager.GetNuGetProjectSafeName).ToArray();

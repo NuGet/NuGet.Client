@@ -14,6 +14,7 @@ using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using Task = System.Threading.Tasks.Task;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -45,7 +46,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             Preprocess();
 
-            var identity = ThreadHelper.JoinableTaskFactory.Run(async delegate
+            var identity = NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 var result = await GetPackageIdentity();
                 return result;

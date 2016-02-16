@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using Task = System.Threading.Tasks.Task;
@@ -32,7 +33,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     var view = new PowerShellInstalledPackage()
                     {
                         Id = package.PackageIdentity.Id,
-                        AsyncLazyVersions = new AsyncLazy<IEnumerable<NuGetVersion>>(() => Task.FromResult<IEnumerable<NuGetVersion>>(new[] { package.PackageIdentity.Version }), ThreadHelper.JoinableTaskFactory),
+                        AsyncLazyVersions = new AsyncLazy<IEnumerable<NuGetVersion>>(() => Task.FromResult<IEnumerable<NuGetVersion>>(new[] { package.PackageIdentity.Version }), NuGetUIThreadHelper.JoinableTaskFactory),
                         ProjectName = entry.Key.GetMetadata<string>(NuGetProjectMetadataKeys.Name),
                     };
 

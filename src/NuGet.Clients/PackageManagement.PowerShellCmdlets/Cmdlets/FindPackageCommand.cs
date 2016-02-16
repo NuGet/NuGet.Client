@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
+using NuGet.PackageManagement.UI;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -140,7 +141,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected void FindPackageStartWithId(bool excludeVersionInfo)
         {
             var autoCompleteResource = ActiveSourceRepository.GetResource<AutoCompleteResource>(Token);
-            var packageIds = ThreadHelper.JoinableTaskFactory.Run(async delegate
+            var packageIds = NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 var result = await autoCompleteResource.IdStartsWith(Id, IncludePrerelease.IsPresent, Logging.NullLogger.Instance, Token);
                 return result;
@@ -213,7 +214,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                     return results;
                 },
-                ThreadHelper.JoinableTaskFactory);
+                NuGetUIThreadHelper.JoinableTaskFactory);
             }
             catch
             {

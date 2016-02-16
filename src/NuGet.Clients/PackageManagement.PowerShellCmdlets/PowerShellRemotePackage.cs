@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.PackageManagement.UI;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
@@ -35,7 +36,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         var versions = await data.GetVersionsAsync();
                         var results = versions?.Select(v => v.Version).OrderByDescending(v => v).ToArray();
                         return results ?? Enumerable.Empty<NuGetVersion>();
-                    }, ThreadHelper.JoinableTaskFactory)
+                    }, NuGetUIThreadHelper.JoinableTaskFactory)
                 };
 
                 switch (versionType)

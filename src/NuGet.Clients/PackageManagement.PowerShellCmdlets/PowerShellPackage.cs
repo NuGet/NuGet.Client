@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.PackageManagement.UI;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
@@ -20,7 +21,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             get
             {
-                return ThreadHelper.JoinableTaskFactory.Run(async delegate
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     var result = (await AsyncLazyVersions.GetValueAsync()) ?? Enumerable.Empty<NuGetVersion>();
 

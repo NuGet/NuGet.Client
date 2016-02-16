@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.PackageManagement.UI;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
@@ -40,7 +41,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                                     .ToArray();
 
                     return results;
-                }, ThreadHelper.JoinableTaskFactory)
+                }, NuGetUIThreadHelper.JoinableTaskFactory)
             };
 
             switch (versionType)
