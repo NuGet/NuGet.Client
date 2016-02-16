@@ -242,7 +242,7 @@ namespace NuGet.Protocol.Core.Types
         private async Task PushPackageToServer(string source,
             string apiKey,
             string pathToPackage,
-            long packageSzie,
+            long packageSize,
             ILogger logger,
             CancellationToken token)
         {
@@ -250,7 +250,10 @@ namespace NuGet.Protocol.Core.Types
                 () => CreateRequest(source, pathToPackage, apiKey),
                 token);
 
-            response.EnsureSuccessStatusCode();
+            using (response)
+            {
+                response.EnsureSuccessStatusCode();
+            }
         }
 
         private HttpRequestMessage CreateRequest(string source,
@@ -329,7 +332,10 @@ namespace NuGet.Protocol.Core.Types
                 }, 
                 token);
 
-            response.EnsureSuccessStatusCode();
+            using (response)
+            {
+                response.EnsureSuccessStatusCode();
+            }
         }
 
         // Deletes a package from a FileSystem.
