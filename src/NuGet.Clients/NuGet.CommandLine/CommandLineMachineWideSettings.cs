@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using NuGet.Common;
 
 namespace NuGet
 {
@@ -11,7 +12,7 @@ namespace NuGet
 
         public CommandLineMachineWideSettings()
         {
-            var baseDirectory = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+            var baseDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.MachineWideConfigDirectory);
             _settings = new Lazy<IEnumerable<Configuration.Settings>>(
                 () => Configuration.Settings.LoadMachineWideSettings(baseDirectory));
         }

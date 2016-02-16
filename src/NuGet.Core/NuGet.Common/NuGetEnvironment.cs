@@ -13,13 +13,12 @@ namespace NuGet.Common
             switch (folder)
             {
                 case NuGetFolderPath.MachineWideSettingsBaseDirectory:
-                    return Path.Combine(
-                        GetFolderPath(SpecialFolder.CommonApplicationData),
-                        "NuGet");
+                    return GetFolderPath(SpecialFolder.CommonApplicationData);
 
                 case NuGetFolderPath.MachineWideConfigDirectory:
                     return Path.Combine(
                         GetFolderPath(NuGetFolderPath.MachineWideSettingsBaseDirectory),
+                        "nuget",
                         "Config");
 
                 case NuGetFolderPath.UserSettingsDirectory:
