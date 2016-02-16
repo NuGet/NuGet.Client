@@ -56,9 +56,9 @@ namespace NuGet.Configuration.Test
                 var userSetting = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 #endif
                 // Assert 
-                Assert.Equal(Path.Combine(commonApplicationData, "NuGet"), machineWidePathTuple.Item2);
+                Assert.Equal(commonApplicationData, machineWidePathTuple.Item2);
                 Assert.Equal("NuGet.Config", machineWidePathTuple.Item1);
-                Assert.Equal(Path.Combine(userSetting, "NuGet"), globalConfigTuple.Item2);
+                Assert.Equal(Path.Combine(userSetting,"NuGet"), globalConfigTuple.Item2);
                 Assert.Equal("NuGet.Config", globalConfigTuple.Item1);
             }
             else if(PlatformServices.Default.Runtime.OperatingSystem.Equals("linux", StringComparison.OrdinalIgnoreCase))
@@ -77,7 +77,7 @@ namespace NuGet.Configuration.Test
                 var userSetting = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 #endif
                 // Assert 
-                Assert.Equal(Path.Combine(commonApplicationData, "NuGet"), machineWidePathTuple.Item2);
+                Assert.Equal(commonApplicationData, machineWidePathTuple.Item2);
                 Assert.Equal("NuGet.Config", machineWidePathTuple.Item1);
                 Assert.Equal(Path.Combine(userSetting, "NuGet"), globalConfigTuple.Item2);
                 Assert.Equal("NuGet.Config", globalConfigTuple.Item1);
@@ -98,7 +98,7 @@ namespace NuGet.Configuration.Test
                 var userSetting = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 #endif
                 // Assert 
-                Assert.Equal(Path.Combine(commonApplicationData, "NuGet"), machineWidePathTuple.Item2);
+                Assert.Equal(commonApplicationData, machineWidePathTuple.Item2);
                 Assert.Equal("NuGet.Config", machineWidePathTuple.Item1);
                 Assert.Equal(Path.Combine(userSetting, "NuGet"), globalConfigTuple.Item2);
                 Assert.Equal("NuGet.Config", globalConfigTuple.Item1);
@@ -1867,7 +1867,7 @@ namespace NuGet.Configuration.Test
 
                 // Act
                 var settings = Settings.LoadMachineWideSettings(
-                    mockBaseDirectory, "IDE", "Version", "SKU", "TestDir");
+                    Path.Combine(mockBaseDirectory, "nuget", "Config"), "IDE", "Version", "SKU", "TestDir");
 
                 // Assert
                 var files = settings.Select(s => s.ConfigFilePath).ToArray();
@@ -1917,7 +1917,7 @@ namespace NuGet.Configuration.Test
 
                 var m = new Mock<IMachineWideSettings>();
                 m.SetupGet(obj => obj.Settings).Returns(
-                    Settings.LoadMachineWideSettings(mockBaseDirectory, "IDE", "Version", "SKU"));
+                    Settings.LoadMachineWideSettings(Path.Combine(mockBaseDirectory, "nuget", "Config"), "IDE", "Version", "SKU"));
 
                 // Act
                 var settings = Settings.LoadDefaultSettings(
@@ -2052,7 +2052,7 @@ namespace NuGet.Configuration.Test
 
                 var m = new Mock<IMachineWideSettings>();
                 m.SetupGet(obj => obj.Settings).Returns(
-                    Settings.LoadMachineWideSettings(mockBaseDirectory, "IDE", "Version", "SKU"));
+                    Settings.LoadMachineWideSettings(Path.Combine(mockBaseDirectory, "nuget", "Config"), "IDE", "Version", "SKU"));
 
                 // Act
                 var settings1 = Settings.LoadDefaultSettings(

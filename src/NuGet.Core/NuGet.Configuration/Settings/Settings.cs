@@ -321,15 +321,12 @@ namespace NuGet.Configuration
             }
 
             var settingFiles = new List<Settings>();
-            var basePath = Path.Combine("nuget", "Config");
             var combinedPath = Path.Combine(paths);
 
             while (true)
             {
-                var directory = Path.Combine(basePath, combinedPath);
-
                 // load setting files in directory
-                foreach (var file in FileSystemUtility.GetFilesRelativeToRoot(root, directory, "*.config", SearchOption.TopDirectoryOnly))
+                foreach (var file in FileSystemUtility.GetFilesRelativeToRoot(root, combinedPath, "*.config", SearchOption.TopDirectoryOnly))
                 {
                     var settings = ReadSettings(root, file, true);
                     if (settings != null)
