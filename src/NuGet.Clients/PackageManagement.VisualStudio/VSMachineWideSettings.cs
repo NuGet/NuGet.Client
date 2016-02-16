@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         internal VsMachineWideSettings(DTE dte)
         {
-            var baseDirectory = Common.NuGetEnvironment.GetFolderPath(Common.NuGetFolderPath.MachineWideSettingsBaseDirectory);
+            var baseDirectory = Common.NuGetEnvironment.GetFolderPath(Common.NuGetFolderPath.MachineWideConfigDirectory);
             _settings = new AsyncLazy<IEnumerable<Configuration.Settings>>(async () =>
                 {
                     await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
