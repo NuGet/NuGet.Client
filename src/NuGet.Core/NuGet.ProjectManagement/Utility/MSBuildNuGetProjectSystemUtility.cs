@@ -327,6 +327,11 @@ namespace NuGet.ProjectManagement
 
         internal static void DeleteFileSafe(string path, Func<Stream> streamFactory, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
         {
+            if (!File.Exists(path))
+            {
+                return;
+            }
+
             // Only delete the file if it exists and the checksum is the same
             if (msBuildNuGetProjectSystem.FileExistsInProject(path))
             {
