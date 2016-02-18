@@ -20,6 +20,7 @@ namespace NuGet.Protocol.Core.v3
         [JsonProperty(PropertyName = JsonProperties.DependencyGroups, ItemConverterType = typeof(PackageDependencyGroupConverter))]
         public IEnumerable<PackageDependencyGroup> DependencySetsInternal { get; private set; }
 
+        [JsonIgnore]
         public IEnumerable<PackageDependencyGroup> DependencySets
         {
             get
