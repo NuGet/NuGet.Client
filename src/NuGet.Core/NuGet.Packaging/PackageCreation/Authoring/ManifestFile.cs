@@ -1,15 +1,21 @@
-﻿#if DNX451
+﻿#if !DNXCORE50
+using NuGet.Packaging.PackageCreation.Resources;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
+using System.IO;
+using System.Linq;
 #endif
 
 namespace NuGet.Packaging
 {
     public class ManifestFile
-#if DNX451
+#if !DNXCORE50
         : IValidatableObject
 #endif
     {
-#if DNX451
+#if !DNXCORE50
         private static readonly char[] _invalidTargetChars = Path.GetInvalidFileNameChars().Except(new[] { '\\', '/', '.' }).ToArray();
         private static readonly char[] _invalidSourceCharacters = Path.GetInvalidPathChars();
 #endif
@@ -20,7 +26,7 @@ namespace NuGet.Packaging
 
         public string Exclude { get; set; }
 
-#if DNX451
+#if !DNXCORE50
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (!String.IsNullOrEmpty(Source) && Source.IndexOfAny(_invalidSourceCharacters) != -1)

@@ -5,9 +5,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Common;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine
 {
+    using NuGet.Packaging;
+
     [Command(typeof(NuGetCommand), "pack", "PackageCommandDescription", MaxArgs = 1, UsageSummaryResourceName = "PackageCommandUsageSummary",
             UsageDescriptionResourceName = "PackageCommandUsageDescription", UsageExampleResourceName = "PackCommandUsageExamples")]
     public class PackCommand : Command
@@ -152,12 +155,12 @@ namespace NuGet.CommandLine
         {
             if (!String.IsNullOrEmpty(Version))
             {
-                builder.Version = new SemanticVersion(Version);
+                builder.Version = new NuGetVersion(Version);
             }
 
             if (!string.IsNullOrEmpty(Suffix))
             {
-                builder.Version = new SemanticVersion(builder.Version.Version, Suffix);
+                builder.Version = new NuGetVersion(builder.Version.Version, Suffix);
             }
 
             if (_minClientVersionValue != null)
@@ -508,7 +511,7 @@ namespace NuGet.CommandLine
                 _properties = properties;
             }
 
-            public dynamic GetPropertyValue(string propertyName)
+            public string GetPropertyValue(string propertyName)
             {
                 string value;
                 if (_properties.TryGetValue(propertyName, out value))

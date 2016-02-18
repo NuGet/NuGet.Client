@@ -29,6 +29,7 @@
     "net45": {
       "frameworkAssemblies": {
         "mscorlib": "",
+        "System.ComponentModel.DataAnnotations": "4.0.0.0",
         "System.Xml": "",
         "System.Xml.Linq": "",
         "System.IO.Compression": ""

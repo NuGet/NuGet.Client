@@ -1,13 +1,18 @@
 ﻿using System;
 using System.IO;
 
+#if !DNXCORE50
+using System.Reflection;
+using NuGet.Common;
+#endif
+
 namespace NuGet.Packaging
 {
     public class FrameworkReferenceResolver
     {
         public static string GetReferenceAssembliesPath()
         {
-#if DNX451
+#if !DNXCORE50
             if (RuntimeEnvironmentHelper.IsMono)
             {
                 var mscorlibLocationOnThisRunningMonoInstance = typeof(object).GetTypeInfo().Assembly.Location;

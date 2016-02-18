@@ -67,6 +67,8 @@
     <Compile Include="Commands\ListCommand.cs" />
     <Compile Include="Commands\OptionAttribute.cs" />
     <Compile Include="Commands\PackCommand.cs" />
+    <Compile Include="Commands\Pack\AssemblyMetadata.cs" />
+    <Compile Include="Commands\Pack\AssemblyMetadataExtractor.cs" />
     <Compile Include="Commands\ProjectFactory.cs" />
     <Compile Include="Commands\PushCommand.cs" />
     <Compile Include="Commands\RestoreCommand.cs" />

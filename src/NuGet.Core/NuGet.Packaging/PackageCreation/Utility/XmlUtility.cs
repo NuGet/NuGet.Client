@@ -6,6 +6,13 @@ namespace NuGet.Packaging
 {
     public static class XmlUtility
     {
+        public static XDocument LoadSafe(Stream input)
+        {
+            var settings = CreateSafeSettings();
+            var reader = XmlReader.Create(input, settings);
+            return XDocument.Load(reader);
+        }
+
         public static XDocument LoadSafe(Stream input, bool ignoreWhiteSpace)
         {
             var settings = CreateSafeSettings(ignoreWhiteSpace);
@@ -32,3 +39,4 @@ namespace NuGet.Packaging
         }
     }
 }
+

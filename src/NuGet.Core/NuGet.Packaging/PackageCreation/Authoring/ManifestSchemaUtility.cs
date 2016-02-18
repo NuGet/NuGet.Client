@@ -1,8 +1,14 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
-
 using NuGet.Packaging.PackageCreation.Resources;
+
+#if !DNXCORE50
+using System.Collections.Concurrent;
+using System.IO;
+using System.Xml;
+using System.Xml.Schema;
+#endif
 
 namespace NuGet.Packaging
 {
@@ -49,7 +55,7 @@ namespace NuGet.Packaging
             SchemaVersionV6
         };
 
-#if DNX451
+#if !DNXCORE50
         private static ConcurrentDictionary<string, XmlSchemaSet> _manifestSchemaSetCache = new ConcurrentDictionary<string, XmlSchemaSet>(StringComparer.OrdinalIgnoreCase);
 #endif
 
@@ -71,13 +77,12 @@ namespace NuGet.Packaging
             return VersionToSchemaMappings[version - 1];
         }
 
-#if DNX451
+#if !DNXCORE50
         public static XmlSchemaSet GetManifestSchemaSet(string schemaNamespace)
         {
             return _manifestSchemaSetCache.GetOrAdd(schemaNamespace, schema =>
                 {
-                    const string schemaResourceName = "NuGet.Authoring.nuspec.xsd";
-
+                    const string schemaResourceName = "NuGet.Packaging.compiler.resources.nuspec.xsd";
                     string formattedContent;
 
                     // Update the xsd with the right schema namespace

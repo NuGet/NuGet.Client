@@ -3,6 +3,10 @@ using System.Collections;
 using System.Linq;
 using System.Reflection;
 
+#if !DNXCORE50
+using System.Xml.Serialization;
+#endif
+
 namespace NuGet.Packaging
 {
     internal static class ManifestVersionUtility
@@ -14,9 +18,6 @@ namespace NuGet.Packaging
         public const int TargetFrameworkSupportForReferencesVersion = 5;
         public const int XdtTransformationVersion = 6;
 
-#if DNX451
-        private static readonly Type[] _xmlAttributes = new[] { typeof(XmlElementAttribute), typeof(XmlAttributeAttribute), typeof(XmlArrayAttribute) };
-#endif
         public static int GetManifestVersion(ManifestMetadata metadata)
         {
             return Math.Max(GetVersionFromObject(metadata), GetMaxVersionFromMetadata(metadata));
@@ -63,13 +64,6 @@ namespace NuGet.Packaging
 
         private static int GetVersionFromPropertyInfo(object obj, PropertyInfo property)
         {
-#if DNX451
-            if (!IsManifestMetadata(property))
-            {
-                return DefaultVersion;
-            }
-#endif
-
             var value = property.GetValue(obj, index: null);
             if (value == null)
             {
@@ -82,15 +76,15 @@ namespace NuGet.Packaging
                 return DefaultVersion;
             }
 
-#if DNX451
+#if !DNXCORE50
             var list = value as IList;
             if (list != null)
             {
                 if (list.Count > 0)
                 {
-                    return Math.Max(version, VisitList(list));
+                    return Math.Max(version.Value, VisitList(list));
                 }
-                return version;
+                return version.Value;
             }
 #endif
 
@@ -125,12 +119,5 @@ namespace NuGet.Packaging
             var attribute = property.GetCustomAttribute<ManifestVersionAttribute>();
             return attribute?.Version;
         }
-
-#if DNX451
-        private static bool IsManifestMetadata(PropertyInfo property)
-        {
-            return _xmlAttributes.Any(attr => property.GetCustomAttribute(attr) != null);
-        }
-#endif
     }
 }

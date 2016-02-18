@@ -51,8 +51,9 @@ namespace NuGet.Packaging.Xml
             elem.Add(GetXElementFromGroupableItemSets(
                 ns,
                 metadata.DependencySets,
-                set => set.TargetFramework != null,
-                set => set.TargetFramework.GetFrameworkString(),
+                set => set.TargetFramework != null || 
+                       set.Dependencies.Any(dependency => dependency.Exclude.Count > 0 || dependency.Include.Count > 0),
+                set => set.TargetFramework?.GetFrameworkString(),
                 set => set.Dependencies,
                 GetXElementFromPackageDependency,
                 Dependencies,
@@ -121,7 +122,11 @@ namespace NuGet.Packaging.Xml
 
                     if (isGroupable(set))
                     {
-                        groupElem.SetAttributeValue(identiferAttributeName, getGroupIdentifer(set));
+                        var groupIdentifier = getGroupIdentifer(set);
+                        if (groupIdentifier != null)
+                        {
+                            groupElem.SetAttributeValue(identiferAttributeName, groupIdentifier);
+                        }
                     }
 
                     childElements.Add(groupElem);
@@ -138,11 +143,27 @@ namespace NuGet.Packaging.Xml
 
         private static XElement GetXElementFromPackageDependency(XNamespace ns, PackageDependency dependency)
         {
-            return new XElement(ns + "dependency",
-                new XAttribute("id", dependency.Id),
-                dependency.VersionRange != null ? new XAttribute("version", dependency.VersionRange.ToString()) : null,
-                dependency.Include != null && dependency.Include.Any() ? new XAttribute("include", string.Join(",", dependency.Include)) : null,
-                dependency.Exclude != null && dependency.Exclude.Any() ? new XAttribute("exclude", string.Join(",", dependency.Exclude)) : null);
+            List<XAttribute> attributes = new List<XAttribute>();
+
+            attributes.Add(new XAttribute("id", dependency.Id));
+
+            if (dependency.VersionRange != null && dependency.VersionRange.OriginalString != null)
+            {
+                // REVIEW: If this is kept as done in CLI, then the version range is persisted into the nuspec, not just a simple version
+                attributes.Add(new XAttribute("version", dependency.VersionRange.OriginalString));
+            }
+
+            if (dependency.Include != null && dependency.Include.Any())
+            {
+                attributes.Add(new XAttribute("include", string.Join(",", dependency.Include)));
+            }
+
+            if (dependency.Exclude != null && dependency.Exclude.Any())
+            {
+                attributes.Add(new XAttribute("exclude", string.Join(",", dependency.Exclude)));
+            }
+
+            return new XElement(ns + "dependency", attributes);
         }
 
         private static XElement GetXElementFromFrameworkAssemblies(XNamespace ns, IEnumerable<FrameworkAssemblyReference> references)
@@ -170,14 +191,32 @@ namespace NuGet.Packaging.Xml
             }
 
             return new XElement(ns + "contentFiles",
-                contentFiles.Select(file =>
-                new XElement(ns + File,
-                    new XAttribute("include", file.Include),
-                    new XAttribute("exclude", file.Exclude),
-                    new XAttribute("buildAction", file.BuildAction),
-                    new XAttribute("copyToOutput", file.CopyToOutput),
-                    new XAttribute("flatten", file.Flatten)
-                )));
+                contentFiles.Select(file => GetXElementFromManifestContentFile(ns, file)));
+        }
+
+        private static XElement GetXElementFromManifestContentFile(XNamespace ns, ManifestContentFiles file)
+        {
+            List<XAttribute> attributes = new List<XAttribute>();
+
+            attributes.Add(GetXAttributeFromNameAndValue("include", file.Include));
+            attributes.Add(GetXAttributeFromNameAndValue("exclude", file.Exclude));
+            attributes.Add(GetXAttributeFromNameAndValue("buildAction", file.BuildAction));
+            attributes.Add(GetXAttributeFromNameAndValue("copyToOutput", file.CopyToOutput));
+            attributes.Add(GetXAttributeFromNameAndValue("flatten", file.Flatten));
+
+            attributes = attributes.Where(xAtt => xAtt != null).ToList();
+
+            return new XElement(ns + Files, attributes);
+        }
+
+        private static XAttribute GetXAttributeFromNameAndValue(string name, object value)
+        {
+            if (name == null || value == null)
+            {
+                return null;
+            }
+
+            return new XAttribute(name, value);
         }
 
         private static void AddElementIfNotNull<T>(XElement parent, XNamespace ns, string name, T value)

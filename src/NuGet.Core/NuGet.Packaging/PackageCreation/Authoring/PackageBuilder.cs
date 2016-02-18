@@ -68,7 +68,7 @@ namespace NuGet.Packaging
             set;
         }
 
-        public SemanticVersion Version
+        public NuGetVersion Version
         {
             get;
             set;
@@ -179,7 +179,7 @@ namespace NuGet.Packaging
         /// <summary>
         /// ContentFiles section from the manifest for content v2
         /// </summary>
-        public Collection<ManifestContentFiles> ContentFiles
+        public ICollection<ManifestContentFiles> ContentFiles
         {
             get;
             private set;
@@ -258,8 +258,10 @@ namespace NuGet.Packaging
 
             using (var package = new ZipArchive(stream, ZipArchiveMode.Create))
             {
+                string psmdcpPath = $"package/services/metadata/core-properties/{Guid.NewGuid().ToString("N")}.psmdcp";
+
                 // Validate and write the manifest
-                WriteManifest(package, DetermineMinimumSchemaVersion(Files, DependencySets));
+                WriteManifest(package, DetermineMinimumSchemaVersion(Files, DependencySets), psmdcpPath);
 
                 // Write the files to the package
                 var extensions = WriteFiles(package);
@@ -267,6 +269,8 @@ namespace NuGet.Packaging
                 extensions.Add("nuspec");
 
                 WriteOpcContentTypes(package, extensions);
+
+                WriteOpcPackageProperties(package, psmdcpPath);
             }
         }
 
@@ -275,7 +279,7 @@ namespace NuGet.Packaging
             List<string> creatorInfo = new List<string>();
             var assembly = typeof(PackageBuilder).GetTypeInfo().Assembly;
             creatorInfo.Add(assembly.FullName);
-#if DNX451 // CORECLR_TODO: Environment.OSVersion
+#if !DNXCORE50 // CORECLR_TODO: Environment.OSVersion
             creatorInfo.Add(Environment.OSVersion.ToString());
 #endif
 
@@ -411,7 +415,7 @@ namespace NuGet.Packaging
             // If there's no base path then ignore the files node
             if (basePath != null)
             {
-                if (manifest.Files == null)
+                if (manifest.Files.Count == 0)
                 {
                     AddFiles(basePath, @"**\*", null);
                 }
@@ -441,7 +445,7 @@ namespace NuGet.Packaging
             Language = metadata.Language;
             Copyright = metadata.Copyright;
             MinClientVersion = metadata.MinClientVersion;
-            ContentFiles = new Collection<ManifestContentFiles>(manifestMetadata.ContentFiles);
+            ContentFiles = new List<ManifestContentFiles>(manifestMetadata.ContentFiles);
 
             if (metadata.Tags != null)
             {
@@ -465,11 +469,11 @@ namespace NuGet.Packaging
             }
         }
 
-        private void WriteManifest(ZipArchive package, int minimumManifestVersion)
+        private void WriteManifest(ZipArchive package, int minimumManifestVersion, string psmdcpPath)
         {
             string path = Id + Constants.ManifestExtension;
 
-            WriteOpcManifestRelationship(package, path);
+            WriteOpcManifestRelationship(package, path, psmdcpPath);
 
             ZipArchiveEntry entry = package.CreateEntry(path, CompressionLevel.Optimal);
 
@@ -633,7 +637,7 @@ namespace NuGet.Packaging
             return version == null || version.Release.Length <= 20;
         }
 
-        private void WriteOpcManifestRelationship(ZipArchive package, string path)
+        private void WriteOpcManifestRelationship(ZipArchive package, string path, string psmdcpPath)
         {
             ZipArchiveEntry relsEntry = package.CreateEntry("_rels/.rels", CompressionLevel.Optimal);
 
@@ -642,7 +646,8 @@ namespace NuGet.Packaging
                 writer.Write(String.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <Relationships xmlns=""http://schemas.openxmlformats.org/package/2006/relationships"">
     <Relationship Type=""http://schemas.microsoft.com/packaging/2010/07/manifest"" Target=""/{0}"" Id=""{1}"" />
-</Relationships>", path, GenerateRelationshipId()));
+    <Relationship Type=""http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties"" Target=""/{2}"" Id=""{3}"" />
+</Relationships>", path, GenerateRelationshipId(), psmdcpPath, GenerateRelationshipId()));
                 writer.Flush();
             }
         }
@@ -656,12 +661,43 @@ namespace NuGet.Packaging
             {
                 writer.Write(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <Types xmlns=""http://schemas.openxmlformats.org/package/2006/content-types"">
-    <Default Extension=""rels"" ContentType=""application/vnd.openxmlformats-package.relationships+xml"" />");
+    <Default Extension=""rels"" ContentType=""application/vnd.openxmlformats-package.relationships+xml"" />
+    <Default Extension=""psmdcp"" ContentType=""application/vnd.openxmlformats-package.core-properties+xml"" />");
                 foreach (var extension in extensions)
                 {
                     writer.Write(@"<Default Extension=""" + extension + @""" ContentType=""application/octet"" />");
                 }
                 writer.Write("</Types>");
+                writer.Flush();
+            }
+        }
+
+        // OPC backwards compatibility for package properties
+        private void WriteOpcPackageProperties(ZipArchive package, string psmdcpPath)
+        {
+            ZipArchiveEntry packageEntry = package.CreateEntry(psmdcpPath, CompressionLevel.Optimal);
+
+            using (var writer = new StreamWriter(packageEntry.Open()))
+            {
+                writer.Write(@"<?xml version=""1.0"" encoding=""utf-8""?>");
+                writer.Write(@"<coreProperties xmlns:dc=""http://purl.org/dc/elements/1.1/"" xmlns:dcterms=""http://purl.org/dc/terms/"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns=""http://schemas.openxmlformats.org/package/2006/metadata/core-properties"">");
+                writer.Write($"<dc:creator>{String.Join(", ", Authors)}</dc:creator>");
+                writer.Write($"<dc:description>{Description}</dc:description>");
+                writer.Write($"<dc:identifier>{Id}</dc:identifier>");
+                writer.Write($"<version>{Version.ToString()}</version>");
+
+                // REVIEW: This doesn't appear to be written by System.IO.Packaging.Package.PackageProperties
+                //writer.Write($"<language>{Language}</language>");
+
+                writer.Write($"<keywords>{((IPackageMetadata)this).Tags}</keywords>");
+
+                // REVIEW: This doesn't appear to be written by System.IO.Packaging.Package.PackageProperties
+                //writer.Write($"<dc:title>{Title}</dc:title>");
+
+                writer.Write($"<lastModifiedBy>{CreatorInfo()}</lastModifiedBy>");
+
+                writer.Write("</coreProperties>");
+
                 writer.Flush();
             }
         }

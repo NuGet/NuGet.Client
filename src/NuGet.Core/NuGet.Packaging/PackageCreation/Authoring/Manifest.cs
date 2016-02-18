@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-#if DNX451
-using System.ComponentModel.DataAnnotations;
-#endif
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-
 using NuGet.Packaging.Xml;
+
+#if !DNXCORE50
+using System.Collections;
+using System.ComponentModel.DataAnnotations;
+using System.Globalization;
+using System.Xml.Schema;
+using NuGet.Packaging.Core;
+using NuGet.Packaging.PackageCreation.Resources;
+#endif
 
 namespace NuGet.Packaging
 {
@@ -20,7 +25,7 @@ namespace NuGet.Packaging
         {
         }
 
-        public Manifest(ManifestMetadata metadata, IEnumerable<ManifestFile> files)
+        public Manifest(ManifestMetadata metadata, ICollection<ManifestFile> files)
         {
             if (metadata == null)
             {
@@ -29,12 +34,15 @@ namespace NuGet.Packaging
 
             Metadata = metadata;
 
-            Files = files?.ToList() ?? new List<ManifestFile>();
+            if (files != null)
+            {
+                Files = files;
+            }
         }
 
         public ManifestMetadata Metadata { get; }
 
-        public List<ManifestFile> Files { get; }
+        public ICollection<ManifestFile> Files { get; } = new List<ManifestFile>();
 
         /// <summary>
         /// Saves the current manifest to the specified stream.
@@ -62,13 +70,13 @@ namespace NuGet.Packaging
 
         public void Save(Stream stream, bool validate, int minimumManifestVersion)
         {
-#if DNX451
-            // TODO(toddgrun): CoreCLR?
+#if !DNXCORE50
+            // REVIEW: CoreCLR?
             if (validate)
             {
                 // Validate before saving
                 Validate(this);
-        }
+            }
 #endif
 
             int version = Math.Max(minimumManifestVersion, ManifestVersionUtility.GetManifestVersion(Metadata));
@@ -122,9 +130,9 @@ namespace NuGet.Packaging
             // Deserialize it
             var manifest = ManifestReader.ReadManifest(document);
 
-#if DNX451
+#if !DNXCORE50
             // Validate before returning
-            // TODO(toddgrun): CoreCLR?
+            // REVIEW: CoreCLR?
             Validate(manifest);
 #endif
 
@@ -149,7 +157,7 @@ namespace NuGet.Packaging
 
         private static void ValidateManifestSchema(XDocument document, string schemaNamespace)
         {
-#if DNX451 // CORECLR_TODO: XmlSchema
+#if !DNXCORE50 // CORECLR_TODO: XmlSchema
             var schemaSet = ManifestSchemaUtility.GetManifestSchemaSet(schemaNamespace);
 
             document.Validate(schemaSet, (sender, e) =>
@@ -165,7 +173,7 @@ namespace NuGet.Packaging
 
         private static void CheckSchemaVersion(XDocument document)
         {
-#if DNX451 // CORECLR_TODO: XmlSchema
+#if !DNXCORE50 // CORECLR_TODO: XmlSchema
             // Get the metadata node and look for the schemaVersion attribute
             XElement metadata = GetMetadataElement(document);
 
@@ -216,7 +224,7 @@ namespace NuGet.Packaging
             return document.Root.Element(metadataName);
         }
 
-#if DNX451
+#if !DNXCORE50
         internal static void Validate(Manifest manifest)
         {
             var results = new List<ValidationResult>();
@@ -228,7 +236,7 @@ namespace NuGet.Packaging
             {
                 TryValidate(manifest.Metadata.DependencySets.SelectMany(d => d.Dependencies), results);
             }
-            TryValidate(manifest.Metadata.ReferenceSets, results);
+            TryValidate(manifest.Metadata.PackageAssemblyReferences, results);
 
             if (results.Any())
             {
@@ -261,20 +269,20 @@ namespace NuGet.Packaging
 
         private static void ValidateDependencyVersion(PackageDependency dependency)
         {
-            if (dependency.VersionSpec != null)
+            if (dependency.VersionRange != null)
             {
-                if (dependency.VersionSpec.MinVersion != null &&
-                    dependency.VersionSpec.MaxVersion != null)
+                if (dependency.VersionRange.MinVersion != null &&
+                    dependency.VersionRange.MaxVersion != null)
                 {
 
-                    if ((!dependency.VersionSpec.IsMaxInclusive ||
-                         !dependency.VersionSpec.IsMinInclusive) &&
-                        dependency.VersionSpec.MaxVersion == dependency.VersionSpec.MinVersion)
+                    if ((!dependency.VersionRange.IsMaxInclusive ||
+                         !dependency.VersionRange.IsMinInclusive) &&
+                        dependency.VersionRange.MaxVersion == dependency.VersionRange.MinVersion)
                     {
                         throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGetResources.DependencyHasInvalidVersion, dependency.Id));
                     }
 
-                    if (dependency.VersionSpec.MaxVersion < dependency.VersionSpec.MinVersion)
+                    if (dependency.VersionRange.MaxVersion < dependency.VersionRange.MinVersion)
                     {
                         throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGetResources.DependencyHasInvalidVersion, dependency.Id));
                     }

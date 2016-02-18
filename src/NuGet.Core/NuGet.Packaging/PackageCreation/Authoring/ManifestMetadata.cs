@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-#if DNX451
+#if !DNXCORE50
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 #endif
 using System.IO;
 using System.Linq;
@@ -11,7 +12,7 @@ using NuGet.Versioning;
 namespace NuGet.Packaging
 {
     public class ManifestMetadata : IPackageMetadata
-#if DNX451
+#if !DNXCORE50
                                         , IValidatableObject
 #endif
     {
@@ -48,6 +49,7 @@ namespace NuGet.Packaging
             FrameworkAssemblies = copy.FrameworkAssemblies;
             PackageAssemblyReferences = copy.PackageAssemblyReferences;
             MinClientVersionString = copy.MinClientVersion?.ToString();
+            ContentFiles = copy.ContentFiles;
         }
 
         [ManifestVersion(5)]
@@ -71,7 +73,7 @@ namespace NuGet.Packaging
 
         public string Id { get; set; }
 
-        public SemanticVersion Version { get; set; }
+        public NuGetVersion Version { get; set; }
 
         public string Title { get; set; }
 
@@ -117,9 +119,9 @@ namespace NuGet.Packaging
 
         public ICollection<PackageReferenceSet> PackageAssemblyReferences { get; set; } = new List<PackageReferenceSet>();
 
-        public IList<ManifestContentFiles> ContentFiles { get; set; } = new List<ManifestContentFiles>();
+        public ICollection<ManifestContentFiles> ContentFiles { get; set; } = new List<ManifestContentFiles>();
 
-#if DNX451
+#if !DNXCORE50
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (!String.IsNullOrEmpty(Id))
@@ -134,25 +136,25 @@ namespace NuGet.Packaging
                 }
             }
 
-            if (LicenseUrl == null)
+            if (LicenseUrl?.OriginalString == String.Empty)
             {
                 yield return new ValidationResult(
                     String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_UriCannotBeEmpty, "LicenseUrl"));
             }
 
-            if (IconUrl == null)
+            if (IconUrl?.OriginalString == String.Empty)
             {
                 yield return new ValidationResult(
                     String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_UriCannotBeEmpty, "IconUrl"));
             }
 
-            if (ProjectUrl == null)
+            if (IconUrl?.OriginalString == String.Empty)
             {
                 yield return new ValidationResult(
                     String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_UriCannotBeEmpty, "ProjectUrl"));
             }
 
-            if (RequireLicenseAcceptance && String.IsNullOrWhiteSpace(LicenseUrl))
+            if (RequireLicenseAcceptance && String.IsNullOrWhiteSpace(LicenseUrl?.OriginalString))
             {
                 yield return new ValidationResult(NuGetResources.Manifest_RequireLicenseAcceptanceRequiresLicenseUrl);
             }
