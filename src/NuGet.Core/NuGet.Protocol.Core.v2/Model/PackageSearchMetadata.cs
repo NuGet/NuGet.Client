@@ -20,6 +20,7 @@ namespace NuGet.Protocol.Core.v2
             {
                 throw new ArgumentNullException(nameof(package));
             }
+
             _package = package;
         }
 
