@@ -121,6 +121,10 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Common.Test", "test\N
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.LibraryModel.Tests", "test\NuGet.Core.Tests\NuGet.LibraryModel.Tests\NuGet.LibraryModel.Tests.xproj", "{D8E35E61-07AE-41D2-BB40-F3BDD8770A92}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "funcTest", "funcTest", "{BB63CACA-866F-454F-BA4C-78B788D032BB}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Commands.FuncTest", "test\NuGet.Core.FuncTests\NuGet.Commands.FuncTest\NuGet.Commands.FuncTest.xproj", "{63C0BFF6-508D-4E5F-BBBC-A636D1398C6B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -343,6 +347,10 @@ Global
 		{D8E35E61-07AE-41D2-BB40-F3BDD8770A92}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8E35E61-07AE-41D2-BB40-F3BDD8770A92}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D8E35E61-07AE-41D2-BB40-F3BDD8770A92}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63C0BFF6-508D-4E5F-BBBC-A636D1398C6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63C0BFF6-508D-4E5F-BBBC-A636D1398C6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63C0BFF6-508D-4E5F-BBBC-A636D1398C6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63C0BFF6-508D-4E5F-BBBC-A636D1398C6B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -401,5 +409,6 @@ Global
 		{DF85929B-6BB1-49F4-82B4-E29A0290C13E} = {BD1946CE-5544-4F28-A04A-9C3D51113E1A}
 		{7FACD9D7-F70D-41C4-BE61-2753E018057D} = {7323F93B-D141-4001-BB9E-7AF14031143E}
 		{D8E35E61-07AE-41D2-BB40-F3BDD8770A92} = {7323F93B-D141-4001-BB9E-7AF14031143E}
+		{63C0BFF6-508D-4E5F-BBBC-A636D1398C6B} = {BB63CACA-866F-454F-BA4C-78B788D032BB}
 	EndGlobalSection
 EndGlobal

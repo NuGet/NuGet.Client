@@ -1,15 +1,15 @@
-﻿using Newtonsoft.Json.Linq;
-using NuGet.Configuration;
-using NuGet.ProjectModel;
-using NuGet.Test.Utility;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using NuGet.Configuration;
+using NuGet.ProjectModel;
+using NuGet.Test.Utility;
 using Xunit;
 
-namespace NuGet.Commands.Test
+namespace NuGet.Commands.FuncTest
 {
     public class UWPRestoreTests
     {
@@ -18,7 +18,7 @@ namespace NuGet.Commands.Test
         public void UWPRestore_ReadV1LockFile()
         {
             // Arrange
-            var expectedStream = GetResource("NuGet.Commands.Test.compiler.resources.uwpBlankAppV1Original.json");
+            var expectedStream = GetResource("NuGet.Commands.FuncTest.compiler.resources.uwpBlankAppV1Original.json");
 
             LockFile lockFile = null;
 
@@ -40,7 +40,7 @@ namespace NuGet.Commands.Test
             using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-                var expectedStream = GetResource("NuGet.Commands.Test.compiler.resources.uwpBlankAppV2.json");
+                var expectedStream = GetResource("NuGet.Commands.FuncTest.compiler.resources.uwpBlankAppV2.json");
 
                 JObject json = null;
                 var format = new LockFileFormat();
@@ -289,7 +289,7 @@ namespace NuGet.Commands.Test
                 var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
 
-                var expectedStream = GetResource("NuGet.Commands.Test.compiler.resources.uwpBlankAppV2.json");
+                var expectedStream = GetResource("NuGet.Commands.FuncTest.compiler.resources.uwpBlankAppV2.json");
 
                 JObject expectedJson = null;
 
@@ -356,7 +356,7 @@ namespace NuGet.Commands.Test
                 var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
 
-                var expectedStream = GetResource("NuGet.Commands.Test.compiler.resources.uwpBlankAppV1.json");
+                var expectedStream = GetResource("NuGet.Commands.FuncTest.compiler.resources.uwpBlankAppV1.json");
 
                 JObject expectedJson = null;
 
