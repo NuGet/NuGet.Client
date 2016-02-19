@@ -45,7 +45,7 @@ namespace NuGet.Packaging
             Summary = copy.Summary?.Trim();
             ReleaseNotes = copy.ReleaseNotes?.Trim();
             Language = copy.Language?.Trim();
-            DependencySets = copy.DependencySets;
+            DependencyGroups = copy.DependencyGroups;
             FrameworkAssemblies = copy.FrameworkAssemblies;
             PackageAssemblyReferences = copy.PackageAssemblyReferences;
             MinClientVersionString = copy.MinClientVersion?.ToString();
@@ -113,7 +113,7 @@ namespace NuGet.Packaging
 
         public string Tags { get; set; }
 
-        public IEnumerable<PackageDependencySet> DependencySets { get; set; } = new List<PackageDependencySet>();
+        public IEnumerable<PackageDependencyGroup> DependencyGroups { get; set; } = new List<PackageDependencyGroup>();
 
         public IEnumerable<FrameworkAssemblyReference> FrameworkAssemblies { get; set; } = new List<FrameworkAssemblyReference>();
 

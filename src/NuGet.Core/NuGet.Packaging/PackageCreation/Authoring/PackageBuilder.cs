@@ -7,9 +7,10 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using NuGet.Common;
 using NuGet.Packaging.PackageCreation.Resources;
-using NuGet.Versioning;
 using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.Packaging
 {
@@ -53,7 +54,7 @@ namespace NuGet.Packaging
         {
             _includeEmptyDirectories = includeEmptyDirectories;
             Files = new Collection<IPackageFile>();
-            DependencySets = new Collection<PackageDependencySet>();
+            DependencyGroups = new Collection<PackageDependencyGroup>();
             FrameworkReferences = new Collection<FrameworkAssemblyReference>();
             ContentFiles = new Collection<ManifestContentFiles>();
             PackageAssemblyReferences = new Collection<PackageReferenceSet>();
@@ -158,7 +159,7 @@ namespace NuGet.Packaging
             set;
         }
 
-        public Collection<PackageDependencySet> DependencySets
+        public Collection<PackageDependencyGroup> DependencyGroups
         {
             get;
             private set;
@@ -215,11 +216,11 @@ namespace NuGet.Packaging
             }
         }
 
-        IEnumerable<PackageDependencySet> IPackageMetadata.DependencySets
+        IEnumerable<PackageDependencyGroup> IPackageMetadata.DependencyGroups
         {
             get
             {
-                return DependencySets;
+                return DependencyGroups;
             }
         }
 
@@ -243,7 +244,7 @@ namespace NuGet.Packaging
             PackageIdValidator.ValidatePackageId(Id);
 
             // Throw if the package doesn't contain any dependencies nor content
-            if (!Files.Any() && !DependencySets.SelectMany(d => d.Dependencies).Any() && !FrameworkReferences.Any())
+            if (!Files.Any() && !DependencyGroups.SelectMany(d => d.Packages).Any() && !FrameworkReferences.Any())
             {
                 throw new InvalidOperationException(NuGetResources.CannotCreateEmptyPackage);
             }
@@ -253,7 +254,7 @@ namespace NuGet.Packaging
                 throw new InvalidOperationException(NuGetResources.SemVerSpecialVersionTooLong);
             }
 
-            ValidateDependencySets(Version, DependencySets);
+            ValidateDependencyGroups(Version, DependencyGroups);
             ValidateReferenceAssemblies(Files, PackageAssemblyReferences);
 
             using (var package = new ZipArchive(stream, ZipArchiveMode.Create))
@@ -261,7 +262,7 @@ namespace NuGet.Packaging
                 string psmdcpPath = $"package/services/metadata/core-properties/{Guid.NewGuid().ToString("N")}.psmdcp";
 
                 // Validate and write the manifest
-                WriteManifest(package, DetermineMinimumSchemaVersion(Files, DependencySets), psmdcpPath);
+                WriteManifest(package, DetermineMinimumSchemaVersion(Files, DependencyGroups), psmdcpPath);
 
                 // Write the files to the package
                 var extensions = WriteFiles(package);
@@ -294,7 +295,7 @@ namespace NuGet.Packaging
 
         private static int DetermineMinimumSchemaVersion(
             Collection<IPackageFile> Files, 
-            Collection<PackageDependencySet> package)
+            Collection<PackageDependencyGroup> package)
         {
             if (HasContentFilesV2(Files) || HasIncludeExclude(package))
             {
@@ -347,10 +348,10 @@ namespace NuGet.Packaging
                 file.Path.StartsWith(Constants.ContentFilesDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
         }
 
-        private static bool HasIncludeExclude(IEnumerable<PackageDependencySet> dependencySets)
+        private static bool HasIncludeExclude(IEnumerable<PackageDependencyGroup> dependencyGroups)
         {
-            return dependencySets.Any(dependencyGroup => 
-                dependencyGroup.Dependencies
+            return dependencyGroups.Any(dependencyGroup => 
+                dependencyGroup.Packages
                    .Any(dependency => dependency.Include != null || dependency.Exclude != null));
         }
 
@@ -363,7 +364,7 @@ namespace NuGet.Packaging
                  file.Path.EndsWith(".uninstall.xdt", StringComparison.OrdinalIgnoreCase)));
         }
 
-        internal static void ValidateDependencySets(SemanticVersion version, IEnumerable<PackageDependencySet> dependencies)
+        internal static void ValidateDependencyGroups(SemanticVersion version, IEnumerable<PackageDependencyGroup> dependencies)
         {
             if (version == null)
             {
@@ -371,7 +372,7 @@ namespace NuGet.Packaging
                 return;
             }
 
-            foreach (var dep in dependencies.SelectMany(s => s.Dependencies))
+            foreach (var dep in dependencies.SelectMany(s => s.Packages))
             {
                 PackageIdValidator.ValidatePackageId(dep.Id);
             }
@@ -379,7 +380,7 @@ namespace NuGet.Packaging
             if (!version.IsPrerelease)
             {
                 // If we are creating a production package, do not allow any of the dependencies to be a prerelease version.
-                var prereleaseDependency = dependencies.SelectMany(set => set.Dependencies).FirstOrDefault(IsPrereleaseDependency);
+                var prereleaseDependency = dependencies.SelectMany(set => set.Packages).FirstOrDefault(IsPrereleaseDependency);
                 if (prereleaseDependency != null)
                 {
                     throw new InvalidDataException(String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_InvalidPrereleaseDependency, prereleaseDependency.ToString()));
@@ -452,7 +453,7 @@ namespace NuGet.Packaging
                 Tags.AddRange(ParseTags(metadata.Tags));
             }
 
-            DependencySets.AddRange(metadata.DependencySets);
+            DependencyGroups.AddRange(metadata.DependencyGroups);
             FrameworkReferences.AddRange(metadata.FrameworkAssemblies);
 
             if (manifestMetadata.PackageAssemblyReferences != null)
@@ -604,7 +605,7 @@ namespace NuGet.Packaging
                 return;
             }
 
-            var entry = package.CreateEntry(PackageCreation.PathUtility.GetPathWithForwardSlashes(path), CompressionLevel.Optimal);
+            var entry = package.CreateEntry(PathUtility.GetPathWithForwardSlashes(path), CompressionLevel.Optimal);
             using (var stream = entry.Open())
             {
                 sourceStream.CopyTo(stream);

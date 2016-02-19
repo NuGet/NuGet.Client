@@ -50,11 +50,11 @@ namespace NuGet.Packaging.Xml
 
             elem.Add(GetXElementFromGroupableItemSets(
                 ns,
-                metadata.DependencySets,
-                set => set.TargetFramework != null || 
-                       set.Dependencies.Any(dependency => dependency.Exclude.Count > 0 || dependency.Include.Count > 0),
-                set => set.TargetFramework?.GetFrameworkString(),
-                set => set.Dependencies,
+                metadata.DependencyGroups,
+                set => set.TargetFramework.IsSpecificFramework || 
+                       set.Packages.Any(dependency => dependency.Exclude.Count > 0 || dependency.Include.Count > 0),
+                set => set.TargetFramework.IsSpecificFramework ? set.TargetFramework.GetFrameworkString() : null,
+                set => set.Packages,
                 GetXElementFromPackageDependency,
                 Dependencies,
                 TargetFramework));
@@ -62,7 +62,7 @@ namespace NuGet.Packaging.Xml
             elem.Add(GetXElementFromGroupableItemSets(
                 ns,
                 metadata.PackageAssemblyReferences,
-                set => set.TargetFramework != null,
+                set => set.TargetFramework.IsSpecificFramework,
                 set => set.TargetFramework.GetFrameworkString(),
                 set => set.References,
                 GetXElementFromPackageReference,

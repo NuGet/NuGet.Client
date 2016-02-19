@@ -764,7 +764,7 @@ namespace NuGet.CommandLine
             // Add the transform file to the package builder
             ProcessTransformFiles(builder, packages.SelectMany(GetTransformFiles));
 
-            var dependencies = builder.DependencySets.SelectMany(d => d.Dependencies)
+            var dependencies = builder.DependencyGroups.SelectMany(d => d.Packages)
                    .ToDictionary(d => d.Id, StringComparer.OrdinalIgnoreCase);
 
             // Reduce the set of packages we want to include as dependencies to the minimal set.
@@ -789,8 +789,10 @@ namespace NuGet.CommandLine
 
             // TO FIX: when we persist the target framework into packages.config file,
             // we need to pull that info into building the PackageDependencySet object
-            builder.DependencySets.Clear();
-            builder.DependencySets.Add(new PackageDependencySet(dependencies.Values));
+            builder.DependencyGroups.Clear();
+
+            // REVIEW: IS NuGetFramework.AnyFramework correct?
+            builder.DependencyGroups.Add(new PackageDependencyGroup(NuGetFramework.AnyFramework, dependencies.Values));
         }
 
         private void AddDependencies(Dictionary<String, Tuple<IPackage, NuGet.PackageDependency>> packagesAndDependencies)

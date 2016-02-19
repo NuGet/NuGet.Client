@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
@@ -169,32 +170,6 @@ namespace NuGet.Packaging
             }
 
             return null;
-        }
-    }
-
-    // TODO: Copied from ProjectManagement. This might go away
-    internal static class PathUtility
-    {
-        public static string EnsureTrailingSlash(string path)
-        {
-            return EnsureTrailingCharacter(path, Path.DirectorySeparatorChar);
-        }
-
-        private static string EnsureTrailingCharacter(string path, char trailingCharacter)
-        {
-            if (path == null)
-            {
-                throw new ArgumentNullException("path");
-            }
-
-            // if the path is empty, we want to return the original string instead of a single trailing character.
-            if (path.Length == 0
-                || path[path.Length - 1] == trailingCharacter)
-            {
-                return path;
-            }
-
-            return path + trailingCharacter;
         }
     }
 }

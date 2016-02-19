@@ -232,9 +232,9 @@ namespace NuGet.Packaging
             // Run all data annotations validations
             TryValidate(manifest.Metadata, results);
             TryValidate(manifest.Files, results);
-            if (manifest.Metadata.DependencySets != null)
+            if (manifest.Metadata.DependencyGroups != null)
             {
-                TryValidate(manifest.Metadata.DependencySets.SelectMany(d => d.Dependencies), results);
+                TryValidate(manifest.Metadata.DependencyGroups.SelectMany(d => d.Packages), results);
             }
             TryValidate(manifest.Metadata.PackageAssemblyReferences, results);
 
@@ -245,15 +245,15 @@ namespace NuGet.Packaging
             }
 
             // Validate additional dependency rules dependencies
-            ValidateDependencySets(manifest.Metadata);
+            ValidateDependencyGroups(manifest.Metadata);
         }
 
-        private static void ValidateDependencySets(IPackageMetadata metadata)
+        private static void ValidateDependencyGroups(IPackageMetadata metadata)
         {
-            foreach (var dependencySet in metadata.DependencySets)
+            foreach (var dependencyGroup in metadata.DependencyGroups)
             {
                 var dependencyHash = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                foreach (var dependency in dependencySet.Dependencies)
+                foreach (var dependency in dependencyGroup.Packages)
                 {
                     // Throw an error if this dependency has been defined more than once
                     if (!dependencyHash.Add(dependency.Id))

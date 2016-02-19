@@ -119,7 +119,7 @@ namespace NuGet.Packaging
                     manifestMetadata.Tags = value;
                     break;
                 case "dependencies":
-                    manifestMetadata.DependencySets = ReadDependencySets(element);
+                    manifestMetadata.DependencyGroups = ReadDependencyGroups(element);
                     break;
                 case "frameworkAssemblies":
                     manifestMetadata.FrameworkAssemblies = ReadFrameworkAssemblies(element);
@@ -218,11 +218,11 @@ namespace NuGet.Packaging
                     ).ToList();
         }
 
-        private static List<PackageDependencySet> ReadDependencySets(XElement dependenciesElement)
+        private static List<PackageDependencyGroup> ReadDependencyGroups(XElement dependenciesElement)
         {
             if (!dependenciesElement.HasElements)
             {
-                return new List<PackageDependencySet>();
+                return new List<PackageDependencyGroup>();
             }
 
             // Disallow the <dependencies> element to contain both <dependency> and 
@@ -237,17 +237,30 @@ namespace NuGet.Packaging
             if (dependencies.Any())
             {
                 // old format, <dependency> is direct child of <dependencies>
-                var dependencySet = new PackageDependencySet(dependencies);
-                return new List<PackageDependencySet> { dependencySet };
+                var dependencyGroup = new PackageDependencyGroup(NuGetFramework.AnyFramework, dependencies);
+                return new List<PackageDependencyGroup> { dependencyGroup };
             }
             else
             {
                 var groups = dependenciesElement.ElementsNoNamespace("group");
-                return (from element in groups
-                        select new PackageDependencySet(
-                            element.GetOptionalAttributeValue("targetFramework")?.Trim(),
-                            ReadDependencies(element))
-                       ).ToList();
+
+                return groups.Select(element =>
+                {
+                    var targetFrameworkName = element.GetOptionalAttributeValue("targetFramework")?.Trim();
+                    NuGetFramework targetFramework = null;
+
+                    if (targetFrameworkName != null)
+                    {
+                        targetFramework = NuGetFramework.Parse(targetFrameworkName);
+                    }
+
+                    // REVIEW: Is UnsupportedFramework correct?
+                    targetFramework = targetFramework ?? NuGetFramework.UnsupportedFramework;
+
+                    return new PackageDependencyGroup(
+                            targetFramework,
+                            ReadDependencies(element));
+                }).ToList();
             }
         }
 

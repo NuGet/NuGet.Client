@@ -28,7 +28,7 @@ namespace NuGet.Packaging
             // Important: check for version 5 before version 4
             bool referencesHasTargetFramework =
               metadata.PackageAssemblyReferences != null &&
-              metadata.PackageAssemblyReferences.Any(r => r.TargetFramework != null);
+              metadata.PackageAssemblyReferences.Any(r => r.TargetFramework.IsSpecificFramework);
 
             if (referencesHasTargetFramework)
             {
@@ -36,8 +36,8 @@ namespace NuGet.Packaging
             }
 
             bool dependencyHasTargetFramework =
-                metadata.DependencySets != null &&
-                metadata.DependencySets.Any(d => d.TargetFramework != null);
+                metadata.DependencyGroups != null &&
+                metadata.DependencyGroups.Any(d => d.TargetFramework.IsSpecificFramework);
             if (dependencyHasTargetFramework)
             {
                 return TargetFrameworkSupportForDependencyContentsAndToolsVersion;
