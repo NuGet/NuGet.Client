@@ -186,7 +186,7 @@ namespace NuGet.CommandLine.XPlat
                             string configFileName = configFile.HasValue() ? configFile.Value() : null;
                             var settings = Settings.LoadDefaultSettings(projectDir,
                                 configFileName,
-                                machineWideSettings: null);
+                                machineWideSettings: new CommandLineXPlatMachineWideSettting());
 
                             var globalFolderPath = string.Empty;
                             if (packagesDirectory.HasValue())
