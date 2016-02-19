@@ -31,6 +31,7 @@ namespace NuGet.Protocol
         private int _authRetries;
         private HttpHandlerResource _httpHandler;
         private CredentialHelper _credentials;
+        private string _httpCacheDirectory;
         private Guid _lastAuthId = Guid.NewGuid();
         private readonly PackageSource _packageSource;
         private readonly string _requestLogFormat = "  {0} {1}";
@@ -70,34 +71,45 @@ namespace NuGet.Protocol
             _messageHandlerFactory = messageHandlerFactory;
             _retryHandler = new HttpRetryHandler();
         }
-
-        internal Task<HttpSourceResult> GetAsync(string uri,
-            string cacheKey,
-            HttpSourceCacheContext context,
-            ILogger log,
-            CancellationToken cancellationToken)
-        {
-            return GetAsync(uri, cacheKey, context, log, ignoreNotFounds: false, cancellationToken: cancellationToken);
-        }
-
+        
         /// <summary>
         /// Caching Get request.
         /// </summary>
-        internal async Task<HttpSourceResult> GetAsync(string uri,
+        public async Task<HttpSourceResult> GetAsync(string uri,
             string cacheKey,
             HttpSourceCacheContext cacheContext,
             ILogger log,
             bool ignoreNotFounds,
+            Action<Stream> ensureValidContents,
             CancellationToken cancellationToken)
         {
             var sw = new Stopwatch();
             sw.Start();
 
-            var result = await TryCache(uri, cacheKey, cacheContext, cancellationToken);
+            var result = await TryReadCacheFile(uri, cacheKey, cacheContext, log, cancellationToken);
             if (result.Stream != null)
             {
                 log.LogInformation(string.Format(CultureInfo.InvariantCulture, _requestLogFormat, "CACHE", uri));
-                return result;
+
+                // Validate the content fetched from the cache.
+                try
+                {
+                    ensureValidContents?.Invoke(result.Stream);
+
+                    result.Stream.Seek(0, SeekOrigin.Begin);
+
+                    return result;
+                }
+                catch (Exception e)
+                {
+                    result.Stream.Dispose();
+                    result.Stream = null;
+
+                    string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_InvalidCacheEntry, uri)
+                                     + Environment.NewLine
+                                     + ExceptionUtilities.DisplayMessage(e);
+                    log.LogWarning(message);
+                }
             }
 
             log.LogInformation(string.Format(CultureInfo.InvariantCulture, _requestLogFormat, "GET", uri));
@@ -120,7 +132,7 @@ namespace NuGet.Protocol
 
                 response.EnsureSuccessStatusCode();
 
-                await CreateCacheFile(result, response, cacheContext, cancellationToken);
+                await CreateCacheFile(result, response, cacheContext, ensureValidContents, cancellationToken);
 
                 log.LogInformation(string.Format(CultureInfo.InvariantCulture,
                     _responseLogFormat, response.StatusCode, uri, sw.ElapsedMilliseconds));
@@ -392,6 +404,7 @@ namespace NuGet.Protocol
             HttpSourceResult result,
             HttpResponseMessage response,
             HttpSourceCacheContext context,
+            Action<Stream> ensureValidContents,
             CancellationToken cancellationToken)
         {
             var newFile = result.CacheFileName + "-new";
@@ -426,6 +439,10 @@ namespace NuGet.Protocol
                             await responseStream.CopyToAsync(stream, bufferSize: 8192, cancellationToken: token);
                             await stream.FlushAsync(cancellationToken);
                         }
+
+                        // Validate the content before putting it into the cache.
+                        stream.Seek(0, SeekOrigin.Begin);
+                        ensureValidContents?.Invoke(stream);
                     }
 
                     if (File.Exists(result.CacheFileName))
@@ -464,15 +481,32 @@ namespace NuGet.Protocol
                 token: cancellationToken);
         }
 
-        protected virtual async Task<HttpSourceResult> TryCache(string uri,
+        public string HttpCacheDirectory
+        {
+            get
+            {
+                if (_httpCacheDirectory == null)
+                {
+                    _httpCacheDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.HttpCacheDirectory);
+                }
+
+                return _httpCacheDirectory;
+            }
+
+            set { _httpCacheDirectory = value; }
+        }
+
+        protected virtual async Task<HttpSourceResult> TryReadCacheFile(
+            string uri,
             string cacheKey,
             HttpSourceCacheContext context,
+            ILogger log,
             CancellationToken token)
         {
             var baseFolderName = RemoveInvalidFileNameChars(ComputeHash(_baseUri.OriginalString));
             var baseFileName = RemoveInvalidFileNameChars(cacheKey) + ".dat";
             var cacheAgeLimit = context.MaxAge;
-            var cacheFolder = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.HttpCacheDirectory), baseFolderName);
+            var cacheFolder = Path.Combine(HttpCacheDirectory, baseFolderName);
             var cacheFile = Path.Combine(cacheFolder, baseFileName);
 
             if (!Directory.Exists(cacheFolder)
