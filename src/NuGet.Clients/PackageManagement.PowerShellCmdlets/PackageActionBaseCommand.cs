@@ -177,6 +177,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Id,
                     includePrerelease: true,
                     includeUnlisted: false,
+                    log: Logging.NullLogger.Instance,
                     token: Token);
                 return result;
             });

@@ -12,7 +12,7 @@ namespace NuGet.Protocol.Core.v3
     public class DownloadResourceV3Provider : ResourceProvider
     {
         public DownloadResourceV3Provider()
-            : base(typeof(DownloadResource), nameof(DownloadResourceV3Provider), "DownloadResourceV2Provider")
+            : base(typeof(DownloadResource), nameof(DownloadResourceV3Provider), "DownloadResourceV2FeedProvider")
         {
         }
 

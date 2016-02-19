@@ -18,11 +18,15 @@ namespace NuGet.Protocol.Core.v2
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             MetadataResource resource = null;
-            var v2repo = await GetRepository(source, token);
 
-            if (v2repo != null)
+            if (FeedTypeUtility.GetFeedType(source.PackageSource) == FeedType.FileSystem)
             {
-                resource = new MetadataResourceV2(v2repo);
+                var v2repo = await GetRepository(source, token);
+
+                if (v2repo != null)
+                {
+                    resource = new MetadataResourceV2(v2repo);
+                }
             }
 
             return new Tuple<bool, INuGetResource>(resource != null, resource);

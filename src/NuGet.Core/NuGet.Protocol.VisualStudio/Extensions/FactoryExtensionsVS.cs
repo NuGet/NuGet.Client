@@ -26,12 +26,9 @@ namespace NuGet.Protocol.VisualStudio
         /// </summary>
         public static IEnumerable<Lazy<INuGetResourceProvider>> GetVisualStudio(this Repository.ProviderFactory factory)
         {
-            yield return new Lazy<INuGetResourceProvider>(() => new AutoCompleteResourceV2Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new AutoCompleteResourceV3Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new UIMetadataResourceV2Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new UIMetadataResourceV3Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new PackageSearchResourceV2Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new PackageSearchResourceV3Provider());
+            yield return new Lazy<INuGetResourceProvider>(() => new AutoCompleteResourceLocalProvider());
+            yield return new Lazy<INuGetResourceProvider>(() => new UIMetadataResourceLocalProvider());
+            yield return new Lazy<INuGetResourceProvider>(() => new PackageSearchResourceLocalProvider());
 
             foreach (var provider in Repository.Provider.GetCoreV2())
             {

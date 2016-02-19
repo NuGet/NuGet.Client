@@ -22,11 +22,14 @@ namespace NuGet.Protocol.Core.v2
         {
             DownloadResource DownloadResourceV2 = null;
 
-            var v2repo = await GetRepository(source, token);
-
-            if (v2repo != null)
+            if (FeedTypeUtility.GetFeedType(source.PackageSource) == FeedType.FileSystem)
             {
-                DownloadResourceV2 = new DownloadResourceV2(v2repo);
+                var v2repo = await GetRepository(source, token);
+
+                if (v2repo != null)
+                {
+                    DownloadResourceV2 = new DownloadResourceV2(v2repo);
+                }
             }
 
             return new Tuple<bool, INuGetResource>(DownloadResourceV2 != null, DownloadResourceV2);

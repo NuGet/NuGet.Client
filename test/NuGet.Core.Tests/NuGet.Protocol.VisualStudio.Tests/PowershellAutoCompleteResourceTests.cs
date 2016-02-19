@@ -7,7 +7,6 @@ using NuGet.Protocol.Core.Types;
 using Test.Utility;
 using Xunit;
 
-
 namespace NuGet.Protocol.VisualStudio.Tests
 {
     // Tests the Powershell autocomplete resource for V2 and v3 sources.  
@@ -20,7 +19,7 @@ namespace NuGet.Protocol.VisualStudio.Tests
             ResponsesDict.Add("http://testsource.com/v3/index.json", JsonData.IndexJson);
             ResponsesDict.Add("https://api-v3search-0.nuget.org/autocomplete?q=elm", JsonData.PsAutoCompleteV3Example);
             ResponsesDict.Add("https://nuget.org/api/v2/package-ids?partialId=elm", JsonData.PSAutoCompleteV2Example);
-         }
+        }
 
 
         //[Theory]
@@ -35,7 +34,7 @@ namespace NuGet.Protocol.VisualStudio.Tests
 
             // Act
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            IEnumerable<string> packages = await resource.IdStartsWith("elm", true, cancellationTokenSource.Token);
+            IEnumerable<string> packages = await resource.IdStartsWith("elm", true, Logging.NullLogger.Instance, cancellationTokenSource.Token);
 
             // Assert
             Assert.True(packages != null & packages.Count() > 0);
@@ -54,7 +53,7 @@ namespace NuGet.Protocol.VisualStudio.Tests
 
             // Act
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            Task<IEnumerable<string>> packagesTask = resource.IdStartsWith("elm", true, cancellationTokenSource.Token);
+            Task<IEnumerable<string>> packagesTask = resource.IdStartsWith("elm", true, Logging.NullLogger.Instance, cancellationTokenSource.Token);
             cancellationTokenSource.Cancel();
 
             // Assert

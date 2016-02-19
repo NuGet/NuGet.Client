@@ -249,4 +249,7 @@
   <data name="LiveFeed" xml:space="preserve">
     <value>the NuGet gallery</value>
   </data>
+  <data name="Log_FailedToFindPackage" xml:space="preserve">
+    <value>Can't find Package '{0}' from source '{1}'.</value>
+  </data>
 </root>

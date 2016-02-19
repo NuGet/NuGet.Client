@@ -93,7 +93,14 @@ namespace NuGet.Packaging.Core
         /// <returns></returns>
         public override string ToString()
         {
-            return String.Format(CultureInfo.InvariantCulture, "{0} : {1}", base.ToString(), String.Join(", ", Dependencies.Select(e => e.ToString()).OrderBy(e => e, StringComparer.OrdinalIgnoreCase)));
+            if (Dependencies.Any())
+            {
+                return String.Format(CultureInfo.InvariantCulture, "{0} : {1}", base.ToString(), String.Join(", ", Dependencies.Select(e => e.ToString()).OrderBy(e => e, StringComparer.OrdinalIgnoreCase)));
+            }
+            else
+            {
+                return base.ToString();
+            }
         }
     }
 }

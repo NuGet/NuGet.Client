@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -1178,7 +1179,6 @@ EndProject");
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
-                MachineCache.Default.RemovePackage(package);
 
                 Util.CreateFile(
                     workingDirectory,
@@ -1219,6 +1219,8 @@ EndProject");
                     server.Get.Add("/nuget", r => "OK");
 
                     server.Start();
+
+                    Util.CreateNuGetConfig(workingDirectory, new List<string>() { } );
 
                     // Act
                     var args = "restore packages.config -PackagesDirectory . -Source " + server.Uri + "nuget";

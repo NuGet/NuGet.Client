@@ -23,7 +23,6 @@ namespace NuGet.CommandLine.Test
             {
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
-                MachineCache.Default.RemovePackage(package);
 
                 Util.CreateFile(
                     workingDirectory,
@@ -273,7 +272,6 @@ namespace NuGet.CommandLine.Test
             {
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
-                MachineCache.Default.RemovePackage(package);
 
                 Util.CreateFile(
                     workingDirectory,
@@ -427,7 +425,6 @@ namespace NuGet.CommandLine.Test
             {
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
-                MachineCache.Default.RemovePackage(package);
 
                 Util.CreateFile(
                     workingDirectory,

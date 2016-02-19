@@ -115,17 +115,9 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 != r.Item1, r.Item2 + " " + r.Item3);
 
                 Assert.Equal(1, hitsByUrl["/index.json"]);
-                Assert.Equal(1, hitsByUrl2["/nuget"]);
+                Assert.Equal(100, hitsByUrl2.Count);
 
                 Assert.Equal(0, allPackages.Count());
-
-                // both v2 and v3 have the packages, it's possible that v2 may never be used if v3 always wins
-                // if v2 is never used there will not be a machine cache folder, which is okay. If it does exist
-                // make sure that there are no tmp files left behind.
-                Assert.Equal(0,
-                    Directory.Exists(MachineCache.Default.Source) ?
-                    Directory.GetFiles(MachineCache.Default.Source, "*.tmp").Count()
-                    : 0);
             }
         }
 
@@ -253,7 +245,6 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 != r.Item1, r.Item2 + " " + r.Item3);
 
                 Assert.Equal(1, hitsByUrl["/index.json"]);
-                Assert.Equal(1, hitsByUrl2["/nuget"]);
 
                 Assert.Equal(expectedPackages.Count, allPackages.Count());
 
@@ -262,8 +253,6 @@ namespace NuGet.CommandLine.Test
                     Assert.True(allPackages.Any(p => p.Id == package.Id
                         && p.Version.ToNormalizedString() == package.Version.ToNormalizedString()));
                 }
-
-                Assert.Equal(0, Directory.GetFiles(MachineCache.Default.Source, "*.tmp").Count());
             }
         }
 
@@ -390,8 +379,6 @@ namespace NuGet.CommandLine.Test
                     Assert.True(allPackages.Any(p => p.Id == package.Id
                         && p.Version.ToNormalizedString() == package.Version.ToNormalizedString()));
                 }
-
-                Assert.Equal(0, Directory.GetFiles(MachineCache.Default.Source, "*.tmp").Count());
             }
         }
 
@@ -517,8 +504,6 @@ namespace NuGet.CommandLine.Test
                     Assert.True(allPackages.Any(p => p.Id == package.Id
                         && p.Version.ToNormalizedString() == package.Version.ToNormalizedString()));
                 }
-
-                Assert.Equal(0, Directory.GetFiles(MachineCache.Default.Source, "*.tmp").Count());
             }
         }
 
@@ -607,7 +592,7 @@ namespace NuGet.CommandLine.Test
                 var globalFolderCount = Directory.GetDirectories(
                     globalFolder.FullName, "*", SearchOption.TopDirectoryOnly)
                     .Count();
-                var machineCacheCount = Directory.GetFiles(MachineCache.Default.Source).Count();
+
                 var packagesFolderCount = Directory.GetDirectories(
                     packagesFolder.FullName, "*", SearchOption.TopDirectoryOnly)
                     .Count();
@@ -615,10 +600,8 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
-                // The machine cache should be used for everything.
-                Assert.Equal(3, machineCacheCount);
                 Assert.Equal(3, packagesFolderCount);   // project.json packages still go here
-                Assert.Equal(3, globalFolderCount);     // packages.config packages should have gone in v2
+                Assert.Equal(6, globalFolderCount);
             }
         }
 
@@ -702,7 +685,7 @@ namespace NuGet.CommandLine.Test
                 var globalFolderCount = Directory.GetDirectories(
                     globalFolder.FullName, "*", SearchOption.TopDirectoryOnly)
                     .Count();
-                var machineCacheCount = GetMachineCacheCount();
+
                 var packagesFolderCount = Directory.GetDirectories(
                     packagesFolder.FullName, "*", SearchOption.TopDirectoryOnly)
                     .Count();
@@ -710,8 +693,6 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
-                // The machine cache should not have been used since v3 was first.
-                Assert.Equal(0, machineCacheCount);
                 Assert.Equal(3, packagesFolderCount);
                 Assert.Equal(6, globalFolderCount);
             }
@@ -1096,7 +1077,6 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 Assert.Equal(1, hitsByUrl["/index.json"]);
-                Assert.Equal(1, hitsByUrl2["/nuget"]);
             }
         }
 
@@ -1397,7 +1377,6 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
-                Assert.Equal(1, hitsByUrl["/nuget"]);
 
                 foreach (var url in hitsByUrl.Keys)
                 {
@@ -1738,37 +1717,6 @@ namespace NuGet.CommandLine.Test
                 // Debug here
                 throw;
             }
-        }
-
-        private static int GetMachineCacheCount()
-        {
-            if (Directory.Exists(MachineCache.Default.Source))
-            {
-                return Directory.GetFiles(MachineCache.Default.Source).Count();
-            }
-
-            return 0;
-        }
-
-        /// <summary>
-        /// Fully delete the machine cache including temp files
-        /// </summary>
-        private static void ClearMachineCache()
-        {
-            var dir = MachineCache.Default.Source;
-
-            if (Directory.Exists(dir))
-            {
-                foreach (var file in Directory.GetFiles(MachineCache.Default.Source))
-                {
-                    File.Delete(file);
-                }
-            }
-        }
-
-        public NetworkCallCountTest()
-        {
-            ClearMachineCache();
         }
     }
 }

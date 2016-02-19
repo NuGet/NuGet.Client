@@ -20,17 +20,17 @@ namespace Test.Utility
         /// <summary>
         /// Creates a handler to override url requests to static content
         /// </summary>
-        public static TestHttpHandlerProvider CreateHttpHandler(Dictionary<string, string> responses)
+        public static TestHttpHandlerProvider CreateHttpHandler(Dictionary<string, string> responses, string errorContent = "")
         {
-            return new TestHttpHandlerProvider(() => new TestMessageHandler(responses));
+            return new TestHttpHandlerProvider(() => new TestMessageHandler(responses, errorContent));
         }
 
         /// <summary>
         /// Creates a source and injects an http handler to override the normal http calls
         /// </summary>
-        public static SourceRepository CreateSource(string sourceUrl, IEnumerable<Lazy<INuGetResourceProvider>> providers, Dictionary<string, string> responses)
+        public static SourceRepository CreateSource(string sourceUrl, IEnumerable<Lazy<INuGetResourceProvider>> providers, Dictionary<string, string> responses, string errorContent = "")
         {
-            var handler = new Lazy<INuGetResourceProvider>(() => CreateHttpHandler(responses));
+            var handler = new Lazy<INuGetResourceProvider>(() => CreateHttpHandler(responses, errorContent));
 
             return new SourceRepository(new PackageSource(sourceUrl), providers.Concat(new Lazy<INuGetResourceProvider>[] { handler }));
         }
@@ -79,15 +79,17 @@ namespace Test.Utility
     public class TestMessageHandler : HttpClientHandler
     {
         private Dictionary<string, string> _responses;
+        private string _errorContent;
 
-        public TestMessageHandler(Dictionary<string, string> responses)
+        public TestMessageHandler(Dictionary<string, string> responses, string errorContent)
         {
             _responses = responses;
+            _errorContent = errorContent;
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            return SendAsyncPublic(request);  
+            return SendAsyncPublic(request);
         }
 
         public virtual Task<HttpResponseMessage> SendAsyncPublic(HttpRequestMessage request)
@@ -99,9 +101,15 @@ namespace Test.Utility
             {
                 // TODO: allow s to be a status code to return
 
-                if (String.IsNullOrEmpty(source))
+                if (source == string.Empty)
                 {
                     msg = new HttpResponseMessage(HttpStatusCode.NotFound);
+                    msg.Content = new TestContent(_errorContent);
+                }
+                else if (source == null)
+                {
+                    msg = new HttpResponseMessage(HttpStatusCode.InternalServerError);
+                    msg.Content = new TestContent(_errorContent);
                 }
                 else
                 {

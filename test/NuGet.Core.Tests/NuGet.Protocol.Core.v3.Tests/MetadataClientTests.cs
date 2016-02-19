@@ -109,7 +109,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             var responses = new Dictionary<string, string>();
             responses.Add("http://testsource.com/v3/index.json", JsonData.Index);
             responses.Add("https://api.nuget.org/v3/registration0/microsoft.owin/index.json", JsonData.MicrosoftOwinRegistration);
-            responses.Add("https://api.nuget.org/v3/registration0/owin/index.json", null);
+            responses.Add("https://api.nuget.org/v3/registration0/owin/index.json", "");
             // Owin is not added
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
 
@@ -129,7 +129,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             var responses = new Dictionary<string, string>();
             responses.Add("http://testsource.com/v3/index.json", JsonData.Index);
             responses.Add("https://api.nuget.org/v3/registration0/microsoft.owin/index.json", JsonData.MicrosoftOwinRegistration);
-            responses.Add("https://api.nuget.org/v3/registration0/owin/index.json", null);
+            responses.Add("https://api.nuget.org/v3/registration0/owin/index.json", "");
             // Owin is not added
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
 
