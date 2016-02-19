@@ -133,7 +133,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         {
                             try
                             {
-                                var doc = XDocument.Load(data.Stream);
+                                var doc = V2FeedParser.LoadXml(data.Stream);
 
                                 var result = doc.Root
                                     .Elements(_xnameEntry)
@@ -142,15 +142,8 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
                                 results.AddRange(result);
 
-                                // Example of what this looks like in the odata feed:
-                                // <link rel="next" href="{nextLink}" />
-                                var nextUri = (from e in doc.Root.Elements(_xnameLink)
-                                               let attr = e.Attribute("rel")
-                                               where attr != null && string.Equals(attr.Value, "next", StringComparison.OrdinalIgnoreCase)
-                                               select e.Attribute("href")
-                                    into nextLink
-                                               where nextLink != null
-                                               select nextLink.Value).FirstOrDefault();
+                                // Find the next url for continuation
+                                var nextUri = V2FeedParser.GetNextUrl(doc);
 
                                 // Stop if there's nothing else to GET
                                 if (string.IsNullOrEmpty(nextUri))
@@ -161,9 +154,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                                 uri = nextUri;
                                 page++;
                             }
-                            catch (XmlException)
+                            catch (XmlException ex)
                             {
                                 Logger.LogMinimal($"The XML file {data.CacheFileName} is corrupt.");
+                                Logger.LogVerbose(ex.ToString());
                                 throw;
                             }
                         }

@@ -213,6 +213,15 @@ namespace NuGet.Protocol.Core.v3 {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Can&apos;t find Package &apos;{0}&apos; from source &apos;{1}&apos;..
+        /// </summary>
+        internal static string Log_FailedToFindPackage {
+            get {
+                return ResourceManager.GetString("Log_FailedToFindPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Unable to load package &apos;{0}&apos;..
         /// </summary>
         internal static string Log_FailedToGetNupkgStream {

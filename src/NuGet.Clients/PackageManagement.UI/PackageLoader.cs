@@ -118,6 +118,7 @@ namespace NuGet.PackageManagement.UI
                     searchFilter,
                     startIndex,
                     _option.PageSize + 1,
+                    Logging.NullLogger.Instance,
                     ct);
 
                 var items = searchResults.ToList();
@@ -413,13 +414,14 @@ namespace NuGet.PackageManagement.UI
                 identity.Id,
                 includePrerelease: true,
                 includeUnlisted: true,
+                log: Logging.NullLogger.Instance,
                 token: cancellationToken);
 
             var packageMetadata = localPackages?.FirstOrDefault(p => p.Identity.Version == identity.Version);
 
             var versions = new[]
             {
-                new VersionInfo(identity.Version, downloadCount: null)
+                new VersionInfo(identity.Version, downloadCount: (long?)null)
             };
 
             return packageMetadata?.WithVersions(versions);
@@ -434,6 +436,7 @@ namespace NuGet.PackageManagement.UI
                 identity.Id,
                 includePrerelease: true,
                 includeUnlisted: false,
+                log: Logging.NullLogger.Instance,
                 token: cancellationToken);
 
             if (packages?.FirstOrDefault() == null)
@@ -548,7 +551,7 @@ namespace NuGet.PackageManagement.UI
                 // only release packages respect the prerel option
                 var includePre = _option.IncludePrerelease;
 
-                var data = await metadataResource.GetMetadataAsync(package.Id, includePre, false, ct);
+                var data = await metadataResource.GetMetadataAsync(package.Id, includePre, false, Logging.NullLogger.Instance, ct);
                 var highest = data.OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease).FirstOrDefault();
 
                 if (highest != null)
@@ -614,7 +617,7 @@ namespace NuGet.PackageManagement.UI
 
                     if (!filteredVersions.Any(v => v.Version == searchResultPackage.Version))
                     {
-                        filteredVersions.Add(new VersionInfo(searchResultPackage.Version, downloadCount: null));
+                        filteredVersions.Add(new VersionInfo(searchResultPackage.Version, downloadCount: (long?)null));
                     }
 
                     return filteredVersions;

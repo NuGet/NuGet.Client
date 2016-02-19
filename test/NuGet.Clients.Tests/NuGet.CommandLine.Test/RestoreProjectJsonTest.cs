@@ -10,11 +10,6 @@ namespace NuGet.CommandLine.Test
 {
     public class RestoreProjectJsonTest
     {
-        public RestoreProjectJsonTest()
-        {
-            MachineCache.Default.Clear();
-        }
-
         [Fact]
         public void RestoreProjectJson_RestoreFromSlnWithCsproj()
         {

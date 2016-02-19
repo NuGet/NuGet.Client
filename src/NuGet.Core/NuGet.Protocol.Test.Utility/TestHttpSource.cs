@@ -16,10 +16,10 @@ namespace Test.Utility
     {
         private Dictionary<string, string> _responses;
 
-        public TestHttpSource(PackageSource source, Dictionary<string, string> responses)
+        public TestHttpSource(PackageSource source, Dictionary<string, string> responses, string errorContent = "")
             : base(source, () => Task.FromResult<HttpHandlerResource>(
                     new TestHttpHandler(
-                        new TestMessageHandler(responses))))
+                        new TestMessageHandler(responses, errorContent))))
         {
             _responses = responses;
         }

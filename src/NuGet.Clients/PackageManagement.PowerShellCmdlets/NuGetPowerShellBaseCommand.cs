@@ -550,7 +550,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             if (resource != null)
             {
-                packages = await resource.SearchAsync(packageId, searchfilter, skip, take, Token);
+                packages = await resource.SearchAsync(packageId, searchfilter, skip, take, Logging.NullLogger.Instance, Token);
             }
 
             return packages;

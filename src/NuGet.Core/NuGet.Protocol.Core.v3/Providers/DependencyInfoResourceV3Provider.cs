@@ -14,7 +14,7 @@ namespace NuGet.Protocol.Core.v3
     public class DependencyInfoResourceV3Provider : ResourceProvider
     {
         public DependencyInfoResourceV3Provider()
-            : base(typeof(DependencyInfoResource), nameof(DependencyInfoResourceV3Provider), "DependencyInfoResourceV2Provider")
+            : base(typeof(DependencyInfoResource), nameof(DependencyInfoResourceV3Provider), "DependencyInfoResourceV2FeedProvider")
         {
         }
 

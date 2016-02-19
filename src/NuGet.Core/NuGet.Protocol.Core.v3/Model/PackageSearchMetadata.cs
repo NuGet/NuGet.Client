@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NuGet.Packaging;
@@ -17,7 +18,16 @@ namespace NuGet.Protocol.Core.v3
         public string Authors { get; private set; }
 
         [JsonProperty(PropertyName = JsonProperties.DependencyGroups, ItemConverterType = typeof(PackageDependencyGroupConverter))]
-        public IEnumerable<PackageDependencyGroup> DependencySets { get; private set; }
+        public IEnumerable<PackageDependencyGroup> DependencySetsInternal { get; private set; }
+
+        [JsonIgnore]
+        public IEnumerable<PackageDependencyGroup> DependencySets
+        {
+            get
+            {
+                return DependencySetsInternal ?? Enumerable.Empty<PackageDependencyGroup>();
+            }
+        }
 
         [JsonProperty(PropertyName = JsonProperties.Description)]
         public string Description { get; private set; }

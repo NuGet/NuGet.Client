@@ -142,7 +142,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             var autoCompleteResource = ActiveSourceRepository.GetResource<AutoCompleteResource>(Token);
             var packageIds = ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                var result = await autoCompleteResource.IdStartsWith(Id, IncludePrerelease.IsPresent, Token);
+                var result = await autoCompleteResource.IdStartsWith(Id, IncludePrerelease.IsPresent, Logging.NullLogger.Instance, Token);
                 return result;
             });
 
@@ -208,7 +208,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 asyncLazyVersions = new AsyncLazy<IEnumerable<NuGetVersion>>(async () =>
                 {
-                    var results = await autoCompleteResource.VersionStartsWith(id, Version, IncludePrerelease.IsPresent, Token);
+                    var results = await autoCompleteResource.VersionStartsWith(id, Version, IncludePrerelease.IsPresent, Logging.NullLogger.Instance, Token);
                     results = results?.OrderByDescending(v => v).ToArray();
 
                     return results;

@@ -12,22 +12,17 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetInstallCommandTest
     {
-        public NuGetInstallCommandTest()
-        {
-            MachineCache.Default.Clear();
-        }
-
         [Fact]
         public void InstallCommand_FromPackagesConfigFileWithExcludeVersion()
         {
             // Arrange
-            //var currentFolderName = Guid.NewGuid().ToString();
-            //var workingPath = Path.Combine(tempPath, currentFolderName);
-
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var nugetexe = Util.GetNuGetExePath();
+
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
                 Directory.CreateDirectory(repositoryPath);
 
@@ -94,6 +89,9 @@ namespace NuGet.CommandLine.Test
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
+
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
                 Directory.CreateDirectory(repositoryPath);
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
@@ -202,6 +200,9 @@ namespace NuGet.CommandLine.Test
 
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
                 var repositoryPath = Path.Combine(workingPath, "Repository");
 
                 Directory.CreateDirectory(repositoryPath);
@@ -250,6 +251,9 @@ namespace NuGet.CommandLine.Test
 
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
                 string folderName = Path.GetFileName(workingPath);
 
                 var repositoryPath = Path.Combine(workingPath, "Repository");
@@ -477,6 +481,9 @@ namespace NuGet.CommandLine.Test
 
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var proj1Directory = Path.Combine(workingPath, "proj1");
 
@@ -540,6 +547,9 @@ namespace NuGet.CommandLine.Test
 
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var proj1Directory = Path.Combine(workingPath, "proj1");
 
@@ -601,6 +611,9 @@ namespace NuGet.CommandLine.Test
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
                 var repositoryPath = Path.Combine(workingPath, "Repository");
                 var proj1Directory = Path.Combine(workingPath, "proj1");
 
@@ -610,10 +623,8 @@ namespace NuGet.CommandLine.Test
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package1 = new ZipPackage(packageFileName);
-                MachineCache.Default.RemovePackage(package1);
                 packageFileName = Util.CreateTestPackage("testPackage1", "1.2.0", packageDirectory);
                 var package2 = new ZipPackage(packageFileName);
-                MachineCache.Default.RemovePackage(package2);
 
                 using (var server = Util.CreateMockServer(new[] { package1, package2 }))
                 {
@@ -631,7 +642,7 @@ namespace NuGet.CommandLine.Test
                     Assert.Equal(0, r1.Item1);
 
                     // testPackage1 1.2.0 is installed
-                    Assert.True(Directory.Exists(Path.Combine(workingPath, "testPackage1.1.2.0")));
+                    Assert.True(Directory.Exists(Path.Combine(workingPath, "packages", "testPackage1.1.2.0")));
                 }
             }
         }
@@ -646,13 +657,14 @@ namespace NuGet.CommandLine.Test
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package1 = new ZipPackage(packageFileName);
-                MachineCache.Default.RemovePackage(package1);
 
                 packageFileName = Util.CreateTestPackage("testPackage1", "1.2.0-beta1", packageDirectory);
                 var package2 = new ZipPackage(packageFileName);
-                MachineCache.Default.RemovePackage(package2);
 
                 using (var server = Util.CreateMockServer(new[] { package1, package2 }))
                 {
@@ -670,7 +682,7 @@ namespace NuGet.CommandLine.Test
                     Assert.Equal(0, r1.Item1);
 
                     // testPackage1 1.2.0-beta1 is installed
-                    Assert.True(Directory.Exists(Path.Combine(workingPath, "testPackage1.1.2.0-beta1")));
+                    Assert.True(Directory.Exists(Path.Combine(workingPath, "packages", "testPackage1.1.2.0-beta1")));
                 }
             }
         }
@@ -685,10 +697,15 @@ namespace NuGet.CommandLine.Test
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             using (var packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
-                MachineCache.Default.RemovePackage(package);
+
+                // Add a nuget.config to clear out sources and set the global packages folder
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
 
                 using (var server = new MockServer())
                 {
@@ -740,7 +757,7 @@ namespace NuGet.CommandLine.Test
 
         // Tests that when -Version is specified, if the specified version cannot be found,
         // nuget will retry with new version numbers by appending 0's to the specified version.
-        [Fact]
+        [Fact(Skip = "Exact packages are no longer requested")]
         public void InstallCommand_WillTryNewVersionsByAppendingZeros()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -748,14 +765,6 @@ namespace NuGet.CommandLine.Test
             using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 // Arrange
-
-                // deleting testPackage1 from machine cache
-                var packages = MachineCache.Default.FindPackagesById("testPackage1");
-                foreach (var p in packages)
-                {
-                    MachineCache.Default.RemovePackage(p);
-                }
-
                 using (var server = new MockServer())
                 {
                     List<string> requests = new List<string>();
@@ -806,7 +815,6 @@ namespace NuGet.CommandLine.Test
 
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
-                MachineCache.Default.RemovePackage(package);
 
                 // add the package to machine cache
                 MachineCache.Default.AddPackage(package);
@@ -871,7 +879,7 @@ namespace NuGet.CommandLine.Test
 
         // Tests that nuget will download package from http source if the package on the server
         // has a different hash value from the cached version.
-        [Fact]
+        [Fact(Skip = "Hashes are no longer checked on download")]
         public void InstallCommand_DownloadPackageWhenHashChanges()
         {
             var nugetexe = Util.GetNuGetExePath();

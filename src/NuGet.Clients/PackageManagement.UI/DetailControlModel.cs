@@ -277,7 +277,7 @@ namespace NuGet.PackageManagement.UI
                 // load up the full details for each version
                 try
                 {
-                    var metadata = await metadataResource.GetMetadataAsync(Id, true, false, token);
+                    var metadata = await metadataResource.GetMetadataAsync(Id, true, false, Logging.NullLogger.Instance, token);
                     foreach (var item in metadata)
                     {
                         if (!dict.ContainsKey(item.Identity.Version))

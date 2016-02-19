@@ -17,9 +17,9 @@ namespace Test.Utility
         /// <summary>
         /// Creates a handler to override url requests to static content
         /// </summary>
-        public static TestHttpSourceProvider CreateHttpSource(Dictionary<string, string> responses)
+        public static TestHttpSourceProvider CreateHttpSource(Dictionary<string, string> responses, string errorContent = "")
         {
-            var handlerProvider = StaticHttpHandler.CreateHttpHandler(responses);
+            var handlerProvider = StaticHttpHandler.CreateHttpHandler(responses, errorContent);
 
             return new TestHttpSourceProvider(responses);
         }

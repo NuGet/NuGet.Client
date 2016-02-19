@@ -59,7 +59,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 PackageMetadataResource resource = ActiveSourceRepository.GetResource<PackageMetadataResource>();
                 var metadata = ThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    var result = await resource.GetMetadataAsync(Id, IncludePrerelease.IsPresent, false, CancellationToken.None);
+                    var result = await resource.GetMetadataAsync(Id, IncludePrerelease.IsPresent, false, Logging.NullLogger.Instance, CancellationToken.None);
                     return result;
                 });
 

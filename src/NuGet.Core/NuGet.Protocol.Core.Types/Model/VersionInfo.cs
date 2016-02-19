@@ -7,6 +7,17 @@ namespace NuGet.Protocol.Core.Types
 {
     public class VersionInfo
     {
+        public VersionInfo(NuGetVersion version, string downloadCount)
+        {
+            Version = version;
+
+            long count;
+            if (long.TryParse(downloadCount, out count))
+            {
+                DownloadCount = count;
+            }
+        }
+
         public VersionInfo(NuGetVersion version, long? downloadCount)
         {
             Version = version;

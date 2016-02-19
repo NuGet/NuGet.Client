@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol.Core.v2
@@ -18,11 +19,15 @@ namespace NuGet.Protocol.Core.v2
         public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             DependencyInfoResource DependencyInfoResourceV2 = null;
-            var v2repo = await GetRepository(source, token);
 
-            if (v2repo != null)
+            if (FeedTypeUtility.GetFeedType(source.PackageSource) == FeedType.FileSystem)
             {
-                DependencyInfoResourceV2 = new DependencyInfoResourceV2(v2repo, source);
+                var v2repo = await GetRepository(source, token);
+
+                if (v2repo != null)
+                {
+                    DependencyInfoResourceV2 = new DependencyInfoResourceV2(v2repo, source);
+                }
             }
 
             return Tuple.Create<bool, INuGetResource>(DependencyInfoResourceV2 != null, DependencyInfoResourceV2);

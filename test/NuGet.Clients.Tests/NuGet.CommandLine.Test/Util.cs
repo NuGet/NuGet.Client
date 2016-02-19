@@ -457,8 +457,6 @@ namespace NuGet.CommandLine.Test
 
             ZipPackage zipPackage = new ZipPackage(path);
 
-            MachineCache.Default.RemovePackage(zipPackage);
-
             return zipPackage;
         }
 

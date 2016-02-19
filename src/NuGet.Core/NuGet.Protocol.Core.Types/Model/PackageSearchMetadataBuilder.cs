@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.Common;
@@ -58,7 +59,7 @@ namespace NuGet.Protocol.Core.Types
             var clonedMetadata = new ClonedPackageSearchMetadata
             {
                 Authors = _metadata.Authors,
-                DependencySets = _metadata.DependencySets,
+                DependencySets = _metadata.DependencySets ?? Enumerable.Empty<PackageDependencyGroup>(),
                 Description = _metadata.Description,
                 DownloadCount = _metadata.DownloadCount,
                 IconUrl = _metadata.IconUrl,
@@ -74,6 +75,7 @@ namespace NuGet.Protocol.Core.Types
                 Title = _metadata.Title,
                 LazyVersionsFactory = _lazyVersionsFactory
             };
+
             return clonedMetadata;
         }
 
