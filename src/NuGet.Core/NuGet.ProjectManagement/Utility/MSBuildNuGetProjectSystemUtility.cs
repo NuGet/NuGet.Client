@@ -278,11 +278,19 @@ namespace NuGet.ProjectManagement
                             }
                             else
                             {
-                                var zipArchiveFileEntry = PathUtility.GetEntry(zipArchive, file);
-                                if (zipArchiveFileEntry != null)
+                                try
                                 {
-                                    DeleteFileSafe(path, zipArchiveFileEntry.Open, projectSystem);
+                                    var zipArchiveFileEntry = PathUtility.GetEntry(zipArchive, file);
+                                    if (zipArchiveFileEntry != null)
+                                    {
+                                        DeleteFileSafe(path, zipArchiveFileEntry.Open, projectSystem);
+                                    }
                                 }
+                                catch (Exception e)
+                                {
+                                    projectSystem.NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
+                                }
+                                
                             }
                         }
                     }
@@ -327,11 +335,6 @@ namespace NuGet.ProjectManagement
 
         internal static void DeleteFileSafe(string path, Func<Stream> streamFactory, IMSBuildNuGetProjectSystem msBuildNuGetProjectSystem)
         {
-            if (!File.Exists(path))
-            {
-                return;
-            }
-
             // Only delete the file if it exists and the checksum is the same
             if (msBuildNuGetProjectSystem.FileExistsInProject(path))
             {
