@@ -296,7 +296,7 @@ namespace NuGet.ProjectModel
                         if ((targetFlagsValue & LibraryDependencyTarget.Package) == LibraryDependencyTarget.Package)
                         {
                             throw FileFormatException.Create(
-                                Strings.MissingVersionProperty,
+                                new ArgumentException(Strings.MissingVersionProperty),
                                 dependency.Value,
                                 packageSpecPath);
                         }
