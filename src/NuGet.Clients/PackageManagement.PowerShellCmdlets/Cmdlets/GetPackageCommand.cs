@@ -201,7 +201,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                var task = Task.Run<IPackageSearchMetadata>(async () =>
                {
-                   var searchTerm = string.Format("packageid:{0}", installedPackage.PackageIdentity.Id);
+                   var searchTerm = ActiveSourceRepository.PackageSource.IsLocal ? installedPackage.PackageIdentity.Id : string.Format("packageid:{0}", installedPackage.PackageIdentity.Id);
                    var results = await GetPackagesFromRemoteSourceAsync(searchTerm, frameworks, IncludePrerelease.IsPresent, Skip, First);
                    var metadata = results.Where(p => string.Equals(p.Identity.Id, installedPackage.PackageIdentity.Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
 
