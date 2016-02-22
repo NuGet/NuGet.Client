@@ -8,6 +8,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
 using NuGet.Common;
+using NuGet.Frameworks;
 using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -323,7 +324,7 @@ namespace NuGet.Packaging
             // check if any file under Content or Tools has TargetFramework defined
             bool hasContentOrTool = files.Any(
                 f => f.TargetFramework != null &&
-                     f.TargetFramework != VersionUtility.UnsupportedFrameworkName &&
+                     f.TargetFramework.Identifier != FrameworkConstants.SpecialIdentifiers.Unsupported &&
                      (f.Path.StartsWith(Constants.ContentDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
                       f.Path.StartsWith(Constants.ToolsDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)));
 

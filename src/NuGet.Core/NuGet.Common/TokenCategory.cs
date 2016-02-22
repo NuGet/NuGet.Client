@@ -1,8 +1,8 @@
-﻿namespace NuGet.Packaging
+﻿namespace NuGet.Common
 {
     public enum TokenCategory
     {
         Text,
         Variable
-    }    
+    }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using NuGet.Common;
 using NuGet.Packaging.Xml;
 
 #if !DNXCORE50
@@ -107,7 +108,7 @@ namespace NuGet.Packaging
             }
             else
             {
-                string content = Preprocessor.Process(stream, propertyProvider);
+                string content = Preprocessor.Process(stream, propName => propertyProvider.GetPropertyValue(propName));
                 document = XDocument.Parse(content);
             }
 

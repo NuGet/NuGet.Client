@@ -588,17 +588,6 @@ namespace NuGet.Packaging
             return framework;
         }
 
-        public static bool IsCompatible(FrameworkName projectFrameworkName, IEnumerable<FrameworkName> packageSupportedFrameworks)
-        {
-            if (packageSupportedFrameworks.Any())
-            {
-                return packageSupportedFrameworks.Any(packageSupportedFramework => IsCompatible(projectFrameworkName, packageSupportedFramework));
-            }
-
-            // No supported frameworks means that everything is supported.
-            return true;
-        }
-
         /// <summary>
         /// Determines if a package's target framework can be installed into a project's framework.
         /// </summary>
@@ -704,21 +693,6 @@ namespace NuGet.Packaging
                 // this is the case with Portable Library installed into a normal project
                 return targetFrameworkPortableProfile.IsCompatibleWith(projectFrameworkName);
             }
-        }
-
-        private static bool TryParseVersion(string versionString, out SemanticVersion version)
-        {
-            version = null;
-            if (!SemanticVersion.TryParse(versionString, out version))
-            {
-                // Support integer version numbers (i.e. 1 -> 1.0)
-                int versionNumber;
-                if (Int32.TryParse(versionString, out versionNumber) && versionNumber > 0)
-                {
-                    version = new SemanticVersion(versionNumber, 0, 0);
-                }
-            }
-            return version != null;
         }
 
         public static bool IsPortableFramework(this FrameworkName framework)
