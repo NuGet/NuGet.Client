@@ -1538,7 +1538,7 @@ namespace NuGet.Configuration.Test
         // Test that a source added in a high priority config file is not
         // disabled by <disabledPackageSources> in a low priority file.
         [Fact]
-        public void HighPrioritySourceNotDisabled()
+        public void HighPrioritySourceDisabled()
         {
             // Arrange
             using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
@@ -1553,11 +1553,11 @@ namespace NuGet.Configuration.Test
         <add key='a' value='http://a' />
     </packageSources>
 </configuration>";
-                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, @"a\b"), configContent1);
-                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, @"a\b\c"), configContent2);
+                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, "a","b"), configContent1);
+                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, "a","b","c"), configContent2);
 
                 var settings = Settings.LoadDefaultSettings(
-                    Path.Combine(mockBaseDirectory, @"a\b\c"),
+                    Path.Combine(mockBaseDirectory, "a","b","c"),
                     configFileName: null,
                     machineWideSettings: null,
                     loadAppDataSettings: false,
@@ -1569,7 +1569,7 @@ namespace NuGet.Configuration.Test
 
                 // Assert
                 Assert.Equal(1, values.Count);
-                Assert.True(values[0].IsEnabled);
+                Assert.False(values[0].IsEnabled);
                 Assert.Equal("a", values[0].Name);
                 Assert.Equal("http://a", values[0].Source);
             }
