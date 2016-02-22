@@ -6,11 +6,11 @@ using NuGet.Configuration;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public class CommandLineXPlatMachineWideSettting : IMachineWideSettings
+    public class CommandLineXPlatMachineWideSetting : IMachineWideSettings
     {
         Lazy<IEnumerable<Settings>> _settings;
 
-        public CommandLineXPlatMachineWideSettting()
+        public CommandLineXPlatMachineWideSetting()
         {
             var baseDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.MachineWideConfigDirectory);
             _settings = new Lazy<IEnumerable<Settings>>(
