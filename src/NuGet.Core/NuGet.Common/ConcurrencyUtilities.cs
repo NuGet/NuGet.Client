@@ -95,7 +95,10 @@ namespace NuGet.Common
             // to a unique lock name.
             using (var sha = SHA1.Create())
             {
-                var hash = sha.ComputeHash(Encoding.UTF32.GetBytes(filePath));
+                // To avoid conflicts on package id casing a case-insensitive lock is used.
+                var normalizedPath = Path.GetFullPath(filePath).ToUpperInvariant();
+
+                var hash = sha.ComputeHash(Encoding.UTF32.GetBytes(normalizedPath));
 
                 return ToHex(hash);
             }
