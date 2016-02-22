@@ -365,6 +365,55 @@ function Test-GetSourceAPI
     Assert-NotNull $sources
 }
 
+function Test-CompareSemanticVersions
+{
+    # Arrange
+    $cm = Get-VsComponentModel
+    $service = $cm.GetService([NuGet.VisualStudio.IVsSemanticVersionComparer])
+	$versionA = "3.1.0-beta-001"
+	$versionB = "2.9.0.0"
+	
+    # Act
+    $actual = $service.Compare($versionA, $versionB)
+
+    # Assert
+    Assert-True ($actual > 0) "$actual should be greater than zero."
+}
+
+function Test-ParseFrameworkName
+{
+    # Arrange
+    $cm = Get-VsComponentModel
+    $service = $cm.GetService([NuGet.VisualStudio.IVsFrameworkParser])
+	$framework = "net45"
+	
+    # Act
+    $actual = $service.ParseFrameworkName($framework)
+
+    # Assert
+	Assert-AreEqual ".NETFramework,Version=v4.5" $actual.ToString()
+}
+
+function Test-GetNearest
+{
+    # Arrange
+    $cm = Get-VsComponentModel
+    $service = $cm.GetService([NuGet.VisualStudio.IVsFrameworkCompatibility])
+	$target = [System.Runtime.Versioning.FrameworkName](".NETFramework,Version=v4.5.1")
+	[System.Runtime.Versioning.FrameworkName[]] $frameworks = @(
+		[System.Runtime.Versioning.FrameworkName](".NETFramework,Version=v3.5"),
+		[System.Runtime.Versioning.FrameworkName](".NETFramework,Version=v4.0"),
+		[System.Runtime.Versioning.FrameworkName](".NETFramework,Version=v4.5"),
+		[System.Runtime.Versioning.FrameworkName](".NETFramework,Version=v4.5.2")
+	)
+	
+    # Act
+    $actual = $service.GetNearest($target, $frameworks)
+
+    # Assert
+	Assert-AreEqual ".NETFramework,Version=v4.5" $actual.ToString()
+}
+
 function Test-GetNetStandardVersions 
 {
     # Arrange

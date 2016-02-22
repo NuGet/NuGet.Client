@@ -326,7 +326,7 @@ namespace NuGet.Test
         [InlineData("portable-net+win+wpa+wp+sl+net-cf+netmf+MonoAndroid+MonoTouch+Xamarin.iOS")]
         public void NuGetFramework_PortableWithInnerPortableProfileFails(string framework)
         {
-            Assert.Throws<FrameworkException>(
+            Assert.Throws<ArgumentException>(
                 () => NuGetFramework.Parse(framework));
         }
     }

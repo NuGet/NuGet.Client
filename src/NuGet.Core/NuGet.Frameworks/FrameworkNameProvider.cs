@@ -444,7 +444,7 @@ namespace NuGet.Frameworks
                 {
                     // Frameworks within the portable profile are not allowed
                     // to have profiles themselves #1869
-                    throw new FrameworkException(Strings.InvalidPortableFrameworks);
+                    throw new ArgumentException(Strings.InvalidPortableFrameworks);
                 }
 
                 result.Add(framework);

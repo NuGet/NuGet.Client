@@ -55,7 +55,10 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="VsGlobalPackagesInitScriptExecutorTests.cs" />
+    <Compile Include="Extensibility\VsFrameworkCompatibilityTests.cs" />
+    <Compile Include="Extensibility\VsFrameworkParserTests.cs" />
+    <Compile Include="Extensibility\VsGlobalPackagesInitScriptExecutorTests.cs" />
+    <Compile Include="Extensibility\VsSemanticVersionComparerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

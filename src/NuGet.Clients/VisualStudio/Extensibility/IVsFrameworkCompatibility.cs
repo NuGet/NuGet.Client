@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -30,5 +31,17 @@ namespace NuGet.VisualStudio
         /// </remarks>
         /// <param name="frameworkName">The .NETStandard version to get supporting frameworks for.</param>
         IEnumerable<FrameworkName> GetFrameworksSupportingNetStandard(FrameworkName frameworkName);
+
+        /// <summary>
+        /// Selects the framework from <see cref="frameworks"/> that is nearest
+        /// to the <see cref="targetFramework"/>, according to NuGet's framework
+        /// compatibility rules. <c>null</c> is returned of none of the frameworks
+        /// are compatible.
+        /// </summary>
+        /// <param name="targetFramework">The target framework.</param>
+        /// <param name="frameworks">The list of frameworks to choose from.</param>
+        /// <exception cref="ArgumentException">If any of the arguments are <c>null</c>.</exception>
+        /// <returns>The nearest framework.</returns>
+        FrameworkName GetNearest(FrameworkName targetFramework, IEnumerable<FrameworkName> frameworks);
     }
 }

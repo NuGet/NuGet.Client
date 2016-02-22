@@ -917,6 +917,19 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public void FrameworkReducer_GetNearestWithEmptyList()
+        {
+            // Arrange
+            FrameworkReducer reducer = new FrameworkReducer();
+
+            // Act
+            var result = reducer.GetNearest(NuGetFramework.Parse("net35"), new NuGetFramework[0]);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
         public void FrameworkReducer_GetNearestWithAny()
         {
             FrameworkReducer reducer = new FrameworkReducer();
