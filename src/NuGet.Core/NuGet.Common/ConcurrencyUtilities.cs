@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -24,38 +23,47 @@ namespace NuGet.Common
             }
 
             var lockPath = FileLockPath(filePath);
-            var bytes = Encoding.UTF8.GetBytes($"{ProcessId}{Environment.NewLine}{filePath}{Environment.NewLine}");
 
             while (true)
             {
                 FileStream fs = null;
-                try
-                {
-                    fs = new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
-                }
-                catch (DirectoryNotFoundException)
-                {
-                    throw;
-                }
-                catch (IOException)
-                {
-                    token.ThrowIfCancellationRequested();
-
-                    await Task.Delay(10);
-                    continue;
-                }
 
                 try
                 {
-                    fs.Write(bytes, 0, bytes.Length);
-                }
-                catch
-                {
-                }
+                    try
+                    {
+                        // This file is deleted when the stream is closed.
+                        // Sync operations have shown much better performance than FileOptions.Asynchronous
+                        fs = new FileStream(
+                            lockPath,
+                            FileMode.OpenOrCreate,
+                            FileAccess.ReadWrite,
+                            FileShare.None,
+                            bufferSize: 32,
+                            options: FileOptions.DeleteOnClose);
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                        throw;
+                    }
+                    catch (IOException)
+                    {
+                        token.ThrowIfCancellationRequested();
 
-                using (fs)
-                {
+                        await Task.Delay(10);
+                        continue;
+                    }
+
+                    // Run the action within the lock
                     return await action(token);
+                }
+                finally
+                {
+                    if (fs != null)
+                    {
+                        // Dispose of the stream, this will cause a delete
+                        fs.Dispose();
+                    }
                 }
             }
         }
@@ -96,7 +104,8 @@ namespace NuGet.Common
             using (var sha = SHA1.Create())
             {
                 // To avoid conflicts on package id casing a case-insensitive lock is used.
-                var normalizedPath = Path.GetFullPath(filePath).ToUpperInvariant();
+                var fullPath = Path.IsPathRooted(filePath) ? Path.GetFullPath(filePath) : filePath;
+                var normalizedPath = fullPath.ToUpperInvariant();
 
                 var hash = sha.ComputeHash(Encoding.UTF32.GetBytes(normalizedPath));
 
@@ -127,20 +136,6 @@ namespace NuGet.Common
             else
             {
                 return (char)(input + 0x30);
-            }
-        }
-
-        private static int _processId = -1;
-        private static int ProcessId
-        {
-            get
-            {
-                if (_processId < 0)
-                {
-                    _processId = Process.GetCurrentProcess().Id;
-                }
-
-                return _processId;
             }
         }
     }
