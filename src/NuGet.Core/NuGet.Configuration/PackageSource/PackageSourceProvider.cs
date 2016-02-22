@@ -108,9 +108,7 @@ namespace NuGet.Configuration
 
                 var isEnabled = true;
                 SettingValue disabledSource;
-                if (disabledSources.TryGetValue(name, out disabledSource)
-                    &&
-                    disabledSource.Priority >= setting.Priority)
+                if (disabledSources.TryGetValue(name, out disabledSource))
                 {
                     isEnabled = false;
                 }
