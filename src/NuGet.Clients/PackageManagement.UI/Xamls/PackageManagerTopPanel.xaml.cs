@@ -143,11 +143,6 @@ namespace NuGet.PackageManagement.UI
             if (_selectedFilter != null)
             {
                 _selectedFilter.Selected = false;
-                if (_selectedFilter == _labelBrowse)
-                {
-                    // Clear the bitmapimagecache, which during browse could have grown to be large, only if we moved away from Browse.
-                    PackageItemListViewModel.ClearBitmapImageCache();
-                }
             }
 
             var previousFilter = _selectedFilter;

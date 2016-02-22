@@ -12,7 +12,6 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using System.Windows.Media.Imaging;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -69,8 +68,8 @@ namespace NuGet.PackageManagement.UI
         {
             _searchResultPackage = searchResultPackage;
             _filter = filter;
-            OnPropertyChanged(nameof(Id));
-            OnPropertyChanged(nameof(IconBitmapImage));
+            OnPropertyChanged("Id");
+            OnPropertyChanged("IconUrl");
 
             var versions = await searchResultPackage.Versions.Value;
 
@@ -182,12 +181,9 @@ namespace NuGet.PackageManagement.UI
             get { return _searchResultPackage?.Id; }
         }
 
-        public BitmapImage IconBitmapImage
+        public Uri IconUrl
         {
-            get
-            {
-                return _searchResultPackage?.IconBitmapImage;
-            }
+            get { return _searchResultPackage?.IconUrl; }
         }
 
         private DetailedPackageMetadata _packageMetadata;
