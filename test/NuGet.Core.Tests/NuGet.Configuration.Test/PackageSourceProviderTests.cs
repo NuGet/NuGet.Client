@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.PlatformAbstractions;
 using Moq;
 using NuGet.Test.Utility;
 using Xunit;
@@ -2068,15 +2069,16 @@ namespace NuGet.Configuration.Test
     <packageSources>
         <add key=""Microsoft and .NET""
          value = ""https://www.nuget.org/api/v2/curated-feeds/microsoftdotnet/"" />
+        <add key=""LocalNuGet""
+         value = ""C:\Temp\Nuget"" />
+        <add key=""LocalNuGet1""
+         value = ""/temp/nuget"" />
     </packageSources>
 </configuration>
 ";
-                var configContets1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-</configuration>
-";
+
                 File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "machinewide.config"), configContents);
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContets1);
+
                 var machineWideSetting = new Settings(mockBaseDirectory.Path, "machinewide.config", true);
                 var m = new Mock<IMachineWideSettings>();
                 m.SetupGet(obj => obj.Settings).Returns(new List<Settings> { machineWideSetting });
@@ -2084,23 +2086,26 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
                    configFileName: null,
                    machineWideSettings: m.Object,
-                   loadAppDataSettings: false,
-                   useTestingGlobalPath: false);
+                   loadAppDataSettings: true,
+                   useTestingGlobalPath: true);
                 var packageSourceProvider = new PackageSourceProvider(settings);
-                var sources = packageSourceProvider.LoadPackageSources().ToList();
 
                 // Act
-                foreach (var source in sources)
-                {
-                    source.IsEnabled = false;
-                }
-                packageSourceProvider.SavePackageSources(sources);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
 
                 // Assert
-                var newSources = packageSourceProvider.LoadPackageSources().ToList();
-                foreach (var source in sources)
+                Assert.Equal("Microsoft and .NET", sources[1].Name);
+                Assert.False(sources[1].IsEnabled);
+
+                if (PlatformServices.Default.Runtime.OperatingSystem.Equals("windows", StringComparison.OrdinalIgnoreCase))
                 {
-                    Assert.False(source.IsEnabled);
+                    Assert.Equal("LocalNuGet", sources[2].Name);
+                    Assert.True(sources[2].IsEnabled);
+                }
+                else
+                {
+                    Assert.Equal("LocalNuGet1", sources[3].Name);
+                    Assert.True(sources[3].IsEnabled);
                 }
             }
         }

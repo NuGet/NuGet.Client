@@ -266,7 +266,13 @@ namespace NuGet.Configuration
                         var values = setting.GetSettingValues(ConfigurationConstants.PackageSources, isPath: true);
                         foreach (var value in values)
                         {
-                            disabledSources.Add(new SettingValue(value.Key, "true", origin: setting, isMachineWide: true, priority: 0));
+                            var packageSource = new PackageSource(value.Value);
+                            
+                            // if the machine wide package source is not local source, disable it by default
+                            if (!packageSource.IsLocal)
+                            {
+                                disabledSources.Add(new SettingValue(value.Key, "true", origin: setting, isMachineWide: true, priority: 0));
+                            }
                         }
                     }
                     appDataSettings.UpdateSections(ConfigurationConstants.DisabledPackageSources, disabledSources);
