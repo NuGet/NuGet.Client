@@ -34,8 +34,6 @@ namespace NuGet.Protocol
         private string _httpCacheDirectory;
         private Guid _lastAuthId = Guid.NewGuid();
         private readonly PackageSource _packageSource;
-        private readonly string _requestLogFormat = "  {0} {1}";
-        private readonly string _responseLogFormat = "  {0} {1} {2}" + Strings.Milliseconds;
         private readonly HttpRetryHandler _retryHandler;
 
         // Only one thread may re-create the http client at a time.
@@ -83,13 +81,10 @@ namespace NuGet.Protocol
             Action<Stream> ensureValidContents,
             CancellationToken cancellationToken)
         {
-            var sw = new Stopwatch();
-            sw.Start();
-
             var result = await TryReadCacheFile(uri, cacheKey, cacheContext, log, cancellationToken);
             if (result.Stream != null)
             {
-                log.LogInformation(string.Format(CultureInfo.InvariantCulture, _requestLogFormat, "CACHE", uri));
+                log.LogInformation(string.Format(CultureInfo.InvariantCulture, HttpRetryHandler.RequestLogFormat, "CACHE", uri));
 
                 // Validate the content fetched from the cache.
                 try
@@ -111,31 +106,26 @@ namespace NuGet.Protocol
                     log.LogWarning(message);
                 }
             }
-
-            log.LogInformation(string.Format(CultureInfo.InvariantCulture, _requestLogFormat, "GET", uri));
+            
             Func<HttpRequestMessage> requestFactory = () => new HttpRequestMessage(HttpMethod.Get, uri);
 
             // Read the response headers before reading the entire stream to avoid timeouts from large packages.
             Func<Task<HttpResponseMessage>> throttleRequest = () => SendWithCredentialSupportAsync(
                     requestFactory,
                     HttpCompletionOption.ResponseHeadersRead,
+                    log,
                     cancellationToken);
 
             using (var response = await GetThrottled(throttleRequest))
             {
                 if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
                 {
-                    log.LogInformation(string.Format(CultureInfo.InvariantCulture,
-                        _responseLogFormat, response.StatusCode, uri, sw.ElapsedMilliseconds));
                     return new HttpSourceResult();
                 }
 
                 response.EnsureSuccessStatusCode();
 
                 await CreateCacheFile(result, response, cacheContext, ensureValidContents, cancellationToken);
-
-                log.LogInformation(string.Format(CultureInfo.InvariantCulture,
-                    _responseLogFormat, response.StatusCode, uri, sw.ElapsedMilliseconds));
 
                 return result;
             }
@@ -147,12 +137,14 @@ namespace NuGet.Protocol
         /// </summary>
         internal async Task<HttpResponseMessage> SendAsync(
             Func<HttpRequestMessage> requestFactory,
+            ILogger log,
             CancellationToken cancellationToken)
         {
             // Read the response headers before reading the entire stream to avoid timeouts from large packages.
             Func<Task<HttpResponseMessage>> throttledRequest = () => SendWithCredentialSupportAsync(
                     requestFactory,
                     HttpCompletionOption.ResponseHeadersRead,
+                    log,
                     cancellationToken);
 
             var response = await GetThrottled(throttledRequest);
@@ -183,16 +175,15 @@ namespace NuGet.Protocol
 
         public Task<HttpResponseMessage> GetAsync(Uri uri, ILogger log, CancellationToken token)
         {
-            log.LogInformation(string.Format(CultureInfo.InvariantCulture, _requestLogFormat, "GET", uri));
-
             Func<HttpRequestMessage> requestFactory = () => new HttpRequestMessage(HttpMethod.Get, uri);
 
-            return SendAsync(requestFactory, token);
+            return SendAsync(requestFactory, log, token);
         }
 
         public async Task<Stream> GetStreamAsync(Uri uri, ILogger log, CancellationToken token)
         {
             var response = await GetAsync(uri, log, token);
+
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadAsStreamAsync();
@@ -215,6 +206,8 @@ namespace NuGet.Protocol
                     return null;
                 }
 
+                response.EnsureSuccessStatusCode();
+
                 using (var stream = await response.Content.ReadAsStreamAsync())
                 using (var reader = new StreamReader(stream))
                 using (var jsonReader = new JsonTextReader(reader))
@@ -227,6 +220,7 @@ namespace NuGet.Protocol
         private async Task<HttpResponseMessage> SendWithCredentialSupportAsync(
             Func<HttpRequestMessage> requestFactory,
             HttpCompletionOption completionOption,
+            ILogger log,
             CancellationToken cancellationToken)
         {
             HttpResponseMessage response = null;
@@ -275,6 +269,7 @@ namespace NuGet.Protocol
                     _httpClient,
                     requestWithStsFactory,
                     completionOption,
+                    log,
                     cancellationToken);
 
                 if (response.StatusCode == HttpStatusCode.Unauthorized)

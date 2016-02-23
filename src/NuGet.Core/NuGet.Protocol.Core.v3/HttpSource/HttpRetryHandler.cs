@@ -2,17 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Common;
+using NuGet.Logging;
 using NuGet.Protocol.Core.v3;
 
 namespace NuGet.Protocol
 {
     public class HttpRetryHandler
     {
+        public const string RequestLogFormat = "  {0} {1}";
+        public static readonly string ResponseLogFormat = "  {0} {1} {2}" + Strings.Milliseconds;
+
         /// <summary>
         /// The <see cref="HttpRetryHandler"/> is for retrying and HTTP request if it times out, has any exception,
         /// or returns a status code of 500 or greater.
@@ -48,6 +52,7 @@ namespace NuGet.Protocol
             HttpClient client,
             Func<HttpRequestMessage> requestFactory,
             HttpCompletionOption completionOption,
+            ILogger log,
             CancellationToken cancellationToken)
         {
             var tries = 0;
@@ -86,6 +91,14 @@ namespace NuGet.Protocol
                         using (cancellationToken.Register(() => responseTcs.Cancel()))
                         {
                             var timeoutTask = Task.Delay(RequestTimeout, timeoutTcs.Token);
+
+                            log.LogInformation(string.Format(
+                                CultureInfo.InvariantCulture,
+                                RequestLogFormat,
+                                request.Method,
+                                request.RequestUri));
+
+                            var stopwatch = Stopwatch.StartNew();
                             var responseTask = client.SendAsync(request, completionOption, responseTcs.Token);
 
                             if (timeoutTask == await Task.WhenAny(responseTask, timeoutTask))
@@ -109,6 +122,13 @@ namespace NuGet.Protocol
                             {
                                 timeoutTcs.Cancel();
                                 response = await responseTask;
+
+                                log.LogInformation(string.Format(
+                                    CultureInfo.InvariantCulture,
+                                    ResponseLogFormat,
+                                    response.StatusCode,
+                                    request.RequestUri,
+                                    stopwatch.ElapsedMilliseconds));
 
                                 if ((int)response.StatusCode >= 500)
                                 {
