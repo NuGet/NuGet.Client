@@ -518,7 +518,7 @@ namespace NuGet.Packaging
 
         private void AddFiles(string basePath, string source, string destination, string exclude = null)
         {
-            List<PhysicalPackageFile> searchFiles = PathResolver.ResolveSearchPattern(basePath, source, destination, _includeEmptyDirectories).ToList();
+            List<PhysicalPackageFile> searchFiles = ResolveSearchPattern(basePath, source, destination, _includeEmptyDirectories).ToList();
             if (_includeEmptyDirectories)
             {
                 // we only allow empty directories which are legit framework folders.
@@ -539,6 +539,57 @@ namespace NuGet.Packaging
 
 
             Files.AddRange(searchFiles);
+        }
+
+        internal static IEnumerable<PhysicalPackageFile> ResolveSearchPattern(string basePath, string searchPath, string targetPath, bool includeEmptyDirectories)
+        {
+            string normalizedBasePath;
+            IEnumerable<PathResolver.SearchPathResult> searchResults = PathResolver.PerformWildcardSearch(basePath, searchPath, includeEmptyDirectories, out normalizedBasePath);
+
+            return searchResults.Select(result =>
+                result.IsFile
+                    ? new PhysicalPackageFile
+                    {
+                        SourcePath = result.Path,
+                        TargetPath = ResolvePackagePath(normalizedBasePath, searchPath, result.Path, targetPath)
+                    }
+                    : new EmptyFrameworkFolderFile(ResolvePackagePath(normalizedBasePath, searchPath, result.Path, targetPath))
+                    {
+                        SourcePath = result.Path
+                    }
+            );
+        }
+
+        /// <summary>
+        /// Determins the path of the file inside a package.
+        /// For recursive wildcard paths, we preserve the path portion beginning with the wildcard.
+        /// For non-recursive wildcard paths, we use the file name from the actual file path on disk.
+        /// </summary>
+        internal static string ResolvePackagePath(string searchDirectory, string searchPattern, string fullPath, string targetPath)
+        {
+            string packagePath;
+            bool isDirectorySearch = PathResolver.IsDirectoryPath(searchPattern);
+            bool isWildcardSearch = PathResolver.IsWildcardSearch(searchPattern);
+            bool isRecursiveWildcardSearch = isWildcardSearch && searchPattern.IndexOf("**", StringComparison.OrdinalIgnoreCase) != -1;
+
+            if ((isRecursiveWildcardSearch || isDirectorySearch) && fullPath.StartsWith(searchDirectory, StringComparison.OrdinalIgnoreCase))
+            {
+                // The search pattern is recursive. Preserve the non-wildcard portion of the path.
+                // e.g. Search: X:\foo\**\*.cs results in SearchDirectory: X:\foo and a file path of X:\foo\bar\biz\boz.cs
+                // Truncating X:\foo\ would result in the package path.
+                packagePath = fullPath.Substring(searchDirectory.Length).TrimStart(Path.DirectorySeparatorChar);
+            }
+            else if (!isWildcardSearch && Path.GetExtension(searchPattern).Equals(Path.GetExtension(targetPath), StringComparison.OrdinalIgnoreCase))
+            {
+                // If the search does not contain wild cards, and the target path shares the same extension, copy it
+                // e.g. <file src="ie\css\style.css" target="Content\css\ie.css" /> --> Content\css\ie.css
+                return targetPath;
+            }
+            else
+            {
+                packagePath = Path.GetFileName(fullPath);
+            }
+            return Path.Combine(targetPath ?? String.Empty, packagePath);
         }
 
         /// <summary>

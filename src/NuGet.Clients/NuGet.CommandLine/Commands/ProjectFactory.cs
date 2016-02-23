@@ -739,7 +739,9 @@ namespace NuGet.CommandLine
                         }
                         else
                         {
-                            targetFolder = Path.Combine(ReferenceFolder, VersionUtility.GetShortFrameworkName(targetFramework));
+                            NuGetFramework nugetFramework = NuGetFramework.Parse(targetFramework.FullName);
+                            string shortFolderName = nugetFramework.GetShortFolderName();
+                            targetFolder = Path.Combine(ReferenceFolder, shortFolderName);
                         }
                     }
                     var packageFile = new PhysicalPackageFile
