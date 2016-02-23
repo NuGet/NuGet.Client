@@ -279,7 +279,24 @@ namespace NuGet.CommandLine.Test
                     }));
             }
 
-            server.Get.Add("/nuget", r => "OK");
+            // fall through to "package not found"
+            server.Get.Add("/nuget/Packages(Id='", r =>
+                new Action<HttpListenerResponse>(response =>
+                {
+                    response.StatusCode = 404;
+                    MockServer.SetResponseContent(response, @"<?xml version=""1.0"" encoding=""utf-8""?>
+<m:error xmlns:m=""http://schemas.microsoft.com/ado/2007/08/dataservices/metadata"">
+  <m:code />
+  <m:message xml:lang=""en-US"">Resource not found for the segment 'Packages'.</m:message>
+</m:error>");
+                }));
+
+            server.Get.Add("/nuget", r =>
+                new Action<HttpListenerResponse>(response =>
+                {
+                    response.StatusCode = 404;
+                }));
+
             return server;
         }
 

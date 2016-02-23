@@ -17,6 +17,7 @@ namespace NuGet.Protocol.FuncTest
         public async Task V2FeedParser_DownloadFromInvalidUrl()
         {
             // Arrange
+            var randomName = Guid.NewGuid().ToString();
             var repo = Repository.Factory.GetCoreV3("https://www.nuget.org/api/v2/");
 
             var httpSource = HttpSource.Create(repo);
@@ -25,14 +26,14 @@ namespace NuGet.Protocol.FuncTest
 
             // Act 
             Exception ex = await Assert.ThrowsAsync<FatalProtocolException>(async () => await parser.DownloadFromUrl(new PackageIdentity("not-found", new NuGetVersion("6.2.0")),
-                                                              new Uri("https://www.invalid.org/api/v2"),
+                                                              new Uri($"https://www.{randomName}.org/api/v2/"),
                                                               Configuration.NullSettings.Instance,
                                                               NullLogger.Instance,
                                                               CancellationToken.None));
 
             // Assert
             Assert.NotNull(ex);
-            Assert.Equal("Error downloading 'not-found.6.2.0' from 'https://www.invalid.org/api/v2'.", ex.Message);
+            Assert.Equal($"Error downloading 'not-found.6.2.0' from 'https://www.{randomName}.org/api/v2/'.", ex.Message);
         }
 
         [Fact]
@@ -46,15 +47,15 @@ namespace NuGet.Protocol.FuncTest
             V2FeedParser parser = new V2FeedParser(httpSource, "https://www.nuget.org/api/v2/");
 
             // Act 
-            Exception ex = await Assert.ThrowsAsync<FatalProtocolException>(async () => await parser.DownloadFromUrl(new PackageIdentity("not-found", new NuGetVersion("6.2.0")),
-                                                              new Uri("https://www.nuget.org/api/v2/package/not-found/6.2.0"),
-                                                              Configuration.NullSettings.Instance,
-                                                              NullLogger.Instance,
-                                                              CancellationToken.None));
+            var actual = await parser.DownloadFromUrl(new PackageIdentity("not-found", new NuGetVersion("6.2.0")),
+                new Uri("https://www.nuget.org/api/v2/package/not-found/6.2.0"),
+                Configuration.NullSettings.Instance,
+                NullLogger.Instance,
+                CancellationToken.None);
 
             // Assert
-            Assert.NotNull(ex);
-            Assert.Equal("Error downloading 'not-found.6.2.0' from 'https://www.nuget.org/api/v2/package/not-found/6.2.0'.", ex.Message);
+            Assert.NotNull(actual);
+            Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
         }
 
         [Fact]

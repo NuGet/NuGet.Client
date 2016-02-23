@@ -249,6 +249,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Getting package &apos;{0}&apos; from source &apos;{1}&apos; was cancelled..
+        /// </summary>
+        internal static string PackageCancelledFromSource {
+            get {
+                return ResourceManager.GetString("PackageCancelledFromSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Package &apos;{0}&apos; could not be installed.
         /// </summary>
         internal static string PackageCouldNotBeInstalled {
@@ -299,6 +308,15 @@ namespace NuGet.PackageManagement {
         internal static string PackageNotFoundInPrimarySources {
             get {
                 return ResourceManager.GetString("PackageNotFoundInPrimarySources", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Package &apos;{0}&apos; is not found on source &apos;{1}&apos;..
+        /// </summary>
+        internal static string PackageNotFoundOnSource {
+            get {
+                return ResourceManager.GetString("PackageNotFoundOnSource", resourceCulture);
             }
         }
         

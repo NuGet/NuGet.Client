@@ -276,4 +276,10 @@
   <data name="Warning_ErrorFindingRepository" xml:space="preserve">
     <value>Error finding repository for '{0}': {1}</value>
   </data>
+  <data name="PackageCancelledFromSource" xml:space="preserve">
+    <value>Getting package '{0}' from source '{1}' was cancelled.</value>
+  </data>
+  <data name="PackageNotFoundOnSource" xml:space="preserve">
+    <value>Package '{0}' is not found on source '{1}'.</value>
+  </data>
 </root>

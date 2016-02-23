@@ -60,8 +60,8 @@ namespace NuGet.Protocol.Core.v2
                         var repository = V2Client as DataServicePackageRepository;
 
                         bool isFromUri = repository != null
-                            && sourcePackage?.PackageHash != null
-                            && sourcePackage?.DownloadUri != null;
+                                         && sourcePackage?.PackageHash != null
+                                         && sourcePackage?.DownloadUri != null;
 
                         if (isFromUri)
                         {
@@ -75,6 +75,10 @@ namespace NuGet.Protocol.Core.v2
                             // Look up the package from the id and version and download it.
                             return DownloadFromIdentity(identity, V2Client, logger, token);
                         }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        return new DownloadResourceResult(DownloadResourceResultStatus.Cancelled);
                     }
                     catch (IOException ex) when (ex.InnerException is SocketException && i < 2)
                     {
@@ -210,7 +214,7 @@ namespace NuGet.Protocol.Core.v2
                 }
             }
 
-            return null;
+            return new DownloadResourceResult(DownloadResourceResultStatus.NotFound);
         }
 
         /// <summary>

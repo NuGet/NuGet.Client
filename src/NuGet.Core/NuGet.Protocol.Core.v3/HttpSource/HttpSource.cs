@@ -84,7 +84,7 @@ namespace NuGet.Protocol
             var result = await TryReadCacheFile(uri, cacheKey, cacheContext, log, cancellationToken);
             if (result.Stream != null)
             {
-                log.LogInformation(string.Format(CultureInfo.InvariantCulture, HttpRetryHandler.RequestLogFormat, "CACHE", uri));
+                log.LogInformation(string.Format(CultureInfo.InvariantCulture, Strings.Http_RequestLog, "CACHE", uri));
 
                 // Validate the content fetched from the cache.
                 try
@@ -147,9 +147,7 @@ namespace NuGet.Protocol
                     log,
                     cancellationToken);
 
-            var response = await GetThrottled(throttledRequest);
-
-            return response;
+            return await GetThrottled(throttledRequest);
         }
 
         private static async Task<HttpResponseMessage> GetThrottled(Func<Task<HttpResponseMessage>> request)
@@ -180,13 +178,22 @@ namespace NuGet.Protocol
             return SendAsync(requestFactory, log, token);
         }
 
-        public async Task<Stream> GetStreamAsync(Uri uri, ILogger log, CancellationToken token)
+        public async Task<T> ProcessStreamAsync<T>(Uri uri, bool ignoreNotFounds, Func<Stream, Task<T>> process, ILogger log, CancellationToken token)
         {
-            var response = await GetAsync(uri, log, token);
+            using (var response = await GetAsync(uri, log, token))
+            {
+                if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return await process(null);
+                }
 
-            response.EnsureSuccessStatusCode();
+                response.EnsureSuccessStatusCode();
 
-            return await response.Content.ReadAsStreamAsync();
+                using (var stream = await response.Content.ReadAsStreamAsync())
+                {
+                    return await process(stream);
+                }
+            }
         }
 
         public Task<JObject> GetJObjectAsync(Uri uri, ILogger log, CancellationToken token)

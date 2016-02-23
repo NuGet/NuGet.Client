@@ -151,7 +151,9 @@
     <value>No download URL could be found for {0}.</value>
   </data>
   <data name="Http_Timeout" xml:space="preserve">
-    <value>The HTTP request to '{0} {1}' has timed out after {2}{3}.</value>
+    <value>The HTTP request to '{0} {1}' has timed out after {2}ms.</value>
+    <comment>Parameters in order: non-localizable HTTP method, non-localizable HTTP request URI, timeout duration in milliseconds.
+The "ms" should be localized to the abbreviation for milliseconds.</comment>
   </data>
   <data name="InvalidVersionFolder" xml:space="preserve">
     <value>The folder '{0}' contains an invalid version.</value>
@@ -179,9 +181,6 @@
   </data>
   <data name="Log_RetryingFindPackagesById" xml:space="preserve">
     <value>Retrying '{0}' for source '{1}'.</value>
-  </data>
-  <data name="Milliseconds" xml:space="preserve">
-    <value>ms</value>
   </data>
   <data name="NoApiKeyFound" xml:space="preserve">
     <value>No API Key was provided and no API Key could be found for {0}. To save an API Key for a source use the 'setApiKey' command.</value>
@@ -249,9 +248,6 @@
   <data name="LiveFeed" xml:space="preserve">
     <value>the NuGet gallery</value>
   </data>
-  <data name="Log_FailedToFindPackage" xml:space="preserve">
-    <value>Can't find Package '{0}' from source '{1}'.</value>
-  </data>
   <data name="Log_InvalidCacheEntry" xml:space="preserve">
     <value>An invalid cache entry was found for URL '{0}' and will be replaced.</value>
   </data>
@@ -299,5 +295,14 @@
   </data>
   <data name="Path_Invalid_NotFileNotUnc" xml:space="preserve">
     <value>'{0}' should be a local path or a UNC share path.</value>
+  </data>
+  <data name="Http_RequestLog" xml:space="preserve">
+    <value>{0} {1}</value>
+    <comment>Parameters in order: non-localizable HTTP method, non-localizable HTTP request URI</comment>
+  </data>
+  <data name="Http_ResponseLog" xml:space="preserve">
+    <value>{0} {1} {2}ms</value>
+    <comment>Parameters in order: non-localizable HTTP status, non-localizable HTTP request URI, request duration in milliseconds.
+The "ms" should be localized to the abbreviation for milliseconds.</comment>
   </data>
 </root>

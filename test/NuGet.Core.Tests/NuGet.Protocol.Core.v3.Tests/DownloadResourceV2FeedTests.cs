@@ -31,14 +31,14 @@ namespace NuGet.Protocol.Core.v3.Tests
             var downloadResource = await repo.GetResourceAsync<DownloadResource>();
 
             // Act 
-            Exception ex = await Assert.ThrowsAsync<FatalProtocolException>(async () => await downloadResource.GetDownloadResourceResultAsync(new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound")),
-                                                              Configuration.NullSettings.Instance,
-                                                              NullLogger.Instance,
-                                                              CancellationToken.None));
+            var actual = await downloadResource.GetDownloadResourceResultAsync(new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound")),
+                NullSettings.Instance,
+                NullLogger.Instance,
+                CancellationToken.None);
 
             // Assert
-            Assert.NotNull(ex);
-            Assert.Equal("Can't find Package 'xunit.1.0.0-notfound' from source 'http://testsource/v2/'.", ex.Message);
+            Assert.NotNull(actual);
+            Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
         }
     }
 }

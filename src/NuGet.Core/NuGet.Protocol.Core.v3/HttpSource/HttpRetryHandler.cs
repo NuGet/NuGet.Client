@@ -14,9 +14,6 @@ namespace NuGet.Protocol
 {
     public class HttpRetryHandler
     {
-        public const string RequestLogFormat = "  {0} {1}";
-        public static readonly string ResponseLogFormat = "  {0} {1} {2}" + Strings.Milliseconds;
-
         /// <summary>
         /// The <see cref="HttpRetryHandler"/> is for retrying and HTTP request if it times out, has any exception,
         /// or returns a status code of 500 or greater.
@@ -92,11 +89,12 @@ namespace NuGet.Protocol
                         {
                             var timeoutTask = Task.Delay(RequestTimeout, timeoutTcs.Token);
 
+                            string requestUri = request.RequestUri.ToString();
                             log.LogInformation(string.Format(
                                 CultureInfo.InvariantCulture,
-                                RequestLogFormat,
+                                Strings.Http_RequestLog,
                                 request.Method,
-                                request.RequestUri));
+                                requestUri));
 
                             var stopwatch = Stopwatch.StartNew();
                             var responseTask = client.SendAsync(request, completionOption, responseTcs.Token);
@@ -112,9 +110,8 @@ namespace NuGet.Protocol
                                         CultureInfo.CurrentCulture,
                                         Strings.Http_Timeout,
                                         request.Method,
-                                        request.RequestUri,
-                                        (int)RequestTimeout.TotalMilliseconds,
-                                        Strings.Milliseconds);
+                                        requestUri,
+                                        (int)RequestTimeout.TotalMilliseconds);
                                     throw new TimeoutException(message);
                                 }
                             }
@@ -125,9 +122,9 @@ namespace NuGet.Protocol
 
                                 log.LogInformation(string.Format(
                                     CultureInfo.InvariantCulture,
-                                    ResponseLogFormat,
+                                    Strings.Http_ResponseLog,
                                     response.StatusCode,
-                                    request.RequestUri,
+                                    requestUri,
                                     stopwatch.ElapsedMilliseconds));
 
                                 if ((int)response.StatusCode >= 500)

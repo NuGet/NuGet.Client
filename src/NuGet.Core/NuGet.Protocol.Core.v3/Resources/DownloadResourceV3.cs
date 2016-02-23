@@ -126,7 +126,7 @@ namespace NuGet.Protocol.Core.v3
                 return await GetDownloadResultUtility.GetDownloadResultAsync(_client, identity, uri, settings, logger, token);
             }
 
-            return null;
+            return new DownloadResourceResult(DownloadResourceResultStatus.NotFound);
         }
     }
 }

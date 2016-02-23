@@ -71,14 +71,15 @@ namespace NuGet.Protocol.FuncTest
             var package = new SourcePackageDependencyInfo("not-found", new NuGetVersion("6.2.0"), null, true, repo, new Uri("https://www.nuget.org/api/v2/package/not-found/6.2.0"), "");
 
             // Act 
-            Exception ex = await Assert.ThrowsAsync<FatalProtocolException>(async () => await downloadResource.GetDownloadResourceResultAsync(package,
-                                                              NullSettings.Instance,
-                                                              NullLogger.Instance,
-                                                              CancellationToken.None));
+            var actual = await downloadResource.GetDownloadResourceResultAsync(
+                package,
+                NullSettings.Instance,
+                NullLogger.Instance,
+                CancellationToken.None);
 
             // Assert
-            Assert.NotNull(ex);
-            Assert.Equal("Error downloading 'not-found.6.2.0' from 'https://www.nuget.org/api/v2/package/not-found/6.2.0'.", ex.Message);
+            Assert.NotNull(actual);
+            Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
         }
 
         [Fact]

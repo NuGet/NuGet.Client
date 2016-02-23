@@ -142,15 +142,15 @@ namespace NuGet.Protocol.Core.v3.Tests
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
             V2FeedParser parser = new V2FeedParser(httpSource, "http://testsource/v2/");
 
-            // Act 
-            Exception ex = await Assert.ThrowsAsync<FatalProtocolException>(async () => await parser.DownloadFromIdentity(new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound")),
-                                                              Configuration.NullSettings.Instance,
-                                                              NullLogger.Instance,
-                                                              CancellationToken.None));
+            // Act
+            var actual = await parser.DownloadFromIdentity(new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound")),
+                NullSettings.Instance,
+                NullLogger.Instance,
+                CancellationToken.None);
 
             // Assert
-            Assert.NotNull(ex);
-            Assert.Equal("Can't find Package 'xunit.1.0.0-notfound' from source 'http://testsource/v2/'.", ex.Message);
+            Assert.NotNull(actual);
+            Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
         }
 
         [Fact]

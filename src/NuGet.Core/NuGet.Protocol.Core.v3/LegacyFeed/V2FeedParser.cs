@@ -218,10 +218,9 @@ namespace NuGet.Protocol
 
             if (packageInfo == null)
             {
-                string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToFindPackage, package, _source.Source);
-
-                throw new FatalProtocolException(message);
+                return new DownloadResourceResult(DownloadResourceResultStatus.NotFound);
             }
+
             return await GetDownloadResultUtility.GetDownloadResultAsync(_httpSource, package, new Uri(packageInfo.DownloadUrl), settings, log, token);
         }
 

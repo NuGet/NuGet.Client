@@ -204,7 +204,25 @@ namespace NuGet.Protocol.Core.v3 {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to The HTTP request to &apos;{0} {1}&apos; has timed out after {2}{3}..
+        ///    Looks up a localized string similar to {0} {1}.
+        /// </summary>
+        internal static string Http_RequestLog {
+            get {
+                return ResourceManager.GetString("Http_RequestLog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to {0} {1} {2}ms.
+        /// </summary>
+        internal static string Http_ResponseLog {
+            get {
+                return ResourceManager.GetString("Http_ResponseLog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The HTTP request to &apos;{0} {1}&apos; has timed out after {2}ms..
         /// </summary>
         internal static string Http_Timeout {
             get {
@@ -254,15 +272,6 @@ namespace NuGet.Protocol.Core.v3 {
         internal static string Log_FailedToDownloadPackage {
             get {
                 return ResourceManager.GetString("Log_FailedToDownloadPackage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Can&apos;t find Package &apos;{0}&apos; from source &apos;{1}&apos;..
-        /// </summary>
-        internal static string Log_FailedToFindPackage {
-            get {
-                return ResourceManager.GetString("Log_FailedToFindPackage", resourceCulture);
             }
         }
         
@@ -344,15 +353,6 @@ namespace NuGet.Protocol.Core.v3 {
         internal static string Log_RetryingServiceIndex {
             get {
                 return ResourceManager.GetString("Log_RetryingServiceIndex", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to ms.
-        /// </summary>
-        internal static string Milliseconds {
-            get {
-                return ResourceManager.GetString("Milliseconds", resourceCulture);
             }
         }
         
