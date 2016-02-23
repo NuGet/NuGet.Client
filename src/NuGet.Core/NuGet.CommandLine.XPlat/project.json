@@ -26,10 +26,12 @@
     "dnx451": {
       "frameworkAssemblies": {
         "Microsoft.Build.Framework": "14.0.0",
-        "Microsoft.Build": "14.0.0"
+        "Microsoft.Build": "14.0.0",
+        "System.Collections": ""
       }
     },
     "dnxcore50": {
+      "imports": [ "portable-net45+win8" ],
       "dependencies": {
         "System.Threading.Tasks": "4.0.11-beta-23516",
         "System.Console": "4.0.0-beta-23409"

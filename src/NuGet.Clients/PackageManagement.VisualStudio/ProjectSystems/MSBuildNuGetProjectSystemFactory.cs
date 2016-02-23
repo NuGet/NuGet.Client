@@ -52,10 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var guids = VsHierarchyUtility.GetProjectTypeGuids(envDTEProject);
             if (guids.Contains(NuGetVSConstants.CppProjectTypeGuid)) // Got a cpp project
             {
-                if (!EnvDTEProjectUtility.IsClr(envDTEProject))
-                {
-                    return new NativeProjectSystem(envDTEProject, nuGetProjectContext);
-                }
+                return new NativeProjectSystem(envDTEProject, nuGetProjectContext);
             }
 
             // Try to get a factory for the project type guid

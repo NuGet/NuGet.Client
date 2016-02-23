@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
@@ -20,7 +22,7 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "CommandApiKey")]
         public string ApiKey { get; set; }
 
-        public override void ExecuteCommand()
+        public override async Task ExecuteCommandAsync()
         {
             if (NoPrompt)
             {
@@ -29,40 +31,29 @@ namespace NuGet.CommandLine
             }
 
             //First argument should be the package ID
-            string packageId = Arguments[0];
+            var packageId = Arguments[0];
             //Second argument should be the package Version
-            string packageVersion = Arguments[1];
+            var packageVersion = Arguments[1];
 
-            //If the user passed a source use it for the gallery location
-            string source = SourceProvider.ResolveAndValidateSource(Source) ?? NuGetConstants.DefaultGalleryServerUrl;
-            var userAgent = UserAgent.CreateUserAgentString(CommandLineConstants.UserAgent);
-            var gallery = new PackageServer(source, userAgent);
-            gallery.SendingRequest += (sender, e) =>
+            //verify source
+            var source = SourceProvider.ResolveAndValidateSource(Source);
+            if (string.IsNullOrEmpty(source))
             {
-                if (Console.Verbosity == NuGet.Verbosity.Detailed)
-                {
-                    Console.WriteLine(ConsoleColor.Green, "{0} {1}", e.Request.Method, e.Request.RequestUri);
-                }
-            };
-
-            //If the user did not pass an API Key look in the config file
-            string apiKey = GetApiKey(source);
-            string sourceDisplayName = CommandLineUtility.GetSourceDisplayName(source);
-            if (String.IsNullOrEmpty(apiKey))
-            {
-                Console.WriteWarning(LocalizedResourceManager.GetString("NoApiKeyFound"), sourceDisplayName);
+                throw new CommandLineException(
+                    LocalizedResourceManager.GetString(nameof(NuGetResources.Error_MissingSourceParameter)));
             }
 
-            if (NonInteractive || Console.Confirm(String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("DeleteCommandConfirm"), packageId, packageVersion, sourceDisplayName)))
-            {
-                Console.WriteLine(LocalizedResourceManager.GetString("DeleteCommandDeletingPackage"), packageId, packageVersion, sourceDisplayName);
-                gallery.DeletePackage(apiKey, packageId, packageVersion);
-                Console.WriteLine(LocalizedResourceManager.GetString("DeleteCommandDeletedPackage"), packageId, packageVersion);
-            }
-            else
-            {
-                Console.WriteLine(LocalizedResourceManager.GetString("DeleteCommandCanceled"));
-            }
+            //Setup repository
+            var packageSource = new Configuration.PackageSource(source);
+            var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
+            var sourceRepository = sourceRepositoryProvider.CreateRepository(packageSource);
+            var packageUpdateResource = await sourceRepository.GetResourceAsync<PackageUpdateResource>();
+
+            await packageUpdateResource.Delete(packageId, 
+                packageVersion,
+                (s) => GetApiKey(s),
+                desc => Console.Confirm(desc),
+                Console);
         }
 
         internal string GetApiKey(string source)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -30,7 +31,12 @@ namespace NuGet.CommandLine.Test
         {
             PortReserver = new PortReserver();
 
-            Listener = new HttpListener();
+            // tests that cancel downloads and exit will cause the mock server to throw, this should be ignored.
+            Listener = new HttpListener()
+            {
+                IgnoreWriteExceptions = true
+            };
+
             Listener.Prefixes.Add(PortReserver.BaseUri);
         }
 
@@ -56,14 +62,21 @@ namespace NuGet.CommandLine.Test
         /// </summary>
         public void Stop()
         {
-            Listener.Abort();
-
-            var task = _listenerTask;
-            _listenerTask = null;
-
-            if (task != null)
+            try
             {
-                task.Wait();
+                Listener.Abort();
+
+                var task = _listenerTask;
+                _listenerTask = null;
+
+                if (task != null)
+                {
+                    task.Wait();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Fail(ex.ToString());
             }
         }
 
@@ -102,7 +115,15 @@ namespace NuGet.CommandLine.Test
             int bodyEndIndex = Find(buffer, 0, delimiter);
             if (bodyEndIndex == -1)
             {
-                return result;
+                //Patch, to deal with new binary format coming with the HttpClient
+                //from dnxcore50. The right way should use existing libraries with
+                //multi-part parsers
+                byte[] delimiter2 = Encoding.UTF8.GetBytes("\r\n--");
+                bodyEndIndex = Find(buffer, 0, delimiter2);
+                if (bodyEndIndex == -1)
+                {
+                    return result;
+                }
             }
 
             result = buffer.Skip(bodyStartIndex).Take(bodyEndIndex - bodyStartIndex).ToArray();
@@ -163,7 +184,15 @@ namespace NuGet.CommandLine.Test
             response.AddHeader("Cache-Control", "no-cache, no-store");
 
             response.ContentLength64 = content.Length;
-            response.OutputStream.Write(content, 0, content.Length);
+
+            try
+            {
+                response.OutputStream.Write(content, 0, content.Length);
+            }
+            catch (HttpListenerException)
+            {
+                // Listener exceptions may occur if the client drops the connection
+            }
         }
 
         public static void SetResponseContent(HttpListenerResponse response, string text)

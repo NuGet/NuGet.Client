@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
+using NuGet.Logging;
 using NuGet.Packaging.Core;
 
 namespace NuGet.Protocol.Core.Types
@@ -28,6 +29,7 @@ namespace NuGet.Protocol.Core.Types
         /// </returns>
         public abstract Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package,
             NuGetFramework projectFramework,
+            ILogger log,
             CancellationToken token);
 
         /// <summary>
@@ -40,6 +42,7 @@ namespace NuGet.Protocol.Core.Types
         /// <returns>available packages and their dependencies</returns>
         public abstract Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId,
             NuGetFramework projectFramework,
+            ILogger log,
             CancellationToken token);
 
         /// <summary>
@@ -50,6 +53,7 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="token">cancellation token</param>
         /// <returns>available packages and their dependencies</returns>
         public virtual Task<IEnumerable<RemoteSourceDependencyInfo>> ResolvePackages(string packageId,
+            Logging.ILogger log,
             CancellationToken token)
         {
             throw new NotSupportedException();

@@ -909,7 +909,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error occured:\n{0}.
+        ///   Looks up a localized string similar to Error occured:{0}{1}.
         /// </summary>
         public static string Text_ErrorOccurred {
             get {
@@ -1067,6 +1067,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Text_ShowAll {
             get {
                 return ResourceManager.GetString("Text_ShowAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Operation canceled by user..
+        /// </summary>
+        public static string Text_UserCanceled {
+            get {
+                return ResourceManager.GetString("Text_UserCanceled", resourceCulture);
             }
         }
         

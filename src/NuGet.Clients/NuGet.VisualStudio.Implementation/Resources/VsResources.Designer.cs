@@ -61,6 +61,15 @@ namespace NuGet.VisualStudio.Implementation.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The specified framework name &apos;{0}&apos; must be .NETStandard..
+        /// </summary>
+        internal static string InvalidNetStandardFramework {
+            get {
+                return ResourceManager.GetString("InvalidNetStandardFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package list contains invalid or duplicate entries..
         /// </summary>
         internal static string InvalidPackageList {

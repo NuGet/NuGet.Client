@@ -19,7 +19,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
         {
         }
 
-        public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository sourceRepository, CancellationToken token)
+        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository sourceRepository, CancellationToken token)
         {
             INuGetResource resource = null;
 
@@ -27,12 +27,14 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 &&
                 !sourceRepository.PackageSource.Source.EndsWith("json", StringComparison.OrdinalIgnoreCase))
             {
+                var httpSourceResource = await sourceRepository.GetResourceAsync<HttpSourceResource>(token);
+
                 resource = new RemoteV2FindPackageByIdResource(
-                    sourceRepository.PackageSource, 
-                    async () => (await sourceRepository.GetResourceAsync<HttpHandlerResource>(token)));
+                    sourceRepository.PackageSource,
+                    httpSourceResource.HttpSource);
             }
 
-            return Task.FromResult(Tuple.Create(resource != null, resource));
+            return Tuple.Create(resource != null, resource);
         }
     }
 }

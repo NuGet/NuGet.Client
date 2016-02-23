@@ -11,7 +11,7 @@ namespace NuGet.Configuration
 {
     internal static class XmlUtility
     {
-        internal static XDocument GetOrCreateDocument(XName rootName, string fullPath)
+        internal static XDocument GetOrCreateDocument(XDocument content, string fullPath)
         {
             if (File.Exists(fullPath))
             {
@@ -21,18 +21,17 @@ namespace NuGet.Configuration
                 }
                 catch (FileNotFoundException)
                 {
-                    return CreateDocument(rootName, fullPath);
+                    return CreateDocument(content, fullPath);
                 }
             }
-            return CreateDocument(rootName, fullPath);
+            return CreateDocument(content, fullPath);
         }
 
-        private static XDocument CreateDocument(XName rootName, string fullPath)
+        private static XDocument CreateDocument(XDocument content, string fullPath)
         {
-            var document = new XDocument(new XElement(rootName));
             // Add it to the file system
-            FileSystemUtility.AddFile(fullPath, document.Save);
-            return document;
+            FileSystemUtility.AddFile(fullPath, content.Save);
+            return content;
         }
 
         private static XDocument GetDocument(string fullPath)

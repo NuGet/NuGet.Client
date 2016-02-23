@@ -1235,26 +1235,8 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 
-            return envDTEProject != null && NuGetVSConstants.CppProjectTypeGuid.Equals(envDTEProject.Kind, StringComparison.OrdinalIgnoreCase) && !IsClr(envDTEProject);
-        }
-
-        /// <summary>
-        /// Checks if a native project type really is a managed project, by checking the CLRSupport item.
-        /// </summary>
-        internal static bool IsClr(EnvDTEProject envDTEProject)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
-            bool isClr = false;
-
-            // always return false here until we fix clr support issue
-            // Null properties on the DTE project item are a common source of bugs, make sure everything is non-null before attempting this check.    
-            if (envDTEProject != null
-                && envDTEProject.FullName != null)
-            {
-                new VcxProject(envDTEProject.FullName);
-            }
-            return isClr;
+            return envDTEProject != null
+                && NuGetVSConstants.CppProjectTypeGuid.Equals(envDTEProject.Kind, StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsWebProject(EnvDTEProject envDTEProject)
@@ -1291,7 +1273,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Check if the project has an unsupported project capability, such as, "SharedAssetsProject"
         /// </summary>
-        private static bool HasUnsupportedProjectCapability(EnvDTEProject envDTEProject)
+        public static bool HasUnsupportedProjectCapability(EnvDTEProject envDTEProject)
         {
             Debug.Assert(ThreadHelper.CheckAccess());
 

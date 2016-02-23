@@ -235,7 +235,7 @@
     <value>Error occurred. Retry</value>
   </data>
   <data name="Text_ErrorOccurred" xml:space="preserve">
-    <value>Error occured:\n{0}</value>
+    <value>Error occured:{0}{1}</value>
   </data>
   <data name="Label_Solution" xml:space="preserve">
     <value>Solution '{0}'</value>
@@ -510,5 +510,8 @@ Packages installed into Website projects will not be restored during build. Cons
   <data name="Text_NotInstalled" xml:space="preserve">
     <value>not installed</value>
     <comment>In the solution package manager, if the select package is not installed, then this message is shown.</comment>
+  </data>
+  <data name="Text_UserCanceled" xml:space="preserve">
+    <value>Operation canceled by user.</value>
   </data>
 </root>

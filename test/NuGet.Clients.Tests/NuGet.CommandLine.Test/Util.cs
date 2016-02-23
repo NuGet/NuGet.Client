@@ -457,8 +457,6 @@ namespace NuGet.CommandLine.Test
 
             ZipPackage zipPackage = new ZipPackage(path);
 
-            MachineCache.Default.RemovePackage(zipPackage);
-
             return zipPackage;
         }
 
@@ -780,6 +778,19 @@ EndProject";
                   </ItemGroup>
                   <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
                  </Project>".Replace("$NAME$", projectName);
+        }
+
+        public static void ClearWebCache()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            var r = CommandRunner.Run(
+            nugetexe,
+            ".",
+            "locals http-cache -Clear",
+            waitForExit: true);
+
+            Assert.Equal(0, r.Item1);
         }
     }
 }

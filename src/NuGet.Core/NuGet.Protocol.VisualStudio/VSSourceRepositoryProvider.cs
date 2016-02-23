@@ -16,24 +16,7 @@ namespace NuGet.Protocol.VisualStudio
     [Export(typeof(ISourceRepositoryProvider))]
     public sealed class ExtensibleSourceRepositoryProvider : ISourceRepositoryProvider
     {
-        private static Configuration.PackageSource[] DefaultPrimarySources = new[]
-            {
-                new Configuration.PackageSource(NuGetConstants.V3FeedUrl, NuGetConstants.FeedName, isEnabled: true, isOfficial: true)
-                    {
-                        Description = Strings.v3sourceDescription,
-                        ProtocolVersion = 3
-                    }
-            };
-
-        private static Configuration.PackageSource[] DefaultSecondarySources = new[]
-            {
-                new Configuration.PackageSource(NuGetConstants.V2FeedUrl, NuGetConstants.FeedName, isEnabled: true, isOfficial: true)
-                    {
-                        Description = Strings.v2sourceDescription,
-                        ProtocolVersion = 2
-                    }
-            };
-
+     
         // TODO: add support for reloading sources when changes occur
         private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
         private IEnumerable<Lazy<INuGetResourceProvider>> _resourceProviders;
@@ -51,7 +34,7 @@ namespace NuGet.Protocol.VisualStudio
         /// </summary>
         [ImportingConstructor]
         public ExtensibleSourceRepositoryProvider([ImportMany] IEnumerable<Lazy<INuGetResourceProvider>> resourceProviders, [Import] Configuration.ISettings settings)
-            : this(new Configuration.PackageSourceProvider(settings, DefaultPrimarySources, DefaultSecondarySources, migratePackageSources: null), resourceProviders)
+            : this(new Configuration.PackageSourceProvider(settings, migratePackageSources: null), resourceProviders)
         {
         }
 

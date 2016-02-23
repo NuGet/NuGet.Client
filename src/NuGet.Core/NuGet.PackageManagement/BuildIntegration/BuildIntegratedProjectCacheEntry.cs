@@ -13,8 +13,8 @@ namespace NuGet.PackageManagement
     {
         public BuildIntegratedProjectCacheEntry(
             string projectConfigPath,
-            IEnumerable<string> referenceClosure,
-            IEnumerable<string> supportsProfiles)
+            ISet<string> referenceClosure,
+            DateTimeOffset? projectConfigLastModified)
         {
             if (projectConfigPath == null)
             {
@@ -26,14 +26,9 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(referenceClosure));
             }
 
-            if (supportsProfiles == null)
-            {
-                throw new ArgumentNullException(nameof(supportsProfiles));
-            }
-
             ProjectConfigPath = projectConfigPath;
-            ReferenceClosure = new HashSet<string>(referenceClosure);
-            SupportsProfiles = supportsProfiles;
+            ReferenceClosure = referenceClosure;
+            ProjectConfigLastModified = projectConfigLastModified;
         }
 
         /// <summary>
@@ -44,8 +39,11 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// All project.json files and msbuild references in the closure.
         /// </summary>
-        public HashSet<string> ReferenceClosure { get; }
+        public ISet<string> ReferenceClosure { get; }
 
-        public IEnumerable<string> SupportsProfiles { get; }
+        /// <summary>
+        /// Timestamp from the last time project.json was modified.
+        /// </summary>
+        public DateTimeOffset? ProjectConfigLastModified { get; }
     }
 }

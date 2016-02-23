@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -1178,7 +1179,6 @@ EndProject");
                 // Arrange
                 var packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
                 var package = new ZipPackage(packageFileName);
-                MachineCache.Default.RemovePackage(package);
 
                 Util.CreateFile(
                     workingDirectory,
@@ -1219,6 +1219,8 @@ EndProject");
                     server.Get.Add("/nuget", r => "OK");
 
                     server.Start();
+
+                    Util.CreateNuGetConfig(workingDirectory, new List<string>() { } );
 
                     // Act
                     var args = "restore packages.config -PackagesDirectory . -Source " + server.Uri + "nuget";
@@ -1456,7 +1458,7 @@ EndProject";
   <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
-                string[] args = new string[] { "restore", "-PackagesDirectory", "outputDir", "-Source", repositoryPath };
+                string[] args = new string[] { "restore", "-PackagesDirectory", "outputDir", "-Source", repositoryPath, "-nocache" };
 
                 // Act
                 var path = Environment.GetEnvironmentVariable("PATH");
@@ -1473,10 +1475,14 @@ EndProject";
                 Assert.False(r.Item2.IndexOf("exception", StringComparison.OrdinalIgnoreCase) > -1);
                 Assert.False(r.Item3.IndexOf("exception", StringComparison.OrdinalIgnoreCase) > -1);
 
-                Assert.True(r.Item2.IndexOf("Unable to find version '1.1.0' of package 'packageA'.",
-                    StringComparison.OrdinalIgnoreCase) > -1);
-                Assert.True(r.Item3.IndexOf("Unable to find version '1.1.0' of package 'packageA'.",
-                    StringComparison.OrdinalIgnoreCase) > -1);
+                var firstIndex = r.Item2.IndexOf("Unable to find version '1.1.0' of package 'packageA'.",
+                    StringComparison.OrdinalIgnoreCase);
+                Assert.True(firstIndex > -1);
+                var secondIndex = r.Item2.IndexOf(
+                    "Unable to find version '1.1.0' of package 'packageA'.",
+                    firstIndex + 1,
+                    StringComparison.OrdinalIgnoreCase);
+                Assert.True(secondIndex > -1);
             }
         }
 
@@ -1488,6 +1494,7 @@ EndProject";
             {
                 // Create an empty config file and pass it as -ConfigFile switch.
                 // This imitates the scenario where there is a machine without a default nuget.config under %APPDATA%
+                // In this case, nuget will not create default nuget.config for user.
                 var config = string.Format(
     @"<?xml version='1.0' encoding='utf - 8'?>
 <configuration/>
@@ -1523,13 +1530,12 @@ EndProject";
                 Environment.SetEnvironmentVariable("PATH", path);
 
                 // Assert
-                Assert.Equal(0, r.Item1);
                 var expectedPath = Path.Combine(
                     randomTestFolder,
                     "Newtonsoft.Json.7.0.1",
                     "Newtonsoft.Json.7.0.1.nupkg");
 
-                Assert.True(File.Exists(expectedPath));
+                Assert.False(File.Exists(expectedPath));
             }
         }
 

@@ -129,11 +129,38 @@
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>Argument cannot be null or empty.</value>
   </data>
+  <data name="DefaultSymbolServer" xml:space="preserve">
+    <value>the symbol server</value>
+  </data>
+  <data name="DeleteCommandCanceled" xml:space="preserve">
+    <value>Delete canceled</value>
+  </data>
+  <data name="DeleteCommandConfirm" xml:space="preserve">
+    <value>{0} {1} will be deleted from the {2}. Would you like to continue?</value>
+  </data>
+  <data name="DeleteCommandDeletedPackage" xml:space="preserve">
+    <value>{0} {1} was deleted successfully.</value>
+  </data>
+  <data name="DeleteCommandDeletingPackage" xml:space="preserve">
+    <value>Deleting {0} {1} from the {2}.</value>
+  </data>
   <data name="DownloadActionHandler_InvalidDownloadUrl" xml:space="preserve">
     <value>The download URL for {0} '{1}' is invalid.</value>
   </data>
   <data name="DownloadActionHandler_NoDownloadUrl" xml:space="preserve">
     <value>No download URL could be found for {0}.</value>
+  </data>
+  <data name="Http_Timeout" xml:space="preserve">
+    <value>The HTTP request to '{0} {1}' has timed out after {2}{3}.</value>
+  </data>
+  <data name="InvalidVersionFolder" xml:space="preserve">
+    <value>The folder '{0}' contains an invalid version.</value>
+  </data>
+  <data name="Log_CanceledNupkgDownload" xml:space="preserve">
+    <value>Downloading a package from '{0}' was canceled.</value>
+  </data>
+  <data name="Log_ErrorDownloading" xml:space="preserve">
+    <value>Error downloading '{0}' from '{1}'.</value>
   </data>
   <data name="Log_FailedToDownloadPackage" xml:space="preserve">
     <value>Failed to download package from '{0}'.</value>
@@ -152,6 +179,12 @@
   </data>
   <data name="Log_RetryingFindPackagesById" xml:space="preserve">
     <value>Retrying '{0}' for source {1}.</value>
+  </data>
+  <data name="Milliseconds" xml:space="preserve">
+    <value>ms</value>
+  </data>
+  <data name="NoApiKeyFound" xml:space="preserve">
+    <value>No API Key was provided and no API Key could be found for {0}. To save an API Key for a source use the 'setApiKey' command.</value>
   </data>
   <data name="NuGetRepository_CannotCreateAggregateRepo" xml:space="preserve">
     <value>Cannot create a NuGet Repository from the Aggregate Source</value>
@@ -192,10 +225,31 @@
   <data name="Protocol_UnsupportedVersion" xml:space="preserve">
     <value>The source version is not supported: '{0}'.</value>
   </data>
+  <data name="PushCommandPackagePushed" xml:space="preserve">
+    <value>Your package was pushed.</value>
+  </data>
+  <data name="PushCommandPushingPackage" xml:space="preserve">
+    <value>Pushing {0} to {1}...</value>
+  </data>
+  <data name="PackageServerEndpoint_NotSupported" xml:space="preserve">
+    <value>ERROR: This version of nuget.exe does not support updating packages to package source '{0}'.</value>
+  </data>
   <data name="RequiredFeatureUnsupportedException_DefaultMessageWithFeature" xml:space="preserve">
     <value>The '{0}' installation feature was required by a package but is not supported on the current host.</value>
   </data>
   <data name="RequiredFeatureUnsupportedException_DefaultMessageWithoutFeature" xml:space="preserve">
     <value>The installation host does not support a feature required by this package.</value>
+  </data>
+  <data name="UnableToFindFile" xml:space="preserve">
+    <value>File does not exist ({0}).</value>
+  </data>
+  <data name="Warning_SymbolServerNotConfigured" xml:space="preserve">
+    <value>Found symbols package '{0}', but no API key was specified for the symbol server. To save an API Key, run 'NuGet.exe setApiKey [your API key from http://www.NuGet.org]'.</value>
+  </data>
+  <data name="LiveFeed" xml:space="preserve">
+    <value>the NuGet gallery</value>
+  </data>
+  <data name="Log_FailedToFindPackage" xml:space="preserve">
+    <value>Can't find Package '{0}' from source '{1}'.</value>
   </data>
 </root>

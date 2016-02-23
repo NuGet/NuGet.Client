@@ -23,6 +23,16 @@ namespace NuGet.Configuration
             get { return String.Empty; }
         }
 
+        public string FileName
+        {
+            get { return String.Empty; }
+        }
+
+        public IEnumerable<ISettings> Priority
+        {
+            get { return new[] { this }; }
+        }
+
         public string GetValue(string section, string key, bool isPath = false)
         {
             return String.Empty;

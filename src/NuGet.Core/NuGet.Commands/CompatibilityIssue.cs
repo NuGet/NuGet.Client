@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 
@@ -47,11 +48,11 @@ namespace NuGet.Commands
                 case CompatibilityIssueType.ReferenceAssemblyNotImplemented:
                     if (string.IsNullOrEmpty(RuntimeIdentifier))
                     {
-                        return Strings.FormatLog_MissingImplementationFx(Package.Id, Package.Version, AssemblyName, Framework);
+                        return string.Format(CultureInfo.CurrentCulture, Strings.Log_MissingImplementationFx, Package.Id, Package.Version, AssemblyName, Framework);
                     }
-                    return Strings.FormatLog_MissingImplementationFxRuntime(Package.Id, Package.Version, AssemblyName, Framework, RuntimeIdentifier);
+                    return string.Format(CultureInfo.CurrentCulture, Strings.Log_MissingImplementationFxRuntime, Package.Id, Package.Version, AssemblyName, Framework, RuntimeIdentifier);
                 case CompatibilityIssueType.PackageIncompatible:
-                    return Strings.FormatLog_PackageNotCompatibleWithFx(Package.Id, Package.Version, FrameworkRuntimePair.GetName(Framework, RuntimeIdentifier));
+                    return string.Format(CultureInfo.CurrentCulture, Strings.Log_PackageNotCompatibleWithFx, Package.Id, Package.Version, FrameworkRuntimePair.GetName(Framework, RuntimeIdentifier));
                 default:
                     return null;
             }

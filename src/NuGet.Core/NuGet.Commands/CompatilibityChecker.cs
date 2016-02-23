@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.LibraryModel;
@@ -53,7 +54,7 @@ namespace NuGet.Commands
             var issues = new List<CompatibilityIssue>();
             foreach (var node in graph.Flattened)
             {
-                _log.LogDebug(Strings.FormatLog_CheckingPackageCompatibility(node.Key.Name, node.Key.Version, graph.Name));
+                _log.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingPackageCompatibility, node.Key.Name, node.Key.Version, graph.Name));
                 var compatibilityData = GetCompatibilityData(graph, node.Key);
                 if (compatibilityData == null)
                 {

@@ -7,6 +7,78 @@ namespace NuGet.ProjectModel.Test
     public class IncludeFlagTests
     {
         [Fact]
+        public void IncludeFlag_ConvertFromTypeOverride()
+        {
+            // Arrange
+            var json = @"{
+                          ""dependencies"": {
+                                ""packageA"": {
+                                    ""version"": ""1.0.0"",
+                                    ""type"": ""build"",
+                                    ""suppressParent"": ""none""
+                                }
+                            },
+                            ""frameworks"": {
+                                ""net46"": {}
+                            }
+                        }";
+
+            // Act
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var dependency = spec.Dependencies.Single();
+
+            // Assert
+            Assert.Equal(LibraryIncludeFlags.None, dependency.SuppressParent);
+        }
+
+        [Fact]
+        public void IncludeFlag_ConvertFromTypeDefault()
+        {
+            // Arrange
+            var json = @"{
+                          ""dependencies"": {
+                                ""packageA"": {
+                                    ""version"": ""1.0.0""
+                                }
+                            },
+                            ""frameworks"": {
+                                ""net46"": {}
+                            }
+                        }";
+
+            // Act
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var dependency = spec.Dependencies.Single();
+
+            // Assert
+            Assert.Equal(LibraryIncludeFlagUtils.DefaultSuppressParent, dependency.SuppressParent);
+        }
+
+        [Fact]
+        public void IncludeFlag_ConvertFromTypeBuild()
+        {
+            // Arrange
+            var json = @"{
+                          ""dependencies"": {
+                                ""packageA"": {
+                                    ""version"": ""1.0.0"",
+                                    ""type"": ""build""
+                                }
+                            },
+                            ""frameworks"": {
+                                ""net46"": {}
+                            }
+                        }";
+
+            // Act
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            var dependency = spec.Dependencies.Single();
+
+            // Assert
+            Assert.Equal(LibraryIncludeFlags.All, dependency.SuppressParent);
+        }
+
+        [Fact]
         public void IncludeFlag_UnknownFlagsParse()
         {
             // Arrange

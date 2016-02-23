@@ -627,7 +627,7 @@ namespace NuGet.PackageManagement.UI
 
                 _packageDetail.ScrollToHome();
 
-                var uiMetadataResource = await ActiveSource.GetResourceAsync<UIMetadataResource>();
+                var uiMetadataResource = await ActiveSource.GetResourceAsync<PackageMetadataResource>();
                 await _detailModel.LoadPackageMetadaAsync(uiMetadataResource, CancellationToken.None);
             }
         }

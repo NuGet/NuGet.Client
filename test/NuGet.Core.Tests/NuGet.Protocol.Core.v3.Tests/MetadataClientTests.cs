@@ -30,7 +30,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             var resource = await repo.GetResourceAsync<DependencyInfoResource>();
 
             // Act
-            var results = await resource.ResolvePackages("deepequal", NuGetFramework.Parse("net45"), CancellationToken.None);
+            var results = await resource.ResolvePackages("deepequal", NuGetFramework.Parse("net45"), Logging.NullLogger.Instance, CancellationToken.None);
 
             var target = results.Where(p => p.Version == NuGetVersion.Parse("1.4.0")).Single();
 
@@ -55,7 +55,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             var package = new PackageIdentity("deepequal", NuGetVersion.Parse("0.9.0"));
 
             // Act
-            var result = await resource.ResolvePackage(package, NuGetFramework.Parse("net45"), CancellationToken.None);
+            var result = await resource.ResolvePackage(package, NuGetFramework.Parse("net45"), Logging.NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.Equal(result.Version, package.Version);
@@ -74,7 +74,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             var resource = await repo.GetResourceAsync<DependencyInfoResource>();
 
             // Act
-            var results = await resource.ResolvePackages("deepequal", NuGetFramework.Parse("net45"), CancellationToken.None);
+            var results = await resource.ResolvePackages("deepequal", NuGetFramework.Parse("net45"), Logging.NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.Equal(19, results.Count());
@@ -95,7 +95,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             var resource = await repo.GetResourceAsync<DependencyInfoResource>();
 
             // Act
-            var results = await resource.ResolvePackages("microsoft.owin", NuGetFramework.Parse("net45"), CancellationToken.None);
+            var results = await resource.ResolvePackages("microsoft.owin", NuGetFramework.Parse("net45"), Logging.NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.Equal(14, results.Count());
@@ -109,14 +109,14 @@ namespace NuGet.Protocol.Core.v3.Tests
             var responses = new Dictionary<string, string>();
             responses.Add("http://testsource.com/v3/index.json", JsonData.Index);
             responses.Add("https://api.nuget.org/v3/registration0/microsoft.owin/index.json", JsonData.MicrosoftOwinRegistration);
-            responses.Add("https://api.nuget.org/v3/registration0/owin/index.json", null);
+            responses.Add("https://api.nuget.org/v3/registration0/owin/index.json", "");
             // Owin is not added
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
 
             var resource = await repo.GetResourceAsync<DependencyInfoResource>();
 
             // Act
-            var results = await resource.ResolvePackages("owin", NuGetFramework.Parse("net45"), CancellationToken.None);
+            var results = await resource.ResolvePackages("owin", NuGetFramework.Parse("net45"), Logging.NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.Equal(0, results.Count());
@@ -129,7 +129,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             var responses = new Dictionary<string, string>();
             responses.Add("http://testsource.com/v3/index.json", JsonData.Index);
             responses.Add("https://api.nuget.org/v3/registration0/microsoft.owin/index.json", JsonData.MicrosoftOwinRegistration);
-            responses.Add("https://api.nuget.org/v3/registration0/owin/index.json", null);
+            responses.Add("https://api.nuget.org/v3/registration0/owin/index.json", "");
             // Owin is not added
             var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
 
@@ -138,7 +138,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             var package = new PackageIdentity("owin", NuGetVersion.Parse("1.0.0"));
 
             // Act
-            var result = await resource.ResolvePackage(package, NuGetFramework.Parse("net45"), CancellationToken.None);
+            var result = await resource.ResolvePackage(package, NuGetFramework.Parse("net45"), Logging.NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.Null(result);
@@ -162,7 +162,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             var projectFramework = NuGetFramework.Parse("net45");
 
             // Act
-            var result = await resource.ResolvePackage(package, projectFramework, CancellationToken.None);
+            var result = await resource.ResolvePackage(package, projectFramework, Logging.NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.False(result.Listed);
@@ -187,7 +187,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             var projectFramework = NuGetFramework.Parse("net45");
 
             // Act
-            var result = await resource.ResolvePackage(package, projectFramework, CancellationToken.None);
+            var result = await resource.ResolvePackage(package, projectFramework, Logging.NullLogger.Instance, CancellationToken.None);
 
             // Assert
             Assert.True(result.Listed);

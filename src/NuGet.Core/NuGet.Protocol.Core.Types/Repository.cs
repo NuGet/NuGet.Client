@@ -48,34 +48,6 @@ namespace NuGet.Protocol.Core.Types
         }
 
         /// <summary>
-        /// Create a source provider for the given sources
-        /// </summary>
-        public static ISourceRepositoryProvider CreateProvider(IEnumerable<INuGetResourceProvider> resourceProviders, IEnumerable<string> sources)
-        {
-            return CreateProvider(resourceProviders, sources.Select(s => new PackageSource(s)));
-        }
-
-        /// <summary>
-        /// Create a source provider for the given sources and with the extra providers.
-        /// </summary>
-        public static ISourceRepositoryProvider CreateProvider(IEnumerable<INuGetResourceProvider> resourceProviders, IEnumerable<PackageSource> sources)
-        {
-            if (sources == null)
-            {
-                throw new ArgumentNullException("sources");
-            }
-
-            if (resourceProviders == null)
-            {
-                throw new ArgumentNullException("resourceProviders");
-            }
-
-            var sourceProvider = new PackageSourceProvider(NullSettings.Instance, sources, Enumerable.Empty<PackageSource>());
-
-            return new SourceRepositoryProvider(sourceProvider, CreateLazy(resourceProviders));
-        }
-
-        /// <summary>
         /// Create a SourceRepository
         /// </summary>
         public static SourceRepository CreateSource(IEnumerable<Lazy<INuGetResourceProvider>> resourceProviders, string sourceUrl)

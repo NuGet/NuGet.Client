@@ -15,6 +15,7 @@ using Microsoft.Extensions.PlatformAbstractions;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.DependencyResolver;
 using NuGet.Logging;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
@@ -55,7 +56,19 @@ namespace NuGet.CommandLine.XPlat
 
             SetConnectionLimit();
 
-            app.Command("restore", restore =>
+            SetUserAgent();
+
+            //register push and delete command
+            new PushCommand(app, () => {
+                EnsureLog(GetLogLevel(verbosity));
+                return Log;
+            });
+            new DeleteCommand(app, () => {
+                EnsureLog(GetLogLevel(verbosity));
+                return Log;
+            });
+
+            app.Command("restore", (Action<CommandLineApplication>)(restore =>
             {
                 restore.Description = Strings.Restore_Description;
                 restore.HelpOption(HelpOption);
@@ -85,11 +98,16 @@ namespace NuGet.CommandLine.XPlat
                     Strings.Restore_Switch_Runtime_Description,
                     CommandOptionType.MultipleValue);
 
-                verbosity = restore.Option(VerbosityOption,
+                var configFile = restore.Option(
+                    "--configfile <file>",
+                    Strings.Restore_Switch_ConfigFile_Description,
+                    CommandOptionType.SingleValue);
+
+                verbosity = restore.Option(
+                    VerbosityOption,
                     Strings.Switch_Verbosity,
                     CommandOptionType.SingleValue);
 
-                EnsureLog(verbosity);
 
                 var argRoot = restore.Argument(
                     "[root]",
@@ -98,6 +116,8 @@ namespace NuGet.CommandLine.XPlat
 
                 restore.OnExecute(async () =>
                 {
+                    EnsureLog(GetLogLevel(verbosity));
+
                     // Ignore casing on windows
                     var comparer = RuntimeEnvironmentHelper.IsWindows ?
                         StringComparer.OrdinalIgnoreCase
@@ -152,90 +172,78 @@ namespace NuGet.CommandLine.XPlat
                         Log.LogVerbose(Strings.Log_RunningNonParallelRestore);
                     }
 
-                    var localCaches = new Dictionary<string, NuGetv3LocalRepository>(StringComparer.Ordinal);
+                    var providerCache = new RestoreCommandProvidersCache();
 
                     var restoreSummaries = new List<RestoreSummary>();
                     var restoreTasks = new List<Task<RestoreSummary>>(maxTasks);
-
-                    foreach (var inputPath in inputValues)
+                    using (var cacheContext = new SourceCacheContext())
                     {
-                        // Global folder
-                        // Load settings based on the current project path.
-                        var projectDir = Path.GetDirectoryName(inputPath);
-                        var settings = Settings.LoadDefaultSettings(projectDir,
-                            configFileName: null,
-                            machineWideSettings: null);
-
-                        var globalFolderPath = string.Empty;
-                        if (packagesDirectory.HasValue())
+                        foreach (var inputPath in inputValues)
                         {
-                            globalFolderPath = packagesDirectory.Value();
-                        }
-                        else
-                        {
-                            globalFolderPath = SettingsUtility.GetGlobalPackagesFolder(settings);
+                            // Global folder
+                            // Load settings based on the current project path.
+                            var projectDir = Path.GetDirectoryName(inputPath);
+                            string configFileName = configFile.HasValue() ? configFile.Value() : null;
+                            var settings = Settings.LoadDefaultSettings(projectDir,
+                                configFileName,
+                                machineWideSettings: new CommandLineXPlatMachineWideSetting());
+
+                            var globalFolderPath = string.Empty;
+                            if (packagesDirectory.HasValue())
+                            {
+                                globalFolderPath = packagesDirectory.Value();
+                            }
+                            else
+                            {
+                                globalFolderPath = SettingsUtility.GetGlobalPackagesFolder(settings);
+                            }
+
+                            var packageSources = GetSources(sources, fallBack, settings);
+
+                            // Find the shared local cache for globalFolderPath
+                            // The global folder may differ between projects
+                            var collectorLog = new CollectorLogger(Log);
+
+                            var sharedCache = providerCache.GetOrCreate(
+                                globalFolderPath,
+                                packageSources,
+                                cacheContext,
+                                collectorLog);
+
+                            // Throttle and wait for a task to finish if we have hit the limit
+                            if (restoreTasks.Count == maxTasks)
+                            {
+                                var restoreSummary = await CompleteTaskAsync(restoreTasks);
+                                restoreSummaries.Add(restoreSummary);
+                            }
+
+                            // Start a new restore
+                            var task = Task.Run((async () => await Program.ExecuteRestoreAsync(
+                                packageSources,
+                                fallBack,
+                                runtime,
+                                sharedCache,
+                                settings,
+                                isParallel,
+                                inputPath,
+                                collectorLog)));
+
+                            restoreTasks.Add(task);
                         }
 
-                        // Find the shared local cache for globalFolderPath
-                        // The global folder may differ between projects
-                        NuGetv3LocalRepository localCache;
-                        if (!localCaches.TryGetValue(globalFolderPath, out localCache))
-                        {
-                            localCache = new NuGetv3LocalRepository(globalFolderPath);
-                            localCaches.Add(globalFolderPath, localCache);
-                        }
-
-                        // Throttle and wait for a task to finish if we have hit the limit
-                        if (restoreTasks.Count == maxTasks)
+                        // Wait for all restores to finish
+                        while (restoreTasks.Count > 0)
                         {
                             var restoreSummary = await CompleteTaskAsync(restoreTasks);
                             restoreSummaries.Add(restoreSummary);
                         }
 
-                        // Start a new restore
-                        var task = Task.Run(async () => await ExecuteRestoreAsync(
-                            sources,
-                            packagesDirectory,
-                            fallBack,
-                            runtime,
-                            localCache,
-                            settings,
-                            isParallel,
-                            inputPath));
+                        RestoreSummary.Log(Log, restoreSummaries, GetLogLevel(verbosity) < LogLevel.Minimal);
 
-                        restoreTasks.Add(task);
+                        return restoreSummaries.All(x => x.Success) ? 0 : 1;
                     }
-
-                    // Wait for all restores to finish
-                    while (restoreTasks.Count > 0)
-                    {
-                        var restoreSummary = await CompleteTaskAsync(restoreTasks);
-                        restoreSummaries.Add(restoreSummary);
-                    }
-
-                    // Display the errors in the same order that they were produced, but grouped by project
-                    if (restoreSummaries.Any())
-                    {
-                        foreach (var restoreSummary in restoreSummaries)
-                        {
-                            if (!restoreSummary.Errors.Any())
-                            {
-                                continue;
-                            }
-
-                            Log.LogSummary(string.Empty);
-                            Log.LogSummary(string.Format(Strings.Log_ErrorSummary, restoreSummary.InputPath));
-                            foreach (var error in restoreSummary.Errors)
-                            {
-                                Log.LogSummary($"    {error}");
-                            }
-                        }
-                    }
-
-                    // Return 0 if all restores were successful
-                    return restoreSummaries.All(x => x.Success) ? 0 : 1;
                 });
-            });
+            }));
 
             app.OnExecute(() =>
             {
@@ -251,7 +259,7 @@ namespace NuGet.CommandLine.XPlat
             }
             catch (Exception e)
             {
-                EnsureLog(verbosity);
+                EnsureLog(GetLogLevel(verbosity));
 
                 // Log the error
                 Log.LogError(ExceptionUtilities.DisplayMessage(e));
@@ -271,9 +279,24 @@ namespace NuGet.CommandLine.XPlat
             return exitCode;
         }
 
-        /// <summary>
-        /// Removes a task from the list and returns the restore summary.
-        /// </summary>
+        private static LogLevel GetLogLevel(CommandOption verbosity)
+        {
+            LogLevel level;
+            if (!Enum.TryParse(value: verbosity.Value(), ignoreCase: true, result: out level))
+            {
+                level = LogLevel.Information;
+            }
+
+            return level;
+        }
+
+        private static void SetUserAgent()
+        {
+            UserAgent.UserAgentString
+                = UserAgent.CreateUserAgentString(
+                    $"NuGet xplat");
+        }
+
         private static async Task<RestoreSummary> CompleteTaskAsync(List<Task<RestoreSummary>> restoreTasks)
         {
             var doneTask = await Task.WhenAny(restoreTasks);
@@ -281,13 +304,13 @@ namespace NuGet.CommandLine.XPlat
             return await doneTask;
         }
 
-        private static void EnsureLog(CommandOption verbosity)
+        private static void EnsureLog(LogLevel logLevel)
         {
             // Set up logging.
             // For tests this will already be set.
             if (Log == null)
             {
-                Log = new CommandOutputLogger(verbosity);
+                Log = new CommandOutputLogger(logLevel);
             }
         }
 
@@ -313,14 +336,14 @@ namespace NuGet.CommandLine.XPlat
         }
 
         private static async Task<RestoreSummary> ExecuteRestoreAsync
-            (CommandOption sources,
-            CommandOption packagesDirectory,
+            (List<SourceRepository> sources,
             CommandOption fallBack,
             CommandOption runtime,
-            NuGetv3LocalRepository localCache,
+            RestoreCommandProviders sharedCache,
             ISettings settings,
             bool isParallel,
-            string inputPath)
+            string inputPath,
+            CollectorLogger logger)
         {
             // Figure out the project directory
             IEnumerable<string> externalProjects = null;
@@ -329,13 +352,13 @@ namespace NuGet.CommandLine.XPlat
             var projectPath = Path.GetFullPath(inputPath);
             if (string.Equals(PackageSpec.PackageSpecFileName, Path.GetFileName(projectPath), StringComparison.OrdinalIgnoreCase))
             {
-                Log.LogVerbose(string.Format(
+                logger.LogVerbose(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Log_ReadingProject,
                     inputPath));
 
                 projectPath = Path.GetDirectoryName(projectPath);
-                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(inputPath), Path.GetFileName(projectPath), inputPath);
+                project = JsonPackageSpecReader.GetPackageSpec(Path.GetFileName(projectPath), inputPath);
             }
             else if (MsBuildUtility.IsMsBuildBasedProject(projectPath))
             {
@@ -346,9 +369,11 @@ namespace NuGet.CommandLine.XPlat
                 externalProjects = MsBuildUtility.GetProjectReferences(projectPath);
 
                 var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(projectPath));
-                var packageSpecFile = Path.Combine(projectDirectory, PackageSpec.PackageSpecFileName);
-                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(packageSpecFile), projectPath, inputPath);
-                Log.LogVerbose(string.Format(
+                var packageSpecFile = new FileInfo(Path.Combine(projectDirectory, PackageSpec.PackageSpecFileName));
+                var projectName = packageSpecFile.Directory.Name;
+
+                project = JsonPackageSpecReader.GetPackageSpec(projectName, packageSpecFile.FullName);
+                logger.LogVerbose(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Log_ReadingProject, inputPath));
 #endif
@@ -357,37 +382,39 @@ namespace NuGet.CommandLine.XPlat
             {
                 var file = Path.Combine(projectPath, PackageSpec.PackageSpecFileName);
 
-                Log.LogVerbose(string.Format(
+                logger.LogVerbose(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Log_ReadingProject,
                     file));
 
-                project = JsonPackageSpecReader.GetPackageSpec(File.ReadAllText(file), Path.GetFileName(projectPath), file);
+                project = JsonPackageSpecReader.GetPackageSpec(Path.GetFileName(projectPath), file);
             }
-            Log.LogVerbose(string.Format(
+
+            logger.LogVerbose(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Log_LoadedProject,
                     project.Name, project.FilePath));
 
             // Resolve the root directory
             var rootDirectory = PackageSpecResolver.ResolveRootDirectory(projectPath);
-            Log.LogVerbose(string.Format(
+            logger.LogVerbose(string.Format(
                 CultureInfo.CurrentCulture,
                 Strings.Log_FoundProjectRoot,
                 rootDirectory));
 
-            var packageSources = GetSources(sources, fallBack, settings);
-
             using (var request = new RestoreRequest(
                 project,
-                packageSources,
-                localCache.RepositoryRoot))
+                sharedCache,
+                logger,
+                disposeProviders: false))
             {
                 // Resolve the packages directory
-                Log.LogVerbose(string.Format(
+                logger.LogVerbose(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.Log_UsingPackagesDirectory,
                     request.PackagesDirectory));
+
+                request.DependencyProviders = sharedCache;
 
                 if (externalProjects != null)
                 {
@@ -419,36 +446,33 @@ namespace NuGet.CommandLine.XPlat
                 request.MaxDegreeOfConcurrency = isParallel ? RestoreRequest.DefaultDegreeOfConcurrency : 1;
 
                 // Run the restore
-                var collectorLog = new CollectorLogger(Log);
-                var command = new RestoreCommand(collectorLog, request);
+                var command = new RestoreCommand(request);
                 var sw = Stopwatch.StartNew();
                 var result = await command.ExecuteAsync();
 
                 // Commit the result
-                Log.LogMinimal(Strings.Log_Committing);
-                result.Commit(collectorLog);
+                logger.LogInformation(Strings.Log_Committing);
+                result.Commit(logger);
 
                 sw.Stop();
 
                 if (result.Success)
                 {
-                    Log.LogMinimal(string.Format(
+                    logger.LogMinimal(string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.Log_RestoreComplete,
                         sw.ElapsedMilliseconds));
                 }
                 else
                 {
-                    Log.LogMinimal(string.Format(
+                    logger.LogMinimal(string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.Log_RestoreFailed,
                         sw.ElapsedMilliseconds));
                 }
 
-                return new RestoreSummary(
-                    inputPath,
-                    result.Success,
-                    collectorLog.Errors);
+                // Build the summary
+                return new RestoreSummary(result, inputPath, settings, sources, logger.Errors);
             }
         }
 

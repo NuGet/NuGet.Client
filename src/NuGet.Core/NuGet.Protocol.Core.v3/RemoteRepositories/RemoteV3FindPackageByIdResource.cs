@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -26,10 +27,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
         private DependencyInfoResource _dependencyInfoResource;
 
-        public RemoteV3FindPackageByIdResource(SourceRepository sourceRepository, Func<Task<HttpHandlerResource>> handlerFactory)
+        public RemoteV3FindPackageByIdResource(SourceRepository sourceRepository, HttpSource httpSource)
         {
             SourceRepository = sourceRepository;
-            _httpSource = new HttpSource(sourceRepository.PackageSource.Source, handlerFactory);
+            _httpSource = httpSource;
         }
 
         public SourceRepository SourceRepository { get; }
@@ -40,7 +41,6 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             set
             {
                 base.Logger = value;
-                _httpSource.Logger = value;
             }
         }
 
@@ -100,7 +100,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             // This is invoked from inside a lock.
             await EnsureDependencyProvider(cancellationToken);
 
-            return await _dependencyInfoResource.ResolvePackages(id, cancellationToken);
+            return await _dependencyInfoResource.ResolvePackages(id, Logger, cancellationToken);
         }
 
         private async Task EnsureDependencyProvider(CancellationToken cancellationToken)
@@ -163,6 +163,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         package.ContentUri,
                         "nupkg_" + package.Identity.Id + "." + package.Identity.Version.ToNormalizedString(),
                         CreateCacheContext(retry),
+                        Logger,
                         cancellationToken))
                     {
                         return new NupkgEntry
@@ -173,12 +174,16 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 }
                 catch (Exception ex) when (retry < 2)
                 {
-                    var message = Strings.FormatLog_FailedToDownloadPackage(package.ContentUri) + Environment.NewLine + ex.Message;
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToDownloadPackage, package.ContentUri)
+                        + Environment.NewLine
+                        + ExceptionUtilities.DisplayMessage(ex);
                     Logger.LogMinimal(message);
                 }
                 catch (Exception ex) when (retry == 2)
                 {
-                    var message = Strings.FormatLog_FailedToDownloadPackage(package.ContentUri) + Environment.NewLine + ex.Message;
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToDownloadPackage, package.ContentUri)
+                        + Environment.NewLine
+                        + ExceptionUtilities.DisplayMessage(ex);
                     Logger.LogError(message);
                 }
             }

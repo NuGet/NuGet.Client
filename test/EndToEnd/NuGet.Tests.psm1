@@ -131,6 +131,7 @@ function global:Run-Test {
     $testRunId = New-Guid
     $testRunOutputPath = Join-Path $testOutputPath $testRunId
     $testLogFile = Join-Path $testRunOutputPath log.txt
+    $testRealTimeResultsFile = Join-Path $testRunOutputPath Realtimeresults.txt
     
     # Create the output folder
     mkdir $testRunOutputPath | Out-Null
@@ -357,6 +358,8 @@ function global:Run-Test {
                         break;
                     }
                 }
+
+                Append-TextResult $results[$name] $testRealTimeResultsFile
             }
         }
     }
@@ -426,6 +429,37 @@ function Write-TestResults {
     }
 }
 
+function Get-TextResultRow
+{
+    param(
+        $Result
+    )
+
+    $status = 'Passed'
+
+    if($Result.Skipped) {
+        $status = 'Skipped'
+    }
+    elseif($Result.Error) {
+        $status = 'Failed'
+    }
+
+    $row = "$status $($Result.Test) $([math]::Round($Result.Time.TotalMilliseconds)) $($Result.Error) "
+
+    return $row
+}
+
+function Append-TextResult
+{
+    param(
+        $Result,
+        $Path
+    )
+
+    $row = Get-TextResultRow $Result
+    $row >> $Path
+}
+
 function Write-TextResults
 {
     param(
@@ -435,16 +469,7 @@ function Write-TextResults
     )
 
     $rows = $Results | % { 
-        $status = 'Passed'
-        
-        if($_.Skipped) {
-            $status = 'Skipped'
-        }
-        elseif($_.Error) {
-            $status = 'Failed'
-        }
-
-        "$status $($_.Test) $($_.Error)"
+        Get-TextResultRow $_
     }
 
     $rows | Out-File $Path | Out-Null

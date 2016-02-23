@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -30,15 +33,14 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
     {
         private const int MaxRetries = 3;
         private readonly HttpSource _httpSource;
-        private readonly Dictionary<string, Task<IEnumerable<PackageInfo>>> _packageInfoCache =
-            new Dictionary<string, Task<IEnumerable<PackageInfo>>>();
+        private readonly ConcurrentDictionary<string, Task<SortedDictionary<NuGetVersion, PackageInfo>>> _packageInfoCache =
+            new ConcurrentDictionary<string, Task<SortedDictionary<NuGetVersion, PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Task<NupkgEntry>> _nupkgCache = new Dictionary<string, Task<NupkgEntry>>();
         private readonly IReadOnlyList<Uri> _baseUris;
-        private bool _ignored;
 
         public HttpFileSystemBasedFindPackageByIdResource(
             IReadOnlyList<Uri> baseUris,
-            Func<Task<HttpHandlerResource>> handlerFactory)
+            HttpSource httpSource)
         {
             if (baseUris == null)
             {
@@ -54,7 +56,8 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 .Take(MaxRetries)
                 .Select(uri => uri.OriginalString.EndsWith("/", StringComparison.Ordinal) ? uri : new Uri(uri.OriginalString + "/"))
                 .ToList();
-            _httpSource = new HttpSource(_baseUris[0].OriginalString, handlerFactory);
+
+            _httpSource = httpSource;
         }
 
         public override ILogger Logger
@@ -63,88 +66,74 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             set
             {
                 base.Logger = value;
-                _httpSource.Logger = value;
             }
         }
-
-        public bool IgnoreFailure { get; set; }
 
         public override async Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, CancellationToken cancellationToken)
         {
             var packageInfos = await EnsurePackagesAsync(id, cancellationToken);
-            return packageInfos.Select(p => p.Version);
+            return packageInfos.Keys;
         }
 
         public override async Task<FindPackageByIdDependencyInfo> GetDependencyInfoAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
         {
             var packageInfos = await EnsurePackagesAsync(id, cancellationToken);
-            var packageInfo = packageInfos.FirstOrDefault(p => p.Version == version);
-            if (packageInfo == null)
-            {
-                return null;
-            }
 
-            var reader = await PackageUtilities.OpenNuspecFromNupkgAsync(
+            PackageInfo packageInfo;
+            if (packageInfos.TryGetValue(version, out packageInfo))
+            {
+                var reader = await PackageUtilities.OpenNuspecFromNupkgAsync(
                 packageInfo.Id,
                 OpenNupkgStreamAsync(packageInfo, cancellationToken),
                 Logger);
 
-            return GetDependencyInfo(reader);
+                return GetDependencyInfo(reader);
+            }
+
+            return null;
         }
 
         public override async Task<Stream> GetNupkgStreamAsync(string id, NuGetVersion version, CancellationToken cancellationToken)
         {
             var packageInfos = await EnsurePackagesAsync(id, cancellationToken);
-            var packageInfo = packageInfos.FirstOrDefault(p => p.Version == version);
-            if (packageInfo == null)
+
+            PackageInfo packageInfo;
+            if (packageInfos.TryGetValue(version, out packageInfo))
             {
-                return null;
+                return await OpenNupkgStreamAsync(packageInfo, cancellationToken);
             }
 
-            return await OpenNupkgStreamAsync(packageInfo, cancellationToken);
+            return null;
         }
 
-        private Task<IEnumerable<PackageInfo>> EnsurePackagesAsync(string id, CancellationToken cancellationToken)
+        private Task<SortedDictionary<NuGetVersion, PackageInfo>> EnsurePackagesAsync(string id, CancellationToken cancellationToken)
         {
-            Task<IEnumerable<PackageInfo>> task;
-
-            lock (_packageInfoCache)
-            {
-                if (!_packageInfoCache.TryGetValue(id, out task))
-                {
-                    task = FindPackagesByIdAsync(id, cancellationToken);
-                    _packageInfoCache[id] = task;
-                }
-            }
-
-            return task;
+            return _packageInfoCache.GetOrAdd(id, (keyId) => FindPackagesByIdAsync(keyId, cancellationToken));
         }
 
-        private async Task<IEnumerable<PackageInfo>> FindPackagesByIdAsync(string id, CancellationToken cancellationToken)
+        private async Task<SortedDictionary<NuGetVersion, PackageInfo>> FindPackagesByIdAsync(string id, CancellationToken cancellationToken)
         {
+            var result = new SortedDictionary<NuGetVersion, PackageInfo>();
+
             for (var retry = 0; retry != 3; ++retry)
             {
-                if (_ignored)
-                {
-                    return Enumerable.Empty<PackageInfo>();
-                }
-
                 var baseUri = _baseUris[retry % _baseUris.Count].OriginalString;
+                var uri = baseUri + id.ToLowerInvariant() + "/index.json";
+                var results = new List<PackageInfo>();
 
                 try
                 {
-                    var uri = baseUri + id.ToLowerInvariant() + "/index.json";
-                    var results = new List<PackageInfo>();
 
                     using (var data = await _httpSource.GetAsync(uri,
                         $"list_{id}",
                         CreateCacheContext(retry),
+                        Logger,
                         ignoreNotFounds: true,
                         cancellationToken: cancellationToken))
                     {
                         if (data.Stream == null)
                         {
-                            return Enumerable.Empty<PackageInfo>();
+                            return result;
                         }
 
                         try
@@ -155,38 +144,39 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                                 doc = JObject.Load(new JsonTextReader(reader));
                             }
 
-                            var result = doc["versions"]
+                            foreach (var packageInfo in doc["versions"]
                                 .Select(x => BuildModel(baseUri, id, x.ToString()))
-                                .Where(x => x != null);
+                                .Where(x => x != null))
+                            {
+                                Debug.Assert(!result.ContainsKey(packageInfo.Version), $"{id} has duplicate versions");
 
-                            results.AddRange(result);
+                                if (!result.ContainsKey(packageInfo.Version))
+                                {
+                                    result.Add(packageInfo.Version, packageInfo);
+                                }
+                            }
                         }
                         catch
                         {
-                            Logger.LogMinimal(Strings.FormatLog_FileIsCorrupt(data.CacheFileName));
+                            Logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_FileIsCorrupt, data.CacheFileName));
                             throw;
                         }
                     }
 
-                    return results;
+                    return result;
                 }
                 catch (Exception ex) when (retry < 2)
                 {
-                    var message = Strings.FormatLog_RetryingFindPackagesById(nameof(FindPackagesByIdAsync), baseUri) + Environment.NewLine + ex.Message;
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingFindPackagesById, nameof(FindPackagesByIdAsync), uri)
+                        + Environment.NewLine
+                        + ExceptionUtilities.DisplayMessage(ex);
                     Logger.LogMinimal(message);
                 }
                 catch (Exception ex) when (retry == 2)
                 {
                     // Fail silently by returning empty result list
-                    var message = Strings.FormatLog_FailedToRetrievePackage(baseUri);
-                    if (IgnoreFailure)
-                    {
-                        _ignored = true;
-                        Logger.LogWarning(message);
-                        return Enumerable.Empty<PackageInfo>();
-                    }
-
-                    Logger.LogError(message + Environment.NewLine + ex.Message);
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, uri);
+                    Logger.LogError(message + Environment.NewLine + ExceptionUtilities.DisplayMessage(ex));
 
                     throw new FatalProtocolException(message, ex);
                 }
@@ -251,6 +241,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         package.ContentUri,
                         "nupkg_" + package.Id + "." + package.Version.ToNormalizedString(),
                         CreateCacheContext(retry),
+                        Logger,
                         cancellationToken))
                     {
                         return new NupkgEntry
@@ -261,12 +252,16 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 }
                 catch (Exception ex) when (retry < 2)
                 {
-                    var message = Strings.FormatLog_FailedToDownloadPackage(package.ContentUri) + Environment.NewLine + ex.Message;
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToDownloadPackage, package.ContentUri)
+                        + Environment.NewLine
+                        + ExceptionUtilities.DisplayMessage(ex); 
                     Logger.LogMinimal(message);
                 }
                 catch (Exception ex) when (retry == 2)
                 {
-                    var message = Strings.FormatLog_FailedToDownloadPackage(package.ContentUri) + Environment.NewLine + ex.Message;
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToDownloadPackage, package.ContentUri)
+                        + Environment.NewLine
+                        + ExceptionUtilities.DisplayMessage(ex);
                     Logger.LogError(message);
                 }
             }

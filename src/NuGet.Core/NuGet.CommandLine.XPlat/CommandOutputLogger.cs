@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
+using System.Text;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Logging;
 
@@ -13,21 +15,11 @@ namespace NuGet.CommandLine.XPlat
     internal class CommandOutputLogger : ILogger
     {
         private static readonly bool _useConsoleColor = true;
-        private Lazy<LogLevel> _verbosity;
+        private readonly LogLevel _logLevel;
 
-        private LogLevel Verbosity { get { return _verbosity.Value; } }
-
-        internal CommandOutputLogger(CommandOption verbosity)
+        internal CommandOutputLogger(LogLevel logLevel)
         {
-            _verbosity = new Lazy<LogLevel>(() =>
-            {
-                LogLevel level;
-                if (!Enum.TryParse(value: verbosity.Value(), ignoreCase: true, result: out level))
-                {
-                    level = LogLevel.Information;
-                }
-                return level;
-            });
+            _logLevel = logLevel;
         }
 
         public void LogDebug(string data)
@@ -67,7 +59,7 @@ namespace NuGet.CommandLine.XPlat
 
         private void LogInternal(LogLevel logLevel, string message)
         {
-            if (logLevel < Verbosity)
+            if (logLevel < _logLevel)
             {
                 return;
             }
@@ -101,7 +93,33 @@ namespace NuGet.CommandLine.XPlat
             {
                 caption = logLevel.ToString().ToLowerInvariant();
             }
-            Console.WriteLine($"{caption}: {message}");
+
+            if (message.IndexOf('\n') >= 0)
+            {
+                Console.Write(PrefixAllLines(caption, message));
+            }
+            else
+            {
+                Console.WriteLine($"{caption}: {message}");
+            }
+        }
+
+        private static string PrefixAllLines(string caption, string message)
+        {
+            // handle messages with multiple lines
+            var builder = new StringBuilder();
+            using (var reader = new StringReader(message))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    builder.Append(caption);
+                    builder.Append(": ");
+                    builder.AppendLine(line);
+                }
+            }
+
+            return builder.ToString();
         }
     }
 }

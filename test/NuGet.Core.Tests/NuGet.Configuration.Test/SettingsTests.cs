@@ -56,9 +56,9 @@ namespace NuGet.Configuration.Test
                 var userSetting = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 #endif
                 // Assert 
-                Assert.Equal(Path.Combine(commonApplicationData, "NuGet"), machineWidePathTuple.Item2);
+                Assert.Equal(commonApplicationData, machineWidePathTuple.Item2);
                 Assert.Equal("NuGet.Config", machineWidePathTuple.Item1);
-                Assert.Equal(Path.Combine(userSetting, "NuGet"), globalConfigTuple.Item2);
+                Assert.Equal(Path.Combine(userSetting,"NuGet"), globalConfigTuple.Item2);
                 Assert.Equal("NuGet.Config", globalConfigTuple.Item1);
             }
             else if(PlatformServices.Default.Runtime.OperatingSystem.Equals("linux", StringComparison.OrdinalIgnoreCase))
@@ -77,7 +77,7 @@ namespace NuGet.Configuration.Test
                 var userSetting = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 #endif
                 // Assert 
-                Assert.Equal(Path.Combine(commonApplicationData, "NuGet"), machineWidePathTuple.Item2);
+                Assert.Equal(commonApplicationData, machineWidePathTuple.Item2);
                 Assert.Equal("NuGet.Config", machineWidePathTuple.Item1);
                 Assert.Equal(Path.Combine(userSetting, "NuGet"), globalConfigTuple.Item2);
                 Assert.Equal("NuGet.Config", globalConfigTuple.Item1);
@@ -98,7 +98,7 @@ namespace NuGet.Configuration.Test
                 var userSetting = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 #endif
                 // Assert 
-                Assert.Equal(Path.Combine(commonApplicationData, "NuGet"), machineWidePathTuple.Item2);
+                Assert.Equal(commonApplicationData, machineWidePathTuple.Item2);
                 Assert.Equal("NuGet.Config", machineWidePathTuple.Item1);
                 Assert.Equal(Path.Combine(userSetting, "NuGet"), globalConfigTuple.Item2);
                 Assert.Equal("NuGet.Config", globalConfigTuple.Item1);
@@ -1755,7 +1755,7 @@ namespace NuGet.Configuration.Test
                 var result = settings.GetSettingValues("SectionName");
 
                 // Assert
-                AssertEqualCollections(result, new[] { "key1", "value1", "key2", "value2", "key3", "value3", "key4", "value4" });
+                AssertEqualCollections(result, new[] { "key1", "value1", "key2", "value2"});
             }
         }
 
@@ -1867,7 +1867,7 @@ namespace NuGet.Configuration.Test
 
                 // Act
                 var settings = Settings.LoadMachineWideSettings(
-                    mockBaseDirectory, "IDE", "Version", "SKU", "TestDir");
+                    Path.Combine(mockBaseDirectory, "nuget", "Config"), "IDE", "Version", "SKU", "TestDir");
 
                 // Assert
                 var files = settings.Select(s => s.ConfigFilePath).ToArray();
@@ -1913,17 +1913,19 @@ namespace NuGet.Configuration.Test
     <add key=""key3"" value=""user"" />
   </SectionName>
 </configuration>";
-                ConfigurationFileTestUtility.CreateConfigurationFile("user.config", mockBaseDirectory, fileContent3);
+                ConfigurationFileTestUtility.CreateConfigurationFile("NuGet.Config", Path.Combine(mockBaseDirectory, "TestingGlobalPath"), fileContent3);
 
                 var m = new Mock<IMachineWideSettings>();
                 m.SetupGet(obj => obj.Settings).Returns(
-                    Settings.LoadMachineWideSettings(mockBaseDirectory, "IDE", "Version", "SKU"));
+                    Settings.LoadMachineWideSettings(Path.Combine(mockBaseDirectory, "nuget", "Config"), "IDE", "Version", "SKU"));
 
                 // Act
                 var settings = Settings.LoadDefaultSettings(
                     mockBaseDirectory,
-                    "user.config",
-                    m.Object);
+                    null,
+                    m.Object,
+                    true,
+                    true);
 
                 // Assert
                 var v = settings.GetValue("SectionName", "key1");
@@ -2018,7 +2020,62 @@ namespace NuGet.Configuration.Test
                 Assert.NotNull(ex);
                 Assert.IsAssignableFrom<InvalidOperationException>(ex);
                 Assert.Equal(String.Format(@"File '{0}' does not exist.", Path.Combine(mockBaseDirectory, "user.config")), ex.Message);
-            } }
+            }
+        }
+
+        // Tests that when configFileName is not null, machineWideSettings and
+        // NuGet.Config files in base directory ancestors are ignored.
+        [Fact]
+        public void UserSpecifiedConfigFileIgnoresOtherSettings()
+        {
+            // Arrange
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var environmentFileContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <SectionName>
+    <add key=""environment"" value=""true"" />
+  </SectionName>
+</configuration>";
+                var machineConfigFileContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <SectionName>
+    <add key=""machine"" value=""true"" />
+  </SectionName>
+</configuration>";
+                var userFileContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <SectionName>
+    <add key=""user"" value=""true"" />
+  </SectionName>
+</configuration>";
+
+                ConfigurationFileTestUtility.CreateConfigurationFile("NuGet.Config", Path.Combine(mockBaseDirectory, "a", "b"), environmentFileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("NuGet.Config", Path.Combine(mockBaseDirectory, "a"), environmentFileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("NuGet.Config", Path.Combine(mockBaseDirectory), environmentFileContent);
+
+                ConfigurationFileTestUtility.CreateConfigurationFile("NuGet.Config", Path.Combine(mockBaseDirectory, "machine"), machineConfigFileContent);
+
+                ConfigurationFileTestUtility.CreateConfigurationFile("NuGet.Config", Path.Combine(mockBaseDirectory, "nuget"), userFileContent);
+
+                var m = new Mock<IMachineWideSettings>();
+                m.SetupGet(obj => obj.Settings).Returns(
+                    Settings.LoadMachineWideSettings(mockBaseDirectory, "machine"));
+
+                // Act and assert
+                var settings = Settings.LoadDefaultSettings(
+                    Path.Combine(mockBaseDirectory, "a", "b"),
+                    Path.Combine(mockBaseDirectory, "nuget", "NuGet.Config"),
+                    m.Object);
+
+                var machineValue = settings.GetValue("SectionName", "machine");
+                Assert.Null(machineValue);
+                var environmentValue = settings.GetValue("SectionName", "environment");
+                Assert.Null(environmentValue);
+                var userFileValue = settings.GetValue("SectionName", "user");
+                Assert.Equal("true", userFileValue);
+            }
+        }
 
         // Tests the scenario where there are two user settings, both created
         // with the same machine wide settings.
@@ -2027,6 +2084,8 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory1 = TestFileSystemUtility.CreateRandomTestFolder())
+            using (var mockBaseDirectory2 = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 var FileContent1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -2047,22 +2106,26 @@ namespace NuGet.Configuration.Test
   </SectionName>
 </configuration>".Replace("\r\n", "\n");
                 ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "nuget", "Config"), FileContent1);
-                ConfigurationFileTestUtility.CreateConfigurationFile("user1.config", mockBaseDirectory, FileContent2);
-                ConfigurationFileTestUtility.CreateConfigurationFile("user2.config", mockBaseDirectory, FileContent3);
+                ConfigurationFileTestUtility.CreateConfigurationFile("NuGet.Config", Path.Combine(mockBaseDirectory1, "TestingGlobalPath"), FileContent2);
+                ConfigurationFileTestUtility.CreateConfigurationFile("NuGet.Config", Path.Combine(mockBaseDirectory2, "TestingGlobalPath"), FileContent3);
 
                 var m = new Mock<IMachineWideSettings>();
                 m.SetupGet(obj => obj.Settings).Returns(
-                    Settings.LoadMachineWideSettings(mockBaseDirectory, "IDE", "Version", "SKU"));
+                    Settings.LoadMachineWideSettings(Path.Combine(mockBaseDirectory, "nuget", "Config"), "IDE", "Version", "SKU"));
 
                 // Act
                 var settings1 = Settings.LoadDefaultSettings(
-                    mockBaseDirectory,
-                    "user1.config",
-                    m.Object);
+                    mockBaseDirectory1,
+                    null,
+                    m.Object,
+                    true,
+                    true);
                 var settings2 = Settings.LoadDefaultSettings(
-                    mockBaseDirectory,
-                    "user2.config",
-                    m.Object);
+                    mockBaseDirectory2,
+                    null,
+                    m.Object,
+                    true,
+                    true);
 
                 // Assert
                 var v = settings1.GetValue("SectionName", "key3");
@@ -2151,6 +2214,26 @@ namespace NuGet.Configuration.Test
 
             // Assert
             Assert.Equal(expectedPath, globalPackagesFolderPath);
+        }
+
+        [Fact]
+        public void CreateNewConfigFileIfNoConfig()
+        {
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Act
+                Settings settings = new Settings(mockBaseDirectory);
+
+                // Assert
+                var text = File.ReadAllText(Path.Combine(mockBaseDirectory, "NuGet.Config")).Replace("\r\n", "\n");
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""nuget.org"" value=""https://api.nuget.org/v3/index.json"" protocolVersion=""3"" />
+  </packageSources>
+</configuration>".Replace("\r\n","\n");
+        Assert.Equal(result, text);
+            }
         }
 
         private void AssertEqualCollections(IList<SettingValue> actual, string[] expected)

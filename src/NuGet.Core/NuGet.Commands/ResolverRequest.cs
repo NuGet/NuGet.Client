@@ -1,4 +1,5 @@
-﻿using NuGet.LibraryModel;
+﻿using System.Globalization;
+using NuGet.LibraryModel;
 
 namespace NuGet.Commands
 {
@@ -15,7 +16,7 @@ namespace NuGet.Commands
 
         public override string ToString()
         {
-            return Strings.FormatResolverRequest_ToStringFormat(Request.ToString(), Requestor.ToString());
+            return string.Format(CultureInfo.CurrentCulture, Strings.ResolverRequest_ToStringFormat, Request.ToString(), Requestor.ToString());
         }
     }
 }

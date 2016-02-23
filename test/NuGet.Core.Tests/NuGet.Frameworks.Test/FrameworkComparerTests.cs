@@ -45,7 +45,7 @@ namespace NuGet.Test
 
             // Act
             list = list
-                .OrderBy(f => f, new FrameworkPrecedenceSorter(DefaultFrameworkNameProvider.Instance))
+                .OrderBy(f => f, new FrameworkPrecedenceSorter(DefaultFrameworkNameProvider.Instance, false))
                 .ThenByDescending(f => f, new NuGetFrameworkSorter())
                 .ToList();
 
@@ -93,7 +93,7 @@ namespace NuGet.Test
 
             // Act
             list = list
-                .OrderBy(f => f, new FrameworkPrecedenceSorter(DefaultFrameworkNameProvider.Instance))
+                .OrderBy(f => f, new FrameworkPrecedenceSorter(DefaultFrameworkNameProvider.Instance, false))
                 .ThenByDescending(f => f, new NuGetFrameworkSorter())
                 .ToList();
 
@@ -135,7 +135,7 @@ namespace NuGet.Test
 
             // Act
             list = list
-                .OrderBy(f => f, new FrameworkPrecedenceSorter(DefaultFrameworkNameProvider.Instance))
+                .OrderBy(f => f, new FrameworkPrecedenceSorter(DefaultFrameworkNameProvider.Instance, false))
                 .ThenByDescending(f => f, new NuGetFrameworkSorter())
                 .ToList();
 

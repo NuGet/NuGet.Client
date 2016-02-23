@@ -60,6 +60,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to The API key for the server..
+        /// </summary>
+        internal static string ApiKey_Description {
+            get {
+                return ResourceManager.GetString("ApiKey_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to NuGet Command Line.
         /// </summary>
         internal static string App_FullName {
@@ -69,20 +78,65 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to {0} (y/N) .
+        /// </summary>
+        internal static string ConsoleConfirmMessage {
+            get {
+                return ResourceManager.GetString("ConsoleConfirmMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to y.
+        /// </summary>
+        internal static string ConsoleConfirmMessageAccept {
+            get {
+                return ResourceManager.GetString("ConsoleConfirmMessageAccept", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Deletes a package from the server..
+        /// </summary>
+        internal static string Delete_Description {
+            get {
+                return ResourceManager.GetString("Delete_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Please provide arguments for package id and package version..
+        /// </summary>
+        internal static string Delete_MissingArguments {
+            get {
+                return ResourceManager.GetString("Delete_MissingArguments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The Package Id and version..
+        /// </summary>
+        internal static string Delete_PackageIdAndVersion_Description {
+            get {
+                return ResourceManager.GetString("Delete_PackageIdAndVersion_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Source parameter was not specified..
+        /// </summary>
+        internal static string Error_MissingSourceParameter {
+            get {
+                return ResourceManager.GetString("Error_MissingSourceParameter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Committing restore....
         /// </summary>
         internal static string Log_Committing {
             get {
                 return ResourceManager.GetString("Log_Committing", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Errors in {0}.
-        /// </summary>
-        internal static string Log_ErrorSummary {
-            get {
-                return ResourceManager.GetString("Log_ErrorSummary", resourceCulture);
             }
         }
         
@@ -159,6 +213,69 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to No API Key was provided and no API Key could be found for {0}. To save an API Key for a source use the &apos;setApiKey&apos; command..
+        /// </summary>
+        internal static string NoApiKeyFound {
+            get {
+                return ResourceManager.GetString("NoApiKeyFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Do not prompt for user input or confirmations..
+        /// </summary>
+        internal static string NonInteractive_Description {
+            get {
+                return ResourceManager.GetString("NonInteractive_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Pushes a package to the server and publishes it..
+        /// </summary>
+        internal static string Push_Description {
+            get {
+                return ResourceManager.GetString("Push_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Invalid timeout parameter value..
+        /// </summary>
+        internal static string Push_InvalidTimeout {
+            get {
+                return ResourceManager.GetString("Push_InvalidTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Please specify the path to the package..
+        /// </summary>
+        internal static string Push_MissingArguments {
+            get {
+                return ResourceManager.GetString("Push_MissingArguments", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specify the path to the package and your API key to push the package to the server..
+        /// </summary>
+        internal static string Push_Package_ApiKey_Description {
+            get {
+                return ResourceManager.GetString("Push_Package_ApiKey_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specifies the timeout for pushing to a server in seconds. Defaults to 300 seconds (5 minutes)..
+        /// </summary>
+        internal static string Push_Timeout_Description {
+            get {
+                return ResourceManager.GetString("Push_Timeout_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to List of projects and project folders to restore. Each value can be: a path to a project.json or global.json file, or a folder to recursively search for project.json files..
         /// </summary>
         internal static string Restore_Arg_ProjectName_Description {
@@ -173,6 +290,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Restore_Description {
             get {
                 return ResourceManager.GetString("Restore_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The NuGet configuration file to use..
+        /// </summary>
+        internal static string Restore_Switch_ConfigFile_Description {
+            get {
+                return ResourceManager.GetString("Restore_Switch_ConfigFile_Description", resourceCulture);
             }
         }
         
@@ -222,7 +348,16 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Warning, Error..
+        ///    Looks up a localized string similar to Specifies the server URL.
+        /// </summary>
+        internal static string Source_Description {
+            get {
+                return ResourceManager.GetString("Source_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Minimal, Warning, Error..
         /// </summary>
         internal static string Switch_Verbosity {
             get {

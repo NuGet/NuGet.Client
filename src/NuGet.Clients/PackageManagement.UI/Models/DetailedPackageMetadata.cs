@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.Protocol.VisualStudio;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
@@ -15,7 +15,7 @@ namespace NuGet.PackageManagement.UI
         {
         }
 
-        public DetailedPackageMetadata(UIPackageMetadata serverData, long? downloadCount)
+        public DetailedPackageMetadata(IPackageSearchMetadata serverData, long? downloadCount)
         {
             Version = serverData.Identity.Version;
             Summary = serverData.Summary;

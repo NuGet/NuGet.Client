@@ -54,23 +54,31 @@ namespace NuGet.PackageManagement
             Action<SourceCacheContext> cacheContextModifier,
             CancellationToken token)
         {
-            // Restore
-            var result = await RestoreAsync(
-                project,
-                project.PackageSpec,
-                context,
-                sources,
-                effectiveGlobalPackagesFolder,
-                cacheContextModifier,
-                token);
+            using (var cacheContext = new SourceCacheContext())
+            {
+                cacheContextModifier(cacheContext);
 
-            // Throw before writing if this has been canceled
-            token.ThrowIfCancellationRequested();
+                var providers = RestoreCommandProviders.Create(effectiveGlobalPackagesFolder,
+                    sources,
+                    cacheContext,
+                    context.Logger);
 
-            // Write out the lock file and msbuild files
-            result.Commit(context.Logger);
+                // Restore
+                var result = await RestoreAsync(
+                    project,
+                    project.PackageSpec,
+                    context,
+                    providers,
+                    token);
 
-            return result;
+                // Throw before writing if this has been canceled
+                token.ThrowIfCancellationRequested();
+
+                // Write out the lock file and msbuild files
+                result.Commit(context.Logger);
+
+                return result;
+            }
         }
 
         /// <summary>
@@ -80,9 +88,7 @@ namespace NuGet.PackageManagement
             BuildIntegratedNuGetProject project,
             PackageSpec packageSpec,
             ExternalProjectReferenceContext context,
-            IEnumerable<SourceRepository> sources,
-            string effectiveGlobalPackagesFolder,
-            Action<SourceCacheContext> cacheContextModifier,
+            RestoreCommandProviders providers,
             CancellationToken token)
         {
             // Restoring packages
@@ -91,15 +97,10 @@ namespace NuGet.PackageManagement
                 Strings.BuildIntegratedPackageRestoreStarted,
                 project.ProjectName));
 
-            using (var request = new RestoreRequest(packageSpec, sources, effectiveGlobalPackagesFolder))
+            using (var request = new RestoreRequest(packageSpec, providers, logger, disposeProviders: false))
             {
                 request.MaxDegreeOfConcurrency = PackageManagementConstants.DefaultMaxDegreeOfParallelism;
                 request.LockFileVersion = await GetLockFileVersion(project, context);
-
-                if (cacheContextModifier != null)
-                {
-                    cacheContextModifier(request.CacheContext);
-                }
 
                 // Add the existing lock file if it exists
                 var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(project.JsonConfigPath);
@@ -112,7 +113,7 @@ namespace NuGet.PackageManagement
 
                 token.ThrowIfCancellationRequested();
 
-                var command = new RestoreCommand(logger, request);
+                var command = new RestoreCommand(request);
 
                 // Execute the restore
                 var result = await command.ExecuteAsync(token);
@@ -180,7 +181,16 @@ namespace NuGet.PackageManagement
                 // Get all project.json file paths in the closure
                 var closure = await project.GetProjectReferenceClosureAsync(context);
 
-                var files = new List<string>();
+                var files = new HashSet<string>(StringComparer.Ordinal);
+
+                // Store the last modified date of the project.json file
+                // If there are any changes a restore is needed
+                var lastModified = DateTimeOffset.MinValue;
+
+                if (File.Exists(project.JsonConfigPath))
+                {
+                    lastModified = File.GetLastWriteTimeUtc(project.JsonConfigPath);
+                }
 
                 foreach (var reference in closure)
                 {
@@ -189,26 +199,16 @@ namespace NuGet.PackageManagement
                         files.Add(reference.MSBuildProjectPath);
                     }
 
-                    if (reference.PackageSpec != null)
+                    if (reference.PackageSpecPath != null)
                     {
-                        Debug.Assert(reference.PackageSpec.FilePath != null, "Empty project.json path");
-                        files.Add(reference.PackageSpec.FilePath);
+                        files.Add(reference.PackageSpecPath);
                     }
-                }
-
-                var supportsProfiles = Enumerable.Empty<string>();
-
-                if (project.PackageSpec != null)
-                {
-                    supportsProfiles = project.PackageSpec.RuntimeGraph.Supports.Keys
-                        .OrderBy(p => p, StringComparer.Ordinal)
-                        .ToArray();
                 }
 
                 var projectInfo = new BuildIntegratedProjectCacheEntry(
                     project.JsonConfigPath,
                     files,
-                    supportsProfiles);
+                    lastModified);
 
                 var uniqueName = project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName);
 
@@ -243,16 +243,15 @@ namespace NuGet.PackageManagement
                     return true;
                 }
 
-                if (!item.Value.ReferenceClosure.OrderBy(s => s, StringComparer.Ordinal)
-                    .SequenceEqual(projectInfo.ReferenceClosure.OrderBy(s => s, StringComparer.Ordinal)))
+                if (item.Value.ProjectConfigLastModified?.Equals(projectInfo.ProjectConfigLastModified) != true)
                 {
-                    // The project closure has changed
+                    // project.json has been modified
                     return true;
                 }
 
-                if (!Enumerable.SequenceEqual(item.Value.SupportsProfiles, projectInfo.SupportsProfiles))
+                if (!item.Value.ReferenceClosure.SetEquals(projectInfo.ReferenceClosure))
                 {
-                    // Supports nodes have changes. Compatibility checks need to be done during the restore.
+                    // The project closure has changed
                     return true;
                 }
             }
@@ -274,32 +273,9 @@ namespace NuGet.PackageManagement
         {
             var hashesChecked = new HashSet<string>();
 
-            var packageSpecs = new Dictionary<string, PackageSpec>();
-
-            // Load all package specs and validate them first for floating versions and supports.
-            foreach (var project in projects)
-            {
-                var path = project.JsonConfigPath;
-
-                if (!packageSpecs.ContainsKey(path))
-                {
-                    var packageSpec = project.PackageSpec;
-
-                    if (packageSpec.Dependencies.Any(dependency => dependency.LibraryRange.VersionRange.IsFloating))
-                    {
-                        // Floating dependencies need to be checked each time
-                        return true;
-                    }
-
-                    packageSpecs.Add(path, packageSpec);
-                }
-            }
-
             // Validate project.lock.json files
             foreach (var project in projects)
             {
-                var packageSpec = packageSpecs[project.JsonConfigPath];
-
                 var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(project.JsonConfigPath);
 
                 if (!File.Exists(lockFilePath))
@@ -309,9 +285,11 @@ namespace NuGet.PackageManagement
                 }
 
                 var lockFileFormat = new LockFileFormat();
-                var lockFile = lockFileFormat.Read(lockFilePath);
+                var lockFile = lockFileFormat.Read(lockFilePath, referenceContext.Logger);
 
                 var lockFileVersion = await GetLockFileVersion(project, referenceContext);
+
+                var packageSpec = referenceContext.GetOrCreateSpec(project.ProjectName, project.JsonConfigPath);
 
                 if (!lockFile.IsValidForPackageSpec(packageSpec, lockFileVersion))
                 {
@@ -394,9 +372,9 @@ namespace NuGet.PackageManagement
 
                     // find all projects which have a child reference matching the same project.json path as the target
                     if (closure.Any(reference =>
-                        reference.PackageSpec != null &&
+                        reference.PackageSpecPath != null &&
                         string.Equals(targetProjectJson,
-                            Path.GetFullPath(reference.PackageSpec.FilePath),
+                            Path.GetFullPath(reference.PackageSpecPath),
                             StringComparison.OrdinalIgnoreCase)))
                     {
                         parents.Add(project);
@@ -466,6 +444,49 @@ namespace NuGet.PackageManagement
             }
 
             return version;
+        }
+
+        /// <summary>
+        /// Find the project closure from a larger set of references.
+        /// </summary>
+        public static ISet<ExternalProjectReference> GetExternalClosure(
+            string rootUniqueName,
+            ISet<ExternalProjectReference> references)
+        {
+            var closure = new HashSet<ExternalProjectReference>();
+
+            // Start with the parent node
+            var parent = references.FirstOrDefault(project =>
+                    rootUniqueName.Equals(project.UniqueName, StringComparison.Ordinal));
+
+            if (parent != null)
+            {
+                closure.Add(parent);
+            }
+
+            // Loop adding child projects each time
+            var notDone = true;
+            while (notDone)
+            {
+                notDone = false;
+
+                foreach (var childName in closure
+                    .Where(project => project.ExternalProjectReferences != null)
+                    .SelectMany(project => project.ExternalProjectReferences)
+                    .ToArray())
+                {
+                    var child = references.FirstOrDefault(project =>
+                        childName.Equals(project.UniqueName, StringComparison.Ordinal));
+
+                    // Continue until nothing new is added
+                    if (child != null)
+                    {
+                        notDone |= closure.Add(child);
+                    }
+                }
+            }
+
+            return closure;
         }
     }
 }

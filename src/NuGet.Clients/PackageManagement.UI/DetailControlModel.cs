@@ -10,8 +10,9 @@ using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
-using NuGet.Protocol.VisualStudio;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using System.Windows.Media.Imaging;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -68,8 +69,8 @@ namespace NuGet.PackageManagement.UI
         {
             _searchResultPackage = searchResultPackage;
             _filter = filter;
-            OnPropertyChanged("Id");
-            OnPropertyChanged("IconUrl");
+            OnPropertyChanged(nameof(Id));
+            OnPropertyChanged(nameof(IconBitmapImage));
 
             var versions = await searchResultPackage.Versions.Value;
 
@@ -181,9 +182,12 @@ namespace NuGet.PackageManagement.UI
             get { return _searchResultPackage?.Id; }
         }
 
-        public Uri IconUrl
+        public BitmapImage IconBitmapImage
         {
-            get { return _searchResultPackage?.IconUrl; }
+            get
+            {
+                return _searchResultPackage?.IconBitmapImage;
+            }
         }
 
         private DetailedPackageMetadata _packageMetadata;
@@ -263,7 +267,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public async Task LoadPackageMetadaAsync(UIMetadataResource metadataResource, CancellationToken token)
+        public async Task LoadPackageMetadaAsync(PackageMetadataResource metadataResource, CancellationToken token)
         {
             var versions = await _searchResultPackage.Versions.Value;
 
@@ -277,7 +281,7 @@ namespace NuGet.PackageManagement.UI
                 // load up the full details for each version
                 try
                 {
-                    var metadata = await metadataResource.GetMetadata(Id, true, false, token);
+                    var metadata = await metadataResource.GetMetadataAsync(Id, true, false, Logging.NullLogger.Instance, token);
                     foreach (var item in metadata)
                     {
                         if (!dict.ContainsKey(item.Identity.Version))

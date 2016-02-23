@@ -940,6 +940,112 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public async Task IncludeType_ProjectToProjectReferenceWithBuildTypeDependencyApplied()
+        {
+            // Restore Project1
+            // Project2 has only build dependencies
+            // Project1 -> Project2 -(suppress: all)-> packageX -> packageY -> packageB
+
+            // Arrange
+            var logger = new TestLogger();
+            var framework = "net46";
+
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var configJson2 = @"{
+                    ""dependencies"": {
+                        ""packageX"": {
+                            ""version"": ""1.0.0"",
+                            ""type"": ""build""
+                        }
+                    },
+                    ""frameworks"": {
+                    ""net46"": {}
+                    }
+                }";
+
+                var configJson1 = @"{
+                    ""dependencies"": {
+                    },
+                    ""frameworks"": {
+                    ""net46"": {}
+                    }
+                }";
+
+                var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+                var dependencies = target.Libraries.Single(lib => lib.Name == "TestProject2").Dependencies;
+
+                // Assert
+                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+                Assert.Equal(0, logger.Errors);
+                Assert.Equal(0, logger.Warnings);
+                Assert.Equal(0, target.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
+                Assert.Equal(0, result.LockFile.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
+                Assert.Equal(0, dependencies.Count());
+            }
+        }
+
+        [Fact]
+        public async Task IncludeType_ProjectToProjectReferenceWithBuildTypeDependencyTopLevel()
+        {
+            // Arrange
+            var logger = new TestLogger();
+            var framework = "net46";
+
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var configJson1 = @"{
+                    ""dependencies"": {
+                        ""packageX"": {
+                            ""version"": ""1.0.0"",
+                            ""type"": ""build""
+                        }
+                    },
+                    ""frameworks"": {
+                    ""net46"": {}
+                    }
+                }";
+
+                var configJson2 = @"{
+                    ""dependencies"": {
+                    },
+                    ""frameworks"": {
+                    ""net46"": {}
+                    }
+                }";
+
+                var repository = Path.Combine(workingDir, "repository");
+
+                var contextY = new SimpleTestPackageContext()
+                {
+                    Id = "packageY"
+                };
+
+                var contextX = new SimpleTestPackageContext()
+                {
+                    Id = "packageX",
+                    Dependencies = new List<SimpleTestPackageContext>() { contextY }
+                };
+
+                SimpleTestPackageUtility.CreateFullPackage(repository, contextX);
+                SimpleTestPackageUtility.CreateFullPackage(repository, contextY);
+
+                var result = await ProjectToProjectSetup(workingDir, logger, configJson1, configJson2);
+                var target = result.LockFile.GetTarget(NuGetFramework.Parse(framework), null);
+
+                // Assert
+                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+                Assert.Equal(0, logger.Errors);
+                Assert.Equal(0, logger.Warnings);
+                Assert.Equal(2, target.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
+                Assert.Equal(2, result.LockFile.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
+                Assert.True(target.Libraries.Any(lib => lib.Name == "packageX"));
+                Assert.True(target.Libraries.Any(lib => lib.Name == "packageY"));
+            }
+        }
+
+        [Fact]
         public async Task IncludeType_ProjectIncludesOnlyCompile()
         {
             // Arrange
@@ -1507,7 +1613,7 @@ namespace NuGet.Commands.Test
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource(repository));
 
-            var request = new RestoreRequest(spec1, sources, packagesDir);
+            var request = new RestoreRequest(spec1, sources, packagesDir, logger);
             request.LockFilePath = Path.Combine(testProject1Dir, "project.lock.json");
 
             request.ExternalProjects = new List<ExternalProjectReference>()
@@ -1525,7 +1631,7 @@ namespace NuGet.Commands.Test
                     Enumerable.Empty<string>())
             };
 
-            var command = new RestoreCommand(logger, request);
+            var command = new RestoreCommand(request);
 
             // Act
             var result = await command.ExecuteAsync();
@@ -1579,7 +1685,7 @@ namespace NuGet.Commands.Test
             var sources = new List<PackageSource>();
             sources.Add(new PackageSource(repository));
 
-            var request = new RestoreRequest(spec1, sources, packagesDir);
+            var request = new RestoreRequest(spec1, sources, packagesDir, logger);
             request.LockFilePath = Path.Combine(testProject1Dir, "project.lock.json");
             request.ExternalProjects = new List<ExternalProjectReference>()
             {
@@ -1588,7 +1694,7 @@ namespace NuGet.Commands.Test
                 new ExternalProjectReference("TestProject3", spec3, null, Enumerable.Empty<string>())
             };
 
-            var command = new RestoreCommand(logger, request);
+            var command = new RestoreCommand(request);
 
             // Act
             var result = await command.ExecuteAsync();
@@ -1618,7 +1724,7 @@ namespace NuGet.Commands.Test
             var specPath = Path.Combine(testProjectDir, "project.json");
             var spec = JsonPackageSpecReader.GetPackageSpec(configJson, "TestProject", specPath);
 
-            var request = new RestoreRequest(spec, sources, packagesDir);
+            var request = new RestoreRequest(spec, sources, packagesDir, logger);
             request.LockFilePath = Path.Combine(testProjectDir, "project.lock.json");
 
             request.ExternalProjects.Add(
@@ -1629,7 +1735,7 @@ namespace NuGet.Commands.Test
                     new string[] { }));
 
 
-            var command = new RestoreCommand(logger, request);
+            var command = new RestoreCommand(request);
 
             // Act
             var result = await command.ExecuteAsync();

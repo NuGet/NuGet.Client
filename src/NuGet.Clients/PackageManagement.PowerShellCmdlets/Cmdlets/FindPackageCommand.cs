@@ -7,6 +7,7 @@ using System.Linq;
 using System.Management.Automation;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
 
@@ -138,10 +139,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected void FindPackageStartWithId(bool excludeVersionInfo)
         {
-            var autoCompleteResource = ActiveSourceRepository.GetResource<PSAutoCompleteResource>(Token);
+            var autoCompleteResource = ActiveSourceRepository.GetResource<AutoCompleteResource>(Token);
             var packageIds = ThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                var result = await autoCompleteResource.IdStartsWith(Id, IncludePrerelease.IsPresent, Token);
+                var result = await autoCompleteResource.IdStartsWith(Id, IncludePrerelease.IsPresent, Logging.NullLogger.Instance, Token);
                 return result;
             });
 
@@ -199,7 +200,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Get IPowerShellPackage from the remote package source
         /// </summary>
-        private PowerShellPackage GetIPowerShellPackageFromRemoteSource(PSAutoCompleteResource autoCompleteResource, string id)
+        private PowerShellPackage GetIPowerShellPackageFromRemoteSource(AutoCompleteResource autoCompleteResource, string id)
         {
             AsyncLazy<IEnumerable<NuGetVersion>> asyncLazyVersions = null;
 
@@ -207,7 +208,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 asyncLazyVersions = new AsyncLazy<IEnumerable<NuGetVersion>>(async () =>
                 {
-                    var results = await autoCompleteResource.VersionStartsWith(id, Version, IncludePrerelease.IsPresent, Token);
+                    var results = await autoCompleteResource.VersionStartsWith(id, Version, IncludePrerelease.IsPresent, Logging.NullLogger.Instance, Token);
                     results = results?.OrderByDescending(v => v).ToArray();
 
                     return results;

@@ -789,7 +789,9 @@ namespace NuGet.Test
                     packageIdentity0.Id,
                     projectA,
                     resolutionContext,
-                    sourceRepositoryProvider.GetRepositories().First(), token);
+                    sourceRepositoryProvider.GetRepositories().First(),
+                    Logging.NullLogger.Instance,
+                    token);
 
                 var packageLatest = new PackageIdentity(packageIdentity0.Id, latestVersion);
 
@@ -845,7 +847,9 @@ namespace NuGet.Test
                     packageIdentity0.Id,
                     projectA,
                     resolutionContext,
-                    sourceRepositoryProvider.GetRepositories().First(), token);
+                    sourceRepositoryProvider.GetRepositories().First(),
+                    Logging.NullLogger.Instance,
+                    token);
 
                 var packageLatest = new PackageIdentity(packageIdentity0.Id, latestVersion);
 
@@ -958,7 +962,9 @@ namespace NuGet.Test
                     packageIdentity0.Id,
                     projectA,
                     resolutionContext,
-                    sourceRepositoryProvider.GetRepositories().First(), token);
+                    sourceRepositoryProvider.GetRepositories().First(),
+                    Logging.NullLogger.Instance,
+                    token);
 
                 var packageLatest = new PackageIdentity(packageIdentity0.Id, latestVersion);
 
@@ -1265,7 +1271,9 @@ namespace NuGet.Test
                     packageIdentity0.Id,
                     projectA,
                     resolutionContext,
-                    sourceRepositoryProvider.GetRepositories().First(), token);
+                    sourceRepositoryProvider.GetRepositories().First(),
+                    Logging.NullLogger.Instance,
+                    token);
 
                 var packageLatest = new PackageIdentity(packageIdentity0.Id, latestVersion);
 
@@ -2081,7 +2089,9 @@ namespace NuGet.Test
                     packageIdentity0.Id,
                     msBuildNuGetProject,
                     new ResolutionContext(),
-                    sourceRepositoryProvider.GetRepositories().First(), token);
+                    sourceRepositoryProvider.GetRepositories().First(),
+                    Logging.NullLogger.Instance,
+                    token);
 
                 var packageLatest = new PackageIdentity(packageIdentity0.Id, latestVersion);
 
@@ -3113,6 +3123,7 @@ namespace NuGet.Test
                     msBuildNuGetProject,
                     resolutionContext,
                     primarySourceRepository,
+                    Logging.NullLogger.Instance,
                     CancellationToken.None);
 
                 var newtonsoftJsonPackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, latestNewtonsoftPrereleaseVersion);
@@ -3160,6 +3171,7 @@ namespace NuGet.Test
                     msBuildNuGetProject,
                     resolutionContext,
                     primarySourceRepository,
+                    Logging.NullLogger.Instance,
                     CancellationToken.None);
 
                 var newtonsoftJsonLatestPrereleasePackageIdentity = new PackageIdentity(newtonsoftJsonPackageId, latestNewtonsoftPrereleaseVersion);
@@ -4397,6 +4409,7 @@ namespace NuGet.Test
                 NuGetFramework.AnyFramework,
                 resolutionContext,
                 sourceRepositoryProvider.GetRepositories().First(),
+                Logging.NullLogger.Instance,
                 CancellationToken.None);
 
             // Assert
@@ -4430,6 +4443,7 @@ namespace NuGet.Test
             public override Task<DownloadResourceResult> GetDownloadResourceResultAsync(
                 PackageIdentity identity,
                 Configuration.ISettings settings,
+                NuGet.Logging.ILogger logger,
                 CancellationToken token)
             {
                 var packageReader = new Mock<PackageReaderBase>(

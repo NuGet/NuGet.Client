@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
 using NuGet.Versioning;
 
@@ -20,7 +21,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Get the view of PowerShellPackage. Used for Get-Package -ListAvailable command.
         /// </summary>
-        internal static List<PowerShellRemotePackage> GetPowerShellPackageView(IEnumerable<PSSearchMetadata> metadata, VersionType versionType)
+        internal static List<PowerShellRemotePackage> GetPowerShellPackageView(IEnumerable<IPackageSearchMetadata> metadata, VersionType versionType)
         {
             var view = new List<PowerShellRemotePackage>();
             foreach (var data in metadata)
@@ -31,8 +32,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     Description = data.Summary,
                     AsyncLazyVersions = new AsyncLazy<IEnumerable<NuGetVersion>>(async delegate
                     {
-                        var results = await data.Versions.Value;
-                        results = results?.OrderByDescending(v => v).ToArray();
+                        var versions = await data.GetVersionsAsync();
+                        var results = versions?.Select(v => v.Version).OrderByDescending(v => v).ToArray();
                         return results ?? Enumerable.Empty<NuGetVersion>();
                     }, ThreadHelper.JoinableTaskFactory)
                 };

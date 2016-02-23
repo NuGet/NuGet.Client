@@ -41,6 +41,6 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
     <TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
-    <ProduceOutputsOnBuild>False</ProduceOutputsOnBuild>
+    <ProduceOutputsOnBuild>True</ProduceOutputsOnBuild>
   </PropertyGroup>
 </Project>

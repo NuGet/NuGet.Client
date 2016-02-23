@@ -316,7 +316,7 @@ namespace NuGet.DependencyResolver
             }
         }
 
-        public Task<GraphItem<RemoteResolveResult>> FindLibraryCached(
+        private Task<GraphItem<RemoteResolveResult>> FindLibraryCached(
             ConcurrentDictionary<LibraryRangeCacheKey, Task<GraphItem<RemoteResolveResult>>> cache,
             LibraryRange libraryRange,
             NuGetFramework framework,
@@ -437,7 +437,8 @@ namespace NuGet.DependencyResolver
                 return null;
             }
 
-            if (libraryRange.TypeConstraint == LibraryDependencyTarget.Reference)
+            // The resolution below is only for package types
+            if (!libraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package))
             {
                 return null;
             }
@@ -446,13 +447,7 @@ namespace NuGet.DependencyResolver
             {
                 // For snapshot dependencies, get the version remotely first.
                 var remoteMatch = await FindLibraryByVersion(libraryRange, framework, _context.RemoteLibraryProviders, cancellationToken);
-                if (remoteMatch == null)
-                {
-                    // If there was nothing remotely, use the local match (if any)
-                    var localMatch = await FindLibraryByVersion(libraryRange, framework, _context.LocalLibraryProviders, cancellationToken);
-                    return localMatch;
-                }
-                else
+                if (remoteMatch != null)
                 {
                     // Try to see if the specific version found on the remote exists locally. This avoids any unnecessary
                     // remote access incase we already have it in the cache/local packages folder.
@@ -467,8 +462,9 @@ namespace NuGet.DependencyResolver
 
                     // We found something locally, but it wasn't an exact match
                     // for the resolved remote match.
-                    return remoteMatch;
                 }
+
+                return remoteMatch;
             }
             else
             {
@@ -516,7 +512,7 @@ namespace NuGet.DependencyResolver
             }
         }
 
-        public Task<RemoteMatch> FindProjectMatch(
+        private Task<RemoteMatch> FindProjectMatch(
             LibraryRange libraryRange,
             NuGetFramework framework,
             GraphEdge<RemoteResolveResult> outerEdge,
@@ -629,7 +625,7 @@ namespace NuGet.DependencyResolver
                         return new RemoteMatch
                         {
                             Provider = provider,
-                            Library = await action(provider)
+                            Library = library
                         };
                     }
 
@@ -651,6 +647,7 @@ namespace NuGet.DependencyResolver
                 // This allows us to shortcircuit slow feeds even if there's an exact match
                 if (!libraryRange.VersionRange.IsFloating &&
                     match?.Library?.Version != null &&
+                    libraryRange.VersionRange.IsMinInclusive &&
                     match.Library.Version.Equals(libraryRange.VersionRange.MinVersion))
                 {
                     return match;

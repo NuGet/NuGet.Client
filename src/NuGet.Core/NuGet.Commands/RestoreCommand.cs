@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -37,13 +38,8 @@ namespace NuGet.Commands
         private readonly ConcurrentDictionary<PackageIdentity, RuntimeGraph> _runtimeGraphCacheByPackage
             = new ConcurrentDictionary<PackageIdentity, RuntimeGraph>(PackageIdentity.Comparer);
 
-        public RestoreCommand(ILogger logger, RestoreRequest request)
+        public RestoreCommand(RestoreRequest request)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
@@ -56,7 +52,7 @@ namespace NuGet.Commands
                 throw new ArgumentOutOfRangeException(nameof(_request.LockFileVersion));
             }
 
-            _logger = logger;
+            _logger = request.Log;
             _request = request;
         }
 
@@ -68,7 +64,7 @@ namespace NuGet.Commands
         public async Task<RestoreResult> ExecuteAsync(CancellationToken token)
         {
             // Use the shared cache if one was provided, otherwise create a new one.
-            var localRepository = _request.SharedLocalCache ?? new NuGetv3LocalRepository(_request.PackagesDirectory);
+            var localRepository = _request.DependencyProviders.GlobalPackages;
 
             var projectLockFilePath = string.IsNullOrEmpty(_request.LockFilePath) ?
                 Path.Combine(_request.Project.BaseDirectory, LockFileFormat.LockFileName) :
@@ -115,7 +111,7 @@ namespace NuGet.Commands
                 foreach (var versionConflict in g.AnalyzeResult.VersionConflicts)
                 {
                     _success = false;
-                    _logger.LogError(Strings.FormatLog_VersionConflict(versionConflict.Selected.Key.Name) + $" {Environment.NewLine} {versionConflict.Selected.GetPath()} {Environment.NewLine} {versionConflict.Conflicting.GetPath()}.");
+                    _logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Log_VersionConflict, versionConflict.Selected.Key.Name) + $" {Environment.NewLine} {versionConflict.Selected.GetPath()} {Environment.NewLine} {versionConflict.Conflicting.GetPath()}.");
                 }
 
                 foreach (var downgrade in g.AnalyzeResult.Downgrades)
@@ -127,7 +123,7 @@ namespace NuGet.Commands
                     var fromVersion = downgraded.Key.VersionRange.MinVersion ?? new NuGetVersion(0, 0, 0);
                     var toVersion = downgradedBy.Key.VersionRange.MinVersion ?? new NuGetVersion(0, 0, 0);
 
-                    _logger.LogWarning(Strings.FormatLog_DowngradeWarning(downgraded.Key.Name, fromVersion, toVersion) + $" {Environment.NewLine} {downgraded.GetPath()} {Environment.NewLine} {downgradedBy.GetPath()}");
+                    _logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_DowngradeWarning, downgraded.Key.Name, fromVersion, toVersion) + $" {Environment.NewLine} {downgraded.GetPath()} {Environment.NewLine} {downgradedBy.GetPath()}");
                 }
             }
 
@@ -138,18 +134,18 @@ namespace NuGet.Commands
                 var checker = new CompatibilityChecker(localRepository, lockFile, _logger);
                 foreach (var graph in graphs)
                 {
-                    _logger.LogVerbose(Strings.FormatLog_CheckingCompatibility(graph.Name));
+                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingCompatibility, graph.Name));
 
                     var res = checker.Check(graph);
                     _success &= res.Success;
                     checkResults.Add(res);
                     if (res.Success)
                     {
-                        _logger.LogVerbose(Strings.FormatLog_PackagesAreCompatible(graph.Name));
+                        _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackagesAreCompatible, graph.Name));
                     }
                     else
                     {
-                        _logger.LogError(Strings.FormatLog_PackagesIncompatible(graph.Name));
+                        _logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackagesIncompatible, graph.Name));
                     }
                 }
             }
@@ -180,16 +176,12 @@ namespace NuGet.Commands
         {
             if (_request.Project.TargetFrameworks.Count == 0)
             {
-                _logger.LogError(Strings.FormatLog_ProjectDoesNotSpecifyTargetFrameworks(_request.Project.Name, _request.Project.FilePath));
+                _logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Log_ProjectDoesNotSpecifyTargetFrameworks, _request.Project.Name, _request.Project.FilePath));
                 _success = false;
                 return Enumerable.Empty<RestoreTargetGraph>();
             }
 
-            _logger.LogMinimal(Strings.FormatLog_RestoringPackages(_request.Project.FilePath));
-
-            // Load repositories
-            var projectResolver = new PackageSpecResolver(_request.Project);
-            var nugetRepository = Repository.Factory.GetCoreV3(_request.PackagesDirectory);
+            _logger.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, _request.Project.FilePath));
 
             // External references
             var updatedExternalProjects = new List<ExternalProjectReference>(_request.ExternalProjects);
@@ -198,7 +190,10 @@ namespace NuGet.Commands
             {
                 // There should be at most one match in the external projects.
                 var rootProjectMatches = _request.ExternalProjects.Where(proj =>
-                     string.Equals(_request.Project.Name, proj.PackageSpec?.Name, StringComparison.OrdinalIgnoreCase))
+                     string.Equals(
+                         _request.Project.Name,
+                         proj.PackageSpecProjectName,
+                         StringComparison.OrdinalIgnoreCase))
                      .ToList();
 
                 if (rootProjectMatches.Count > 1)
@@ -234,13 +229,20 @@ namespace NuGet.Commands
                 }
             }
 
+            // Load repositories
+
+            // the external project provider is specific to the current restore project
+            var projectResolver = new PackageSpecResolver(_request.Project);
             context.ProjectLibraryProviders.Add(
                     new PackageSpecReferenceDependencyProvider(projectResolver, updatedExternalProjects));
 
-            context.LocalLibraryProviders.Add(
-                new SourceRepositoryDependencyProvider(nugetRepository, _logger, _request.CacheContext));
+            // providers must be given by the request so that they can be shared
+            foreach (var provider in _request.DependencyProviders.LocalProviders)
+            {
+                context.LocalLibraryProviders.Add(provider);
+            }
 
-            foreach (var provider in _request.Sources.Select(s => CreateProviderFromSource(s, _request.CacheContext)))
+            foreach (var provider in _request.DependencyProviders.RemoteProviders)
             {
                 context.RemoteLibraryProviders.Add(provider);
             }
@@ -304,7 +306,7 @@ namespace NuGet.Commands
                 else if (!runtimes.Supports.TryGetValue(profile.Value.Name, out compatProfile))
                 {
                     // No definition of this profile found, so just continue to the next one
-                    _logger.LogWarning(Strings.FormatLog_UnknownCompatibilityProfile(profile.Key));
+                    _logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_UnknownCompatibilityProfile, profile.Key));
                     continue;
                 }
 
@@ -369,7 +371,7 @@ namespace NuGet.Commands
 
             foreach (var pair in runtimesByFramework)
             {
-                _logger.LogVerbose(Strings.FormatLog_RestoringPackages(pair.Key.DotNetFrameworkName));
+                _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, pair.Key.DotNetFrameworkName));
 
                 frameworkTasks.Add(WalkDependenciesAsync(projectRange,
                     pair.Key,
@@ -456,10 +458,10 @@ namespace NuGet.Commands
                 if (graph.Conflicts.Any())
                 {
                     success = false;
-                    _logger.LogError(Strings.FormatLog_FailedToResolveConflicts(graph.Name));
+                    _logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToResolveConflicts, graph.Name));
                     foreach (var conflict in graph.Conflicts)
                     {
-                        _logger.LogError(Strings.FormatLog_ResolverConflict(
+                        _logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Log_ResolverConflict, 
                             conflict.Name,
                             string.Join(", ", conflict.Requests)));
                     }
@@ -469,7 +471,7 @@ namespace NuGet.Commands
                     success = false;
                     foreach (var unresolved in graph.Unresolved)
                     {
-                        _logger.LogError(Strings.FormatLog_UnresolvedDependency(unresolved.Name,
+                        _logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Log_UnresolvedDependency, unresolved.Name,
                             unresolved.VersionRange.ToNonSnapshotRange().PrettyPrint(),
                             graph.Name));
                     }
@@ -749,10 +751,13 @@ namespace NuGet.Commands
 
                             // Find all dependencies which would be in the nuspec
                             // Include dependencies with no constraints, or package/project/external
+                            // Exclude suppressed dependencies, the top level project is not written 
+                            // as a target so the node depth does not matter.
                             Dependencies = graphItem.Data.Dependencies
                                 .Where(
                                     d => (d.LibraryRange.TypeConstraintAllowsAnyOf(
-                                        LibraryDependencyTarget.PackageProjectExternal)))
+                                        LibraryDependencyTarget.PackageProjectExternal))
+                                        && d.SuppressParent != LibraryIncludeFlags.All)
                                 .Select(d => GetDependencyVersionRange(d))
                                 .ToList()
                         };
@@ -817,7 +822,7 @@ namespace NuGet.Commands
                             if (!targetLibrary.Equals(targetLibraryWithoutFallback))
                             {
                                 var libraryName = $"{library.Name} {library.Version}";
-                                _logger.LogWarning(Strings.FormatLog_ImportsFallbackWarning(libraryName, fallbackFramework.Fallback, nonFallbackFramework));
+                                _logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_ImportsFallbackWarning, libraryName, String.Join(", ", fallbackFramework.Fallback), nonFallbackFramework));
 
                                 // only log the warning once per library
                                 librariesWithWarnings.Add(library);
@@ -862,9 +867,9 @@ namespace NuGet.Commands
 
         private static PackageDependency GetDependencyVersionRange(LibraryDependency dependency)
         {
-            var range = dependency.LibraryRange.VersionRange;
+            var range = dependency.LibraryRange.VersionRange ?? VersionRange.All;
 
-            if (range == null
+            if (VersionRange.All.Equals(range)
                 && (dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.ExternalProject)))
             {
                 // For csproj -> csproj type references where there is no range, use 1.0.0
@@ -970,7 +975,7 @@ namespace NuGet.Commands
                         var library = _request.ExistingLockFile.GetLibrary(targetLibrary.Name, targetLibrary.Version);
                         if (library == null)
                         {
-                            _logger.LogWarning(Strings.FormatLog_LockFileMissingLibraryForTargetLibrary(
+                            _logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_LockFileMissingLibraryForTargetLibrary, 
                                 targetLibrary.Name,
                                 targetLibrary.Version,
                                 target.Name));
@@ -1007,7 +1012,7 @@ namespace NuGet.Commands
             }
 
             // Resolve conflicts
-            _logger.LogVerbose(Strings.FormatLog_ResolvingConflicts(name));
+            _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_ResolvingConflicts, name));
 
             // Flatten and create the RestoreTargetGraph to hold the packages
             var result = RestoreTargetGraph.Create(writeToLockFile, runtimeGraph, graphs, context, _logger, framework, runtimeIdentifier);
@@ -1039,7 +1044,7 @@ namespace NuGet.Commands
                     var match = result.Flattened.FirstOrDefault(g => g.Key.Name.Equals(dependency.LibraryRange.Name));
                     if (match != null && match.Key.Version > dependency.LibraryRange.VersionRange.MinVersion)
                     {
-                        _logger.LogWarning(Strings.FormatLog_DependencyBumpedUp(
+                        _logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_DependencyBumpedUp, 
                             dependency.LibraryRange.Name,
                             dependency.LibraryRange.VersionRange.PrettyPrint(),
                             match.Key.Name,
@@ -1062,7 +1067,7 @@ namespace NuGet.Commands
             var resultGraphs = new List<Task<RestoreTargetGraph>>();
             foreach (var runtimeName in runtimeIds)
             {
-                _logger.LogVerbose(Strings.FormatLog_RestoringPackages(FrameworkRuntimePair.GetName(graph.Framework, runtimeName)));
+                _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, FrameworkRuntimePair.GetName(graph.Framework, runtimeName)));
 
                 resultGraphs.Add(WalkDependenciesAsync(projectRange,
                     graph.Framework,
@@ -1111,7 +1116,7 @@ namespace NuGet.Commands
                     var nextGraph = LoadRuntimeGraph(package);
                     if (nextGraph != null)
                     {
-                        _logger.LogVerbose(Strings.FormatLog_MergingRuntimes(match.Library));
+                        _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_MergingRuntimes, match.Library));
                         runtimeGraph = RuntimeGraph.Merge(runtimeGraph, nextGraph);
                     }
                 }
@@ -1192,7 +1197,7 @@ namespace NuGet.Commands
             SourceRepository repository,
             SourceCacheContext cacheContext)
         {
-            _logger.LogVerbose(Strings.FormatLog_UsingSource(repository.PackageSource.Source));
+            _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_UsingSource, repository.PackageSource.Source));
 
             return new SourceRepositoryDependencyProvider(repository, _logger, cacheContext);
         }

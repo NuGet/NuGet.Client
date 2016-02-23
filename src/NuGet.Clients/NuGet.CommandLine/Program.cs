@@ -9,7 +9,6 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using NuGet.Common;
-using NuGet.Logging;
 
 namespace NuGet.CommandLine
 {
@@ -69,14 +68,9 @@ namespace NuGet.CommandLine
             }
 
             var console = new Common.Console();
-
-            // todo: As some tests are potentially running Program.Main in parallel,
-            // we should consider leveraging thread local store.
-            Logger.Instance = console;
-
             var fileSystem = new PhysicalFileSystem(workingDirectory);
 
-            Func<Exception, string> getErrorMessage = e => e.Message;
+            Func<Exception, string> getErrorMessage = ExceptionUtilities.DisplayMessage;
 
             try
             {
@@ -126,34 +120,20 @@ namespace NuGet.CommandLine
             }
             catch (AggregateException exception)
             {
-                string message;
                 Exception unwrappedEx = ExceptionUtility.Unwrap(exception);
-                if (unwrappedEx == exception)
-                {
-                    // If the AggregateException contains more than one InnerException, it cannot be unwrapped. In which case, simply print out individual error messages
-                    message = String.Join(Environment.NewLine, exception.InnerExceptions.Select(getErrorMessage)
-                                                                        .Distinct(StringComparer.CurrentCulture));
-                }
-                else if (unwrappedEx is TargetInvocationException)
-                {
-                    message = getErrorMessage(unwrappedEx.InnerException);
-                }
-                else if (unwrappedEx is ExitCodeException)
+                if (unwrappedEx is ExitCodeException)
                 {
                     // Return the exit code without writing out the exception type
                     var exitCodeEx = unwrappedEx as ExitCodeException;
                     return exitCodeEx.ExitCode;
                 }
-                else
-                {
-                    message = getErrorMessage(unwrappedEx);
-                }
-                console.WriteError(message);
+                
+                console.WriteError(getErrorMessage(exception));
                 return 1;
             }
-            catch (Exception e)
+            catch (Exception exception)
             {
-                console.WriteError(getErrorMessage(ExceptionUtility.Unwrap(e)));
+                console.WriteError(getErrorMessage(exception));
                 return 1;
             }
             finally

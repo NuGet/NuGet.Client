@@ -115,6 +115,15 @@ namespace NuGet.Frameworks
                     profile = profilePart.Split('=')[1];
                 }
 
+                if (StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Portable, platform)
+                    && !string.IsNullOrEmpty(profile)
+                    && profile.Contains("-"))
+                {
+                    // Frameworks within the portable profile are not allowed
+                    // to have profiles themselves #1869
+                    throw new FrameworkException(Strings.InvalidPortableFrameworks);
+                }
+
                 result = new NuGetFramework(platform, version, profile);
             }
 

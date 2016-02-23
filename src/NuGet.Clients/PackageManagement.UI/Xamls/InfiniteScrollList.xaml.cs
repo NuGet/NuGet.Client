@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using NuGet.Common;
 using Mvs = Microsoft.VisualStudio.Shell;
 using Resx = NuGet.PackageManagement.UI;
 
@@ -168,6 +169,14 @@ namespace NuGet.PackageManagement.UI
             }
             catch (OperationCanceledException)
             {
+                if (!token.IsCancellationRequested)
+                {
+                    // The user cancelled the login, but treat as a load error in UI
+                    // So the retry button and message is displayed
+                    // Do not log to the activity log, since it is not a NuGet error
+                    _loadingStatusIndicator.Status = LoadingStatus.ErrorOccured;
+                    _loadingStatusIndicator.ErrorMessage = Resx.Resources.Text_UserCanceled;
+                }
             }
             catch (Exception ex)
             {
@@ -177,7 +186,8 @@ namespace NuGet.PackageManagement.UI
                     var message = string.Format(
                             CultureInfo.CurrentCulture,
                             Resx.Resources.Text_ErrorOccurred,
-                            ex.Message);
+                            Environment.NewLine,
+                            ExceptionUtilities.DisplayMessage(ex));
 
                     _loadingStatusIndicator.Status = LoadingStatus.ErrorOccured;
                     _loadingStatusIndicator.ErrorMessage = message;

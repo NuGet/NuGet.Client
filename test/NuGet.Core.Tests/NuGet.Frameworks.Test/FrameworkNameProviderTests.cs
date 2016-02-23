@@ -14,6 +14,27 @@ namespace NuGet.Test
     public class FrameworkNameProviderTests
     {
         [Fact]
+        public void FrameworkNameProvider_NetStandardVersions()
+        {
+            // Arrange
+            var provider = DefaultFrameworkNameProvider.Instance;
+
+            // Act
+            var versions = provider
+                .GetNetStandardVersions()
+                .ToArray();
+
+            // Assert
+            Assert.Equal(6, versions.Length);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard10, versions[0]);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard11, versions[1]);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard12, versions[2]);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard13, versions[3]);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, versions[4]);
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard15, versions[5]);
+        }
+
+        [Fact]
         public void FrameworkNameProvider_DuplicateFrameworksInPrecedence()
         {
             // Arrange
@@ -74,6 +95,31 @@ namespace NuGet.Test
         }
 
         [Fact]
+        public void FrameworkNameProvider_EquivalentFrameworkPrecedence()
+        {
+            // Arrange
+            var mappingsA = new Mock<IFrameworkMappings>();
+            var mappingsB = new Mock<IFrameworkMappings>();
+            mappingsA.Setup(x => x.EquivalentFrameworkPrecedence).Returns(new[] { Windows });
+            mappingsB.Setup(x => x.EquivalentFrameworkPrecedence).Returns(new[] { NetCore });
+
+            var provider = new FrameworkNameProvider(new[] { mappingsA.Object, mappingsB.Object }, null);
+
+            // Act
+            var lt = provider.CompareEquivalentFrameworks(
+                FrameworkConstants.CommonFrameworks.Win8,
+                FrameworkConstants.CommonFrameworks.NetCore45);
+
+            var gt = provider.CompareEquivalentFrameworks(
+                FrameworkConstants.CommonFrameworks.NetCore45,
+                FrameworkConstants.CommonFrameworks.Win8);
+
+            // Assert
+            Assert.True(lt < 0, "Win should come before NetCore");
+            Assert.True(gt > 0, "NetCore should come after Win");
+        }
+
+        [Fact]
         public void FrameworkNameProvider_EqualFrameworksWithoutCurrent()
         {
             var provider = DefaultFrameworkNameProvider.Instance;
@@ -96,9 +142,17 @@ namespace NuGet.Test
             IEnumerable<NuGetFramework> frameworks = null;
             provider.TryGetEquivalentFrameworks(input, out frameworks);
 
-            var results = frameworks.ToArray();
+            var results = frameworks
+                .OrderBy(f => f, new NuGetFrameworkSorter())
+                .Select(f => f.GetShortFolderName())
+                .ToArray();
 
-            Assert.Equal(2, results.Length);
+            Assert.Equal(5, results.Length);
+            Assert.Equal("netcore", results[0]);
+            Assert.Equal("netcore45", results[1]);
+            Assert.Equal("win", results[2]);
+            Assert.Equal("winrt", results[3]);
+            Assert.Equal("winrt45", results[4]);
         }
 
         [Fact]

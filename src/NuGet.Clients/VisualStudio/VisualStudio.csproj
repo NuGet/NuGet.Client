@@ -101,6 +101,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensibility\IVsGlobalPackagesInitScriptExecutor.cs" />
+    <Compile Include="Extensibility\IVsFrameworkCompatibility.cs" />
     <Compile Include="Extensibility\IVsPackageSourceProvider.cs" />
     <Compile Include="Extensibility\IVsPackageInstaller.cs" />
     <Compile Include="Extensibility\IVsPackageInstallerEvents.cs" />

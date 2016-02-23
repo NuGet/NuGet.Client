@@ -146,9 +146,12 @@ namespace NuGet.PackageManagement.UI
                 // when the keys are used in an xaml file.
                 ContentBrushKey = SystemColors.WindowBrush;
                 ContentMouseOverTextBrushKey = SystemColors.ControlTextBrush;
+                ContentMouseOverBrushKey = SystemColors.ControlTextBrush;
                 ContentInactiveSelectedTextBrushKey = SystemColors.ControlTextBrush;
+                ContentInactiveSelectedBrushKey = SystemColors.ControlTextBrush;
                 BackgroundBrushKey = SystemColors.WindowBrush;
                 ContentSelectedBrushKey = SystemColors.ActiveCaptionBrushKey;
+                ContentSelectedTextBrushKey = SystemColors.ActiveCaptionTextBrushKey;
             }
             else
             {

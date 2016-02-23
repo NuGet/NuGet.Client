@@ -290,7 +290,7 @@ function Test-InstallPackageAPIUnreachableSource
     $p = New-ClassLibrary
 
     # Act&Assert
-    Assert-Throws {[API.Test.InternalAPITestHook]::InstallPackageApiBadSource("owin","1.0.0") } "Exception calling `"InstallPackageApiBadSource`" with `"2`" argument(s): `"The remote name could not be resolved: 'packagesource'`""
+    Assert-Throws {[API.Test.InternalAPITestHook]::InstallPackageApiBadSource("owin","1.0.0") } "Exception calling `"InstallPackageApiBadSource`" with `"2`" argument(s): `"An error occurred while retrieving package metadata for 'owin.1.0.0' from source 'http://packagesource'.`""
     Assert-NoPackage $p "owin"
 }
 
@@ -363,6 +363,39 @@ function Test-GetSourceAPI
 
     # Assert
     Assert-NotNull $sources
+}
+
+function Test-GetNetStandardVersions 
+{
+    # Arrange
+    $cm = Get-VsComponentModel
+    $service = $cm.GetService([NuGet.VisualStudio.IVsFrameworkCompatibility])
+
+    # Act
+    $actual = $service.GetNetStandardFrameworks()
+
+    # Assert
+    Assert-AreEqual ".NETStandard,Version=v1.0" ($actual | Select-Object -Index 0)
+    Assert-AreEqual ".NETStandard,Version=v1.1" ($actual | Select-Object -Index 1)
+    Assert-AreEqual ".NETStandard,Version=v1.2" ($actual | Select-Object -Index 2)
+    Assert-AreEqual ".NETStandard,Version=v1.3" ($actual | Select-Object -Index 3)
+    Assert-AreEqual ".NETStandard,Version=v1.4" ($actual | Select-Object -Index 4)
+    Assert-AreEqual ".NETStandard,Version=v1.5" ($actual | Select-Object -Index 5)
+}
+
+function Test-GetFrameworksSupportingNetStandard
+{
+    # Arrange
+    $cm = Get-VsComponentModel
+    $service = $cm.GetService([NuGet.VisualStudio.IVsFrameworkCompatibility])
+
+    # Act
+    $actual = $service.GetFrameworksSupportingNetStandard(".NETStandard,Version=v1.2")
+
+    # Assert
+    Assert-AreEqual ".NETCore,Version=v5.0" ($actual | Select-Object -Index 0)
+    Assert-AreEqual ".NETFramework,Version=v4.5.1" ($actual | Select-Object -Index 1)
+    Assert-AreEqual ".NETPortable,Version=v0.0,Profile=Profile151" ($actual | Select-Object -Index 2)
 }
 
 function Test-RestorePackageAPI

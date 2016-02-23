@@ -10,7 +10,7 @@ using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Protocol.Core.Types;
 
-namespace NuGet.Protocol.Core.v3
+namespace NuGet.Protocol
 {
     public static class GlobalPackagesFolderUtility
     {
@@ -107,7 +107,7 @@ namespace NuGet.Protocol.Core.v3
                 xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
 
             await PackageExtractor.InstallFromSourceAsync(
-                stream => packageStream.CopyToAsync(stream),
+                stream => packageStream.CopyToAsync(stream, bufferSize: 8192, cancellationToken: token),
                 versionFolderPathContext,
                 token: token);
 

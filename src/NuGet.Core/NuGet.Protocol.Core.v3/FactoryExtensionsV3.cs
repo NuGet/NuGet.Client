@@ -26,21 +26,30 @@ namespace NuGet.Protocol.Core.v3
         {
             yield return new Lazy<INuGetResourceProvider>(() => new DependencyInfoResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new DownloadResourceV3Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new HttpHandlerResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new MetadataResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new RawSearchResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new RegistrationResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new ReportAbuseResourceV3Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new SearchLatestResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new ServiceIndexResourceV3Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new SimpleSearchResourceV3Provider());
+            yield return new Lazy<INuGetResourceProvider>(() => new HttpHandlerResourceV3Provider());
+            yield return new Lazy<INuGetResourceProvider>(() => new HttpSourceResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new HttpFileSystemBasedFindPackageByIdResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new RemoteV3FindPackagePackageByIdResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new RemoteV2FindPackageByIdResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new LocalV3FindPackageByIdResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new LocalV2FindPackageByIdResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new ListCommandResourceV3Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new PushCommandResourceV3Provider());
+            yield return new Lazy<INuGetResourceProvider>(() => new PackageUpdateResourceV2Provider());
+            yield return new Lazy<INuGetResourceProvider>(() => new PackageUpdateResourceV3Provider());
+            yield return new Lazy<INuGetResourceProvider>(() => new DependencyInfoResourceV2FeedProvider());
+            yield return new Lazy<INuGetResourceProvider>(() => new DownloadResourceV2FeedProvider());
+            yield return new Lazy<INuGetResourceProvider>(() => new MetadataResourceV2FeedProvider());
+            yield return new Lazy<INuGetResourceProvider>(() => new PackageSearchResourceV2FeedProvider());
+            yield return new Lazy<INuGetResourceProvider>(() => new PackageSearchResourceV3Provider());
+            yield return new Lazy<INuGetResourceProvider>(() => new UIMetadataResourceV2FeedProvider());
+            yield return new Lazy<INuGetResourceProvider>(() => new UIMetadataResourceV3Provider());
+            yield return new Lazy<INuGetResourceProvider>(() => new AutoCompleteResourceV2FeedProvider());
+            yield return new Lazy<INuGetResourceProvider>(() => new AutoCompleteResourceV3Provider());
             yield break;
         }
     }
