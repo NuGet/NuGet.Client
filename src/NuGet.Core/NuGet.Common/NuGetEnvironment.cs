@@ -87,6 +87,13 @@ namespace NuGet.Common
                     }
                     else
                     {
+                        string commonApplicationDataOverride = Environment.GetEnvironmentVariable("NUGET_COMMON_APPLICATION_DATA");
+
+                        if (!string.IsNullOrEmpty(commonApplicationDataOverride))
+                        {
+                            return commonApplicationDataOverride;
+                        }
+
                         return @"/etc/opt";
                     }
 
