@@ -437,12 +437,6 @@ namespace NuGet.CommandLine.XPlat
 
                 var runtimeEnvironment = PlatformServices.Default.Runtime;
 
-                var defaultRuntimes = RequestRuntimeUtility.GetDefaultRestoreRuntimes(
-                    runtimeEnvironment.OperatingSystem,
-                    runtimeEnvironment.GetRuntimeOsName());
-
-                request.FallbackRuntimes.UnionWith(defaultRuntimes);
-
                 request.MaxDegreeOfConcurrency = isParallel ? RestoreRequest.DefaultDegreeOfConcurrency : 1;
 
                 // Run the restore
