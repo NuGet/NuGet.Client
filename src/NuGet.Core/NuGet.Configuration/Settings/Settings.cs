@@ -268,8 +268,8 @@ namespace NuGet.Configuration
                         {
                             var packageSource = new PackageSource(value.Value);
                             
-                            // if the machine wide package source is not local source, disable it by default
-                            if (!packageSource.IsLocal)
+                            // if the machine wide package source is http source, disable it by default
+                            if (packageSource.IsHttp)
                             {
                                 disabledSources.Add(new SettingValue(value.Key, "true", origin: setting, isMachineWide: true, priority: 0));
                             }
