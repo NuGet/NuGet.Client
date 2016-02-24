@@ -7,16 +7,22 @@ param([parameter(Mandatory = $true)]
 $ErrorActionPreference = "Stop"
 $FileKind = "{6BB5F8EE-4483-11D3-8BCF-00C04F8EC28C}"
 
-function New-BuildIntegratedProj 
+function Get-VSVersion
+{
+    $version = [API.Test.VSHelper]::GetVSVersion()
+    return $version
+}
+
+function New-BuildIntegratedProj
 {
     param(
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
-
-    if ($dte.Version -ge '14.0')
+    
+    if ((Get-VSVersion) -ge '14.0')
     {
-        $SolutionFolder | New-Project BuildIntegratedProj $ProjectName
+        New-Project BuildIntegratedProj $ProjectName $SolutionFolder
     }
     else
     {
@@ -28,12 +34,12 @@ function New-CpsApp
 {
     param(
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
-    if ($dte.Version -ge '14.0')
+    if ($version -ge '14.0')
     {
-        $SolutionFolder | New-Project CpsApp $ProjectName
+        New-Project CpsApp $ProjectName $SolutionFolder
     }
     else
     {
@@ -42,26 +48,23 @@ function New-CpsApp
 }
 
 function Get-SolutionDir {
-    if($dte.Solution -and $dte.Solution.IsOpen) {
-        return Split-Path $dte.Solution.FullName
-    }
-    else {
-        throw "Solution not avaliable"
-    }
+    Write-Verbose "Get-SolutionDir function"
+
+    $solutionFullName = Get-SolutionFullName
+    return Split-Path $solutionFullName
 }
 
-function Ensure-Solution {
-    if(!$dte.Solution -or !$dte.Solution.IsOpen) {
-        New-Solution
-    }
+function Get-SolutionFullName {
+    Write-Verbose "Get-SolutionFullName function"
+
+    return [API.Test.VSSolutionHelper]::GetSolutionFullName()
 }
 
 function Close-Solution 
 {
-    if ($dte.Solution -and $dte.Solution.IsOpen) 
-    {
-        $dte.Solution.Close()
-    }
+    Write-Verbose "Close-Solution function"
+
+    [API.Test.VSSolutionHelper]::CloseSolution()
 }
 
 function Open-Solution 
@@ -72,8 +75,22 @@ function Open-Solution
         [parameter(Mandatory = $true)]
         $Path
     )
+    Write-Verbose "Open-Solution function"
     
-    $dte.Solution.Open($Path)
+    [API.Test.VSSolutionHelper]::OpenSolution($Path)
+}
+
+function SaveAs-Solution
+{
+    param
+    (
+        [string]
+        [parameter(Mandatory = $true)]
+        $Path
+    )
+    Write-Verbose "SaveAs-Solution function"
+    
+    [API.Test.VSSolutionHelper]::SaveAsSolution($Path)
 }
 
 function Ensure-Dir {
@@ -92,21 +109,17 @@ function New-Solution {
         [string]$solutionName
     )
 
-    if ($solutionName) {
-        $name = $solutionName 
+    Write-Host "New-Solution function"
+    if ($solutionName)
+    {
+        [API.Test.VSSolutionHelper]::CreateNewSolution($OutputPath, $solutionName)
     }
-    else {
-        $id = New-Guid
-        $name = "Solution_$id"
+    else
+    {
+        [API.Test.VSSolutionHelper]::CreateNewSolution($OutputPath)
     }
 
-    $solutionDir = Join-Path $OutputPath $name
-    $solutionPath = Join-Path $solutionDir $name
-    
-    Ensure-Dir $solutionDir
-     
-    $dte.Solution.Create($solutionDir, $name) | Out-Null
-    $dte.Solution.SaveAs($solutionPath) | Out-Null    
+    Write-Host "New-Solution function: End"
 }
 
 function New-Project {
@@ -114,149 +127,51 @@ function New-Project {
          [parameter(Mandatory = $true)]
          [string]$TemplateName,
          [string]$ProjectName,
-         [parameter(ValueFromPipeline = $true)]$SolutionFolder
+         [string]$SolutionFolder
     )
 
-    $id = New-Guid
-    if (!$ProjectName) {
-        $ProjectName = $TemplateName + "_$id"
-    }
+    Write-Verbose "New-Project function"
+    $p = [API.Test.VSProjectHelper]::NewProject($TemplatePath, $OutputPath, $TemplateName, $ProjectName, $SolutionFolder)
+    Write-Verbose "New-Project function end"
 
-    # Make sure there is a solution
-    Ensure-Solution
-    
-	if ($TemplateName -eq 'DNXClassLibrary' -or $TemplateName -eq 'DNXConsoleApp')
-	{
-		# Get the zip file where the project template is located
-		$projectTemplatePath = $TemplateName + '.vstemplate|FrameworkVersion=4.5'
-		$lang = 'CSharp/Web'
-
-		# Find the vs template file
-		$projectTemplateFilePath = $dte.Solution.GetProjectTemplate($projectTemplatePath, $lang)
-	}
-	else
-	{
-		# Get the zip file where the project template is located
-		$projectTemplatePath = Join-Path $TemplatePath "$TemplateName.zip"
-    
-		# Find the vs template file
-		$projectTemplateFilePath = @(Get-ChildItem $projectTemplatePath -Filter *.vstemplate)[0].FullName
-	} 
-
-    # Get the output path of the project
-    if($SolutionFolder) {
-        $destPath = Join-Path (Get-SolutionDir) (Join-Path $SolutionFolder.Name $projectName)
-    }
-    else {
-        $destPath = Join-Path (Get-SolutionDir) $projectName
-    }
-    
-    # Store the active window so that we can set focus to it after the command completes
-    # When we add a project to VS it usually tries to set focus to some page
-    $window = $dte.ActiveWindow
-    
-    if($SolutionFolder) {
-        $SolutionFolder.Object.AddFromTemplate($projectTemplateFilePath, $destPath, $projectName) | Out-Null
-    }
-    else {
-        # Add the project to the solution from th template file specified
-        $dte.Solution.AddFromTemplate($projectTemplateFilePath, $destPath, $projectName, $false) | Out-Null
-    }
-    
-    # Close all active documents
-    $dte.Documents | %{ try { $_.Close() } catch { } }
-
-    # Change the configuration of the project to x86
-    $dte.Solution.SolutionBuild.SolutionConfigurations | % { if ($_.PlatformName -eq 'x86') { $_.Activate() } } | Out-Null
-
-    # Set the focus back on the shell
-    $window.SetFocus()
-
-    if ($TemplateName -eq 'JScriptVisualBasicLightSwitchProjectTemplate')
-    {
-        return
-    }
-
-    if ($TemplateName -eq "EmptyWeb")
-    {
-        # For WebSite project, the project name can be something like "ProjectName(12)".
-        # So, use wildcard to search
-        $ProjectName = "$ProjectName*"
-    }
-
-    # Return the project if it is NOT a LightSwitch project
-    for ($counter = 0; $counter -lt 5; $counter++)
-    {
-        if ($SolutionFolder) {
-            $solutionFolderPath = Get-SolutionFolderPathRecursive $SolutionFolder
-            $project = Get-Project "$($solutionFolderPath)$projectName" -ErrorAction SilentlyContinue
-        }
-        else {
-            $project = Get-Project $projectName -ErrorAction SilentlyContinue
-        }
-
-        if ($project)
-        {
-            break;
-        }
-
-        [System.Threading.Thread]::Sleep(100)
-    }
-    
-    if(!$project) {
-        $project = Get-Project "$destPath\"
-    }
-    
-    $project
-}
-
-function Get-SolutionFolderPathRecursive([parameter(mandatory=$true)]$solutionFolder) {
-    $path = ''
-    while ($solutionFolder -ne $null) {
-        $path = "$($solutionFolder.Name)\$path"
-        $solutionFolder = $solutionFolder.ParentProjectItem.ContainingProject
-    }
-    return $path
+    return $p
 }
 
 function New-SolutionFolder {
     param(
-        [string]$Name,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$FolderPath
     )
-    
-    $id = New-Guid
-    if(!$Name) {
-        $Name = "SolutionFolder_$id"
-    }
-    
-    if(!$SolutionFolder) {
-        # Make sure there is a solution
-        Ensure-Solution
 
-        $solution = Get-Interface $dte.Solution ([EnvDTE80.Solution2])
-    }
-    elseif($SolutionFolder.Object.AddSolutionFolder) {
-        $solution = $SolutionFolder.Object
-    }
+    Write-Verbose "New-SolutionFolder function"
+    [API.Test.VSSolutionHelper]::NewSolutionFolder($OutputPath, $FolderPath)
+    Write-Verbose "New-SolutionFolder function: End"
+}
 
-    $solution.AddSolutionFolder($Name)
+function Rename-SolutionFolder {
+    param(
+        [string]$FolderPath,
+        [string]$NewName
+    )
+
+    Write-Verbose "Rename-SolutionFolder function"
+    [API.Test.VSSolutionHelper]::RenameSolutionFolder($FolderPath, $NewName)
+    Write-Verbose "Rename-SolutionFolder function: End"
 }
 
 function New-ClassLibrary {
     param(        
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolderName
     )
 
-    $SolutionFolder | New-Project ClassLibrary $ProjectName
+    New-Project ClassLibrary $ProjectName $SolutionFolderName
 }
 
 function New-LightSwitchApplication 
 {
     param(
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
     New-Project JScriptVisualBasicLightSwitchProjectTemplate $ProjectName $SolutionFolder
@@ -267,7 +182,7 @@ function New-PortableLibrary
     param(
         [string]$ProjectName,
         [string]$Profile = $null,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
     try
@@ -290,43 +205,26 @@ function New-PortableLibrary
     $project
 }
 
-function New-BuildIntegratedProj 
-{
-    param(
-        [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
-    )
-
-    if ($dte.Version -ge '14.0')
-    {
-        $SolutionFolder | New-Project BuildIntegratedProj $ProjectName
-    }
-    else
-    {
-        throw "SKIP: $($_)"
-    }
-}
-
 function New-JavaScriptApplication 
 {
     param(
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
     try 
     {
-        if ($dte.Version -eq '12.0')
+        if (Get-VSVersion -eq '12.0')
         {
-            $SolutionFolder | New-Project WinJSBlue $ProjectName
+            New-Project WinJSBlue $ProjectName $SolutionFolder
         }
-        elseif ($dte.Version -eq '14.0')
+        elseif (Get-VSVersion -eq '14.0')
         {
-            $SolutionFolder | New-Project WinJS_Dev14 $ProjectName
+            New-Project WinJS_Dev14 $ProjectName $SolutionFolder
         }
         else 
         {
-            $SolutionFolder | New-Project WinJS $ProjectName
+            New-Project WinJS $ProjectName $SolutionFolder
         }
     }
     catch {
@@ -340,12 +238,12 @@ function New-JavaScriptApplication81
 {
     param(
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
     try 
     {
-        $SolutionFolder | New-Project WinJSBlue $ProjectName
+        New-Project WinJSBlue $ProjectName $SolutionFolder
     }
     catch {
         # If we're unable to create the project that means we probably don't have some SDK installed
@@ -358,12 +256,12 @@ function New-JavaScriptWindowsPhoneApp81
 {
     param(
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
     try 
     {
-        $SolutionFolder | New-Project WindowsPhoneApp81JS $ProjectName
+        New-Project WindowsPhoneApp81JS $ProjectName $SolutionFolder
     }
     catch {
         # If we're unable to create the project that means we probably don't have some SDK installed
@@ -376,22 +274,22 @@ function New-NativeWinStoreApplication
 {
     param(
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
     try
     {
-        if ($dte.Version -eq '12.0' -or $dte.Version -eq '14.0')
+        if (Get-VSVersion -eq '12.0' -or Get-VSVersion -eq '14.0')
         {
-            $SolutionFolder | New-Project CppWinStoreApplicationBlue $ProjectName
+            New-Project CppWinStoreApplicationBlue $ProjectName $SolutionFolder
         }
-        elseif ($dte.Version -eq '14.0')
+        elseif (Get-VSVersion -eq '14.0')
         {
-            $SolutionFolder | New-Project CppWinStoreApplication_Dev14 $ProjectName
+            New-Project CppWinStoreApplication_Dev14 $ProjectName $SolutionFolder
         }
         else 
         {
-            $SolutionFolder | New-Project CppWinStoreApplication $ProjectName
+            New-Project CppWinStoreApplication $ProjectName $SolutionFolder
         }
     }
     catch {
@@ -404,114 +302,130 @@ function New-NativeWinStoreApplication
 function New-ConsoleApplication {
     param(        
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
-    $SolutionFolder | New-Project ConsoleApplication $ProjectName
+    New-Project ConsoleApplication $ProjectName $SolutionFolder
 }
 
 function New-WebApplication {
     param(        
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
-    $SolutionFolder | New-Project EmptyWebApplicationProject40 $ProjectName
+    New-Project EmptyWebApplicationProject40 $ProjectName $SolutionFolder
 }
 
 function New-VBConsoleApplication {
     param(        
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
-    $SolutionFolder | New-Project VBConsoleApplication $ProjectName
+    New-Project VBConsoleApplication $ProjectName $SolutionFolder
 }
 
 function New-MvcApplication { 
     param(        
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
-    $SolutionFolder | New-Project EmptyMvcWebApplicationProjectTemplatev4.0.csaspx $ProjectName
+    New-Project EmptyMvcWebApplicationProjectTemplatev4.0.csaspx $ProjectName $SolutionFolder
 }
 
 function New-MvcWebSite { 
     param(        
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
-    $SolutionFolder | New-Project WebApplication45WebSite $ProjectName
+    New-Project WebApplication45WebSite $ProjectName $SolutionFolder
 }
 
 function New-WebSite {
     param(        
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
-    $SolutionFolder | New-Project EmptyWeb $ProjectName
+    New-Project EmptyWeb $ProjectName $SolutionFolder
 }
 
 function New-FSharpLibrary {
     param(        
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
-    $SolutionFolder | New-Project FSharpLibrary $ProjectName
+    New-Project FSharpLibrary $ProjectName $SolutionFolder
 }
 
 function New-FSharpConsoleApplication {
     param(        
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
-    $SolutionFolder | New-Project FSharpConsoleApplication $ProjectName
+    New-Project FSharpConsoleApplication $ProjectName $SolutionFolder
 }
 
 function New-WPFApplication {
     param(        
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
-    $SolutionFolder | New-Project WPFApplication $ProjectName
+    New-Project WPFApplication $ProjectName $SolutionFolder
 }
 
 function New-SilverlightClassLibrary {
     param(        
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
-    $SolutionFolder | New-Project SilverlightClassLibrary $ProjectName
+    try
+    {
+        New-Project SilverlightClassLibrary $ProjectName $SolutionFolder
+    }
+    catch {
+        # If we're unable to create the project that means we probably don't have some SDK installed
+        # Signal to the runner that we want to skip this test
+        throw "SKIP: $($_)"
+    }
 }
 
 function New-SilverlightApplication {
     param(        
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
-    $SolutionFolder | New-Project SilverlightProject $ProjectName
+    try
+    {
+        New-Project SilverlightProject $ProjectName $SolutionFolder
+    }
+    catch {
+        # If we're unable to create the project that means we probably don't have some SDK installed
+        # Signal to the runner that we want to skip this test
+        throw "SKIP: $($_)"
+    }
 }
 
 function New-WindowsPhoneClassLibrary {
     param(        
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
     try {
-        if ($dte.Version -eq '14.0') {
-            $SolutionFolder | New-Project WindowsPhoneClassLibrary81 $ProjectName
+        if (Get-VSVersion -eq '14.0') {
+            New-Project WindowsPhoneClassLibrary81 $ProjectName $SolutionFolder
         }
         else {
-            $SolutionFolder | New-Project WindowsPhoneClassLibrary $ProjectName
+            New-Project WindowsPhoneClassLibrary $ProjectName $SolutionFolder
         }
     }
     catch {
@@ -525,12 +439,12 @@ function New-DNXClassLibrary
 {
     param(
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
     try 
     {
-        $SolutionFolder | New-Project DNXClassLibrary $ProjectName
+        New-Project DNXClassLibrary $ProjectName $SolutionFolder
     }
     catch {
         # If we're unable to create the project that means we probably don't have some SDK installed
@@ -543,12 +457,12 @@ function New-DNXConsoleApp
 {
     param(
         [string]$ProjectName,
-        [parameter(ValueFromPipeline = $true)]$SolutionFolder
+        [string]$SolutionFolder
     )
 
     try 
     {
-        $SolutionFolder | New-Project DNXConsoleApp $ProjectName
+        New-Project DNXConsoleApp $ProjectName $SolutionFolder
     }
     catch {
         # If we're unable to create the project that means we probably don't have some SDK installed
@@ -558,33 +472,21 @@ function New-DNXConsoleApp
 }
 
 function New-TextFile {
-    $dte.ItemOperations.NewFile('General\Text File')
-    $dte.ActiveDocument.Object("TextDocument")
+    Write-Verbose "New-TextFile method"
+
+    [API.Test.VSHelper]::NewTextFile()
 }
 
-function Build-Project {
-    param(
-        [parameter(Mandatory = $true)]
-        $Project,
-        [string]$Configuration
-    )    
-    if(!$Configuration) {
-        # If no configuration was specified then use
-        $Configuration = $dte.Solution.SolutionBuild.ActiveConfiguration.Name
-    }
-    
-    # Build the project and wait for it to complete
-    $dte.Solution.SolutionBuild.BuildProject($Configuration, $Project.UniqueName, $true)
-}
+function Clean-Solution {
+    Write-Verbose "Clean the project and wait for it to complete"
 
-function Clean-Project {
-    # Clean the project and wait for it to complete
-    $dte.Solution.SolutionBuild.Clean($true)
+    [API.Test.VSSolutionHelper]::CleanSolution()
 }
 
 function Build-Solution {
-    # Build and wait for it to complete
-    $dte.Solution.SolutionBuild.Build($true)
+    Write-Verbose "Build and wait for it to complete"
+
+    [API.Test.VSSolutionHelper]::BuildSolution()
 }
 
 function Get-AssemblyReference {
@@ -709,55 +611,17 @@ function Get-OutputPath {
     Join-Path (Get-ProjectDir) $outputPath
 }
 
-function Get-ErrorTasks {
-    param(
-        [parameter(Mandatory = $true)]
-        $vsBuildErrorLevel
-    )
-    $dte.ExecuteCommand("View.ErrorList", " ")
-    
-    # Make sure there are no errors in the error list
-    $errorList = $dte.Windows | ?{ $_.Caption -like 'Error List*' } | Select -First 1
-    
-    if(!$errorList) {
-        throw "Unable to locate the error list"
-    }
-
-    # Forcefully show all the error items so that they can be retrieved when they are present
-    $errorList.Object.ShowErrors = $True
-    $errorList.Object.ShowWarnings = $True
-    $errorList.Object.ShowMessages = $True
-    
-    # Get the list of errors from the error list window which contains errors, warnings and info
-    $allItemsInErrorListWindow = $errorList.Object.ErrorItems
-
-    $errorTasks = @()
-    for($i=0; $i -lt $allItemsInErrorListWindow.Count; $i++)
-    {
-        $currentErrorLevel = [EnvDTE80.vsBuildErrorLevel]($allItemsInErrorListWindow[$i].ErrorLevel)
-        if($currentErrorLevel -eq $vsBuildErrorLevel)
-        {
-            $errorTasks += $allItemsInErrorListWindow[$i]
-        }
-    }
-
-    # Force return array. Arrays are zero-based
-    return ,$errorTasks
-}
-
 function Get-Errors {
-    $vsBuildErrorLevelHigh = [EnvDTE80.vsBuildErrorLevel]::vsBuildErrorLevelHigh
-    $errors = Get-ErrorTasks $vsBuildErrorLevelHigh
+    Write-Verbose "Get-Errors method"
 
-    # Force return array. Arrays are zero-based
+    $errors = [API.Test.VSHelper]::GetErrors()
     return ,$errors
 }
 
 function Get-Warnings {
-    $vsBuildErrorLevelMedium = [EnvDTE80.vsBuildErrorLevel]::vsBuildErrorLevelMedium
-    $warnings = Get-ErrorTasks $vsBuildErrorLevelMedium
+    Write-Verbose "Get-Warnings method"
 
-    # Force return array. Arrays are zero-based
+    $warnings = [API.Test.VSHelper]::GetWarnings()
     return ,$warnings
 }
 
@@ -824,17 +688,6 @@ function Get-ProjectItem {
     }
 }
 
-function Add-File {
-    param(
-        [parameter(Mandatory = $true)]
-        $Project,
-        [parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
-        [string]$FilePath
-    )
-    
-    $Project.ProjectItems.AddFromFileCopy($FilePath) | out-null
-}
-
 function Add-ProjectReference {
     param (
         [parameter(Mandatory = $true)]
@@ -860,18 +713,8 @@ function Remove-Project {
     [NuGetConsole.Host.PowerShell.Implementation.ProjectExtensions]::RemoveProject($ProjectName)
 }
 
-function Get-SolutionPath {
-    $dte.Solution.Properties.Item("Path").Value
-}
-
-function Close-Solution {
-    if ($dte.Solution) {
-        $dte.Solution.Close()
-    }
-}
-
 function Enable-PackageRestore {
-    if (!$dte.Solution -or !$dte.Solution.IsOpen) 
+    if (!([API.Test.VSSolutionHelper]::IsSolutionAvailable()))
     {
         throw "No solution is available."
     }
@@ -896,4 +739,8 @@ function Check-NuGetConfig {
         <configuration>
         </configuration>' > $newFile
     }
+}
+
+function Get-BuildOutput { 
+    return [API.Test.VSHelper]::GetBuildOutput()
 }

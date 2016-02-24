@@ -1,8 +1,8 @@
 function Test-ProjectNameReturnsUniqueName {
      # Arrange
-     $f = New-SolutionFolder 'Folder1'
-     $p1 = $f | New-ClassLibrary 'ProjectA'
-     $p3 = $f | New-WebApplication 'ProjectB'
+     New-SolutionFolder 'Folder1'
+     $p1 = New-ClassLibrary 'ProjectA' 'Folder1'
+     $p3 = New-WebApplication 'ProjectB' 'Folder1'
 
      $p2 = New-ConsoleApplication 'ProjectA'
 
@@ -18,8 +18,8 @@ function Test-ProjectNameReturnsUniqueName {
 
 function Test-DefaultProjectIsCorrectWhenProjectsAreAdded {
     # Act
-    $f1 = New-SolutionFolder 'Folder1'
-    $p1 = $f1 | New-ClassLibrary 'ProjectA'
+    New-SolutionFolder 'Folder1'
+    $p1 = New-ClassLibrary 'ProjectA' 'Folder1'
 
     # Assert
     Assert-DefaultProject $p1
@@ -37,17 +37,17 @@ function Test-DefaultProjectIsCorrectWhenProjectsAreAddedInReverseOrder {
     Assert-DefaultProject $p1
 
     # Act
-    $f1 = New-SolutionFolder 'Folder1'
-    $p2 = $f1 | New-ClassLibrary 'ProjectA'
+    New-SolutionFolder 'Folder1'
+    $p2 = New-ClassLibrary 'ProjectA' 'Folder1'
     Assert-DefaultProject $p1
 }
 
 function Test-GetProjectThrowsIfProjectNameAmbiguous {
     # Act
-    $f1 = New-SolutionFolder 'foo'
-    $f2 = New-SolutionFolder 'bar'
-    $p1 = $f1 | New-ClassLibrary 'A'
-    $p2 = $f2 | New-ClassLibrary 'A'
+    New-SolutionFolder 'foo'
+    New-SolutionFolder 'bar'
+    $p1 = New-ClassLibrary 'A' 'foo'
+    $p2 = New-ClassLibrary 'A' 'bar'
 
     # Assert
     Assert-Throws { Get-Project A } "Project 'A' is not found."
@@ -67,13 +67,13 @@ function Test-GetProjectCommandWithWildCardsWorksWithProjectHavingTheSameName {
     #
 
     # Arrange
-    $f = New-SolutionFolder 'Folder1'
-    $p1 = $f | New-ClassLibrary 'ProjectA'
-    $p2 = $f | New-ClassLibrary 'ProjectB'
+    New-SolutionFolder 'Folder1'
+    $p1 = New-ClassLibrary 'ProjectA' 'Folder1'
+    $p2 = New-ClassLibrary 'ProjectB' 'Folder1'
 
-    $g = New-SolutionFolder 'Folder2'
-    $p3 = $g | New-ClassLibrary 'ProjectA'
-    $p4 = $g | New-ConsoleApplication 'ProjectC'
+    New-SolutionFolder 'Folder2'
+    $p3 = New-ClassLibrary 'ProjectA' 'Folder2'
+    $p4 = New-ConsoleApplication 'ProjectC' 'Folder2'
 
     $p5 = New-ConsoleApplication 'ProjectA'
 
@@ -106,11 +106,11 @@ function Test-GetProjectCommandWithWildCardsWorksWithProjectHavingTheSameName {
 
 function Test-SimpleNameDoesNotWorkWhenAllProjectsAreNested {
     # Arrange
-    $f = New-SolutionFolder 'Folder1'
-    $p1 = $f | New-ClassLibrary 'ProjectA'
+    New-SolutionFolder 'Folder1'
+    $p1 = New-ClassLibrary 'ProjectA' 'Folder1'
 
-    $g = New-SolutionFolder 'Folder2'
-    $p2 = $g | New-ClassLibrary 'ProjectA'
+    New-SolutionFolder 'Folder2'
+    $p2 = New-ClassLibrary 'ProjectA' 'Folder2'
 
     # Assert
     Assert-Throws { (Get-Project -Name 'ProjectA') } "Project 'ProjectA' is not found."
@@ -118,9 +118,9 @@ function Test-SimpleNameDoesNotWorkWhenAllProjectsAreNested {
 
 function Test-RemovingAmbiguousProjectAllowsSimpleNameToBeUsed {
     # Act
-    $f1 = New-SolutionFolder 'foo'
+    New-SolutionFolder 'foo'
     $p1 = New-ClassLibrary 'A'
-    $p2 = $f1 | New-ClassLibrary 'A'
+    $p2 = New-ClassLibrary 'A' 'foo'
     
 
     Assert-AreEqual $p2 (Get-Project -Name foo\A)
@@ -134,9 +134,9 @@ function Test-RemovingAmbiguousProjectAllowsSimpleNameToBeUsed {
 
 function Test-RenameCreatingAmbiguityFollowedByRemovalAllowsSimpleNameToBeUsed {
     # Act
-    $f1 = New-SolutionFolder 'foo'
+    New-SolutionFolder 'foo'
     $p1 = New-ClassLibrary 'A'
-    $p2 = $f1 | New-ClassLibrary 'B'
+    $p2 = New-ClassLibrary 'B' 'foo'
     
 
     Assert-AreEqual $p2 (Get-Project -Name foo\B)
@@ -155,9 +155,9 @@ function Test-RenameCreatingAmbiguityFollowedByRemovalAllowsSimpleNameToBeUsed {
 
 function Test-RenamingSolutionFolderDoesNotAffectGetProject {
     # Act
-    $f1 = New-SolutionFolder 'foo'
+    New-SolutionFolder 'foo'
     $p1 = New-ClassLibrary 'A'
-    $p2 = $f1 | New-ClassLibrary 'B'
+    $p2 = New-ClassLibrary 'B' 'foo'
     
 
     Assert-AreEqual $p2 (Get-Project -Name foo\B)
@@ -168,7 +168,7 @@ function Test-RenamingSolutionFolderDoesNotAffectGetProject {
     Assert-AreEqual $p2 (Get-Project -Name foo\A)
     Assert-AreEqual $p1 (Get-Project -Name A)
 
-    $f1.Name = 'bar'
+    Rename-SolutionFolder 'foo' 'bar'
     
     Assert-AreEqual $p2 (Get-Project -Name bar\A)
     Assert-AreEqual $p1 (Get-Project -Name A)
@@ -180,15 +180,12 @@ function Test-RenamingSolutionFolderDoesNotAffectGetProject {
 
 function Test-RenamingSolutionFolderWithDeeplyNestedProjectsDoesNotAffectGetProject {
     # Act
-    $f1 = New-SolutionFolder 'foo'
-    $f2 = $f1 | New-SolutionFolder 'bar'
-    $f3 = $f1 | New-SolutionFolder 'empty'
+    New-SolutionFolder 'foo'
+    New-SolutionFolder 'foo\bar'
+    New-SolutionFolder 'foo\empty'
     
     $p1 = New-ClassLibrary 'A'
-    $p2 = $f2 | New-ClassLibrary 'B'
-    
-    Add-File $f1 "$($context.RepositoryRoot)\coolpackage.nuspec"
-    Add-File $f2 "$($context.RepositoryRoot)\secondpackage.nuspec"
+    $p2 = New-ClassLibrary 'B' 'foo\bar'
     
     
     Assert-AreEqual $p2 (Get-Project -Name foo\bar\B)
@@ -198,8 +195,8 @@ function Test-RenamingSolutionFolderWithDeeplyNestedProjectsDoesNotAffectGetProj
     
     Assert-AreEqual $p2 (Get-Project -Name foo\bar\A)
     Assert-AreEqual $p1 (Get-Project -Name A)
-    
-    $f1.Name = 'bar'
+
+    Rename-SolutionFolder 'foo' 'bar'
     
     Assert-AreEqual $p2 (Get-Project -Name bar\bar\A)
     Assert-AreEqual $p1 (Get-Project -Name A)
@@ -211,21 +208,21 @@ function Test-RenamingSolutionFolderWithDeeplyNestedProjectsDoesNotAffectGetProj
 
 function Test-AmbiguousStartupProject {
     # Arrange
-    $f = New-SolutionFolder foo
-    $p1 = $f | New-ClassLibrary A
+    New-SolutionFolder foo
+    $p1 = New-ClassLibrary A foo
     $p2 = New-ClassLibrary A
 
     # Make sure the default project is p1
     Assert-DefaultProject $p1
 
-    $path = Get-SolutionPath
+    $solutionFile = Get-SolutionFullName
     $p1.Save()
     $p2.Save()
-    $dte.Solution.SaveAs($path)
-    $dte.Solution.Close()
+    SaveAs-Solution($solutionFile)
+    Close-Solution
 
     # Re open the solution
-    $dte.Solution.Open($path)
+    Open-Solution($solutionFile)
     $p1 = Get-Project foo\A
     $p2 = Get-Project A
 
@@ -252,7 +249,7 @@ function Test-GetProjectForDNXClassLibrary
 {
 	param($context)
 
-	if ($dte.Version -eq '14.0') {
+	if ((Get-VSVersion) -eq '14.0') {
 		# Arrange
 		$p1 = New-DNXClassLibrary
 

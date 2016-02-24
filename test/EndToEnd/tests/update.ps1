@@ -360,7 +360,7 @@ function Test-AddingBindingRedirectAfterUpdate {
     Assert-Package $p B 2.0
     Assert-Null (Get-SolutionPackage B 1.0)
 
-    Build-Project $p
+    Build-Solution
 
     Add-BindingRedirect
 
@@ -1473,7 +1473,7 @@ function Test-FinishFailedUpdateOnSolutionOpen
 
     # Act
     # After closing the file handle, we close the solution and reopen it
-    $solutionDir = $dte.Solution.FullName
+    $solutionDir = Get-SolutionFullName
     Close-Solution
     Open-Solution $solutionDir
 

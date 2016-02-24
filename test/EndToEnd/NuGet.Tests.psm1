@@ -108,11 +108,13 @@ function global:Run-Test {
     param(
         [parameter(ParameterSetName="Test", Position=0)]
         [string]$Test,
-        [parameter(ParameterSetName="File", Mandatory=$true, Position=1)]
+        [Parameter(Position=1)]
+        [string]$RunId="",
+        [parameter(ParameterSetName="File", Mandatory=$true, Position=2)]
         [string]$File,
-		[parameter(ParameterSetName="Exclude", Mandatory=$true, Position=1)]
+		[parameter(ParameterSetName="Exclude", Mandatory=$true, Position=2)]
         [string]$Exclude,
-        [parameter(Position=2)]
+        [parameter(Position=3)]
         [bool]$LaunchResultsOnFailure=$true
     )
 
@@ -128,13 +130,21 @@ function global:Run-Test {
     # Get a reference to the powershell window so we can set focus after the tests are over
     $window = $dte.ActiveWindow
     
-    $testRunId = New-Guid
+    if ($RunId)
+    {
+        $testRunId = $RunId
+    }
+    else
+    {
+        $testRunId = New-Guid
+    }
+
     $testRunOutputPath = Join-Path $testOutputPath $testRunId
     $testLogFile = Join-Path $testRunOutputPath log.txt
     $testRealTimeResultsFile = Join-Path $testRunOutputPath Realtimeresults.txt
     
     # Create the output folder
-    mkdir $testRunOutputPath | Out-Null
+    mkdir $testRunOutputPath -ErrorAction Ignore | Out-Null
        
     # Load all of the helper scripts from the current location
     Get-ChildItem $currentPath -Filter *.ps1 | %{ 

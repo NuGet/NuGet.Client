@@ -282,13 +282,13 @@ function Test-UninstallPackageWorksWithPackagesHavingSameNames {
     #
 
     # Arrange
-    $f = New-SolutionFolder 'Folder1'
-    $p1 = $f | New-ClassLibrary 'ProjectA'
-    $p2 = $f | New-ClassLibrary 'ProjectB'
+    New-SolutionFolder 'Folder1'
+    $p1 = New-ClassLibrary 'ProjectA' 'Folder1'
+    $p2 = New-ClassLibrary 'ProjectB' 'Folder1'
 
-    $g = New-SolutionFolder 'Folder2'
-    $p3 = $g | New-ClassLibrary 'ProjectA'
-    $p4 = $g | New-ConsoleApplication 'ProjectC'
+    New-SolutionFolder 'Folder2'
+    $p3 = New-ClassLibrary 'ProjectA' 'Folder2'
+    $p4 = New-ConsoleApplication 'ProjectC' 'Folder2'
 
     $p5 = New-ConsoleApplication 'ProjectA'
 
@@ -331,10 +331,11 @@ function Test-UninstallPackageAfterRenaming {
         $context
     )
     # Arrange
-    $f = New-SolutionFolder 'Folder1' | New-SolutionFolder 'Folder2'
+    New-SolutionFolder 'Folder1'
+    New-SolutionFolder 'Folder1\Folder2'
     $p0 = New-ClassLibrary 'ProjectX'
-    $p1 = $f | New-ClassLibrary 'ProjectA'
-    $p2 = $f | New-ClassLibrary 'ProjectB'
+    $p1 = New-ClassLibrary 'ProjectA' 'Folder1\Folder2'
+    $p2 = New-ClassLibrary 'ProjectB' 'Folder1\Folder2'
 
     # Act
     $p1 | Install-Package NestedFolders -Source $context.RepositoryPath 
@@ -342,7 +343,7 @@ function Test-UninstallPackageAfterRenaming {
     Uninstall-Package NestedFolders -ProjectName Folder1\Folder2\ProjectX
 
     $p2 | Install-Package NestedFolders -Source $context.RepositoryPath 
-    $f.Name = "Folder3"
+    Rename-SolutionFolder "Folder1\Folder2" "Folder3"
     Uninstall-Package NestedFolders -ProjectName Folder1\Folder3\ProjectB
 
     Assert-Null (Get-ProjectItem $p1 scripts\jquery-1.5.js)
@@ -615,7 +616,7 @@ function UninstallPackageRemoveSolutionPackagesConfig
 
     $a | Install-Package SolutionOnlyPackage -version 1.0 -source $context.RepositoryRoot
     
-    $solutionFile = Get-SolutionPath
+    $solutionFile = Get-SolutionFullName
     $solutionDir = Split-Path $solutionFile -Parent
 
     $configFile = "$solutionDir\.nuget\packages.config"
@@ -648,7 +649,7 @@ function Test-UninstallSolutionPackageRemoveEntryFromProjectPackagesConfig
     $a | Install-Package SolutionLevelPkg -version 1.0.0 -source $context.RepositoryRoot
     $a | Install-Package RazorGenerator.MsBuild -version 1.3.2
     
-    $solutionFile = Get-SolutionPath
+    $solutionFile = Get-SolutionFullName
     $solutionDir = Split-Path $solutionFile -Parent
 
     $configFile = "$solutionDir\" + $a.Name + "\packages.config"
@@ -917,7 +918,7 @@ function Test-FinishFailedUninstallOnSolutionOpenOfProjectLevelPackage
 
     # Act
     # After closing the file handle, we close the solution and reopen it
-    $solutionDir = $dte.Solution.FullName
+    $solutionDir = Get-SolutionFullName
     Close-Solution
     Open-Solution $solutionDir
 
@@ -1003,7 +1004,7 @@ function UninstallPackageRemoveImportStatement
 
 function Test-UninstallPackageFromNativeWinStoreApplication
 {
-    if ($dte.Version -eq "10.0")
+    if ((Get-VSVersion) -eq "10.0")
     {
         return
     }
@@ -1027,7 +1028,7 @@ function Test-UninstallPackageFromNativeWinStoreApplication
 
 function UninstallPackageFromJsWinStoreApplication
 {
-    if ($dte.Version -eq "10.0")
+    if ((Get-VSVersion) -eq "10.0")
     {
         return
     }

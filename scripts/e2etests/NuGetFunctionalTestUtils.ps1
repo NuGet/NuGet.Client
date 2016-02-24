@@ -54,6 +54,67 @@ function WriteToTeamCity
     return $true
 }
 
+function New-Guid {
+    [System.Guid]::NewGuid().ToString("d").Substring(0, 4).Replace("-", "")
+}
+
+function Get-Tests
+{
+    param(
+    [Parameter(Mandatory=$true)]
+    [string]$NuGetTestPath)
+
+    # Get the path where tests are located
+    $testPath = Join-Path $NuGetTestPath tests
+
+    # Load all the test scripts
+    Get-ChildItem $testPath -Filter "*.ps1" | %{
+        . $_.FullName
+    }
+
+    # Get the test methods
+    $tests = Get-ChildItem function:\Test-*
+
+    # Apparently, running PackageRestore tests on Dev12 RTM causes hang problem.
+    # They have always been disabled. Need to investigate this later.
+    $tests = $tests | ? {!($_.Name -like 'Test-PackageRestore*') }
+
+    return $tests
+}
+
+function Run-Tests
+{
+    param (
+    [Parameter(Mandatory=$true)]
+    [string]$NuGetTestPath,
+    [Parameter(Mandatory=$true)]
+    [string]$dte2,
+    [Parameter(Mandatory=$true)]
+    $EachTestTimoutInSecs)
+
+    $tests = Get-Tests
+
+    mkdir $NuGetTestPath\bin -ErrorAction Ignore
+
+    $guid = New-Guid
+    $currentBinFolder = Join-Path $NuGetTestPath\bin $guid
+    mkdir $currentBinFolder
+
+    Write-Host "There are"$tests.Count"tests"
+
+    $currentTestTime = 0
+    $currentTestId = 0
+    $currentTestName = $tests[$currentTestId]
+
+    $testResults = Join-Path $currentBinFolder.FullName "Realtimeresults.txt"
+
+    while (($currentTestId -lt $tests.Count) -and ($currentTestTime -le $EachTestTimoutInSecs))
+    {
+        start-sleep 1
+        $currentTestTime++
+    }
+}
+
 # This function requires a rewrite. This is a first cut
 function RealTimeLogResults
 {
