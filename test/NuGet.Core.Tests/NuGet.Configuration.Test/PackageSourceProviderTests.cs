@@ -2058,7 +2058,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void SavePackageSources_DisabledMachineWideSource()
+        public void DisabledMachineWideSourceByDefault()
         {
             using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
@@ -2127,12 +2127,9 @@ namespace NuGet.Configuration.Test
     </packageSources>
 </configuration>
 ";
-                var configContents1 = @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-</configuration>
-";
+
                 File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "machinewide.config"), configContents);
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents1);
+
                 var machineWideSetting = new Settings(mockBaseDirectory.Path, "machinewide.config", true);
                 var m = new Mock<IMachineWideSettings>();
                 m.SetupGet(obj => obj.Settings).Returns(new List<Settings> { machineWideSetting });
@@ -2140,59 +2137,22 @@ namespace NuGet.Configuration.Test
                 var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
                    configFileName: null,
                    machineWideSettings: m.Object,
-                   loadAppDataSettings: false,
-                   useTestingGlobalPath: false);
+                   loadAppDataSettings: true,
+                   useTestingGlobalPath: true);
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var sources = packageSourceProvider.LoadPackageSources().ToList();
 
                 // Act
-                sources[1].IsEnabled = false;
+                sources[2].IsEnabled = false;
                 packageSourceProvider.SavePackageSources(sources);
 
                 // Assert
                 var newSources = packageSourceProvider.LoadPackageSources().ToList();
-                Assert.True(newSources[0].IsEnabled);
-                Assert.Equal("Microsoft and .NET", newSources[0].Name);
-
                 Assert.False(newSources[1].IsEnabled);
-                Assert.Equal("test1", newSources[1].Name);
-            }
-        }
+                Assert.Equal("Microsoft and .NET", newSources[1].Name);
 
-        [Fact]
-        public void DisabledMachineWideSourceByDefault()
-        {
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                // Arrange
-                var configContents =
-                    @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-    <packageSources>
-        <add key=""Microsoft and .NET""
-         value = ""https://www.nuget.org/api/v2/curated-feeds/microsoftdotnet/"" />
-        <add key=""test1""
-         value = ""//test/source"" />
-    </packageSources>
-</configuration>
-";
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "machinewide.config"), configContents);
-                var machineWideSetting = new Settings(mockBaseDirectory.Path, "machinewide.config", true);
-                var m = new Mock<IMachineWideSettings>();
-                m.SetupGet(obj => obj.Settings).Returns(new List<Settings> { machineWideSetting });
-
-                // Act
-                var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
-                      configFileName: null,
-                      machineWideSettings: m.Object,
-                      loadAppDataSettings: true,
-                      useTestingGlobalPath: true);
-                var packageSourceProvider = new PackageSourceProvider(settings);
-                var sources = packageSourceProvider.LoadPackageSources().Where(p => p.IsMachineWide).ToList();
-
-                // Assert
-                Assert.False(sources[0].IsEnabled);
-                Assert.False(sources[1].IsEnabled);
+                Assert.False(newSources[2].IsEnabled);
+                Assert.Equal("test1", newSources[2].Name);
             }
         }
 
