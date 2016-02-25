@@ -131,6 +131,68 @@ namespace NuGet.Configuration
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to NuGet.Config is malformed, Please check NuGet.Config.
+        /// </summary>
+        public static string ShowError_ConfigInvalidOperation
+        {
+            get
+            {
+                return GetString("ShowError_ConfigInvalidOperation");
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Can not access NuGet.Config, Please check NuGet.Config.
+        /// </summary>
+        public static string ShowError_ConfigUnauthorizedAccess
+        {
+            get
+            {
+                return GetString("ShowError_ConfigUnauthorizedAccess");
+            }
+        }
+
+        public static string ShowError_ConfigInvalidXml
+        {
+            get
+            {
+                return GetString("ShowError_ConfigInvalidXml");
+            }
+        }
+
+        public static string Unknown_Config_Exception
+        {
+            get
+            {
+                return GetString("Unknown_Config_Exception");
+            }
+        }
+
+        public static string ShowError_ConfigRootInvalid
+        {
+            get
+            {
+                return GetString("ShowError_ConfigRootInvalid");
+            }
+        }
+
+        public static string UnsupportedDecryptPassword
+        {
+            get
+            {
+                return GetString("UnsupportedDecryptPassword");
+            }
+        }
+
+        public static string UnsupportedEncryptPassword
+        {
+            get
+            {
+                return GetString("UnsupportedEncryptPassword");
+            }
+        }
+
+        /// <summary>
         /// Unable to parse config file '{0}'.
         /// </summary>
         internal static string FormatUserSettings_UnableToParseConfigFile(object p0)

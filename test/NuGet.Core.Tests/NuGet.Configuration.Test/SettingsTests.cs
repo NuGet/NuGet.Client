@@ -202,7 +202,7 @@ namespace NuGet.Configuration.Test
                 // Act & Assert
                 var ex = Record.Exception(() => new Settings(mockBaseDirectory));
                 Assert.NotNull(ex);
-                Assert.IsAssignableFrom<XmlException>(ex);
+                Assert.IsAssignableFrom<NuGetConfigurationException>(ex);
             }
         }
 
@@ -2233,6 +2233,49 @@ namespace NuGet.Configuration.Test
   </packageSources>
 </configuration>".Replace("\r\n","\n");
         Assert.Equal(result, text);
+            }
+        }
+
+        [Fact]
+        public void LoadNuGetConfig_InvalidXmlThrowException()
+        {
+            // Arrange
+            var config = @"boo>";
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act
+                var ex = Assert.Throws<NuGetConfigurationException>(() => new Settings(mockBaseDirectory));
+
+                // Assert
+                var path = Path.Combine(mockBaseDirectory, nugetConfigPath);
+                Assert.Equal($"NuGet.Config is invalid XML. Path: '{path}'.", ex.Message);
+            }
+        }
+
+        [Fact]
+        public void LoadNuGetConfig_InvalidRootThrowException()
+        {
+            // Arrange
+            var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<packageSources>
+    <add key=""nuget.org"" value=""https://api.nuget.org/v3/index.json"" protocolVersion=""3"" />
+  </packageSources>";
+
+            var nugetConfigPath = "NuGet.Config";
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+
+                // Act
+                var ex = Assert.Throws<NuGetConfigurationException>(() => new Settings(mockBaseDirectory));
+
+                // Assert
+                var path = Path.Combine(mockBaseDirectory, nugetConfigPath);
+                Assert.Equal($"NuGet.Config does not contain the expected root element: 'configuration'.  Path: '{path}'.", ex.Message);
             }
         }
 
