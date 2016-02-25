@@ -5,7 +5,7 @@ using System.Windows.Input;
 
 namespace NuGet.PackageManagement.UI
 {
-    public static class Commands
+    internal static class Commands
     {
         public static readonly RoutedCommand FocusOnSearchBox = new RoutedCommand();
 
@@ -14,5 +14,9 @@ namespace NuGet.PackageManagement.UI
 
         // The parameter of this command is PackageItemListViewModel
         public static readonly RoutedCommand InstallPackageCommand = new RoutedCommand();
+
+        public static readonly RoutedCommand RestartSearchCommand = new RoutedCommand();
+
+        public static readonly RoutedCommand ShowErrorsCommand = new RoutedCommand();
     }
 }

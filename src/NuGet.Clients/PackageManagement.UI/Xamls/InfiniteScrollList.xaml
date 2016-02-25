@@ -2,31 +2,30 @@
   x:Class="NuGet.PackageManagement.UI.InfiniteScrollList"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"
-  xmlns:self="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   mc:Ignorable="d"
   d:DesignHeight="300"
-  d:DesignWidth="300">
+  d:DesignWidth="500">
   <UserControl.Resources>
-    <self:InfiniteScrollListItemStyleSelector
+    <nuget:InfiniteScrollListItemStyleSelector
       x:Key="itemStyleSelector" />
     <DataTemplate
-      DataType="{x:Type self:LoadingStatusIndicator}">
+      DataType="{x:Type nuget:LoadingStatusIndicator}">
       <Grid
         Margin="0,8">
         <TextBlock
           Name="_noItemsFound"
           FontStyle="Italic"
           HorizontalAlignment="Center"
-          Text="{x:Static resx:Resources.Text_NoItemsFound}"
+          Text="{x:Static nuget:Resources.Text_NoItemsFound}"
           Visibility="Collapsed" />
 
         <TextBlock
           Name="_ready"
           HorizontalAlignment="Center"
-          Text="{x:Static resx:Resources.Text_Ready}"
+          Text="{x:Static nuget:Resources.Text_Ready}"
           Visibility="Collapsed" />
 
         <Grid
@@ -38,37 +37,20 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
           </Grid.ColumnDefinitions>
-          <self:Spinner
+          <nuget:Spinner
             Grid.Column="0"
             Width="16"
             Height="16"
             Margin="3"
             HorizontalAlignment="Center" 
-        VerticalAlignment="Center" 
-            Visibility="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}, AncestorLevel=1},Path=Visibility}"/>
+            VerticalAlignment="Center" 
+            Visibility="{Binding Visibility,RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}, AncestorLevel=1}}"/>
           <TextBlock
             Grid.Column="1"
             Text="{Binding Path=LoadingMessage}"
-            FontFamily="SegoeUI"
-            FontSize="12"
-            Foreground="#111111"
             HorizontalAlignment="Left" 
             VerticalAlignment="Center"/>
         </Grid>
-
-        <StackPanel
-          Orientation="Vertical"
-          Name="_errorOccurred"
-          Visibility="Collapsed">
-          <Expander
-            Margin="0,8,0,0"
-            Header="{x:Static resx:Resources.Text_ErrorDetails}">
-            <TextBox
-              IsReadOnly="True"
-              TextWrapping="Wrap"
-              Text="{Binding ErrorMessage}" />
-          </Expander>
-        </StackPanel>
       </Grid>
       <DataTemplate.Triggers>
         <DataTrigger
@@ -92,14 +74,6 @@
           Value="NoItemsFound">
           <Setter
             TargetName="_noItemsFound"
-            Property="Visibility"
-            Value="Visible" />
-        </DataTrigger>
-        <DataTrigger
-          Binding="{Binding Path=Status}"
-          Value="ErrorOccured">
-          <Setter
-            TargetName="_errorOccurred"
             Property="Visibility"
             Value="Visible" />
         </DataTrigger>
@@ -129,7 +103,7 @@
           <Setter
             Property="Background"
             TargetName="Bd"
-            Value="{DynamicResource {x:Static resx:Brushes.ListPaneBackground}}" />
+            Value="{DynamicResource {x:Static nuget:Brushes.ListPaneBackground}}" />
         </Trigger>
 
         <MultiTrigger>
@@ -141,10 +115,10 @@
           <Setter
             Property="Background"
             TargetName="Bd"
-            Value="{DynamicResource {x:Static resx:Brushes.ContentMouseOverBrushKey}}" />
+            Value="{DynamicResource {x:Static nuget:Brushes.ContentMouseOverBrushKey}}" />
           <Setter
             Property="TextBlock.Foreground"
-            Value="{DynamicResource {x:Static resx:Brushes.ContentMouseOverTextBrushKey}}" />
+            Value="{DynamicResource {x:Static nuget:Brushes.ContentMouseOverTextBrushKey}}" />
         </MultiTrigger>
         <MultiTrigger>
           <MultiTrigger.Conditions>
@@ -158,10 +132,10 @@
           <Setter
             Property="Background"
             TargetName="Bd"
-            Value="{DynamicResource {x:Static resx:Brushes.ContentInactiveSelectedBrushKey}}" />
+            Value="{DynamicResource {x:Static nuget:Brushes.ContentInactiveSelectedBrushKey}}" />
           <Setter
             Property="TextBlock.Foreground"
-            Value="{DynamicResource {x:Static resx:Brushes.ContentInactiveSelectedTextBrushKey}}" />
+            Value="{DynamicResource {x:Static nuget:Brushes.ContentInactiveSelectedTextBrushKey}}" />
         </MultiTrigger>
         <MultiTrigger>
           <MultiTrigger.Conditions>
@@ -175,11 +149,11 @@
           <Setter
             Property="Background"
             TargetName="Bd"
-            Value="{DynamicResource {x:Static resx:Brushes.ContentSelectedBrushKey}}" />
+            Value="{DynamicResource {x:Static nuget:Brushes.ContentSelectedBrushKey}}" />
           <Setter
             Property="TextBlock.Foreground"
             TargetName="Bd"
-            Value="{DynamicResource {x:Static resx:Brushes.ContentSelectedTextBrushKey}}" />
+            Value="{DynamicResource {x:Static nuget:Brushes.ContentSelectedTextBrushKey}}" />
         </MultiTrigger>
       </ControlTemplate.Triggers>
     </ControlTemplate>
@@ -191,7 +165,7 @@
       <Border
         x:Name="Bd"
         BorderThickness="0"
-        Background="{DynamicResource {x:Static resx:Brushes.ListPaneBackground}}"
+        Background="{DynamicResource {x:Static nuget:Brushes.ListPaneBackground}}"
         Padding="0"
         SnapsToDevicePixels="true">
         <ContentPresenter
@@ -272,17 +246,12 @@
     </Style>
   </UserControl.Resources>
   <DockPanel LastChildFill="True">
-    <resx:LoadingStatusBar 
-      x:Name="_loadingStatusBar"
-      DockPanel.Dock="Top"
-      ShowMoreResultsClicked="_loadingStatusBar_ShowMoreResultsClicked"
-      RestartSearchClicked="_loadingStatusBar_RestartSearchClicked" />
     <Border
       x:Name="_updateButtonContainer"
       DockPanel.Dock="Top"
       BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
       BorderThickness="0,0,0,1"
-      Background="{DynamicResource {x:Static resx:Brushes.LegalMessageBackground}}">
+      Background="{DynamicResource {x:Static nuget:Brushes.LegalMessageBackground}}">
       <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="auto" />
@@ -296,8 +265,8 @@
           VerticalAlignment="Center"
           Checked="SelectAllPackagesCheckBox_Checked"
           Unchecked="SelectAllPackagesCheckBox_Unchecked"
-          Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
-          Content="{x:Static resx:Resources.Checkbox_SelectAllPackages}" />
+          Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
+          Content="{x:Static nuget:Resources.Checkbox_SelectAllPackages}" />
         <Button
           x:Name="_updateButton"
           Grid.Column="2"
@@ -306,15 +275,23 @@
           Margin="24,8"
           VerticalAlignment="Center"
           Click="_updateButton_Click"
-          Content="{x:Static resx:Resources.Button_Update}" />
+          Content="{x:Static nuget:Resources.Button_Update}" />
       </Grid>
+    </Border>
+    <Border
+      DockPanel.Dock="Top"
+      BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+      BorderThickness="0,0,0,1">
+      <nuget:LoadingStatusBar 
+        x:Name="_loadingStatusBar"
+        ShowMoreResultsClicked="_loadingStatusBar_ShowMoreResultsClicked" />
     </Border>
     <ListBox
       x:Name="_list"
       DockPanel.Dock="Bottom"
       PreviewKeyUp="List_PreviewKeyUp"
-      Background="{DynamicResource {x:Static resx:Brushes.ListPaneBackground}}"
-      Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
+      Background="{DynamicResource {x:Static nuget:Brushes.ListPaneBackground}}"
+      Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
       ScrollViewer.VerticalScrollBarVisibility="Visible"
       ItemContainerStyleSelector="{DynamicResource itemStyleSelector}"
