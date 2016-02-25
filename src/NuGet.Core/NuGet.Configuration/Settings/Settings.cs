@@ -80,6 +80,7 @@ namespace NuGet.Configuration
             ExecuteSynchronized(() => config = XmlUtility.GetOrCreateDocument(CreateDefaultConfig(), ConfigFilePath));
             ConfigXDocument = config;
             IsMachineWideSettings = isMachineWideSettings;
+            CheckConfigRoot();
         }
 
         public event EventHandler SettingsChanged = delegate { };
@@ -1034,6 +1035,29 @@ namespace NuGet.Configuration
                     owner = _globalMutex.WaitOne(TimeSpan.FromMinutes(1));
                     ioOperation();
                 }
+                catch (InvalidOperationException e)
+                {
+                    throw new NuGetConfigurationException(
+                        string.Format(CultureInfo.CurrentCulture,Resources.ShowError_ConfigInvalidOperation, ConfigFilePath, e.Message), e);
+                }
+
+                catch (UnauthorizedAccessException e)
+                {
+                    throw new NuGetConfigurationException(
+                        string.Format(CultureInfo.CurrentCulture,Resources.ShowError_ConfigUnauthorizedAccess, ConfigFilePath, e.Message), e);
+                }
+
+                catch (XmlException e)
+                {
+                    throw new NuGetConfigurationException(
+                        string.Format(CultureInfo.CurrentCulture,Resources.ShowError_ConfigInvalidXml, ConfigFilePath, e.Message), e);
+                }
+
+                catch (Exception e)
+                {
+                    throw new NuGetConfigurationException(
+                        string.Format(CultureInfo.CurrentCulture,Resources.Unknown_Config_Exception, ConfigFilePath, e.Message), e);
+                }
                 finally
                 {
                     if (owner)
@@ -1069,6 +1093,29 @@ namespace NuGet.Configuration
                     // ownership probably means faulty hardware and in this case it's better to report
                     // back than hang
                     ioOperation();
+                }
+                catch (InvalidOperationException e)
+                {
+                    throw new NuGetConfigurationException(
+                        string.Format(CultureInfo.CurrentCulture, Resources.ShowError_ConfigInvalidOperation, fileName, e.Message), e);
+                }
+
+                catch (UnauthorizedAccessException e)
+                {
+                    throw new NuGetConfigurationException(
+                        string.Format(CultureInfo.CurrentCulture, Resources.ShowError_ConfigUnauthorizedAccess, fileName, e.Message), e);
+                }
+
+                catch (XmlException e)
+                {
+                    throw new NuGetConfigurationException(
+                        string.Format(CultureInfo.CurrentCulture, Resources.ShowError_ConfigInvalidXml, fileName, e.Message), e);
+                }
+
+                catch (Exception e)
+                {
+                    throw new NuGetConfigurationException(
+                        string.Format(CultureInfo.CurrentCulture, Resources.Unknown_Config_Exception, fileName, e.Message), e);
                 }
                 finally
                 {
@@ -1123,6 +1170,16 @@ namespace NuGet.Configuration
                 }
             }
             return false;
+        }
+
+        // this method will check NuGet.Config file, if the root is not configuration, it will throw.
+        private void CheckConfigRoot()
+        {
+            if (ConfigXDocument.Root.Name != "configuration")
+            {
+                throw new NuGetConfigurationException(
+                         string.Format(Resources.ShowError_ConfigRootInvalid, ConfigFilePath));
+            }
         }
     }
 }

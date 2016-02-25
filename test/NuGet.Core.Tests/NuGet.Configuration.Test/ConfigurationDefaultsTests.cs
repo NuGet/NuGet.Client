@@ -78,7 +78,7 @@ namespace NuGet.Configuration
                 var defaultPushSource = "<add key='DefaultPushSource' value='" + feed2 + "' />";
                 File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement, defaultPushSource));
 
-                Assert.Throws<XmlException>(() =>
+                Assert.Throws<NuGetConfigurationException>(() =>
                 {
                     ConfigurationDefaults configDefaults = new ConfigurationDefaults(nugetConfigFileFolder, nugetConfigFile);
                 });

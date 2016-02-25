@@ -14,7 +14,7 @@ namespace NuGet.Configuration
             var source = new PackageSource("Source", "SourceName", isEnabled: false)
                 {
                     IsPasswordClearText = true,
-                    Password = "password",
+                    PasswordText = "password",
                     UserName = "username",
                     ProtocolVersion = 43,
                 };

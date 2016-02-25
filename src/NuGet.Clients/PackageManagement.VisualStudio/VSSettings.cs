@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
+using NuGet.Common;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -50,7 +51,14 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 root = Path.Combine(SolutionManager.SolutionDirectory, EnvDTEProjectUtility.NuGetSolutionSettingsFolder);
             }
-            SolutionSettings = Configuration.Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings);
+            try
+            {
+                SolutionSettings = Configuration.Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings);
+            }
+            catch (Configuration.NuGetConfigurationException ex)
+            {
+                MessageHelper.ShowErrorMessage(ExceptionUtilities.DisplayMessage(ex), Strings.ConfigErrorDialogBoxTitle);
+            }
         }
 
         private void OnSolutionOpenedOrClosed(object sender, EventArgs e)

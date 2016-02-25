@@ -14,6 +14,7 @@ using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 
@@ -227,15 +228,12 @@ namespace NuGet.Options
                     _packageSourceProvider.SavePackageSources(packageSources);
                 }
             }
-            catch (InvalidOperationException)
+            catch (Configuration.NuGetConfigurationException e)
             {
-                MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigInvalidOperation, Resources.ErrorDialogBoxTitle);
+                MessageHelper.ShowErrorMessage(ExceptionUtilities.DisplayMessage(e), Resources.ErrorDialogBoxTitle);
                 return false;
             }
-            catch (UnauthorizedAccessException)
-            {
-                MessageHelper.ShowErrorMessage(Resources.ShowError_ConfigUnauthorizedAccess, Resources.ErrorDialogBoxTitle);
-            }
+
             // find the enabled package source 
             return true;
         }
