@@ -427,7 +427,7 @@ function Test-InstallPackageAPIPackageNotExist
     $p = New-ClassLibrary
 
     # Act & Assert
-    Assert-Throws { [API.Test.InternalAPITestHook]::InstallPackageApi("NotExistPackage","") } "Exception calling `"InstallPackageApi`" with `"2`" argument(s): `"No latest version found for the 'NotExistPackage' for the given source repositories and resolution context`""
+    Assert-Throws { [API.Test.InternalAPITestHook]::InstallPackageApi("NotExistPackage","") } "Exception calling `"InstallPackageApi`" with `"2`" argument(s): `"No latest version found for 'NotExistPackage' for the given source repositories and resolution context`""
 }
 
 function Test-InstallPackageAPIInstalledPackage
