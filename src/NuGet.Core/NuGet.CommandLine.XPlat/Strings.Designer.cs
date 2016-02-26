@@ -321,6 +321,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Do not cache packages and http requests..
+        /// </summary>
+        internal static string Restore_Switch_NoCache_Description {
+            get {
+                return ResourceManager.GetString("Restore_Switch_NoCache_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Directory to install packages in..
         /// </summary>
         internal static string Restore_Switch_Packages_Description {

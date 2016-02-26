@@ -3,21 +3,26 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using NuGet.ProjectManagement;
+using NuGet.Common;
 using NuGet.ProjectModel;
 
-namespace NuGet.CommandLine
+namespace NuGet.Commands
 {
-    public class ProjectReferenceCache
+    public class MSBuildProjectReferenceProvider : IExternalProjectReferenceProvider
     {
-        private Dictionary<string, Dictionary<string, ExternalProjectReference>> _cache
+        private readonly Dictionary<string, Dictionary<string, ExternalProjectReference>> _cache
             = new Dictionary<string, Dictionary<string, ExternalProjectReference>>(StringComparer.OrdinalIgnoreCase);
 
-        private Dictionary<string, PackageSpec> _projectJsonCache
+        private readonly Dictionary<string, PackageSpec> _projectJsonCache
             = new Dictionary<string, PackageSpec>(StringComparer.OrdinalIgnoreCase);
 
-        public ProjectReferenceCache(IEnumerable<string> msbuildOutputLines)
+        public MSBuildProjectReferenceProvider(IEnumerable<string> msbuildOutputLines)
         {
+            if (msbuildOutputLines == null)
+            {
+                throw new ArgumentNullException(nameof(msbuildOutputLines));
+            }
+
             var lookup = new Dictionary<string, Dictionary<string, HashSet<string>>>(StringComparer.OrdinalIgnoreCase);
 
             string entryPoint = null;
@@ -71,7 +76,19 @@ namespace NuGet.CommandLine
             }
         }
 
-        public List<ExternalProjectReference> GetReferences(string entryPointPath)
+        public static MSBuildProjectReferenceProvider Load(string path)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            var lines = File.ReadAllLines(path);
+
+            return new MSBuildProjectReferenceProvider(lines);
+        }
+
+        public IReadOnlyList<ExternalProjectReference> GetReferences(string entryPointPath)
         {
             var results = new List<ExternalProjectReference>();
 
@@ -79,6 +96,18 @@ namespace NuGet.CommandLine
             if (_cache.TryGetValue(entryPointPath, out lookup))
             {
                 results.AddRange(lookup.Values);
+            }
+
+            return results;
+        }
+
+        public IReadOnlyList<ExternalProjectReference> GetEntryPoints()
+        {
+            var results = new List<ExternalProjectReference>();
+
+            foreach (var path in _cache.Keys)
+            {
+                results.Add(_cache[path][path]);
             }
 
             return results;
@@ -149,12 +178,12 @@ namespace NuGet.CommandLine
                 // Only project.json is allowed
                 path = Path.Combine(
                     directory,
-                    BuildIntegratedProjectUtility.ProjectConfigFileName);
+                    PackageSpec.PackageSpecFileName);
             }
             else
             {
                 // Allow project.json or projectName.project.json
-                path = BuildIntegratedProjectUtility.GetProjectConfigPath(directory, projectName);
+                path = ProjectJsonPathUtilities.GetProjectConfigPath(directory, projectName);
             }
 
             // Read the file if it exists and is not cached already
