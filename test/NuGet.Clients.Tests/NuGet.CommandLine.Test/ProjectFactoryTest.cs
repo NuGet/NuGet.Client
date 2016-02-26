@@ -49,7 +49,7 @@ namespace NuGet.CommandLine
 
             // act
             var author = factory.InitializeProperties(metadata);
-            var actual = NuGet.Common.Preprocessor.Process(inputSpec.AsStream(), propName => ((IPropertyProvider)factory).GetPropertyValue(propName));
+            var actual = NuGet.Common.Preprocessor.Process(inputSpec.AsStream(), propName => factory.GetPropertyValue(propName));
 
             // assert
             Assert.Equal("Outercurve Foundation", author);

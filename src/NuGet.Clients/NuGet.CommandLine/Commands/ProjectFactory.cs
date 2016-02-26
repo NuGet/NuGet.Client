@@ -22,7 +22,7 @@ namespace NuGet.CommandLine
     using Console = System.Console;
 
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-    public class ProjectFactory : MSBuildUser, IPropertyProvider
+    public class ProjectFactory : MSBuildUser
     {
         // Its type is Microsoft.Build.Evaluation.Project
         private dynamic _project;
@@ -272,7 +272,7 @@ namespace NuGet.CommandLine
             return projectAuthor;
         }
 
-        string IPropertyProvider.GetPropertyValue(string propertyName)
+        private string GetPropertyValue(string propertyName)
         {
             string value;
             if (!_properties.TryGetValue(propertyName, out value))
@@ -995,7 +995,7 @@ namespace NuGet.CommandLine
             {
                 // Don't validate the manifest since this might be a partial manifest
                 // The bulk of the metadata might be coming from the project.
-                Manifest manifest = Manifest.ReadFrom(stream, this, validateSchema: true);
+                Manifest manifest = Manifest.ReadFrom(stream, GetPropertyValue, validateSchema: true);
                 builder.Populate(manifest.Metadata);
 
                 if (manifest.Files != null)
@@ -1302,19 +1302,6 @@ namespace NuGet.CommandLine
             {
                 get;
                 private set;
-            }
-
-            IEnumerable<NuGetFramework> IFrameworkTargetable.SupportedFrameworks
-            {
-                get
-                {
-                    if (TargetFramework != null)
-                    {
-                        // REVIEW: Is this correct?
-                        yield return new NuGetFramework(TargetFramework.FullName);
-                    }
-                    yield break;
-                }
             }
         }
     }

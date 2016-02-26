@@ -72,18 +72,6 @@ namespace NuGet.Packaging
             get { return _targetFramework; }
         }
 
-        public IEnumerable<NuGetFramework> SupportedFrameworks
-        {
-            get
-            {
-                if (TargetFramework != null)
-                {
-                    yield return NuGetFramework.Parse(TargetFramework.Identifier);
-                }
-                yield break;
-            }
-        }
-
         public Stream GetStream()
         {
             return _streamFactory != null ? _streamFactory() : File.OpenRead(SourcePath);

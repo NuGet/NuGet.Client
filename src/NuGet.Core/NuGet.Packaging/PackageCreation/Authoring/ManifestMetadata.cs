@@ -85,7 +85,7 @@ namespace NuGet.Packaging
 
         public IEnumerable<string> Owners
         {
-            get { return (_owners == null || _owners.IsEmpty()) ? _authors : _owners; }
+            get { return (_owners == null || !_owners.Any()) ? _authors : _owners; }
             set { _owners = value ?? Enumerable.Empty<string>(); }
         }
 
@@ -174,7 +174,7 @@ namespace NuGet.Packaging
 
         private static IEnumerable<PackageDependencyGroup> CreatePackageDependencyGroups(IEnumerable<PackageDependencyGroup> packageDependencyGroups)
         {
-            if (packageDependencyGroups.IsEmpty())
+            if (packageDependencyGroups == null || !packageDependencyGroups.Any())
             {
                 return new List<PackageDependencyGroup>(0);
             }

@@ -368,14 +368,21 @@ namespace NuGet.CommandLine
                 Properties["version"] = Version;
             }
 
-            // Initialize the property provider based on what was passed in using the properties flag
-            var propertyProvider = new DictionaryPropertyProvider(Properties);
-
             if (String.IsNullOrEmpty(BasePath))
             {
-                return new PackageBuilder(path, propertyProvider, !ExcludeEmptyDirectories);
+                return new PackageBuilder(path, GetPropertyValue, !ExcludeEmptyDirectories);
             }
-            return new PackageBuilder(path, BasePath, propertyProvider, !ExcludeEmptyDirectories);
+            return new PackageBuilder(path, BasePath, GetPropertyValue, !ExcludeEmptyDirectories);
+        }
+
+        private string GetPropertyValue(string propertyName)
+        {
+            string value;
+            if (Properties.TryGetValue(propertyName, out value))
+            {
+                return value;
+            }
+            return null;
         }
 
         private IPackage BuildFromProjectFile(string path)
@@ -500,26 +507,6 @@ namespace NuGet.CommandLine
             }
 
             return Path.GetFullPath(Path.Combine(CurrentDirectory, result));
-        }
-
-        private class DictionaryPropertyProvider : IPropertyProvider
-        {
-            private readonly IDictionary<string, string> _properties;
-
-            public DictionaryPropertyProvider(IDictionary<string, string> properties)
-            {
-                _properties = properties;
-            }
-
-            public string GetPropertyValue(string propertyName)
-            {
-                string value;
-                if (_properties.TryGetValue(propertyName, out value))
-                {
-                    return value;
-                }
-                return null;
-            }
         }
     }
 }

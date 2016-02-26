@@ -15,18 +15,18 @@ using NuGet.Versioning;
 
 namespace NuGet.Packaging
 {
-    public class PackageBuilder : IPackageBuilder
+    public class PackageBuilder : IPackageMetadata
     {
         private const string DefaultContentType = "application/octet";
         internal const string ManifestRelationType = "manifest";
         private readonly bool _includeEmptyDirectories;
         
-        public PackageBuilder(string path, IPropertyProvider propertyProvider, bool includeEmptyDirectories)
+        public PackageBuilder(string path, Func<string, string> propertyProvider, bool includeEmptyDirectories)
             : this(path, Path.GetDirectoryName(path), propertyProvider, includeEmptyDirectories)
         {
         }
 
-        public PackageBuilder(string path, string basePath, IPropertyProvider propertyProvider, bool includeEmptyDirectories)
+        public PackageBuilder(string path, string basePath, Func<string, string> propertyProvider, bool includeEmptyDirectories)
             : this(includeEmptyDirectories)
         {
             using (Stream stream = File.OpenRead(path))
@@ -36,11 +36,11 @@ namespace NuGet.Packaging
         }
 
         public PackageBuilder(Stream stream, string basePath)
-            : this(stream, basePath, NullPropertyProvider.Instance)
+            : this(stream, basePath, null)
         {
         }
 
-        public PackageBuilder(Stream stream, string basePath, IPropertyProvider propertyProvider)
+        public PackageBuilder(Stream stream, string basePath, Func<string, string> propertyProvider)
             : this()
         {
             ReadManifest(stream, basePath, propertyProvider);
@@ -407,7 +407,7 @@ namespace NuGet.Packaging
             }
         }
 
-        private void ReadManifest(Stream stream, string basePath, IPropertyProvider propertyProvider)
+        private void ReadManifest(Stream stream, string basePath, Func<string, string> propertyProvider)
         {
             // Deserialize the document and extract the metadata
             Manifest manifest = Manifest.ReadFrom(stream, propertyProvider, validateSchema: true);
@@ -521,12 +521,9 @@ namespace NuGet.Packaging
             List<PhysicalPackageFile> searchFiles = ResolveSearchPattern(basePath, source, destination, _includeEmptyDirectories).ToList();
             if (_includeEmptyDirectories)
             {
-                // we only allow empty directories which are legit framework folders.
-                // Folders for nuget v3 should be included here also since this part of nuget.core is still used 
-                // by nuget.exe 3.3.0.
-                searchFiles.RemoveAll(file => file.TargetFramework == null
-                                             && Path.GetFileName(file.TargetPath) == Constants.PackageEmptyFileName
-                                             && !IsKnownV3Folder(file.TargetPath));
+                // we only allow empty directories which are under known root folders.
+                searchFiles.RemoveAll(file => Path.GetFileName(file.TargetPath) == Constants.PackageEmptyFileName
+                                             && !IsKnownFolder(file.TargetPath));
             }
 
             ExcludeFiles(searchFiles, basePath, exclude);
@@ -593,9 +590,9 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
-        /// Returns true if the path uses a known v3 folder root.
+        /// Returns true if the path uses a known folder root.
         /// </summary>
-        private static bool IsKnownV3Folder(string targetPath)
+        private static bool IsKnownFolder(string targetPath)
         {
             if (targetPath != null)
             {
@@ -610,28 +607,12 @@ namespace NuGet.Packaging
                 {
                     var topLevelDirectory = parts.FirstOrDefault();
 
-                    return KnownFoldersForV3.Any(folder =>
+                    return Constants.KnownFolders.Any(folder =>
                         folder.Equals(topLevelDirectory, StringComparison.OrdinalIgnoreCase));
                 }
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Folders used in NuGet v3 that are not used in NuGet.Core
-        /// </summary>
-        private static IEnumerable<string> KnownFoldersForV3
-        {
-            get
-            {
-                yield return "contentFiles";
-                yield return "ref";
-                yield return "runtimes";
-                yield return "native";
-                yield return "analyzers";
-                yield break;
-            }
         }
 
         private static void ExcludeFiles(List<PhysicalPackageFile> searchFiles, string basePath, string exclude)

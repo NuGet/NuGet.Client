@@ -89,19 +89,19 @@ namespace NuGet.Packaging
 
         public static Manifest ReadFrom(Stream stream, bool validateSchema)
         {
-            return ReadFrom(stream, NullPropertyProvider.Instance, validateSchema);
+            return ReadFrom(stream, null, validateSchema);
         }
 
-        public static Manifest ReadFrom(Stream stream, IPropertyProvider propertyProvider, bool validateSchema)
+        public static Manifest ReadFrom(Stream stream, Func<string, string> propertyProvider, bool validateSchema)
         {
             XDocument document;
-            if (propertyProvider == NullPropertyProvider.Instance)
+            if (propertyProvider == null)
             {
                 document = XmlUtility.LoadSafe(stream, ignoreWhiteSpace: true);
             }
             else
             {
-                string content = Preprocessor.Process(stream, propName => propertyProvider.GetPropertyValue(propName));
+                string content = Preprocessor.Process(stream, propName => propertyProvider(propName));
                 document = XDocument.Parse(content);
             }
 
