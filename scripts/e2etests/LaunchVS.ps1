@@ -15,37 +15,45 @@ trap
 
 . "$PSScriptRoot\VSUtils.ps1"
 
-KillRunningInstancesOfVS
-
-Write-Host 'Waiting for 5 seconds before cleaning the MEF cache'
-start-sleep 5
-
-Write-Host "Force deleting LOCALAPPDATA\Microsoft\VisualStudio\$VSVersion"
-$localappdata = $env:LOCALAPPDATA
-Remove-Item (Join-Path $localappdata\Microsoft\VisualStudio $VSVersion) -Force -Recurse -ErrorAction SilentlyContinue
-
-Write-Host 'Waiting for 5 seconds after cleaning the MEF cache'
-start-sleep 5
-
-LaunchVS $VSVersion
-
-$dte2 = $null
-$count = 0
-Write-Host "Will wait for $NumberOfPolls times and $DTEReadyPollFrequencyInSecs seconds each time."
-
-while($count -lt $NumberOfPolls)
+function LaunchVSAndWaitForDTE
 {
-    # Wait for $VSLaunchWaitTimeInSecs secs for VS to load before getting the DTE COM object
-    Write-Host "Waiting for $DTEReadyPollFrequencyInSecs seconds for DTE to become available"
-    start-sleep $DTEReadyPollFrequencyInSecs
+    KillRunningInstancesOfVS
+    Write-Host 'Waiting for 5 seconds after killing VS'
+    start-sleep 5
 
-    $dte2 = GetDTE2 $VSVersion
-    if ($dte2)
+    LaunchVS $VSVersion
+
+    $dte2 = $null
+    $count = 0
+    Write-Host "Will wait for $NumberOfPolls times and $DTEReadyPollFrequencyInSecs seconds each time."
+
+    while($count -lt $NumberOfPolls)
     {
-	    exit 0
-    }
+        # Wait for $VSLaunchWaitTimeInSecs secs for VS to load before getting the DTE COM object
+        Write-Host "Waiting for $DTEReadyPollFrequencyInSecs seconds for DTE to become available"
+        start-sleep $DTEReadyPollFrequencyInSecs
 
-    $count++
+        $dte2 = GetDTE2 $VSVersion
+        if ($dte2)
+        {
+            Write-Host 'Obtained DTE. Wait for 5 seconds...'
+            start-sleep 5
+	        return $true
+        }
+
+        $count++
+    }
+}
+
+$result = LaunchVSAndWaitForDTE
+if ($result -eq $true)
+{
+    Write-Host 'Do the kill VS, Launch VS and wait for DTE one more time'
+    $result = LaunchVSAndWaitForDTE
+    if ($result -eq $true)
+    {
+        exit 0
+    }
 }
 
 Write-Error "Could not obtain DTE after waiting $NumberOfPolls * $DTEReadyPollFrequencyInSecs = " $NumberOfPolls * $DTEReadyPollFrequencyInSecs " secs"
