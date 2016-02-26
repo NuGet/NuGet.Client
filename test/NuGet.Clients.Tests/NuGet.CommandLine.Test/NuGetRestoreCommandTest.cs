@@ -234,11 +234,11 @@ namespace NuGet.CommandLine.Test
                         waitForExit: true);
 
                     // Assert
+                    Assert.True(result.Item3 == string.Empty, $"There should not be any STDERR:{Environment.NewLine}{result.Item3}");
+                    Assert.True(result.Item2 != string.Empty, $"There should be some STDOUT.");
+                    Assert.DoesNotContain("cancel", result.Item2, StringComparison.OrdinalIgnoreCase);
+                    Assert.DoesNotContain("not found", result.Item2, StringComparison.OrdinalIgnoreCase);
                     Assert.Equal(0, result.Item1);
-                    Assert.NotEmpty(result.Item2);
-                    Assert.DoesNotContain("cancel", result.Item2.ToLower());
-                    Assert.DoesNotContain("not found", result.Item2.ToLower());
-                    Assert.Empty(result.Item3);
                     Assert.True(File.Exists(Path.Combine(packagesPath, @"PackageA.1.1.0\PackageA.1.1.0.nupkg")));
                 }
             }
