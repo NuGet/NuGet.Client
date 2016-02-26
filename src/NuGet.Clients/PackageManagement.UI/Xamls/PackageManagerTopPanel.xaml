@@ -81,7 +81,7 @@
         x:Name="_sourceRepoList"
         AutomationProperties.AutomationId="ComboBox_PackageSource"
         VerticalAlignment="Center"
-        DisplayMemberPath="PackageSource.Name"
+        DisplayMemberPath="SourceName"
         MinWidth="130"
         MinHeight="22"
         AutomationProperties.Name="{x:Static resx:Resources.Label_Repository}"

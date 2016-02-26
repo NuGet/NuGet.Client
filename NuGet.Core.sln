@@ -113,6 +113,8 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Shared", "src\NuGet.C
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.CommandLine.XPlat.Test", "test\NuGet.Core.Tests\NuGet.CommandLine.XPlat.Test\NuGet.CommandLine.XPlat.Test.xproj", "{82FF10C5-8724-4187-953E-5096AD90184F}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Indexing", "src\NuGet.Core\NuGet.Indexing\NuGet.Indexing.xproj", "{A2B06FA8-BDBC-4459-A92A-161862B2AA97}"
+EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Logging.Test", "test\NuGet.Core.Tests\NuGet.Logging.Test\NuGet.Logging.Test.xproj", "{95CCAF1D-B922-4DDF-A0B2-8570F5FA9BA8}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Test.Server", "src\NuGet.Core\NuGet.Test.Server\NuGet.Test.Server.xproj", "{DF85929B-6BB1-49F4-82B4-E29A0290C13E}"
@@ -126,6 +128,8 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Commands.FuncTest", "test\NuGet.Core.FuncTests\NuGet.Commands.FuncTest\NuGet.Commands.FuncTest.xproj", "{63C0BFF6-508D-4E5F-BBBC-A636D1398C6B}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Protocol.FuncTest", "test\NuGet.Core.FuncTests\NuGet.Protocol.FuncTest\NuGet.Protocol.FuncTest.xproj", "{1A94F70B-1AB6-4638-931A-4AB0EBEF7EC1}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "NuGet.Indexing.Test", "test\NuGet.Core.Tests\NuGet.Indexing.Test\NuGet.Indexing.Test.xproj", "{626E0086-1375-4ABE-A0F8-412786D315FA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -357,6 +361,14 @@ Global
 		{1A94F70B-1AB6-4638-931A-4AB0EBEF7EC1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A94F70B-1AB6-4638-931A-4AB0EBEF7EC1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A94F70B-1AB6-4638-931A-4AB0EBEF7EC1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2B06FA8-BDBC-4459-A92A-161862B2AA97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2B06FA8-BDBC-4459-A92A-161862B2AA97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2B06FA8-BDBC-4459-A92A-161862B2AA97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2B06FA8-BDBC-4459-A92A-161862B2AA97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{626E0086-1375-4ABE-A0F8-412786D315FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{626E0086-1375-4ABE-A0F8-412786D315FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{626E0086-1375-4ABE-A0F8-412786D315FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{626E0086-1375-4ABE-A0F8-412786D315FA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -417,5 +429,7 @@ Global
 		{D8E35E61-07AE-41D2-BB40-F3BDD8770A92} = {7323F93B-D141-4001-BB9E-7AF14031143E}
 		{63C0BFF6-508D-4E5F-BBBC-A636D1398C6B} = {BB63CACA-866F-454F-BA4C-78B788D032BB}
 		{1A94F70B-1AB6-4638-931A-4AB0EBEF7EC1} = {BB63CACA-866F-454F-BA4C-78B788D032BB}
+		{A2B06FA8-BDBC-4459-A92A-161862B2AA97} = {BD1946CE-5544-4F28-A04A-9C3D51113E1A}
+		{626E0086-1375-4ABE-A0F8-412786D315FA} = {7323F93B-D141-4001-BB9E-7AF14031143E}
 	EndGlobalSection
 EndGlobal

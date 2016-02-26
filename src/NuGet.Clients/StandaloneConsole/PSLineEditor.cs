@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Management.Automation;
@@ -9,7 +9,7 @@ using NuGetConsole;
 namespace StandaloneConsole
 {
     /// <summary>
-    /// This class is used to read a PowerShell command line, colorizing the 
+    /// This class is used to read a PowerShell command line, colorizing the
     /// text as it is entered. Tokens are determined using the PSParser.Tokenize
     /// class.
     /// </summary>
@@ -76,7 +76,7 @@ namespace StandaloneConsole
                 ConsoleColor.DarkCyan,   // StatementSeparator
                 defaultColor,            // NewLine
                 defaultColor,            // LineContinuation
-                defaultColor,            // Position            
+                defaultColor,            // Position
             };
 
             _commandExpansion = commandExpansion;
@@ -203,7 +203,7 @@ namespace StandaloneConsole
         /// <summary>
         /// Moves to the left of the cursor postion.
         /// </summary>
-        /// <param name="consoleModifiers">Enumeration for Alt, Control, 
+        /// <param name="consoleModifiers">Enumeration for Alt, Control,
         /// and Shift keys.</param>
         private void OnLeft(ConsoleModifiers consoleModifiers)
         {
@@ -240,7 +240,7 @@ namespace StandaloneConsole
         /// Determines if a character is a seperator.
         /// </summary>
         /// <param name="ch">Character to investigate.</param>
-        /// <returns>A value that incicates whether the character 
+        /// <returns>A value that incicates whether the character
         /// is a seperator.</returns>
         private static bool IsSeperator(char ch)
         {
@@ -250,7 +250,7 @@ namespace StandaloneConsole
         /// <summary>
         /// Moves to what is to the right of the cursor position.
         /// </summary>
-        /// <param name="consoleModifiers">Enumeration for Alt, Control, 
+        /// <param name="consoleModifiers">Enumeration for Alt, Control,
         /// and Shift keys.</param>
         private void OnRight(ConsoleModifiers consoleModifiers)
         {

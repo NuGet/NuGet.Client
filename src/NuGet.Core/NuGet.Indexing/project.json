@@ -1,0 +1,25 @@
+﻿{
+  "version": "3.4.0-*",
+  "description": "NuGet.Indexing Class Library",
+  "compile": [
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/NuGetQuery.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/IdentifierKeywordAnalyzer.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/IdentifierAnalyzer.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/DescriptionAnalyzer.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/DotTokenizer.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/TokenizingHelper.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/OwnerAnalyzer.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/VersionAnalyzer.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/CamelCaseFilter.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/TagsAnalyzer.cs",
+    "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/SemanticVersionFilter.cs"
+  ],
+  "dependencies": {
+    "Lucene.Net": "3.0.3",
+    "NuGet.Versioning": "3.4.0-*",
+    "NuGet.Protocol.Core.Types": "3.4.0-*"
+  },
+  "frameworks": {
+    "net45": { }
+  }
+}

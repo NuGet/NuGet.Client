@@ -48,6 +48,7 @@
     x:Key="ProjectAndSolutionViewHeightConverter" />
   <Tools:ProjectAndSolutionViewMinHeightConverter
     x:Key="ProjectAndSolutionViewMinHeightConverter"/>
+  <Tools:NotEqualConverter x:Key="NotEqualConverter"/>
 
   <DataTemplate
     DataType="{x:Type Tools:PackageDependencyMetadata}">

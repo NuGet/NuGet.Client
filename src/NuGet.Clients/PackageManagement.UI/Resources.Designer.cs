@@ -97,6 +97,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All.
+        /// </summary>
+        public static string AggregateSourceName {
+            get {
+                return ResourceManager.GetString("AggregateSourceName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Some NuGet packages are missing from this solution. Click to restore from your online package sources..
         /// </summary>
         public static string AskForRestoreMessage {
@@ -187,11 +196,29 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error occurred. Retry.
+        ///   Looks up a localized string similar to Restart search.
         /// </summary>
-        public static string Button_Retry {
+        public static string Button_RestartSearch {
             get {
-                return ResourceManager.GetString("Button_Retry", resourceCulture);
+                return ResourceManager.GetString("Button_RestartSearch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show errors in output.
+        /// </summary>
+        public static string Button_ShowErrors {
+            get {
+                return ResourceManager.GetString("Button_ShowErrors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show {0} more results.
+        /// </summary>
+        public static string Button_ShowMoreResults {
+            get {
+                return ResourceManager.GetString("Button_ShowMoreResults", resourceCulture);
             }
         }
         
@@ -1053,11 +1080,38 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Search completed..
+        /// </summary>
+        public static string Text_SearchCompleted {
+            get {
+                return ResourceManager.GetString("Text_SearchCompleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to These results might be incomplete. Search is still working..
+        /// </summary>
+        public static string Text_SearchIncomplete {
+            get {
+                return ResourceManager.GetString("Text_SearchIncomplete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Searching &apos;{0}&apos;.
         /// </summary>
         public static string Text_Searching {
             get {
                 return ResourceManager.GetString("Text_Searching", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search stopped while still incomplete..
+        /// </summary>
+        public static string Text_SearchStopped {
+            get {
+                return ResourceManager.GetString("Text_SearchStopped", resourceCulture);
             }
         }
         

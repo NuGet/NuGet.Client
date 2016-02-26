@@ -103,18 +103,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         private void FindPackagesByPSSearchService()
         {
-            VersionType versionType;
-            var remotePackages = ThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                var result = await GetPackagesFromRemoteSourceAsync(Id, Enumerable.Empty<string>(), IncludePrerelease.IsPresent, Skip, First);
-                return result;
-            });
+            var remotePackages = GetPackagesFromRemoteSource(Id, IncludePrerelease.IsPresent);
 
             if (ExactMatch.IsPresent)
             {
                 remotePackages = remotePackages.Where(p => string.Equals(p.Identity.Id, Id, StringComparison.OrdinalIgnoreCase));
             }
 
+            remotePackages = remotePackages.Skip(Skip).Take(First);
+
+            VersionType versionType;
             if (AllVersions.IsPresent)
             {
                 versionType = VersionType.All;
@@ -140,29 +138,16 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected void FindPackageStartWithId(bool excludeVersionInfo)
         {
-            var autoCompleteResource = ActiveSourceRepository.GetResource<AutoCompleteResource>(Token);
-            var packageIds = NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                var result = await autoCompleteResource.IdStartsWith(Id, IncludePrerelease.IsPresent, Logging.NullLogger.Instance, Token);
-                return result;
-            });
+            var packageIds = NuGetUIThreadHelper.JoinableTaskFactory.Run(
+                () => GetPackageIdsFromRemoteSourceAsync(Id, IncludePrerelease.IsPresent));
 
             Token.ThrowIfCancellationRequested();
 
-            packageIds = packageIds == null ? Enumerable.Empty<string>() : packageIds.Skip(Skip).Take(First);
+            packageIds = packageIds?.Skip(Skip).Take(First) ?? Enumerable.Empty<string>();
 
             if (excludeVersionInfo)
             {
-                var packages = new List<PowerShellPackage>();
-
-                foreach (var id in packageIds)
-                {
-                    packages.Add(new PowerShellPackage
-                    {
-                        Id = id
-                    });
-                }
-
+                var packages = packageIds.Select(id => new PowerShellPackage { Id = id });
                 WriteObject(packages, enumerateCollection: true);
                 return;
             }
@@ -172,7 +157,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 var packages = new List<PowerShellPackage>();
                 foreach (var id in packageIds)
                 {
-                    var package = GetIPowerShellPackageFromRemoteSource(autoCompleteResource, id);
+                    var package = GetPowerShellPackageFromRemoteSource(id);
 
                     // Just start the task and don't wait for it to complete
                     package.AsyncLazyVersions.GetValueAsync();
@@ -188,7 +173,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                     var packageId = packageIds.Where(p => string.Equals(p, Id, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
                     if (!string.IsNullOrEmpty(packageId))
                     {
-                        var package = GetIPowerShellPackageFromRemoteSource(autoCompleteResource, packageId);
+                        var package = GetPowerShellPackageFromRemoteSource(packageId);
 
                         // Just start the task and don't wait for it to complete
                         package.AsyncLazyVersions.GetValueAsync();
@@ -201,24 +186,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Get IPowerShellPackage from the remote package source
         /// </summary>
-        private PowerShellPackage GetIPowerShellPackageFromRemoteSource(AutoCompleteResource autoCompleteResource, string id)
+        private PowerShellPackage GetPowerShellPackageFromRemoteSource(string id)
         {
-            AsyncLazy<IEnumerable<NuGetVersion>> asyncLazyVersions = null;
-
-            try
-            {
-                asyncLazyVersions = new AsyncLazy<IEnumerable<NuGetVersion>>(async () =>
-                {
-                    var results = await autoCompleteResource.VersionStartsWith(id, Version, IncludePrerelease.IsPresent, Logging.NullLogger.Instance, Token);
-                    results = results?.OrderByDescending(v => v).ToArray();
-
-                    return results;
-                },
+            var asyncLazyVersions = new AsyncLazy<IEnumerable<NuGetVersion>>(
+                () => GetPackageVersionsFromRemoteSourceAsync(id, Version, IncludePrerelease.IsPresent),
                 NuGetUIThreadHelper.JoinableTaskFactory);
-            }
-            catch
-            {
-            }
 
             var package = new PowerShellPackage();
             package.Id = id;

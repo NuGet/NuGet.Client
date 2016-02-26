@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Utilities;
 using NuGet.VisualStudio;
 
-namespace NuGet.CommandLine.Test
+namespace NuGet.PackageManagement.UI.Test
 {
     [Export(typeof(IVsPackageManagerProvider))]
     [Order(Before = "test-version1")]

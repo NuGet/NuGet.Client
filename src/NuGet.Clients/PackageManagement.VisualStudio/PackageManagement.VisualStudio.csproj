@@ -188,13 +188,13 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\VisualStudio14\VisualStudio14.csproj">
-      <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
-      <Name>VisualStudio14</Name>
-    </ProjectReference>
     <ProjectReference Include="..\PackageManagement.UI\PackageManagement.UI.csproj">
       <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
       <Name>PackageManagement.UI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\VisualStudio14\VisualStudio14.csproj">
+      <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
+      <Name>VisualStudio14</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
