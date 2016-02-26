@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using NuGet.Frameworks;
+using NuGet.Packaging.PackageCreation.Resources;
 
 namespace NuGet.Packaging
 {
@@ -31,5 +33,13 @@ namespace NuGet.Packaging
         public IReadOnlyCollection<string> References { get; }
 
         public NuGetFramework TargetFramework { get; }
+
+        public IEnumerable<string> Validate()
+        {
+            if (References.Any(reference => String.IsNullOrEmpty(reference)))
+            {
+                yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredMetadataMissing, "Reference");
+            }
+        }
     }
 }

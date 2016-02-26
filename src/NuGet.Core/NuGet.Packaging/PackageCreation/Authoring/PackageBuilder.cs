@@ -258,7 +258,7 @@ namespace NuGet.Packaging
             ValidateDependencyGroups(Version, DependencyGroups);
             ValidateReferenceAssemblies(Files, PackageAssemblyReferences);
 
-            using (var package = new ZipArchive(stream, ZipArchiveMode.Create))
+            using (var package = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
             {
                 string psmdcpPath = $"package/services/metadata/core-properties/{Guid.NewGuid().ToString("N")}.psmdcp";
 
@@ -365,7 +365,7 @@ namespace NuGet.Packaging
                  file.Path.EndsWith(".uninstall.xdt", StringComparison.OrdinalIgnoreCase)));
         }
 
-        internal static void ValidateDependencyGroups(SemanticVersion version, IEnumerable<PackageDependencyGroup> dependencies)
+        public static void ValidateDependencyGroups(SemanticVersion version, IEnumerable<PackageDependencyGroup> dependencies)
         {
             if (version == null)
             {
@@ -389,7 +389,7 @@ namespace NuGet.Packaging
             }
         }
 
-        internal static void ValidateReferenceAssemblies(IEnumerable<IPackageFile> files, IEnumerable<PackageReferenceSet> packageAssemblyReferences)
+        public static void ValidateReferenceAssemblies(IEnumerable<IPackageFile> files, IEnumerable<PackageReferenceSet> packageAssemblyReferences)
         {
             var libFiles = new HashSet<string>(from file in files
                                                where !String.IsNullOrEmpty(file.Path) && file.Path.StartsWith("lib", StringComparison.OrdinalIgnoreCase)
@@ -657,13 +657,23 @@ namespace NuGet.Packaging
                 return;
             }
 
-            var entry = package.CreateEntry(PathUtility.GetPathWithForwardSlashes(path), CompressionLevel.Optimal);
+            string entryName = CreatePartEntryName(path);
+
+            var entry = package.CreateEntry(entryName, CompressionLevel.Optimal);
             using (var stream = entry.Open())
             {
                 sourceStream.CopyTo(stream);
             }
         }
 
+        internal static string CreatePartEntryName(string path)
+        {
+            // Only the segments between the path separators should be escaped
+            var segments = path.Split(new[] { '/', Path.DirectorySeparatorChar }, StringSplitOptions.None)
+                               .Select(Uri.EscapeDataString);
+            return String.Join("/", segments);
+        }
+        
         /// <summary>
         /// Tags come in this format. tag1 tag2 tag3 etc..
         /// </summary>
@@ -682,12 +692,7 @@ namespace NuGet.Packaging
 
         private static bool ValidateSpecialVersionLength(SemanticVersion version)
         {
-            if (!version.IsPrerelease)
-            {
-                return true;
-            }
-
-            return version == null || version.Release.Length <= 20;
+            return version == null || !version.IsPrerelease || version.Release.Length <= 20;
         }
 
         private void WriteOpcManifestRelationship(ZipArchive package, string path, string psmdcpPath)

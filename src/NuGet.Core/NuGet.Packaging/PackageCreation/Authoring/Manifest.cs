@@ -1,19 +1,15 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using NuGet.Common;
-using NuGet.Packaging.Xml;
-
-#if !DNXCORE50
-using System.Collections;
-using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using System.Xml.Schema;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageCreation.Resources;
-#endif
+using NuGet.Packaging.Xml;
 
 namespace NuGet.Packaging
 {
@@ -71,14 +67,11 @@ namespace NuGet.Packaging
 
         public void Save(Stream stream, bool validate, int minimumManifestVersion)
         {
-#if !DNXCORE50
-            // REVIEW: CoreCLR?
             if (validate)
             {
                 // Validate before saving
                 Validate(this);
             }
-#endif
 
             int version = Math.Max(minimumManifestVersion, ManifestVersionUtility.GetManifestVersion(Metadata));
             var schemaNamespace = (XNamespace)ManifestSchemaUtility.GetSchemaNamespace(version);
@@ -131,11 +124,8 @@ namespace NuGet.Packaging
             // Deserialize it
             var manifest = ManifestReader.ReadManifest(document);
 
-#if !DNXCORE50
             // Validate before returning
-            // REVIEW: CoreCLR?
             Validate(manifest);
-#endif
 
             return manifest;
         }
@@ -225,28 +215,49 @@ namespace NuGet.Packaging
             return document.Root.Element(metadataName);
         }
 
-#if !DNXCORE50
         internal static void Validate(Manifest manifest)
         {
-            var results = new List<ValidationResult>();
+            var results = new List<string>();
 
-            // Run all data annotations validations
-            TryValidate(manifest.Metadata, results);
-            TryValidate(manifest.Files, results);
+            // Run all validations
+            results.AddRange(manifest.Metadata.Validate());
+            foreach(var manifestFile in manifest.Files)
+            {
+                results.AddRange(manifestFile.Validate());
+            }
+
             if (manifest.Metadata.DependencyGroups != null)
             {
-                TryValidate(manifest.Metadata.DependencyGroups.SelectMany(d => d.Packages), results);
+                foreach(var packageDependency in manifest.Metadata.DependencyGroups.SelectMany(d => d.Packages))
+                {
+                    results.AddRange(ValidatePackageDependency(packageDependency));
+                }
             }
-            TryValidate(manifest.Metadata.PackageAssemblyReferences, results);
+
+            if (manifest.Metadata.PackageAssemblyReferences != null)
+            {
+                foreach (var packageAssemblyReference in manifest.Metadata.PackageAssemblyReferences)
+                {
+                    results.AddRange(packageAssemblyReference.Validate());
+                }
+            }
 
             if (results.Any())
             {
-                string message = String.Join(Environment.NewLine, results.Select(r => r.ErrorMessage));
-                throw new ValidationException(message);
+                string message = String.Join(Environment.NewLine, results);
+                throw new Exception(message);
             }
 
             // Validate additional dependency rules dependencies
             ValidateDependencyGroups(manifest.Metadata);
+        }
+
+        private static IEnumerable<string> ValidatePackageDependency(PackageDependency dependency)
+        {
+            if (String.IsNullOrEmpty(dependency.Id))
+            {
+                yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_DependencyIdRequired);
+            }
         }
 
         private static void ValidateDependencyGroups(IPackageMetadata metadata)
@@ -290,46 +301,5 @@ namespace NuGet.Packaging
                 }
             }
         }
-
-        private static bool TryValidate(object value, ICollection<ValidationResult> results)
-        {
-            if (value != null)
-            {
-                var enumerable = value as IEnumerable;
-                if (enumerable != null)
-                {
-                    foreach (var item in enumerable)
-                    {
-                        Validator.TryValidateObject(item, CreateValidationContext(item), results);
-                    }
-                }
-                return Validator.TryValidateObject(value, CreateValidationContext(value), results);
-            }
-            return true;
-        }
-
-        private static ValidationContext CreateValidationContext(object value)
-        {
-            return new ValidationContext(value, NullServiceProvider.Instance, new Dictionary<object, object>());
-        }
-
-        private class NullServiceProvider : IServiceProvider
-        {
-            private static readonly IServiceProvider _instance = new NullServiceProvider();
-
-            public static IServiceProvider Instance
-            {
-                get
-                {
-                    return _instance;
-                }
-            }
-
-            public object GetService(Type serviceType)
-            {
-                return null;
-            }
-        }
-#endif
     }
 }

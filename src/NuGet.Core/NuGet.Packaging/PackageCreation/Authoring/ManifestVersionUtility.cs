@@ -3,10 +3,6 @@ using System.Collections;
 using System.Linq;
 using System.Reflection;
 
-#if !DNXCORE50
-using System.Xml.Serialization;
-#endif
-
 namespace NuGet.Packaging
 {
     internal static class ManifestVersionUtility
@@ -43,7 +39,7 @@ namespace NuGet.Packaging
                 return TargetFrameworkSupportForDependencyContentsAndToolsVersion;
             }
 
-            if (metadata.Version.IsPrerelease)
+            if (metadata.Version != null && metadata.Version.IsPrerelease)
             {
                 return SemverVersion;
             }
@@ -76,7 +72,6 @@ namespace NuGet.Packaging
                 return DefaultVersion;
             }
 
-#if !DNXCORE50
             var list = value as IList;
             if (list != null)
             {
@@ -84,9 +79,8 @@ namespace NuGet.Packaging
                 {
                     return Math.Max(version.Value, VisitList(list));
                 }
-                return version.Value;
+                return DefaultVersion;
             }
-#endif
 
             var stringValue = value as string;
             if (stringValue != null)

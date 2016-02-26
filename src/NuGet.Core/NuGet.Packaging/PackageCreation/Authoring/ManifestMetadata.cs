@@ -1,25 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-#if !DNXCORE50
-using System.ComponentModel.DataAnnotations;
 using System.Globalization;
-#endif
 using System.IO;
 using System.Linq;
+using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Versioning;
 
 namespace NuGet.Packaging
 {
     public class ManifestMetadata : IPackageMetadata
-#if !DNXCORE50
-                                        , IValidatableObject
-#endif
     {
         private string _minClientVersionString;
 
         private IEnumerable<string> _authors = Enumerable.Empty<string>();
         private IEnumerable<string> _owners = Enumerable.Empty<string>();
+
+        private string _iconUrl;
+        private string _licenseUrl;
+        private string _projectUrl;
 
         public ManifestMetadata()
         {
@@ -36,20 +35,21 @@ namespace NuGet.Packaging
             Authors = copy.Authors;
             Owners = copy.Owners;
             Tags = string.IsNullOrEmpty(copy.Tags) ? null : copy.Tags.Trim();
-            LicenseUrl = copy.LicenseUrl;
-            ProjectUrl = copy.ProjectUrl;
-            IconUrl = copy.IconUrl;
+            _licenseUrl = copy.LicenseUrl?.OriginalString;
+            _projectUrl = copy.ProjectUrl?.OriginalString;
+            _iconUrl = copy.IconUrl?.OriginalString;
             RequireLicenseAcceptance = copy.RequireLicenseAcceptance;
             Description = copy.Description?.Trim();
             Copyright = copy.Copyright?.Trim();
             Summary = copy.Summary?.Trim();
             ReleaseNotes = copy.ReleaseNotes?.Trim();
             Language = copy.Language?.Trim();
-            DependencyGroups = copy.DependencyGroups;
+            DependencyGroups = CreatePackageDependencyGroups(copy.DependencyGroups);
             FrameworkAssemblies = copy.FrameworkAssemblies;
             PackageAssemblyReferences = copy.PackageAssemblyReferences;
             MinClientVersionString = copy.MinClientVersion?.ToString();
             ContentFiles = copy.ContentFiles;
+            DevelopmentDependency = copy.DevelopmentDependency;
         }
 
         [ManifestVersion(5)]
@@ -89,11 +89,61 @@ namespace NuGet.Packaging
             set { _owners = value ?? Enumerable.Empty<string>(); }
         }
 
-        public Uri IconUrl { get; set; }
+        // The (Icon/License/Project)Url properties have backing strings as we need to be able to differentiate
+        //   between the property not being set (valid) and set to an empty value (invalid). 
+        public void SetIconUrl(string iconUrl)
+        {
+            _iconUrl = iconUrl;
+        }
 
-        public Uri LicenseUrl { get; set; }
+        public Uri IconUrl
+        {
+            get
+            {
+                if (_iconUrl == null)
+                {
+                    return null;
+                }
 
-        public Uri ProjectUrl { get; set; }
+                return new Uri(_iconUrl);
+            }
+        }
+
+        public void SetLicenseUrl(string licenseUrl)
+        {
+            _licenseUrl = licenseUrl;
+        }
+
+        public Uri LicenseUrl
+        {
+            get
+            {
+                if (_licenseUrl == null)
+                {
+                    return null;
+                }
+
+                return new Uri(_licenseUrl);
+            }
+        }
+
+        public void SetProjectUrl(string projectUrl)
+        {
+            _projectUrl = projectUrl;
+        }
+
+        public Uri ProjectUrl
+        {
+            get
+            {
+                if (_projectUrl == null)
+                {
+                    return null;
+                }
+
+                return new Uri(_projectUrl);
+            }
+        }
 
         public bool RequireLicenseAcceptance { get; set; }
 
@@ -117,48 +167,94 @@ namespace NuGet.Packaging
 
         public IEnumerable<FrameworkAssemblyReference> FrameworkAssemblies { get; set; } = new List<FrameworkAssemblyReference>();
 
+        [ManifestVersion(2)]
         public ICollection<PackageReferenceSet> PackageAssemblyReferences { get; set; } = new List<PackageReferenceSet>();
 
         public ICollection<ManifestContentFiles> ContentFiles { get; set; } = new List<ManifestContentFiles>();
 
-#if !DNXCORE50
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        private static IEnumerable<PackageDependencyGroup> CreatePackageDependencyGroups(IEnumerable<PackageDependencyGroup> packageDependencyGroups)
         {
-            if (!String.IsNullOrEmpty(Id))
+            if (packageDependencyGroups.IsEmpty())
+            {
+                return new List<PackageDependencyGroup>(0);
+            }
+
+            return packageDependencyGroups.Select(dependencyGroup =>
+            {
+                var dependencies = CreatePackageDependencies(dependencyGroup.Packages);
+                return new PackageDependencyGroup(dependencyGroup.TargetFramework, dependencies);
+            }).ToList();
+        }
+
+        private static IEnumerable<PackageDependency> CreatePackageDependencies(IEnumerable<PackageDependency> packageDependencies)
+        {
+            if (packageDependencies == null)
+            {
+                return new List<PackageDependency>(0);
+            }
+
+            return packageDependencies.Select(dependency =>
+            {
+                return new PackageDependency(
+                    dependency.Id.SafeTrim(),
+                    dependency.VersionRange,
+                    dependency.Include,
+                    dependency.Exclude);
+            }).ToList();
+        }
+
+        public IEnumerable<string> Validate()
+        {
+            if (String.IsNullOrEmpty(Id))
+            {
+                yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredMetadataMissing, "Id");
+            }
+            else
             {
                 if (Id.Length > PackageIdValidator.MaxPackageIdLength)
                 {
-                    yield return new ValidationResult(String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_IdMaxLengthExceeded));
+                    yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_IdMaxLengthExceeded);
                 }
-                else if(!PackageIdValidator.IsValidPackageId(Id))
+                else if (!PackageIdValidator.IsValidPackageId(Id))
                 {
-                    yield return new ValidationResult(String.Format(CultureInfo.CurrentCulture, NuGetResources.InvalidPackageId, Id));
+                    yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.InvalidPackageId, Id);
                 }
             }
 
-            if (LicenseUrl?.OriginalString == String.Empty)
+            if (Version == null)
             {
-                yield return new ValidationResult(
-                    String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_UriCannotBeEmpty, "LicenseUrl"));
+                yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredMetadataMissing, "Version");
             }
 
-            if (IconUrl?.OriginalString == String.Empty)
+            if (Authors == null || !Authors.Any())
             {
-                yield return new ValidationResult(
-                    String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_UriCannotBeEmpty, "IconUrl"));
+                yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredMetadataMissing, "Authors");
             }
 
-            if (IconUrl?.OriginalString == String.Empty)
+            if (String.IsNullOrEmpty(Description))
             {
-                yield return new ValidationResult(
-                    String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_UriCannotBeEmpty, "ProjectUrl"));
+                yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredMetadataMissing, "Description");
             }
 
-            if (RequireLicenseAcceptance && String.IsNullOrWhiteSpace(LicenseUrl?.OriginalString))
+            if (_licenseUrl == String.Empty)
             {
-                yield return new ValidationResult(NuGetResources.Manifest_RequireLicenseAcceptanceRequiresLicenseUrl);
+                yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_UriCannotBeEmpty, "LicenseUrl");
+            }
+
+            if (_iconUrl == String.Empty)
+            {
+                yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_UriCannotBeEmpty, "IconUrl");
+            }
+
+            if (_projectUrl == String.Empty)
+            {
+                yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_UriCannotBeEmpty, "ProjectUrl");
+            }
+
+            if (RequireLicenseAcceptance && String.IsNullOrWhiteSpace(_licenseUrl))
+            {
+                yield return NuGetResources.Manifest_RequireLicenseAcceptanceRequiresLicenseUrl;
             }
         }
-#endif
     }
 }

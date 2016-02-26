@@ -603,8 +603,8 @@ namespace Proj2
                     dependencies,
                     new PackageDependency[]
                     {
-                        new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.0.0.0")),
-                        new PackageDependency("proj6", VersionUtility.ParseVersionSpec("2.0.0.0"))
+                        new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.0.0")),
+                        new PackageDependency("proj6", VersionUtility.ParseVersionSpec("2.0.0"))
                     },
                     new PackageDepencyComparer());
             }
@@ -713,8 +713,8 @@ namespace Proj2
                     dependencies,
                     new PackageDependency[]
                     {
-                        new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.0.0.0")),
-                        new PackageDependency("proj6", VersionUtility.ParseVersionSpec("2.0.0.0"))
+                        new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.0.0")),
+                        new PackageDependency("proj6", VersionUtility.ParseVersionSpec("2.0.0"))
                     },
                     new PackageDepencyComparer());
             }
@@ -815,8 +815,8 @@ namespace Proj2
                     dependencies.OrderBy(d => d.ToString()),
                     new PackageDependency[]
                     {
-                        new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.0.0.0")),
-                        new PackageDependency(prefixTokenValue + "proj6", VersionUtility.ParseVersionSpec("2.0.0.0"))
+                        new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.0.0")),
+                        new PackageDependency(prefixTokenValue + "proj6", VersionUtility.ParseVersionSpec("2.0.0"))
                     }.OrderBy(d => d.ToString()),
                     new PackageDepencyComparer());
             }
@@ -884,7 +884,7 @@ namespace Proj2
                     dependencies,
                     new PackageDependency[]
                     {
-                        new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.2.0.0"))
+                        new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.2.0"))
                     },
                     new PackageDepencyComparer());
             }

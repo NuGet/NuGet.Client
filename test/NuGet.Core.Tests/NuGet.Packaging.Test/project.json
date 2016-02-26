@@ -10,9 +10,16 @@
     "test": "xunit.runner.dnx"
   },
   "frameworks": {
-    "dnx451": {},
+    "dnx451": {
+      "dependencies": {
+        "Moq": "4.2.1510.2205"
+      }
+    },
     "dnxcore50": {
-      "imports": [ "portable-net45+win8" ]
+      "imports": [ "portable-net45+win8" ],
+      "dependencies": {
+        "moq.netcore": "4.4.0-beta8"
+      }
     }
   }
 }

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Xml.Linq;
 
 using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.Packaging.Xml
 {
@@ -32,12 +33,15 @@ namespace NuGet.Packaging.Xml
             }
 
             elem.Add(new XElement(ns + "id", metadata.Id));
-            elem.Add(new XElement(ns + "version", metadata.Version.ToString()));
+            AddElementIfNotNull(elem, ns, "version", metadata.Version?.ToString());
             AddElementIfNotNull(elem, ns, "title", metadata.Title);
-            elem.Add(new XElement(ns + "requireLicenseAcceptance", metadata.RequireLicenseAcceptance));
-            elem.Add(new XElement(ns + "developmentDependency", metadata.DevelopmentDependency));
             AddElementIfNotNull(elem, ns, "authors", metadata.Authors, authors => string.Join(",", authors));
             AddElementIfNotNull(elem, ns, "owners", metadata.Owners, owners => string.Join(",", owners));
+            elem.Add(new XElement(ns + "requireLicenseAcceptance", metadata.RequireLicenseAcceptance));
+            if (metadata.DevelopmentDependency)
+            {
+                elem.Add(new XElement(ns + "developmentDependency", metadata.DevelopmentDependency));
+            }
             AddElementIfNotNull(elem, ns, "licenseUrl", metadata.LicenseUrl);
             AddElementIfNotNull(elem, ns, "projectUrl", metadata.ProjectUrl);
             AddElementIfNotNull(elem, ns, "iconUrl", metadata.IconUrl);
@@ -147,10 +151,9 @@ namespace NuGet.Packaging.Xml
 
             attributes.Add(new XAttribute("id", dependency.Id));
 
-            if (dependency.VersionRange != null && dependency.VersionRange.OriginalString != null)
+            if (dependency.VersionRange != null && dependency.VersionRange != VersionRange.All)
             {
-                // REVIEW: If this is kept as done in CLI, then the version range is persisted into the nuspec, not just a simple version
-                attributes.Add(new XAttribute("version", dependency.VersionRange.OriginalString));
+                attributes.Add(new XAttribute("version", dependency.VersionRange.ToLegacyShortString()));
             }
 
             if (dependency.Include != null && dependency.Include.Any())
@@ -179,7 +182,7 @@ namespace NuGet.Packaging.Xml
                     new XElement(ns + FrameworkAssembly,
                         new XAttribute(AssemblyName, reference.AssemblyName),
                         reference.SupportedFrameworks != null && reference.SupportedFrameworks.Any() ?
-                            new XAttribute("targetFramework", string.Join(", ", reference.SupportedFrameworks.Select(f => f.GetFrameworkString()))) :
+                            new XAttribute("targetFramework", string.Join(", ", reference.SupportedFrameworks.Where(f => f.IsSpecificFramework).Select(f => f.GetFrameworkString()))) :
                             null)));
         }
 

@@ -83,13 +83,13 @@ namespace NuGet.Packaging
                     manifestMetadata.Owners = value?.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                     break;
                 case "licenseUrl":
-                    manifestMetadata.LicenseUrl = new Uri(value);
+                    manifestMetadata.SetLicenseUrl(value);
                     break;
                 case "projectUrl":
-                    manifestMetadata.ProjectUrl = new Uri(value);
+                    manifestMetadata.SetProjectUrl(value);
                     break;
                 case "iconUrl":
-                    manifestMetadata.IconUrl = new Uri(value);
+                    manifestMetadata.SetIconUrl(value);
                     break;
                 case "requireLicenseAcceptance":
                     manifestMetadata.RequireLicenseAcceptance = XmlConvert.ToBoolean(value);
