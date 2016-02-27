@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace NuGet.Packaging
 {
-    internal static class ManifestVersionUtility
+    public static class ManifestVersionUtility
     {
         public const int DefaultVersion = 1;
         public const int SemverVersion = 3;
@@ -24,7 +24,7 @@ namespace NuGet.Packaging
             // Important: check for version 5 before version 4
             bool referencesHasTargetFramework =
               metadata.PackageAssemblyReferences != null &&
-              metadata.PackageAssemblyReferences.Any(r => r.TargetFramework.IsSpecificFramework);
+              metadata.PackageAssemblyReferences.Any(r => r.TargetFramework != null && r.TargetFramework.IsSpecificFramework);
 
             if (referencesHasTargetFramework)
             {
@@ -33,7 +33,7 @@ namespace NuGet.Packaging
 
             bool dependencyHasTargetFramework =
                 metadata.DependencyGroups != null &&
-                metadata.DependencyGroups.Any(d => d.TargetFramework.IsSpecificFramework);
+                metadata.DependencyGroups.Any(d => d.TargetFramework != null && d.TargetFramework.IsSpecificFramework);
             if (dependencyHasTargetFramework)
             {
                 return TargetFrameworkSupportForDependencyContentsAndToolsVersion;
