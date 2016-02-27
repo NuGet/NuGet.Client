@@ -47,7 +47,7 @@ namespace NuGet.Packaging
                 {
                     _targetPath = value;
                     string effectivePath;
-                    _targetFramework = VersionUtility.ParseFrameworkNameFromFilePath(_targetPath, out effectivePath);
+                    _targetFramework = FrameworkNameUtility.ParseFrameworkNameFromFilePath(_targetPath, out effectivePath);
                     EffectivePath = effectivePath;
                 }
             }

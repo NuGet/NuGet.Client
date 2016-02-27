@@ -325,8 +325,8 @@ namespace NuGet.Packaging
             bool hasContentOrTool = files.Any(
                 f => f.TargetFramework != null &&
                      f.TargetFramework.Identifier != FrameworkConstants.SpecialIdentifiers.Unsupported &&
-                     (f.Path.StartsWith(Constants.ContentDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
-                      f.Path.StartsWith(Constants.ToolsDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)));
+                     (f.Path.StartsWith(PackagingConstants.Folders.Content + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
+                      f.Path.StartsWith(PackagingConstants.Folders.Tools + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)));
 
             if (hasContentOrTool)
             {
@@ -336,8 +336,8 @@ namespace NuGet.Packaging
             // now check if the Lib folder has any empty framework folder
             bool hasEmptyLibFolder = files.Any(
                 f => f.TargetFramework != null &&
-                     f.Path.StartsWith(Constants.LibDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
-                     f.EffectivePath == Constants.PackageEmptyFileName);
+                     f.Path.StartsWith(PackagingConstants.Folders.Lib + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
+                     f.EffectivePath == PackagingConstants.PackageEmptyFileName);
 
             return hasEmptyLibFolder;
         }
@@ -346,7 +346,7 @@ namespace NuGet.Packaging
         {
             return contentFiles.Any(file =>
                 file.Path != null &&
-                file.Path.StartsWith(Constants.ContentFilesDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+                file.Path.StartsWith(PackagingConstants.Folders.ContentFiles + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
         }
 
         private static bool HasIncludeExclude(IEnumerable<PackageDependencyGroup> dependencyGroups)
@@ -360,7 +360,7 @@ namespace NuGet.Packaging
         {
             return contentFiles.Any(file => 
                 file.Path != null &&
-                file.Path.StartsWith(Constants.ContentDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
+                file.Path.StartsWith(PackagingConstants.Folders.Content + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) &&
                 (file.Path.EndsWith(".install.xdt", StringComparison.OrdinalIgnoreCase) || 
                  file.Path.EndsWith(".uninstall.xdt", StringComparison.OrdinalIgnoreCase)));
         }
@@ -473,7 +473,7 @@ namespace NuGet.Packaging
 
         private void WriteManifest(ZipArchive package, int minimumManifestVersion, string psmdcpPath)
         {
-            string path = Id + Constants.ManifestExtension;
+            string path = Id + PackagingConstants.ManifestExtension;
 
             WriteOpcManifestRelationship(package, path, psmdcpPath);
 
@@ -522,7 +522,7 @@ namespace NuGet.Packaging
             if (_includeEmptyDirectories)
             {
                 // we only allow empty directories which are under known root folders.
-                searchFiles.RemoveAll(file => Path.GetFileName(file.TargetPath) == Constants.PackageEmptyFileName
+                searchFiles.RemoveAll(file => Path.GetFileName(file.TargetPath) == PackagingConstants.PackageEmptyFileName
                                              && !IsKnownFolder(file.TargetPath));
             }
 
@@ -607,7 +607,7 @@ namespace NuGet.Packaging
                 {
                     var topLevelDirectory = parts.FirstOrDefault();
 
-                    return Constants.KnownFolders.Any(folder =>
+                    return PackagingConstants.Folders.Known.Any(folder =>
                         folder.Equals(topLevelDirectory, StringComparison.OrdinalIgnoreCase));
                 }
             }

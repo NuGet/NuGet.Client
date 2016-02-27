@@ -272,7 +272,7 @@ namespace NuGet.CommandLine
             return projectAuthor;
         }
 
-        private string GetPropertyValue(string propertyName)
+        public string GetPropertyValue(string propertyName)
         {
             string value;
             if (!_properties.TryGetValue(propertyName, out value))

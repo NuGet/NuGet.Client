@@ -17,7 +17,7 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException(nameof(directoryPathInPackage));
             }
 
-            TargetPath = System.IO.Path.Combine(directoryPathInPackage, Constants.PackageEmptyFileName);
+            TargetPath = System.IO.Path.Combine(directoryPathInPackage, PackagingConstants.PackageEmptyFileName);
         }
     }
 }

@@ -6,12 +6,12 @@ using NuGet.Frameworks;
 
 namespace NuGet.Packaging
 {
-    public static class VersionUtility
+    public static class FrameworkNameUtility
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", MessageId = "1#")]
         public static FrameworkName ParseFrameworkNameFromFilePath(string filePath, out string effectivePath)
         {
-            foreach (string knownFolder in Constants.KnownFolders)
+            foreach (string knownFolder in PackagingConstants.Folders.Known)
             {
                 string folderPrefix = knownFolder + System.IO.Path.DirectorySeparatorChar;
                 if (filePath.Length > folderPrefix.Length &&
@@ -21,9 +21,9 @@ namespace NuGet.Packaging
 
                     try
                     {
-                        return VersionUtility.ParseFrameworkFolderName(
+                        return FrameworkNameUtility.ParseFrameworkFolderName(
                             frameworkPart,
-                            strictParsing: knownFolder == Constants.LibDirectory,
+                            strictParsing: knownFolder == PackagingConstants.Folders.Lib,
                             effectivePath: out effectivePath);
                     }
                     catch (ArgumentException)
