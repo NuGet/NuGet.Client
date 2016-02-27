@@ -127,7 +127,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             try
             {
-                var actions = await PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext, null, PrimarySourceRepositories, CancellationToken.None);
+                var actions = await PackageManager.PreviewInstallPackageAsync(project, packageId, resolutionContext, projectContext, PrimarySourceRepositories, null, CancellationToken.None);
 
                 if (isPreview)
                 {
