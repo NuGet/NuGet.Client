@@ -124,10 +124,7 @@ Function Install-NuGet {
     param()
     if (-not (Test-Path $NuGetExe)) {
         Trace-Log 'Downloading nuget.exe'
-
-        # wget https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe -OutFile $NuGetExe
-        # 20160222 Using the stable version due to prerelease being broken
-        wget https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile $NuGetExe
+        wget https://dist.nuget.org/win-x86-commandline/latest-prerelease/nuget.exe -OutFile $NuGetExe
     }
 }
 
