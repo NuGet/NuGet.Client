@@ -51,6 +51,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private string _activePackageSource;
         private string[] _packageSources;
         private readonly DTE _dte;
+        private readonly HashSet<PackageIdentity> _finishedPackages = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
 
         private IConsole _activeConsole;
         private NuGetPSHost _nugetHost;
@@ -76,6 +77,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             _settings = ServiceLocator.GetInstance<ISettings>();
             _deleteOnRestartManager = ServiceLocator.GetInstance<IDeleteOnRestartManager>();
             _scriptExecutor = ServiceLocator.GetInstance<IScriptExecutor>();
+
+            var prm = ServiceLocator.GetInstance<IPackageRestoreManager>();
+            prm.PackageRestoredEvent += (o, e) =>
+            {
+                RunInitScripts();
+            };
 
             _dte = ServiceLocator.GetInstance<DTE>();
             _sourceControlManagerProvider = ServiceLocator.GetInstanceSafe<ISourceControlManagerProvider>();
@@ -267,20 +274,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             await ExecuteInitScriptsAsync();
 
                             // Hook up solution events
-                            _solutionManager.SolutionOpened += (o, e) =>
-                                {
-                                    _scriptExecutor.Reset();
-
-                                    // Solution opened event is raised on the UI thread
-                                    // Go off the UI thread before calling likely expensive call of ExecuteInitScriptsAsync
-                                    // Also, it uses semaphores, do not call it from the UI thread
-                                    Task.Run(delegate
-                                        {
-                                            UpdateWorkingDirectory();
-                                            return ExecuteInitScriptsAsync();
-                                        });
-                                };
-                            _solutionManager.SolutionClosed += (o, e) => UpdateWorkingDirectory();
+                            _solutionManager.SolutionOpened += (o, e) => RunInitScripts();
+                            _solutionManager.SolutionClosed += (o, e) =>
+                            {
+                                _finishedPackages.Clear();
+                                UpdateWorkingDirectory();
+                            };
                             _solutionManager.NuGetProjectAdded += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
                             _solutionManager.NuGetProjectRenamed += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
                             _solutionManager.NuGetProjectRemoved += (o, e) =>
@@ -307,6 +306,20 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         }
                     }
                 });
+        }
+
+        private void RunInitScripts()
+        {
+            _scriptExecutor.Reset();
+
+            // Solution opened event is raised on the UI thread
+            // Go off the UI thread before calling likely expensive call of ExecuteInitScriptsAsync
+            // Also, it uses semaphores, do not call it from the UI thread
+            Task.Run(delegate
+            {
+                UpdateWorkingDirectory();
+                return ExecuteInitScriptsAsync();
+            });
         }
 
         private void UpdateWorkingDirectoryAndAvailableProjects()
@@ -397,14 +410,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                 var globalFolderPath = SettingsUtility.GetGlobalPackagesFolder(_settings);
                 var globalPathResolver = new VersionFolderPathResolver(globalFolderPath);
 
-                var finishedPackages = new HashSet<PackageIdentity>(PackageIdentity.Comparer);
-
                 foreach (var package in sortedPackages)
                 {
                     // Packages may occur under multiple projects, but we only need to run it once.
-                    if (!finishedPackages.Contains(package))
+                    if (!_finishedPackages.Contains(package))
                     {
-                        finishedPackages.Add(package);
+                        _finishedPackages.Add(package);
 
                         try
                         {
