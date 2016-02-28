@@ -12,7 +12,7 @@ namespace NuGet.Packaging.Test
         public void GetManifestVersionReturns1IfNoNewPropertiesAreSet()
         {
             // Arrange
-            var metadata =    new ManifestMetadata
+            var metadata = new ManifestMetadata
             {
                 Id = "Foo",
                 Version = NuGetVersion.Parse("1.0"),
@@ -37,7 +37,7 @@ namespace NuGet.Packaging.Test
                 Version = NuGetVersion.Parse("1.0"),
                 Authors = new[] { "A, B" },
                 Description = "Description",
-                FrameworkAssemblies = new List<FrameworkAssemblyReference> {  
+                FrameworkReferences = new List<FrameworkAssemblyReference> {
                     new FrameworkAssemblyReference("System.Data.dll", new [] { NuGetFramework.AnyFramework })
                 }
             };
@@ -79,7 +79,7 @@ namespace NuGet.Packaging.Test
                 Version = NuGetVersion.Parse("1.0"),
                 Authors = new[] { "A, B" },
                 Description = "Description",
-                FrameworkAssemblies = new List<FrameworkAssemblyReference> {
+                FrameworkReferences = new List<FrameworkAssemblyReference> {
                     new FrameworkAssemblyReference("System.Data.dll", new [] { NuGetFramework.AnyFramework })
                 },
                 PackageAssemblyReferences = new List<PackageReferenceSet> {
@@ -104,7 +104,7 @@ namespace NuGet.Packaging.Test
                 Version = NuGetVersion.Parse("1.0"),
                 Authors = new[] { "A, B" },
                 Description = "Description",
-                FrameworkAssemblies = new List<FrameworkAssemblyReference>(),
+                FrameworkReferences = new List<FrameworkAssemblyReference>(),
                 PackageAssemblyReferences = new List<PackageReferenceSet>
                 {
                 }

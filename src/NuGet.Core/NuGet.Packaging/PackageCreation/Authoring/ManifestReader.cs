@@ -1,6 +1,8 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -8,7 +10,6 @@ using System.Xml;
 using System.Xml.Linq;
 using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Versioning;
-using System.Runtime.Versioning;
 using NuGet.Packaging.Core;
 using NuGet.Frameworks;
 
@@ -122,7 +123,7 @@ namespace NuGet.Packaging
                     manifestMetadata.DependencyGroups = ReadDependencyGroups(element);
                     break;
                 case "frameworkAssemblies":
-                    manifestMetadata.FrameworkAssemblies = ReadFrameworkAssemblies(element);
+                    manifestMetadata.FrameworkReferences = ReadFrameworkAssemblies(element);
                     break;
                 case "references":
                     manifestMetadata.PackageAssemblyReferences = ReadReferenceSets(element);

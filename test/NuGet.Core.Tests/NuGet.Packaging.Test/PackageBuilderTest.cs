@@ -9,13 +9,12 @@ using System.Xml;
 using System.Xml.Linq;
 using Moq;
 using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.Packaging.Test
 {
-    using NuGet.Packaging.Core;
-
     public class PackageBuilderTest
     {
         [Fact]
@@ -58,23 +57,25 @@ namespace NuGet.Packaging.Test
 
                 ms.Seek(0, SeekOrigin.Begin);
 
-                var zip = new ZipPackage(ms);
-                var files = zip.GetFiles()
-                    .Select(file => file.Path)
-                    .Where(file => Path.GetFileName(file) == "_._")
-                    .OrderBy(s => s)
-                    .ToArray();
+                using (var archive = new ZipArchive(ms, ZipArchiveMode.Read, leaveOpen: true))
+                {
+                    var files = archive.Entries
+                        .Where(file => file.Name == "_._")
+                        .Select(file => file.FullName)
+                        .OrderBy(s => s)
+                        .ToArray();
 
-                // Assert
-                Assert.Equal(8, files.Length);
-                Assert.Equal(@"build\_._", files[0]);
-                Assert.Equal(@"content\_._", files[1]);
-                Assert.Equal(@"contentFiles\any\any\_._", files[2]);
-                Assert.Equal(@"lib\net45\_._", files[3]);
-                Assert.Equal(@"native\net45\_._", files[4]);
-                Assert.Equal(@"ref\net45\_._", files[5]);
-                Assert.Equal(@"runtimes\net45\_._", files[6]);
-                Assert.Equal(@"tools\_._", files[7]);
+                    // Assert
+                    Assert.Equal(8, files.Length);
+                    Assert.Equal(@"build/_._", files[0]);
+                    Assert.Equal(@"content/_._", files[1]);
+                    Assert.Equal(@"contentFiles/any/any/_._", files[2]);
+                    Assert.Equal(@"lib/net45/_._", files[3]);
+                    Assert.Equal(@"native/net45/_._", files[4]);
+                    Assert.Equal(@"ref/net45/_._", files[5]);
+                    Assert.Equal(@"runtimes/net45/_._", files[6]);
+                    Assert.Equal(@"tools/_._", files[7]);
+                }
             }
         }
 
@@ -97,7 +98,7 @@ namespace NuGet.Packaging.Test
                 VersionRange.Parse("1.0.0"),
                 new[] { "a", "b", "c" },
                 new[] { "b", "c" }));
-            
+
             var set = new PackageDependencyGroup(NuGetFramework.AnyFramework, dependencies);
             builder.DependencyGroups.Add(set);
 
@@ -358,8 +359,8 @@ namespace NuGet.Packaging.Test
                 Id = "A",
                 Version = NuGetVersion.Parse("1.0"),
                 Description = "Descriptions",
+                PackageAssemblyReferences = new[] { new PackageReferenceSet(NuGetFramework.AnyFramework, new string[] { "foo.dll" }) }
             };
-            builder.PackageAssemblyReferences.Add(new PackageReferenceSet(NuGetFramework.AnyFramework, new string[] { "foo.dll" }));
             builder.Authors.Add("JohnDoe");
             var ms = new MemoryStream();
 
@@ -819,10 +820,10 @@ namespace NuGet.Packaging.Test
                 Description = "Descriptions",
             };
             builder.Authors.Add("testAuthor");
-            builder.PackageAssemblyReferences.Add(
+            builder.PackageAssemblyReferences = new[] {
                 new PackageReferenceSet(
                     NuGetFramework.Parse(".NET, Version=3.0"),
-                    new[] { "one.dll" }));
+                    new[] { "one.dll" })};
             builder.Files.Add(CreatePackageFile("lib\\one.dll"));
 
             using (var ms = new MemoryStream())
@@ -865,10 +866,10 @@ namespace NuGet.Packaging.Test
                 DevelopmentDependency = true
             };
             builder.Authors.Add("testAuthor");
-            builder.PackageAssemblyReferences.Add(
+            builder.PackageAssemblyReferences = new[] {
                 new PackageReferenceSet(
                     NuGetFramework.Parse(".NET, Version=3.0"),
-                    new[] { "one.dll" }));
+                    new[] { "one.dll" })};
             builder.Files.Add(CreatePackageFile("lib\\one.dll"));
 
             using (var ms = new MemoryStream())
@@ -911,10 +912,10 @@ namespace NuGet.Packaging.Test
                 Description = "Descriptions",
             };
             builder.Authors.Add("testAuthor");
-            builder.PackageAssemblyReferences.Add(
+            builder.PackageAssemblyReferences = new[] {
                 new PackageReferenceSet(
                     NuGetFramework.UnsupportedFramework,
-                    new[] { "one.dll" }));
+                    new[] { "one.dll" })};
             builder.Files.Add(CreatePackageFile("lib\\one.dll"));
 
             using (var ms = new MemoryStream())
@@ -1156,7 +1157,7 @@ namespace NuGet.Packaging.Test
             };
             builder.Authors.Add("Test");
             builder.Files.Add(new PhysicalPackageFile { TargetPath = @"lib\Foo.dll" });
-            builder.PackageAssemblyReferences.Add(new PackageReferenceSet(NuGetFramework.AnyFramework, new string[] { "Bar.dll" }));
+            builder.PackageAssemblyReferences = new[] { new PackageReferenceSet(NuGetFramework.AnyFramework, new string[] { "Bar.dll" }) };
 
             ExceptionAssert.Throws<InvalidDataException>(() => builder.Save(new MemoryStream()),
                 "Invalid assembly reference 'Bar.dll'. Ensure that a file named 'Bar.dll' exists in the lib directory.");
@@ -1224,7 +1225,8 @@ Description is required.");
             string spec4 = @"<?xml version=""1.0"" encoding=""utf-8""?><package><metadata></metadata></package>";
 
             // Switch to invariant culture to ensure the error message is in english.
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+            // REVIEW: Unsupported in dotnet core
+            // Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             // Act and Assert
             ExceptionAssert.Throws<XmlException>(() => new PackageBuilder(spec1.AsStream(), null), "Data at the root level is invalid. Line 1, position 1.");
@@ -1246,7 +1248,8 @@ Description is required.");
   </metadata></package>";
 
             // Switch to invariant culture to ensure the error message is in english.
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+            // REVIEW: Unsupported in dotnet core
+            //Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             // Act & Assert
             ExceptionAssert.Throws<InvalidOperationException>(() => new PackageBuilder(spec.AsStream(), null), "The element 'metadata' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' has incomplete content. List of possible elements expected: 'id' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd'.");
@@ -1307,7 +1310,8 @@ Description is required.");
   </metadata></package>";
 
             // Switch to invariant culture to ensure the error message is in english.
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+            // REVIEW: Unsupported in dotnet core
+            //Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             // Act & Assert
             ExceptionAssert.Throws<InvalidOperationException>(() => new PackageBuilder(spec.AsStream(), null), "The element 'metadata' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' has incomplete content. List of possible elements expected: 'version' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd'.");
@@ -1326,7 +1330,8 @@ Description is required.");
   </metadata></package>";
 
             // Switch to invariant culture to ensure the error message is in english.
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+            // REVIEW: Unsupported in dotnet core
+            //Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             // Act & Assert
             ExceptionAssert.Throws<InvalidOperationException>(() => new PackageBuilder(spec.AsStream(), null), "The element 'metadata' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' has incomplete content. List of possible elements expected: 'authors' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd'.");
@@ -1345,7 +1350,8 @@ Description is required.");
   </metadata></package>";
 
             // Switch to invariant culture to ensure the error message is in english.
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+            // REVIEW: Unsupported in dotnet core
+            //Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             // Act & Assert
             ExceptionAssert.Throws<InvalidOperationException>(() => new PackageBuilder(spec.AsStream(), null), "The element 'metadata' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' has incomplete content. List of possible elements expected: 'description' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd'.");
@@ -1368,7 +1374,8 @@ Description is required.");
   </metadata></package>";
 
             // Switch to invariant culture to ensure the error message is in english.
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+            // REVIEW: Unsupported in dotnet core
+            //Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             // Act & Assert
             ExceptionAssert.Throws<InvalidOperationException>(() => new PackageBuilder(spec.AsStream(), null), "The required attribute 'id' is missing.");
@@ -1418,7 +1425,8 @@ Description is required.");
 </package>";
 
             // Switch to invariant culture to ensure the error message is in english.
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+            // REVIEW: Unsupported in dotnet core
+            //Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             // Assert
             ExceptionAssert.Throws<InvalidOperationException>(() => new PackageBuilder(spec.AsStream(), null), "The required attribute 'src' is missing.");
@@ -1825,7 +1833,7 @@ Description is required.");
             var dependencySets = new PackageDependencyGroup[] {
                         new PackageDependencyGroup(NuGetFramework.AnyFramework, dependencies)
                     };
-             
+
             // Act and Assert
             ExceptionAssert.Throws<InvalidDataException>(() => PackageBuilder.ValidateDependencyGroups(packageVersion, dependencySets),
                 String.Format(CultureInfo.InvariantCulture,
@@ -1932,7 +1940,8 @@ Enabling license acceptance requires a license url.");
 </package>";
 
             // Switch to invariant culture to ensure the error message is in english.
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+            // REVIEW: Unsupported in dotnet core
+            //Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             // Act
             ExceptionAssert.Throws<UriFormatException>(() => new PackageBuilder(spec.AsStream(), null), "Invalid URI: The format of the URI could not be determined.");
@@ -2025,7 +2034,7 @@ Enabling license acceptance requires a license url.");
 </package>";
 
             // Act & Assert
-            ExceptionAssert.Throws<InvalidOperationException>(() => new PackageBuilder(spec.AsStream(), null), "The schema version of 'Artem.XmlProviders' is incompatible with version " + typeof(Manifest).Assembly.GetName().Version + " of NuGet. Please upgrade NuGet to the latest version from http://go.microsoft.com/fwlink/?LinkId=213942.");
+            ExceptionAssert.Throws<InvalidOperationException>(() => new PackageBuilder(spec.AsStream(), null), "The schema version of 'Artem.XmlProviders' is incompatible with version " + typeof(Manifest).GetTypeInfo().Assembly.GetName().Version + " of NuGet. Please upgrade NuGet to the latest version from http://go.microsoft.com/fwlink/?LinkId=213942.");
         }
 
         [Fact]
@@ -2043,7 +2052,7 @@ Enabling license acceptance requires a license url.");
 </package>";
 
             // Act & Assert
-            ExceptionAssert.Throws<InvalidOperationException>(() => new PackageBuilder(spec.AsStream(), null), "The schema version of '' is incompatible with version " + typeof(Manifest).Assembly.GetName().Version + " of NuGet. Please upgrade NuGet to the latest version from http://go.microsoft.com/fwlink/?LinkId=213942.");
+            ExceptionAssert.Throws<InvalidOperationException>(() => new PackageBuilder(spec.AsStream(), null), "The schema version of '' is incompatible with version " + typeof(Manifest).GetTypeInfo().Assembly.GetName().Version + " of NuGet. Please upgrade NuGet to the latest version from http://go.microsoft.com/fwlink/?LinkId=213942.");
         }
 
         [Fact]
@@ -2140,7 +2149,8 @@ Enabling license acceptance requires a license url.");
 </package>";
 
             // Switch to invariant culture to ensure the error message is in english.
-            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+            // REVIEW: Unsupported in dotnet core
+            //Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
             // Act
             ExceptionAssert.Throws<InvalidOperationException>(() => new PackageBuilder(spec.AsStream(), null), "The element 'package' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' has incomplete content. List of possible elements expected: 'metadata' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd'.");
@@ -2171,12 +2181,23 @@ Enabling license acceptance requires a license url.");
             {
                 builder.Save(stream);
 
-                var zipPackage = new ZipPackage(new MemoryStream(stream.ToArray()));
-                Assert.Equal(@"content\images\bread&butter.jpg", zipPackage.GetFiles().ElementAt(0).Path);
-                Assert.Equal(@"content\images\logo123?#78.png", zipPackage.GetFiles().ElementAt(1).Path);
-                Assert.Equal(@"lib\C#\test.dll", zipPackage.GetFiles().ElementAt(2).Path);
-                Assert.Equal(@"lib\name with spaces.dll", zipPackage.GetFiles().ElementAt(3).Path);
-                Assert.Equal(@"lib\regular.file.dll", zipPackage.GetFiles().ElementAt(4).Path);
+                using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true))
+                {
+                    var files = archive.GetFiles().OrderBy(s => s).ToArray();
+
+                    Assert.Equal(@"[Content_Types].xml", files[0]);
+                    Assert.Equal(@"_rels/.rels", files[1]);
+                    Assert.Equal(@"content/images/bread&butter.jpg", files[2]);
+                    Assert.Equal(@"content/images/logo123?#78.png", files[3]);
+                    Assert.Equal(@"lib/C#/test.dll", files[4]);
+                    Assert.Equal(@"lib/name with spaces.dll", files[5]);
+                    Assert.Equal(@"lib/regular.file.dll", files[6]);
+
+                    Assert.StartsWith(@"package/services/metadata/core-properties/", files[7]);
+                    Assert.EndsWith(@".psmdcp", files[7]);
+
+                    Assert.Equal(@"test.nuspec", files[8]);
+                }
             }
         }
 
@@ -2187,26 +2208,13 @@ Enabling license acceptance requires a license url.");
             file.Setup(f => f.GetStream()).Returns(new MemoryStream());
 
             string effectivePath;
-            var fx = VersionUtility.ParseFrameworkNameFromFilePath(name, out effectivePath);
+            var fx = FrameworkNameUtility.ParseFrameworkNameFromFilePath(name, out effectivePath);
             file.SetupGet(f => f.EffectivePath).Returns(effectivePath);
             file.SetupGet(f => f.TargetFramework).Returns(fx);
 
             return file.Object;
         }
 
-        private static NuGet.IPackageFile CreatePackageFile2(string name)
-        {
-            var file = new Mock<NuGet.IPackageFile>();
-            file.SetupGet(f => f.Path).Returns(name);
-            file.Setup(f => f.GetStream()).Returns(new MemoryStream());
-
-            string effectivePath;
-            var fx = VersionUtility.ParseFrameworkNameFromFilePath(name, out effectivePath);
-            file.SetupGet(f => f.EffectivePath).Returns(effectivePath);
-            file.SetupGet(f => f.TargetFramework).Returns(fx);
-
-            return file.Object;
-        }
         private Stream GetManifestStream(Stream packageStream)
         {
             Stream resultStream = null;

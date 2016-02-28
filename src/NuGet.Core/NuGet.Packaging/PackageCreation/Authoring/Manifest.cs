@@ -1,5 +1,7 @@
-﻿using System;
-using System.Collections;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -83,8 +85,8 @@ namespace NuGet.Packaging
                         new XElement(schemaNamespace + "files",
                             Files.Select(file => new XElement(schemaNamespace + "file",
                                 new XAttribute("src", file.Source),
-                                new XAttribute("target", file.Target),
-                                new XAttribute("exclude", file.Exclude)))) : null)).Save(stream);
+                                file.Target != null ? new XAttribute("target", file.Target) : null,
+                                file.Exclude != null ? new XAttribute("exclude", file.Exclude) : null))) : null)).Save(stream);
         }
 
         public static Manifest ReadFrom(Stream stream, bool validateSchema)
@@ -215,7 +217,7 @@ namespace NuGet.Packaging
             return document.Root.Element(metadataName);
         }
 
-        internal static void Validate(Manifest manifest)
+        public static void Validate(Manifest manifest)
         {
             var results = new List<string>();
 
@@ -254,6 +256,7 @@ namespace NuGet.Packaging
 
         private static IEnumerable<string> ValidatePackageDependency(PackageDependency dependency)
         {
+            // REVIEW: This was used in tests, but now can't be hit due to the construction pattern of PackageDependency.
             if (String.IsNullOrEmpty(dependency.Id))
             {
                 yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_DependencyIdRequired);

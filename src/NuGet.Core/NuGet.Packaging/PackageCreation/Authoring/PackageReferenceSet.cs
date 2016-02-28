@@ -1,6 +1,10 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using NuGet.Frameworks;
 using NuGet.Packaging.PackageCreation.Resources;
@@ -9,6 +13,8 @@ namespace NuGet.Packaging
 {
     public class PackageReferenceSet
     {
+        private static readonly char[] _referenceFileInvalidCharacters = Path.GetInvalidFileNameChars();
+
         public PackageReferenceSet(IEnumerable<string> references)
             : this((NuGetFramework)null, references)
         {
@@ -36,9 +42,16 @@ namespace NuGet.Packaging
 
         public IEnumerable<string> Validate()
         {
-            if (References.Any(reference => String.IsNullOrEmpty(reference)))
+            foreach(var reference in References)
             {
-                yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredMetadataMissing, "Reference");
+                if (String.IsNullOrEmpty(reference))
+                {
+                    yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredElementMissing, "File");
+                }
+                else if (reference.IndexOfAny(_referenceFileInvalidCharacters) != -1)
+                {
+                    yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_InvalidReferenceFile, reference);
+                }
             }
         }
     }

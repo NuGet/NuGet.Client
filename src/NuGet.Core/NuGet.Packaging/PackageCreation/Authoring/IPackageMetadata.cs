@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using NuGet.Versioning;
@@ -27,12 +30,12 @@ namespace NuGet.Packaging
         /// <summary>
         /// Specifies assemblies from GAC that the package depends on.
         /// </summary>
-        IEnumerable<FrameworkAssemblyReference> FrameworkAssemblies { get; }
+        IEnumerable<FrameworkAssemblyReference> FrameworkReferences { get; }
         
         /// <summary>
         /// Returns sets of References specified in the manifest.
         /// </summary>
-        ICollection<PackageReferenceSet> PackageAssemblyReferences { get; }
+        IEnumerable<PackageReferenceSet> PackageAssemblyReferences { get; }
 
         /// <summary>
         /// Specifies sets other packages that the package depends on.

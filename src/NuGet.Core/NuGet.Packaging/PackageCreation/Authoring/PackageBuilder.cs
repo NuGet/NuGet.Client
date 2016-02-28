@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -7,6 +10,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.PackageCreation.Resources;
@@ -190,7 +194,7 @@ namespace NuGet.Packaging
         public ICollection<PackageReferenceSet> PackageAssemblyReferences
         {
             get;
-            private set;
+            set;
         }
 
         IEnumerable<string> IPackageMetadata.Authors
@@ -217,6 +221,14 @@ namespace NuGet.Packaging
             }
         }
 
+        IEnumerable<PackageReferenceSet> IPackageMetadata.PackageAssemblyReferences
+        {
+            get
+            {
+                return PackageAssemblyReferences;
+            }
+        }
+
         IEnumerable<PackageDependencyGroup> IPackageMetadata.DependencyGroups
         {
             get
@@ -225,7 +237,7 @@ namespace NuGet.Packaging
             }
         }
 
-        IEnumerable<FrameworkAssemblyReference> IPackageMetadata.FrameworkAssemblies
+        IEnumerable<FrameworkAssemblyReference> IPackageMetadata.FrameworkReferences
         {
             get
             {
@@ -295,7 +307,7 @@ namespace NuGet.Packaging
         }
 
         private static int DetermineMinimumSchemaVersion(
-            Collection<IPackageFile> Files, 
+            Collection<IPackageFile> Files,
             Collection<PackageDependencyGroup> package)
         {
             if (HasContentFilesV2(Files) || HasIncludeExclude(package))
@@ -455,7 +467,7 @@ namespace NuGet.Packaging
             }
 
             DependencyGroups.AddRange(metadata.DependencyGroups);
-            FrameworkReferences.AddRange(metadata.FrameworkAssemblies);
+            FrameworkReferences.AddRange(metadata.FrameworkReferences);
 
             if (manifestMetadata.PackageAssemblyReferences != null)
             {

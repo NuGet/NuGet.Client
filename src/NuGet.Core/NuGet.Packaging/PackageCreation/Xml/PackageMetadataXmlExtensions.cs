@@ -73,7 +73,7 @@ namespace NuGet.Packaging.Xml
                 References,
                 TargetFramework));
 
-            elem.Add(GetXElementFromFrameworkAssemblies(ns, metadata.FrameworkAssemblies));
+            elem.Add(GetXElementFromFrameworkAssemblies(ns, metadata.FrameworkReferences));
             elem.Add(GetXElementFromManifestContentFiles(ns, metadata.ContentFiles));
 
             return elem;

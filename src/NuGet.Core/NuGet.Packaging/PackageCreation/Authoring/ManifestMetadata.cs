@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -44,8 +47,8 @@ namespace NuGet.Packaging
             Summary = copy.Summary?.Trim();
             ReleaseNotes = copy.ReleaseNotes?.Trim();
             Language = copy.Language?.Trim();
-            DependencyGroups = CreatePackageDependencyGroups(copy.DependencyGroups);
-            FrameworkAssemblies = copy.FrameworkAssemblies;
+            DependencyGroups = copy.DependencyGroups;
+            FrameworkReferences = copy.FrameworkReferences;
             PackageAssemblyReferences = copy.PackageAssemblyReferences;
             MinClientVersionString = copy.MinClientVersion?.ToString();
             ContentFiles = copy.ContentFiles;
@@ -163,44 +166,105 @@ namespace NuGet.Packaging
 
         public string Tags { get; set; }
 
-        public IEnumerable<PackageDependencyGroup> DependencyGroups { get; set; } = new List<PackageDependencyGroup>();
+        private IEnumerable<PackageDependencyGroup> _dependencyGroups = new List<PackageDependencyGroup>();
+        public IEnumerable<PackageDependencyGroup> DependencyGroups
+        {
+            get
+            {
+                return _dependencyGroups;
+            }
+            set
+            {
+                _dependencyGroups = MergeDependencyGroups(value);
+            }
+        }
 
-        public IEnumerable<FrameworkAssemblyReference> FrameworkAssemblies { get; set; } = new List<FrameworkAssemblyReference>();
+        public IEnumerable<FrameworkAssemblyReference> FrameworkReferences { get; set; } = new List<FrameworkAssemblyReference>();
+
+        private IEnumerable<PackageReferenceSet> _packageAssemblyReferences = new List<PackageReferenceSet>();
 
         [ManifestVersion(2)]
-        public ICollection<PackageReferenceSet> PackageAssemblyReferences { get; set; } = new List<PackageReferenceSet>();
+        public IEnumerable<PackageReferenceSet> PackageAssemblyReferences
+        {
+            get
+            {
+                return _packageAssemblyReferences;
+            }
+
+            set
+            {
+                _packageAssemblyReferences = MergePackageAssemblyReferences(value);
+            }
+        }
+
+        private static IEnumerable<PackageReferenceSet> MergePackageAssemblyReferences(IEnumerable<PackageReferenceSet> referenceSets)
+        {
+            if (referenceSets == null)
+            {
+                Enumerable.Empty<PackageReferenceSet>();
+            }
+
+            var referenceSetGroups = referenceSets.GroupBy(set => set.TargetFramework);
+            var groupedReferenceSets = referenceSetGroups.Select(group => new PackageReferenceSet(group.Key, group.SelectMany(g => g.References)))
+                                                            .ToList();
+
+            int nullTargetFrameworkIndex = groupedReferenceSets.FindIndex(set => set.TargetFramework == null);
+            if (nullTargetFrameworkIndex > -1)
+            {
+                var nullFxReferenceSet = groupedReferenceSets[nullTargetFrameworkIndex];
+                groupedReferenceSets.RemoveAt(nullTargetFrameworkIndex);
+                groupedReferenceSets.Insert(0, nullFxReferenceSet);
+            }
+
+            return groupedReferenceSets;
+        }
 
         public ICollection<ManifestContentFiles> ContentFiles { get; set; } = new List<ManifestContentFiles>();
 
-        private static IEnumerable<PackageDependencyGroup> CreatePackageDependencyGroups(IEnumerable<PackageDependencyGroup> packageDependencyGroups)
+        private static IEnumerable<PackageDependencyGroup> MergeDependencyGroups(IEnumerable<PackageDependencyGroup> actualDependencyGroups)
         {
-            if (packageDependencyGroups == null || !packageDependencyGroups.Any())
+            if (actualDependencyGroups == null)
             {
-                return new List<PackageDependencyGroup>(0);
+                return Enumerable.Empty<PackageDependencyGroup>();
             }
 
-            return packageDependencyGroups.Select(dependencyGroup =>
+            var dependencyGroups = actualDependencyGroups.Select(CreatePackageDependencyGroup);
+
+            // group the dependency sets with the same target framework together.
+            var dependencySetGroups = dependencyGroups.GroupBy(set => set.TargetFramework);
+            var groupedDependencySets = dependencySetGroups.Select(group => new PackageDependencyGroup(group.Key, group.SelectMany(g => g.Packages)))
+                                                            .ToList();
+            // move the group with the any target framework (if any) to the front just for nicer display in UI
+            int anyTargetFrameworkIndex = groupedDependencySets.FindIndex(set => set.TargetFramework.IsAny);
+            if (anyTargetFrameworkIndex > -1)
             {
-                var dependencies = CreatePackageDependencies(dependencyGroup.Packages);
-                return new PackageDependencyGroup(dependencyGroup.TargetFramework, dependencies);
-            }).ToList();
+                var anyFxDependencySet = groupedDependencySets[anyTargetFrameworkIndex];
+                groupedDependencySets.RemoveAt(anyTargetFrameworkIndex);
+                groupedDependencySets.Insert(0, anyFxDependencySet);
+            }
+
+            return groupedDependencySets;
         }
 
-        private static IEnumerable<PackageDependency> CreatePackageDependencies(IEnumerable<PackageDependency> packageDependencies)
+        private static PackageDependencyGroup CreatePackageDependencyGroup(PackageDependencyGroup dependencyGroup)
         {
-            if (packageDependencies == null)
+            IEnumerable<PackageDependency> dependencies;
+
+            if (dependencyGroup.Packages == null)
             {
-                return new List<PackageDependency>(0);
+                dependencies = Enumerable.Empty<PackageDependency>();
+            }
+            else
+            {
+                dependencies = dependencyGroup.Packages.Select(dependency =>
+                    new PackageDependency(
+                        dependency.Id.SafeTrim(),
+                        dependency.VersionRange,
+                        dependency.Include,
+                        dependency.Exclude)).ToList();
             }
 
-            return packageDependencies.Select(dependency =>
-            {
-                return new PackageDependency(
-                    dependency.Id.SafeTrim(),
-                    dependency.VersionRange,
-                    dependency.Include,
-                    dependency.Exclude);
-            }).ToList();
+            return new PackageDependencyGroup(dependencyGroup.TargetFramework, dependencies);
         }
 
         public IEnumerable<string> Validate()
@@ -226,7 +290,7 @@ namespace NuGet.Packaging
                 yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredMetadataMissing, "Version");
             }
 
-            if (Authors == null || !Authors.Any())
+            if (Authors == null || !Authors.Any(author => !String.IsNullOrEmpty(author)))
             {
                 yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredMetadataMissing, "Authors");
             }
