@@ -82,7 +82,6 @@
     <Compile Include="NuGetPushCommandTest.cs" />
     <Compile Include="NuGetRestoreCommandTest.cs" />
     <Compile Include="NuGetUpdateCommandTests.cs" />
-    <Compile Include="OffineFeedUtilityTests.cs" />
     <Compile Include="PortReserver.cs" />
     <Compile Include="RestoreProjectJsonTest.cs" />
     <Compile Include="NuGetSourcesCommandTest.cs" />

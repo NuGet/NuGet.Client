@@ -171,16 +171,14 @@ namespace NuGet.Configuration
         {
             {
                 // Walk up the tree to find a config file; also look in .nuget subdirectories
-                // In order to avoid duplicate settings
-                // Exclude specified configeFile from hierarchy Config files
+                // If a configFile is passed, don't walk up the tree. Only use that single config file.
                 var validSettingFiles = new List<Settings>();
-                if (root != null)
+                if (root != null && string.IsNullOrEmpty(configFileName))
                 {
                     validSettingFiles.AddRange(
                         GetSettingsFileNames(root)
                             .Select(f => ReadSettings(root, f))
-                            .Where(f => f != null
-                            && !ConfigPathComparer(f.ConfigFilePath, Path.Combine(root, configFileName ?? string.Empty))));
+                            .Where(f => f != null));
                 }
 
                 if (loadAppDataSettings)
@@ -188,7 +186,7 @@ namespace NuGet.Configuration
                     LoadUserSpecificSettings(validSettingFiles, root, configFileName, machineWideSettings, useTestingGlobalPath);
                 }
 
-                if (machineWideSettings != null)
+                if (machineWideSettings != null && string.IsNullOrEmpty(configFileName))
                 {
                     validSettingFiles.AddRange(
                         machineWideSettings.Settings.Select(
@@ -244,7 +242,7 @@ namespace NuGet.Configuration
                 var defaultSettingsFilePath = String.Empty;
                 if (useTestingGlobalPath)
                 {
-                    defaultSettingsFilePath = Path.Combine(root, "TestingGlobalPath");
+                    defaultSettingsFilePath = Path.Combine(root, "TestingGlobalPath", DefaultSettingsFileName);
                 }
                 else
                 {
@@ -1068,27 +1066,6 @@ namespace NuGet.Configuration
                         mutex.ReleaseMutex();
                     }
                 }
-            }
-        }
-
-        // Compare two config file path, return true if two path are the same.
-        private static bool ConfigPathComparer(string path1, string path2)
-        {
-            if (path1 == null && path2 == null)
-            {
-                return true;
-            }
-            else if (path1 == null || path2 == null)
-            {
-                return false;
-            }
-            else if (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsMacOSX)
-            {
-                return path1.Equals(path2, StringComparison.OrdinalIgnoreCase);
-            }
-            else
-            {
-                return path1.Equals(path2);
             }
         }
 

@@ -204,7 +204,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to No latest version found for the &apos;{0}&apos; for the given source repositories and resolution context.
+        ///    Looks up a localized string similar to No latest version found for &apos;{0}&apos; for the given source repositories and resolution context.
         /// </summary>
         internal static string NoLatestVersionFound {
             get {

@@ -417,7 +417,9 @@ namespace NuGet.PackageManagement.UI
                 log: Logging.NullLogger.Instance,
                 token: cancellationToken);
 
-            var packageMetadata = localPackages?.FirstOrDefault(p => p.Identity.Version == identity.Version);
+            var packageMetadata = localPackages?
+                .FirstOrDefault(p => p.Identity.Version == identity.Version)
+                ?? PackageSearchMetadataBuilder.FromIdentity(identity).Build();
 
             var versions = new[]
             {
@@ -485,7 +487,7 @@ namespace NuGet.PackageManagement.UI
 
                 // if the package does not exist in the remote source, NuGet should
                 // try getting metadata from the local resource.
-                if (String.IsNullOrEmpty(metadata.Summary) && localResource != null)
+                if (String.IsNullOrEmpty(metadata?.Summary) && localResource != null)
                 {
                     return await GetPackageMetadataWhenRemoteSourceUnavailable(
                         localResource,

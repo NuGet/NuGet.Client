@@ -1636,7 +1636,7 @@ namespace NuGet.Test
 
                 Assert.NotNull(exception);
                 Assert.True(exception is InvalidOperationException);
-                Assert.Equal("No latest version found for the 'DoesNotExist' for the given source repositories and resolution context", exception.Message);
+                Assert.Equal("No latest version found for 'DoesNotExist' for the given source repositories and resolution context", exception.Message);
             }
         }
 

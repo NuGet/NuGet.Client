@@ -117,8 +117,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>NuGetResources.resx</DependentUpon>
     </Compile>
-    <Compile Include="OfflineFeedAddContext.cs" />
-    <Compile Include="OfflineFeedUtility.cs" />
     <Compile Include="PackageServer.cs" />
     <Compile Include="PackageSourceBuilder.cs" />
     <Compile Include="Program.cs" />

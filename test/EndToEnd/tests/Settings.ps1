@@ -6,7 +6,7 @@ function Test-GetRepositoryPathFromVsSettings {
 	# Arrange
 	$p1 = New-ClassLibrary
 
-	$solutionFile = $dte.Solution.FullName
+	$solutionFile = Get-SolutionFullName
 	$solutionDir = Split-Path $solutionFile -Parent
 	$nugetDir = Join-Path $solutionDir ".nuget"
 	$repoPath = Join-Path $solutionDir "my_repo"
@@ -26,7 +26,7 @@ function Test-GetRepositoryPathFromVsSettings {
 
 	# Act
 	# close & open the solution so that the settings are reloaded.
-	$dte.Solution.SaveAs($solutionFile)
+	SaveAs-Solution($solutionFile)
 	Close-Solution
 	Write-Host 'Closed solution'
 	Open-Solution $solutionFile

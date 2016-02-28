@@ -186,7 +186,7 @@ namespace NuGet.CommandLine.XPlat
                             string configFileName = configFile.HasValue() ? configFile.Value() : null;
                             var settings = Settings.LoadDefaultSettings(projectDir,
                                 configFileName,
-                                machineWideSettings: null);
+                                machineWideSettings: new CommandLineXPlatMachineWideSetting());
 
                             var globalFolderPath = string.Empty;
                             if (packagesDirectory.HasValue())
@@ -436,12 +436,6 @@ namespace NuGet.CommandLine.XPlat
                 request.RequestedRuntimes.UnionWith(runtime.Values);
 
                 var runtimeEnvironment = PlatformServices.Default.Runtime;
-
-                var defaultRuntimes = RequestRuntimeUtility.GetDefaultRestoreRuntimes(
-                    runtimeEnvironment.OperatingSystem,
-                    runtimeEnvironment.GetRuntimeOsName());
-
-                request.FallbackRuntimes.UnionWith(defaultRuntimes);
 
                 request.MaxDegreeOfConcurrency = isParallel ? RestoreRequest.DefaultDegreeOfConcurrency : 1;
 
