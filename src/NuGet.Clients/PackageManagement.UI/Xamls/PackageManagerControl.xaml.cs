@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -114,6 +115,9 @@ namespace NuGet.PackageManagement.UI
             // UI is initialized. Start the first search
             _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
             _packageList.IsSolution = this.Model.IsSolution;
+
+            ProcessSearchQuery();
+
             SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
             RefreshAvailableUpdatesCount();
             RefreshConsolidatablePackagesCount();
@@ -139,6 +143,51 @@ namespace NuGet.PackageManagement.UI
             }
 
             _missingPackageStatus = false;
+        }
+
+        private void ProcessSearchQuery()
+        {
+            var searchString = _windowSearchHost.SearchQuery.SearchString;
+
+            // See if there are any query parameters in the search string that we 
+            // should adjust our behavior based on.
+            var queryParameters = RemoveQueryParameters(ref searchString);
+
+            string filterParameter;
+            if (queryParameters.TryGetValue("Filter", out filterParameter))
+            { 
+                ItemFilter itemFilter;
+                if (Enum.TryParse(filterParameter, out itemFilter))
+                {
+                    _topPanel.SelectFilter(itemFilter);
+                }
+            }
+        }
+
+        // Look for parameters of the form:  /paramName:paramValue
+        private readonly Regex queryParameterRegex = new Regex(@"\/([a-zA-Z]+)\:([a-zA-Z]+)", RegexOptions.Compiled);
+
+        /// <summary>
+        /// Takes in a search query and strips all query parameters from it.  The query 
+        /// parameters are provided in the returned dictionary, and the search string
+        /// is updated to no longer contain the parameters.
+        /// </summary>
+        private IReadOnlyDictionary<string,string> RemoveQueryParameters(ref string searchString)
+        {
+            var parameters = new Dictionary<string, string>();
+
+            searchString = queryParameterRegex.Replace(searchString,
+                match =>
+                {
+                    var key = match.Groups[1].Value;
+                    var value = match.Groups[2].Value;
+                    parameters[key] = value;
+
+                    // Remove the query parameter entirely from the final string.
+                    return "";
+                });
+
+            return parameters;
         }
 
         private void SolutionManager_ProjectsChanged(object sender, NuGetProjectEventArgs e)
@@ -489,6 +538,9 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         private void SearchPackageInActivePackageSource(string searchText)
         {
+            // Remove any query parameters from this search string before we proceed.
+            RemoveQueryParameters(ref searchText);
+
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
