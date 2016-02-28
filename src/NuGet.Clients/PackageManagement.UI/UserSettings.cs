@@ -18,7 +18,7 @@ namespace NuGet.PackageManagement.UI
         {
             IncludePrerelease = RegistrySettingUtility.GetBooleanSetting(Constants.IncludePrereleaseRegistryName);
             ShowPreviewWindow = true;
-            SelectedFilter = Filter.Installed;
+            SelectedFilter = ItemFilter.Installed;
             DependencyBehavior = DependencyBehavior.Lowest;
             FileConflictAction = FileConflictAction.PromptUser;
             OptionsExpanded = false;
@@ -34,7 +34,7 @@ namespace NuGet.PackageManagement.UI
 
         public bool IncludePrerelease { get; set; }
 
-        public Filter SelectedFilter { get; set; }
+        public ItemFilter SelectedFilter { get; set; }
 
         public DependencyBehavior DependencyBehavior { get; set; }
 

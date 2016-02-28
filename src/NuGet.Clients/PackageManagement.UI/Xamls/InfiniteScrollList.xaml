@@ -29,28 +29,37 @@
           Text="{x:Static resx:Resources.Text_Ready}"
           Visibility="Collapsed" />
 
-        <StackPanel
-          Orientation="Vertical"
+        <Grid
           Name="_progressBar"
-          Visibility="Collapsed">
-          <ProgressBar
-            Margin="24,0"
-            Height="15"
-            IsIndeterminate="True" />
+          Visibility="Collapsed"
+          HorizontalAlignment="Center"
+          Height="22">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <self:Spinner
+            Grid.Column="0"
+            Width="16"
+            Height="16"
+            Margin="3"
+            HorizontalAlignment="Center" 
+        VerticalAlignment="Center" 
+            Visibility="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Grid}, AncestorLevel=1},Path=Visibility}"/>
           <TextBlock
-            Margin="0,8"
+            Grid.Column="1"
             Text="{Binding Path=LoadingMessage}"
-            HorizontalAlignment="Center" />
-        </StackPanel>
+            FontFamily="SegoeUI"
+            FontSize="12"
+            Foreground="#111111"
+            HorizontalAlignment="Left" 
+            VerticalAlignment="Center"/>
+        </Grid>
 
         <StackPanel
           Orientation="Vertical"
           Name="_errorOccurred"
           Visibility="Collapsed">
-          <Button
-            Click="RetryButtonClicked"
-            Content="{x:Static resx:Resources.Button_Retry}"
-            MinWidth="150" />
           <Expander
             Margin="0,8,0,0"
             Header="{x:Static resx:Resources.Text_ErrorDetails}">
@@ -262,14 +271,15 @@
             -->
     </Style>
   </UserControl.Resources>
-  <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition Height="Auto" />
-      <RowDefinition Height="*" />
-    </Grid.RowDefinitions>
+  <DockPanel LastChildFill="True">
+    <resx:LoadingStatusBar 
+      x:Name="_loadingStatusBar"
+      DockPanel.Dock="Top"
+      ShowMoreResultsClicked="_loadingStatusBar_ShowMoreResultsClicked"
+      RestartSearchClicked="_loadingStatusBar_RestartSearchClicked" />
     <Border
       x:Name="_updateButtonContainer"
-      Grid.Row="0"
+      DockPanel.Dock="Top"
       BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
       BorderThickness="0,0,0,1"
       Background="{DynamicResource {x:Static resx:Brushes.LegalMessageBackground}}">
@@ -301,8 +311,8 @@
     </Border>
     <ListBox
       x:Name="_list"
+      DockPanel.Dock="Bottom"
       PreviewKeyUp="List_PreviewKeyUp"
-      Grid.Row="1"
       Background="{DynamicResource {x:Static resx:Brushes.ListPaneBackground}}"
       Foreground="{DynamicResource {x:Static resx:Brushes.UIText}}"
       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -333,5 +343,5 @@
         </ControlTemplate>
       </ListBox.Template>
     </ListBox>
-  </Grid>
+  </DockPanel>
 </UserControl>

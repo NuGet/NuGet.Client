@@ -6,9 +6,8 @@ using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Utilities;
 using System.ComponentModel.Composition.Hosting;
 using System.Reflection;
-using NuGet.PackageManagement.UI;
 
-namespace NuGet.CommandLine.Test
+namespace NuGet.PackageManagement.UI.Test
 {
     public class PackageManagerProviderTest
     {

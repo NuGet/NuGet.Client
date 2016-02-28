@@ -18,6 +18,7 @@ using NuGet.Resolver;
 using NuGet.ProjectManagement;
 using NuGet.Versioning;
 using Task = System.Threading.Tasks.Task;
+using NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -258,7 +259,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                         using (var client = new System.Net.Http.HttpClient())
                         {
-                            ThreadHelper.JoinableTaskFactory.Run(async delegate
+                            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                             {
                                 using (Stream downloadStream = await client.GetStreamAsync(Id))
                                 {

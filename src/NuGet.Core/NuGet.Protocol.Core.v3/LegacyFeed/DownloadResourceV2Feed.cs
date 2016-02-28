@@ -69,6 +69,10 @@ namespace NuGet.Protocol
                     return await _feedParser.DownloadFromIdentity(identity, settings, logger, token);
                 }
             }
+            catch (OperationCanceledException)
+            {
+                return new DownloadResourceResult(DownloadResourceResultStatus.Cancelled);
+            }
             catch (Exception ex) when (!(ex is FatalProtocolException))
             {
                 // if the expcetion is not FatalProtocolException, catch it.

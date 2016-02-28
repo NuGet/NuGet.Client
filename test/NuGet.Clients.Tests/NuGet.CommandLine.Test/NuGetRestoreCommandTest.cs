@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
@@ -172,6 +173,74 @@ namespace NuGet.CommandLine.Test
                 var packageFileB = Path.Combine(workingPath, @"outputDir\packageB.2.2.0\packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
+            }
+        }
+
+        [Fact]
+        public void RestoreCommand_NoCancelledOrNotFoundMessages()
+        {
+            // Arrange
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var nugetexe = Util.GetNuGetExePath();
+
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+                var sourcePath = Path.Combine(workingPath, "source");
+                Directory.CreateDirectory(sourcePath);
+
+                var packagesPath = Path.Combine(workingPath, "packages");
+                Directory.CreateDirectory(packagesPath);
+                
+                var packageA = new ZipPackage(Util.CreateTestPackage("PackageA", "1.1.0", sourcePath));
+                var packageB = new ZipPackage(Util.CreateTestPackage("PackageB", "2.2.0", sourcePath));
+
+                Util.CreateFile(workingPath, "packages.config",
+@"<packages>
+  <package id=""PackageA"" version=""1.1.0"" targetFramework=""net45"" />
+</packages>");
+
+                using (var serverWithPackage = Util.CreateMockServer(new[] { packageA }))
+                using (var serverWithoutPackage = Util.CreateMockServer(new[] { packageB }))
+                using (var slowServer = new MockServer())
+                {
+                    slowServer.Get.Add("/", request =>
+                    {
+                        return new Action<HttpListenerResponse>(response =>
+                        {
+                            Thread.Sleep(TimeSpan.FromSeconds(5));
+                            response.StatusCode = 500;
+                        });
+                    });
+
+                    serverWithPackage.Start();
+                    serverWithoutPackage.Start();
+                    slowServer.Start();
+
+                    string[] args =
+                    {
+                        "restore",
+                        "-PackagesDirectory", packagesPath,
+                        "-Source", serverWithPackage.Uri + "nuget",
+                        "-Source", serverWithoutPackage.Uri + "nuget",
+                        "-Source", slowServer.Uri + "nuget"
+                    };
+
+                    // Act
+                    var result = CommandRunner.Run(
+                        nugetexe,
+                        workingPath,
+                        string.Join(" ", args),
+                        waitForExit: true);
+
+                    // Assert
+                    Assert.True(result.Item3 == string.Empty, $"There should not be any STDERR:{Environment.NewLine}{result.Item3}");
+                    Assert.True(result.Item2 != string.Empty, $"There should be some STDOUT.");
+                    Assert.DoesNotContain("cancel", result.Item2, StringComparison.OrdinalIgnoreCase);
+                    Assert.DoesNotContain("not found", result.Item2, StringComparison.OrdinalIgnoreCase);
+                    Assert.Equal(0, result.Item1);
+                    Assert.True(File.Exists(Path.Combine(packagesPath, @"PackageA.1.1.0\PackageA.1.1.0.nupkg")));
+                }
             }
         }
 

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 
 namespace NuGet.Frameworks
@@ -107,7 +108,13 @@ namespace NuGet.Frameworks
                         versionString += ".0";
                     }
 
-                    Version.TryParse(versionString, out version);
+                    if (!Version.TryParse(versionString, out version))
+                    {
+                        throw new ArgumentException(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.InvalidFrameworkVersion,
+                            versionString));
+                    }
                 }
 
                 if (!String.IsNullOrEmpty(profilePart))
@@ -121,7 +128,7 @@ namespace NuGet.Frameworks
                 {
                     // Frameworks within the portable profile are not allowed
                     // to have profiles themselves #1869
-                    throw new FrameworkException(Strings.InvalidPortableFrameworks);
+                    throw new ArgumentException(Strings.InvalidPortableFrameworks);
                 }
 
                 result = new NuGetFramework(platform, version, profile);

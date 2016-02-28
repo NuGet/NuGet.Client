@@ -21,6 +21,44 @@ namespace API.Test
             });
         }
 
+        private static Window PSWindow = null;
+        public static void StorePSWindow()
+        {
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await StorePSWindowAsync();
+            });
+        }
+
+        private static async Task StorePSWindowAsync()
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var dte = ServiceLocator.GetInstance<DTE>();
+            PSWindow = dte.ActiveWindow;
+        }
+
+        public static void FocusStoredPSWindow()
+        {
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await FocusStoredPSWindowAsync();
+            });
+        }
+
+        private static async Task FocusStoredPSWindowAsync()
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            if (PSWindow == null)
+            {
+                throw new InvalidOperationException("There is no stored PSWindow");
+            }
+
+            PSWindow.SetFocus();
+            PSWindow = null;
+        }
+
         private static async Task<string> GetVSVersionAsync()
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();

@@ -14,6 +14,13 @@ namespace NuGet.Protocol.Core.Types
     /// </summary>
     public abstract class DownloadResource : INuGetResource
     {
+        /// <summary>
+        /// Downloads a package .nupkg with the provided identity. If the package is not available
+        /// on the source but the source itself is not down or unavailable, the
+        /// <see cref="DownloadResourceResult.Status"/> will be <see cref="DownloadResourceResultStatus.NotFound"/>.
+        /// If the operation was cancelled, the <see cref="DownloadResourceResult.Status"/> will be
+        /// <see cref="DownloadResourceResultStatus.Cancelled"/>.
+        /// </summary>
         public abstract Task<DownloadResourceResult> GetDownloadResourceResultAsync(
             PackageIdentity identity,
             ISettings settings,

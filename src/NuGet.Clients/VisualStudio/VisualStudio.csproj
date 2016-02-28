@@ -100,6 +100,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensibility\IVsFrameworkParser.cs" />
     <Compile Include="Extensibility\IVsGlobalPackagesInitScriptExecutor.cs" />
     <Compile Include="Extensibility\IVsFrameworkCompatibility.cs" />
     <Compile Include="Extensibility\IVsPackageSourceProvider.cs" />
@@ -109,6 +110,7 @@
     <Compile Include="Extensibility\IVsPackageMetadata.cs" />
     <Compile Include="Extensibility\IVsPackageRestorer.cs" />
     <Compile Include="Extensibility\IVsPackageUninstaller.cs" />
+    <Compile Include="Extensibility\IVsSemanticVersionComparer.cs" />
     <Compile Include="Extensibility\VsPackageEventHandler.cs" />
     <Compile Include="IVsPackageManagerProvider.cs" />
     <Compile Include="IRegistryKey.cs" />

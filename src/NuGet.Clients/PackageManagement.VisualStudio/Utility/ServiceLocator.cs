@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
@@ -11,6 +10,7 @@ using EnvDTE;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.PackageManagement.UI;
 using VsServiceProvider = Microsoft.VisualStudio.OLE.Interop.IServiceProvider;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -49,12 +49,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static TService GetInstance<TService>() where TService : class
         {
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     // VS Threading Rule #1
                     // Access to ServiceProvider and a lot of casts are performed in this method,
                     // and so this method can RPC into main thread. Switch to main thread explictly, since method has STA requirement
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     // Special case IServiceProvider
                     if (typeof(TService) == typeof(IServiceProvider))
@@ -85,7 +85,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public static TInterface GetGlobalService<TService, TInterface>() where TInterface : class
         {
-            return ThreadHelper.JoinableTaskFactory.Run(GetGlobalServiceAsync<TService, TInterface>);
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(GetGlobalServiceAsync<TService, TInterface>);
         }
 
         private static async Task<TInterface> GetGlobalServiceAsync<TService, TInterface>() where TInterface : class
@@ -93,7 +93,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // VS Threading Rule #1
             // Access to ServiceProvider and a lot of casts are performed in this method,
             // and so this method can RPC into main thread. Switch to main thread explictly, since method has STA requirement
-            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             if (PackageServiceProvider != null)
             {
@@ -113,7 +113,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Debug.Assert(ThreadHelper.CheckAccess());
 
             var dte = await GetGlobalServiceAsync<SDTE, DTE>();
-            return QueryService(dte, typeof(TService)) as TService;
+            return dte != null ? QueryService(dte, typeof(TService)) as TService : null;
         }
 
         private static async Task<TService> GetComponentModelServiceAsync<TService>() where TService : class
@@ -121,7 +121,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Debug.Assert(ThreadHelper.CheckAccess());
 
             IComponentModel componentModel = await GetGlobalServiceAsync<SComponentModel, IComponentModel>();
-            return componentModel.GetService<TService>();
+            return componentModel?.GetService<TService>();
         }
 
         private static async Task<IServiceProvider> GetServiceProviderAsync()

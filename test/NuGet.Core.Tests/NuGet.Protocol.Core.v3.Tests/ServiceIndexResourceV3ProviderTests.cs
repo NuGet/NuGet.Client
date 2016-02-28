@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -68,10 +69,12 @@ namespace NuGet.Protocol.Core.v3.Tests
                 new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act
-            await Assert.ThrowsAsync<HttpRequestException>(async () =>
+            var exception = await Assert.ThrowsAsync<FatalProtocolException>(async () =>
             {
                 var result = await provider.TryCreate(sourceRepository, default(CancellationToken));
             });
+
+            Assert.IsType<HttpRequestException>(exception.InnerException);
         }
 
         [Theory]
@@ -89,10 +92,13 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
                 new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act and assert
-            await Assert.ThrowsAsync<JsonReaderException>(async () =>
-           {
-               var result = await provider.TryCreate(sourceRepository, default(CancellationToken));
-           });
+            var exception = await Assert.ThrowsAsync<FatalProtocolException>(async () =>
+            {
+                var result = await provider.TryCreate(sourceRepository, default(CancellationToken));
+            });
+
+            Assert.IsType<InvalidDataException>(exception.InnerException);
+            Assert.IsType<JsonReaderException>(exception.InnerException.InnerException);
         }
 
         [Theory]
@@ -108,13 +114,13 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
                 new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act
-            NuGetProtocolException ex = await Assert.ThrowsAsync<FatalProtocolException>(async () =>
+            var exception = await Assert.ThrowsAsync<FatalProtocolException>(async () =>
             {
                 var result = await provider.TryCreate(sourceRepository, default(CancellationToken));
             });
 
             // Assert
-            Assert.True(ex.Message.StartsWith("The source version is not supported"));
+            Assert.StartsWith("The source version is not supported", exception.InnerException.Message);
         }
 
         [Theory]
@@ -131,13 +137,13 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
                 new INuGetResourceProvider[] { httpProvider, provider });
 
             // Act
-            NuGetProtocolException ex = await Assert.ThrowsAsync<FatalProtocolException>(async () =>
+            var exception = await Assert.ThrowsAsync<FatalProtocolException>(async () =>
             {
                 var result = await provider.TryCreate(sourceRepository, default(CancellationToken));
             });
 
             // Assert
-            Assert.Equal(ex.Message, "The source does not have the 'version' property.");
+            Assert.Equal("The source does not have the 'version' property.", exception.InnerException.Message);
         }
 
         [Fact]
@@ -156,8 +162,6 @@ xmlns=""http://www.w3.org/2007/app"" xmlns:atom=""http://www.w3.org/2005/Atom"">
 
             // Assert
             Assert.True(result.Item1);
-
-
         }
 
         [Fact]

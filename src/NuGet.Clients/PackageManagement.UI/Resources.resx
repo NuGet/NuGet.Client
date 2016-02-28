@@ -231,8 +231,8 @@
   <data name="Text_LicenseText" xml:space="preserve">
     <value>By clicking "I Accept," you agree to the license terms for the package(s) listed above. If you do not agree to the license terms, click "I Decline."</value>
   </data>
-  <data name="Button_Retry" xml:space="preserve">
-    <value>Error occurred. Retry</value>
+  <data name="Button_RestartSearch" xml:space="preserve">
+    <value>Restart search</value>
   </data>
   <data name="Text_ErrorOccurred" xml:space="preserve">
     <value>Error occured:{0}{1}</value>
@@ -513,5 +513,23 @@ Packages installed into Website projects will not be restored during build. Cons
   </data>
   <data name="Text_UserCanceled" xml:space="preserve">
     <value>Operation canceled by user.</value>
+  </data>
+  <data name="AggregateSourceName" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="Button_ShowErrors" xml:space="preserve">
+    <value>Show errors in output</value>
+  </data>
+  <data name="Button_ShowMoreResults" xml:space="preserve">
+    <value>Show {0} more results</value>
+  </data>
+  <data name="Text_SearchCompleted" xml:space="preserve">
+    <value>Search completed.</value>
+  </data>
+  <data name="Text_SearchIncomplete" xml:space="preserve">
+    <value>These results might be incomplete. Search is still working.</value>
+  </data>
+  <data name="Text_SearchStopped" xml:space="preserve">
+    <value>Search stopped while still incomplete.</value>
   </data>
 </root>

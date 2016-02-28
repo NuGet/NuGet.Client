@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Common;
+using NuGet.Logging;
 using NuGet.Protocol.Core.v3;
 
 namespace NuGet.Protocol
@@ -48,6 +49,7 @@ namespace NuGet.Protocol
             HttpClient client,
             Func<HttpRequestMessage> requestFactory,
             HttpCompletionOption completionOption,
+            ILogger log,
             CancellationToken cancellationToken)
         {
             var tries = 0;
@@ -86,6 +88,15 @@ namespace NuGet.Protocol
                         using (cancellationToken.Register(() => responseTcs.Cancel()))
                         {
                             var timeoutTask = Task.Delay(RequestTimeout, timeoutTcs.Token);
+
+                            string requestUri = request.RequestUri.ToString();
+                            log.LogInformation(string.Format(
+                                CultureInfo.InvariantCulture,
+                                Strings.Http_RequestLog,
+                                request.Method,
+                                requestUri));
+
+                            var stopwatch = Stopwatch.StartNew();
                             var responseTask = client.SendAsync(request, completionOption, responseTcs.Token);
 
                             if (timeoutTask == await Task.WhenAny(responseTask, timeoutTask))
@@ -99,9 +110,8 @@ namespace NuGet.Protocol
                                         CultureInfo.CurrentCulture,
                                         Strings.Http_Timeout,
                                         request.Method,
-                                        request.RequestUri,
-                                        (int)RequestTimeout.TotalMilliseconds,
-                                        Strings.Milliseconds);
+                                        requestUri,
+                                        (int)RequestTimeout.TotalMilliseconds);
                                     throw new TimeoutException(message);
                                 }
                             }
@@ -109,6 +119,13 @@ namespace NuGet.Protocol
                             {
                                 timeoutTcs.Cancel();
                                 response = await responseTask;
+
+                                log.LogInformation(string.Format(
+                                    CultureInfo.InvariantCulture,
+                                    Strings.Http_ResponseLog,
+                                    response.StatusCode,
+                                    requestUri,
+                                    stopwatch.ElapsedMilliseconds));
 
                                 if ((int)response.StatusCode >= 500)
                                 {

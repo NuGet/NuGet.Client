@@ -14,16 +14,17 @@ using System.Management.Automation.Host;
 using System.Management.Automation.Runspaces;
 using System.Threading;
 using System.Threading.Tasks;
-using ExecutionContext = NuGet.ProjectManagement.ExecutionContext;
+using System.Xml.Linq;
 using EnvDTE;
 using Microsoft.VisualStudio.Threading;
-using NuGet.Configuration;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.VisualStudio;
-using System.Xml.Linq;
+using NuGet.Versioning;
+using ExecutionContext = NuGet.ProjectManagement.ExecutionContext;
 
 namespace NuGet.PackageManagement.PowerShellCmdlets
 {
@@ -38,7 +39,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         private readonly BlockingCollection<Message> _blockingCollection = new BlockingCollection<Message>();
         private readonly Semaphore _scriptEndSemaphore = new Semaphore(0, Int32.MaxValue);
-        private readonly ISourceRepositoryProvider _resourceRepositoryProvider;
+        private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly ICommonOperations _commonOperations;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
 
@@ -54,11 +55,13 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         internal const string SyncModeKey = "IsSyncMode";
         private const string CancellationTokenKey = "CancellationTokenKey";
 
+        private SourceRepository _activeSourceRepository;
+
         #endregion Members
 
         protected NuGetPowerShellBaseCommand()
         {
-            _resourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
+            _sourceRepositoryProvider = ServiceLocator.GetInstance<ISourceRepositoryProvider>();
             ConfigSettings = ServiceLocator.GetInstance<Configuration.ISettings>();
             VsSolutionManager = ServiceLocator.GetInstance<ISolutionManager>();
             DTE = ServiceLocator.GetInstance<DTE>();
@@ -83,7 +86,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         protected NuGetPackageManager PackageManager
         {
             get { return new NuGetPackageManager(
-                _resourceRepositoryProvider,
+                _sourceRepositoryProvider,
                 ConfigSettings,
                 VsSolutionManager,
                 _deleteOnRestartManager); }
@@ -105,14 +108,21 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Active Source Repository for PowerShell Cmdlets
+        /// List of primary source repositories used for search operations
         /// </summary>
-        protected SourceRepository ActiveSourceRepository { get; set; }
+        protected IEnumerable<SourceRepository> PrimarySourceRepositories
+        {
+            get
+            {
+                return _activeSourceRepository != null
+                    ? new[] { _activeSourceRepository } : EnabledSourceRepositories;
+            }
+        }
 
         /// <summary>
         /// List of all the enabled source repositories
         /// </summary>
-        protected List<SourceRepository> EnabledSourceRepositories { get; private set; }
+        protected IEnumerable<SourceRepository> EnabledSourceRepositories { get; private set; }
 
         /// <summary>
         /// Settings read from the config files
@@ -243,18 +253,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         #region Cmdlets base APIs
 
         /// <summary>
-        /// Get the active source repository for PowerShell cmdlets, based on the source string.
+        /// Initializes source repositories for PowerShell cmdlets, based on config, source string, and/or host active source property value.
         /// </summary>
         /// <param name="source">The source string specified by -Source switch.</param>
         protected void UpdateActiveSourceRepository(string source)
         {
+            var packageSources = _sourceRepositoryProvider?.PackageSourceProvider?.LoadPackageSources();
+
             // If source string is not specified, get the current active package source from the host
             source = string.IsNullOrEmpty(source) ? (string)GetPropertyValueFromHost(ActivePackageSourceKey) : source;
 
             if (!string.IsNullOrEmpty(source))
             {
-                var packageSources = _resourceRepositoryProvider?.PackageSourceProvider?.LoadPackageSources();
-
                 // Look through all available sources (including those disabled) by matching source name and url
                 var matchingSource = packageSources
                     ?.Where(p => StringComparer.OrdinalIgnoreCase.Equals(p.Name, source) ||
@@ -263,18 +273,19 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                 if (matchingSource != null)
                 {
-                    ActiveSourceRepository = _resourceRepositoryProvider?.CreateRepository(matchingSource);
+                    _activeSourceRepository = _sourceRepositoryProvider?.CreateRepository(matchingSource);
                 }
                 else
                 {
                     // source should be the format of url here; otherwise it cannot resolve from name anyways.
-                    ActiveSourceRepository = CreateRepositoryFromSource(source);
+                    _activeSourceRepository = CreateRepositoryFromSource(source);
                 }
 
-                EnabledSourceRepositories = _resourceRepositoryProvider?.GetRepositories()
-                    .Where(r => r.PackageSource.IsEnabled)
-                    .ToList();
             }
+
+            EnabledSourceRepositories = _sourceRepositoryProvider?.GetRepositories()
+                .Where(r => r.PackageSource.IsEnabled)
+                .ToList();
         }
 
         /// <summary>
@@ -288,7 +299,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             }
 
             var packageSource = new Configuration.PackageSource(source);
-            var repository = _resourceRepositoryProvider.CreateRepository(packageSource);
+            var repository = _sourceRepositoryProvider.CreateRepository(packageSource);
             var resource = repository.GetResource<PackageSearchResource>();
 
             // resource can be null here for relative path package source.
@@ -311,7 +322,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 }
             }
 
-            var sourceRepo = _resourceRepositoryProvider.CreateRepository(packageSource);
+            var sourceRepo = _sourceRepositoryProvider.CreateRepository(packageSource);
             // Right now if packageSource is invalid, CreateRepository will not throw. Instead, resource returned is null.
             var newResource = repository.GetResource<PackageSearchResource>();
             if (newResource == null)
@@ -497,7 +508,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// Get the list of installed packages based on Filter, Skip and First parameters. Used for Get-Package.
         /// </summary>
         /// <returns></returns>
-        protected static async Task<Dictionary<NuGetProject, IEnumerable<Packaging.PackageReference>>> GetInstalledPackages(IEnumerable<NuGetProject> projects,
+        protected static async Task<Dictionary<NuGetProject, IEnumerable<Packaging.PackageReference>>> GetInstalledPackagesAsync(IEnumerable<NuGetProject> projects,
             string filter,
             int skip,
             int take,
@@ -533,27 +544,43 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Get list of packages from the remote package source. Used for Get-Package -ListAvailable.
         /// </summary>
-        protected async Task<IEnumerable<IPackageSearchMetadata>> GetPackagesFromRemoteSourceAsync(string packageId,
-            IEnumerable<string> targetFrameworks,
-            bool includePrerelease,
-            int skip,
-            int take)
+        protected IEnumerable<IPackageSearchMetadata> GetPackagesFromRemoteSource(string searchString, bool includePrerelease)
         {
-            var searchfilter = new SearchFilter();
-            searchfilter.IncludePrerelease = includePrerelease;
-            searchfilter.SupportedFrameworks = targetFrameworks;
-            searchfilter.IncludeDelisted = false;
-
-            var packages = Enumerable.Empty<IPackageSearchMetadata>();
-
-            var resource = await ActiveSourceRepository.GetResourceAsync<PackageSearchResource>();
-
-            if (resource != null)
+            var searchFilter = new SearchFilter
             {
-                packages = await resource.SearchAsync(packageId, searchfilter, skip, take, Logging.NullLogger.Instance, Token);
-            }
+                IncludePrerelease = includePrerelease,
+                SupportedFrameworks = Enumerable.Empty<string>(),
+                IncludeDelisted = false
+            };
 
-            return packages;
+            var packageFeed = new MultiSourcePackageFeed(PrimarySourceRepositories, Logging.NullLogger.Instance);
+            var searchTask = packageFeed.SearchAsync(searchString, searchFilter, Token);
+            return PackageFeedEnumerator.Enumerate(packageFeed, searchTask, Token);
+        }
+
+        protected async Task<IEnumerable<IPackageSearchMetadata>> GetPackagesFromRemoteSourceAsync(string packageId, bool includePrerelease)
+        {
+            var metadataProvider = new MultiSourcePackageMetadataProvider(PrimarySourceRepositories, optionalLocalRepository: null, logger: Logging.NullLogger.Instance);
+            return await metadataProvider.GetPackageMetadataListAsync(packageId, includePrerelease, false, Token);
+        }
+
+        protected async Task<IPackageSearchMetadata> GetLatestPackageFromRemoteSourceAsync(PackageIdentity identity, bool includePrerelease)
+        {
+            var metadataProvider = new MultiSourcePackageMetadataProvider(PrimarySourceRepositories, optionalLocalRepository: null, logger: Logging.NullLogger.Instance);
+            return await metadataProvider.GetLatestPackageMetadataAsync(identity, includePrerelease, Token);
+        }
+
+        protected async Task<IEnumerable<string>> GetPackageIdsFromRemoteSourceAsync(string idPrefix, bool includePrerelease)
+        {
+            var autoCompleteProvider = new MultiSourceAutoCompleteProvider(PrimarySourceRepositories, logger: Logging.NullLogger.Instance);
+            return await autoCompleteProvider.IdStartsWithAsync(idPrefix, includePrerelease, Token);
+        }
+
+        protected async Task<IEnumerable<NuGetVersion>> GetPackageVersionsFromRemoteSourceAsync(string id, string versionPrefix, bool includePrerelease)
+        {
+            var autoCompleteProvider = new MultiSourceAutoCompleteProvider(PrimarySourceRepositories, logger: Logging.NullLogger.Instance);
+            var results = await autoCompleteProvider.VersionStartsWithAsync(id, versionPrefix, includePrerelease, Token);
+            return results?.OrderByDescending(v => v).ToArray();
         }
 
         /// <summary>

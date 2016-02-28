@@ -129,37 +129,30 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                             $"list_{id}_page{page}",
                             CreateCacheContext(retry),
                             Logger,
-                            cancellationToken))
+                            ignoreNotFounds: false,
+                            ensureValidContents: stream => HttpStreamValidation.ValidateXml(uri, stream),
+                            cancellationToken: cancellationToken))
                         {
-                            try
+                            var doc = V2FeedParser.LoadXml(data.Stream);
+
+                            var result = doc.Root
+                                .Elements(_xnameEntry)
+                                .Select(x => BuildModel(id, x))
+                                .Where(x => x != null);
+
+                            results.AddRange(result);
+
+                            // Find the next url for continuation
+                            var nextUri = V2FeedParser.GetNextUrl(doc);
+
+                            // Stop if there's nothing else to GET
+                            if (string.IsNullOrEmpty(nextUri))
                             {
-                                var doc = V2FeedParser.LoadXml(data.Stream);
-
-                                var result = doc.Root
-                                    .Elements(_xnameEntry)
-                                    .Select(x => BuildModel(id, x))
-                                    .Where(x => x != null);
-
-                                results.AddRange(result);
-
-                                // Find the next url for continuation
-                                var nextUri = V2FeedParser.GetNextUrl(doc);
-
-                                // Stop if there's nothing else to GET
-                                if (string.IsNullOrEmpty(nextUri))
-                                {
-                                    break;
-                                }
-
-                                uri = nextUri;
-                                page++;
+                                break;
                             }
-                            catch (XmlException ex)
-                            {
-                                Logger.LogMinimal($"The XML file {data.CacheFileName} is corrupt.");
-                                Logger.LogVerbose(ex.ToString());
-                                throw;
-                            }
+
+                            uri = nextUri;
+                            page++;
                         }
                     }
 
@@ -239,7 +232,9 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         "nupkg_" + package.Id + "." + package.Version,
                         CreateCacheContext(retry),
                         Logger,
-                        cancellationToken))
+                        ignoreNotFounds: false,
+                        ensureValidContents: stream => HttpStreamValidation.ValidateNupkg(package.ContentUri, stream),
+                        cancellationToken: cancellationToken))
                     {
                         return new NupkgEntry
                         {

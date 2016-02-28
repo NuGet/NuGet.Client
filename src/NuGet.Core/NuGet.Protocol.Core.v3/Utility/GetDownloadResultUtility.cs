@@ -40,16 +40,28 @@ namespace NuGet.Protocol
             {
                 try
                 {
-                    using (var packageStream = await client.GetStreamAsync(uri, logger, token))
-                    {
-                        var downloadResult = await GlobalPackagesFolderUtility.AddPackageAsync(identity,
-                            packageStream,
-                            settings,
-                            logger,
-                            token);
+                    return await client.ProcessStreamAsync(
+                        uri: uri,
+                        ignoreNotFounds: true,
+                        process: async packageStream =>
+                        {
+                            if (packageStream == null)
+                            {
+                                return new DownloadResourceResult(DownloadResourceResultStatus.NotFound);
+                            }
 
-                        return downloadResult;
-                    }
+                            return await GlobalPackagesFolderUtility.AddPackageAsync(identity,
+                                packageStream,
+                                settings,
+                                logger,
+                                token);
+                        },
+                        log: logger,
+                        token: token);
+                }
+                catch (OperationCanceledException)
+                {
+                    return new DownloadResourceResult(DownloadResourceResultStatus.Cancelled);
                 }
                 catch (IOException ex) when (ex.InnerException is SocketException && i < 2)
                 {

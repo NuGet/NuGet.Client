@@ -103,20 +103,20 @@
     <Compile Include="Cmdlets\AddBindingRedirectCommand.cs" />
     <Compile Include="Cmdlets\TabExpansionCommand.cs" />
     <Compile Include="PackageActionBaseCommand.cs" />
-    <Compile Include="PowerShellExecutionMessage.cs" />
+    <Compile Include="Model\PowerShellExecutionMessage.cs" />
     <Compile Include="Cmdlets\FindPackageCommand.cs" />
     <Compile Include="Cmdlets\GetPackageCommand.cs" />
     <Compile Include="Cmdlets\GetProjectCommand.cs" />
-    <Compile Include="PowerShellInstalledPackage.cs" />
-    <Compile Include="PowerShellRemotePackage.cs" />
-    <Compile Include="PowerShellUpdatePackage.cs" />
+    <Compile Include="Model\PowerShellInstalledPackage.cs" />
+    <Compile Include="Model\PowerShellRemotePackage.cs" />
+    <Compile Include="Model\PowerShellUpdatePackage.cs" />
     <Compile Include="Utility\IErrorHandler.cs" />
     <Compile Include="Utility\IHttpClientEvents.cs" />
     <Compile Include="Cmdlets\InstallPackageCommand.cs" />
     <Compile Include="Utility\NuGetErrorId.cs" />
     <Compile Include="NuGetPowerShellBaseCommand.cs" />
     <Compile Include="Cmdlets\OpenPackagePageCommand.cs" />
-    <Compile Include="PowerShellPackage.cs" />
+    <Compile Include="Model\PowerShellPackage.cs" />
     <Compile Include="Utility\PowerShellCmdletsUtility.cs" />
     <Compile Include="Utility\ProgressActivityIds.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -130,10 +130,9 @@
     <Compile Include="Cmdlets\UpdatePackageCommand.cs" />
     <Compile Include="Utility\PSPathUtility.cs" />
     <Compile Include="Utility\WebRequestEventArgs.cs" />
-    <Compile Include="VersionType.cs" />
+    <Compile Include="Model\VersionType.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="PackageManagement.PowerShellCmdlets.nuspec" />
     <None Include="project.json" />
   </ItemGroup>
@@ -144,6 +143,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PackageManagement.UI\PackageManagement.UI.csproj">
+      <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
+      <Name>PackageManagement.UI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj">
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
       <Name>PackageManagement.VisualStudio</Name>

@@ -31,10 +31,9 @@ namespace NuGet.Protocol
         private int _authRetries;
         private HttpHandlerResource _httpHandler;
         private CredentialHelper _credentials;
+        private string _httpCacheDirectory;
         private Guid _lastAuthId = Guid.NewGuid();
         private readonly PackageSource _packageSource;
-        private readonly string _requestLogFormat = "  {0} {1}";
-        private readonly string _responseLogFormat = "  {0} {1} {2}" + Strings.Milliseconds;
         private readonly HttpRetryHandler _retryHandler;
 
         // Only one thread may re-create the http client at a time.
@@ -70,60 +69,63 @@ namespace NuGet.Protocol
             _messageHandlerFactory = messageHandlerFactory;
             _retryHandler = new HttpRetryHandler();
         }
-
-        internal Task<HttpSourceResult> GetAsync(string uri,
-            string cacheKey,
-            HttpSourceCacheContext context,
-            ILogger log,
-            CancellationToken cancellationToken)
-        {
-            return GetAsync(uri, cacheKey, context, log, ignoreNotFounds: false, cancellationToken: cancellationToken);
-        }
-
+        
         /// <summary>
         /// Caching Get request.
         /// </summary>
-        internal async Task<HttpSourceResult> GetAsync(string uri,
+        public async Task<HttpSourceResult> GetAsync(string uri,
             string cacheKey,
             HttpSourceCacheContext cacheContext,
             ILogger log,
             bool ignoreNotFounds,
+            Action<Stream> ensureValidContents,
             CancellationToken cancellationToken)
         {
-            var sw = new Stopwatch();
-            sw.Start();
-
-            var result = await TryCache(uri, cacheKey, cacheContext, cancellationToken);
+            var result = await TryReadCacheFile(uri, cacheKey, cacheContext, log, cancellationToken);
             if (result.Stream != null)
             {
-                log.LogInformation(string.Format(CultureInfo.InvariantCulture, _requestLogFormat, "CACHE", uri));
-                return result;
-            }
+                log.LogInformation(string.Format(CultureInfo.InvariantCulture, Strings.Http_RequestLog, "CACHE", uri));
 
-            log.LogInformation(string.Format(CultureInfo.InvariantCulture, _requestLogFormat, "GET", uri));
+                // Validate the content fetched from the cache.
+                try
+                {
+                    ensureValidContents?.Invoke(result.Stream);
+
+                    result.Stream.Seek(0, SeekOrigin.Begin);
+
+                    return result;
+                }
+                catch (Exception e)
+                {
+                    result.Stream.Dispose();
+                    result.Stream = null;
+
+                    string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_InvalidCacheEntry, uri)
+                                     + Environment.NewLine
+                                     + ExceptionUtilities.DisplayMessage(e);
+                    log.LogWarning(message);
+                }
+            }
+            
             Func<HttpRequestMessage> requestFactory = () => new HttpRequestMessage(HttpMethod.Get, uri);
 
             // Read the response headers before reading the entire stream to avoid timeouts from large packages.
             Func<Task<HttpResponseMessage>> throttleRequest = () => SendWithCredentialSupportAsync(
                     requestFactory,
                     HttpCompletionOption.ResponseHeadersRead,
+                    log,
                     cancellationToken);
 
             using (var response = await GetThrottled(throttleRequest))
             {
                 if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
                 {
-                    log.LogInformation(string.Format(CultureInfo.InvariantCulture,
-                        _responseLogFormat, response.StatusCode, uri, sw.ElapsedMilliseconds));
                     return new HttpSourceResult();
                 }
 
                 response.EnsureSuccessStatusCode();
 
-                await CreateCacheFile(result, response, cacheContext, cancellationToken);
-
-                log.LogInformation(string.Format(CultureInfo.InvariantCulture,
-                    _responseLogFormat, response.StatusCode, uri, sw.ElapsedMilliseconds));
+                await CreateCacheFile(result, response, cacheContext, ensureValidContents, cancellationToken);
 
                 return result;
             }
@@ -135,17 +137,17 @@ namespace NuGet.Protocol
         /// </summary>
         internal async Task<HttpResponseMessage> SendAsync(
             Func<HttpRequestMessage> requestFactory,
+            ILogger log,
             CancellationToken cancellationToken)
         {
             // Read the response headers before reading the entire stream to avoid timeouts from large packages.
             Func<Task<HttpResponseMessage>> throttledRequest = () => SendWithCredentialSupportAsync(
                     requestFactory,
                     HttpCompletionOption.ResponseHeadersRead,
+                    log,
                     cancellationToken);
 
-            var response = await GetThrottled(throttledRequest);
-
-            return response;
+            return await GetThrottled(throttledRequest);
         }
 
         private static async Task<HttpResponseMessage> GetThrottled(Func<Task<HttpResponseMessage>> request)
@@ -171,19 +173,27 @@ namespace NuGet.Protocol
 
         public Task<HttpResponseMessage> GetAsync(Uri uri, ILogger log, CancellationToken token)
         {
-            log.LogInformation(string.Format(CultureInfo.InvariantCulture, _requestLogFormat, "GET", uri));
-
             Func<HttpRequestMessage> requestFactory = () => new HttpRequestMessage(HttpMethod.Get, uri);
 
-            return SendAsync(requestFactory, token);
+            return SendAsync(requestFactory, log, token);
         }
 
-        public async Task<Stream> GetStreamAsync(Uri uri, ILogger log, CancellationToken token)
+        public async Task<T> ProcessStreamAsync<T>(Uri uri, bool ignoreNotFounds, Func<Stream, Task<T>> process, ILogger log, CancellationToken token)
         {
-            var response = await GetAsync(uri, log, token);
-            response.EnsureSuccessStatusCode();
+            using (var response = await GetAsync(uri, log, token))
+            {
+                if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return await process(null);
+                }
 
-            return await response.Content.ReadAsStreamAsync();
+                response.EnsureSuccessStatusCode();
+
+                using (var stream = await response.Content.ReadAsStreamAsync())
+                {
+                    return await process(stream);
+                }
+            }
         }
 
         public Task<JObject> GetJObjectAsync(Uri uri, ILogger log, CancellationToken token)
@@ -203,6 +213,8 @@ namespace NuGet.Protocol
                     return null;
                 }
 
+                response.EnsureSuccessStatusCode();
+
                 using (var stream = await response.Content.ReadAsStreamAsync())
                 using (var reader = new StreamReader(stream))
                 using (var jsonReader = new JsonTextReader(reader))
@@ -215,6 +227,7 @@ namespace NuGet.Protocol
         private async Task<HttpResponseMessage> SendWithCredentialSupportAsync(
             Func<HttpRequestMessage> requestFactory,
             HttpCompletionOption completionOption,
+            ILogger log,
             CancellationToken cancellationToken)
         {
             HttpResponseMessage response = null;
@@ -263,6 +276,7 @@ namespace NuGet.Protocol
                     _httpClient,
                     requestWithStsFactory,
                     completionOption,
+                    log,
                     cancellationToken);
 
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -392,6 +406,7 @@ namespace NuGet.Protocol
             HttpSourceResult result,
             HttpResponseMessage response,
             HttpSourceCacheContext context,
+            Action<Stream> ensureValidContents,
             CancellationToken cancellationToken)
         {
             var newFile = result.CacheFileName + "-new";
@@ -426,6 +441,10 @@ namespace NuGet.Protocol
                             await responseStream.CopyToAsync(stream, bufferSize: 8192, cancellationToken: token);
                             await stream.FlushAsync(cancellationToken);
                         }
+
+                        // Validate the content before putting it into the cache.
+                        stream.Seek(0, SeekOrigin.Begin);
+                        ensureValidContents?.Invoke(stream);
                     }
 
                     if (File.Exists(result.CacheFileName))
@@ -464,15 +483,32 @@ namespace NuGet.Protocol
                 token: cancellationToken);
         }
 
-        protected virtual async Task<HttpSourceResult> TryCache(string uri,
+        public string HttpCacheDirectory
+        {
+            get
+            {
+                if (_httpCacheDirectory == null)
+                {
+                    _httpCacheDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.HttpCacheDirectory);
+                }
+
+                return _httpCacheDirectory;
+            }
+
+            set { _httpCacheDirectory = value; }
+        }
+
+        protected virtual async Task<HttpSourceResult> TryReadCacheFile(
+            string uri,
             string cacheKey,
             HttpSourceCacheContext context,
+            ILogger log,
             CancellationToken token)
         {
             var baseFolderName = RemoveInvalidFileNameChars(ComputeHash(_baseUri.OriginalString));
             var baseFileName = RemoveInvalidFileNameChars(cacheKey) + ".dat";
             var cacheAgeLimit = context.MaxAge;
-            var cacheFolder = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.HttpCacheDirectory), baseFolderName);
+            var cacheFolder = Path.Combine(HttpCacheDirectory, baseFolderName);
             var cacheFile = Path.Combine(cacheFolder, baseFileName);
 
             if (!Directory.Exists(cacheFolder)

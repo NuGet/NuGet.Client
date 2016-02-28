@@ -1,5 +1,6 @@
 ﻿{
   "dependencies": {
+    "Lucene.Net": "3.0.3",
     "Microsoft.IdentityModel.Clients.ActiveDirectory": "2.16.204221202",
     "Microsoft.VisualStudio.OLE.Interop": "7.10.6070",
     "Microsoft.VisualStudio.Services.Client": "14.83.2",
@@ -19,6 +20,7 @@
     "Microsoft.VSSDK.BuildTools": "14.0.23107",
     "Microsoft.WindowsAzure.ConfigurationManager": "1.7.0",
     "NuGet.Commands": "3.4.0-*",
+    "NuGet.Indexing": "3.4.0-*",
     "System.IdentityModel.Tokens.Jwt": "4.0.0"
   },
   "frameworks": {

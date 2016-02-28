@@ -74,7 +74,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         void OnActionsExecuted(IEnumerable<ResolvedAction> actions);
 
-        SourceRepository ActiveSource { get; }
+        IEnumerable<SourceRepository> ActiveSources { get; }
 
         bool RemoveDependencies { get; }
 

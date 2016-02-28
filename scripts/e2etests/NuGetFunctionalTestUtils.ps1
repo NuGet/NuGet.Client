@@ -35,7 +35,7 @@ function WriteToTeamCity
 
         Write-Host "##teamcity[testStarted name='$testName']";
 
-        if ($status -eq "Failed")
+        if (($status -eq "Failed") -or ($status -eq "Skipped"))
         {
             if ($parts.Length -lt 4)
             {
@@ -44,7 +44,14 @@ function WriteToTeamCity
             else
             {
                 $result = EscapeContentForTeamCity([string]::Join(" ", ($parts | select -skip 3)))
-                Write-Host "##teamcity[testFailed name='$testName' message='$result']"
+                if ($status -eq "Failed")
+                {
+                    Write-Host "##teamcity[testFailed name='$testName' message='$result']"
+                }
+                else
+                {
+                    Write-Host "##teamcity[testIgnored name='$testName' message='$result']"
+                }
             }
         }
 
@@ -80,39 +87,6 @@ function Get-Tests
     $tests = $tests | ? {!($_.Name -like 'Test-PackageRestore*') }
 
     return $tests
-}
-
-function Run-Tests
-{
-    param (
-    [Parameter(Mandatory=$true)]
-    [string]$NuGetTestPath,
-    [Parameter(Mandatory=$true)]
-    [string]$dte2,
-    [Parameter(Mandatory=$true)]
-    $EachTestTimoutInSecs)
-
-    $tests = Get-Tests
-
-    mkdir $NuGetTestPath\bin -ErrorAction Ignore
-
-    $guid = New-Guid
-    $currentBinFolder = Join-Path $NuGetTestPath\bin $guid
-    mkdir $currentBinFolder
-
-    Write-Host "There are"$tests.Count"tests"
-
-    $currentTestTime = 0
-    $currentTestId = 0
-    $currentTestName = $tests[$currentTestId]
-
-    $testResults = Join-Path $currentBinFolder.FullName "Realtimeresults.txt"
-
-    while (($currentTestId -lt $tests.Count) -and ($currentTestTime -le $EachTestTimoutInSecs))
-    {
-        start-sleep 1
-        $currentTestTime++
-    }
 }
 
 # This function requires a rewrite. This is a first cut

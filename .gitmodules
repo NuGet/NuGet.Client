@@ -6,3 +6,7 @@
 	path = submodules/Common
 	url = https://github.com/aspnet/Common.git
 	branch = NuGet/SubModuleIntegration
+[submodule "submodules/NuGet.Services.Metadata"]
+	path = submodules/NuGet.Services.Metadata
+	url = https://github.com/NuGet/NuGet.Services.Metadata.git
+	branch = searchcloud

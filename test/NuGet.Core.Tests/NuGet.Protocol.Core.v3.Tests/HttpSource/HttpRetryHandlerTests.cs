@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Test.Server;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Protocol.Core.v3.Tests
@@ -107,6 +108,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 httpClient,
                 () => new HttpRequestMessage(HttpMethod.Get, TestUrl),
                 HttpCompletionOption.ResponseHeadersRead,
+                new TestLogger(), 
                 CancellationToken.None);
 
             // Assert
@@ -135,6 +137,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 httpClient,
                 () => new HttpRequestMessage(HttpMethod.Get, TestUrl),
                 HttpCompletionOption.ResponseHeadersRead,
+                new TestLogger(),
                 CancellationToken.None);
 
             // Assert
@@ -162,6 +165,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 httpClient,
                 () => new HttpRequestMessage(HttpMethod.Get, TestUrl),
                 HttpCompletionOption.ResponseHeadersRead,
+                new TestLogger(),
                 CancellationToken.None);
 
             // Assert
@@ -189,6 +193,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 httpClient,
                 () => new HttpRequestMessage(HttpMethod.Get, TestUrl),
                 HttpCompletionOption.ResponseHeadersRead,
+                new TestLogger(),
                 CancellationToken.None);
 
             // Assert
@@ -217,6 +222,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 httpClient,
                 () => new HttpRequestMessage(HttpMethod.Get, TestUrl),
                 HttpCompletionOption.ResponseHeadersRead,
+                new TestLogger(),
                 CancellationToken.None);
             timer.Stop();
 
@@ -248,6 +254,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 httpClient,
                 () => new HttpRequestMessage(HttpMethod.Get, TestUrl),
                 HttpCompletionOption.ResponseHeadersRead,
+                new TestLogger(),
                 CancellationToken.None);
 
             // Assert
@@ -275,6 +282,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 httpClient,
                 () => new HttpRequestMessage(HttpMethod.Get, TestUrl),
                 HttpCompletionOption.ResponseHeadersRead,
+                new TestLogger(),
                 CancellationToken.None);
 
             // Assert
@@ -303,6 +311,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 httpClient,
                 () => new HttpRequestMessage(HttpMethod.Get, TestUrl),
                 HttpCompletionOption.ResponseHeadersRead,
+                new TestLogger(),
                 CancellationToken.None);
 
             // Assert
@@ -342,6 +351,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 httpClient,
                 () => new HttpRequestMessage(HttpMethod.Get, TestUrl),
                 HttpCompletionOption.ResponseHeadersRead,
+                new TestLogger(),
                 CancellationToken.None);
 
             // Assert
@@ -364,6 +374,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                     httpClient,
                     () => new HttpRequestMessage(HttpMethod.Get, address),
                     HttpCompletionOption.ResponseHeadersRead,
+                new TestLogger(),
                     CancellationToken.None);
 
                 // Act & Assert

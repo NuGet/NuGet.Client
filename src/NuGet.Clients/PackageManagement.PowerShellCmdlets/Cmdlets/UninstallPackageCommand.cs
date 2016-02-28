@@ -7,6 +7,7 @@ using System.ComponentModel.Composition;
 using System.Management.Automation;
 using System.Threading;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using Task = System.Threading.Tasks.Task;
@@ -48,7 +49,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         {
             CheckSolutionState();
             GetNuGetProject(ProjectName);
-            ThreadHelper.JoinableTaskFactory.Run(CheckMissingPackagesAsync);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(CheckMissingPackagesAsync);
             ActionType = NuGetActionType.Uninstall;
         }
 

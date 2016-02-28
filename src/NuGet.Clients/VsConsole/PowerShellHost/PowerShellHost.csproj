@@ -114,6 +114,10 @@
     <None Include="Scripts\NuGet.Format.ps1xml" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\PackageManagement.UI\PackageManagement.UI.csproj">
+      <Project>{538adefd-2170-40a9-a2c5-ec8369cfe490}</Project>
+      <Name>PackageManagement.UI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\PackageManagement.VisualStudio\PackageManagement.VisualStudio.csproj">
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
       <Name>PackageManagement.VisualStudio</Name>

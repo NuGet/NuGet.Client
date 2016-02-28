@@ -50,14 +50,7 @@ namespace NuGet.Protocol.Core.Types
                     $"Must set cache context on {this.GetType().FullName} before consuming.");
             }
 
-            if (retryCount == 0)
-            {
-                return new HttpSourceCacheContext(CacheContext);
-            }
-            else
-            {
-                return new HttpSourceCacheContext(CacheContext, TimeSpan.Zero);
-            }
+            return HttpSourceCacheContext.CreateCacheContext(CacheContext, retryCount);
         }
     }
 }

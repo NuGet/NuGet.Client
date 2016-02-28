@@ -24,12 +24,15 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
+using NuGetUIThreadHelper = NuGet.PackageManagement.UI.NuGetUIThreadHelper;
 using ThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
 {
     internal abstract class PowerShellHost : IHost, IPathExpansion, IDisposable
     {
+        private static readonly string AggregateSourceName = NuGet.PackageManagement.UI.Resources.AggregateSourceName;
+
         private readonly AsyncSemaphore _initScriptsLock = new AsyncSemaphore(1);
         private readonly string _name;
         private readonly IRunspaceManager _runspaceManager;
@@ -46,6 +49,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         private const string DTEKey = "DTE";
         private const string CancellationTokenKey = "CancellationTokenKey";
         private string _activePackageSource;
+        private string[] _packageSources;
         private readonly DTE _dte;
 
         private IConsole _activeConsole;
@@ -61,8 +65,6 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         // store the current CancellationToken. This will be set on the private data
         private CancellationToken _token;
-
-        private List<SourceRepository> _sourceRepositories;
 
         protected PowerShellHost(string name, IRunspaceManager runspaceManager)
         {
@@ -91,19 +93,27 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private void InitializeSources()
         {
-            _sourceRepositories = _sourceRepositoryProvider
-                .GetRepositories()
-                .Where(repo => repo.PackageSource.IsEnabled)
-                .ToList();
+            _packageSources = GetEnabledPackageSources(_sourceRepositoryProvider);
+            UpdateActiveSource(_sourceRepositoryProvider.PackageSourceProvider.ActivePackageSourceName);
+        }
 
-            _activePackageSource = _sourceRepositoryProvider.PackageSourceProvider.ActivePackageSourceName;
+        private static string[] GetEnabledPackageSources(ISourceRepositoryProvider sourceRepositoryProvider)
+        {
+            var enabledSources = sourceRepositoryProvider
+                           .GetRepositories()
+                           .Where(r => r.PackageSource.IsEnabled)
+                           .ToArray();
 
-            // check if active package source name is valid
-            var activeSource = _sourceRepositories.FirstOrDefault(
-                repo => StringComparer.CurrentCultureIgnoreCase.Equals(repo.PackageSource.Name, _activePackageSource))
-                               ?? _sourceRepositories.FirstOrDefault();
+            var packageSources = new List<string>();
 
-            _activePackageSource = activeSource?.PackageSource.Name;
+            if (enabledSources.Length > 1)
+            {
+                packageSources.Add(AggregateSourceName);
+            }
+
+            packageSources.AddRange(
+                enabledSources.Select(r => r.PackageSource.Name));
+            return packageSources.ToArray();
         }
 
         #region Properties
@@ -166,6 +176,26 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public PackageManagementContext PackageManagementContext { get; set; }
 
+        public string ActivePackageSource
+        {
+            get { return _activePackageSource; }
+            set { UpdateActiveSource(value); }
+        }
+
+        public string DefaultProject
+        {
+            get
+            {
+                Debug.Assert(_solutionManager != null);
+                if (_solutionManager.DefaultNuGetProject == null)
+                {
+                    return null;
+                }
+
+                return GetDisplayName(_solutionManager.DefaultNuGetProject);
+            }
+        }
+
         #endregion
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
@@ -173,7 +203,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             var prompt = "PM>";
 
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
                 try
                 {
@@ -207,7 +237,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public void Initialize(IConsole console)
         {
-            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
                     ActiveConsole = console;
                     if (_initialized.HasValue)
@@ -222,7 +252,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     {
                         try
                         {
-                            Tuple<RunspaceDispatcher, NuGetPSHost> result = _runspaceManager.GetRunspace(console, _name);
+                            var result = _runspaceManager.GetRunspace(console, _name);
                             Runspace = result.Item1;
                             _nugetHost = result.Item2;
 
@@ -485,7 +515,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             SetPropertyValueOnHost(SyncModeKey, isSync);
             SetPropertyValueOnHost(PackageManagementContextKey, PackageManagementContext);
-            SetPropertyValueOnHost(ActivePackageSourceKey, ActivePackageSource);
+            // "All" aggregate source in a context of PS command means no particular source is preferred,
+            // in that case all enabled sources will be picked for a command execution.
+            SetPropertyValueOnHost(ActivePackageSourceKey, ActivePackageSource != AggregateSourceName ? ActivePackageSource : string.Empty);
             SetPropertyValueOnHost(DTEKey, _dte);
             SetPropertyValueOnHost(CancellationTokenKey, _token);
         }
@@ -545,81 +577,34 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             ActiveConsole?.WriteLine(message);
         }
 
-        public string ActivePackageSource
-        {
-            get { return _activePackageSource; }
-            set
-            {
-                _activePackageSource = value;
-                var source = _sourceRepositories
-                    .FirstOrDefault(s =>
-                        StringComparer.CurrentCultureIgnoreCase.Equals(_activePackageSource, s.PackageSource.Name));
-                if (source != null)
-                {
-                    _sourceRepositoryProvider.PackageSourceProvider.SaveActivePackageSource(source.PackageSource);
-                }
-            }
-        }
-
-        public string[] GetPackageSources()
-        {
-            return _sourceRepositories.Select(repo => repo.PackageSource.Name).ToArray();
-        }
+        public string[] GetPackageSources() => _packageSources;
 
         private void PackageSourceProvider_PackageSourcesChanged(object sender, EventArgs e)
         {
-            _sourceRepositories = _sourceRepositoryProvider
-                .GetRepositories()
-                .Where(repo => repo.PackageSource.IsEnabled)
-                .ToList();
-
-            string oldActiveSource = ActivePackageSource;
-            SetNewActiveSource(oldActiveSource);
+            _packageSources = GetEnabledPackageSources(_sourceRepositoryProvider);
+            UpdateActiveSource(ActivePackageSource);
         }
 
-        private void SetNewActiveSource(string oldActiveSource)
+        private void UpdateActiveSource(string activePackageSource)
         {
-            if (!_sourceRepositories.Any())
+            if (_packageSources.Length == 0)
             {
-                ActivePackageSource = string.Empty;
+                _activePackageSource = string.Empty;
+            }
+            else if (activePackageSource == null)
+            {
+                // use the first enabled source as the active source
+                _activePackageSource = _packageSources.First();
             }
             else
             {
-                if (oldActiveSource == null)
-                {
-                    // use the first enabled source as the active source
-                    ActivePackageSource = _sourceRepositories.First().PackageSource.Name;
-                }
-                else
-                {
-                    var s = _sourceRepositories.FirstOrDefault(
-                        p => StringComparer.CurrentCultureIgnoreCase.Equals(p.PackageSource.Name, oldActiveSource));
-                    if (s == null)
-                    {
-                        // the old active source does not exist any more. In this case,
-                        // use the first eneabled source as the active source.
-                        ActivePackageSource = _sourceRepositories.First().PackageSource.Name;
-                    }
-                    else
-                    {
-                        // the old active source still exists. Keep it as the active source.
-                        ActivePackageSource = s.PackageSource.Name;
-                    }
-                }
-            }
-        }
+                var s = _packageSources.FirstOrDefault(
+                    p => StringComparer.CurrentCultureIgnoreCase.Equals(p, activePackageSource));
 
-        public string DefaultProject
-        {
-            get
-            {
-                Debug.Assert(_solutionManager != null);
-                if (_solutionManager.DefaultNuGetProject == null)
-                {
-                    return null;
-                }
-
-                return GetDisplayName(_solutionManager.DefaultNuGetProject);
+                // if the old active source still exists. Keep it as the active source.
+                // if the old active source does not exist any more. In this case,
+                // use the first eneabled source as the active source.
+                _activePackageSource = s ?? _packageSources.First();
             }
         }
 
@@ -643,9 +628,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         {
             Debug.Assert(_solutionManager != null);
 
-            return ThreadHelper.JoinableTaskFactory.Run(async delegate
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                     var allProjects = _solutionManager.GetNuGetProjects();
                     _projectSafeNames = allProjects.Select(_solutionManager.GetNuGetProjectSafeName).ToArray();

@@ -109,13 +109,11 @@ Function Update-Submodules {
     [CmdletBinding()]
     param()
     $opts = 'submodule', 'update'
-    if (-not (Test-Path -Path "$NuGetClientRoot/submodules/FileSystem/src")) {
-        Trace-Log 'Updating and initializing submodules'
-        $opts += '--init'
-    }
+    $opts += '--init'
     if (-not $VerbosePreference) {
         $opts += '--quiet'
     }
+    Trace-Log 'Updating and initializing submodules'
     Verbose-Log "git $opts"
     & git $opts 2>&1
 }

@@ -248,6 +248,7 @@ namespace NuGet.Protocol.Core.Types
         {
             var response = await _httpSource.SendAsync(
                 () => CreateRequest(source, pathToPackage, apiKey),
+                logger,
                 token);
 
             using (response)
@@ -345,7 +346,8 @@ namespace NuGet.Protocol.Core.Types
                         request.Headers.Add(ApiKeyHeader, apiKey);
                     }
                     return request;
-                }, 
+                },
+                logger,
                 token);
 
             using (response)

@@ -204,7 +204,25 @@ namespace NuGet.Protocol.Core.v3 {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to The HTTP request to &apos;{0} {1}&apos; has timed out after {2}{3}..
+        ///    Looks up a localized string similar to {0} {1}.
+        /// </summary>
+        internal static string Http_RequestLog {
+            get {
+                return ResourceManager.GetString("Http_RequestLog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to {0} {1} {2}ms.
+        /// </summary>
+        internal static string Http_ResponseLog {
+            get {
+                return ResourceManager.GetString("Http_ResponseLog", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The HTTP request to &apos;{0} {1}&apos; has timed out after {2}ms..
         /// </summary>
         internal static string Http_Timeout {
             get {
@@ -258,15 +276,6 @@ namespace NuGet.Protocol.Core.v3 {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Can&apos;t find Package &apos;{0}&apos; from source &apos;{1}&apos;..
-        /// </summary>
-        internal static string Log_FailedToFindPackage {
-            get {
-                return ResourceManager.GetString("Log_FailedToFindPackage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///    Looks up a localized string similar to Unable to load package &apos;{0}&apos;..
         /// </summary>
         internal static string Log_FailedToGetNupkgStream {
@@ -281,6 +290,15 @@ namespace NuGet.Protocol.Core.v3 {
         internal static string Log_FailedToGetNuspecStream {
             get {
                 return ResourceManager.GetString("Log_FailedToGetNuspecStream", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unable to load the service index for source {0}..
+        /// </summary>
+        internal static string Log_FailedToReadServiceIndex {
+            get {
+                return ResourceManager.GetString("Log_FailedToReadServiceIndex", resourceCulture);
             }
         }
         
@@ -303,7 +321,25 @@ namespace NuGet.Protocol.Core.v3 {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Retrying &apos;{0}&apos; for source {1}..
+        ///    Looks up a localized string similar to An invalid cache entry was found for URL &apos;{0}&apos; and will be replaced..
+        /// </summary>
+        internal static string Log_InvalidCacheEntry {
+            get {
+                return ResourceManager.GetString("Log_InvalidCacheEntry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The nupkg at &apos;{0}&apos; is not valid..
+        /// </summary>
+        internal static string Log_InvalidNupkgFromUrl {
+            get {
+                return ResourceManager.GetString("Log_InvalidNupkgFromUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Retrying &apos;{0}&apos; for source &apos;{1}&apos;..
         /// </summary>
         internal static string Log_RetryingFindPackagesById {
             get {
@@ -312,11 +348,11 @@ namespace NuGet.Protocol.Core.v3 {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to ms.
+        ///    Looks up a localized string similar to Retrying service index request for source &apos;{0}&apos;..
         /// </summary>
-        internal static string Milliseconds {
+        internal static string Log_RetryingServiceIndex {
             get {
-                return ResourceManager.GetString("Milliseconds", resourceCulture);
+                return ResourceManager.GetString("Log_RetryingServiceIndex", resourceCulture);
             }
         }
         
@@ -420,11 +456,47 @@ namespace NuGet.Protocol.Core.v3 {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to The &apos;versions&apos; property at &apos;{0}&apos; must be an array..
+        /// </summary>
+        internal static string Protocol_FlatContainerIndexVersionsNotArray {
+            get {
+                return ResourceManager.GetString("Protocol_FlatContainerIndexVersionsNotArray", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Service index document is missing the &apos;resources&apos; property..
         /// </summary>
         internal static string Protocol_IndexMissingResourcesNode {
             get {
                 return ResourceManager.GetString("Protocol_IndexMissingResourcesNode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The content at &apos;{0}&apos; is not a valid JSON object..
+        /// </summary>
+        internal static string Protocol_InvalidJsonObject {
+            get {
+                return ResourceManager.GetString("Protocol_InvalidJsonObject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The source does not have the &apos;version&apos; property at &apos;{0}&apos;..
+        /// </summary>
+        internal static string Protocol_InvalidServiceIndex {
+            get {
+                return ResourceManager.GetString("Protocol_InvalidServiceIndex", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The content at &apos;{0}&apos; is not valid XML..
+        /// </summary>
+        internal static string Protocol_InvalidXml {
+            get {
+                return ResourceManager.GetString("Protocol_InvalidXml", resourceCulture);
             }
         }
         
