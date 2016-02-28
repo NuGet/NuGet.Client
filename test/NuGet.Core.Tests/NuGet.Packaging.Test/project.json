@@ -18,9 +18,7 @@
     "dnxcore50": {
       "imports": [ "portable-net45+win8" ],
       "dependencies": {
-        "moq.netcore": "4.4.0-beta8",
-        "System.Reflection": "4.0.10-beta-23109",
-        "System.Reflection.Extensions": "4.0.0-beta-23109"
+        "moq.netcore": "4.4.0-beta8"
       }
     }
   }

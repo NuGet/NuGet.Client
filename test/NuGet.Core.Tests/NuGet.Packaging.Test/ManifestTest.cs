@@ -387,13 +387,19 @@ namespace NuGet.Packaging.Test
 </package>";
 
             // Switch to invariant culture to ensure the error message is in english.
-            // REVIEW: Unsupported in dotnet core
-            //System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
+#if !DNXCORE50
+            // REVIEW: Unsupported on CoreCLR
+            System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
+#endif
 
             // Act && Assert
+#if !DNXCORE50
             ExceptionAssert.Throws<InvalidOperationException>(
                 () => Manifest.ReadFrom(content.AsStream(), validateSchema: true),
                 "The 'hello' attribute is not declared.");
+#else
+            // REVIEW: Not thrown in CoreCLR
+#endif
         }
 
         [Fact]
@@ -417,13 +423,21 @@ namespace NuGet.Packaging.Test
 </package>";
 
             // Switch to invariant culture to ensure the error message is in english.
-            // REVIEW: Unsupported in dotnet core
-            //System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
+#if !DNXCORE50
+            // REVIEW: Unsupported on CoreCLR
+            System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
+#endif
 
             // Act && Assert
+#if !DNXCORE50
             ExceptionAssert.Throws<InvalidOperationException>(
                 () => Manifest.ReadFrom(content.AsStream(), validateSchema: true),
                 "The element 'group' in namespace 'http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd' has incomplete content. List of possible elements expected: 'reference' in namespace 'http://schemas.microsoft.com/packaging/2013/01/nuspec.xsd'.");
+#else
+            ExceptionAssert.Throws<InvalidDataException>(
+                () => Manifest.ReadFrom(content.AsStream(), validateSchema: true),
+                @"The element package\metadata\references\group must contain at least one <reference> child element.");
+#endif
         }
 
         [Fact]
@@ -447,8 +461,10 @@ namespace NuGet.Packaging.Test
 </package>";
 
             // Switch to invariant culture to ensure the error message is in english.
-            // REVIEW: Unsupported in dotnet core
-            //System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
+#if !DNXCORE50
+            // REVIEW: Unsupported on CoreCLR
+            System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
+#endif
 
             // Act && Assert
             ExceptionAssert.Throws<InvalidDataException>(
