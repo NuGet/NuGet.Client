@@ -117,9 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Manifest_DependencyIdRequired" xml:space="preserve">
-    <value>Dependency Id is required.</value>
-  </data>
   <data name="Manifest_RequireLicenseAcceptanceRequiresLicenseUrl" xml:space="preserve">
     <value>Enabling license acceptance requires a license url.</value>
   </data>

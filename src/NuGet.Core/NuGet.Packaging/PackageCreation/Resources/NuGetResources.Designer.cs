@@ -114,15 +114,6 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Dependency Id is required..
-        /// </summary>
-        public static string Manifest_DependencyIdRequired {
-            get {
-                return ResourceManager.GetString("Manifest_DependencyIdRequired", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///    Looks up a localized string similar to Exclude path &apos;{0}&apos; contains invalid characters..
         /// </summary>
         public static string Manifest_ExcludeContainsInvalidCharacters {

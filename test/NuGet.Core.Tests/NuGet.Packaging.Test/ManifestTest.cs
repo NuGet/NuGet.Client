@@ -119,30 +119,6 @@ namespace NuGet.Packaging.Test
                 "Assembly reference 'Foo?.dll' contains invalid characters.\r\nAssembly reference 'Bar*.dll' contains invalid characters.\r\nAssembly reference 'net40\\baz.dll' contains invalid characters.\r\nAssembly reference 'wee?dd.dll' contains invalid characters.");
         }
 
-        // REVIEW: Disabled for now due to PackageDependency construction now throwing
-        //   on null id, which occurs before validation
-        // [Fact]
-        public void ManifestValidatesDependencies()
-        {
-            // Arrange
-            var manifest = new Manifest(new ManifestMetadata
-            {
-                Id = "Foobar",
-                Version = NuGetVersion.Parse("1.0"),
-                Authors = new[] { "test-author" },
-                Description = "desc",
-                DependencyGroups = new[] {
-                        new PackageDependencyGroup(
-                            NuGetFramework.AnyFramework,
-                            new [] {
-                                new PackageDependency(null)
-                            })}
-            });
-
-            // Act and Assert
-            ExceptionAssert.Throws<Exception>(() => Manifest.Validate(manifest), "Dependency Id is required.");
-        }
-
         [Fact]
         public void ReadFromReadsRequiredValues()
         {
@@ -398,7 +374,7 @@ namespace NuGet.Packaging.Test
                 () => Manifest.ReadFrom(content.AsStream(), validateSchema: true),
                 "The 'hello' attribute is not declared.");
 #else
-            // REVIEW: Not thrown in CoreCLR
+            // REVIEW: Not thrown in CoreCLR due to no XmlSchema validation
 #endif
         }
 

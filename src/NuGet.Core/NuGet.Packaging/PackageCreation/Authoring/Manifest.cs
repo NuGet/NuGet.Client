@@ -228,14 +228,6 @@ namespace NuGet.Packaging
                 results.AddRange(manifestFile.Validate());
             }
 
-            if (manifest.Metadata.DependencyGroups != null)
-            {
-                foreach(var packageDependency in manifest.Metadata.DependencyGroups.SelectMany(d => d.Packages))
-                {
-                    results.AddRange(ValidatePackageDependency(packageDependency));
-                }
-            }
-
             if (manifest.Metadata.PackageAssemblyReferences != null)
             {
                 foreach (var packageAssemblyReference in manifest.Metadata.PackageAssemblyReferences)
@@ -252,15 +244,6 @@ namespace NuGet.Packaging
 
             // Validate additional dependency rules dependencies
             ValidateDependencyGroups(manifest.Metadata);
-        }
-
-        private static IEnumerable<string> ValidatePackageDependency(PackageDependency dependency)
-        {
-            // REVIEW: This was used in tests, but now can't be hit due to the construction pattern of PackageDependency.
-            if (String.IsNullOrEmpty(dependency.Id))
-            {
-                yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_DependencyIdRequired);
-            }
         }
 
         private static void ValidateDependencyGroups(IPackageMetadata metadata)
