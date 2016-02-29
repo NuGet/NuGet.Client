@@ -18,9 +18,15 @@ namespace NuGetVSExtension
         // any project system that wants to load NuGet when its project opens needs to activate a UI context with this GUID
         public const string guidAutoLoadNuGetString = "65B1D035-27A5-4BBA-BAB9-5F61C1E2BC4A";
 
+        // Unique identifier of the editor factory that created an instance of the document view and document data objects.
+        // Used when creating document windows of Package Manager
+        public const string guidNuGetEditorTypeString = "95501c48-a850-47c1-a785-2aaa96637f81";
+
         public static readonly Guid guidNuGetConsoleCmdSet = new Guid(guidNuGetConsoleCmdSetString);
         public static readonly Guid guidNuGetDialogCmdSet = new Guid(guidNuGetDialogCmdSetString);
         public static readonly Guid guidNuGetToolsGroupCmdSet = new Guid(guidNuGetToolsGroupString);
         public static readonly Guid guidNuGetDebugConsoleCmdSet = new Guid(guidNuGetDebugConsoleCmdSetString);
+
+        public static readonly Guid guidNuGetEditorType = Guid.Parse(guidNuGetEditorTypeString);
     }
 }
