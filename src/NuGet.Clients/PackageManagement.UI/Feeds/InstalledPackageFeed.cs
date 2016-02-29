@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement.UI
                 (p, t) => _metadataProvider.GetPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t), 
                 cancellationToken);
 
-            var result = SearchResult.FromItems(items.ToArray());
+            var result = SearchResult.FromItems(items.OrderBy(p => p.Identity.Id).ToArray());
 
             var loadingStatus = hasMoreItems
                 ? LoadingStatus.Ready
