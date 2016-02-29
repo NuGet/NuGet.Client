@@ -189,7 +189,10 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 Task.Run(async () =>
                 {
                     var metadata = await GetLatestPackageFromRemoteSourceAsync(installedPackage.PackageIdentity, IncludePrerelease.IsPresent);
-                    await metadata?.GetVersionsAsync();
+                    if (metadata != null)
+                    {
+                        await metadata.GetVersionsAsync();
+                    }
                     return metadata;
                 }));
 

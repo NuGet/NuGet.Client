@@ -61,9 +61,8 @@ namespace NuGet.PackageManagement.UI
                 ?? completed.FirstOrDefault()
                 ?? PackageSearchMetadataBuilder.FromIdentity(identity).Build();
 
-            var mergedVersions = await MergeVersionsAsync(identity, completed);
-
-            return master.WithVersions(mergedVersions);
+            return master.WithVersions(
+                asyncValueFactory: () => MergeVersionsAsync(identity, completed));
         }
 
         public async Task<IPackageSearchMetadata> GetLatestPackageMetadataAsync(PackageIdentity identity,
@@ -83,9 +82,8 @@ namespace NuGet.PackageManagement.UI
                 .OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease)
                 .FirstOrDefault();
 
-            var mergedVersions = await MergeVersionsAsync(identity, completed);
-
-            return highest?.WithVersions(mergedVersions);
+            return highest?.WithVersions(
+                asyncValueFactory: () => MergeVersionsAsync(identity, completed));
         }
 
         public async Task<IEnumerable<IPackageSearchMetadata>> GetPackageMetadataListAsync(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken cancellationToken)
@@ -113,7 +111,8 @@ namespace NuGet.PackageManagement.UI
 
             return allVersions
                 .GroupBy(v => v.Version, v => v.DownloadCount)
-                .Select(g => new VersionInfo(g.Key, g.Max()));
+                .Select(g => new VersionInfo(g.Key, g.Max()))
+                .ToArray();
         }
 
         private void LogError(Task task)

@@ -167,7 +167,7 @@ namespace NuGet.PackageManagement.UI
             var autoCompleteResource = await sourceRepository.GetResourceAsync<AutoCompleteResource>(cancellationToken);
             var packageIds = await autoCompleteResource?.IdStartsWith(
                 packageIdPrefix,
-                includePrerelease: true,
+                includePrerelease: includePrerelease,
                 log: Logging.NullLogger.Instance,
                 token: cancellationToken);
 
@@ -181,7 +181,7 @@ namespace NuGet.PackageManagement.UI
             var versions = await autoCompleteResource?.VersionStartsWith(
                 packageId,
                 versionPrefix,
-                includePrerelease: true,
+                includePrerelease: includePrerelease,
                 log: Logging.NullLogger.Instance,
                 token: cancellationToken);
 
