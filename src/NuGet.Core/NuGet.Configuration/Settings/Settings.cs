@@ -156,7 +156,7 @@ namespace NuGet.Configuration
                 configFileName,
                 machineWideSettings,
                 loadAppDataSettings: true,
-                useTestingGlobalPath : false);
+                useTestingGlobalPath: false);
         }
 
         /// <summary>
@@ -201,6 +201,8 @@ namespace NuGet.Configuration
                     // Returning a null instance prevents us from silently failing and also from picking up the wrong config
                     return NullSettings.Instance;
                 }
+
+                validSettingFiles = RemoveSettingsBeforeClearTag(validSettingFiles);
 
                 validSettingFiles[0]._priority = validSettingFiles.Count;
 
@@ -267,7 +269,7 @@ namespace NuGet.Configuration
                         foreach (var value in values)
                         {
                             var packageSource = new PackageSource(value.Value);
-                            
+
                             // if the machine wide package source is http source, disable it by default
                             if (packageSource.IsHttp)
                             {
@@ -390,7 +392,7 @@ namespace NuGet.Configuration
         private string ApplyEnvironmentTransform(string configValue)
         {
             if (string.IsNullOrEmpty(configValue))
-            { 
+            {
                 return configValue;
             }
 
@@ -1079,10 +1081,44 @@ namespace NuGet.Configuration
         {
             return new XDocument(new XElement("configuration",
                                  new XElement(ConfigurationConstants.PackageSources,
-                                 new XElement("add", 
+                                 new XElement("add",
                                  new XAttribute(ConfigurationConstants.KeyAttribute, NuGetConstants.FeedName),
                                  new XAttribute(ConfigurationConstants.ValueAttribute, NuGetConstants.V3FeedUrl),
                                  new XAttribute(ConfigurationConstants.ProtocolVersionAttribute, "3")))));
+        }
+
+        private static List<Settings> RemoveSettingsBeforeClearTag(List<Settings> settings)
+        {
+            var result = new List<Settings>();
+
+            bool foundClear = false;
+
+            foreach (var setting in settings)
+            {
+                if (!foundClear || setting.IsMachineWideSettings)
+                {
+                    result.Add(setting);
+                    foundClear = FoundClearTag(setting.ConfigXDocument);
+                }
+            }
+
+            return result;
+        }
+
+        private static bool FoundClearTag(XDocument config)
+        {
+            var sectionElement = GetSection(config.Root, ConfigurationConstants.PackageSources);
+            if (sectionElement != null)
+            {
+                foreach (var element in sectionElement.Elements())
+                {
+                    if (element.Name.LocalName.Equals("clear", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
     }
 }

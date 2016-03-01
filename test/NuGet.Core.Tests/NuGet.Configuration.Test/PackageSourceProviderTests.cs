@@ -2240,6 +2240,45 @@ namespace NuGet.Configuration.Test
             }
         }
 
+        [Fact]
+        public void SavePackageSource_IgnoreSettingBeforeClear()
+        {
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var configContents =
+                     @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+      <clear />
+      <add key=""test"" value=""https://nuget/test"" />
+    </packageSources>
+</configuration>
+";
+                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "nuget.config"), configContents);
+                var settings = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
+                                  configFileName: null,
+                                  machineWideSettings: null,
+                                  loadAppDataSettings: true,
+                                  useTestingGlobalPath: true);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+
+                // Act
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                packageSourceProvider.SavePackageSources(sources);
+
+                // Assert
+                var text = File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")).Replace("\r\n", "\n");
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""nuget.org"" value=""https://api.nuget.org/v3/index.json"" protocolVersion=""3"" />
+  </packageSources>
+</configuration>".Replace("\r\n", "\n");
+                Assert.Equal(result, text);
+            }
+        }
+
         private string CreateNuGetConfigContent(string enabledReplacement = "", string disabledReplacement = "", string activeSourceReplacement = "")
         {
             var nugetConfigBaseString = new StringBuilder();
