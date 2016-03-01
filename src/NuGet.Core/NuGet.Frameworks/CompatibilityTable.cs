@@ -58,7 +58,7 @@ namespace NuGet.Frameworks
             HashSet<NuGetFramework> frameworks = null;
             if (_table.TryGetValue(framework, out frameworks))
             {
-                compatible = new HashSet<NuGetFramework>(frameworks, NuGetFramework.Comparer);
+                compatible = new HashSet<NuGetFramework>(frameworks);
                 return true;
             }
 
@@ -69,12 +69,12 @@ namespace NuGet.Frameworks
         private static Dictionary<NuGetFramework, HashSet<NuGetFramework>> GetTable(IEnumerable<NuGetFramework> frameworks, IFrameworkNameProvider mappings, IFrameworkCompatibilityProvider compat)
         {
             // get the distinct set of frameworks, ignoring all special frameworks like Any, and Unsupported
-            var input = new HashSet<NuGetFramework>(frameworks.Where(f => f.IsSpecificFramework), NuGetFramework.Comparer);
-            var table = new Dictionary<NuGetFramework, HashSet<NuGetFramework>>(NuGetFramework.Comparer);
+            var input = new HashSet<NuGetFramework>(frameworks.Where(f => f.IsSpecificFramework));
+            var table = new Dictionary<NuGetFramework, HashSet<NuGetFramework>>();
 
             foreach (var framework in input)
             {
-                var compatFrameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+                var compatFrameworks = new HashSet<NuGetFramework>();
                 table.Add(framework, compatFrameworks);
 
                 foreach (var testFramework in input)
