@@ -220,4 +220,7 @@
   <data name="Push_InvalidTimeout" xml:space="preserve">
     <value>Invalid timeout parameter value.</value>
   </data>
+  <data name="Restore_Switch_NoCache_Description" xml:space="preserve">
+    <value>Do not cache packages and http requests.</value>
+  </data>
 </root>

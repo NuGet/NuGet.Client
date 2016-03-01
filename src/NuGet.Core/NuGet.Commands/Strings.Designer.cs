@@ -60,6 +60,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Invalid input &apos;{0}&apos;. The file type was not recognized..
+        /// </summary>
+        internal static string Error_InvalidCommandLineInput {
+            get {
+                return ResourceManager.GetString("Error_InvalidCommandLineInput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Package &apos;{0}&apos; specifies an invalid build action &apos;{1}&apos; for file &apos;{2}&apos;..
         /// </summary>
         internal static string Error_UnknownBuildAction {
@@ -83,6 +92,15 @@ namespace NuGet.Commands {
         internal static string Log_CheckingPackageCompatibility {
             get {
                 return ResourceManager.GetString("Log_CheckingPackageCompatibility", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Committing restore....
+        /// </summary>
+        internal static string Log_Committing {
+            get {
+                return ResourceManager.GetString("Log_Committing", resourceCulture);
             }
         }
         
@@ -150,6 +168,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Found project root directory: {0}..
+        /// </summary>
+        internal static string Log_FoundProjectRoot {
+            get {
+                return ResourceManager.GetString("Log_FoundProjectRoot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Generating MSBuild file {0}..
         /// </summary>
         internal static string Log_GeneratingMsBuildFile {
@@ -191,6 +218,15 @@ namespace NuGet.Commands {
         internal static string Log_InstallingPackage {
             get {
                 return ResourceManager.GetString("Log_InstallingPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Loaded project {0} from {1}..
+        /// </summary>
+        internal static string Log_LoadedProject {
+            get {
+                return ResourceManager.GetString("Log_LoadedProject", resourceCulture);
             }
         }
         
@@ -276,6 +312,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Reading project file {0}..
+        /// </summary>
+        internal static string Log_ReadingProject {
+            get {
+                return ResourceManager.GetString("Log_ReadingProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Unable to satisfy conflicting requests for &apos;{0}&apos;: {1}.
         /// </summary>
         internal static string Log_ResolverConflict {
@@ -294,6 +339,24 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Restore completed in {0}ms..
+        /// </summary>
+        internal static string Log_RestoreComplete {
+            get {
+                return ResourceManager.GetString("Log_RestoreComplete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Restore failed in {0}ms..
+        /// </summary>
+        internal static string Log_RestoreFailed {
+            get {
+                return ResourceManager.GetString("Log_RestoreFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Restoring packages for {0}....
         /// </summary>
         internal static string Log_RestoringPackages {
@@ -308,6 +371,24 @@ namespace NuGet.Commands {
         internal static string Log_RestoringPackagesForCompat {
             get {
                 return ResourceManager.GetString("Log_RestoringPackagesForCompat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Running non-parallel restore..
+        /// </summary>
+        internal static string Log_RunningNonParallelRestore {
+            get {
+                return ResourceManager.GetString("Log_RunningNonParallelRestore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Running restore with {0} concurrent jobs..
+        /// </summary>
+        internal static string Log_RunningParallelRestore {
+            get {
+                return ResourceManager.GetString("Log_RunningParallelRestore", resourceCulture);
             }
         }
         
@@ -344,6 +425,15 @@ namespace NuGet.Commands {
         internal static string Log_UnresolvedDependency {
             get {
                 return ResourceManager.GetString("Log_UnresolvedDependency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Using packages directory: {0}..
+        /// </summary>
+        internal static string Log_UsingPackagesDirectory {
+            get {
+                return ResourceManager.GetString("Log_UsingPackagesDirectory", resourceCulture);
             }
         }
         

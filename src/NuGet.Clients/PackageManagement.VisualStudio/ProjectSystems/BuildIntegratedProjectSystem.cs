@@ -12,6 +12,7 @@ using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -168,7 +169,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Check for projectName.project.json and project.json
             string jsonConfigItem =
-                BuildIntegratedProjectUtility.GetProjectConfigPath(
+                ProjectJsonPathUtilities.GetProjectConfigPath(
                     directoryPath: projectDirectory,
                     projectName: projectName);
 
@@ -233,7 +234,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         {
                             var possibleProjectJson = Path.Combine(
                                                         possibleSdkPath,
-                                                        BuildIntegratedProjectUtility.ProjectConfigFileName);
+                                                        ProjectJsonPathUtilities.ProjectConfigFileName);
 
                             if (File.Exists(possibleProjectJson))
                             {
