@@ -5308,4 +5308,7 @@ nuget locals global-packages -list</value>
   <data name="PackageCommandSuffixDescription" xml:space="preserve">
     <value>Appends a pre-release suffix to the internally generated version number.</value>
   </data>
+  <data name="CommandRuntimeDescription" xml:space="preserve">
+    <value>List of runtime identifiers to restore for.</value>
+  </data>
 </root>
