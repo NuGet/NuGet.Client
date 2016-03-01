@@ -28,7 +28,7 @@ namespace NuGet.Frameworks
         /// </summary>
         public IEnumerable<NuGetFramework> Expand(NuGetFramework framework)
         {
-            var seen = new HashSet<NuGetFramework>(NuGetFramework.Comparer) { framework };
+            var seen = new HashSet<NuGetFramework>() { framework };
             var toExpand = new Stack<NuGetFramework>();
             toExpand.Push(framework);
 

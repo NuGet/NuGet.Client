@@ -18,6 +18,7 @@ namespace NuGet.Frameworks
         private readonly Version _frameworkVersion;
         private readonly string _frameworkProfile;
         private const string _portable = "portable";
+        private int? _hashCode;
 
         public NuGetFramework(NuGetFramework framework)
             : this(framework.Framework, framework.Version, framework.Profile)
@@ -342,7 +343,12 @@ namespace NuGet.Frameworks
 
         public override int GetHashCode()
         {
-            return Comparer.GetHashCode(this);
+            if (_hashCode == null)
+            {
+                _hashCode = Comparer.GetHashCode(this);
+            }
+
+            return _hashCode.Value;
         }
 
         public override bool Equals(object obj)
