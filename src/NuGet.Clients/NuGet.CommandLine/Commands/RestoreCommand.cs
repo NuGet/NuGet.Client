@@ -44,14 +44,6 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "CommandMSBuildVersion")]
         public string MSBuildVersion { get; set; }
 
-        private readonly List<string> _runtimes = new List<string>();
-
-        [Option(typeof(NuGetCommand), "CommandRuntimeDescription")]
-        public ICollection<string> Runtime
-        {
-            get { return _runtimes; }
-        }
-
         private static readonly int MaxDegreesOfConcurrency = Environment.ProcessorCount;
 
         [ImportingConstructor]
@@ -114,7 +106,6 @@ namespace NuGet.CommandLine
                     restoreContext.Sources = Source.ToList();
                     restoreContext.Log = Console;
                     restoreContext.CachingSourceProvider = GetSourceRepositoryProvider();
-                    restoreContext.Runtimes.UnionWith(Runtime);
 
                     var packageSaveMode = EffectivePackageSaveMode;
                     if (packageSaveMode != Packaging.PackageSaveMode.None)
