@@ -1,8 +1,6 @@
 ﻿<UserControl
   x:Class="NuGet.PackageManagement.UI.DetailControl"
-  xmlns:Tools="clr-namespace:NuGet.PackageManagement.UI"
-  xmlns:k="clr-namespace:NuGet.PackageManagement.UI"
-  xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -15,14 +13,13 @@
   <UserControl.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary
-          Source="Resources.xaml" />
+        <nuget:SharedResources/>
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </UserControl.Resources>
   <UserControl.CommandBindings>
     <CommandBinding
-      Command="{x:Static Tools:PackageManagerControlCommands.OpenExternalLink}"
+      Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
       Executed="ExecuteOpenLicenseLink" />
   </UserControl.CommandBindings>
   <ScrollViewer
@@ -34,7 +31,7 @@
         <RowDefinition
           Height="Auto" />
         <RowDefinition
-          Height="{Binding Path=IsSolution, Converter={StaticResource ProjectAndSolutionViewHeightConverter}}" 
+          Height="{Binding Path=IsSolution, Converter={StaticResource ProjectAndSolutionViewHeightConverter}}"
           MinHeight="{Binding Path=IsSolution, Converter={StaticResource ProjectAndSolutionViewMinHeightConverter}}" />
         <RowDefinition
           Height="Auto" />
@@ -65,7 +62,7 @@
       </StackPanel>
 
       <!-- project action when in project package manager -->
-      <Tools:ProjectView
+      <nuget:ProjectView
         Grid.Row="1"
         Margin="0,8"
         InstallButtonClicked="ProjectInstallButtonClicked"
@@ -73,7 +70,7 @@
         Visibility="{Binding Path=IsSolution, Converter={StaticResource InvertedBooleanToVisibilityConverter}}" />
 
       <!-- solution view when in solution package manager -->
-      <Tools:SolutionView
+      <nuget:SolutionView
         AutomationProperties.AutomationId="SolutionView"
         x:Name="_solutionView"
         Grid.Row="1"
@@ -90,23 +87,23 @@
         VerticalAlignment="Top"
         Margin="-24,0,-7,0"
         Visibility="{Binding Path=IsSolution,Converter={StaticResource BooleanToVisibilityConverter}}"
-        Background="{DynamicResource {x:Static Tools:Brushes.SplitterBackgroundKey}}"
+        Background="{DynamicResource {x:Static nuget:Brushes.SplitterBackgroundKey}}"
         BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
         BorderThickness="0,1" />
-      
+
       <!-- options -->
       <Border
         Grid.Row="3"
         Margin="0,11,0,0"
         BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
         BorderThickness="0,1,0,1">
-        <Tools:OptionsControl
+        <nuget:OptionsControl
           x:Name="_optionsControl"
-          Margin="0,12,0,16"          
+          Margin="0,12,0,16"
           DataContext="{Binding}" />
       </Border>
 
-      <Tools:PackageMetadataControl
+      <nuget:PackageMetadataControl
         Grid.Row="4"
         Margin="0,12,0,0"
         DataContext="{Binding PackageMetadata}" />

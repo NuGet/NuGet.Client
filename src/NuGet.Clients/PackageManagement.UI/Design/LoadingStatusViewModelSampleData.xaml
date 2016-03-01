@@ -1,0 +1,13 @@
+﻿<nuget:LoadingStatusViewModel
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:coll="clr-namespace:System.Collections.ObjectModel;assembly=System"
+  xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:system="clr-namespace:System;assembly=mscorlib"
+  LoadingMessage="Searching 'nuget'"
+  LoadingStatus="ErrorOccured"
+  ItemsFound="10"
+  ItemsLoaded="0"
+  >
+</nuget:LoadingStatusViewModel>

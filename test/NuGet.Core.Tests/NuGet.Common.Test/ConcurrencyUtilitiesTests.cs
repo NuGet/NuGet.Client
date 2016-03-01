@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -7,6 +9,43 @@ namespace NuGet.Common.Test
 {
     public class ConcurrencyUtilitiesTests
     {
+        [Fact]
+        public async Task ConcurrencyUtilities_LockStress()
+        {
+            // Arrange
+            var sem = new ManualResetEventSlim();
+            var threads = 1000;
+            var tasks = new Stack<Task<bool>>(threads);
+            var path = Path.Combine(Path.GetTempPath(), "ConcurrencyUtilities_LockStress");
+            var token = CancellationToken.None;
+            Func<CancellationToken, Task<bool>> action = (ct) => {
+                // Wait till all threads are ready
+                sem.Wait();
+                return Task.FromResult(true);
+            };
+
+            while (tasks.Count < threads)
+            {
+                var task = Task.Run(async () => await ConcurrencyUtilities.ExecuteWithFileLockedAsync<bool>(
+                    path,
+                    action,
+                    token));
+
+                tasks.Push(task);
+            }
+
+            // Act
+            // Release all the threads at once
+            sem.Set();
+            await Task.WhenAll(tasks);
+
+            // Assert
+            while (tasks.Count > 0)
+            {
+                // Verify everything finished without errors
+                Assert.True(await tasks.Pop());
+            }
+        }
 
         [Fact]
         public async Task ConcurrencyUtilities_LockAllCasings()

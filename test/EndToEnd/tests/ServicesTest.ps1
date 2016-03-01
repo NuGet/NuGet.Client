@@ -228,6 +228,20 @@ function VsPackageInstallerEvents {
     }
 }
 
+function Test-InstallPrereleasePackageAPI 
+{
+    param($context)
+
+    # Arrange
+    $p = New-ClassLibrary
+
+    # Act
+    [API.Test.InternalAPITestHook]::InstallPackageApi("AutoMapper", "4.0.0-alpha1") 
+
+    # Assert
+    Assert-Package $p AutoMapper 4.0.0-alpha1
+}
+
 function Test-InstallPackageAPI 
 {
     param($context)

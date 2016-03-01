@@ -38,16 +38,19 @@ namespace NuGet.PackageManagement.UI
             {
                 throw new ArgumentNullException(nameof(sourceRepositories));
             }
+
             if (!sourceRepositories.Any())
             {
                 throw new ArgumentException("Collection of source repositories cannot be empty", nameof(sourceRepositories));
             }
+
             _sourceRepositories = sourceRepositories.ToArray();
 
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
+
             _logger = logger;
         }
 
@@ -66,7 +69,8 @@ namespace NuGet.PackageManagement.UI
         public async Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
             var searchToken = continuationToken as AggregatedContinuationToken;
-            if (searchToken == null || searchToken.SourceSearchCursors == null)
+
+            if (searchToken?.SourceSearchCursors == null)
             {
                 throw new InvalidOperationException("Invalid token");
             }
@@ -90,6 +94,7 @@ namespace NuGet.PackageManagement.UI
         public async Task<SearchResult<IPackageSearchMetadata>> RefreshSearchAsync(RefreshToken refreshToken, CancellationToken cancellationToken)
         {
             var searchToken = refreshToken as AggregatedRefreshToken;
+
             if (searchToken == null)
             {
                 throw new InvalidOperationException("Invalid token");
@@ -127,6 +132,7 @@ namespace NuGet.PackageManagement.UI
             var completedOnly = partitionedTasks[true];
 
             SearchResult<IPackageSearchMetadata> aggregated;
+
             if (completedOnly.Any())
             {
                 var results = await Task.WhenAll(completedOnly.Select(kv => kv.Value));
@@ -140,6 +146,7 @@ namespace NuGet.PackageManagement.UI
             aggregated.RefreshToken = refreshToken;
 
             var notCompleted = partitionedTasks[false];
+
             if (notCompleted.Any())
             {
                 aggregated.SourceSearchStatus

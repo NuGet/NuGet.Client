@@ -340,9 +340,9 @@ namespace NuGet.PackageManagement.UI
             if (Model.Context.PackageRestoreManager != null)
             {
                 _restoreBar = new PackageRestoreBar(Model.Context.SolutionManager, Model.Context.PackageRestoreManager);
-                _restoreBar.SetValue(Grid.RowProperty, 0);
+                DockPanel.SetDock(_restoreBar, Dock.Top);
 
-                _root.Children.Add(_restoreBar);
+                _root.Children.Insert(0, _restoreBar);
 
                 Model.Context.PackageRestoreManager.PackagesMissingStatusChanged += packageRestoreManager_PackagesMissingStatusChanged;
             }
@@ -364,9 +364,9 @@ namespace NuGet.PackageManagement.UI
             if (Model.Context.PackageManager.DeleteOnRestartManager != null && vsRestarter != null)
             {
                 _restartBar = new RestartRequestBar(Model.Context.PackageManager.DeleteOnRestartManager, vsRestarter);
-                _restartBar.SetValue(Grid.RowProperty, 1);
+                DockPanel.SetDock(_restartBar, Dock.Top);
 
-                _root.Children.Add(_restartBar);
+                _root.Children.Insert(0, _restartBar);
             }
         }
 
@@ -415,7 +415,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (Model.IsSolution)
             {
-                _label.Text = Resx.Resources.Label_SolutionPackageManager;
+                _topPanel.Title = Resx.Resources.Label_SolutionPackageManager;
             }
             else
             {
@@ -426,7 +426,7 @@ namespace NuGet.PackageManagement.UI
                     projectName = "unknown";
                 }
 
-                _label.Text = string.Format(
+                _topPanel.Title = string.Format(
                     CultureInfo.CurrentCulture,
                     Resx.Resources.Label_PackageManager,
                     projectName);
@@ -949,6 +949,16 @@ namespace NuGet.PackageManagement.UI
                         CancellationToken.None);
                 },
                nugetUi => SetOptions(nugetUi, NuGetActionType.Update));
+        }
+
+        private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
+        {
+            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+        }
+
+        private void ExecuteShowErrorsCommand(object sender, ExecutedRoutedEventArgs e)
+        {
+
         }
     }
 }

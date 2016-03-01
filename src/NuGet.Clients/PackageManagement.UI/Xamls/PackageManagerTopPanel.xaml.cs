@@ -24,44 +24,20 @@ namespace NuGet.PackageManagement.UI
         }
 
         // the control that is used as container for the search box.
-        public Border SearchControlParent
-        {
-            get
-            {
-                return _searchControlParent;
-            }
-        }
+        public Border SearchControlParent => _searchControlParent;
 
-        public CheckBox CheckboxPrerelease
-        {
-            get
-            {
-                return _checkboxPrerelease;
-            }
-        }
+        public CheckBox CheckboxPrerelease => _checkboxPrerelease;
 
-        public ComboBox SourceRepoList
-        {
-            get
-            {
-                return _sourceRepoList;
-            }
-        }
+        public ComboBox SourceRepoList => _sourceRepoList;
 
-        public ToolTip SourceToolTip
-        {
-            get
-            {
-                return _sourceTooltip;
-            }
-        }
+        public ToolTip SourceToolTip => _sourceTooltip;
 
-        public ItemFilter Filter
+        public ItemFilter Filter => _selectedFilter.Filter;
+
+        public string Title
         {
-            get
-            {
-                return _selectedFilter.Filter;
-            }
+            get { return _label.Text; }
+            set { _label.Text = value; }
         }
 
         // Indicates if the control is hosted in solution package manager.
@@ -102,34 +78,22 @@ namespace NuGet.PackageManagement.UI
 
         private void _checkboxPrerelease_Checked(object sender, RoutedEventArgs e)
         {
-            if (PrereleaseCheckChanged != null)
-            {
-                PrereleaseCheckChanged(this, EventArgs.Empty);
-            }
+            PrereleaseCheckChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void _checkboxPrerelease_Unchecked(object sender, RoutedEventArgs e)
         {
-            if (PrereleaseCheckChanged != null)
-            {
-                PrereleaseCheckChanged(this, EventArgs.Empty);
-            }
+            PrereleaseCheckChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void _sourceRepoList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (SourceRepoListSelectionChanged != null)
-            {
-                SourceRepoListSelectionChanged(this, EventArgs.Empty);
-            }
+            SourceRepoListSelectionChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void _settingsButton_Click(object sender, RoutedEventArgs e)
         {
-            if (SettingsButtonClicked != null)
-            {
-                SettingsButtonClicked(this, EventArgs.Empty);
-            }
+            SettingsButtonClicked?.Invoke(this, EventArgs.Empty);
         }
 
         public void FilterLabel_ControlSelected(object sender, EventArgs e)

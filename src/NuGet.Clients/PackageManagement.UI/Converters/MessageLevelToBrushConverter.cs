@@ -1,35 +1,72 @@
 ﻿using System;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class MessageLevelToBrushConverter : IValueConverter
+    [ValueConversion(typeof(MessageLevel), typeof(Brush))]
+    internal class MessageLevelToBrushConverter : Freezable, IValueConverter
     {
-        private static readonly object GreenBrush = (SolidColorBrush)(new BrushConverter().ConvertFrom("#54d360"));
-        private static readonly object YellowBrush = (SolidColorBrush)(new BrushConverter().ConvertFrom("#fef5b7"));
-        private static readonly object RedBrush = (SolidColorBrush)(new BrushConverter().ConvertFrom("#febeb7"));
+        public static readonly DependencyProperty WarningProperty =
+            DependencyProperty.Register(nameof(Warning), typeof(Brush), typeof(MessageLevelToBrushConverter));
+
+        public static readonly DependencyProperty MessageProperty =
+            DependencyProperty.Register(nameof(Message), typeof(Brush), typeof(MessageLevelToBrushConverter));
+
+        public Brush Warning
+        {
+            get { return (Brush)GetValue(WarningProperty); }
+            set { SetValue(WarningProperty, value); }
+        }
+
+        public Brush Message
+        {
+            get { return (Brush)GetValue(MessageProperty); }
+            set { SetValue(MessageProperty, value); }
+        }
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var messageLevel = (MessageLevel)value;
-            switch(messageLevel)
+            switch (messageLevel)
             {
                 case MessageLevel.Error:
-                    return RedBrush;
-                case MessageLevel.Info:
-                    return GreenBrush;
                 case MessageLevel.Warning:
-                    return YellowBrush;
+                    return Warning;
+
+                case MessageLevel.Info:
                 default:
-                    return null;
+                    return Message;
             }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
+
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        {
+            var messageLevel = (MessageLevel)values[0];
+            switch (messageLevel)
+            {
+                case MessageLevel.Error:
+                case MessageLevel.Warning:
+                    return Warning;
+
+                case MessageLevel.Info:
+                default:
+                    return Message;
+            }
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+
+        protected override Freezable CreateInstanceCore() => new MessageLevelToBrushConverter();
     }
 }

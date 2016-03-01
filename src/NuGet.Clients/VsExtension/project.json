@@ -1,5 +1,6 @@
 ﻿{
   "dependencies": {
+    "Lucene.Net": "3.0.3",
     "Microsoft.IdentityModel.Clients.ActiveDirectory": "2.16.204221202",
     "Microsoft.VisualStudio.OLE.Interop": "7.10.6070",
     "Microsoft.VisualStudio.Services.Client": "14.83.2",

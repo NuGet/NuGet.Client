@@ -2,7 +2,7 @@
 function Test-GetPackageRetunsMoreThanServerPagingLimit {
     # Act
     $packages = Get-Package -ListAvailable
-    
+
     # Assert
     Assert-True $packages.Count -gt 100 "Get-Package cmdlet returns less than (or equal to) than server side paging limit"
 }
@@ -10,12 +10,12 @@ function Test-GetPackageRetunsMoreThanServerPagingLimit {
 function Test-GetPackageListsInstalledPackages {
     # Arrange
     $p = New-WebApplication
-    
+
     # Act
     Install-Package elmah -Project $p.Name -Version 1.1
-    Install-Package jQuery -Project $p.Name    
+    Install-Package jQuery -Project $p.Name
     $packages = Get-Package
-    
+
     # Assert
     Assert-AreEqual 2 $packages.Count
 }
@@ -27,22 +27,22 @@ function Test-GetPackageWithoutOpenSolutionThrows {
 function Test-GetPackageWithUpdatesListsUpdates {
     # Arrange
     $p = New-WebApplication
-    
+
     # Act
     Install-Package NuGet.Core -Version 1.6.0 -Project $p.Name
-    Install-Package NuGet.CommandLine -Version 1.6.0 -Project $p.Name    
+    Install-Package NuGet.CommandLine -Version 1.6.0 -Project $p.Name
     $packages = Get-Package -Updates
-    
+
     # Assert
     Assert-AreEqual 2 $packages.Count
 }
 
-function Test-GetPackageCollapsesPackageVersionsForListAvailable 
+function Test-GetPackageCollapsesPackageVersionsForListAvailable
 {
     # Act
-    $packages = Get-Package -ListAvailable jQuery 
-    $packagesWithMoreThanOne = $packages | group "Id" | Where { $_.count -gt 1 } 
-    
+    $packages = Get-Package -ListAvailable jQuery
+    $packagesWithMoreThanOne = $packages | group "Id" | Where { $_.count -gt 1 }
+
     # Assert
     # Ensure we have at least some packages
     Assert-True (1 -le $packages.Count)
@@ -60,12 +60,12 @@ function Test-GetPackageAcceptsSourceName {
 function Test-GetPackageWithUpdatesAcceptsSourceName {
     # Arrange
     $p = New-WebApplication
-    
+
     # Act
     Install-Package Antlr -Version 3.1.1 -Project $p.Name -Source $SourceNuGet
     Install-Package jQuery -Version 1.4.1 -Project $p.Name -Source $SourceNuGet
     $packages = Get-Package -Updates -Source $SourceNuGet
-    
+
     # Assert
     Assert-AreEqual 2 $packages.Count
 }
@@ -220,7 +220,7 @@ function Test-GetPackageForProjectReturnsEmptyIfItHasNoInstalledPackage2 {
     $p2 = New-ClassLibrary
 
     Install-Package jQuery -Source $context.RepositoryPath -Project $p1.Name
- 
+
     # Act
     $result = @(Get-Package -ProjectName $p2.Name)
 
@@ -235,7 +235,7 @@ function Test-GetPackageForProjectThrowIfProjectNameIsInvalid {
 
     # Arrange
     $p1 = New-ConsoleApplication
- 
+
     # Act & Assert
     Assert-Throws { Get-Package -ProjectName "invalidname" } "Project 'invalidname' is not found."
 }
@@ -251,7 +251,7 @@ function Test-GetPackageWithoutProjectNameReturnsInstalledPackagesInTheSolution 
 
     Install-Package jQuery -Source $context.RepositoryPath -Project $p1.Name
     Install-Package netfx-Guard -Source $context.RepositoryPath -Project $p2.Name
- 
+
     # Act
     $result = @(Get-Package)
 
@@ -270,15 +270,15 @@ function Test-ZipPackageLoadsReleaseNotesAttribute {
     $p = Get-Package -ListAvailable -Source $context.RepositoryRoot -Filter ReleaseNotesPackage
 
     # Assert
-	# Starting NuGet 3.0, IPackage interface has been deprecated. 
+	# Starting NuGet 3.0, IPackage interface has been deprecated.
 	# We are now returning PowerShellPackage which does not contain a ReleaseNotes property. Hence updated the test.
     Assert-AreEqual "ReleaseNotesPackage" $p.Id
 }
 
-function Test-GetPackagesWithNoUpdatesReturnPackagesWithIsUpdateNotSet {    
+function Test-GetPackagesWithNoUpdatesReturnPackagesWithIsUpdateNotSet {
     # Arrange & Act
     $package = Get-Package -ListAvailable -First 1
-    
+
     # Assert
     Assert-NotNull $package
     Assert-False $package.IsUpdate
@@ -300,7 +300,7 @@ function Test-GetPackagesDoesNotShowPrereleasePackagesWhenSwitchIsNotSpecified {
     Assert-AreEqual "1.0.0" $packages[1].Version
     Assert-AreEqual "PreReleaseTestPackage.A" $packages[2].Id
     Assert-AreEqual "1.0.0" $packages[2].Version
-    
+
 }
 
 function Test-GetPackagesAllVersionsDoesNotShowPrereleasePackagesWhenSwitchIsNotSpecified {
@@ -372,7 +372,7 @@ function Test-GetPackageUpdatesDoNotReturnPrereleasePackagesIfFlagIsNotSpecified
 
     $p | Install-Package PrereleaseTestPackage -Version 1.0.0.0-b -Source $context.RepositoryRoot -Prerelease
     Assert-Package $p 'PrereleaseTestPackage' '1.0.0.0-b'
-    
+
     # Act
     $updates = @(Get-Package -Updates -Source $context.RepositoryRoot)
 
@@ -392,7 +392,7 @@ function Test-GetPackageUpdatesReturnPrereleasePackagesIfFlagIsSpecified {
 
     $p | Install-Package PrereleaseTestPackage -Version 1.0.0.0-a -Source $context.RepositoryRoot -Prerelease
     Assert-Package $p 'PrereleaseTestPackage' '1.0.0.0-a'
-    
+
     # Act
     $updates = @(Get-Package -Updates -Prerelease -Source $context.RepositoryRoot)
 
@@ -407,12 +407,12 @@ function Test-GetPackageDoesNotThrowIfSolutionIsTemporary {
 
     # Arrange
     New-TextFile
-    
+
     # Act and Assert
     Assert-Throws { Get-Package } "Solution is not saved. Please save your solution before managing NuGet packages."
 }
 
-function Test-GetPackageUpdatesReturnAllVersionsIfFlagIsSpecified 
+function Test-GetPackageUpdatesReturnAllVersionsIfFlagIsSpecified
 {
     param
     (
@@ -424,7 +424,7 @@ function Test-GetPackageUpdatesReturnAllVersionsIfFlagIsSpecified
 
     $p | Install-Package PrereleaseTestPackage -Version '1.0.0-a' -Source $context.RepositoryRoot -Prerelease
     Assert-Package $p 'PrereleaseTestPackage' '1.0.0-a'
-    
+
     # Act
     $updates = @(Get-Package -Updates -AllVersions -Source $context.RepositoryRoot)
 
@@ -434,7 +434,7 @@ function Test-GetPackageUpdatesReturnAllVersionsIfFlagIsSpecified
     Assert-AreEqual '1.0.0' $updates[0].Version.ToString()
 }
 
-function Test-GetPackageUpdatesReturnAllVersionsAndPrereleaseVersionsIfTwoFlagsAreSpecified 
+function Test-GetPackageUpdatesReturnAllVersionsAndPrereleaseVersionsIfTwoFlagsAreSpecified
 {
     param
     (
@@ -446,7 +446,7 @@ function Test-GetPackageUpdatesReturnAllVersionsAndPrereleaseVersionsIfTwoFlagsA
 
     $p | Install-Package PrereleaseTestPackage -Version '1.0.0-b' -Source $context.RepositoryRoot -Prerelease
     Assert-Package $p 'PrereleaseTestPackage' '1.0.0-b'
-    
+
     # Act
     $updates = @(Get-Package -Updates -AllVersions -Prerelease -Source $context.RepositoryRoot)
 
@@ -466,10 +466,10 @@ function Test-GetInstalledPackageWithFilterReturnsCorrectPackage
 
     # Arrange
     $p = New-ClassLibrary
-    
+
     $p | Install-Package PrereleaseTestPackage -Version '1.0.0-b' -Source $context.RepositoryRoot
     Assert-Package $p 'PrereleaseTestPackage' '1.0.0-b'
-    
+
     # Act
     $packages = @(Get-Package 'Prerelease')
 
@@ -488,11 +488,11 @@ function Test-GetPackageUpdatesAfterSwitchToSourceThatDoesNotContainInstalledPac
 
     # Arrange
     $p = New-ClassLibrary
-    
+
     $p | Install-Package antlr -Version '3.1.1' -Source $SourceNuGet
-    
+
     # Act
-    $packages = @(Get-Package -updates -Source 'https://www.nuget.org/api/v2/curated-feeds/microsoftdotnet/')
+    $packages = @(Get-Package -updates -Source 'https://www.myget.org/F/nuget-volatile/api/v3/index.json')
 
     # Assert
     Assert-AreEqual 0 $packages.Count
@@ -506,7 +506,7 @@ function Test-GetPackageWhenSourceSwitchNotSpecified
     (
         $context
     )
-    
+
     # Act
     $packages = @(Get-Package -listavailable -First 5)
 

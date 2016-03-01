@@ -6,8 +6,7 @@
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   x:Name="_self"
   mc:Ignorable="d"
-  xmlns:ui="clr-namespace:NuGet.PackageManagement.UI"
-  xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"
+  xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
   MinHeight="72"
   d:DesignHeight="90"
   d:DesignWidth="400"
@@ -15,22 +14,21 @@
   <UserControl.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary
-          Source="Resources.xaml" />
+        <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
-      <ui:PackageStatusToInstallImageVisibilityConverter
+      <nuget:PackageStatusToInstallImageVisibilityConverter
         x:Key="PackageStatusToInstallImageVisibilityConverter" />
-      <ui:PackageStatusToUpdateImageVisibilityConverter
+      <nuget:PackageStatusToUpdateImageVisibilityConverter
         x:Key="PackageStatusToUpdateImageVisibilityConverter" />
-      <ui:BooleanToVisibilityConverter
+      <nuget:BooleanToVisibilityConverter
         x:Key="BooleanToVisibilityConverter" />
-      <ui:SummaryToFontStyleConverter
+      <nuget:SummaryToFontStyleConverter
         x:Key="SummaryToFontStyleConverter" />
-      <ui:SummaryToStringConverter
+      <nuget:SummaryToStringConverter
         x:Key="SummaryToStringConverter" />
-      <ui:StringFormatConverter
+      <nuget:StringFormatConverter
         x:Key="StringFormatConverter" />
-      <ui:NullToBooleanConverter
+      <nuget:NullToBooleanConverter
         x:Key="NullToBooleanConverter" />
 
       <!-- style for install, uninstall and update buttons -->
@@ -62,12 +60,12 @@
         <Setter Property="BorderBrush" Value="Transparent" />
         <Style.Triggers>
           <Trigger Property="IsMouseOver" Value="True">
-            <Setter Property="Background" Value="{DynamicResource {x:Static resx:Brushes.ToolWindowButtonHoverActiveKey}}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static resx:Brushes.ToolWindowButtonHoverActiveBorderKey}}" />
+            <Setter Property="Background" Value="{DynamicResource {x:Static nuget:Brushes.ToolWindowButtonHoverActiveKey}}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static nuget:Brushes.ToolWindowButtonHoverActiveBorderKey}}" />
           </Trigger>
           <Trigger Property="IsPressed" Value="True">
-            <Setter Property="Background" Value="{DynamicResource {x:Static resx:Brushes.ToolWindowButtonDownKey}}" />
-            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static resx:Brushes.ToolWindowButtonDownBorderKey}}" />
+            <Setter Property="Background" Value="{DynamicResource {x:Static nuget:Brushes.ToolWindowButtonDownKey}}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static nuget:Brushes.ToolWindowButtonDownBorderKey}}" />
           </Trigger>
         </Style.Triggers>
       </Style>
@@ -96,7 +94,7 @@
                     Grid.Column="0"
                     Margin="0,12,8,0"
                     VerticalAlignment="top"
-                    Visibility="{Binding CheckBoxesEnabled, RelativeSource={RelativeSource AncestorType={x:Type ui:InfiniteScrollList}}, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    Visibility="{Binding CheckBoxesEnabled, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}, Converter={StaticResource BooleanToVisibilityConverter}}"
                     IsChecked="{Binding Selected}" />
 
                   <!-- Icon -->
@@ -116,7 +114,7 @@
                       Style="{StaticResource PackageIconImageStyle}"
                       VerticalAlignment="Top"
                       Margin="0,0,16,0" />
-                    <ui:InstalledIndicator
+                    <nuget:InstalledIndicator
                       x:Name="_checkMark"
                       Grid.Row="0"
                       Margin="18,20,0,0"
@@ -124,8 +122,8 @@
                       Height="16"
                       VerticalAlignment="Top"
                       Visibility="{Binding Status, Converter={StaticResource PackageStatusToInstallImageVisibilityConverter}}"
-                      ToolTip="{x:Static resx:Resources.ToolTip_PackageInstalled}" />
-                    <ui:UpdateAvailableIndicator
+                      ToolTip="{x:Static nuget:Resources.ToolTip_PackageInstalled}" />
+                    <nuget:UpdateAvailableIndicator
                       x:Name="_updateMark"
                       Grid.Row="0"
                       Margin="18,20,0,0"
@@ -133,11 +131,11 @@
                       Height="16"
                       VerticalAlignment="Top"
                       Visibility="{Binding Status, Converter={StaticResource PackageStatusToUpdateImageVisibilityConverter}}"
-                      ToolTip="{x:Static resx:Resources.ToolTip_UpdateAvailable}" />
+                      ToolTip="{x:Static nuget:Resources.ToolTip_UpdateAvailable}" />
 
                     <TextBlock
                       Grid.Row="1"
-                      Text="{x:Static resx:Resources.Label_PackagePrerelease}"
+                      Text="{x:Static nuget:Resources.Label_PackagePrerelease}"
                       FontSize="9"
                       Margin="0,3,0,0"
                       HorizontalAlignment="Left"
@@ -165,7 +163,7 @@
                         VerticalAlignment="Top"
                         Text="{Binding Id}" />
                       <!-- author and download count -->
-                      <ui:AuthorAndDownloadCount
+                      <nuget:AuthorAndDownloadCount
                         Margin="5,4,0,0"
                         Author="{Binding Author}"
                         DownloadCount="{Binding DownloadCount}" />
@@ -179,9 +177,9 @@
                         <RowDefinition Height="*" />
                       </Grid.RowDefinitions>
                       <!-- providers -->
-                      <ui:PackageManagerProvidersLabel
+                      <nuget:PackageManagerProvidersLabel
                         Grid.Row="0"
-                        FormatString="{x:Static resx:Resources.Label_UseInstead}"
+                        FormatString="{x:Static nuget:Resources.Label_UseInstead}"
                         DataContext="{Binding Providers}" />
 
                       <!-- Summary -->
@@ -230,7 +228,7 @@
                       </Grid.ColumnDefinitions>
 
                       <!-- installed indicator -->
-                      <ui:InstalledIndicator
+                      <nuget:InstalledIndicator
                         x:Name="_installedIndicator"
                         Grid.Column="0"
                         Width="12"
@@ -249,7 +247,7 @@
                         Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter},StringFormat={}v{0}}">
                         <TextBlock.ToolTip>
                           <MultiBinding Converter="{StaticResource StringFormatConverter}">
-                            <Binding Source="{x:Static resx:Resources.ToolTip_InstalledVersion}" />
+                            <Binding Source="{x:Static nuget:Resources.ToolTip_InstalledVersion}" />
                             <Binding Path="InstalledVersion" Converter="{StaticResource VersionToStringConverter}" />
                           </MultiBinding>
                         </TextBlock.ToolTip>
@@ -268,7 +266,7 @@
                       Text="{Binding LatestVersion, Converter={StaticResource VersionToStringConverter},StringFormat={}v{0}}">
                       <TextBlock.ToolTip>
                         <MultiBinding Converter="{StaticResource StringFormatConverter}">
-                          <Binding Source="{x:Static resx:Resources.ToolTip_LatestVersion}" />
+                          <Binding Source="{x:Static nuget:Resources.ToolTip_LatestVersion}" />
                           <Binding Path="LatestVersion" Converter="{StaticResource VersionToStringConverter}" />
                         </MultiBinding>
                       </TextBlock.ToolTip>
@@ -282,8 +280,8 @@
                       Grid.Column="1"
                       Click="UninstallButtonClicked"
                       Visibility="Hidden"
-                      ToolTip="{x:Static resx:Resources.ToolTip_UninstallButton}">
-                      <ui:UninstallButton
+                      ToolTip="{x:Static nuget:Resources.ToolTip_UninstallButton}">
+                      <nuget:UninstallButton
                         Width="16"
                         Height="16" />
                     </Button>
@@ -298,12 +296,12 @@
                       Visibility="Hidden">
                       <Button.ToolTip>
                         <MultiBinding Converter="{StaticResource StringFormatConverter}">
-                          <Binding Source="{x:Static resx:Resources.ToolTip_InstallButton}" />
+                          <Binding Source="{x:Static nuget:Resources.ToolTip_InstallButton}" />
                           <Binding Path="Id" />
                           <Binding Path="LatestVersion" Converter="{StaticResource VersionToStringConverter}" />
                         </MultiBinding>
                       </Button.ToolTip>
-                      <ui:InstallButton
+                      <nuget:InstallButton
                         Width="16"
                         Height="16" />
                     </Button>
@@ -321,7 +319,7 @@
                       Text="{Binding LatestVersion, Converter={StaticResource VersionToStringConverter},StringFormat={}v{0}}">
                       <TextBlock.ToolTip>
                         <MultiBinding Converter="{StaticResource StringFormatConverter}">
-                          <Binding Source="{x:Static resx:Resources.ToolTip_LatestVersion}" />
+                          <Binding Source="{x:Static nuget:Resources.ToolTip_LatestVersion}" />
                           <Binding Path="LatestVersion" Converter="{StaticResource VersionToStringConverter}" />
                         </MultiBinding>
                       </TextBlock.ToolTip>
@@ -338,12 +336,12 @@
                       Visibility="Hidden">
                       <Button.ToolTip>
                         <MultiBinding Converter="{StaticResource StringFormatConverter}">
-                          <Binding Source="{x:Static resx:Resources.ToolTip_UpdateButton}" />
+                          <Binding Source="{x:Static nuget:Resources.ToolTip_UpdateButton}" />
                           <Binding Path="Id" />
                           <Binding Path="LatestVersion" Converter="{StaticResource VersionToStringConverter}" />
                         </MultiBinding>
                       </Button.ToolTip>
-                      <ui:UpdateButton
+                      <nuget:UpdateButton
                         Width="16"
                         Height="16" />
                     </Button>
@@ -367,7 +365,7 @@
                       Binding="{Binding Status}"
                       Value="NotInstalled" />
                     <Condition
-                      Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type ui:InfiniteScrollList}}}"
+                      Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}"
                       Value="False" />
                   </MultiDataTrigger.Conditions>
                   <Setter TargetName="_installButton" Property="Visibility" Value="Visible" />
@@ -375,7 +373,7 @@
 
                 <!-- The install button is collapsed when IsSolution is true -->
                 <DataTrigger
-                  Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type ui:InfiniteScrollList}}}"
+                  Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}"
                   Value="True">
                   <Setter TargetName="_installButton" Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
@@ -390,7 +388,7 @@
                       Binding="{Binding InstalledVersion,Converter={StaticResource NullToBooleanConverter}}"
                       Value="False" />
                     <Condition
-                      Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type ui:InfiniteScrollList}}}"
+                      Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}"
                       Value="False" />
                   </MultiDataTrigger.Conditions>
                   <Setter TargetName="_installedVersion" Property="Visibility" Value="Visible" />
@@ -417,7 +415,7 @@
                 <MultiDataTrigger>
                   <MultiDataTrigger.Conditions>
                     <Condition
-                      Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type ui:InfiniteScrollList}}}"
+                      Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}"
                       Value="True">
                     </Condition>
                     <Condition
@@ -439,7 +437,7 @@
                       Binding="{Binding Status}"
                       Value="UpdateAvailable" />
                     <Condition
-                      Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type ui:InfiniteScrollList}}}"
+                      Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}"
                       Value="False" />
                   </MultiDataTrigger.Conditions>
                   <Setter
@@ -462,7 +460,7 @@
                       Binding="{Binding Status}"
                       Value="Installed" />
                     <Condition
-                      Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type ui:InfiniteScrollList}}}"
+                      Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}"
                       Value="False" />
                   </MultiDataTrigger.Conditions>
                   <Setter TargetName="_uninstallButton" Property="Visibility" Value="Visible" />
@@ -476,7 +474,7 @@
                       Binding="{Binding Status}"
                       Value="UpdateAvailable" />
                     <Condition
-                      Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type ui:InfiniteScrollList}}}"
+                      Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}"
                       Value="False" />
                   </MultiDataTrigger.Conditions>
                   <Setter TargetName="_uninstallButton" Property="Visibility" Value="Visible" />
@@ -484,7 +482,7 @@
 
                 <!-- The uninstall button is collapsed when IsSolution is true -->
                 <DataTrigger
-                  Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type ui:InfiniteScrollList}}}"
+                  Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}"
                   Value="True">
                   <Setter TargetName="_uninstallButton" Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
@@ -503,7 +501,7 @@
                       Binding="{Binding Status}"
                       Value="UpdateAvailable" />
                     <Condition
-                      Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type ui:InfiniteScrollList}}}"
+                      Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}"
                       Value="False" />
                   </MultiDataTrigger.Conditions>
                   <Setter TargetName="_updateButton" Property="Visibility" Value="Visible" />
@@ -511,7 +509,7 @@
 
                 <!-- The update button is collapsed when IsSolution is true -->
                 <DataTrigger
-                  Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type ui:InfiniteScrollList}}}"
+                  Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}"
                   Value="True">
                   <Setter TargetName="_updateButton" Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
@@ -521,7 +519,7 @@
                    * InstalledVersion is null;
                 -->
                 <DataTrigger
-                  Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type ui:InfiniteScrollList}}}" Value="true">
+                  Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}" Value="true">
                   <Setter TargetName="_installedIndicator" Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
                 <DataTrigger

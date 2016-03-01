@@ -11,8 +11,7 @@
   <UserControl.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary
-          Source="Resources.xaml" />
+        <local:SharedResources />
       </ResourceDictionary.MergedDictionaries>
       <local:NotNullToBooleanConverter
         x:Key="NotNullToBooleanConverter" />

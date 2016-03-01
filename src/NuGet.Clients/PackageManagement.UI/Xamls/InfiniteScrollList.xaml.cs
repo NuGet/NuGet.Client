@@ -153,8 +153,6 @@ namespace NuGet.PackageManagement.UI
                 ClearPackageList();
             }
 
-            ShowLoadingStatus(LoadingStatus.Loading);
-
             var currentLoader = _loader;
 
             var loadedItems = await LoadNextPageAsync(currentLoader, restart: restart, token: token);
@@ -173,8 +171,6 @@ namespace NuGet.PackageManagement.UI
             await WaitForCompletionAsync(currentLoader, token);
 
             token.ThrowIfCancellationRequested();
-
-            ShowLoadingStatus(currentLoader.State.LoadingStatus);
         }
 
         private async Task<IEnumerable<PackageItemListViewModel>> LoadNextPageAsync(IItemLoader<PackageItemListViewModel> currentLoader, bool restart, CancellationToken token)
@@ -195,8 +191,8 @@ namespace NuGet.PackageManagement.UI
                 await currentLoader.LoadNextAsync(progress, token);
 
                 // run till first results are ready
-                for (var state = currentLoader.State; 
-                    state.LoadingStatus == LoadingStatus.Loading && state.ItemsCount == 0; 
+                for (var state = currentLoader.State;
+                    state.LoadingStatus == LoadingStatus.Loading && state.ItemsCount == 0;
                     state = currentLoader.State)
                 {
                     token.ThrowIfCancellationRequested();
@@ -225,25 +221,29 @@ namespace NuGet.PackageManagement.UI
 
         private void HandleItemLoaderStateChange(IItemLoader<PackageItemListViewModel> loader, IItemLoaderState state)
         {
-            if (loader == _loader)
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                _loadingStatusIndicator.UpdateLoadingState(state);
-                _loadingStatusBar.UpdateLoadingState(state);
-            }
-        }
+                if (loader == _loader)
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-        private void ShowLoadingStatus(LoadingStatus status)
-        {
-            _loadingStatusIndicator.Status = status;
+                    _loadingStatusBar.UpdateLoadingState(state);
 
-            if (!_loadingStatusIndicator.IsVisible)
-            {
-                Items.Remove(_loadingStatusIndicator);
-            }
-            else if (!Items.Contains(_loadingStatusIndicator))
-            {
-                Items.Add(_loadingStatusIndicator);
-            }
+                    _loadingStatusIndicator.Status = state.LoadingStatus;
+
+                    if (!_loadingStatusIndicator.IsVisible)
+                    {
+                        Items.Remove(_loadingStatusIndicator);
+                    }
+                    else if (!Items.Contains(_loadingStatusIndicator))
+                    {
+                        if (state.LoadingStatus != LoadingStatus.Loading || PackageItems.Any())
+                        {
+                            Items.Add(_loadingStatusIndicator);
+                        }
+                    }
+                }
+            });
         }
 
         private void UpdatePackageList(List<PackageItemListViewModel> packages, bool refresh)

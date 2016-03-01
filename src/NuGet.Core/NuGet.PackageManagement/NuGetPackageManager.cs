@@ -233,9 +233,31 @@ namespace NuGet.PackageManagement
         /// <paramref name="packageId" /> into <paramref name="nuGetProject" /> <paramref name="resolutionContext" />
         /// and <paramref name="nuGetProjectContext" /> are used in the process.
         /// </summary>
-        public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(NuGetProject nuGetProject, string packageId,
-            ResolutionContext resolutionContext, INuGetProjectContext nuGetProjectContext,
-            SourceRepository primarySourceRepository, IEnumerable<SourceRepository> secondarySources, CancellationToken token)
+        public Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(
+            NuGetProject nuGetProject,
+            string packageId,
+            ResolutionContext resolutionContext,
+            INuGetProjectContext nuGetProjectContext,
+            SourceRepository primarySourceRepository,
+            IEnumerable<SourceRepository> secondarySources,
+            CancellationToken token)
+        {
+            return PreviewInstallPackageAsync(nuGetProject, packageId, resolutionContext, nuGetProjectContext, new[] { primarySourceRepository }, secondarySources, token);
+        }
+
+        /// <summary>
+        /// Gives the preview as a list of NuGetProjectActions that will be performed to install
+        /// <paramref name="packageId" /> into <paramref name="nuGetProject" /> <paramref name="resolutionContext" />
+        /// and <paramref name="nuGetProjectContext" /> are used in the process.
+        /// </summary>
+        public async Task<IEnumerable<NuGetProjectAction>> PreviewInstallPackageAsync(
+            NuGetProject nuGetProject, 
+            string packageId,
+            ResolutionContext resolutionContext, 
+            INuGetProjectContext nuGetProjectContext,
+            IEnumerable<SourceRepository> primarySources, 
+            IEnumerable<SourceRepository> secondarySources, 
+            CancellationToken token)
         {
             if (nuGetProject == null)
             {
@@ -264,7 +286,7 @@ namespace NuGet.PackageManagement
                 packageId,
                 nuGetProject,
                 resolutionContext,
-                primarySourceRepository,
+                primarySources,
                 log,
                 token);
 
@@ -283,7 +305,7 @@ namespace NuGet.PackageManagement
 
             // Step-2 : Call InstallPackage(project, packageIdentity)
             return await PreviewInstallPackageAsync(nuGetProject, new PackageIdentity(packageId, latestVersion), resolutionContext,
-                nuGetProjectContext, primarySourceRepository, secondarySources, token);
+                nuGetProjectContext, primarySources, secondarySources, token);
         }
 
         public Task<IEnumerable<NuGetProjectAction>> PreviewUpdatePackagesAsync(
