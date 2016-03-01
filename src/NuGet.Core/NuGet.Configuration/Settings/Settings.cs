@@ -246,7 +246,7 @@ namespace NuGet.Configuration
                 }
                 else
                 {
-                    var userSettingsDir = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+                    var userSettingsDir = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory) ?? String.Empty;
                     defaultSettingsFilePath = Path.Combine(userSettingsDir, DefaultSettingsFileName);
                 }
 
