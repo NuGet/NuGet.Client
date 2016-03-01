@@ -213,7 +213,14 @@ namespace NuGet.VisualStudio
                         projectContext.PackageExtractionContext.UseLegacyPackageInstallPath = true;
 
                         // This runs from the UI thread
-                        await _installer.InstallInternalAsync(project, toInstall, repos, projectContext, package.IgnoreDependencies, CancellationToken.None);
+                        await _installer.InstallInternalAsync(
+                            project,
+                            toInstall,
+                            repos,
+                            projectContext,
+                            includePrerelease: false,
+                            ignoreDependencies: package.IgnoreDependencies,
+                            token: CancellationToken.None);
                     }
                     catch (InvalidOperationException exception)
                     {
