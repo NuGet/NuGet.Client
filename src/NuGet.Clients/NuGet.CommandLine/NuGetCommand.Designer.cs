@@ -630,6 +630,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to List of runtime identifiers to restore for..
+        /// </summary>
+        internal static string CommandRuntimeDescription {
+            get {
+                return ResourceManager.GetString("CommandRuntimeDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A list of packages sources to use for this command..
         /// </summary>
         internal static string CommandSourceDescription {

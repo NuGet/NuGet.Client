@@ -113,11 +113,11 @@ namespace NuGet.CommandLine
         public new string ConfigFile { get; set; }
 
         // The directory that contains msbuild
-        private string _msbuildDirectory;
+        private Lazy<string> _msbuildDirectory;
 
         public override void ExecuteCommand()
         {
-            _msbuildDirectory = MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console);
+            _msbuildDirectory = new Lazy<string>(() => MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console));
 
             if (Verbose)
             {
@@ -377,7 +377,7 @@ namespace NuGet.CommandLine
 
         private IPackage BuildFromProjectFile(string path)
         {
-            var factory = new ProjectFactory(_msbuildDirectory, path, Properties)
+            var factory = new ProjectFactory(_msbuildDirectory.Value, path, Properties)
             {
                 IsTool = Tool,
                 Logger = Console,

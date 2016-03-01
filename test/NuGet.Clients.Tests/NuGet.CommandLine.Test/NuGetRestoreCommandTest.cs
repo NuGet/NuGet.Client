@@ -41,7 +41,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.NotEqual(0, r.Item1);
                 var error = r.Item3;
-                Assert.Contains("could not find a part of the path", r.Item3, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("Input file does not exist: bad/pat.h/myfile.blah", r.Item3, StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -72,7 +72,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.NotEqual(0, r.Item1);
                 var error = r.Item3;
-                Assert.Contains("could not find a part of the path", r.Item3, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("Input file does not exist:", r.Item3, StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -105,7 +105,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.NotEqual(0, r.Item1);
                 var error = r.Item3;
-                Assert.Contains("could not find a part of the path", r.Item3, StringComparison.OrdinalIgnoreCase);
+                Assert.Contains("Input file does not exist:", r.Item3, StringComparison.OrdinalIgnoreCase);
             }
         }
 
@@ -1079,7 +1079,7 @@ EndProject");
 
                 // Assert
                 Assert.Equal(1, r.Item1);
-                Assert.Contains("Cannot locate a solution file.", r.Item3);
+                Assert.Contains("does not contain an msbuild solution, packages.config, or project.json file to restore", r.Item3);
                 var packageFileA = Path.Combine(workingPath, @"packages\packageA.1.1.0\packageA.1.1.0.nupkg");
                 var packageFileB = Path.Combine(workingPath, @"packages\packageB.2.2.0\packageB.2.2.0.nupkg");
                 Assert.False(File.Exists(packageFileA));
