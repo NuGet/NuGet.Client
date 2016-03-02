@@ -13,7 +13,7 @@
       </ResourceDictionary.MergedDictionaries>
       <BitmapImage
         x:Key="BitmapImage_Refresh"
-        UriSource="/NuGet.PackageManagement.UI;component/Resources/Refresh_grey_16x.png" />
+        UriSource="/NuGet.PackageManagement.UI;component/Resources/Refresh.16.16.png" />
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid>
@@ -102,12 +102,10 @@
         Grid.Column="1"
         x:Name="_refreshButton"
         AutomationProperties.AutomationId="Button_Retry"
-        Margin="0"
+        Margin="3,0"
         VerticalAlignment="Center"
         Padding="0"
         Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"
-        BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" 
-        BorderThickness="1" 
         Command="{x:Static nuget:Commands.RestartSearchCommand}">
         <Image
           Source="{StaticResource BitmapImage_Refresh}"
@@ -121,7 +119,7 @@
         Grid.Column="2"
         x:Name="_checkboxPrerelease"
         AutomationProperties.AutomationId="CheckBox_Prerelease"
-        Margin="6,0,0,0"
+        Margin="3,0"
         VerticalAlignment="Center"
         Content="{x:Static nuget:Resources.Checkbox_IncludePrerelease}"
         Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"

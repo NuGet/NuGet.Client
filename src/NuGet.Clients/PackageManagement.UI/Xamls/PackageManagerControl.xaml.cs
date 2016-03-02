@@ -491,8 +491,6 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                 var loadContext = new PackageLoadContext(
                     ActiveSources, Model.IsSolution, Model.Context);
                 var packageFeed = await CreatePackageFeedAsync(loadContext, _topPanel.Filter);
@@ -501,42 +499,42 @@ namespace NuGet.PackageManagement.UI
                 var loadingMessage = string.IsNullOrWhiteSpace(searchText)
                     ? Resx.Resources.Text_Loading
                     : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
-                await _packageList.LoadAsync(loader, loadingMessage);
+
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                _packageList.LoadItems(loader, loadingMessage);
             });
         }
 
         private void RefreshAvailableUpdatesCount()
         {
+            _topPanel._labelUpgradeAvailable.Count = 0;
+
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                _topPanel._labelUpgradeAvailable.Count = 0;
-
                 var loadContext = new PackageLoadContext(
                     ActiveSources, Model.IsSolution, Model.Context);
                 var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable);
                 var loader = new PackageItemLoader(
                     loadContext, packageFeed, includePrerelease: IncludePrerelease);
 
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 _topPanel._labelUpgradeAvailable.Count = await loader.GetTotalCountAsync(100, CancellationToken.None);
             });
         }
 
         private void RefreshConsolidatablePackagesCount()
         {
+            _topPanel._labelConsolidate.Count = 0;
+
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                _topPanel._labelConsolidate.Count = 0;
-
                 var loadContext = new PackageLoadContext(
                     ActiveSources, Model.IsSolution, Model.Context);
                 var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate);
                 var loader = new PackageItemLoader(
                     loadContext, packageFeed, includePrerelease: IncludePrerelease);
 
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 _topPanel._labelConsolidate.Count = await loader.GetTotalCountAsync(100, CancellationToken.None);
             });
         }
@@ -922,17 +920,11 @@ namespace NuGet.PackageManagement.UI
                 nugetUi => SetOptions(nugetUi, NuGetActionType.Install));
         }
 
-        private void PackageList_UpdateButtonClicked(object sender, EventArgs e)
+        private void PackageList_UpdateButtonClicked(PackageItemListViewModel[] selectedPackages)
         {
-            var packagesToUpdate = new List<PackageIdentity>();
-            foreach (var item in _packageList.Items)
-            {
-                var package = item as PackageItemListViewModel;
-                if (package?.Selected == true)
-                {
-                    packagesToUpdate.Add(new PackageIdentity(package.Id, package.Version));
-                }
-            }
+            var packagesToUpdate = selectedPackages
+                .Select(package => new PackageIdentity(package.Id, package.Version))
+                .ToList();
 
             if (packagesToUpdate.Count == 0)
             {

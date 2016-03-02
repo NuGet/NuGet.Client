@@ -79,7 +79,10 @@
     <Compile Include="Common\NuGetEvent.cs" />
     <Compile Include="Common\NuGetEventTrigger.cs" />
     <Compile Include="Common\OptionsPage.cs" />
+    <Compile Include="Converters\CollectionToStringConverter.cs" />
+    <Compile Include="Converters\EnumDescriptionValueConverter.cs" />
     <Compile Include="Models\LoadingStatusViewModel.cs" />
+    <Compile Include="Models\PackageSearchStatus.cs" />
     <Compile Include="Resources\Domain.cs" />
     <Compile Include="Resources\Resources.xaml.cs">
       <DependentUpon>Resources.xaml</DependentUpon>
@@ -267,6 +270,9 @@
     <DesignDataWithDesignTimeCreatableTypes Include="Design\LoadingStatusViewModelSampleData.xaml">
       <SubType>Designer</SubType>
     </DesignDataWithDesignTimeCreatableTypes>
+    <DesignDataWithDesignTimeCreatableTypes Include="Design\PackageItemListViewSampleData.xaml">
+      <SubType>Designer</SubType>
+    </DesignDataWithDesignTimeCreatableTypes>
     <Page Include="Themes\generic.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -416,7 +422,9 @@
     <Resource Include="Resources\Refresh_grey_16x.png" />
     <Resource Include="Resources\Refresh_inverse_16x.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\Refresh.16.16.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\..\build\common.targets" />
   <Import Project="..\..\..\build\sign.targets" />

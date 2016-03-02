@@ -113,6 +113,8 @@ namespace NuGet.PackageManagement.UI.Test
 
         private class TestPackageFeed : IPackageFeed
         {
+            public bool IsMultiSource => false;
+
             public Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
             {
                 Assert.NotNull(continuationToken);
