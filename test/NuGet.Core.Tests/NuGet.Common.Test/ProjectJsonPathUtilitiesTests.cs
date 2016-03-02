@@ -223,10 +223,10 @@ namespace NuGet.Common.Test
 
         [Theory]
         [InlineData("project.json", "project.lock.json")]
-        [InlineData("dir/project.json", "dir\\project.lock.json")]
+        [InlineData("dir\\project.json", "dir\\project.lock.json")]
         [InlineData("c:\\users\\project.json", "c:\\users\\project.lock.json")]
         [InlineData("abc.project.json", "abc.project.lock.json")]
-        [InlineData("dir/abc.project.json", "dir\\abc.project.lock.json")]
+        [InlineData("dir\\abc.project.json", "dir\\abc.project.lock.json")]
         [InlineData("c:\\users\\abc.project.json", "c:\\users\\abc.project.lock.json")]
         public void ProjectJsonPathUtilities_GetLockFilePath(string configPath, string lockFilePath)
         {
@@ -246,7 +246,7 @@ namespace NuGet.Common.Test
         {
             if (!RuntimeEnvironmentHelper.IsWindows)
             {
-                return path.Replace("c:\\", "/tmp/".Replace('\\', '/'));
+                return path.Replace("c:\\", "/tmp/").Replace('\\', '/');
             }
             else
             {
