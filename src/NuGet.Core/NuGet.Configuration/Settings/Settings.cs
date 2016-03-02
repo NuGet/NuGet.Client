@@ -45,6 +45,8 @@ namespace NuGet.Configuration
         // The priority of this setting file
         private int _priority;
 
+        private bool cleared { get; set; }
+
         public Settings(string root /*, ILogger logger */)
             : this(root, DefaultSettingsFileName, false)
         {
@@ -202,7 +204,7 @@ namespace NuGet.Configuration
                     return NullSettings.Instance;
                 }
 
-                validSettingFiles = RemoveSettingsBeforeClearTag(validSettingFiles);
+                SetClearTagForSettings(validSettingFiles);
 
                 validSettingFiles[0]._priority = validSettingFiles.Count;
 
@@ -499,7 +501,8 @@ namespace NuGet.Configuration
         public void UpdateSections(string section, IReadOnlyList<SettingValue> values)
         {
             // machine wide settings cannot be changed.
-            if (IsMachineWideSettings)
+            if (IsMachineWideSettings || 
+                ((section == ConfigurationConstants.PackageSources || section == ConfigurationConstants.DisabledPackageSources) && cleared))
             {
                 if (_next == null)
                 {
@@ -1087,7 +1090,7 @@ namespace NuGet.Configuration
                                  new XAttribute(ConfigurationConstants.ProtocolVersionAttribute, "3")))));
         }
 
-        private static List<Settings> RemoveSettingsBeforeClearTag(List<Settings> settings)
+        private static void SetClearTagForSettings(List<Settings> settings)
         {
             var result = new List<Settings>();
 
@@ -1095,14 +1098,15 @@ namespace NuGet.Configuration
 
             foreach (var setting in settings)
             {
-                if (!foundClear || setting.IsMachineWideSettings)
+                if (!foundClear)
                 {
-                    result.Add(setting);
                     foundClear = FoundClearTag(setting.ConfigXDocument);
                 }
+                else
+                {
+                    setting.cleared = true;
+                }
             }
-
-            return result;
         }
 
         private static bool FoundClearTag(XDocument config)
