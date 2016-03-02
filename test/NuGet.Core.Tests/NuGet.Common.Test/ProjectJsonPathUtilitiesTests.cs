@@ -208,8 +208,6 @@ namespace NuGet.Common.Test
         [InlineData("c:\\users\\packages.config")]
         [InlineData("c:\\users\\abc.project..json")]
         [InlineData("c:\\users\\")]
-        [InlineData("<Shared>")]
-        [InlineData("<Shared>.Project.json")]
         [InlineData("\t")]
         [InlineData("")]
         public void ProjectJsonPathUtilities_IsProjectConfig_False(string path)
