@@ -68,20 +68,30 @@ namespace NuGet.Test.Utility
 
             using (var zip = new ZipArchive(File.Create(file.FullName), ZipArchiveMode.Create))
             {
-                zip.AddEntry("contentFiles/any/any/config.xml", new byte[] { 0 });
-                zip.AddEntry("contentFiles/cs/net45/code.cs", new byte[] { 0 });
-                zip.AddEntry("lib/net45/a.dll", new byte[] { 0 });
-                zip.AddEntry("lib/netstandard1.0/a.dll", new byte[] { 0 });
-                zip.AddEntry($"build/net45/{id}.targets", @"<targets />", Encoding.UTF8);
-                zip.AddEntry("native/net45/a.dll", new byte[] { 0 });
-                zip.AddEntry("tools/a.exe", new byte[] { 0 });
+                if (packageContext.Files.Any())
+                {
+                    foreach (var entryFile in packageContext.Files)
+                    {
+                        zip.AddEntry(entryFile.Key, entryFile.Value);
+                    }
+                }
+                else
+                {
+                    zip.AddEntry("contentFiles/any/any/config.xml", new byte[] { 0 });
+                    zip.AddEntry("contentFiles/cs/net45/code.cs", new byte[] { 0 });
+                    zip.AddEntry("lib/net45/a.dll", new byte[] { 0 });
+                    zip.AddEntry("lib/netstandard1.0/a.dll", new byte[] { 0 });
+                    zip.AddEntry($"build/net45/{id}.targets", @"<targets />", Encoding.UTF8);
+                    zip.AddEntry("native/net45/a.dll", new byte[] { 0 });
+                    zip.AddEntry("tools/a.exe", new byte[] { 0 });
+                }
 
                 if (!string.IsNullOrEmpty(runtimeJson))
                 {
                     zip.AddEntry("runtime.json", runtimeJson, Encoding.UTF8);
                 }
 
-                var nuspecXml = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+                var nuspecXml = packageContext.Nuspec?.ToString() ?? $@"<?xml version=""1.0"" encoding=""utf-8""?>
                         <package>
                         <metadata>
                             <id>{id}</id>
@@ -143,6 +153,14 @@ namespace NuGet.Test.Utility
             }
 
             return file;
+        }
+
+        /// <summary>
+        /// Create package.
+        /// </summary>
+        public static void CreatePackages(SimpleTestPackageContext package, string repositoryPath)
+        {
+            CreatePackages(new List<SimpleTestPackageContext>() { package }, repositoryPath);
         }
 
         /// <summary>

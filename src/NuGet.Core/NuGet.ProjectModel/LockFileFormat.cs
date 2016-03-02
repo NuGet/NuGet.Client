@@ -37,6 +37,7 @@ namespace NuGet.ProjectModel
         private const string CompileProperty = "compile";
         private const string NativeProperty = "native";
         private const string ContentFilesProperty = "contentFiles";
+        private const string RuntimeTargetsProperty = "runtimeTargets";
         private const string ResourceProperty = "resource";
         private const string TypeProperty = "type";
         private const string PathProperty = "path";
@@ -282,6 +283,7 @@ namespace NuGet.ProjectModel
             library.ResourceAssemblies = ReadObject(json[ResourceProperty] as JObject, ReadFileItem);
             library.NativeLibraries = ReadObject(json[NativeProperty] as JObject, ReadFileItem);
             library.ContentFiles = ReadObject(json[ContentFilesProperty] as JObject, ReadFileItem);
+            library.RuntimeTargets = ReadObject(json[RuntimeTargetsProperty] as JObject, ReadFileItem);
 
             return library;
         }
@@ -347,6 +349,13 @@ namespace NuGet.ProjectModel
                 var ordered = library.ContentFiles.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
 
                 json[ContentFilesProperty] = WriteObject(ordered, WriteFileItem);
+            }
+
+            if (library.RuntimeTargets.Count > 0)
+            {
+                var ordered = library.RuntimeTargets.OrderBy(assembly => assembly.Path, StringComparer.Ordinal);
+
+                json[RuntimeTargetsProperty] = WriteObject(ordered, WriteFileItem);
             }
 
             return new JProperty(library.Name + "/" + library.Version.ToNormalizedString(), json);

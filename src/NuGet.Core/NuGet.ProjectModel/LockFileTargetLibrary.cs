@@ -33,6 +33,8 @@ namespace NuGet.ProjectModel
 
         public IList<LockFileItem> ContentFiles { get; set; } = new List<LockFileItem>();
 
+        public IList<LockFileItem> RuntimeTargets { get; set; } = new List<LockFileItem>();
+
         public bool Equals(LockFileTargetLibrary other)
         {
             if (other == null)
@@ -62,7 +64,9 @@ namespace NuGet.ProjectModel
                 && NativeLibraries.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase)
                     .SequenceEqual(other.NativeLibraries.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase))
                 && ContentFiles.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase)
-                    .SequenceEqual(other.ContentFiles.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase));
+                    .SequenceEqual(other.ContentFiles.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase))
+                && RuntimeTargets.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase)
+                    .SequenceEqual(other.RuntimeTargets.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase));
         }
 
         public override bool Equals(object obj)
@@ -110,6 +114,11 @@ namespace NuGet.ProjectModel
             }
 
             foreach (var item in ContentFiles.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase))
+            {
+                combiner.AddObject(item);
+            }
+
+            foreach (var item in RuntimeTargets.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase))
             {
                 combiner.AddObject(item);
             }

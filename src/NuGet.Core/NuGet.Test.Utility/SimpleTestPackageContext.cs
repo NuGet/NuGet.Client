@@ -1,7 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Text;
+using System.Xml.Linq;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
@@ -14,6 +17,8 @@ namespace NuGet.Test.Utility
         public List<SimpleTestPackageContext> Dependencies { get; set; } = new List<SimpleTestPackageContext>();
         public string Include { get; set; } = string.Empty;
         public string Exclude { get; set; } = string.Empty;
+        public List<KeyValuePair<string, byte[]>> Files { get; set; } = new List<KeyValuePair<string, byte[]>>();
+        public XDocument Nuspec { get; set; }
 
         /// <summary>
         /// runtime.json
@@ -26,6 +31,29 @@ namespace NuGet.Test.Utility
             {
                 return new PackageIdentity(Id, NuGetVersion.Parse(Version));
             }
+        }
+
+        /// <summary>
+        /// Add a file to the zip. Ex: lib/net45/a.dll
+        /// </summary>
+        public void AddFile(string path)
+        {
+            AddFile(path, new byte[] { 0 });
+        }
+
+        public void AddFile(string path, string content)
+        {
+            AddFile(path, Encoding.UTF8.GetBytes(content));
+        }
+
+        public void AddFile(string path, byte[] bytes)
+        {
+            if (string.IsNullOrEmpty(path) || path.StartsWith("/") || path.IndexOf('\\') > -1)
+            {
+                throw new ArgumentException(nameof(path));
+            }
+
+            Files.Add(new KeyValuePair<string, byte[]>(path, bytes));
         }
     }
 }
