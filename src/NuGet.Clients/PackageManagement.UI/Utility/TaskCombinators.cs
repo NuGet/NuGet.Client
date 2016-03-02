@@ -43,5 +43,30 @@ namespace NuGet.PackageManagement.UI
 
             return values;
         }
+
+        public static IDictionary<string, Task<TValue>> ObserveErrorsAsync<TSource, TValue>(
+            IEnumerable<TSource> sources,
+            Func<TSource, string> keySelector,
+            Func<TSource, CancellationToken, Task<TValue>> valueSelector,
+            Action<Task, object> observeErrorAction,
+            CancellationToken cancellationToken)
+        {
+            var tasks = sources
+                .ToDictionary(
+                    s => keySelector(s),
+                    s =>
+                    {
+                        var valueTask = valueSelector(s, cancellationToken);
+                        var ignored = valueTask.ContinueWith(
+                            observeErrorAction, 
+                            s, 
+                            cancellationToken, 
+                            TaskContinuationOptions.OnlyOnFaulted, 
+                            TaskScheduler.Current);
+                        return valueTask;
+                    });
+
+            return tasks;
+        }
     }
 }

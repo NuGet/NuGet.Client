@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Indexing;
 using NuGet.Protocol.Core.Types;
 
@@ -20,7 +22,7 @@ namespace NuGet.PackageManagement.UI
         private const int PageSize = 25;
 
         private readonly SourceRepository[] _sourceRepositories;
-        private readonly Logging.ILogger _logger;
+        private readonly INuGetUILogger _logger;
 
         public bool IsMultiSource => _sourceRepositories.Length > 1;
 
@@ -37,7 +39,7 @@ namespace NuGet.PackageManagement.UI
             public IDictionary<string, LoadingStatus> SourceSearchStatus { get; set; }
         }
 
-        public MultiSourcePackageFeed(IEnumerable<SourceRepository> sourceRepositories, Logging.ILogger logger)
+        public MultiSourcePackageFeed(IEnumerable<SourceRepository> sourceRepositories, INuGetUILogger logger)
         {
             if (sourceRepositories == null)
             {
@@ -51,22 +53,17 @@ namespace NuGet.PackageManagement.UI
 
             _sourceRepositories = sourceRepositories.ToArray();
 
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
             _logger = logger;
         }
 
         public async Task<SearchResult<IPackageSearchMetadata>> SearchAsync(string searchText, SearchFilter filter, CancellationToken cancellationToken)
         {
-            var searchTasks = _sourceRepositories
-                .ToDictionary(r => r.PackageSource.Name, r => r.SearchAsync(searchText, filter, PageSize, cancellationToken));
-
-            var ignored = searchTasks.Values
-                .Select(task => task.ContinueWith(LogError, TaskContinuationOptions.OnlyOnFaulted))
-                .ToArray();
+            var searchTasks = TaskCombinators.ObserveErrorsAsync(
+                _sourceRepositories,
+                r => r.PackageSource.Name,
+                (r, t) => r.SearchAsync(searchText, filter, PageSize, t),
+                LogError,
+                cancellationToken);
 
             return await WaitForCompletionOrBailOutAsync(searchText, searchTasks, cancellationToken);
         }
@@ -80,18 +77,18 @@ namespace NuGet.PackageManagement.UI
                 throw new InvalidOperationException("Invalid token");
             }
 
-            var searchTasks = _sourceRepositories
+            var searchTokens = _sourceRepositories
                 .Join(searchToken.SourceSearchCursors,
                     r => r.PackageSource.Name,
                     c => c.Key,
-                    (r, c) => new { Repository = r, NextToken = c.Value })
-                .ToDictionary(
-                    j => j.Repository.PackageSource.Name,
-                    j => j.Repository.SearchAsync(j.NextToken, PageSize, cancellationToken));
+                    (r, c) => new { Repository = r, NextToken = c.Value });
 
-            var ignored = searchTasks.Values
-                .Select(task => task.ContinueWith(LogError, TaskContinuationOptions.OnlyOnFaulted))
-                .ToArray();
+            var searchTasks = TaskCombinators.ObserveErrorsAsync(
+                searchTokens,
+                j => j.Repository.PackageSource.Name,
+                (j, t) => j.Repository.SearchAsync(j.NextToken, PageSize, t),
+                LogError,
+                cancellationToken);
 
             return await WaitForCompletionOrBailOutAsync(searchToken.SearchString, searchTasks, cancellationToken);
         }
@@ -226,16 +223,25 @@ namespace NuGet.PackageManagement.UI
             return result;
         }
 
-        private void LogError(Task task)
+        private void LogError(Task task, object state)
         {
-            try
+            if (_logger == null)
             {
-                foreach (var ex in task.Exception.Flatten().InnerExceptions)
-                {
-                    _logger.LogError(ex.ToString());
-                }
+                // observe the task exception when no UI logger provided.
+                Trace.WriteLine(ExceptionUtilities.DisplayMessage(task.Exception));
+                return;
             }
-            catch { }
+
+            // UI logger only can be engaged from the main thread
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var errorMessage = ExceptionUtilities.DisplayMessage(task.Exception);
+                _logger.Log(
+                    ProjectManagement.MessageLevel.Error,
+                    $"[{state.ToString()}] {errorMessage}");
+            });
         }
     }
 }

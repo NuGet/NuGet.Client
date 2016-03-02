@@ -274,7 +274,8 @@
                       Style="{StaticResource buttonStyle}"
                       Grid.Row="0"
                       Grid.Column="1"
-                      Click="UninstallButtonClicked"
+                      Command="{x:Static nuget:Commands.UninstallPackageCommand}"
+                      CommandParameter="{Binding}"
                       Visibility="Hidden"
                       ToolTip="{x:Static nuget:Resources.ToolTip_UninstallButton}">
                       <nuget:UninstallButton
@@ -288,7 +289,8 @@
                       Grid.Row="0"
                       Grid.Column="1"
                       Style="{StaticResource buttonStyle}"
-                      Click="InstallButtonClicked"
+                      Command="{x:Static nuget:Commands.InstallPackageCommand}"
+                      CommandParameter="{Binding}"
                       Visibility="Hidden">
                       <Button.ToolTip>
                         <MultiBinding Converter="{StaticResource StringFormatConverter}">
@@ -328,7 +330,8 @@
                       Grid.Column="2"
                       Style="{StaticResource buttonStyle}"
                       Margin="0,5,0,0"
-                      Click="InstallButtonClicked"
+                      Command="{x:Static nuget:Commands.InstallPackageCommand}"
+                      CommandParameter="{Binding}"
                       Visibility="Hidden">
                       <Button.ToolTip>
                         <MultiBinding Converter="{StaticResource StringFormatConverter}">

@@ -31,17 +31,11 @@
     <CommandBinding
       Command="{x:Static nuget:Commands.RestartSearchCommand}" 
       Executed="ExecuteRestartSearchCommand"/>
-    <CommandBinding
-      Command="{x:Static nuget:Commands.ShowErrorsCommand}" 
-      Executed="ExecuteShowErrorsCommand"/>
   </UserControl.CommandBindings>
   <UserControl.InputBindings>
     <KeyBinding
       Command="{x:Static nuget:Commands.FocusOnSearchBox}"
       Gesture="CTRL+E" />
-    <KeyBinding
-      Command="{x:Static nuget:Commands.RestartSearchCommand}"
-      Gesture="F5" />
   </UserControl.InputBindings>
   <DockPanel
     x:Name="_root"

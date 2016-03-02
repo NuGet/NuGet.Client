@@ -553,7 +553,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 IncludeDelisted = false
             };
 
-            var packageFeed = new MultiSourcePackageFeed(PrimarySourceRepositories, Logging.NullLogger.Instance);
+            var packageFeed = new MultiSourcePackageFeed(PrimarySourceRepositories, logger: null);
             var searchTask = packageFeed.SearchAsync(searchString, searchFilter, Token);
             return PackageFeedEnumerator.Enumerate(packageFeed, searchTask, Token);
         }

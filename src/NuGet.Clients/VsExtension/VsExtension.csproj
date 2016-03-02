@@ -71,6 +71,7 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="SettingsToLegacySettings.cs" />
+    <Compile Include="ShowErrorsCommand.cs" />
     <Compile Include="VisualStudioAccountProvider.cs" />
     <Compile Include="VisualStudioCredentialProvider.cs" />
     <Compile Include="VisualStudioUIContext.cs" />

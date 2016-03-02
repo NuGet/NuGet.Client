@@ -7,7 +7,6 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
@@ -18,6 +17,7 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet;
+using NuGet.Credentials;
 using NuGet.Options;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.UI;
@@ -30,7 +30,7 @@ using IMachineWideSettings = NuGet.Configuration.IMachineWideSettings;
 using ISettings = NuGet.Configuration.ISettings;
 using Resx = NuGet.PackageManagement.UI.Resources;
 using Strings = NuGet.PackageManagement.VisualStudio.Strings;
-using NuGet.Credentials;
+using UI = NuGet.PackageManagement.UI;
 
 namespace NuGetVSExtension
 {
@@ -321,6 +321,10 @@ namespace NuGetVSExtension
 
             // This initializes the IVSSourceControlTracker, even though _vsSourceControlTracker is unused.
             _vsSourceControlTracker = ServiceLocator.GetInstanceSafe<IVsSourceControlTracker>();
+
+            // This instantiates a decoupled ICommand instance responsible to locate and display output pane by a UI control
+            var serviceProvider = ServiceLocator.GetInstanceSafe<System.IServiceProvider>();
+            UI.Commands.ShowErrorsCommand = new ShowErrorsCommand(serviceProvider);
         }
 
         /// <summary>
@@ -650,10 +654,10 @@ namespace NuGetVSExtension
             var uiFactory = ServiceLocator.GetInstance<INuGetUIFactory>();
             var uiController = uiFactory.Create(uiContext, _uiProjectContext);
 
-            var model = new PackageManagerModel(uiController, uiContext, isSolution: false);
+            var model = new PackageManagerModel(uiController, uiContext, isSolution: false, editorFactoryGuid: GuidList.guidNuGetEditorType);
             var vsWindowSearchHostfactory = ServiceLocator.GetGlobalService<SVsWindowSearchHostFactory, IVsWindowSearchHostFactory>();
             var vsShell = ServiceLocator.GetGlobalService<SVsShell, IVsShell4>();
-            var control = new PackageManagerControl(model, Settings, vsWindowSearchHostfactory, vsShell);
+            var control = new PackageManagerControl(model, Settings, vsWindowSearchHostfactory, vsShell, _outputConsoleLogger);
             var windowPane = new PackageManagerWindowPane(control);
             var guidEditorType = GuidList.guidNuGetEditorType;
             var guidCommandUI = Guid.Empty;
@@ -868,11 +872,11 @@ namespace NuGetVSExtension
             var uiController = uiFactory.Create(uiContext, _uiProjectContext);
 
             var solutionName = (string)_dte.Solution.Properties.Item("Name").Value;
-            var model = new PackageManagerModel(uiController, uiContext, isSolution: true);
+            var model = new PackageManagerModel(uiController, uiContext, isSolution: true, editorFactoryGuid: GuidList.guidNuGetEditorType);
             model.SolutionName = solutionName;
             var vsWindowSearchHostfactory = ServiceLocator.GetGlobalService<SVsWindowSearchHostFactory, IVsWindowSearchHostFactory>();
             var vsShell = ServiceLocator.GetGlobalService<SVsShell, IVsShell4>();
-            var control = new PackageManagerControl(model, Settings, vsWindowSearchHostfactory, vsShell);
+            var control = new PackageManagerControl(model, Settings, vsWindowSearchHostfactory, vsShell, _outputConsoleLogger);
             var windowPane = new PackageManagerWindowPane(control);
             var guidEditorType = GuidList.guidNuGetEditorType;
             var guidCommandUI = Guid.Empty;

@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -45,6 +46,8 @@ namespace NuGet.PackageManagement.UI
 
         private bool _missingPackageStatus;
 
+        private readonly INuGetUILogger _uiLogger;
+
         public PackageManagerModel Model { get; }
 
         private PackageSourceMoniker SelectedSource
@@ -69,9 +72,12 @@ namespace NuGet.PackageManagement.UI
             PackageManagerModel model,
             Configuration.ISettings nugetSettings,
             IVsWindowSearchHostFactory searchFactory,
-            IVsShell4 vsShell)
+            IVsShell4 vsShell,
+            INuGetUILogger uiLogger = null)
         {
             _uiDispatcher = Dispatcher.CurrentDispatcher;
+            _uiLogger = uiLogger;
+
             Model = model;
             if (!Model.IsSolution)
             {
@@ -115,9 +121,13 @@ namespace NuGet.PackageManagement.UI
             // UI is initialized. Start the first search
             _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
             _packageList.IsSolution = this.Model.IsSolution;
-            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
-            RefreshAvailableUpdatesCount();
-            RefreshConsolidatablePackagesCount();
+
+            Loaded += (_, __) =>
+            {
+                SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+                RefreshAvailableUpdatesCount();
+                RefreshConsolidatablePackagesCount();
+            };
 
             // register with the UI controller
             var controller = model.UIController as NuGetUI;
@@ -496,7 +506,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     CachedPackages = Model.CachedUpdates
                 };
-                var packageFeed = await CreatePackageFeedAsync(loadContext, _topPanel.Filter);
+                var packageFeed = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger);
                 var loader = new PackageItemLoader(
                     loadContext, packageFeed, searchText, IncludePrerelease);
                 var loadingMessage = string.IsNullOrWhiteSpace(searchText)
@@ -504,7 +514,7 @@ namespace NuGet.PackageManagement.UI
                     : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
 
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                _packageList.LoadItems(loader, loadingMessage);
+                _packageList.LoadItems(loader, loadingMessage, _uiLogger);
             });
         }
 
@@ -516,7 +526,7 @@ namespace NuGet.PackageManagement.UI
 
                 _topPanel._labelUpgradeAvailable.Count = 0;
                 var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
-                var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable);
+                var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable, _uiLogger);
                 var loader = new PackageItemLoader(
                     loadContext, packageFeed, includePrerelease: IncludePrerelease);
 
@@ -537,10 +547,10 @@ namespace NuGet.PackageManagement.UI
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 _topPanel._labelConsolidate.Count = 0;
                 var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
-                var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate);
+                var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate, _uiLogger);
                 var loader = new PackageItemLoader(
                     loadContext, packageFeed, includePrerelease: IncludePrerelease);
-                
+
                 _topPanel._labelConsolidate.Count = await loader.GetTotalCountAsync(100, CancellationToken.None);
             });
         }
@@ -581,7 +591,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private static async Task<IPackageFeed> CreatePackageFeedAsync(PackageLoadContext context, ItemFilter filter)
+        private static async Task<IPackageFeed> CreatePackageFeedAsync(PackageLoadContext context, ItemFilter filter, INuGetUILogger uiLogger)
         {
             // Go off the UI thread to perform non-UI operations
             await TaskScheduler.Default;
@@ -590,7 +600,7 @@ namespace NuGet.PackageManagement.UI
 
             if (filter == ItemFilter.All)
             {
-                return new MultiSourcePackageFeed(context.SourceRepositories, logger);
+                return new MultiSourcePackageFeed(context.SourceRepositories, uiLogger);
             }
 
             var metadataProvider = CreatePackageMetadataProvider(context);
@@ -955,11 +965,6 @@ namespace NuGet.PackageManagement.UI
         private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
         {
             SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
-        }
-
-        private void ExecuteShowErrorsCommand(object sender, ExecutedRoutedEventArgs e)
-        {
-
         }
     }
 }

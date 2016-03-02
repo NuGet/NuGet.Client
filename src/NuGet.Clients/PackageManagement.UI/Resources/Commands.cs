@@ -5,18 +5,20 @@ using System.Windows.Input;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal static class Commands
+    public static class Commands
     {
-        public static readonly RoutedCommand FocusOnSearchBox = new RoutedCommand();
+        public static ICommand FocusOnSearchBox { get; } = new RoutedCommand();
 
         // The parameter of this command is PackageItemListViewModel
-        public static readonly RoutedCommand UninstallPackageCommand = new RoutedCommand();
+        public static ICommand UninstallPackageCommand { get; } = new RoutedCommand();
 
         // The parameter of this command is PackageItemListViewModel
-        public static readonly RoutedCommand InstallPackageCommand = new RoutedCommand();
+        public static ICommand InstallPackageCommand { get; } = new RoutedCommand();
 
-        public static readonly RoutedCommand RestartSearchCommand = new RoutedCommand();
+        // no parameters
+        public static ICommand RestartSearchCommand { get; } = new RoutedCommand();
 
-        public static readonly RoutedCommand ShowErrorsCommand = new RoutedCommand();
+        // no parameters. Overridable by hosting app.
+        public static ICommand ShowErrorsCommand { get; set; } = new RoutedCommand();
     }
 }
