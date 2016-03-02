@@ -201,9 +201,6 @@
   <data name="Restore_Switch_Packages_Description" xml:space="preserve">
     <value>Directory to install packages in.</value>
   </data>
-  <data name="Restore_Switch_Runtime_Description" xml:space="preserve">
-    <value>List of runtime identifiers to restore for.</value>
-  </data>
   <data name="Restore_Switch_Source_Description" xml:space="preserve">
     <value>Specifies a NuGet package source to use during the restore.</value>
   </data>

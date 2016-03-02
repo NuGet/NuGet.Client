@@ -42,11 +42,6 @@ namespace NuGet.CommandLine.XPlat
                     Strings.Restore_Switch_Fallback_Description,
                     CommandOptionType.MultipleValue);
 
-                var runtime = restore.Option(
-                    "--runtime <RID>",
-                    Strings.Restore_Switch_Runtime_Description,
-                    CommandOptionType.MultipleValue);
-
                 var configFile = restore.Option(
                     "--configfile <file>",
                     Strings.Restore_Switch_ConfigFile_Description,
@@ -97,8 +92,6 @@ namespace NuGet.CommandLine.XPlat
                             FallbackSources = fallBack.Values,
                             CachingSourceProvider = _sourceProvider
                         };
-
-                        restoreContext.Runtimes.UnionWith(runtime.Values);
 
                         var restoreSummaries = await RestoreRunner.Run(restoreContext);
 
