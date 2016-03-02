@@ -2,18 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
 using System.Reflection;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
-using NuGet.Commands;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Logging;
-using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -48,11 +42,13 @@ namespace NuGet.CommandLine.XPlat
             XPlatUtility.SetUserAgent();
 
             //register push and delete command
-            new PushCommand(app, () => {
+            new PushCommand(app, () =>
+            {
                 EnsureLog(XPlatUtility.GetLogLevel(verbosity));
                 return Log;
             });
-            new DeleteCommand(app, () => {
+            new DeleteCommand(app, () =>
+            {
                 EnsureLog(XPlatUtility.GetLogLevel(verbosity));
                 return Log;
             });

@@ -14,13 +14,13 @@ namespace NuGet.Frameworks
         private readonly IFrameworkNameProvider _mappings;
         private readonly FrameworkExpander _expander;
         private static readonly NuGetFrameworkFullComparer _fullComparer = new NuGetFrameworkFullComparer();
-        private readonly ConcurrentDictionary<CompatCacheKey, bool> _cache;
+        private readonly ConcurrentDictionary<CompatibilityCacheKey, bool> _cache;
 
         public CompatibilityProvider(IFrameworkNameProvider mappings)
         {
             _mappings = mappings;
             _expander = new FrameworkExpander(mappings);
-            _cache = new ConcurrentDictionary<CompatCacheKey, bool>();
+            _cache = new ConcurrentDictionary<CompatibilityCacheKey, bool>();
         }
 
         /// <summary>
@@ -42,9 +42,9 @@ namespace NuGet.Frameworks
             }
 
             // check the cache for a solution
-            var cacheKey = new CompatCacheKey(target, candidate);
+            var cacheKey = new CompatibilityCacheKey(target, candidate);
 
-            bool? result = _cache.GetOrAdd(cacheKey, (Func<CompatCacheKey, bool>)((key) 
+            bool? result = _cache.GetOrAdd(cacheKey, (Func<CompatibilityCacheKey, bool>)((key) 
                 => { return IsCompatibleCore(target, candidate) == true; }));
 
             return result == true;

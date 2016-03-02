@@ -11,7 +11,6 @@ namespace NuGet.CommandLine.XPlat
     {
         internal const string HelpOption = "-h|--help";
         internal const string VerbosityOption = "-v|--verbosity <verbosity>";
-        internal static readonly int MaxDegreesOfConcurrency = Environment.ProcessorCount;
 
         internal static LogLevel GetLogLevel(CommandOption verbosity)
         {

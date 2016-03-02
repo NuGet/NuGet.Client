@@ -5,14 +5,14 @@ namespace NuGet.Frameworks
     /// <summary>
     /// Internal cache key used to store framework compatibility.
     /// </summary>
-    internal class CompatCacheKey : IEquatable<CompatCacheKey>
+    internal class CompatibilityCacheKey : IEquatable<CompatibilityCacheKey>
     {
         public NuGetFramework Target { get; }
         public NuGetFramework Candidate { get; }
 
         private readonly int _hashCode;
 
-        public CompatCacheKey(NuGetFramework target, NuGetFramework candidate)
+        public CompatibilityCacheKey(NuGetFramework target, NuGetFramework candidate)
         {
             if (target == null)
             {
@@ -39,7 +39,7 @@ namespace NuGet.Frameworks
             return _hashCode;
         }
 
-        public bool Equals(CompatCacheKey other)
+        public bool Equals(CompatibilityCacheKey other)
         {
             if (other == null)
             {
@@ -57,7 +57,7 @@ namespace NuGet.Frameworks
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as CompatCacheKey);
+            return Equals(obj as CompatibilityCacheKey);
         }
 
         public override string ToString()
