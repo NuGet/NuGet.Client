@@ -14,13 +14,13 @@ namespace NuGet.Frameworks
         private readonly IFrameworkNameProvider _mappings;
         private readonly FrameworkExpander _expander;
         private static readonly NuGetFrameworkFullComparer _fullComparer = new NuGetFrameworkFullComparer();
-        private readonly ConcurrentDictionary<int, bool> _cache;
+        private readonly ConcurrentDictionary<CompatCacheKey, bool> _cache;
 
         public CompatibilityProvider(IFrameworkNameProvider mappings)
         {
             _mappings = mappings;
             _expander = new FrameworkExpander(mappings);
-            _cache = new ConcurrentDictionary<int, bool>();
+            _cache = new ConcurrentDictionary<CompatCacheKey, bool>();
         }
 
         /// <summary>
@@ -42,9 +42,10 @@ namespace NuGet.Frameworks
             }
 
             // check the cache for a solution
-            var cacheKey = GetCacheKey(target, candidate);
+            var cacheKey = new CompatCacheKey(target, candidate);
 
-            bool? result = _cache.GetOrAdd(cacheKey, (Func<int, bool>)((key) => { return IsCompatibleCore(target, candidate) == true; }));
+            bool? result = _cache.GetOrAdd(cacheKey, (Func<CompatCacheKey, bool>)((key) 
+                => { return IsCompatibleCore(target, candidate) == true; }));
 
             return result == true;
         }
@@ -185,18 +186,6 @@ namespace NuGet.Frameworks
         private static bool IsVersionCompatible(Version target, Version candidate)
         {
             return candidate == FrameworkConstants.EmptyVersion || candidate <= target;
-        }
-
-        private static int GetCacheKey(NuGetFramework target, NuGetFramework candidate)
-        {
-            var combiner = new HashCombiner();
-
-            // create the cache key from the hash codes of both frameworks
-            // the order is important here since compatibility is usually one way
-            combiner.AddObject(target);
-            combiner.AddObject(candidate);
-
-            return combiner.CombinedHash;
         }
 
         /// <summary>

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging.Core;
@@ -71,7 +72,7 @@ namespace NuGet.Test
 
                         buildIntegratedProjects.Add(buildIntegratedProject);
 
-                        lockFiles.Add(BuildIntegratedProjectUtility.GetLockFilePath(config));
+                        lockFiles.Add(ProjectJsonPathUtilities.GetLockFilePath(config));
 
                         testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
                     }
@@ -192,7 +193,7 @@ namespace NuGet.Test
 
                         buildIntegratedProjects.Add(buildIntegratedProject);
 
-                        lockFiles.Add(BuildIntegratedProjectUtility.GetLockFilePath(config));
+                        lockFiles.Add(ProjectJsonPathUtilities.GetLockFilePath(config));
 
                         testSolutionManager.NuGetProjects.Add(buildIntegratedProject);
                     }
@@ -288,7 +289,7 @@ namespace NuGet.Test
                     new ResolutionContext(), testNuGetProjectContext, sourceRepositoryProvider.GetRepositories().First(), null, token);
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
-                var lockFile = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+                var lockFile = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
 
                 // Assert
                 Assert.Equal(packageIdentity, installedPackages.First().PackageIdentity);
@@ -332,7 +333,7 @@ namespace NuGet.Test
                         sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
-                var lockFile = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+                var lockFile = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
 
                 // Assert
                 Assert.Equal(packageIdentity, installedPackages.First().PackageIdentity);
@@ -395,7 +396,7 @@ namespace NuGet.Test
                 }
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
-                var lockFile = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+                var lockFile = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
 
                 // Assert
                 Assert.True(rollback);
@@ -471,7 +472,7 @@ namespace NuGet.Test
                 }
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
-                var lockFile = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+                var lockFile = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
 
                 // Assert
                 Assert.True(rollback);
@@ -513,7 +514,7 @@ namespace NuGet.Test
                 await nuGetPackageManager.InstallPackageAsync(buildIntegratedProject, packageIdentity, new ResolutionContext(), new TestNuGetProjectContext(),
                     sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
 
-                var lockFile = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+                var lockFile = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
 
                 File.Delete(lockFile);
 
@@ -570,7 +571,7 @@ namespace NuGet.Test
                         sourceRepositoryProvider.GetRepositories(), sourceRepositoryProvider.GetRepositories(), CancellationToken.None);
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
-                var lockFile = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+                var lockFile = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
 
                 // Assert
                 Assert.Equal(1, installedPackages.Count());
@@ -628,7 +629,7 @@ namespace NuGet.Test
                     CancellationToken.None);
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
-                var lockFile = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+                var lockFile = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
 
                 // Assert
                 Assert.Equal(1, actions.Count());
@@ -692,7 +693,7 @@ namespace NuGet.Test
                     CancellationToken.None);
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
-                var lockFile = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+                var lockFile = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
 
                 // Assert
                 Assert.Equal(1, actions.Count());
@@ -768,7 +769,7 @@ namespace NuGet.Test
                     CancellationToken.None);
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
-                var lockFile = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+                var lockFile = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
 
                 // Assert
                 Assert.Equal(0, actions.Count());
@@ -826,7 +827,7 @@ namespace NuGet.Test
                     CancellationToken.None);
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
-                var lockFile = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+                var lockFile = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
 
                 // Assert
                 Assert.Equal(1, actions.Count());
@@ -919,7 +920,7 @@ namespace NuGet.Test
                     CancellationToken.None);
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
-                var lockFile = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+                var lockFile = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
 
                 // Assert
                 Assert.Equal(1, actions.Count());
@@ -998,7 +999,7 @@ namespace NuGet.Test
                     CancellationToken.None);
 
                 var installedPackages = await buildIntegratedProject.GetInstalledPackagesAsync(CancellationToken.None);
-                var lockFile = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+                var lockFile = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
 
                 // Assert
                 Assert.Equal(1, actions.Count());
@@ -1201,7 +1202,7 @@ namespace NuGet.Test
                     CancellationToken.None);
 
                 var lockFileFormat = new LockFileFormat();
-                var lockFilePath = BuildIntegratedProjectUtility.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
+                var lockFilePath = ProjectJsonPathUtilities.GetLockFilePath(buildIntegratedProject.JsonConfigPath);
 
                 var lockFile = lockFileFormat.Read(lockFilePath);
                 var entityFrameworkTargets = lockFile.Targets.SelectMany(target => target.Libraries)

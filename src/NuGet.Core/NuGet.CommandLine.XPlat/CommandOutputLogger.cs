@@ -12,12 +12,17 @@ namespace NuGet.CommandLine.XPlat
     /// <summary>
     /// Logger to print formatted command output.
     /// </summary>
-    internal class CommandOutputLogger : ILogger
+    public class CommandOutputLogger : ILogger
     {
         private static readonly bool _useConsoleColor = true;
-        private readonly LogLevel _logLevel;
+        private LogLevel _logLevel;
 
-        internal CommandOutputLogger(LogLevel logLevel)
+        public CommandOutputLogger(LogLevel logLevel)
+        {
+            _logLevel = logLevel;
+        }
+
+        public void SetLogLevel(LogLevel logLevel)
         {
             _logLevel = logLevel;
         }
@@ -57,7 +62,7 @@ namespace NuGet.CommandLine.XPlat
             LogInternal(LogLevel.Warning, data);
         }
 
-        private void LogInternal(LogLevel logLevel, string message)
+        protected virtual void LogInternal(LogLevel logLevel, string message)
         {
             if (logLevel < _logLevel)
             {

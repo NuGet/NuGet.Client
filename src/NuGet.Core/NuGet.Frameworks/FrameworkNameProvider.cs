@@ -68,7 +68,7 @@ namespace NuGet.Frameworks
             _profileShortToLong = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             _portableFrameworks = new Dictionary<int, HashSet<NuGetFramework>>();
             _portableOptionalFrameworks = new Dictionary<int, HashSet<NuGetFramework>>();
-            _equivalentFrameworks = new Dictionary<NuGetFramework, HashSet<NuGetFramework>>(NuGetFramework.Comparer);
+            _equivalentFrameworks = new Dictionary<NuGetFramework, HashSet<NuGetFramework>>();
             _equivalentProfiles = new Dictionary<string, Dictionary<string, HashSet<string>>>(StringComparer.OrdinalIgnoreCase);
             _subSetFrameworks = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
             _nonPackageBasedFrameworkPrecedence = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -76,8 +76,8 @@ namespace NuGet.Frameworks
             _equivalentFrameworkPrecedence = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             _compatibilityMappings = new Dictionary<string, HashSet<OneWayCompatibilityMappingEntry>>(StringComparer.OrdinalIgnoreCase);
             _portableCompatibilityMappings = new Dictionary<int, HashSet<FrameworkRange>>();
-            _shortNameRewrites = new Dictionary<NuGetFramework, NuGetFramework>(NuGetFramework.Comparer);
-            _fullNameRewrites = new Dictionary<NuGetFramework, NuGetFramework>(NuGetFramework.Comparer);
+            _shortNameRewrites = new Dictionary<NuGetFramework, NuGetFramework>();
+            _fullNameRewrites = new Dictionary<NuGetFramework, NuGetFramework>();
             _netStandardVersions = new List<NuGetFramework>();
             _compatibleCandidates = new List<NuGetFramework>();
 
@@ -270,7 +270,7 @@ namespace NuGet.Frameworks
                     }
 
                     // check all frameworks while taking into account equivalent variations
-                    var premutations = GetEquivalentPermutations(pair.Value).Select(p => new HashSet<NuGetFramework>(p, NuGetFramework.Comparer));
+                    var premutations = GetEquivalentPermutations(pair.Value).Select(p => new HashSet<NuGetFramework>(p));
                     foreach (var permutation in premutations)
                     {
                         if (permutation.SetEquals(reduced))
@@ -288,8 +288,8 @@ namespace NuGet.Frameworks
 
         private HashSet<NuGetFramework> RemoveDuplicateFramework(IEnumerable<NuGetFramework> supportedFrameworks)
         {
-            var result = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
-            var existingFrameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+            var result = new HashSet<NuGetFramework>();
+            var existingFrameworks = new HashSet<NuGetFramework>();
 
             foreach (var framework in supportedFrameworks)
             {
@@ -315,7 +315,7 @@ namespace NuGet.Frameworks
             // Loop through the frameworks, all frameworks that are not in results yet   
             // will be added to toProcess to get the equivalent frameworks  
             var toProcess = new Stack<NuGetFramework>();
-            var results = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+            var results = new HashSet<NuGetFramework>();
 
             toProcess.Push(framework);
             results.Add(framework);
@@ -349,7 +349,7 @@ namespace NuGet.Frameworks
                 var current = frameworks.First();
                 var remaining = frameworks.Skip(1).ToArray();
 
-                var equalFrameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+                var equalFrameworks = new HashSet<NuGetFramework>();
                 // include ourselves
                 equalFrameworks.Add(current);
 
@@ -501,7 +501,7 @@ namespace NuGet.Frameworks
 
         public bool TryGetEquivalentFrameworks(NuGetFramework framework, out IEnumerable<NuGetFramework> frameworks)
         {
-            var result = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+            var result = new HashSet<NuGetFramework>();
 
             // add in all framework aliases
             HashSet<NuGetFramework> eqFrameworks = null;
@@ -547,14 +547,14 @@ namespace NuGet.Frameworks
                 throw new ArgumentNullException(nameof(range));
             }
 
-            var relevant = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+            var relevant = new HashSet<NuGetFramework>();
 
             foreach (var framework in _equivalentFrameworks.Keys.Where(f => range.Satisfies(f)))
             {
                 relevant.Add(framework);
             }
 
-            var results = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+            var results = new HashSet<NuGetFramework>();
 
             foreach (var framework in relevant)
             {
@@ -759,7 +759,7 @@ namespace NuGet.Frameworks
                     remaining.Push(pair.Key);
                     remaining.Push(pair.Value);
 
-                    var seen = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+                    var seen = new HashSet<NuGetFramework>();
                     while (remaining.Any())
                     {
                         var next = remaining.Pop();
@@ -772,7 +772,7 @@ namespace NuGet.Frameworks
                         if (!_equivalentFrameworks.TryGetValue(next, out eqFrameworks))
                         {
                             // initialize set
-                            eqFrameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+                            eqFrameworks = new HashSet<NuGetFramework>();
                             _equivalentFrameworks.Add(next, eqFrameworks);
                         }
                         else
@@ -859,7 +859,7 @@ namespace NuGet.Frameworks
 
                     if (!_portableFrameworks.TryGetValue(pair.Key, out frameworks))
                     {
-                        frameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+                        frameworks = new HashSet<NuGetFramework>();
                         _portableFrameworks.Add(pair.Key, frameworks);
                     }
 
@@ -882,7 +882,7 @@ namespace NuGet.Frameworks
 
                     if (!_portableOptionalFrameworks.TryGetValue(pair.Key, out frameworks))
                     {
-                        frameworks = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+                        frameworks = new HashSet<NuGetFramework>();
                         _portableOptionalFrameworks.Add(pair.Key, frameworks);
                     }
 
@@ -1045,7 +1045,7 @@ namespace NuGet.Frameworks
 
         private void AddCompatibleCandidates()
         {
-            var set = new HashSet<NuGetFramework>(NuGetFramework.Comparer);
+            var set = new HashSet<NuGetFramework>();
 
             // equivalent
             foreach (var framework in _equivalentFrameworks.Values.SelectMany(x => x))

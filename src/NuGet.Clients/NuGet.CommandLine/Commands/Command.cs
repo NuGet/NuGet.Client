@@ -140,8 +140,6 @@ namespace NuGet.CommandLine
 
             var credentialService = new CredentialService(providers, Console.WriteError, NonInteractive);
 
-            HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(credentialService);
-
             // Set up proxy handling for v3 sources.
             // We need to sync the v2 proxy cache and v3 proxy cache so that the user will not
             // get prompted twice for the same authenticated proxy.
