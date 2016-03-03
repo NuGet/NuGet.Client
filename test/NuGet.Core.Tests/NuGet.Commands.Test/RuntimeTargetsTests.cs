@@ -336,8 +336,10 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                var lockFile = result.LockFile;
                 result.Commit(logger);
+
+                var format = new LockFileFormat();
+                var lockFile = format.Read(request.LockFilePath);
 
                 var targetLib = lockFile.Targets.Single(graph => graph.RuntimeIdentifier == null).Libraries.Single();
                 var ridTargetLib = lockFile.Targets.Single(graph => graph.RuntimeIdentifier != null).Libraries.Single();
