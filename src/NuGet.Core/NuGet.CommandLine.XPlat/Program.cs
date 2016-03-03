@@ -61,7 +61,6 @@ namespace NuGet.CommandLine.XPlat
 
             RestoreCommand.Register(app,() =>
             {
-                EnsureLog(XPlatUtility.GetLogLevel(verbosity));
                 return Log;
             });
 
