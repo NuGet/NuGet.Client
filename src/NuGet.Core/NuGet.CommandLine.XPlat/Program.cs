@@ -37,6 +37,14 @@ namespace NuGet.CommandLine.XPlat
 
             var verbosity = app.Option(XPlatUtility.VerbosityOption, Strings.Switch_Verbosity, CommandOptionType.SingleValue);
 
+            // Set up logging.
+            // For tests this will already be set.
+            if (Log == null)
+            {
+                var logLevel = XPlatUtility.GetLogLevel(verbosity);
+                Log = new CommandOutputLogger(logLevel);
+            }
+
             XPlatUtility.SetConnectionLimit();
 
             XPlatUtility.SetUserAgent();
@@ -44,12 +52,10 @@ namespace NuGet.CommandLine.XPlat
             //register push and delete command
             new PushCommand(app, () =>
             {
-                EnsureLog(XPlatUtility.GetLogLevel(verbosity));
                 return Log;
             });
             new DeleteCommand(app, () =>
             {
-                EnsureLog(XPlatUtility.GetLogLevel(verbosity));
                 return Log;
             });
 
@@ -69,8 +75,6 @@ namespace NuGet.CommandLine.XPlat
             }
             catch (Exception e)
             {
-                EnsureLog(XPlatUtility.GetLogLevel(verbosity));
-
                 // Log the error
                 Log.LogError(ExceptionUtilities.DisplayMessage(e));
 
@@ -87,16 +91,6 @@ namespace NuGet.CommandLine.XPlat
             }
 
             return exitCode;
-        }
-
-        public static void EnsureLog(LogLevel logLevel)
-        {
-            // Set up logging.
-            // For tests this will already be set.
-            if (Log == null)
-            {
-                Log = new CommandOutputLogger(logLevel);
-            }
         }
     }
 }
