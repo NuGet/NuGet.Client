@@ -1,15 +1,30 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 
-namespace NuGet.ProjectManagement
+namespace NuGet.Common
 {
+    /// <summary>
+    /// This class is used to parse string into tokens.    
+    /// There are two types of tokens: variables, e.g. "$variable$", or text. 
+    /// The dollar sign can be escaped using $$.
+    /// A variable contains only word characters.
+    /// 
+    /// Examples:
+    /// - "a $b$ c" is parsed into 
+    ///   {text, "a "}, {variable, "b"}, {text, " c"}.
+    /// - "a $$b$$ c" is parsed into
+    ///   {text, "a $b$ c"}.
+    /// - "a $b$ $c" is parsed into
+    ///   {text, "a "}, {variable, "b"}, {text, " $c"}.
+    /// - "a $b$$c$" is parsed into
+    ///   {text, "a "}, {variable, "b"}, {variable, "c"}.
+    /// - "a $b c$d$" is parsed into 
+    ///   {text, "a $b c"}, {variable, "d"} (because space is not a word character).
+    /// </summary>
     public class Tokenizer
     {
-        private readonly string _text;
-        private int _index;
+        string _text;
+        int _index;
 
         public Tokenizer(string text)
         {
@@ -33,7 +48,10 @@ namespace NuGet.ProjectManagement
                 _index++;
                 return ParseTokenAfterDollarSign();
             }
-            return ParseText();
+            else
+            {
+                return ParseText();
+            }
         }
 
         private static bool IsWordChar(char ch)
@@ -41,22 +59,22 @@ namespace NuGet.ProjectManagement
             // See http://msdn.microsoft.com/en-us/library/20bw873z.aspx#WordCharacter
             var c = CharUnicodeInfo.GetUnicodeCategory(ch);
             return c == UnicodeCategory.LowercaseLetter ||
-                   c == UnicodeCategory.UppercaseLetter ||
-                   c == UnicodeCategory.TitlecaseLetter ||
-                   c == UnicodeCategory.OtherLetter ||
-                   c == UnicodeCategory.ModifierLetter ||
-                   c == UnicodeCategory.DecimalDigitNumber ||
-                   c == UnicodeCategory.ConnectorPunctuation;
+                c == UnicodeCategory.UppercaseLetter ||
+                c == UnicodeCategory.TitlecaseLetter ||
+                c == UnicodeCategory.OtherLetter ||
+                c == UnicodeCategory.ModifierLetter ||
+                c == UnicodeCategory.DecimalDigitNumber ||
+                c == UnicodeCategory.ConnectorPunctuation;
         }
 
         // Parses and returns the next token after a $ is just read.
         // _index is one char after the $.
         private Token ParseTokenAfterDollarSign()
         {
-            var sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             while (_index < _text.Length)
             {
-                var ch = _text[_index];
+                char ch = _text[_index];
                 if (ch == '$')
                 {
                     ++_index;
@@ -65,10 +83,13 @@ namespace NuGet.ProjectManagement
                         // escape sequence "$$" is encountered
                         return new Token(TokenCategory.Text, "$");
                     }
-                    // matching $ is read. So the token is a variable.
-                    return new Token(TokenCategory.Variable, sb.ToString());
+                    else
+                    {
+                        // matching $ is read. So the token is a variable.
+                        return new Token(TokenCategory.Variable, sb.ToString());
+                    }
                 }
-                if (IsWordChar(ch))
+                else if (IsWordChar(ch))
                 {
                     sb.Append(ch);
                     ++_index;
@@ -92,9 +113,8 @@ namespace NuGet.ProjectManagement
 
         private Token ParseText()
         {
-            var sb = new StringBuilder();
-            while (_index < _text.Length
-                   && _text[_index] != '$')
+            StringBuilder sb = new StringBuilder();
+            while (_index < _text.Length && _text[_index] != '$')
             {
                 sb.Append(_text[_index]);
                 _index++;

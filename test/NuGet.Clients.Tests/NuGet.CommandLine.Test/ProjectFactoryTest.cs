@@ -8,10 +8,13 @@ using Microsoft.Build.Evaluation;
 using Moq;
 using NuGet.CommandLine.Test;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 
 namespace NuGet.CommandLine
 {
+    using NuGet.Packaging;
+
     public class ProjectFactoryTest
     {
         [Fact]
@@ -34,11 +37,11 @@ namespace NuGet.CommandLine
             var metadata = new ManifestMetadata
             {
                 Id = "ProjectFactoryTest",
-                Version = "2.0.30619.9000",
+                Version = NuGetVersion.Parse("2.0.30619.9000"),
                 Title = "NuGet.Test",
                 Description = "",
                 Copyright = "\x00a9 Outercurve. All rights reserved.",
-                Authors = "Outercurve Foundation",
+                Authors = new[] { "Outercurve Foundation" },
             };
             var projectMock = new Mock<Project>();
             var msbuildDirectory = NuGet.CommandLine.MsBuildUtility.GetMsbuildDirectory("4.0", console: null);
@@ -46,7 +49,7 @@ namespace NuGet.CommandLine
 
             // act
             var author = factory.InitializeProperties(metadata);
-            var actual = Preprocessor.Process(inputSpec.AsStream(), factory, false);
+            var actual = NuGet.Common.Preprocessor.Process(inputSpec.AsStream(), propName => factory.GetPropertyValue(propName));
 
             // assert
             Assert.Equal("Outercurve Foundation", author);
@@ -71,7 +74,7 @@ namespace NuGet.CommandLine
         {
             var us = Assembly.GetExecutingAssembly();
             var sourcePath = us.Location;
-            var targetFile = new PhysicalPackageFile { SourcePath = sourcePath };
+            var targetFile = new NuGet.PhysicalPackageFile { SourcePath = sourcePath };
             var fullPath = sourcePath + "readOnly";
             File.Copy(sourcePath, fullPath);
             File.SetAttributes(fullPath, FileAttributes.ReadOnly);
