@@ -17,7 +17,7 @@ namespace NuGet.Commands
 {
     public class RestoreRequest : IDisposable
     {
-        public static readonly int DefaultDegreeOfConcurrency = 16;
+        public static readonly int DefaultDegreeOfConcurrency = Environment.ProcessorCount;
         private readonly bool _disposeProviders;
 
         public RestoreRequest(
