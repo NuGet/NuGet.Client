@@ -475,7 +475,7 @@ namespace NuGet.Options
             }
             else if (e.Button == MouseButtons.Left)
             {
-                int itemIndex = currentListBox.IndexFromPoint(e.Location);
+                int itemIndex = currentListBox.SelectedIndex;
                 if (itemIndex >= 0
                     && itemIndex < currentListBox.Items.Count)
                 {
