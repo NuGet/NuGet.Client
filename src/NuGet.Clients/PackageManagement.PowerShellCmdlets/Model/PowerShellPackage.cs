@@ -63,5 +63,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         public bool AllVersions { get; set; }
+
+        public string LicenseUrl { get; set; }
     }
 }

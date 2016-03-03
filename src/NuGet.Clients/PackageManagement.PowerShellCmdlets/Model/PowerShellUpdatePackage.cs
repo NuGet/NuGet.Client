@@ -40,7 +40,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                                     .ToArray();
 
                     return results;
-                }, NuGetUIThreadHelper.JoinableTaskFactory)
+                }, NuGetUIThreadHelper.JoinableTaskFactory),
+                LicenseUrl = data.LicenseUrl.AbsoluteUri
             };
 
             switch (versionType)
