@@ -434,6 +434,20 @@ function Test-ParseFrameworkName
     Assert-AreEqual ".NETFramework,Version=v4.5" $actual.ToString()
 }
 
+function Test-GetShortFolderName
+{
+    # Arrange
+    $cm = Get-VsComponentModel
+    $service = $cm.GetService([NuGet.VisualStudio.IVsFrameworkParser])
+    $framework = [System.Runtime.Versioning.FrameworkName](".NETStandard,Version=v1.3")
+    
+    # Act
+    $actual = $service.GetShortFrameworkName($framework)
+
+    # Assert
+    Assert-AreEqual "netstandard1.3" $actual.ToString()
+}
+
 function Test-GetNearest
 {
     # Arrange

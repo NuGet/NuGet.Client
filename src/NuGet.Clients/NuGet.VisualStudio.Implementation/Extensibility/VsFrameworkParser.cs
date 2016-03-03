@@ -3,8 +3,10 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using System.Runtime.Versioning;
 using NuGet.Frameworks;
+using NuGet.VisualStudio.Implementation.Resources;
 
 namespace NuGet.VisualStudio
 {
@@ -18,8 +20,40 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(shortOrFullName));
             }
 
-            var nugetFramework = NuGetFramework.Parse(shortOrFullName);
-            return new FrameworkName(nugetFramework.DotNetFrameworkName);
+            var nuGetFramework = NuGetFramework.Parse(shortOrFullName);
+            return new FrameworkName(nuGetFramework.DotNetFrameworkName);
+        }
+
+        public string GetShortFrameworkName(FrameworkName frameworkName)
+        {
+            if (frameworkName == null)
+            {
+                throw new ArgumentNullException(nameof(frameworkName));
+            }
+
+            var nuGetFramework = NuGetFramework.ParseFrameworkName(
+                frameworkName.ToString(),
+                DefaultFrameworkNameProvider.Instance);
+
+            try
+            {
+                return nuGetFramework.GetShortFolderName();
+            }
+            catch (FrameworkException e)
+            {
+                // Wrap this exception for two reasons:
+                //
+                // 1) FrameworkException is not a .NET Framework type and therefore is not
+                //    recognized by other components in Visual Studio.
+                //
+                // 2) Changing our NuGet code to throw ArgumentException is not appropriate in
+                //    this case because the failure does not occur in a method that has arguments!
+                var message = string.Format(
+                    CultureInfo.CurrentCulture,
+                    VsResources.CouldNotGetShortFrameworkName,
+                    frameworkName);
+                throw new ArgumentException(message, e);
+            }
         }
     }
 }
