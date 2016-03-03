@@ -67,7 +67,7 @@ namespace NuGet.Commands.Test
                 packageA.AddFile("ref/netstandard1.5/a.dll");
                 packageA.AddFile("contentFiles/any/any/a.dll");
 
-                SimpleTestPackageUtility.CreatePackages(packageA, packageSource.FullName);
+                SimpleTestPackageUtility.CreatePackages(packageSource.FullName, packageA);
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -141,7 +141,7 @@ namespace NuGet.Commands.Test
                 packageA.AddFile("runtimes/win7-x86/lib/netstandard1.5/a.dll");
                 packageA.AddFile("runtimes/win7-x86/lib/netstandard1.5/en-us/a.resources.dll");
 
-                SimpleTestPackageUtility.CreatePackages(packageA, packageSource.FullName);
+                SimpleTestPackageUtility.CreatePackages(packageSource.FullName, packageA);
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -235,7 +235,7 @@ namespace NuGet.Commands.Test
                 packageA.AddFile("runtimes/win7-x86/lib/netstandard1.5/a.dll");
                 packageA.AddFile("runtimes/win7-x86/lib/netstandard1.5/en-us/a.resources.dll");
 
-                SimpleTestPackageUtility.CreatePackages(packageA, packageSource.FullName);
+                SimpleTestPackageUtility.CreatePackages(packageSource.FullName, packageA);
 
                 // Act
                 var command = new RestoreCommand(request);
@@ -330,8 +330,7 @@ namespace NuGet.Commands.Test
 
                 packageA.AddFile("runtimes/win-any/lib/net45/a.dll");
 
-
-                SimpleTestPackageUtility.CreatePackages(packageA, packageSource.FullName);
+                SimpleTestPackageUtility.CreatePackages(packageSource.FullName, packageA);
 
                 // Act
                 var command = new RestoreCommand(request);
