@@ -146,8 +146,10 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                var lockFile = result.LockFile;
                 result.Commit(logger);
+
+                var format = new LockFileFormat();
+                var lockFile = format.Read(request.LockFilePath);
 
                 var targetLib = lockFile.Targets.Single(graph => graph.RuntimeIdentifier == null).Libraries.Single();
                 var ridTargetLib = lockFile.Targets.Single(graph => graph.RuntimeIdentifier != null).Libraries.Single();
@@ -164,9 +166,9 @@ namespace NuGet.Commands.Test
                 Assert.Equal("resource", targetLib.RuntimeTargets[3].Properties["assetType"]);
                 Assert.Equal("win7-x86", targetLib.RuntimeTargets[3].Properties["rid"]);
 
-                Assert.Equal("runtimes/unix/native/a.dll", targetLib.RuntimeTargets[4].Path);
-                Assert.Equal("native", targetLib.RuntimeTargets[4].Properties["assetType"]);
-                Assert.Equal("unix", targetLib.RuntimeTargets[4].Properties["rid"]);
+                Assert.Equal("runtimes/unix/native/a.dll", targetLib.RuntimeTargets[1].Path);
+                Assert.Equal("native", targetLib.RuntimeTargets[1].Properties["assetType"]);
+                Assert.Equal("unix", targetLib.RuntimeTargets[1].Properties["rid"]);
 
                 // This section does not exist for RID graphs
                 Assert.Equal(0, ridTargetLib.RuntimeTargets.Count);
@@ -238,8 +240,10 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                var lockFile = result.LockFile;
                 result.Commit(logger);
+
+                var format = new LockFileFormat();
+                var lockFile = format.Read(request.LockFilePath);
 
                 var targetLib = lockFile.Targets.Single(graph => graph.RuntimeIdentifier == null).Libraries.Single();
                 var ridTargetLib = lockFile.Targets.Single(graph => graph.RuntimeIdentifier != null).Libraries.Single();
@@ -252,13 +256,13 @@ namespace NuGet.Commands.Test
                 Assert.Equal("runtime", targetLib.RuntimeTargets[0].Properties["assetType"]);
                 Assert.Equal("unix", targetLib.RuntimeTargets[0].Properties["rid"]);
 
-                Assert.Equal("runtimes/win7-x86/lib/netstandard1.5/en-us/_._", targetLib.RuntimeTargets[1].Path);
-                Assert.Equal("resource", targetLib.RuntimeTargets[1].Properties["assetType"]);
-                Assert.Equal("win7-x86", targetLib.RuntimeTargets[1].Properties["rid"]);
+                Assert.Equal("runtimes/win7-x86/lib/netstandard1.5/en-us/_._", targetLib.RuntimeTargets[2].Path);
+                Assert.Equal("resource", targetLib.RuntimeTargets[2].Properties["assetType"]);
+                Assert.Equal("win7-x86", targetLib.RuntimeTargets[2].Properties["rid"]);
 
-                Assert.Equal("runtimes/unix/native/_._", targetLib.RuntimeTargets[2].Path);
-                Assert.Equal("native", targetLib.RuntimeTargets[2].Properties["assetType"]);
-                Assert.Equal("unix", targetLib.RuntimeTargets[2].Properties["rid"]);
+                Assert.Equal("runtimes/unix/native/_._", targetLib.RuntimeTargets[1].Path);
+                Assert.Equal("native", targetLib.RuntimeTargets[1].Properties["assetType"]);
+                Assert.Equal("unix", targetLib.RuntimeTargets[1].Properties["rid"]);
 
                 // This section does not exist for RID graphs
                 Assert.Equal(0, ridTargetLib.RuntimeTargets.Count);
