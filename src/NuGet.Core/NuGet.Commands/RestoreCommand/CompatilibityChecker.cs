@@ -25,7 +25,9 @@ namespace NuGet.Commands
             _log = log;
         }
 
-        internal CompatibilityCheckResult Check(RestoreTargetGraph graph)
+        internal CompatibilityCheckResult Check(
+            RestoreTargetGraph graph,
+            Dictionary<string, LibraryIncludeFlags> includeFlags)
         {
             // The Compatibility Check is designed to alert the user to cases where packages are not behaving as they would
             // expect, due to compatibility issues.
@@ -55,6 +57,24 @@ namespace NuGet.Commands
             foreach (var node in graph.Flattened)
             {
                 _log.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingPackageCompatibility, node.Key.Name, node.Key.Version, graph.Name));
+
+                // Find the include/exclude flags for this package
+                LibraryIncludeFlags packageIncludeFlags;
+                if (!includeFlags.TryGetValue(node.Key.Name, out packageIncludeFlags))
+                {
+                    packageIncludeFlags = LibraryIncludeFlags.All;
+                }
+
+                // If the package has compile and runtime assets excluded the compatibility check
+                // is not needed. Packages with no ref or lib entries are considered
+                // compatible in IsCompatible.
+                if ((packageIncludeFlags & 
+                        (LibraryIncludeFlags.Compile
+                        | LibraryIncludeFlags.Runtime)) == LibraryIncludeFlags.None)
+                {
+                    continue;
+                }
+
                 var compatibilityData = GetCompatibilityData(graph, node.Key);
                 if (compatibilityData == null)
                 {
@@ -75,39 +95,56 @@ namespace NuGet.Commands
                 var targetLibrary = compatibilityData.TargetLibrary;
                 if (!string.IsNullOrEmpty(graph.RuntimeIdentifier))
                 {
-                    // Scan the package for ref assemblies
-                    foreach (var compile in targetLibrary.CompileTimeAssemblies.Where(p => Path.GetExtension(p.Path).Equals(".dll", StringComparison.OrdinalIgnoreCase)))
+                    // Skip runtime checks for packages that have runtime references excluded,
+                    // this allows compile only packages that do not have runtimes for the 
+                    // graph RID to be used.
+                    if ((packageIncludeFlags & LibraryIncludeFlags.Runtime) == LibraryIncludeFlags.Runtime)
                     {
-                        string name = Path.GetFileNameWithoutExtension(compile.Path);
-
-                        // If we haven't already started tracking this compile-time assembly, AND there isn't already a runtime-loadable version
-                        if (!compileAssemblies.ContainsKey(name) && !runtimeAssemblies.Contains(name))
+                        // Scan the package for ref assemblies
+                        foreach (var compile in targetLibrary.CompileTimeAssemblies
+                            .Where(p => Path.GetExtension(p.Path)
+                                .Equals(".dll", StringComparison.OrdinalIgnoreCase)))
                         {
-                            // Track this assembly as potentially compile-time-only
-                            compileAssemblies.Add(name, node.Key);
-                        }
-                    }
+                            string name = Path.GetFileNameWithoutExtension(compile.Path);
 
-                    // Match up runtime assemblies
-                    foreach (var runtime in targetLibrary.RuntimeAssemblies.Where(p => Path.GetExtension(p.Path).Equals(".dll", StringComparison.OrdinalIgnoreCase)))
-                    {
-                        string name = Path.GetFileNameWithoutExtension(runtime.Path);
-
-                        // Fix for NuGet/Home#752 - Consider ".ni.dll" (native image/ngen) files matches for ref/ assemblies
-                        if (name.EndsWith(".ni"))
-                        {
-                            name = name.Substring(0, name.Length - 3);
+                            // If we haven't already started tracking this compile-time assembly, AND there isn't already a runtime-loadable version
+                            if (!compileAssemblies.ContainsKey(name) && !runtimeAssemblies.Contains(name))
+                            {
+                                // Track this assembly as potentially compile-time-only
+                                compileAssemblies.Add(name, node.Key);
+                            }
                         }
 
-                        // If there was a compile-time-only assembly under this name...
-                        if (compileAssemblies.ContainsKey(name))
+                        // Match up runtime assemblies
+                        foreach (var runtime in targetLibrary.RuntimeAssemblies
+                            .Where(p => Path.GetExtension(p.Path)
+                                .Equals(".dll", StringComparison.OrdinalIgnoreCase)))
                         {
-                            // Remove it, we've found a matching runtime ref
-                            compileAssemblies.Remove(name);
-                        }
+                            string name = Path.GetFileNameWithoutExtension(runtime.Path);
 
-                        // Track this assembly as having a runtime assembly
-                        runtimeAssemblies.Add(name);
+                            // If there was a compile-time-only assembly under this name...
+                            if (compileAssemblies.ContainsKey(name))
+                            {
+                                // Remove it, we've found a matching runtime ref
+                                compileAssemblies.Remove(name);
+                            }
+
+                            // Track this assembly as having a runtime assembly
+                            runtimeAssemblies.Add(name);
+
+                            // Fix for NuGet/Home#752 - Consider ".ni.dll" (native image/ngen) files matches for ref/ assemblies
+                            if (name.EndsWith(".ni", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var withoutNi = name.Substring(0, name.Length - 3);
+
+                                if (compileAssemblies.ContainsKey(withoutNi))
+                                {
+                                    compileAssemblies.Remove(withoutNi);
+                                }
+
+                                runtimeAssemblies.Add(withoutNi);
+                            }
+                        }
                     }
                 }
             }

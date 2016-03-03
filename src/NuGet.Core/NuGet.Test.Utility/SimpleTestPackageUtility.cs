@@ -156,11 +156,11 @@ namespace NuGet.Test.Utility
         }
 
         /// <summary>
-        /// Create package.
+        /// Create packages.
         /// </summary>
-        public static void CreatePackages(SimpleTestPackageContext package, string repositoryPath)
+        public static void CreatePackages(string repositoryPath, params SimpleTestPackageContext[] package)
         {
-            CreatePackages(new List<SimpleTestPackageContext>() { package }, repositoryPath);
+            CreatePackages(package.ToList(), repositoryPath);
         }
 
         /// <summary>

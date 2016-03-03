@@ -37,6 +37,8 @@ namespace NuGet.Commands
         private readonly Dictionary<NuGetFramework, RuntimeGraph> _runtimeGraphCache = new Dictionary<NuGetFramework, RuntimeGraph>();
         private readonly ConcurrentDictionary<PackageIdentity, RuntimeGraph> _runtimeGraphCacheByPackage
             = new ConcurrentDictionary<PackageIdentity, RuntimeGraph>(PackageIdentity.Comparer);
+        private readonly Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> _includeFlagGraphs
+            = new Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>>();
 
         public RestoreCommand(RestoreRequest request)
         {
@@ -136,7 +138,9 @@ namespace NuGet.Commands
                 {
                     _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingCompatibility, graph.Name));
 
-                    var res = checker.Check(graph);
+                    var includeFlags = GetIncludeFlags(_request.Project, graph);
+
+                    var res = checker.Check(graph, includeFlags);
                     _success &= res.Success;
                     checkResults.Add(res);
                     if (res.Success)
@@ -505,7 +509,7 @@ namespace NuGet.Commands
 
             var pathResolver = new VersionFolderPathResolver(repository.RepositoryRoot);
 
-            var flattenedFlags = IncludeFlagUtils.FlattenDependencyTypes(graph, project);
+            var flattenedFlags = GetIncludeFlags(project, graph);
 
             var targets = new List<string>();
             var props = new List<string>();
@@ -707,7 +711,7 @@ namespace NuGet.Commands
                 target.TargetFramework = targetGraph.Framework;
                 target.RuntimeIdentifier = targetGraph.RuntimeIdentifier;
 
-                var flattenedFlags = IncludeFlagUtils.FlattenDependencyTypes(targetGraph, project);
+                var flattenedFlags = GetIncludeFlags(project, targetGraph);
 
                 var fallbackFramework = target.TargetFramework as FallbackFramework;
                 var warnForImportsOnGraph = warnForImports && fallbackFramework != null;
@@ -1197,6 +1201,18 @@ namespace NuGet.Commands
             _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_UsingSource, repository.PackageSource.Source));
 
             return new SourceRepositoryDependencyProvider(repository, _logger, cacheContext);
+        }
+
+        private Dictionary<string, LibraryIncludeFlags> GetIncludeFlags(PackageSpec project, RestoreTargetGraph graph)
+        {
+            Dictionary<string, LibraryIncludeFlags> flattenedFlags;
+            if (!_includeFlagGraphs.TryGetValue(graph, out flattenedFlags))
+            {
+                flattenedFlags = IncludeFlagUtils.FlattenDependencyTypes(graph, project);
+                _includeFlagGraphs.Add(graph, flattenedFlags);
+            }
+
+            return flattenedFlags;
         }
     }
 }
