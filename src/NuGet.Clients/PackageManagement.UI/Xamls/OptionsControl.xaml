@@ -57,11 +57,12 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="Auto" />
-          <ColumnDefinition />
+          <ColumnDefinition Width="4*"/>
+          <ColumnDefinition Width="*" MinWidth="30" />
         </Grid.ColumnDefinitions>
         <TextBlock
           Grid.Row="0"
-          Grid.ColumnSpan="2"
+          Grid.ColumnSpan="3"
           Margin="-16,0,0,0"
           Text="{x:Static nuget:Resources.GroupBoxHeader_InstallOptions}"
           FontWeight="Bold">
@@ -76,9 +77,7 @@
         <ComboBox
           Grid.Row="2"
           Grid.Column="1"
-          HorizontalAlignment="Left"
           MinHeight="22"
-          MinWidth="150"
           AutomationProperties.Name="{x:Static nuget:Resources.Label_DependencyBehavior}"
           ItemsSource="{Binding Path=Options.DependencyBehaviors}"
           SelectedItem="{Binding Path=Options.SelectedDependencyBehavior}" />
@@ -94,8 +93,6 @@
           Grid.Row="4"
           Grid.Column="1"
           MinHeight="22"
-          MinWidth="150"
-          HorizontalAlignment="Left"
           AutomationProperties.Name="{x:Static nuget:Resources.Label_FileConflictAction}"
           ItemsSource="{Binding Path=Options.FileConflictActions}"
           SelectedItem="{Binding Path=Options.SelectedFileConflictAction}" />

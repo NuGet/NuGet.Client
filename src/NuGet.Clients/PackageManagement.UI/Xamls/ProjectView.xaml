@@ -85,7 +85,6 @@
       x:Name="_versions"
       Grid.Row="2"
       Grid.Column="2"
-      MinWidth="150"
       MinHeight="22"
       AutomationProperties.Name="{x:Static local:Resources.Label_Version}"
       ItemsSource="{Binding Path=Versions}"
