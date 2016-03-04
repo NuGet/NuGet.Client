@@ -59,14 +59,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                     if (packageFolder != null)
                     {
-                        installPackagePath = BuildIntegratedProjectUtility.GetPackagePathFromGlobalSource(packageFolder, package.PackageIdentity);
+                        var defaultPackagePathResolver = new VersionFolderPathResolver(packageFolder, normalizePackageId: false);
+                        installPackagePath = defaultPackagePathResolver.GetPackageFilePath(package.PackageIdentity.Id, package.PackageIdentity.Version);
                     }
                     else if (packageFolderProject != null)
                     {
                         installPackagePath = packageFolderProject.GetInstalledPackageFilePath(package.PackageIdentity);
                     }
 
-                    using (var reader = GetPackageReader(installPackagePath, package.PackageIdentity))
+                    using (var reader = GetPackageReader(installPackagePath))
                     {
                         var nuspecReader = new NuspecReader(reader.GetNuspec());
                         licenseUrl = nuspecReader.GetLicenseUrl();
@@ -88,19 +89,9 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             return views;
         }
 
-        private static PackageReaderBase GetPackageReader(string installPath, PackageIdentity package)
+        private static PackageReaderBase GetPackageReader(string installPath)
         {
-            FileInfo nupkg = null;
-            
-            if (File.Exists(installPath))
-            {
-                nupkg = new FileInfo(installPath);
-            }
-            else
-            {
-                var defaultPackagePathResolver = new VersionFolderPathResolver(installPath, normalizePackageId: false);
-                nupkg = new FileInfo(defaultPackagePathResolver.GetPackageFilePath(package.Id, package.Version));
-            }
+            var nupkg = new FileInfo(installPath);
 
             if (nupkg?.Exists == true)
             {
