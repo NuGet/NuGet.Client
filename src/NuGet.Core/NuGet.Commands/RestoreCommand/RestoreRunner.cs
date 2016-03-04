@@ -18,7 +18,7 @@ namespace NuGet.Commands
 
             if (!restoreContext.DisableParallel && !RuntimeEnvironmentHelper.IsMono)
             {
-                maxTasks = RestoreRequest.DefaultDegreeOfConcurrency;
+                maxTasks = Environment.ProcessorCount;
             }
 
             if (maxTasks < 1)
