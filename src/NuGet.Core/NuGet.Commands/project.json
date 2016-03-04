@@ -1,5 +1,5 @@
 ﻿{
-  "version": "3.4.0-*",
+  "version": "3.4.0-rtm-*",
   "description": "Complete commands common to command-line and GUI NuGet clients",
   "compilationOptions": {
     "warningsAsErrors": true
@@ -17,14 +17,14 @@
     "../../../tools/compiler/preprocess/Internalization.cs"
   ],
   "dependencies": {
-    "NuGet.Client": "3.4.0-*",
-    "NuGet.ContentModel": "3.4.0-*",
-    "NuGet.ProjectModel": "3.4.0-*",
-    "NuGet.Configuration": "3.4.0-*",
-    "NuGet.DependencyResolver": "3.4.0-*",
-    "NuGet.RuntimeModel": "3.4.0-*",
+    "NuGet.Client": "3.4.0-rtm-*",
+    "NuGet.ContentModel": "3.4.0-rtm-*",
+    "NuGet.ProjectModel": "3.4.0-rtm-*",
+    "NuGet.Configuration": "3.4.0-rtm-*",
+    "NuGet.DependencyResolver": "3.4.0-rtm-*",
+    "NuGet.RuntimeModel": "3.4.0-rtm-*",
     "NuGet.Shared": {
-      "version": "3.4.0-*",
+      "version": "3.4.0-rtm-*",
       "type": "build"
     }
   },
@@ -56,7 +56,9 @@
       }
     },
     "dnxcore50": {
-      "imports": [ "portable-net45+win8" ],
+      "imports": [
+        "portable-net45+win8"
+      ],
       "dependencies": {
         "System.Collections": "4.0.10-beta-23109",
         "System.Linq.Parallel": "4.0.0-beta-23109",

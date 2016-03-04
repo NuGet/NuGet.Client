@@ -1,5 +1,5 @@
 ﻿{
-  "version": "3.4.0-*",
+  "version": "3.4.0-rtm-*",
   "description": "NuGet.Indexing Class Library",
   "compile": [
     "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/NuGetQuery.cs",
@@ -16,10 +16,10 @@
   ],
   "dependencies": {
     "Lucene.Net": "3.0.3",
-    "NuGet.Versioning": "3.4.0-*",
-    "NuGet.Protocol.Core.Types": "3.4.0-*"
+    "NuGet.Versioning": "3.4.0-rtm-*",
+    "NuGet.Protocol.Core.Types": "3.4.0-rtm-*"
   },
   "frameworks": {
-    "net45": { }
+    "net45": {}
   }
 }

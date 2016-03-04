@@ -1,13 +1,13 @@
 ﻿{
-  "version": "3.4.0-*",
+  "version": "3.4.0-rtm-*",
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Common": "3.4.0-*"
+    "NuGet.Common": "3.4.0-rtm-*"
   },
   "frameworks": {
-    "dnx451": { },
+    "dnx451": {},
     "dnxcore50": {
       "dependencies": {
         "System.Net.NetworkInformation": "4.0.10-beta-23019",

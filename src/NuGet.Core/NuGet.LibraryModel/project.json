@@ -1,10 +1,10 @@
 ﻿{
-  "version": "3.4.0-*",
+  "version": "3.4.0-rtm-*",
   "dependencies": {
-    "NuGet.Versioning": "3.4.0-*",
+    "NuGet.Versioning": "3.4.0-rtm-*",
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.0-*"
+      "version": "3.4.0-rtm-*"
     }
   },
   "compilationOptions": {

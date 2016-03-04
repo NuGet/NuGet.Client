@@ -1,23 +1,25 @@
 ﻿{
-  "version": "3.4.0-*",
+  "version": "3.4.0-rtm-*",
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.LibraryModel": "3.4.0-*",
-    "NuGet.Frameworks": "3.4.0-*",
-    "NuGet.Protocol.Core.v3": "3.4.0-*",
-    "NuGet.Repositories": "3.4.0-*",
-    "NuGet.RuntimeModel": "3.4.0-*",
+    "NuGet.LibraryModel": "3.4.0-rtm-*",
+    "NuGet.Frameworks": "3.4.0-rtm-*",
+    "NuGet.Protocol.Core.v3": "3.4.0-rtm-*",
+    "NuGet.Repositories": "3.4.0-rtm-*",
+    "NuGet.RuntimeModel": "3.4.0-rtm-*",
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.0-*"
+      "version": "3.4.0-rtm-*"
     }
   },
   "frameworks": {
     "net45": {},
     "dnxcore50": {
-      "imports": [ "portable-net45+win8" ]
+      "imports": [
+        "portable-net45+win8"
+      ]
     }
   }
 }

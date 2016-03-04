@@ -1,7 +1,7 @@
 ﻿{
-  "version": "3.4.0-*",
+  "version": "3.4.0-rtm-*",
   "dependencies": {
-    "NuGet.RuntimeModel": "3.4.0-*",
+    "NuGet.RuntimeModel": "3.4.0-rtm-*",
     "xunit": "2.1.0",
     "xunit.runner.dnx": "2.1.0-rc1-build204"
   },
@@ -11,7 +11,9 @@
   "frameworks": {
     "dnx451": {},
     "dnxcore50": {
-      "imports": [ "portable-net45+win8" ]
+      "imports": [
+        "portable-net45+win8"
+      ]
     }
   }
 }

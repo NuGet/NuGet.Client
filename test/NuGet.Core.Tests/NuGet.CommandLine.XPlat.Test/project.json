@@ -1,8 +1,8 @@
 ﻿{
-  "version": "3.4.0-*",
+  "version": "3.4.0-rtm-*",
   "dependencies": {
-    "NuGet.CommandLine.XPlat": "3.4.0-*",
-    "NuGet.Test.Utility": "3.4.0-*",
+    "NuGet.CommandLine.XPlat": "3.4.0-rtm-*",
+    "NuGet.Test.Utility": "3.4.0-rtm-*",
     "xunit": "2.1.0",
     "xunit.runner.dnx": "2.1.0-rc1-build204"
   },
@@ -10,6 +10,6 @@
     "test": "xunit.runner.dnx"
   },
   "frameworks": {
-    "dnx451": { }
+    "dnx451": {}
   }
 }

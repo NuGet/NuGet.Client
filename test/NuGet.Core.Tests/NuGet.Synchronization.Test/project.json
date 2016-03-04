@@ -1,26 +1,28 @@
 ﻿{
-    "version": "3.4.0-*",
-    "dependencies": {
-        "Microsoft.NETCore.Platforms": "1.0.1-beta-23516",
-        "NuGet.Shared": {
-            "version": "3.4.0-*",
-            "type": "build"
-        },
-        "NuGet.Test.Utility": "3.4.0-*",
-        "SynchronizationTestApp": "1.0.0-*",
-        "xunit": "2.1.0",
-        "xunit.runner.dnx": "2.1.0-rc1-build204"
+  "version": "3.4.0-rtm-*",
+  "dependencies": {
+    "Microsoft.NETCore.Platforms": "1.0.1-beta-23516",
+    "NuGet.Shared": {
+      "version": "3.4.0-rtm-*",
+      "type": "build"
     },
-    "commands": {
-        "test": "xunit.runner.dnx"
-    },
-    "frameworks": {
-        "dnx451": { },
-      "dnxcore50": {
-        "imports": [ "portable-net45+win8" ],
-        "dependencies": {
-          "System.Runtime": "4.0.21-beta-23516"
-        }
+    "NuGet.Test.Utility": "3.4.0-rtm-*",
+    "SynchronizationTestApp": "1.0.0-*",
+    "xunit": "2.1.0",
+    "xunit.runner.dnx": "2.1.0-rc1-build204"
+  },
+  "commands": {
+    "test": "xunit.runner.dnx"
+  },
+  "frameworks": {
+    "dnx451": {},
+    "dnxcore50": {
+      "imports": [
+        "portable-net45+win8"
+      ],
+      "dependencies": {
+        "System.Runtime": "4.0.21-beta-23516"
       }
     }
+  }
 }

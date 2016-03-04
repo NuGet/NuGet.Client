@@ -1,5 +1,5 @@
 ﻿{
-  "version": "3.4.0-*",
+  "version": "3.4.0-rtm-*",
   "compilationOptions": {
     "warningsAsErrors": true
   },
@@ -7,10 +7,10 @@
     "Newtonsoft.Json": "6.0.4",
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.0-*"
+      "version": "3.4.0-rtm-*"
     },
-    "NuGet.Versioning": "3.4.0-*",
-    "NuGet.Frameworks": "3.4.0-*"
+    "NuGet.Versioning": "3.4.0-rtm-*",
+    "NuGet.Frameworks": "3.4.0-rtm-*"
   },
   "frameworks": {
     "net45": {
@@ -19,7 +19,9 @@
       }
     },
     "dnxcore50": {
-      "imports": [ "portable-net45+win8" ],
+      "imports": [
+        "portable-net45+win8"
+      ],
       "dependencies": {
         "System.IO.FileSystem": "4.0.0-beta-23109",
         "System.Collections": "4.0.10-beta-23109",
