@@ -10,7 +10,7 @@ namespace NuGet.PackageManagement.UI
     {
         public LoadingStatusViewModel ViewModel => DataContext as LoadingStatusViewModel;
 
-        #region ItemsLoaded DP
+        #region ItemsLoaded
 
         public int ItemsLoaded
         {
@@ -29,9 +29,9 @@ namespace NuGet.PackageManagement.UI
             ((LoadingStatusBar)d).ViewModel.ItemsLoaded = (int)e.NewValue;
         }
 
-        #endregion ItemsLoaded DP
+        #endregion ItemsLoaded
 
-        #region ShowMoreResultsClick RE
+        #region ShowMoreResultsClick
 
         public static readonly RoutedEvent ShowMoreResultsClickEvent = EventManager.RegisterRoutedEvent(
             nameof(ShowMoreResultsClick),
@@ -45,9 +45,9 @@ namespace NuGet.PackageManagement.UI
             remove { RemoveHandler(ShowMoreResultsClickEvent, value); }
         }
 
-        #endregion ShowMoreResultsClick RE
+        #endregion ShowMoreResultsClick
 
-        #region DismissClick RE
+        #region DismissClick
 
         public static readonly RoutedEvent DismissClickEvent = EventManager.RegisterRoutedEvent(
             nameof(DismissClick),
@@ -61,7 +61,7 @@ namespace NuGet.PackageManagement.UI
             remove { RemoveHandler(DismissClickEvent, value); }
         }
 
-        #endregion DismissClick RE
+        #endregion DismissClick
 
         public LoadingStatusBar()
         {

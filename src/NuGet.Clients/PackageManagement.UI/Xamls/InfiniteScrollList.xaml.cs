@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using NuGet.Common;
@@ -45,8 +46,9 @@ namespace NuGet.PackageManagement.UI
         public InfiniteScrollList()
         {
             InitializeComponent();
-            DataContext = Items;
 
+            BindingOperations.EnableCollectionSynchronization(Items, _itemsLock);
+            DataContext = Items;
             CheckBoxesEnabled = false;
         }
 
@@ -73,6 +75,8 @@ namespace NuGet.PackageManagement.UI
         }
 
         public bool IsSolution { get; set; }
+
+        private object _itemsLock = new object();
 
         public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
         public IEnumerable<PackageItemListViewModel> PackageItems => Items.OfType<PackageItemListViewModel>();
@@ -122,6 +126,13 @@ namespace NuGet.PackageManagement.UI
                 try
                 {
                     await LoadItemsCoreAsync(currentLoader, loadCts.Token);
+
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    if (selectedPackageItem != null)
+                    {
+                        UpdateSelectedItem(selectedPackageItem);
+                    }
                 }
                 catch (OperationCanceledException) when (!loadCts.IsCancellationRequested)
                 {
@@ -145,13 +156,6 @@ namespace NuGet.PackageManagement.UI
                     // Write stack to activity log
                     Mvs.ActivityLog.LogError(LogEntrySource, ex.ToString());
                 }
-
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                if (selectedPackageItem != null)
-                {
-                    UpdateSelectedItem(selectedPackageItem);
-                }
             });
         }
 
@@ -163,15 +167,18 @@ namespace NuGet.PackageManagement.UI
 
             token.ThrowIfCancellationRequested();
 
+            // multiple loads may occur at the same time
+            if (currentLoader == _loader)
+            {
+                UpdatePackageList(loadedItems.ToList(), refresh: false);
+            }
+
+            token.ThrowIfCancellationRequested();
+
             await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                // multiple loads may occur at the same time
-                if (currentLoader == _loader)
-                {
-                    UpdatePackageList(loadedItems.ToList(), refresh: false);
-                }
+                _loadingStatusBar.ItemsLoaded = PackageItems.Count();
             });
 
             token.ThrowIfCancellationRequested();
@@ -273,8 +280,6 @@ namespace NuGet.PackageManagement.UI
 
         private void UpdatePackageList(List<PackageItemListViewModel> packages, bool refresh)
         {
-            var selectedItem = SelectedPackageItem;
-
             // remove the loading status indicator if it's in the list
             Items.Remove(_loadingStatusIndicator);
 
@@ -293,10 +298,6 @@ namespace NuGet.PackageManagement.UI
             });
 
             Items.Add(_loadingStatusIndicator);
-
-            _loadingStatusBar.ItemsLoaded = PackageItems.Count();
-
-            UpdateSelectedItem(selectedItem);
         }
 
         private void ClearPackageList()
@@ -473,12 +474,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        // Returns true if there are any selected packages
-        private bool AnySelected()
-        {
-            return _list.Items.OfType<PackageItemListViewModel>().Any(i => i.Selected);
-        }
-
         private void _updateButton_Click(object sender, RoutedEventArgs e)
         {
             var selectedPackages = PackageItems.Where(p => p.Selected).ToArray();
@@ -500,6 +495,7 @@ namespace NuGet.PackageManagement.UI
         {
             var packageItems = _loader?.GetCurrent() ?? Enumerable.Empty<PackageItemListViewModel>();
             UpdatePackageList(packageItems.ToList(), refresh: true);
+            _loadingStatusBar.ItemsLoaded = PackageItems.Count();
 
             var desiredVisibility = EvaluateStatusBarVisibility(_loader, _loader.State);
             if (_loadingStatusBar.Visibility != desiredVisibility)

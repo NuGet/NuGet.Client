@@ -45,6 +45,8 @@
     x:Key="ProjectAndSolutionViewHeightConverter" />
   <nuget:ProjectAndSolutionViewMinHeightConverter
     x:Key="ProjectAndSolutionViewMinHeightConverter"/>
+  <nuget:IconUrlToImageCacheConverter
+    x:Key="IconUrlToImageCacheConverter"/>
 
   <!-- Default styles -->
   <Style
@@ -143,9 +145,9 @@
           Path="DataContext.IconUrl"
           RelativeSource="{RelativeSource Self}"
           Converter="{StaticResource IconUrlToImageCacheConverter}"
-          ConverterParameter="{x:Static resx:Images.DefaultPackageIcon}"
-          TargetNullValue="{x:Static resx:Images.DefaultPackageIcon}"
-          FallbackValue="{x:Static resx:Images.DefaultPackageIcon}"/>
+          ConverterParameter="{x:Static nuget:Images.DefaultPackageIcon}"
+          TargetNullValue="{x:Static nuget:Images.DefaultPackageIcon}"
+          FallbackValue="{x:Static nuget:Images.DefaultPackageIcon}"/>
       </Setter.Value>
     </Setter>
     <EventSetter Event="ImageFailed" Handler="PackageIconImage_ImageFailed"/>

@@ -56,7 +56,7 @@ namespace NuGet.PackageManagement.UI
 
         #endregion SourceLoadingStatus
 
-        #region IsMultiSource DP
+        #region IsMultiSource
 
         public bool IsMultiSource
         {
@@ -75,9 +75,9 @@ namespace NuGet.PackageManagement.UI
             ((LoadingStatusViewModel)d).UpdateModel();
         }
 
-        #endregion IsMultiSource DP
+        #endregion IsMultiSource
 
-        #region LoadingMessage DP
+        #region LoadingMessage
 
         public string LoadingMessage
         {
@@ -96,9 +96,9 @@ namespace NuGet.PackageManagement.UI
             ((LoadingStatusViewModel)d).UpdateModel();
         }
 
-        #endregion LoadingMessage DP
+        #endregion LoadingMessage
 
-        #region PackageSearchStatus DP
+        #region PackageSearchStatus
 
         public PackageSearchStatus PackageSearchStatus
         {
@@ -117,9 +117,9 @@ namespace NuGet.PackageManagement.UI
             ((LoadingStatusViewModel)d).UpdateModel();
         }
 
-        #endregion PackageSearchStatus DP
+        #endregion PackageSearchStatus
 
-        #region MessageLevel DP
+        #region MessageLevel
 
         public MessageLevel MessageLevel
         {
@@ -156,9 +156,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        #endregion MessageLevel DP
+        #endregion MessageLevel
 
-        #region ItemsFound DP
+        #region ItemsFound
 
         public int ItemsFound
         {
@@ -177,9 +177,9 @@ namespace NuGet.PackageManagement.UI
             ((LoadingStatusViewModel)d).UpdateModel();
         }
 
-        #endregion ItemsFound DP
+        #endregion ItemsFound
 
-        #region ItemsLoaded DP
+        #region ItemsLoaded
 
         public int ItemsLoaded
         {
@@ -198,9 +198,9 @@ namespace NuGet.PackageManagement.UI
             ((LoadingStatusViewModel)d).UpdateModel();
         }
 
-        #endregion ItemsLoaded DP
+        #endregion ItemsLoaded
 
-        #region HasMoreItems DP
+        #region HasMoreItems
 
         public bool HasMoreItems
         {
@@ -221,9 +221,9 @@ namespace NuGet.PackageManagement.UI
             return vm.ItemsLoaded > 0 && vm.ItemsFound > vm.ItemsLoaded;
         }
 
-        #endregion HasMoreItems DP
+        #endregion HasMoreItems
 
-        #region MoreItemsLinkText DP
+        #region MoreItemsLinkText
 
         public string MoreItemsLinkText
         {
@@ -247,9 +247,9 @@ namespace NuGet.PackageManagement.UI
                 vm.ItemsFound - vm.ItemsLoaded);
         }
 
-        #endregion MoreItemsLinkText DP
+        #endregion MoreItemsLinkText
 
-        #region FailedSources DP
+        #region FailedSources
 
         public string[] FailedSources
         {
@@ -281,9 +281,9 @@ namespace NuGet.PackageManagement.UI
                 .ToArray();
         }
 
-        #endregion FailedSources DP
+        #endregion FailedSources
 
-        #region LoadingSources DP
+        #region LoadingSources
 
         public string[] LoadingSources
         {
@@ -315,7 +315,7 @@ namespace NuGet.PackageManagement.UI
                 .ToArray();
         }
 
-        #endregion LoadingSources DP
+        #endregion LoadingSources
 
         private static PackageSearchStatus Convert(LoadingStatus status)
         {
