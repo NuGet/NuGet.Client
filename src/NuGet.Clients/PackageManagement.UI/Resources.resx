@@ -522,6 +522,7 @@ Packages installed into Website projects will not be restored during build. Cons
   </data>
   <data name="Button_ShowMoreResults" xml:space="preserve">
     <value>Show {0} more results</value>
+    <comment>The string format has a single parameter "{0}", which is an integer number of how many more results will be displayed to the user when they click a button.</comment>
   </data>
   <data name="Text_SearchCompleted" xml:space="preserve">
     <value>Search completed</value>
