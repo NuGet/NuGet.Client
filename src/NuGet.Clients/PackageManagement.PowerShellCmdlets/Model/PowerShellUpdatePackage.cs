@@ -41,7 +41,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
                     return results;
                 }, NuGetUIThreadHelper.JoinableTaskFactory),
-                LicenseUrl = data.LicenseUrl.AbsoluteUri
+                LicenseUrl = data.LicenseUrl?.AbsoluteUri
             };
 
             switch (versionType)

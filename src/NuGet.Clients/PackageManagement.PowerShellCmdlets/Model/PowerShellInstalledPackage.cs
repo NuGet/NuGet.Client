@@ -66,7 +66,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         installPackagePath = packageFolderProject.GetInstalledPackageFilePath(package.PackageIdentity);
                     }
 
-                    using (var reader = GetPackageReader(installPackagePath, package.PackageIdentity))   
+                    using (var reader = GetPackageReader(installPackagePath, package.PackageIdentity))
                     {
                         var nuspecReader = new NuspecReader(reader.GetNuspec());
                         licenseUrl = nuspecReader.GetLicenseUrl();
@@ -91,18 +91,18 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         private static PackageReaderBase GetPackageReader(string installPath, PackageIdentity package)
         {
             FileInfo nupkg = null;
-            if (Directory.Exists(installPath))
-            {
-                nupkg = new FileInfo(
-                        Path.Combine(installPath, package.Id + "." + package.Version + PackagingCoreConstants.NupkgExtension));
-            }
-
+            
             if (File.Exists(installPath))
             {
                 nupkg = new FileInfo(installPath);
             }
+            else
+            {
+                var defaultPackagePathResolver = new VersionFolderPathResolver(installPath, normalizePackageId: false);
+                nupkg = new FileInfo(defaultPackagePathResolver.GetPackageFilePath(package.Id, package.Version));
+            }
 
-            if (nupkg!= null && nupkg.Exists)
+            if (nupkg?.Exists == true)
             {
                 return new PackageArchiveReader(nupkg.OpenRead());
             }

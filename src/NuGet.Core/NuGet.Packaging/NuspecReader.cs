@@ -286,17 +286,16 @@ namespace NuGet.Packaging
         public string GetLanguage()
         {
             var node = MetadataNode.Elements(XName.Get(Language, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
-            return node == null ? null : node.Value;
+            return node?.Value;
         }
 
         /// <summary>
         /// Package License Url
         /// </summary>
-        /// <returns></returns>
         public string GetLicenseUrl()
         {
             var node = MetadataNode.Elements(XName.Get(LicenseUrl, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
-            return node == null ? null : node.Value;
+            return node?.Value;
         }
 
         /// <summary>

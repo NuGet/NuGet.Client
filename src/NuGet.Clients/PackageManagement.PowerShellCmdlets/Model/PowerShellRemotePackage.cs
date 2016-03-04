@@ -36,7 +36,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                         var results = versions?.Select(v => v.Version).OrderByDescending(v => v).ToArray();
                         return results ?? Enumerable.Empty<NuGetVersion>();
                     }, NuGetUIThreadHelper.JoinableTaskFactory),
-                    LicenseUrl = data.LicenseUrl.AbsoluteUri
+                    LicenseUrl = data.LicenseUrl?.AbsoluteUri
                 };
 
                 switch (versionType)
