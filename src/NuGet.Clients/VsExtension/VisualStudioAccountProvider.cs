@@ -48,7 +48,7 @@ namespace NuGetVSExtension
         public string Id { get; }
 
         /// <summary>
-        /// Determins if the endpoint is a Visual Studio Online endpoint.  If so, uses the keychain to get a
+        /// Determines if the endpoint is a Visual Studio Online endpoint.  If so, uses the keychain to get a
         /// session token for the endpoint and returns that as a ICredentials object
         /// </summary>
         /// <param name="uri">URI for the feed endponint to use</param>
@@ -220,5 +220,7 @@ namespace NuGetVSExtension
 
             return response;
         }
+
+        public static Func<ICredentialProvider> FactoryMethod = () => new VisualStudioAccountProvider();
     }
 }

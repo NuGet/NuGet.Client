@@ -20,8 +20,8 @@ namespace NuGet.Credentials
             = new ConcurrentDictionary<string, bool>();
         private readonly ConcurrentDictionary<string, CredentialResponse> _providerCredentialCache
             = new ConcurrentDictionary<string, CredentialResponse>();
-
         private readonly bool _nonInteractive;
+        private readonly Lazy<IEnumerable<ICredentialProvider>> _providers;
 
         /// <summary>
         /// This semaphore ensures only one provider active per process, in order
@@ -35,15 +35,20 @@ namespace NuGet.Credentials
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="providers">Enumeration of credential providers.</param>
+        /// <param name="providersDelegate">Used to enumerate available credential providers.</param>
         /// <param name="errorDelegate">Used to write error messages to the user</param>
         /// <param name="nonInteractive">If true, the nonInteractive flag will be passed to providers.
         /// NonInteractive requests must not promt the user for credentials.</param>
         public CredentialService(
-            IEnumerable<ICredentialProvider> providers,
+            Func<IEnumerable<ICredentialProvider>> providersDelegate,
             Action<string> errorDelegate,
             bool nonInteractive)
         {
+            if (providersDelegate == null)
+            {
+                throw new ArgumentNullException(nameof(providersDelegate));
+            }
+
             if (errorDelegate == null)
             {
                 throw new ArgumentNullException(nameof(errorDelegate));
@@ -51,13 +56,8 @@ namespace NuGet.Credentials
 
             ErrorDelegate = errorDelegate;
             _nonInteractive = nonInteractive;
-            Providers = providers ?? new List<ICredentialProvider>();
+            _providers = new Lazy<IEnumerable<ICredentialProvider>>(providersDelegate);
         }
-
-        /// <summary>
-        /// Gets the currently configured providers.
-        /// </summary>
-        public IEnumerable<ICredentialProvider> Providers { get; } = null;
 
         /// <summary>
         /// Provides credentials for http requests.
@@ -136,6 +136,11 @@ namespace NuGet.Credentials
 
             return creds;
         }
+
+        /// <summary>
+        /// Gets the currently configured providers.
+        /// </summary>
+        private IEnumerable<ICredentialProvider> Providers => _providers.Value;
 
         private bool TryFromCredentialCache(Uri uri, bool isProxy, bool isRetry, ICredentialProvider provider,
             out CredentialResponse credentials)

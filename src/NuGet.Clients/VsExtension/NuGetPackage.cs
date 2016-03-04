@@ -274,6 +274,7 @@ namespace NuGetVSExtension
             _dteEvents = _dte.Events.DTEEvents;
             _dteEvents.OnBeginShutdown += OnBeginShutDown;
 
+            _outputConsoleLogger = new OutputConsoleLogger(this);
             SetDefaultCredentialProvider();
 
             if (SolutionManager != null)
@@ -285,7 +286,6 @@ namespace NuGetVSExtension
                     };
             }
 
-            _outputConsoleLogger = new OutputConsoleLogger(this);
             _uiProjectContext = new NuGetUIProjectContext(
                 _outputConsoleLogger,
                 SourceControlManagerProvider,
@@ -333,23 +333,9 @@ namespace NuGetVSExtension
         /// </summary>
         private void SetDefaultCredentialProvider()
         {
-            var webProxy = (IVsWebProxy)GetService(typeof(SVsWebProxy));
-            Debug.Assert(webProxy != null);
-
-            PackageSourceProvider packageSourceProvider = new PackageSourceProvider(
-                new SettingsToLegacySettings(Settings));
-
-            var credentialProviders = new List<NuGet.Credentials.ICredentialProvider>
-            {
-                new CredentialProviderAdapter(new SettingsCredentialProvider(
-                    NuGet.NullCredentialProvider.Instance, packageSourceProvider)),
-                new VisualStudioAccountProvider(),
-                new VisualStudioCredentialProvider(webProxy)
-            };
-
             var credentialService = new CredentialService(
-                credentialProviders,
-                (s) => this._outputConsoleLogger.OutputConsole.WriteLine(s),
+                GetCredentialProviders,
+                this._outputConsoleLogger.OutputConsole.WriteLine,
                 nonInteractive: false);
 
             HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(credentialService); ;
@@ -395,6 +381,31 @@ namespace NuGetVSExtension
                 NuGet.CredentialStore.Instance.Add(uri, credentials);
                 NuGet.Configuration.CredentialStore.Instance.Add(uri, credentials);
             };
+        }
+
+        private IEnumerable<NuGet.Credentials.ICredentialProvider> GetCredentialProviders()
+        {
+            var packageSourceProvider = new PackageSourceProvider(new SettingsToLegacySettings(Settings));
+            var credentialProviders = new List<NuGet.Credentials.ICredentialProvider>();
+
+            credentialProviders.Add(
+                new CredentialProviderAdapter(new SettingsCredentialProvider(NuGet.NullCredentialProvider.
+                    Instance, packageSourceProvider)));
+
+            var importer = new VsCredentialProviderImporter(
+                this._dte,
+                VisualStudioAccountProvider.FactoryMethod,
+                this._outputConsoleLogger.OutputConsole.WriteLine);
+            var vstsProvider = importer.GetProvider();
+            if (vstsProvider != null)
+            {
+                credentialProviders.Add(vstsProvider);
+            }
+
+            var webProxy = (IVsWebProxy)GetService(typeof(SVsWebProxy));
+            Debug.Assert(webProxy != null);
+            credentialProviders.Add(new VisualStudioCredentialProvider(webProxy));
+            return credentialProviders;
         }
 
         private void AddMenuCommandHandlers()
