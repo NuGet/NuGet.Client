@@ -70,7 +70,7 @@ namespace NuGet.CommandLine.Test
                 Util.CreateFile(
                     projectDirectory,
                     "proj1.csproj",
-                    Util.CreateProjFileContent());
+                    Util.CreateProjFileContent(contentFiles: new[] { "test.txt" }));
 
                 Util.CreateFile(solutionDirectory, "a.sln",
                     Util.CreateSolutionFileContent());
@@ -108,6 +108,7 @@ namespace NuGet.CommandLine.Test
                     solutionFile,
                     "-Source",
                     packagesSourceDirectory,
+                    "-NonInteractive"
                 };
 
                 var r = CommandRunner.Run(
@@ -121,7 +122,7 @@ namespace NuGet.CommandLine.Test
                 var content = File.ReadAllText(projectFile);
                 Assert.True(content.Contains(@"<HintPath>..\packages\B.2.0.0\lib\net45\B.dll</HintPath>"));
                 Assert.True(content.Contains(@"<HintPath>..\packages\A.2.0.0\lib\net45\A.dll</HintPath>"));
-                Assert.True(File.Exists(Path.Combine(projectDirectory, "test.txt")));
+                Assert.True(content.Contains(@"<Content Include=""test.txt"" />"));
             }
         }
 
