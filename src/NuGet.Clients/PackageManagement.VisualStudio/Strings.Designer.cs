@@ -70,6 +70,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to NuGet operation failed.
+        /// </summary>
+        public static string ConfigErrorDialogBoxTitle {
+            get {
+                return ResourceManager.GetString("ConfigErrorDialogBoxTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Added file &apos;{0}&apos; to project &apos;{1}&apos;..
         /// </summary>
         public static string Debug_AddedFileToProject {

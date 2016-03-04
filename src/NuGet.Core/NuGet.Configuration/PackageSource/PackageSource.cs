@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 
 namespace NuGet.Configuration
 {
@@ -32,7 +33,30 @@ namespace NuGet.Configuration
 
         public string UserName { get; set; }
 
-        public string Password { get; set; }
+        public string Password
+        {
+            get
+            {
+                if (PasswordText != null && !IsPasswordClearText)
+                {
+                    try
+                    {
+                        return EncryptionUtility.DecryptString(PasswordText);
+                    }
+                    catch (NotSupportedException e)
+                    {
+                        throw new NuGetConfigurationException(
+                            string.Format(CultureInfo.CurrentCulture, Resources.UnsupportedDecryptPassword, Source), e);
+                    }
+                }
+                else
+                {
+                    return PasswordText;
+                }
+            }
+        }
+
+        public string PasswordText { get; set; }
 
         public bool IsPasswordClearText { get; set; }
 
@@ -167,7 +191,7 @@ namespace NuGet.Configuration
                 {
                     Description = Description,
                     UserName = UserName,
-                    Password = Password,
+                    PasswordText = PasswordText,
                     IsPasswordClearText = IsPasswordClearText,
                     IsMachineWide = IsMachineWide,
                     ProtocolVersion = ProtocolVersion
