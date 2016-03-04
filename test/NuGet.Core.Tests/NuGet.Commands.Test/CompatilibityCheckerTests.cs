@@ -230,7 +230,7 @@ namespace NuGet.Commands.Test
               ""projectUrl"": """",
               ""licenseUrl"": """",
               ""frameworks"": {
-                ""netstandard1.5"": {
+                ""netstandardapp1.5"": {
                     ""dependencies"": {
                         ""packageA"": {
                             ""version"": ""1.0.0""
