@@ -84,6 +84,7 @@
     <Compile Include="Converters\CollectionToStringConverter.cs" />
     <Compile Include="Converters\EnumDescriptionValueConverter.cs" />
     <Compile Include="Models\LoadingStatusViewModel.cs" />
+    <Compile Include="Models\PackageSearchMetadataCache.cs" />
     <Compile Include="Models\PackageSearchStatus.cs" />
     <Compile Include="Resources\Domain.cs" />
     <Compile Include="Resources\Resources.xaml.cs">

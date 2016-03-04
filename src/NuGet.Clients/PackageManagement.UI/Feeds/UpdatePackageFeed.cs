@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -16,11 +19,13 @@ namespace NuGet.PackageManagement.UI
     {
         private readonly IEnumerable<PackageIdentity> _installedPackages;
         private readonly IPackageMetadataProvider _metadataProvider;
+        private readonly PackageSearchMetadataCache _cachedUpdates;
         private readonly Logging.ILogger _logger;
 
         public UpdatePackageFeed(
             IEnumerable<PackageIdentity> installedPackages,
             IPackageMetadataProvider metadataProvider,
+            PackageSearchMetadataCache cachedUpdates,
             Logging.ILogger logger)
         {
             if (installedPackages == null)
@@ -34,6 +39,8 @@ namespace NuGet.PackageManagement.UI
                 throw new ArgumentNullException(nameof(metadataProvider));
             }
             _metadataProvider = metadataProvider;
+
+            _cachedUpdates = cachedUpdates;
 
             if (logger == null)
             {
@@ -50,7 +57,12 @@ namespace NuGet.PackageManagement.UI
                 throw new InvalidOperationException("Invalid token");
             }
 
-            var packagesWithUpdates = await GetPackagesWithUpdatesAsync(searchToken.SearchString, searchToken.SearchFilter, cancellationToken);
+            var packagesWithUpdates = (_cachedUpdates != null && _cachedUpdates.IncludePrerelease == searchToken.SearchFilter.IncludePrerelease)
+                ?
+                    GetPackagesFromCache(searchToken.SearchString)
+                :
+                    await GetPackagesWithUpdatesAsync(searchToken.SearchString, searchToken.SearchFilter, cancellationToken);
+
             var items = packagesWithUpdates
                 .Skip(searchToken.StartIndex)
                 .ToArray();
@@ -66,6 +78,11 @@ namespace NuGet.PackageManagement.UI
             };
 
             return result;
+        }
+
+        private IEnumerable<IPackageSearchMetadata> GetPackagesFromCache(string searchText)
+        {
+            return _cachedUpdates.Packages.Where(p => p.Identity.Id.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1);
         }
 
         private async Task<IEnumerable<IPackageSearchMetadata>> GetPackagesWithUpdatesAsync(string searchText, SearchFilter searchFilter, CancellationToken cancellationToken)

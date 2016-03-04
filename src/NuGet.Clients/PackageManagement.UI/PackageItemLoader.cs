@@ -159,6 +159,27 @@ namespace NuGet.PackageManagement.UI
             return totalCount;
         }
 
+        public async Task<IReadOnlyList<IPackageSearchMetadata>> GetAllPackagesAsync(CancellationToken cancellationToken)
+        {
+            var packages = new List<IPackageSearchMetadata>();
+            ContinuationToken nextToken = null;
+            do
+            {
+                var searchResult = await SearchAsync(nextToken, cancellationToken);
+                while (searchResult.RefreshToken != null)
+                {
+                    searchResult = await _packageFeed.RefreshSearchAsync(searchResult.RefreshToken, cancellationToken);
+                }
+
+                nextToken = searchResult.NextToken;
+
+                packages.AddRange(searchResult.Items);
+
+            } while (nextToken != null);
+
+            return packages;
+        }
+
         public async Task LoadNextAsync(IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
