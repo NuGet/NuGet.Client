@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
-using Microsoft.Extensions.PlatformAbstractions;
 using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.Logging;
@@ -16,7 +15,7 @@ namespace NuGet.CommandLine.XPlat
     {
         public static void Register(
             CommandLineApplication cmdApp,
-            Func<CommandOutputLogger> getLogger)
+            CommandOutputLogger log)
         {
             cmdApp.Command("restore", (Action<CommandLineApplication>)(restore =>
             {
@@ -70,7 +69,6 @@ namespace NuGet.CommandLine.XPlat
 
                 restore.OnExecute(async () =>
                 {
-                    var log = getLogger();
                     var logLevel = XPlatUtility.GetLogLevel(verbosity);
                     log.SetLogLevel(logLevel);
 
@@ -101,11 +99,6 @@ namespace NuGet.CommandLine.XPlat
                         };
 
                         restoreContext.Runtimes.UnionWith(runtime.Values);
-
-                        var defaultRuntimes = RequestRuntimeUtility.GetDefaultRestoreRuntimes(
-                            PlatformServices.Default.Runtime.OperatingSystem,
-                            PlatformServices.Default.Runtime.GetRuntimeOsName());
-                        restoreContext.FallbackRuntimes.UnionWith(defaultRuntimes);
 
                         var restoreSummaries = await RestoreRunner.Run(restoreContext);
 

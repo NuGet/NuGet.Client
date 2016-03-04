@@ -59,10 +59,7 @@ namespace NuGet.CommandLine.XPlat
                 return Log;
             });
 
-            RestoreCommand.Register(app,() =>
-            {
-                return Log;
-            });
+            RestoreCommand.Register(app, Log);
 
             app.OnExecute(() =>
             {
