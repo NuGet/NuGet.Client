@@ -339,15 +339,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to List of runtime identifiers to restore for..
-        /// </summary>
-        internal static string Restore_Switch_Runtime_Description {
-            get {
-                return ResourceManager.GetString("Restore_Switch_Runtime_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///    Looks up a localized string similar to Specifies a NuGet package source to use during the restore..
         /// </summary>
         internal static string Restore_Switch_Source_Description {
