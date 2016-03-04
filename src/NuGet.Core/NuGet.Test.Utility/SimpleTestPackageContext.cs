@@ -12,6 +12,15 @@ namespace NuGet.Test.Utility
 {
     public class SimpleTestPackageContext
     {
+        public SimpleTestPackageContext(string packageId)
+        {
+            Id = packageId;
+        }
+
+        public SimpleTestPackageContext()
+        {
+        }
+
         public string Id { get; set; } = "packageA";
         public string Version { get; set; } = "1.0.0";
         public List<SimpleTestPackageContext> Dependencies { get; set; } = new List<SimpleTestPackageContext>();
