@@ -6,7 +6,7 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   mc:Ignorable="d"
-  d:DesignHeight="300"
+  d:DesignHeight="200"
   d:DesignWidth="500">
   <UserControl.Resources>
     <nuget:InfiniteScrollListItemStyleSelector
@@ -19,7 +19,7 @@
           Name="_noItemsFound"
           FontStyle="Italic"
           HorizontalAlignment="Center"
-          Text="{x:Static nuget:Resources.Text_NoItemsFound}"
+          Text="{x:Static nuget:Resources.Text_NoPackagesFound}"
           Visibility="Collapsed" />
 
         <TextBlock
@@ -244,6 +244,22 @@
             added by code when Standalone == false.
             -->
     </Style>
+
+    <Style TargetType="FrameworkElement" x:Key="FadeAnimationStyle">
+      <Setter Property="Visibility" Value="Hidden"/>
+      <Style.Triggers>
+        <Trigger Property="Visibility" Value="Visible">
+          <Trigger.EnterActions>
+            <BeginStoryboard>
+              <Storyboard>
+                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                             From="0.0" To="1.0" Duration="0:0:0.7"/>
+              </Storyboard>
+            </BeginStoryboard>
+          </Trigger.EnterActions>
+        </Trigger>
+      </Style.Triggers>
+    </Style>
   </UserControl.Resources>
   <DockPanel LastChildFill="True">
     <Border
@@ -278,15 +294,19 @@
           Content="{x:Static nuget:Resources.Button_Update}" />
       </Grid>
     </Border>
-    <Border
+    <Grid
       DockPanel.Dock="Top"
-      BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
-      BorderThickness="0,0,0,1">
+      Background="{DynamicResource {x:Static nuget:Brushes.ListPaneBackground}}"
+      Height="22">
       <nuget:LoadingStatusBar 
         x:Name="_loadingStatusBar"
-        ShowMoreResultsClicked="_loadingStatusBar_ShowMoreResultsClicked" />
-    </Border>
+        ShowMoreResultsClick="_loadingStatusBar_ShowMoreResultsClick"
+        DismissClick="_loadingStatusBar_DismissClick"
+        Style="{StaticResource FadeAnimationStyle}"
+        Visibility="Hidden"/>
+    </Grid>
     <ListBox
+      d:DataContext="{d:DesignData Source=/Design/PackageItemListViewSampleData.xaml,IsDesignTimeCreatable=True}"
       x:Name="_list"
       DockPanel.Dock="Bottom"
       PreviewKeyUp="List_PreviewKeyUp"
@@ -298,7 +318,8 @@
       BorderThickness="0,0,0,0"
       HorizontalContentAlignment="Stretch"
       SelectionChanged="List_SelectionChanged"
-      Loaded="List_Loaded">
+      Loaded="List_Loaded"
+      ItemsSource="{Binding}">
       <!-- set the template to disable the background change when the IsEnabled is false. -->
       <ListBox.Template>
         <ControlTemplate

@@ -31,6 +31,8 @@ namespace NuGet.PackageManagement.UI
 
         public IItemLoaderState State => _state;
 
+        public bool IsMultiSource => _packageFeed.IsMultiSource;
+
         private class PackageFeedSearchState : IItemLoaderState
         {
             private readonly SearchResult<IPackageSearchMetadata> _results;
@@ -63,8 +65,6 @@ namespace NuGet.PackageManagement.UI
                     return AggregateLoadingStatus(SourceLoadingStatus?.Values);
                 }
             }
-
-            public bool IsMultiSource => SourceLoadingStatus?.Count > 1;
 
             public int ItemsCount => _results?.Items?.Count() ?? 0;
 

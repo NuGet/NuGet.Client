@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 
 namespace NuGet.PackageManagement.UI
@@ -32,7 +31,37 @@ namespace NuGet.PackageManagement.UI
 
         #endregion ItemsLoaded DP
 
-        public event EventHandler ShowMoreResultsClicked;
+        #region ShowMoreResultsClick RE
+
+        public static readonly RoutedEvent ShowMoreResultsClickEvent = EventManager.RegisterRoutedEvent(
+            nameof(ShowMoreResultsClick),
+            RoutingStrategy.Bubble,
+            typeof(RoutedEventHandler),
+            typeof(LoadingStatusBar));
+
+        public event RoutedEventHandler ShowMoreResultsClick
+        {
+            add { AddHandler(ShowMoreResultsClickEvent, value); }
+            remove { RemoveHandler(ShowMoreResultsClickEvent, value); }
+        }
+
+        #endregion ShowMoreResultsClick RE
+
+        #region DismissClick RE
+
+        public static readonly RoutedEvent DismissClickEvent = EventManager.RegisterRoutedEvent(
+            nameof(DismissClick),
+            RoutingStrategy.Bubble,
+            typeof(RoutedEventHandler),
+            typeof(LoadingStatusBar));
+
+        public event RoutedEventHandler DismissClick
+        {
+            add { AddHandler(DismissClickEvent, value); }
+            remove { RemoveHandler(DismissClickEvent, value); }
+        }
+
+        #endregion DismissClick RE
 
         public LoadingStatusBar()
         {
@@ -44,12 +73,17 @@ namespace NuGet.PackageManagement.UI
             ViewModel?.UpdateModel(loaderState);
         }
 
-        public void Reset(string loadingMessage)
+        public void Reset(string loadingMessage, bool isMultiSource)
         {
-            DataContext = new LoadingStatusViewModel(loadingMessage);
+            DataContext = new LoadingStatusViewModel
+            {
+                LoadingMessage = loadingMessage,
+                IsMultiSource = isMultiSource
+            };
         }
 
-        private void ShowMoreResultsButton_Click(object sender, RoutedEventArgs e) =>
-            ShowMoreResultsClicked?.Invoke(this, EventArgs.Empty);
+        private void ShowMoreResultsButton_Click(object sender, RoutedEventArgs e) => RaiseEvent(new RoutedEventArgs(ShowMoreResultsClickEvent));
+
+        private void DismissButton_Click(object sender, RoutedEventArgs e) => RaiseEvent(new RoutedEventArgs(DismissClickEvent));
     }
 }
