@@ -34,8 +34,8 @@ namespace NuGet.Common
                             "{0} {1}", args.Request.Method, args.Request.RequestUri);
                     }
 
-                    var userAgent = UserAgent.CreateUserAgentString(CommandLineConstants.UserAgent);
-                    HttpUtility.SetUserAgent(args.Request, userAgent);
+                    var userAgentString = new UserAgentStringBuilder(CommandLineConstants.UserAgent).Build();
+                    HttpUtility.SetUserAgent(args.Request, userAgentString);
                 };
             }
 

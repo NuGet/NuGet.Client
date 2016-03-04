@@ -118,7 +118,8 @@ namespace NuGet.CommandLine
                 SourceProvider = PackageSourceBuilder.CreateSourceProvider(Settings);
                 SetDefaultCredentialProvider();
                 RepositoryFactory = new CommandLineRepositoryFactory(Console);
-                UserAgent.UserAgentString = UserAgent.CreateUserAgentString(CommandLineConstants.UserAgent);
+
+                UserAgent.SetUserAgentString(new UserAgentStringBuilder(CommandLineConstants.UserAgent));
 
                 ExecuteCommandAsync().Wait();
             }
