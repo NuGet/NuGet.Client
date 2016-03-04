@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -37,6 +39,9 @@ namespace NuGet.PackageManagement.UI
         public bool IsSolution { get; private set; }
 
         public INuGetUI UIController { get; }
+
+        // Cached Package Metadata collected when we set the "count" of updates in the background
+        public PackageSearchMetadataCache CachedUpdates { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
