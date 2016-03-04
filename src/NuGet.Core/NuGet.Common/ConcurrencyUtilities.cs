@@ -46,6 +46,12 @@ namespace NuGet.Common
                     {
                         throw;
                     }
+                    catch (UnauthorizedAccessException)
+                    {
+                        // This can occur when the file is being deleted
+                        await Task.Delay(10);
+                        continue;
+                    }
                     catch (IOException)
                     {
                         token.ThrowIfCancellationRequested();

@@ -311,11 +311,5 @@ namespace NuGet.PackageManagement.UI
                 OnPropertyChanged(nameof(Options));
             }
         }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
-        public IUIBrushes UIBrushes
-        {
-            get { return null; }
-        }
     }
 }

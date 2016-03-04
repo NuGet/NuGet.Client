@@ -4,6 +4,8 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Markup;
 
 
 #if SIGNED_BUILD
@@ -17,3 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("NuGet's Package Management UI for Visual Studio")]
 [assembly: AssemblyDescription("NuGet's Package Management UI for Visual Studio")]
 [assembly: ComVisible(false)]
+
+[assembly: ThemeInfo(ResourceDictionaryLocation.None, ResourceDictionaryLocation.SourceAssembly)]
+[assembly: XmlnsPrefix("http://schemas.nuget.org/xaml", "nuget")]
+[assembly: XmlnsDefinition("http://schemas.nuget.org/xaml", "NuGet.PackageManagement.UI")]

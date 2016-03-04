@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.UI
             set
             {
                 _status = value;
-                OnPropertyChanged("Status");
+                OnPropertyChanged(nameof(Status));
             }
         }
 
@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement.UI
                 if (_loadingMessage != value)
                 {
                     _loadingMessage = value;
-                    OnPropertyChanged("LoadingMessage");
+                    OnPropertyChanged(nameof(LoadingMessage));
                 }
             }
         }
@@ -53,7 +53,7 @@ namespace NuGet.PackageManagement.UI
                 if (_errorMessage != value)
                 {
                     _errorMessage = value;
-                    OnPropertyChanged("ErrorMessage");
+                    OnPropertyChanged(nameof(ErrorMessage));
                 }
             }
         }

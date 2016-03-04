@@ -42,7 +42,6 @@ namespace StandaloneUI
 
         public MainWindow()
         {
-            Brushes.Initialize();
             InitializeComponent();
             _commonOperations = new StandAloneUICommonOperations();
             CreatePackageManagerControl();

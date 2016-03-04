@@ -70,7 +70,9 @@ namespace NuGet.PackageManagement.UI
                 (p, t) => _metadataProvider.GetPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t), 
                 cancellationToken);
 
-            var result = SearchResult.FromItems(items.ToArray());
+            //  The packages were originally sorted which is important because we Skip and Take based on that sort
+            //  however the asynchronous execution has randomly reordered the set. So we need to resort. 
+            var result = SearchResult.FromItems(items.OrderBy(p => p.Identity.Id).ToArray());
 
             var loadingStatus = hasMoreItems
                 ? LoadingStatus.Ready

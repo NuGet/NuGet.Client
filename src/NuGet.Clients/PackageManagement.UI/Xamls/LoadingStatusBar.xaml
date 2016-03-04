@@ -2,23 +2,29 @@
              x:ClassModifier="internal"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:NuGet.PackageManagement.UI"
-             xmlns:resx="clr-namespace:NuGet.PackageManagement.UI"
-             mc:Ignorable="d" 
-             d:DesignHeight="30" d:DesignWidth="300">
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+             mc:Ignorable="d"
+             d:DesignHeight="30" d:DesignWidth="800">
   <UserControl.DataContext>
-    <local:LoadingStatusViewModel/>
+    <nuget:LoadingStatusViewModel />
   </UserControl.DataContext>
   <UserControl.Resources>
-    <local:LoadingStatusToIconConverter x:Key="LoadingStatusToIconConverter"/>
-    <local:MessageLevelToBrushConverter x:Key="MessageLevelToBrushConverter"/>
-    <local:NotEqualConverter x:Key="NotEqualConverter"/>
-    <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-    <local:LoadingStatus x:Key="LoadingStatus">Loading</local:LoadingStatus>
-    <Style 
-        x:Key="LinkButtonStyle" 
+    <nuget:LoadingStatusToIconConverter x:Key="LoadingStatusToIconConverter" />
+    <nuget:MessageLevelToBrushConverter
+      x:Key="MessageLevelToBackgroundConverter"
+      Warning="{DynamicResource {x:Static nuget:Brushes.InfoBackgroundKey}}"
+      Message="{DynamicResource {x:Static nuget:Brushes.LegalMessageBackground}}" />
+    <nuget:MessageLevelToBrushConverter
+      x:Key="MessageLevelToForegroundConverter"
+      Warning="{DynamicResource {x:Static nuget:Brushes.InfoTextKey}}"
+      Message="{DynamicResource {x:Static nuget:Brushes.UIText}}" />
+    <nuget:NotEqualConverter x:Key="NotEqualConverter" />
+    <nuget:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    <nuget:LoadingStatus x:Key="LoadingStatus">Loading</nuget:LoadingStatus>
+    <Style
+        x:Key="LinkButtonStyle"
         TargetType="{x:Type Button}">
       <Setter Property="Template">
         <Setter.Value>
@@ -29,135 +35,103 @@
           </ControlTemplate>
         </Setter.Value>
       </Setter>
-      <Setter Property="HorizontalContentAlignment" Value="Center"/>
-      <Setter Property="VerticalContentAlignment" Value="Center"/>
-      <Setter Property="Foreground" Value="{DynamicResource {x:Static resx:Brushes.ControlLinkTextKey}}" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.ControlLinkTextKey}}" />
       <Setter Property="Cursor" Value="Hand" />
       <Style.Triggers>
         <Trigger Property="IsMouseOver" Value="true">
-          <Setter Property="Foreground" Value="{DynamicResource {x:Static resx:Brushes.ControlLinkTextHoverKey}}" />
+          <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.ControlLinkTextHoverKey}}" />
         </Trigger>
       </Style.Triggers>
     </Style>
   </UserControl.Resources>
-  <Border 
-    x:Name="StatusBarControl" 
-    VerticalAlignment="Center" 
-    Visibility="Visible" 
-    Background="{Binding MessageLevel,Converter={StaticResource MessageLevelToBrushConverter}}"
-    BorderThickness="0"
-    Height="22">
-    <Grid Margin="3,0">
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="Auto"/>
-        <ColumnDefinition Width="Auto"/>
-        <ColumnDefinition Width="Auto"/>
-        <ColumnDefinition Width="Auto"/>
-        <ColumnDefinition Width="Auto"/>
-        <ColumnDefinition Width="*" />
-      </Grid.ColumnDefinitions>
-      <Image 
-        Grid.Column="0" 
-        Source="{Binding LoadingStatus,Converter={StaticResource LoadingStatusToIconConverter}}" 
-        Margin="0,0,3,0"
-        Stretch="Uniform" 
-        HorizontalAlignment="Center" 
-        VerticalAlignment="Center" 
-        Height="16" 
-        Width="16" >
-        <Image.Style>
-          <Style TargetType="{x:Type Image}">
-            <Setter Property="Visibility" Value="Collapsed"/>
-            <Style.Triggers>
-              <DataTrigger Binding="{Binding Path=LoadingStatus,
-                Converter={StaticResource NotEqualConverter},
-                ConverterParameter={StaticResource LoadingStatus}}" Value="True">
-                <Setter Property="Visibility" Value="Visible"/>
-              </DataTrigger>
-            </Style.Triggers>
-          </Style>
-        </Image.Style>
-      </Image>
-      <local:Spinner 
-        Grid.Column="0" 
-        Margin="0,0,3,0" 
-        HorizontalAlignment="Center" 
-        VerticalAlignment="Center" 
-        Width="16" 
-        Height="16">
-        <local:Spinner.Style>
-          <Style TargetType="{x:Type local:Spinner}">
-            <Setter Property="Visibility" Value="Collapsed"/>
-            <Style.Triggers>
-              <DataTrigger Binding="{Binding LoadingStatus}" Value="Loading">
-                <Setter Property="Visibility" Value="Visible"/>
-              </DataTrigger>
-            </Style.Triggers>
-          </Style>
-        </local:Spinner.Style>
-      </local:Spinner>
-      <TextBlock 
-        Grid.Column="1" 
-        Text="{Binding Path=StatusMessage}"
-        TextWrapping="Wrap" 
-        TextOptions.TextFormattingMode="Display" 
-        VerticalAlignment="Center" 
-        Margin="5,0"
-        FontFamily="SegoeUI"
-        FontSize="12"
-        Foreground="#111111"
-       />
-      <Button 
-        Grid.Column="2" 
-        x:Name="ShowMoreResultsButton" 
-        Visibility="{Binding Path=HasMoreItems,Converter={StaticResource BooleanToVisibilityConverter}}"
-        VerticalAlignment="Center" 
-        Content="{Binding Path=MoreItemsLinkText}" 
-        Click="ShowMoreResultsButton_Click" 
-        Margin="5,0"
-        FontFamily="SegoeUI"
-        FontSize="12"
-        Style="{StaticResource LinkButtonStyle}" />
-      <Button 
-        Grid.Column="3" 
-        x:Name="ShowErrorsButton"
-        VerticalAlignment="Center" 
-        Content="{x:Static resx:Resources.Button_ShowErrors}"
-        Click="ShowErrorsButton_Click"
-        Margin="5,0"
-        FontFamily="SegoeUI"
-        FontSize="12">
-        <Button.Style>
-          <Style TargetType="{x:Type Button}" BasedOn="{StaticResource LinkButtonStyle}">
-            <Setter Property="Visibility" Value="Collapsed"/>
-            <Style.Triggers>
-              <DataTrigger Binding="{Binding Path=LoadingStatus}" Value="ErrorOccured">
-                <Setter Property="Visibility" Value="Visible"/>
-              </DataTrigger>
-            </Style.Triggers>
-          </Style>
-        </Button.Style>
-      </Button>
-      <Button 
-        Grid.Column="4" 
-        x:Name="RestartSearchButton"
-        VerticalAlignment="Center" 
-        Content="{x:Static resx:Resources.Button_RestartSearch}"
-        Click="RestartSearchButton_Click" 
-        Margin="5,0" 
-        FontFamily="SegoeUI"
-        FontSize="12">
-        <Button.Style>
-          <Style TargetType="{x:Type Button}" BasedOn="{StaticResource LinkButtonStyle}">
-            <Setter Property="Visibility" Value="Collapsed"/>
-            <Style.Triggers>
-              <DataTrigger Binding="{Binding Path=LoadingStatus}" Value="ErrorOccured">
-                <Setter Property="Visibility" Value="Visible"/>
-              </DataTrigger>
-            </Style.Triggers>
-          </Style>
-        </Button.Style>
-      </Button>
-    </Grid>
-  </Border>
+  <StackPanel
+    d:DataContext="{d:DesignData Source=/Design/LoadingStatusViewModelSampleData.xaml,IsDesignTimeCreatable=True}"
+    VerticalAlignment="Center"
+    Visibility="Visible"
+    Background="{Binding MessageLevel,Converter={StaticResource MessageLevelToBackgroundConverter}}"
+    Height="22"
+    Margin="0"
+    Orientation="Horizontal">
+    <Image
+      Source="{Binding LoadingStatus,Converter={StaticResource LoadingStatusToIconConverter}}"
+      Margin="16,0,0,0"
+      Stretch="Uniform"
+      HorizontalAlignment="Center"
+      VerticalAlignment="Center"
+      Height="16"
+      Width="16">
+      <Image.Style>
+        <Style TargetType="{x:Type Image}">
+          <Setter Property="Visibility" Value="Collapsed" />
+          <Style.Triggers>
+            <DataTrigger 
+              Binding="{Binding Path=LoadingStatus,
+              Converter={StaticResource NotEqualConverter},
+              ConverterParameter={StaticResource LoadingStatus}}" 
+              Value="True">
+              <Setter Property="Visibility" Value="Visible" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </Image.Style>
+    </Image>
+    <nuget:Spinner
+      Margin="16,0,0,0"
+      HorizontalAlignment="Center"
+      VerticalAlignment="Center"
+      Width="16"
+      Height="16">
+      <nuget:Spinner.Style>
+        <Style TargetType="{x:Type nuget:Spinner}">
+          <Setter Property="Visibility" Value="Collapsed" />
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding LoadingStatus}" Value="Loading">
+              <Setter Property="Visibility" Value="Visible" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </nuget:Spinner.Style>
+    </nuget:Spinner>
+    <TextBlock
+      Text="{Binding Path=StatusMessage}"
+      TextWrapping="Wrap"
+      TextOptions.TextFormattingMode="Display"
+      VerticalAlignment="Center"
+      Margin="3,0"
+      FontFamily="SegoeUI"
+      FontSize="12"
+      Foreground="{Binding MessageLevel,Converter={StaticResource MessageLevelToForegroundConverter}}" />
+    <Button
+      x:Name="ShowMoreResultsButton"
+      Visibility="{Binding HasMoreItems,Converter={StaticResource BooleanToVisibilityConverter}}"
+      VerticalAlignment="Center"
+      Content="{Binding Path=MoreItemsLinkText}"
+      Click="ShowMoreResultsButton_Click"
+      Margin="5,0"
+      FontFamily="SegoeUI"
+      FontSize="12"
+      Style="{StaticResource LinkButtonStyle}" />
+    <Button
+      x:Name="ShowErrorsButton"
+      AutomationProperties.AutomationId="Button_ShowErrors"
+      VerticalAlignment="Center"
+      Content="{x:Static nuget:Resources.Button_ShowErrors}"
+      Command="{x:Static nuget:Commands.ShowErrorsCommand}"
+      Margin="5,0"
+      FontFamily="SegoeUI"
+      FontSize="12">
+      <Button.Style>
+        <Style TargetType="{x:Type Button}" BasedOn="{StaticResource LinkButtonStyle}">
+          <Setter Property="Visibility" Value="Collapsed" />
+          <Style.Triggers>
+            <DataTrigger Binding="{Binding Path=LoadingStatus}" Value="ErrorOccured">
+              <Setter Property="Visibility" Value="Visible" />
+            </DataTrigger>
+          </Style.Triggers>
+        </Style>
+      </Button.Style>
+    </Button>
+  </StackPanel>
 </UserControl>
