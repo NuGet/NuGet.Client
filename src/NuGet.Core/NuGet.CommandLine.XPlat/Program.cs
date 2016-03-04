@@ -8,6 +8,7 @@ using System.Reflection;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Common;
 using NuGet.Logging;
+using NuGet.Protocol;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -48,6 +49,9 @@ namespace NuGet.CommandLine.XPlat
             XPlatUtility.SetConnectionLimit();
 
             XPlatUtility.SetUserAgent();
+
+            // This method has no effect on .NET Core.
+            NetworkProtocolUtility.ConfigureSupportedSslProtocols();
 
             //register push and delete command
             new PushCommand(app, () =>

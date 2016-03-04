@@ -8,6 +8,38 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetListCommandTest
     {
+        [Theory]
+        [InlineData("https://www.ssllabs.com:10300/index.json")] // SSLv3.0
+        [InlineData("https://www.ssllabs.com:10301/index.json")] // TLSv1.0
+        [InlineData("https://www.ssllabs.com:10302/index.json")] // TLSv1.1
+        [InlineData("https://www.ssllabs.com:10303/index.json")] // TLSv1.2
+        public void ListCommand_SupportsServersWithSsl(string source)
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            // The following source URL is not a valid NuGet source but is a HTTP server known
+            // to support only a single SSL protocol (it is a test server for this specific
+            // purpose). Since it is not a valid NuGet server, the command should fail but should
+            // fail with an error that indicates a successful HTTP connection. In this case, a 404
+            // Not Found is returned.
+            //
+            // http://stackoverflow.com/a/29221439/52749
+            string[] args = { "list", Guid.NewGuid().ToString(), "-Source", source };
+
+            // Act
+            var result = CommandRunner.Run(
+                nugetexe,
+                Directory.GetCurrentDirectory(),
+                string.Join(" ", args),
+                waitForExit: true);
+
+            // Assert
+            Assert.Equal(1, result.Item1);
+            Assert.Contains($"Unable to load the service index for source {source}.", result.Item3);
+            Assert.Contains("Response status code does not indicate success: 404 (Not Found).", result.Item3);
+        }
+
         [Fact]
         public void ListCommand_WithUserSpecifiedSource()
         {
