@@ -2252,7 +2252,7 @@ namespace NuGet.Configuration.Test
 
                 // Assert
                 var path = Path.Combine(mockBaseDirectory, nugetConfigPath);
-                Assert.Equal($"NuGet.Config is invalid XML. Path: '{path}'.", ex.Message);
+                Assert.Equal($"NuGet.Config is not valid XML. Path: '{path}'.", ex.Message);
             }
         }
 
@@ -2275,7 +2275,7 @@ namespace NuGet.Configuration.Test
 
                 // Assert
                 var path = Path.Combine(mockBaseDirectory, nugetConfigPath);
-                Assert.Equal($"NuGet.Config does not contain the expected root element: 'configuration'.  Path: '{path}'.", ex.Message);
+                Assert.Equal($"NuGet.Config does not contain the expected root element: 'configuration'. Path: '{path}'.", ex.Message);
             }
         }
 
