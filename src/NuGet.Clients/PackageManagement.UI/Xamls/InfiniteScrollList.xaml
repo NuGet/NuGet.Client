@@ -11,6 +11,19 @@
   <UserControl.Resources>
     <nuget:InfiniteScrollListItemStyleSelector
       x:Key="itemStyleSelector" />
+
+    <DataTemplate
+      DataType="{x:Type nuget:PackageDependencyMetadata}">
+      <TextBlock
+        Text="{Binding}" />
+    </DataTemplate>
+
+    <DataTemplate
+      DataType="{x:Type nuget:PackageItemListViewModel}">
+      <nuget:PackageItemControl
+        DataContext="{Binding}" />
+    </DataTemplate>
+
     <DataTemplate
       DataType="{x:Type nuget:LoadingStatusIndicator}">
       <Grid

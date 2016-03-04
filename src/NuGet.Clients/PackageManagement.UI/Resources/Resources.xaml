@@ -64,18 +64,6 @@
     TargetType="{x:Type ScrollViewer}"
     BasedOn="{StaticResource {x:Static nuget:Styles.ScrollViewerStyleKey}}"/>
 
-  <DataTemplate
-    DataType="{x:Type nuget:PackageDependencyMetadata}">
-    <TextBlock
-      Text="{Binding}" />
-  </DataTemplate>
-
-  <DataTemplate
-    DataType="{x:Type nuget:PackageItemListViewModel}">
-    <nuget:PackageItemControl
-      DataContext="{Binding}" />
-  </DataTemplate>
-
   <Style
     x:Key="TooltipStyle"
     TargetType="{x:Type TextBlock}">
