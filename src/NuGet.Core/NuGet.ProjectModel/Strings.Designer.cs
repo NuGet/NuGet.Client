@@ -105,11 +105,29 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Unable to resolve tool &apos;&apos;..
+        /// </summary>
+        internal static string MissingToolName {
+            get {
+                return ResourceManager.GetString("MissingToolName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Package dependencies must specify a version range..
         /// </summary>
-        internal static string MissingVersionProperty {
+        internal static string MissingVersionOnDependency {
             get {
-                return ResourceManager.GetString("MissingVersionProperty", resourceCulture);
+                return ResourceManager.GetString("MissingVersionOnDependency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Tools must specify a version range..
+        /// </summary>
+        internal static string MissingVersionOnTool {
+            get {
+                return ResourceManager.GetString("MissingVersionOnTool", resourceCulture);
             }
         }
     }
