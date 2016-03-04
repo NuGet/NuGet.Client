@@ -778,8 +778,7 @@ EndProject
 Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""proj2"", ""proj2\proj2.csproj"", ""{42641DAE-D6C4-49D4-92EA-749D2573554A}""
 EndProject");
                 Util.CreateFile(workingPath, "my.config",
-                    @"
-<?xml version=""1.0"" encoding=""utf-8""?>
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageRestore>
     <add key=""enabled"" value=""True"" />
