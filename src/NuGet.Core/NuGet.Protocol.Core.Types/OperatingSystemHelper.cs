@@ -1,8 +1,8 @@
 using System;
-
 #if DNXCORE50
 using System.Diagnostics;
 using System.IO;
+using NuGet.Common;
 #endif
 
 namespace NuGet.Protocol.Core.Types
@@ -15,14 +15,25 @@ namespace NuGet.Protocol.Core.Types
             return Environment.OSVersion.ToString();
         }
 #else
-        private static readonly Lazy<OperatingSystemInfo> _osInfo = new Lazy<OperatingSystemInfo>(GetOsDetails);
+        private static readonly Lazy<OperatingSystemInfo> _osInfo = new Lazy<OperatingSystemInfo>(GetOperatingSystemInfo);
 
         public static string GetVersion()
         {
             return _osInfo.Value.ToString();
         }
 
-        private static OperatingSystemInfo GetOsDetails()
+        private static OperatingSystemInfo GetOperatingSystemInfo()
+        {
+            if (!RuntimeEnvironmentHelper.IsWindows && RuntimeEnvironmentHelper.IsMono)
+            {
+                return GetOperatingSystemInfoOnMono();
+            }
+
+            // Could not determine OS version information. Defaulting to the empty string.
+            return new OperatingSystemInfo(null, null);
+        }
+
+        private static OperatingSystemInfo GetOperatingSystemInfoOnMono()
         {
             var unameOutput = RunProgram("uname", "-s -m").Split(' ');
 
