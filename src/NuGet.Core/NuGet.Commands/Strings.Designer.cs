@@ -375,6 +375,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Restoring packages for tool &apos;{0}&apos; in {1}....
+        /// </summary>
+        internal static string Log_RestoringToolPackages {
+            get {
+                return ResourceManager.GetString("Log_RestoringToolPackages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Running non-parallel restore..
         /// </summary>
         internal static string Log_RunningNonParallelRestore {

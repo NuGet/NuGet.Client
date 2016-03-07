@@ -141,6 +141,19 @@ namespace NuGet.Packaging.Test
             Assert.False(isValid);
         }
 
+        [Fact]
+        public void DotToolsIsNotAllowed()
+        {
+            // Arrange
+            string packageId = ".tools";
+
+            // Act
+            bool isValid = PackageIdValidator.IsValidPackageId(packageId);
+
+            // Assert
+            Assert.False(isValid);
+        }
+
         [Theory]
         [InlineData(101)]
         [InlineData(102)]

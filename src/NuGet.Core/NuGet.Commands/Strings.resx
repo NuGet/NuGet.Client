@@ -255,4 +255,10 @@
   <data name="Error_InvalidCommandLineInput" xml:space="preserve">
     <value>Invalid input '{0}'. The file type was not recognized.</value>
   </data>
+  <data name="Log_RestoringToolPackages" xml:space="preserve">
+    <value>Restoring packages for tool '{0}' in {1}...</value>
+    <comment>String format parameters:
+{0} is replaced with the tool ID.
+{1} is replaced with a path to the project that is being restored.</comment>
+  </data>
 </root>

@@ -11,7 +11,6 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
-using NuGet.RuntimeModel;
 
 namespace NuGet.Commands
 {

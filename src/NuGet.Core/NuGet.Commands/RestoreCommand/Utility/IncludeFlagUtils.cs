@@ -11,6 +11,21 @@ namespace NuGet.Commands
     internal static class IncludeFlagUtils
     {
         internal static Dictionary<string, LibraryIncludeFlags> FlattenDependencyTypes(
+            Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> includeFlagGraphs,
+            PackageSpec project,
+            RestoreTargetGraph graph)
+        {
+            Dictionary<string, LibraryIncludeFlags> flattenedFlags;
+            if (!includeFlagGraphs.TryGetValue(graph, out flattenedFlags))
+            {
+                flattenedFlags = FlattenDependencyTypes(graph, project);
+                includeFlagGraphs.Add(graph, flattenedFlags);
+            }
+
+            return flattenedFlags;
+        }
+
+        internal static Dictionary<string, LibraryIncludeFlags> FlattenDependencyTypes(
             RestoreTargetGraph targetGraph,
             PackageSpec spec)
         {

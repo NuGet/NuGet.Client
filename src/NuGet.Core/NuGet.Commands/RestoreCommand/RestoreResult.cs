@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using NuGet.LibraryModel;
 using NuGet.Logging;
@@ -27,6 +28,8 @@ namespace NuGet.Commands
 
         public IEnumerable<CompatibilityCheckResult> CompatibilityCheckResults { get; }
 
+        public IEnumerable<ToolRestoreResult> ToolRestoreResults { get; }
+
         /// <summary>
         /// Gets a boolean indicating if the lock file will be re-written on <see cref="Commit"/>
         /// because the file needs to be re-locked.
@@ -51,8 +54,8 @@ namespace NuGet.Commands
             LockFile lockFile,
             LockFile previousLockFile,
             string lockFilePath,
-            bool relockFile,
-            MSBuildRestoreResult msbuild)
+            MSBuildRestoreResult msbuild,
+            IEnumerable<ToolRestoreResult> toolRestoreResults)
         {
             Success = success;
             RestoreGraphs = restoreGraphs;
@@ -61,6 +64,7 @@ namespace NuGet.Commands
             LockFilePath = lockFilePath;
             MSBuild = msbuild;
             PreviousLockFile = previousLockFile;
+            ToolRestoreResults = toolRestoreResults;
         }
 
         /// <summary>
@@ -126,6 +130,19 @@ namespace NuGet.Commands
                 else
                 {
                     log.LogDebug($"Lock file has not changed. Skipping lock file write. Path: {LockFilePath}");
+                }
+            }
+
+            // Always write the tool lock files
+            foreach (var toolRestoreResult in ToolRestoreResults)
+            {
+                if (toolRestoreResult.LockFilePath != null)
+                {
+                    log.LogDebug($"Writing tool lock file to disk. Path: {toolRestoreResult.LockFilePath}");
+
+                    var lockFileDirectory = Path.GetDirectoryName(toolRestoreResult.LockFilePath);
+                    Directory.CreateDirectory(lockFileDirectory);
+                    lockFileFormat.Write(toolRestoreResult.LockFilePath, toolRestoreResult.LockFile);
                 }
             }
 

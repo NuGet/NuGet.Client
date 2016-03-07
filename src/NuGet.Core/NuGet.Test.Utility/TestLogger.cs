@@ -79,5 +79,10 @@ namespace NuGet.Test.Utility
         {
             return string.Join(Environment.NewLine, ErrorMessages);
         }
+
+        public string ShowMessages()
+        {
+            return string.Join(Environment.NewLine, Messages);
+        }
     }
 }
