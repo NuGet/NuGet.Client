@@ -1,11 +1,11 @@
 ﻿{
-  "version": "3.4.0-rtm-*",
+  "version": "3.4.0-*",
   "dependencies": {
     "Newtonsoft.Json": "6.0.4",
-    "NuGet.DependencyResolver.Core": "3.4.0-rtm-*",
+    "NuGet.DependencyResolver.Core": "3.4.0-*",
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.0-rtm-*"
+      "version": "3.4.0-*"
     }
   },
   "compilationOptions": {
@@ -14,9 +14,7 @@
   "frameworks": {
     "net45": {},
     "dnxcore50": {
-      "imports": [
-        "portable-net45+win8"
-      ],
+      "imports": [ "portable-net45+win8" ],
       "dependencies": {
         "System.Dynamic.Runtime": "4.0.10-*"
       }

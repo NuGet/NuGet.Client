@@ -4,16 +4,14 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Protocol.Core.v3": "3.4.0-rtm-*"
+    "NuGet.Protocol.Core.v3": "3.4.0-*"
   },
   "frameworks": {
     "dnx451": {
       "dependencies": {}
     },
     "dnxcore50": {
-      "imports": [
-        "portable-net45+win8"
-      ],
+      "imports": [ "portable-net45+win8" ],
       "dependencies": {
         "System.Runtime": "4.0.20-beta-23109",
         "System.Net.Http": "4.0.0-beta-23109",

@@ -1,5 +1,5 @@
 ﻿{
-  "version": "3.4.0-rtm-*",
+  "version": "3.4.0-*",
   "description": "NuGet 3 restore for dotnet CLI, DNX, and UWP",
   "compilationOptions": {
     "emitEntryPoint": true,
@@ -8,9 +8,9 @@
   "dependencies": {
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-rc1-final",
     "Microsoft.NETCore.Platforms": "1.0.1-beta-*",
-    "NuGet.Commands": "3.4.0-rtm-*",
+    "NuGet.Commands": "3.4.0-*",
     "NuGet.Shared": {
-      "version": "3.4.0-rtm-*",
+      "version": "3.4.0-*",
       "type": "build"
     },
     "System.Runtime.Serialization.Primitives": "4.0.0",
@@ -31,9 +31,7 @@
       }
     },
     "dnxcore50": {
-      "imports": [
-        "portable-net45+win8"
-      ],
+      "imports": [ "portable-net45+win8" ],
       "dependencies": {
         "System.Threading.Tasks": "4.0.11-beta-23516",
         "System.Console": "4.0.0-beta-23409"

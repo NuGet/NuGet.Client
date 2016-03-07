@@ -1,12 +1,12 @@
 ﻿{
-  "version": "3.4.0-rtm-*",
+  "version": "3.4.0-*",
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.0-rtm-*"
+      "version": "3.4.0-*"
     }
   },
   "frameworks": {

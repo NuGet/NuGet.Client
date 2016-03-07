@@ -19,8 +19,8 @@
     "Microsoft.VisualStudio.Threading": "14.0.50702",
     "Microsoft.VSSDK.BuildTools": "14.0.23107",
     "Microsoft.WindowsAzure.ConfigurationManager": "1.7.0",
-    "NuGet.Commands": "3.4.0-rtm-*",
-    "NuGet.Indexing": "3.4.0-rtm-*",
+    "NuGet.Commands": "3.4.0-*",
+    "NuGet.Indexing": "3.4.0-*",
     "System.IdentityModel.Tokens.Jwt": "4.0.0"
   },
   "frameworks": {

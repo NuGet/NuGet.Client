@@ -1,9 +1,9 @@
-﻿{
-  "version": "3.4.0-rtm-*",
+{
+  "version": "3.4.0-*",
   "dependencies": {
     "Moq": "4.2.1510.2205",
-    "NuGet.PackageManagement": "3.4.0-rtm-*",
-    "Test.Utility": "3.4.0-rtm-*",
+    "NuGet.PackageManagement": "3.4.0-*",
+    "Test.Utility": "3.4.0-*",
     "xunit": "2.1.0",
     "xunit.runner.dnx": "2.1.0-rc1-build204"
   },
@@ -11,6 +11,7 @@
     "test": "xunit.runner.dnx"
   },
   "frameworks": {
-    "dnx451": {}
+    "dnx451": {
+    }
   }
 }
