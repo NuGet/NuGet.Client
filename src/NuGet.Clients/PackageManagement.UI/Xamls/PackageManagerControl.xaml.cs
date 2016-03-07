@@ -17,6 +17,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using Resx = NuGet.PackageManagement.UI;
+using Microsoft.VisualStudio.Threading;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -509,10 +510,11 @@ namespace NuGet.PackageManagement.UI
 
         private void RefreshAvailableUpdatesCount()
         {
-            _topPanel._labelUpgradeAvailable.Count = 0;
-
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                _topPanel._labelUpgradeAvailable.Count = 0;
                 var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
                 var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable);
                 var loader = new PackageItemLoader(
@@ -524,23 +526,21 @@ namespace NuGet.PackageManagement.UI
                     IncludePrerelease = IncludePrerelease
                 };
 
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 _topPanel._labelUpgradeAvailable.Count = Model.CachedUpdates.Packages.Count;
             });
         }
 
         private void RefreshConsolidatablePackagesCount()
         {
-            _topPanel._labelConsolidate.Count = 0;
-
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                _topPanel._labelConsolidate.Count = 0;
                 var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
                 var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate);
                 var loader = new PackageItemLoader(
                     loadContext, packageFeed, includePrerelease: IncludePrerelease);
-
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                
                 _topPanel._labelConsolidate.Count = await loader.GetTotalCountAsync(100, CancellationToken.None);
             });
         }
@@ -583,6 +583,9 @@ namespace NuGet.PackageManagement.UI
 
         private static async Task<IPackageFeed> CreatePackageFeedAsync(PackageLoadContext context, ItemFilter filter)
         {
+            // Go off the UI thread to perform non-UI operations
+            await TaskScheduler.Default;
+
             var logger = new VisualStudioActivityLogger();
 
             if (filter == ItemFilter.All)
