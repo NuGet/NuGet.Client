@@ -53,7 +53,7 @@ namespace NuGet.CommandLine.XPlat
 
                 return os + ver;
             }
-            else if (string.Equals(env.OperatingSystem, "Darwin", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(env.OperatingSystem, "Darwin", StringComparison.OrdinalIgnoreCase) || string.Equals(env.OperatingSystem, "Mac OS X", StringComparison.OrdinalIgnoreCase))
             {
                 os = "osx";
             }
