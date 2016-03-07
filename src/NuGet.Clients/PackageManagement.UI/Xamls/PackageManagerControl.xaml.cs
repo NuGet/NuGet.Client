@@ -507,34 +507,33 @@ namespace NuGet.PackageManagement.UI
 
         private void RefreshAvailableUpdatesCount()
         {
-            _topPanel._labelUpgradeAvailable.Count = 0;
-
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                _topPanel._labelUpgradeAvailable.Count = 0;
                 var loadContext = new PackageLoadContext(
                     ActiveSources, Model.IsSolution, Model.Context);
                 var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable);
                 var loader = new PackageItemLoader(
                     loadContext, packageFeed, includePrerelease: IncludePrerelease);
 
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 _topPanel._labelUpgradeAvailable.Count = await loader.GetTotalCountAsync(100, CancellationToken.None);
             });
         }
 
         private void RefreshConsolidatablePackagesCount()
         {
-            _topPanel._labelConsolidate.Count = 0;
-
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                _topPanel._labelConsolidate.Count = 0;
                 var loadContext = new PackageLoadContext(
                     ActiveSources, Model.IsSolution, Model.Context);
                 var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate);
                 var loader = new PackageItemLoader(
                     loadContext, packageFeed, includePrerelease: IncludePrerelease);
-
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                
                 _topPanel._labelConsolidate.Count = await loader.GetTotalCountAsync(100, CancellationToken.None);
             });
         }
