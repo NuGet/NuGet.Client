@@ -39,10 +39,9 @@ namespace NuGet.Common.Test
                     supported = RuntimeEnvironmentHelper.IsLinux;
                 }
 #else
-                // Backwards compatibility.
                 if (name == Ssl30Name)
                 {
-                    supported = true;
+                    supported = false;
                 }
 #endif
             }

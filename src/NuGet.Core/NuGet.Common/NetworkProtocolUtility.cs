@@ -16,7 +16,6 @@ namespace NuGet.Common
         {
 #if !DNXCORE50
             ServicePointManager.SecurityProtocol =
-                SecurityProtocolType.Ssl3 |
                 SecurityProtocolType.Tls |
                 SecurityProtocolType.Tls11 |
                 SecurityProtocolType.Tls12;
