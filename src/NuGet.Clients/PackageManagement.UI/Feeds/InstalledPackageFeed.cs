@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.UI
 
             var items = await TaskCombinators.ThrottledAsync(
                 packages,
-                (p, t) => _metadataProvider.GetLocalPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t),
+                (p, t) => GetPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t),
                 cancellationToken);
 
             //  The packages were originally sorted which is important because we Skip and Take based on that sort
@@ -96,6 +96,16 @@ namespace NuGet.PackageManagement.UI
             }
 
             return result;
+        }
+
+        private async Task<IPackageSearchMetadata> GetPackageMetadataAsync(PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
+        {
+            var packageMetadata = await _metadataProvider.GetLocalPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+            if (packageMetadata == null)
+            {
+                packageMetadata = await _metadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+            }
+            return packageMetadata;
         }
     }
 }
