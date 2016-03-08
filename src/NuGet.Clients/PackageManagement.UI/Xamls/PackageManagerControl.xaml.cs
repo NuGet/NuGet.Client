@@ -17,6 +17,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using Resx = NuGet.PackageManagement.UI;
+using Microsoft.VisualStudio.Threading;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -577,6 +578,9 @@ namespace NuGet.PackageManagement.UI
 
         private static async Task<IPackageFeed> CreatePackageFeedAsync(PackageLoadContext context, ItemFilter filter)
         {
+            // Go off the UI thread to perform non-UI operations
+            await TaskScheduler.Default;
+
             var logger = new VisualStudioActivityLogger();
 
             if (filter == ItemFilter.All)

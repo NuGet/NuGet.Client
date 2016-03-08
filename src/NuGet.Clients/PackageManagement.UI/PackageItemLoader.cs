@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 
@@ -143,6 +144,9 @@ namespace NuGet.PackageManagement.UI
 
         public async Task<int> GetTotalCountAsync(int maxCount, CancellationToken cancellationToken)
         {
+            // Go off the UI thread to perform non-UI operations
+            await TaskScheduler.Default;
+
             int totalCount = 0;
             ContinuationToken nextToken = null;
             do
