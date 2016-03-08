@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -2037,6 +2039,123 @@ EndProject";
                 var dllFileInfo = new FileInfo(dllPath);
                 Assert.True(File.Exists(dllFileInfo.FullName));
                 Assert.Equal(entryModifiedTime, dllFileInfo.LastWriteTime);
+            }
+        }
+
+        /// <summary>
+        /// Test proper handling of project in parent directories. The solution A\A.sln contains A\A.Util\A.Util.csproj
+        /// and B\B.csproj. B.csproj depends on ..\A\A.Util\A.Util.csproj.
+        /// </summary>
+        [Fact]
+        public void RestoreCommand_FromSolutionFile_ProjectsInParentDir() {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var basePath = TestFileSystemUtility.CreateRandomTestFolder()) {
+                Directory.CreateDirectory(Path.Combine(basePath, "A"));
+                Directory.CreateDirectory(Path.Combine(basePath, "A", "A.Util"));
+                Directory.CreateDirectory(Path.Combine(basePath, "B"));
+
+                var repositoryPath = Path.Combine(basePath, "Repository");
+
+                Directory.CreateDirectory(repositoryPath);
+
+                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
+
+                Util.CreateFile(Path.Combine(basePath, "A", "A.Util"), "A.Util.csproj",
+@"<Project ToolsVersion='14.0' DefaultTargets='Build' xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"" Condition=""Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"" />
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include='project.json' />
+  </ItemGroup>
+  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+</Project>");
+
+                Util.CreateFile(Path.Combine(basePath, "A", "A.Util"), "project.json",
+@"{
+  'dependencies': {
+    'packageA': '1.1.0',
+    'packageB': '2.2.0'
+  },
+  'frameworks': {
+                'netcore50': { }
+            }
+}");
+                Util.CreateFile(Path.Combine(basePath, "B"), "B.csproj",
+@"<Project ToolsVersion='14.0' DefaultTargets='Build' xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <Import Project=""$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props"" Condition=""Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"" />
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include=""..\A\A.Util\A.Util.csproj"">
+      <Project>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Project>
+      <Name>A.Util</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include='project.json' />
+  </ItemGroup>
+  <Import Project=""$(MSBuildToolsPath)\Microsoft.CSharp.targets"" />
+</Project>");
+
+                Util.CreateFile(Path.Combine(basePath, "B"), "project.json",
+@"{
+  'dependencies': {
+  },
+  'frameworks': {
+                'netcore50': { }
+            }
+}");
+
+                Util.CreateFile(basePath, "nuget.config",
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <config>
+    <add key=""globalPackagesFolder"" value=""GlobalPackages2"" />
+  </config>
+</configuration>");
+
+                Util.CreateFile(Path.Combine(basePath, "A"), "A.sln",
+                    @"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""A.Util"", ""A.Util\A.Util.csproj"", ""{A04C59CC-7622-4223-B16B-CDF2ECAD438D}""
+EndProject
+Project(""{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""B"", ""..\B\B.csproj"", ""{42641DAE-D6C4-49D4-92EA-749D2573554A}""
+EndProject");
+
+                var args = new[] {
+                    "restore",
+                    Path.Combine(basePath, "A", "A.sln"),
+                    "-verbosity detailed",
+                    "-Source", repositoryPath
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    basePath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, r.Item1);
+                var bProjectLockJsonFile = Path.Combine(basePath, "B", "project.lock.json");
+                Assert.True(File.Exists(bProjectLockJsonFile));
+                var bProjectLockJson = new LockFileFormat().Read(bProjectLockJsonFile);
+                var bLibraries = bProjectLockJson.Libraries;
+                var bLibraryNames = bLibraries.Select(lib => lib.Name).ToList();
+                Assert.Contains("packageA", bLibraryNames);
+                Assert.Contains("packageB", bLibraryNames);
             }
         }
     }

@@ -692,7 +692,8 @@ namespace NuGet.CommandLine
                 restoreInputs.PackagesConfigFiles.Add(solutionLevelPackagesConfig);
             }
 
-            var projectFiles = MsBuildUtility.GetAllProjectFileNames(solutionFileFullPath, _msbuildDirectory.Value);
+            var projectFiles = MsBuildUtility.GetAllProjectFileNames(solutionFileFullPath, _msbuildDirectory.Value)
+                .Select(Path.GetFullPath); // normalize path
             foreach (var projectFile in projectFiles)
             {
                 if (!File.Exists(projectFile))
