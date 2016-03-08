@@ -83,7 +83,5 @@ namespace NuGet.PackageManagement.UI
             Status = LoadingStatus.ErrorOccured;
             ErrorMessage = message;
         }
-
-        public void SetError(IEnumerable<string> lines) => SetError(string.Join(Environment.NewLine, lines));
     }
 }

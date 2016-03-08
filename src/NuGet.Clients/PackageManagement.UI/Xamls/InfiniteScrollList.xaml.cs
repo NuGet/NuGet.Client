@@ -136,25 +136,33 @@ namespace NuGet.PackageManagement.UI
                 }
                 catch (OperationCanceledException) when (!loadCts.IsCancellationRequested)
                 {
+                    loadCts.Cancel();
+                    currentLoader.Reset();
+
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                     // The user cancelled the login, but treat as a load error in UI
                     // So the retry button and message is displayed
                     // Do not log to the activity log, since it is not a NuGet error
-                    //_loadingStatusIndicator.SetError(Resx.Resources.Text_UserCanceled);
+                    _loadingStatusIndicator.SetError(Resx.Resources.Text_UserCanceled);
+
+                    _loadingStatusBar.SetCancelled();
+                    _loadingStatusBar.Visibility = Visibility.Visible;
                 }
                 catch (Exception ex) when (!loadCts.IsCancellationRequested)
                 {
                     loadCts.Cancel();
-
-                    // only display errors if this is still relevant
-                    var message = string.Format(
-                            CultureInfo.CurrentCulture,
-                            Resx.Resources.Text_ErrorOccurred,
-                            Environment.NewLine,
-                            ExceptionUtilities.DisplayMessage(ex));
-                    //_loadingStatusIndicator.SetError(new[] { Resx.Resources.Text_ErrorOccurred, message });
+                    currentLoader.Reset();
 
                     // Write stack to activity log
                     Mvs.ActivityLog.LogError(LogEntrySource, ex.ToString());
+
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    _loadingStatusIndicator.SetError(ExceptionUtilities.DisplayMessage(ex));
+
+                    _loadingStatusBar.SetError();
+                    _loadingStatusBar.Visibility = Visibility.Visible;
                 }
             });
         }
@@ -436,7 +444,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            if (_loader.State.LoadingStatus == LoadingStatus.Ready)
+            if (_loader?.State.LoadingStatus == LoadingStatus.Ready)
             {
                 var first = _scrollViewer.VerticalOffset;
                 var last = _scrollViewer.ViewportHeight + first;

@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.UI
             nameof(IsMultiSource),
             typeof(bool),
             typeof(LoadingStatusViewModel),
-            new PropertyMetadata(true, OnIsMultiSourcePropertyChanged));
+            new PropertyMetadata(false, OnIsMultiSourcePropertyChanged));
 
         private static void OnIsMultiSourcePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
