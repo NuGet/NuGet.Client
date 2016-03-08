@@ -105,6 +105,11 @@ namespace NuGet.PackageManagement.UI
         {
             var result = await _localRepository.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken);
 
+            if (result == null)
+            {
+                return null;
+            }
+
             return result.WithVersions(asyncValueFactory: () => FetchAndMergeVersionsAsync(identity, includePrerelease, cancellationToken));
         }
 
