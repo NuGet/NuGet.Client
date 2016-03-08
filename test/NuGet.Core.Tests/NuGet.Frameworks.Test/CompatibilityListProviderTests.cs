@@ -67,7 +67,6 @@ namespace NuGet.Frameworks.Test
 
             // Assert
             // positive
-            Assert.Contains(".NETCore,Version=v5.0", actual);
             Assert.Contains(".NETFramework,Version=v4.6.2", actual);
             Assert.Contains(".NETStandard,Version=v1.5", actual);
             Assert.Contains(".NETStandardApp,Version=v1.5", actual);
@@ -76,7 +75,6 @@ namespace NuGet.Frameworks.Test
             Assert.Contains("MonoAndroid,Version=v0.0", actual);
             Assert.Contains("MonoMac,Version=v0.0", actual);
             Assert.Contains("MonoTouch,Version=v0.0", actual);
-            Assert.Contains("UAP,Version=v10.0", actual);
             Assert.Contains("Xamarin.iOS,Version=v0.0", actual);
             Assert.Contains("Xamarin.Mac,Version=v0.0", actual);
             Assert.Contains("Xamarin.PlayStation3,Version=v0.0", actual);

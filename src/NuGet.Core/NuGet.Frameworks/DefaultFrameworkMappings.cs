@@ -335,17 +335,17 @@ namespace NuGet.Frameworks
                                 FrameworkConstants.CommonFrameworks.DotNet56,
                                 FrameworkConstants.CommonFrameworks.NetStandard15),
 
-                            // uap -> dotnet5.6, netstandard1.5
+                            // uap -> dotnet5.5, netstandard1.4
                             CreateGenerationAndStandardMappingForAllVersions(
                                 FrameworkConstants.FrameworkIdentifiers.UAP,
-                                FrameworkConstants.CommonFrameworks.DotNet56,
-                                FrameworkConstants.CommonFrameworks.NetStandard15),
+                                FrameworkConstants.CommonFrameworks.DotNet55,
+                                FrameworkConstants.CommonFrameworks.NetStandard14),
 
-                            // netcore50 -> dotnet5.6, netstandard1.5
+                            // netcore50 -> dotnet5.5, netstandard1.4
                             CreateGenerationAndStandardMapping(
                                 FrameworkConstants.CommonFrameworks.NetCore50,
-                                FrameworkConstants.CommonFrameworks.DotNet56,
-                                FrameworkConstants.CommonFrameworks.NetStandard15),
+                                FrameworkConstants.CommonFrameworks.DotNet55,
+                                FrameworkConstants.CommonFrameworks.NetStandard14),
 
                             // wpa81 -> dotnet5.3, netstandard1.2
                             CreateGenerationAndStandardMapping(
