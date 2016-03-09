@@ -63,6 +63,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.Restore_Arg_ProjectName_Description,
                     multipleValues: true);
 
+                var ignoreFailedSources = restore.Option(
+                    "--ignore-failed-sources",
+                    Strings.Restore_Switch_IgnoreFailedSource_Description,
+                    CommandOptionType.NoValue);
+
                 restore.OnExecute(async () =>
                 {
                     var log = getLogger();
@@ -72,6 +77,7 @@ namespace NuGet.CommandLine.XPlat
                     using (var cacheContext = new SourceCacheContext())
                     {
                         cacheContext.NoCache = noCache.HasValue();
+                        cacheContext.IgnoreFailedSources = ignoreFailedSources.HasValue();
                         var providerCache = new RestoreCommandProvidersCache();
 
                         // Ordered request providers

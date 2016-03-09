@@ -97,6 +97,8 @@ namespace NuGet.Protocol.Core.Types
 
         public string GeneratedTempFolder { get; } = Path.Combine(Path.GetTempPath(), "NuGet", "TempCache", _tempFolderGuid);
 
+        public bool IgnoreFailedSources { get; set; }
+
         public void Dispose()
         {
             try

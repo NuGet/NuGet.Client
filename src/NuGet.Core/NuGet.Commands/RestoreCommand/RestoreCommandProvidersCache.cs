@@ -40,7 +40,9 @@ namespace NuGet.Commands
             var local = _localProvider.GetOrAdd(globalPackagesPath, (path) =>
             {
                 var pathSource = Repository.Factory.GetCoreV3(path);
-                return new SourceRepositoryDependencyProvider(pathSource, log, cacheContext);
+
+                // Do not throw or warn for gloabal cache 
+                return new SourceRepositoryDependencyProvider(pathSource, log, cacheContext, ignoreFailedSources: true, ignoreWarning: true);
             });
 
             var localProviders = new List<IRemoteDependencyProvider>() { local };
