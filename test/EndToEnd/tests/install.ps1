@@ -231,7 +231,8 @@ function Test-InstallPackageResolvesDependenciesAcrossSources {
     # Act
     # Ensure Antlr is not avilable in local repo.
     Assert-Null (Get-Package -ListAvailable -Source $context.RepositoryRoot Antlr)
-    Install-Package PackageWithExternalDependency -Source $context.RepositoryRoot
+
+	Install-Package PackageWithExternalDependency -Source $context.RepositoryRoot
 
     # Assert
     Assert-Package $p PackageWithExternalDependency
