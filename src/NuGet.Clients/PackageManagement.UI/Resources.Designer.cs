@@ -945,7 +945,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error occured.
+        ///   Looks up a localized string similar to Error occurred.
         /// </summary>
         public static string Text_ErrorOccurred {
             get {

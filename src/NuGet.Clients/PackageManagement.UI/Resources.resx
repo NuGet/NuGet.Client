@@ -235,7 +235,7 @@
     <value>Restart search</value>
   </data>
   <data name="Text_ErrorOccurred" xml:space="preserve">
-    <value>Error occured</value>
+    <value>Error occurred</value>
   </data>
   <data name="Label_Solution" xml:space="preserve">
     <value>Solution '{0}'</value>

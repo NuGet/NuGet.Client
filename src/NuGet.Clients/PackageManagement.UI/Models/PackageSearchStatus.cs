@@ -14,7 +14,7 @@ namespace NuGet.PackageManagement.UI
         [Description(nameof(Resources.Text_UserCanceled))]
         Cancelled,
         [Description(nameof(Resources.Text_ErrorOccurred))]
-        ErrorOccured,
+        ErrorOccurred,
         [Description(nameof(Resources.Text_Loading))]
         Loading,
         [Description(nameof(Resources.Text_NoPackagesFound))]

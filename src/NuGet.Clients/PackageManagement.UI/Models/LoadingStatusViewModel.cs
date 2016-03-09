@@ -143,7 +143,7 @@ namespace NuGet.PackageManagement.UI
                     return vm.ItemsFound == 0 ? MessageLevel.Info : MessageLevel.Warning;
 
                 case PackageSearchStatus.Cancelled:
-                case PackageSearchStatus.ErrorOccured:
+                case PackageSearchStatus.ErrorOccurred:
                     return MessageLevel.Error;
 
                 case PackageSearchStatus.PackagesFound:
@@ -276,7 +276,7 @@ namespace NuGet.PackageManagement.UI
                 .Cast<System.Collections.DictionaryEntry>()
                 .ToLookup(e => (PackageSearchStatus)e.Value);
 
-            return sourceLoadingStatus[PackageSearchStatus.ErrorOccured]
+            return sourceLoadingStatus[PackageSearchStatus.ErrorOccurred]
                 .Select(e => (string)e.Key)
                 .ToArray();
         }
@@ -324,7 +324,7 @@ namespace NuGet.PackageManagement.UI
                 case LoadingStatus.Cancelled:
                     return PackageSearchStatus.Cancelled;
                 case LoadingStatus.ErrorOccured:
-                    return PackageSearchStatus.ErrorOccured;
+                    return PackageSearchStatus.ErrorOccurred;
                 case LoadingStatus.Loading:
                     return PackageSearchStatus.Loading;
                 case LoadingStatus.NoItemsFound:
