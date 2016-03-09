@@ -159,7 +159,7 @@
                   Value="Collapsed" />
           <Style.Triggers>
             <DataTrigger Binding="{Binding Path=PackageSearchStatus}" 
-                         Value="ErrorOccured">
+                         Value="ErrorOccurred">
               <Setter Property="Visibility" 
                       Value="Visible" />
             </DataTrigger>
@@ -253,7 +253,7 @@
                     Value="True"/>
                 <Condition
                     Binding="{Binding PackageSearchStatus}"
-                    Value="ErrorOccured"/>
+                    Value="ErrorOccurred"/>
               </MultiDataTrigger.Conditions>
               <Setter
                   Property="Visibility"
@@ -314,7 +314,7 @@
                   Value="Collapsed" />
           <Style.Triggers>
             <DataTrigger Binding="{Binding Path=PackageSearchStatus}" 
-                         Value="ErrorOccured">
+                         Value="ErrorOccurred">
               <Setter Property="Visibility" 
                       Value="Visible" />
             </DataTrigger>

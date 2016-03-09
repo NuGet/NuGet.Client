@@ -86,7 +86,7 @@ namespace NuGet.PackageManagement.UI
         {
             DataContext = new LoadingStatusViewModel
             {
-                PackageSearchStatus = PackageSearchStatus.ErrorOccured
+                PackageSearchStatus = PackageSearchStatus.ErrorOccurred
             };
         }
 

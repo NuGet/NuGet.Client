@@ -11,7 +11,7 @@ namespace NuGet.PackageManagement.UI
     {
         Unknown, // not initialized
         Cancelled, // loading cancelled
-        ErrorOccured, // error occured
+        ErrorOccurred, // error occured
         Loading, // loading is running in background
         NoItemsFound, // loading complete, no items found
         NoMoreItems, // loading complete, no more items discovered beyond current page

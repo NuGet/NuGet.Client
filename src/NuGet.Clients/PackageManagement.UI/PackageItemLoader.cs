@@ -91,9 +91,9 @@ namespace NuGet.PackageManagement.UI
                     return LoadingStatus.Loading;
                 }
 
-                if (statuses.Contains(LoadingStatus.ErrorOccured))
+                if (statuses.Contains(LoadingStatus.ErrorOccurred))
                 {
-                    return LoadingStatus.ErrorOccured;
+                    return LoadingStatus.ErrorOccurred;
                 }
 
                 if (statuses.Contains(LoadingStatus.Cancelled))

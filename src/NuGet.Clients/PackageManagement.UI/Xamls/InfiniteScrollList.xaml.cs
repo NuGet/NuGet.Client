@@ -264,7 +264,7 @@ namespace NuGet.PackageManagement.UI
             var statusBarVisibility = Visibility.Hidden;
 
             if (state.LoadingStatus == LoadingStatus.Cancelled
-                || state.LoadingStatus == LoadingStatus.ErrorOccured)
+                || state.LoadingStatus == LoadingStatus.ErrorOccurred)
             {
                 statusBarVisibility = Visibility.Visible;
             }

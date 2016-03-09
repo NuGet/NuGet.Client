@@ -5,7 +5,7 @@
   xmlns:coll="clr-namespace:System.Collections;assembly=mscorlib"
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
   xmlns:sys="clr-namespace:System;assembly=mscorlib"
-  PackageSearchStatus="ErrorOccured"
+  PackageSearchStatus="ErrorOccurred"
   IsMultiSource="True"
   ItemsFound="10"
   ItemsLoaded="2"
@@ -13,7 +13,7 @@
   <nuget:LoadingStatusViewModel.SourceLoadingStatus>
     <coll:SortedList>
       <nuget:PackageSearchStatus x:Key="nuget.org">Loading</nuget:PackageSearchStatus>
-      <nuget:PackageSearchStatus x:Key="AspNetVNext">ErrorOccured</nuget:PackageSearchStatus>
+      <nuget:PackageSearchStatus x:Key="AspNetVNext">ErrorOccurred</nuget:PackageSearchStatus>
       <nuget:PackageSearchStatus x:Key="Remote package repository with extraordinary long name given by user">Loading</nuget:PackageSearchStatus>
     </coll:SortedList>
   </nuget:LoadingStatusViewModel.SourceLoadingStatus>

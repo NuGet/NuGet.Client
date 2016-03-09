@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement.UI
 
         public void SetError(string message)
         {
-            Status = LoadingStatus.ErrorOccured;
+            Status = LoadingStatus.ErrorOccurred;
             ErrorMessage = message;
         }
     }
