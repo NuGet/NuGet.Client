@@ -59,6 +59,7 @@ namespace NuGet.PackageManagement.UI
             RestoreBar.SetResourceReference(Border.BackgroundProperty, VsBrushes.InfoBackgroundKey);
             RestoreBar.SetResourceReference(Border.BorderBrushProperty, VsBrushes.ActiveBorderKey);
 
+            // Find storyboards that will be used to smoothly show and hide the restore bar.
             showRestoreBar = this.FindResource("ShowSmoothly") as Storyboard;
             hideRestoreBar = this.FindResource("HideSmoothly") as Storyboard;
         }

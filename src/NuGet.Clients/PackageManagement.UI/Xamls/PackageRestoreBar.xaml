@@ -10,15 +10,15 @@
         </ObjectAnimationUsingKeyFrames>
         <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="RestoreBar">
           <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="0"/>
-          <EasingDoubleKeyFrame KeyTime="0:0:0.6" Value="1"/>
+          <EasingDoubleKeyFrame KeyTime="0:0:0.9" Value="1"/>
         </DoubleAnimationUsingKeyFrames>
       </Storyboard>
       <Storyboard x:Key="HideSmoothly">
         <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="RestoreBar">
-          <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="0"/>
+          <EasingDoubleKeyFrame KeyTime="0:0:0.6" Value="0"/>
         </DoubleAnimationUsingKeyFrames>
         <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="RestoreBar">
-          <DiscreteObjectKeyFrame KeyTime="0:0:0.3" Value="{x:Static Visibility.Collapsed}"/>
+          <DiscreteObjectKeyFrame KeyTime="0:0:0.6" Value="{x:Static Visibility.Collapsed}"/>
         </ObjectAnimationUsingKeyFrames>
       </Storyboard>
     </UserControl.Resources>
