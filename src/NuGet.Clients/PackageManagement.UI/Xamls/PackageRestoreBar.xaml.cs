@@ -7,13 +7,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using System.Xml.Linq;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using VsBrushes = Microsoft.VisualStudio.Shell.VsBrushes;
-using System.Windows.Media.Animation;
 
 namespace NuGet.PackageManagement.UI
 {
