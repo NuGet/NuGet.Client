@@ -68,18 +68,15 @@ namespace NuGet.Commands
 
         public string GetEffectiveGlobalPackagesFolder(string rootDirectory, ISettings settings)
         {
-            string globalPath = null;
-
             if (!string.IsNullOrEmpty(GlobalPackagesFolder))
             {
-                globalPath = GlobalPackagesFolder;
-            }
-            else
-            {
-                globalPath = SettingsUtility.GetGlobalPackagesFolder(settings);
+                // Resolve as relative to the CWD
+                return Path.GetFullPath(GlobalPackagesFolder);
             }
 
-            // Resolve relative paths
+            // Load from environment, nuget.config or default location, and resolve relative paths
+            // to the project root.
+            string globalPath = SettingsUtility.GetGlobalPackagesFolder(settings);
             return Path.GetFullPath(Path.Combine(rootDirectory, globalPath));
         }
 

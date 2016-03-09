@@ -39,6 +39,28 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public void RequestFactory_RestorePackagesArgRelativeToCwd()
+        {
+            // If a packages argument is provided, GetEffectiveGlobalPackagesFolder() should ignore
+            // the provided root path and any configuration information and resolve relative to the
+            // current working directory.
+
+            // Arrange
+            var globalPackagesFolder = "MyPackages";
+            var restoreArgs = new RestoreArgs()
+            {
+                GlobalPackagesFolder = globalPackagesFolder
+            };
+
+            // Act
+            var resolvedGlobalPackagesFolder = restoreArgs.GetEffectiveGlobalPackagesFolder("C:\\Dummy", null);
+
+            // Assert
+            var expectedResolvedGlobalPackagesFolder = Path.GetFullPath(globalPackagesFolder);
+            Assert.Equal(expectedResolvedGlobalPackagesFolder, resolvedGlobalPackagesFolder);
+        }
+
+        [Fact]
         public async Task RequestFactory_FindProjectJsonFilesInDirectory()
         {
             // Arrange
