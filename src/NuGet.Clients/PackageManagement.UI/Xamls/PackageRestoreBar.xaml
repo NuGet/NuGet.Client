@@ -6,8 +6,7 @@
     <UserControl.Resources>
       <Storyboard x:Key="ShowSmoothly">
         <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="RestoreBar">
-        <DiscreteObjectKeyFrame KeyTime="0:0:0.3" Value="{x:Static Visibility.Visible}"/>
-          <DiscreteObjectKeyFrame KeyTime="0:0:0.6" Value="{x:Static Visibility.Visible}"/>
+          <DiscreteObjectKeyFrame KeyTime="0:0:0.3" Value="{x:Static Visibility.Visible}"/>
         </ObjectAnimationUsingKeyFrames>
         <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="RestoreBar">
           <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="0"/>
@@ -23,7 +22,7 @@
         </ObjectAnimationUsingKeyFrames>
       </Storyboard>
     </UserControl.Resources>
-    <Border x:Name="RestoreBar" VerticalAlignment="Center" Visibility="Collapsed" BorderThickness="0,0,0,1">
+    <Border x:Name="RestoreBar" VerticalAlignment="Center" Visibility="Collapsed" Opacity="0" BorderThickness="0,0,0,1">
         <Grid Margin="0,4,0,6">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />

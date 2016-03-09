@@ -116,6 +116,9 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
+                // In order to hide the restore bar:
+                // * stop the reveal animation, in case it was still going.
+                // * begin the hide animation.
                 showRestoreBar.Stop();
                 hideRestoreBar.Begin();
             }
@@ -189,13 +192,18 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void ResetUI()
+        private void RevealRestoreBar()
         {
+            // If the restoreBar isn't visible, begin the animation to reveal it.
             if (RestoreBar.Visibility != Visibility.Visible)
             {
-                showRestoreBar.Begin();                                
+                showRestoreBar.Begin();
             }
+        }
 
+        private void ResetUI()
+        {
+            RevealRestoreBar();
             RestoreButton.Visibility = Visibility.Visible;
             ProgressBar.Visibility = Visibility.Collapsed;
             StatusMessage.Text = UI.Resources.AskForRestoreMessage;
@@ -203,11 +211,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ShowProgressUI()
         {
-            if (RestoreBar.Visibility != Visibility.Visible)
-            {
-                showRestoreBar.Begin();
-            }
-
+            RevealRestoreBar();
             RestoreButton.Visibility = Visibility.Collapsed;
             ProgressBar.Visibility = Visibility.Visible;
             StatusMessage.Text = UI.Resources.PackageRestoreProgressMessage;
