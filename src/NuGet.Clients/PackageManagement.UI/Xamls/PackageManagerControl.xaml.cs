@@ -627,6 +627,7 @@ namespace NuGet.PackageManagement.UI
             return new MultiSourcePackageMetadataProvider(
                 context.SourceRepositories,
                 context.PackageManager?.PackagesFolderSourceRepository,
+                context.PackageManager?.GlobalPackagesFolderSourceRepository,
                 logger);
         }
 

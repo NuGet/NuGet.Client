@@ -57,7 +57,7 @@ namespace NuGet.PackageManagement.UI
                 throw new InvalidOperationException("Invalid token");
             }
 
-            var packagesWithUpdates = (_cachedUpdates != null && _cachedUpdates.IncludePrerelease == searchToken.SearchFilter.IncludePrerelease)
+            var packagesWithUpdates = (_cachedUpdates?.IncludePrerelease == searchToken.SearchFilter.IncludePrerelease)
                 ?
                     GetPackagesFromCache(searchToken.SearchString)
                 :
