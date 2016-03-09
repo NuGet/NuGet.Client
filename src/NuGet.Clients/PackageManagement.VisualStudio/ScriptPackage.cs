@@ -57,7 +57,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (_files == null)
             {
                 var result = new List<ScriptPackageFile>();
-                using (var reader = GetPackageReader(_installPath))
+                using (var reader = GetPackageReader())
                 {
                     Debug.Assert(reader != null);
 
@@ -109,7 +109,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private PackageReaderBase GetPackageReader(string installPath)
+        private PackageReaderBase GetPackageReader()
         {
             if (Directory.Exists(_installPath))
             {

@@ -2,10 +2,12 @@
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using Newtonsoft.Json;
+using NuGet.Packaging;
 
 namespace NuGet.Protocol.Core.v3
 {
@@ -54,11 +56,12 @@ namespace NuGet.Protocol.Core.v3
         {
             try
             {
-                using (var reader = new ZipArchive(
+                using (var reader = new PackageArchiveReader(
                     stream: stream,
-                    mode: ZipArchiveMode.Read,
-                    leaveOpen: true))
+                    leaveStreamOpen: true))
+                using (var nuspec = reader.GetNuspec()) // This method throws if no .nuspec exists.
                 {
+                    new NuspecReader(nuspec); // This method throws if reading the .nuspec fails
                 }
             }
             catch (Exception e)

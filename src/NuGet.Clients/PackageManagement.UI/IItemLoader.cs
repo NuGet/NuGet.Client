@@ -11,7 +11,6 @@ namespace NuGet.PackageManagement.UI
     internal interface IItemLoaderState
     {
         LoadingStatus LoadingStatus { get; }
-        bool IsMultiSource { get; }
         int ItemsCount { get; }
         IDictionary<string, LoadingStatus> SourceLoadingStatus { get; }
     }
@@ -22,6 +21,8 @@ namespace NuGet.PackageManagement.UI
     /// <typeparam name="T"></typeparam>
     internal interface IItemLoader<T>
     {
+        bool IsMultiSource { get; }
+
         IItemLoaderState State { get; }
 
         IEnumerable<T> GetCurrent();

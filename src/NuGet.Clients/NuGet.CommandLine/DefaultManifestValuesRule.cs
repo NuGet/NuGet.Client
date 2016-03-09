@@ -34,7 +34,7 @@ namespace NuGet.CommandLine
                 yield return CreateIssueFor("Description", SpecCommand.SampleDescription);
             }
 
-            var dependency = package.GetCompatiblePackageDependencies(targetFramework: null).FirstOrDefault();
+            var dependency = package.DependencySets.SelectMany(d => d.Dependencies).FirstOrDefault();
             if (dependency != null &&
                 dependency.Id.Equals(SpecCommand.SampleManifestDependency.Id, StringComparison.Ordinal) &&
                 dependency.VersionSpec != null &&

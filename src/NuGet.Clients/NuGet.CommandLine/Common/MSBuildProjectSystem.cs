@@ -84,7 +84,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(targetFullPath));
             }
 
-            var targetRelativePath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(_projectDirectory), targetFullPath);
+            var targetRelativePath = NuGet.PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(_projectDirectory), targetFullPath);
             var imports = Project.Xml.Imports;
             bool notImported = true;
             if (imports != null)
@@ -124,8 +124,8 @@ namespace NuGet.Common
 
         public void AddReference(string referencePath)
         {
-            string fullPath = PathUtility.GetAbsolutePath(_projectDirectory, referencePath);
-            string relativePath = PathUtility.GetRelativePath(Project.FullPath, fullPath);
+            string fullPath = NuGet.PathUtility.GetAbsolutePath(_projectDirectory, referencePath);
+            string relativePath = NuGet.PathUtility.GetRelativePath(Project.FullPath, fullPath);
             // REVIEW: Do we need to use the fully qualified the assembly name for strong named assemblies?
             string include = Path.GetFileNameWithoutExtension(fullPath);
 
@@ -235,7 +235,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(targetFullPath));
             }
 
-            var targetRelativePath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(_projectDirectory), targetFullPath);
+            var targetRelativePath = NuGet.PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(_projectDirectory), targetFullPath);
             if (Project.Xml.Imports != null)
             {
                 // search for this import statement and remove it

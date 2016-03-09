@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 
 namespace NuGet.Test.Utility
 {
@@ -8,6 +9,7 @@ namespace NuGet.Test.Utility
         /// Logged messages
         /// </summary>
         public ConcurrentQueue<string> Messages { get; } = new ConcurrentQueue<string>();
+        public ConcurrentQueue<string> ErrorMessages { get; } = new ConcurrentQueue<string>();
 
         public int Errors { get; set; }
 
@@ -23,6 +25,7 @@ namespace NuGet.Test.Utility
         {
             Errors++;
             Messages.Enqueue(data);
+            ErrorMessages.Enqueue(data);
             DumpMessage("ERROR", data);
         }
 
@@ -70,6 +73,16 @@ namespace NuGet.Test.Utility
             {
                 // do nothing
             }
+        }
+
+        public string ShowErrors()
+        {
+            return string.Join(Environment.NewLine, ErrorMessages);
+        }
+
+        public string ShowMessages()
+        {
+            return string.Join(Environment.NewLine, Messages);
         }
     }
 }

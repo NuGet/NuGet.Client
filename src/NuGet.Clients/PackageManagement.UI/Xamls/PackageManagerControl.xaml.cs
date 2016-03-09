@@ -17,6 +17,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using Resx = NuGet.PackageManagement.UI;
+using Microsoft.VisualStudio.Threading;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -491,17 +492,19 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                var loadContext = new PackageLoadContext(
-                    ActiveSources, Model.IsSolution, Model.Context);
+                var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context)
+                {
+                    CachedPackages = Model.CachedUpdates
+                };
                 var packageFeed = await CreatePackageFeedAsync(loadContext, _topPanel.Filter);
                 var loader = new PackageItemLoader(
                     loadContext, packageFeed, searchText, IncludePrerelease);
                 var loadingMessage = string.IsNullOrWhiteSpace(searchText)
                     ? Resx.Resources.Text_Loading
                     : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
-                await _packageList.LoadAsync(loader, loadingMessage);
+
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                _packageList.LoadItems(loader, loadingMessage);
             });
         }
 
@@ -512,14 +515,18 @@ namespace NuGet.PackageManagement.UI
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _topPanel._labelUpgradeAvailable.Count = 0;
-
-                var loadContext = new PackageLoadContext(
-                    ActiveSources, Model.IsSolution, Model.Context);
+                var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
                 var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable);
                 var loader = new PackageItemLoader(
                     loadContext, packageFeed, includePrerelease: IncludePrerelease);
 
-                _topPanel._labelUpgradeAvailable.Count = await loader.GetTotalCountAsync(100, CancellationToken.None);
+                Model.CachedUpdates = new PackageSearchMetadataCache
+                {
+                    Packages = await loader.GetAllPackagesAsync(CancellationToken.None),
+                    IncludePrerelease = IncludePrerelease
+                };
+
+                _topPanel._labelUpgradeAvailable.Count = Model.CachedUpdates.Packages.Count;
             });
         }
 
@@ -528,15 +535,12 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                 _topPanel._labelConsolidate.Count = 0;
-
-                var loadContext = new PackageLoadContext(
-                    ActiveSources, Model.IsSolution, Model.Context);
+                var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
                 var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate);
                 var loader = new PackageItemLoader(
                     loadContext, packageFeed, includePrerelease: IncludePrerelease);
-
+                
                 _topPanel._labelConsolidate.Count = await loader.GetTotalCountAsync(100, CancellationToken.None);
             });
         }
@@ -571,8 +575,7 @@ namespace NuGet.PackageManagement.UI
 
                 _packageDetail.ScrollToHome();
 
-                var context = new PackageLoadContext(
-                    ActiveSources, Model.IsSolution, Model.Context);
+                var context = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
                 var metadataProvider = CreatePackageMetadataProvider(context);
                 await _detailModel.LoadPackageMetadaAsync(metadataProvider, CancellationToken.None);
             }
@@ -580,6 +583,9 @@ namespace NuGet.PackageManagement.UI
 
         private static async Task<IPackageFeed> CreatePackageFeedAsync(PackageLoadContext context, ItemFilter filter)
         {
+            // Go off the UI thread to perform non-UI operations
+            await TaskScheduler.Default;
+
             var logger = new VisualStudioActivityLogger();
 
             if (filter == ItemFilter.All)
@@ -608,7 +614,7 @@ namespace NuGet.PackageManagement.UI
 
             if (filter == ItemFilter.UpdatesAvailable)
             {
-                return new UpdatePackageFeed(installedPackages, metadataProvider, logger);
+                return new UpdatePackageFeed(installedPackages, metadataProvider, context.CachedPackages, logger);
             }
 
             throw new InvalidOperationException("Unsupported feed type");
@@ -922,17 +928,11 @@ namespace NuGet.PackageManagement.UI
                 nugetUi => SetOptions(nugetUi, NuGetActionType.Install));
         }
 
-        private void PackageList_UpdateButtonClicked(object sender, EventArgs e)
+        private void PackageList_UpdateButtonClicked(PackageItemListViewModel[] selectedPackages)
         {
-            var packagesToUpdate = new List<PackageIdentity>();
-            foreach (var item in _packageList.Items)
-            {
-                var package = item as PackageItemListViewModel;
-                if (package?.Selected == true)
-                {
-                    packagesToUpdate.Add(new PackageIdentity(package.Id, package.Version));
-                }
-            }
+            var packagesToUpdate = selectedPackages
+                .Select(package => new PackageIdentity(package.Id, package.Version))
+                .ToList();
 
             if (packagesToUpdate.Count == 0)
             {

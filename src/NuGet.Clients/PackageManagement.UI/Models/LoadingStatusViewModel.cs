@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Linq;
 using System.Windows;
 using Resx = NuGet.PackageManagement.UI;
 
@@ -11,27 +12,72 @@ namespace NuGet.PackageManagement.UI
             UpdateModel();
         }
 
-        public LoadingStatusViewModel(string loadingMessage)
-        {
-            LoadingMessage = loadingMessage;
-        }
-
         public void UpdateModel(IItemLoaderState loaderState)
         {
-            LoadingStatus = loaderState.LoadingStatus;
+            PackageSearchStatus = Convert(loaderState.LoadingStatus);
             ItemsFound = loaderState.ItemsCount;
+
+            var convertedList = new System.Collections.SortedList();
+            foreach( var kv in loaderState.SourceLoadingStatus)
+            {
+                convertedList.Add(kv.Key, Convert(kv.Value));
+            }
+            SourceLoadingStatus = convertedList;
         }
 
         private void UpdateModel()
         {
             // order is important!
             CoerceValue(HasMoreItemsProperty);
-            CoerceValue(StatusMessageProperty);
             CoerceValue(MessageLevelProperty);
             CoerceValue(MoreItemsLinkTextProperty);
+            CoerceValue(FailedSourcesProperty);
+            CoerceValue(LoadingSourcesProperty);
         }
 
-        #region LoadingMessage DP
+        #region SourceLoadingStatus
+
+        public System.Collections.IDictionary SourceLoadingStatus
+        {
+            get { return (System.Collections.IDictionary)GetValue(SourceLoadingStatusProperty); }
+            set { SetValue(SourceLoadingStatusProperty, value); }
+        }
+
+        public static readonly DependencyProperty SourceLoadingStatusProperty = DependencyProperty.Register(
+            nameof(SourceLoadingStatus),
+            typeof(System.Collections.IDictionary),
+            typeof(LoadingStatusViewModel),
+            new PropertyMetadata(null, OnSourceLoadingStatusPropertyChanged));
+
+        private static void OnSourceLoadingStatusPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((LoadingStatusViewModel)d).UpdateModel();
+        }
+
+        #endregion SourceLoadingStatus
+
+        #region IsMultiSource
+
+        public bool IsMultiSource
+        {
+            get { return ((bool)GetValue(IsMultiSourceProperty)); }
+            set { SetValue(IsMultiSourceProperty, value); }
+        }
+
+        public static readonly DependencyProperty IsMultiSourceProperty = DependencyProperty.Register(
+            nameof(IsMultiSource),
+            typeof(bool),
+            typeof(LoadingStatusViewModel),
+            new PropertyMetadata(false, OnIsMultiSourcePropertyChanged));
+
+        private static void OnIsMultiSourcePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((LoadingStatusViewModel)d).UpdateModel();
+        }
+
+        #endregion IsMultiSource
+
+        #region LoadingMessage
 
         public string LoadingMessage
         {
@@ -50,72 +96,30 @@ namespace NuGet.PackageManagement.UI
             ((LoadingStatusViewModel)d).UpdateModel();
         }
 
-        #endregion LoadingMessage DP
+        #endregion LoadingMessage
 
-        #region LoadingStatus DP
+        #region PackageSearchStatus
 
-        public LoadingStatus LoadingStatus
+        public PackageSearchStatus PackageSearchStatus
         {
-            get { return (LoadingStatus)GetValue(LoadingStatusProperty); }
-            set { SetValue(LoadingStatusProperty, value); }
+            get { return (PackageSearchStatus)GetValue(PackageSearchStatusProperty); }
+            set { SetValue(PackageSearchStatusProperty, value); }
         }
 
-        public static readonly DependencyProperty LoadingStatusProperty = DependencyProperty.Register(
-            nameof(LoadingStatus),
-            typeof(LoadingStatus),
+        public static readonly DependencyProperty PackageSearchStatusProperty = DependencyProperty.Register(
+            nameof(PackageSearchStatus),
+            typeof(PackageSearchStatus),
             typeof(LoadingStatusViewModel),
-            new PropertyMetadata(LoadingStatus.Unknown, OnLoadingStatusPropertyChanged));
+            new PropertyMetadata(PackageSearchStatus.Unknown, OnPackageSearchStatusPropertyChanged));
 
-        private static void OnLoadingStatusPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnPackageSearchStatusPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ((LoadingStatusViewModel)d).UpdateModel();
         }
 
-        #endregion LoadingStatus DP
+        #endregion PackageSearchStatus
 
-        #region StatusMessage DP
-
-        public string StatusMessage
-        {
-            get { return ((string)GetValue(StatusMessageProperty)); }
-            private set { SetValue(StatusMessageProperty, value); }
-        }
-
-        public static readonly DependencyProperty StatusMessageProperty = DependencyProperty.RegisterReadOnly(
-            nameof(StatusMessage),
-            typeof(string),
-            typeof(LoadingStatusViewModel),
-            new PropertyMetadata(string.Empty, null, OnCoerceStatusMessage))
-            .DependencyProperty;
-
-        private static object OnCoerceStatusMessage(DependencyObject d, object baseValue)
-        {
-            var vm = (LoadingStatusViewModel)d;
-            switch (vm.LoadingStatus)
-            {
-                case LoadingStatus.Loading:
-                    return vm.ItemsLoaded == 0 ? vm.LoadingMessage : Resx.Resources.Text_SearchIncomplete;
-
-                case LoadingStatus.Cancelled:
-                    return Resx.Resources.Text_UserCanceled;
-
-                case LoadingStatus.ErrorOccured:
-                    return Resx.Resources.Text_SearchStopped;
-
-                case LoadingStatus.NoItemsFound: // loading complete, no items found
-                case LoadingStatus.NoMoreItems: // loading complete, no more items discovered beyond current page
-                case LoadingStatus.Ready:
-                    return Resx.Resources.Text_SearchCompleted;
-
-                case LoadingStatus.Unknown:
-                default:
-                    return null;
-            }
-        }
-
-        #endregion StatusMessage DP
-
-        #region MessageLevel DP
+        #region MessageLevel
 
         public MessageLevel MessageLevel
         {
@@ -133,29 +137,28 @@ namespace NuGet.PackageManagement.UI
         private static object OnCoerceMessageLevel(DependencyObject d, object baseValue)
         {
             var vm = (LoadingStatusViewModel)d;
-            switch (vm.LoadingStatus)
+            switch (vm.PackageSearchStatus)
             {
-                case LoadingStatus.Loading:
+                case PackageSearchStatus.Loading:
                     return vm.ItemsFound == 0 ? MessageLevel.Info : MessageLevel.Warning;
 
-                case LoadingStatus.Cancelled:
-                case LoadingStatus.ErrorOccured:
+                case PackageSearchStatus.Cancelled:
+                case PackageSearchStatus.ErrorOccurred:
                     return MessageLevel.Error;
 
-                case LoadingStatus.Ready:
+                case PackageSearchStatus.PackagesFound:
                     return !vm.HasMoreItems ? MessageLevel.Info : MessageLevel.Warning;
 
-                case LoadingStatus.NoItemsFound:
-                case LoadingStatus.NoMoreItems:
-                case LoadingStatus.Unknown:
+                case PackageSearchStatus.NoPackagesFound:
+                case PackageSearchStatus.Unknown:
                 default:
                     return MessageLevel.Info;
             }
         }
 
-        #endregion MessageLevel DP
+        #endregion MessageLevel
 
-        #region ItemsFound DP
+        #region ItemsFound
 
         public int ItemsFound
         {
@@ -174,9 +177,9 @@ namespace NuGet.PackageManagement.UI
             ((LoadingStatusViewModel)d).UpdateModel();
         }
 
-        #endregion ItemsFound DP
+        #endregion ItemsFound
 
-        #region ItemsLoaded DP
+        #region ItemsLoaded
 
         public int ItemsLoaded
         {
@@ -195,9 +198,9 @@ namespace NuGet.PackageManagement.UI
             ((LoadingStatusViewModel)d).UpdateModel();
         }
 
-        #endregion ItemsLoaded DP
+        #endregion ItemsLoaded
 
-        #region HasMoreItems DP
+        #region HasMoreItems
 
         public bool HasMoreItems
         {
@@ -215,12 +218,12 @@ namespace NuGet.PackageManagement.UI
         private static object OnCoerceHasMoreItems(DependencyObject d, object baseValue)
         {
             var vm = (LoadingStatusViewModel)d;
-            return vm.ItemsFound > vm.ItemsLoaded;
+            return vm.ItemsLoaded > 0 && vm.ItemsFound > vm.ItemsLoaded;
         }
 
-        #endregion HasMoreItems DP
+        #endregion HasMoreItems
 
-        #region MoreItemsLinkText DP
+        #region MoreItemsLinkText
 
         public string MoreItemsLinkText
         {
@@ -244,6 +247,95 @@ namespace NuGet.PackageManagement.UI
                 vm.ItemsFound - vm.ItemsLoaded);
         }
 
-        #endregion MoreItemsLinkText DP
+        #endregion MoreItemsLinkText
+
+        #region FailedSources
+
+        public string[] FailedSources
+        {
+            get { return (string[])GetValue(FailedSourcesProperty); }
+            private set { SetValue(FailedSourcesProperty, value); }
+        }
+
+        public static readonly DependencyProperty FailedSourcesProperty = DependencyProperty.RegisterReadOnly(
+            nameof(FailedSources),
+            typeof(string[]),
+            typeof(LoadingStatusViewModel),
+            new PropertyMetadata(null, null, OnCoerceFailedSources))
+            .DependencyProperty;
+
+        private static object OnCoerceFailedSources(DependencyObject d, object baseValue)
+        {
+            var vm = (LoadingStatusViewModel)d;
+            if (vm.SourceLoadingStatus == null)
+            {
+                return null;
+            }
+
+            var sourceLoadingStatus = vm.SourceLoadingStatus
+                .Cast<System.Collections.DictionaryEntry>()
+                .ToLookup(e => (PackageSearchStatus)e.Value);
+
+            return sourceLoadingStatus[PackageSearchStatus.ErrorOccurred]
+                .Select(e => (string)e.Key)
+                .ToArray();
+        }
+
+        #endregion FailedSources
+
+        #region LoadingSources
+
+        public string[] LoadingSources
+        {
+            get { return (string[])GetValue(LoadingSourcesProperty); }
+            private set { SetValue(LoadingSourcesProperty, value); }
+        }
+
+        public static readonly DependencyProperty LoadingSourcesProperty = DependencyProperty.RegisterReadOnly(
+            nameof(LoadingSources),
+            typeof(string[]),
+            typeof(LoadingStatusViewModel),
+            new PropertyMetadata(null, null, OnCoerceLoadingSources))
+            .DependencyProperty;
+
+        private static object OnCoerceLoadingSources(DependencyObject d, object baseValue)
+        {
+            var vm = (LoadingStatusViewModel)d;
+            if (vm.SourceLoadingStatus == null)
+            {
+                return null;
+            }
+
+            var sourceLoadingStatus = vm.SourceLoadingStatus
+                .Cast<System.Collections.DictionaryEntry>()
+                .ToLookup(e => (PackageSearchStatus)e.Value);
+
+            return sourceLoadingStatus[PackageSearchStatus.Loading]
+                .Select(e => (string)e.Key)
+                .ToArray();
+        }
+
+        #endregion LoadingSources
+
+        private static PackageSearchStatus Convert(LoadingStatus status)
+        {
+            switch(status)
+            {
+                case LoadingStatus.Cancelled:
+                    return PackageSearchStatus.Cancelled;
+                case LoadingStatus.ErrorOccurred:
+                    return PackageSearchStatus.ErrorOccurred;
+                case LoadingStatus.Loading:
+                    return PackageSearchStatus.Loading;
+                case LoadingStatus.NoItemsFound:
+                    return PackageSearchStatus.NoPackagesFound;
+                case LoadingStatus.NoMoreItems:
+                case LoadingStatus.Ready:
+                    return PackageSearchStatus.PackagesFound;
+                case LoadingStatus.Unknown:
+                default:
+                    return PackageSearchStatus.Unknown;
+            }
+        }
     }
 }

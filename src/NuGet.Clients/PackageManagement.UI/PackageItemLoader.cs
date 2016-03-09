@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 
@@ -30,6 +31,8 @@ namespace NuGet.PackageManagement.UI
         private PackageFeedSearchState _state = new PackageFeedSearchState();
 
         public IItemLoaderState State => _state;
+
+        public bool IsMultiSource => _packageFeed.IsMultiSource;
 
         private class PackageFeedSearchState : IItemLoaderState
         {
@@ -64,8 +67,6 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
-            public bool IsMultiSource => SourceLoadingStatus?.Count > 1;
-
             public int ItemsCount => _results?.Items?.Count() ?? 0;
 
             public IDictionary<string, LoadingStatus> SourceLoadingStatus => _results?.SourceSearchStatus;
@@ -90,9 +91,9 @@ namespace NuGet.PackageManagement.UI
                     return LoadingStatus.Loading;
                 }
 
-                if (statuses.Contains(LoadingStatus.ErrorOccured))
+                if (statuses.Contains(LoadingStatus.ErrorOccurred))
                 {
-                    return LoadingStatus.ErrorOccured;
+                    return LoadingStatus.ErrorOccurred;
                 }
 
                 if (statuses.Contains(LoadingStatus.Cancelled))
@@ -143,6 +144,9 @@ namespace NuGet.PackageManagement.UI
 
         public async Task<int> GetTotalCountAsync(int maxCount, CancellationToken cancellationToken)
         {
+            // Go off the UI thread to perform non-UI operations
+            await TaskScheduler.Default;
+
             int totalCount = 0;
             ContinuationToken nextToken = null;
             do
@@ -157,6 +161,30 @@ namespace NuGet.PackageManagement.UI
             } while (nextToken != null && totalCount <= maxCount);
 
             return totalCount;
+        }
+
+        public async Task<IReadOnlyList<IPackageSearchMetadata>> GetAllPackagesAsync(CancellationToken cancellationToken)
+        {
+            // Go off the UI thread to perform non-UI operations
+            await TaskScheduler.Default;
+
+            var packages = new List<IPackageSearchMetadata>();
+            ContinuationToken nextToken = null;
+            do
+            {
+                var searchResult = await SearchAsync(nextToken, cancellationToken);
+                while (searchResult.RefreshToken != null)
+                {
+                    searchResult = await _packageFeed.RefreshSearchAsync(searchResult.RefreshToken, cancellationToken);
+                }
+
+                nextToken = searchResult.NextToken;
+
+                packages.AddRange(searchResult.Items);
+
+            } while (nextToken != null);
+
+            return packages;
         }
 
         public async Task LoadNextAsync(IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)

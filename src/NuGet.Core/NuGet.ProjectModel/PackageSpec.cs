@@ -58,6 +58,8 @@ namespace NuGet.ProjectModel
 
         public IList<LibraryDependency> Dependencies { get; set; }
 
+        public IList<ToolDependency> Tools { get; set; }
+
         public IDictionary<string, IEnumerable<string>> Scripts { get; private set; }
 
         public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; }

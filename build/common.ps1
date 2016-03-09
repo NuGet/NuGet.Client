@@ -378,11 +378,9 @@ Function Invoke-DnuPack {
         [string]$Output
     )
     Begin {
-        $BuildNumber = Format-BuildNumber $BuildNumber
-
         ## Setting the DNX build version
         if($ReleaseLabel -ne 'Release') {
-            $env:DNX_BUILD_VERSION="${ReleaseLabel}-${BuildNumber}"
+            $env:DNX_BUILD_VERSION="${ReleaseLabel}-$(Format-BuildNumber $BuildNumber)"
         }
 
         # Setting the DNX AssemblyFileVersion

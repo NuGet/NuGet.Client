@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
 
@@ -20,6 +21,9 @@ namespace NuGet.PackageManagement.UI
     internal abstract class PlainPackageFeedBase : IPackageFeed
     {
         public int PageSize { get; protected set; } = 100;
+
+        // No, it's not.
+        public bool IsMultiSource => false;
 
         public Task<SearchResult<IPackageSearchMetadata>> SearchAsync(string searchText, SearchFilter searchFilter, CancellationToken cancellationToken)
         {

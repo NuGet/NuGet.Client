@@ -38,6 +38,7 @@ namespace NuGet.Packaging
         private const string CopyToOutput = "copyToOutput";
         private const string IncludeFlags = "include";
         private const string ExcludeFlags = "exclude";
+        private const string LicenseUrl = "licenseUrl";
         private static readonly char[] CommaArray = new char[] { ',' };
         private readonly IFrameworkNameProvider _frameworkProvider;
 
@@ -285,7 +286,16 @@ namespace NuGet.Packaging
         public string GetLanguage()
         {
             var node = MetadataNode.Elements(XName.Get(Language, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
-            return node == null ? null : node.Value;
+            return node?.Value;
+        }
+
+        /// <summary>
+        /// Package License Url
+        /// </summary>
+        public string GetLicenseUrl()
+        {
+            var node = MetadataNode.Elements(XName.Get(LicenseUrl, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
+            return node?.Value;
         }
 
         /// <summary>

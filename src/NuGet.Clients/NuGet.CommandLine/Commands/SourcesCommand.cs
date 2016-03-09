@@ -155,7 +155,7 @@ namespace NuGet.CommandLine
                 throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandUniqueSource"));
             }
 
-            var newPackageSource = new Configuration.PackageSource(Source, Name) { UserName = UserName, Password = Password, IsPasswordClearText = StorePasswordInClearText };
+            var newPackageSource = new Configuration.PackageSource(Source, Name) { UserName = UserName, PasswordText = Password, IsPasswordClearText = StorePasswordInClearText };
             sourceList.Add(newPackageSource);
             SourceProvider.SavePackageSources(sourceList);
             Console.WriteLine(LocalizedResourceManager.GetString("SourcesCommandSourceAddedSuccessfully"), Name);
@@ -196,7 +196,7 @@ namespace NuGet.CommandLine
 
             sourceList.RemoveAt(existingSourceIndex);
             existingSource.UserName = UserName;
-            existingSource.Password = Password;
+            existingSource.PasswordText = Password;
             existingSource.IsPasswordClearText = StorePasswordInClearText;
 
             sourceList.Insert(existingSourceIndex, existingSource);

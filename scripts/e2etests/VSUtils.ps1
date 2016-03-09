@@ -133,11 +133,11 @@ function UninstallVSIX
     $VSIXInstallerPath = GetVSIXInstallerPath $VSVersion
 
     Write-Host 'Uninstalling VSIX...'
-    & $VSIXInstallerPath /q /a /u:$vsixID
+    $p = start-process "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q /a /u:$vsixID"
 
-    if ($lastexitcode)
+    if ($p.ExitCode -ne 0)
     {
-        Write-Error "Error uninstalling the VSIX! Exit code: $lastexitcode"
+        Write-Error "Error uninstalling the VSIX! Exit code: " $p.ExitCode
         return $false
     }
 
@@ -162,11 +162,11 @@ function InstallVSIX
     $VSIXInstallerPath = GetVSIXInstallerPath $VSVersion
 
     Write-Host "Installing VSIX from $vsixpath..."
-    & $VSIXInstallerPath /q /a $vsixpath
+    $p = start-process "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q /a $vsixpath"
 
-    if ($lastexitcode)
+    if ($p.ExitCode -ne 0)
     {
-        Write-Error "Error installing the VSIX! Exit code: $lastexitcode"
+        Write-Error "Error installing the VSIX! Exit code: " $p.ExitCode
         return $false
     }
 

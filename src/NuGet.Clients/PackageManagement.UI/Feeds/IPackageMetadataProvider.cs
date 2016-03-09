@@ -41,5 +41,15 @@ namespace NuGet.PackageManagement.UI
         /// <returns>Collection of packages matching query parameters</returns>
         Task<IEnumerable<IPackageSearchMetadata>> GetPackageMetadataListAsync(string packageId,
             bool includePrerelease, bool includeUnlisted, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves a package metadata of a specific version along with list of all available versions
+        /// </summary>
+        /// <param name="identity">Desired package id with version</param>
+        /// <param name="includePrerelease">Filters pre-release versions</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>Package metadata</returns>
+        Task<IPackageSearchMetadata> GetLocalPackageMetadataAsync(PackageIdentity identity,
+            bool includePrerelease, CancellationToken cancellationToken);
     }
 }

@@ -1,4 +1,5 @@
-﻿using NuGet.PackageManagement.VisualStudio;
+﻿using System;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
@@ -6,6 +7,18 @@ namespace API.Test
 {
     public static class InternalAPITestHook
     {
+        public static void InstallLatestPackageApi(string id, bool prerelease)
+        {
+            var dte = ServiceLocator.GetInstance<EnvDTE.DTE>();
+            var services = ServiceLocator.GetInstance<IVsPackageInstaller2>();
+
+            foreach (EnvDTE.Project project in dte.Solution.Projects)
+            {
+                services.InstallLatestPackage(null, project, id, prerelease, false);
+                return;
+            }
+        }
+
         public static void InstallPackageApi(string id, string version)
         {
             InstallPackageApi(null, id, version, false);

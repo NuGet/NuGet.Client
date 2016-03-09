@@ -90,7 +90,7 @@ namespace NuGet.Protocol
                             var timeoutTask = Task.Delay(RequestTimeout, timeoutTcs.Token);
 
                             string requestUri = request.RequestUri.ToString();
-                            log.LogInformation(string.Format(
+                            log.LogInformation("  " + string.Format(
                                 CultureInfo.InvariantCulture,
                                 Strings.Http_RequestLog,
                                 request.Method,
@@ -120,7 +120,7 @@ namespace NuGet.Protocol
                                 timeoutTcs.Cancel();
                                 response = await responseTask;
 
-                                log.LogInformation(string.Format(
+                                log.LogInformation("  " + string.Format(
                                     CultureInfo.InvariantCulture,
                                     Strings.Http_ResponseLog,
                                     response.StatusCode,

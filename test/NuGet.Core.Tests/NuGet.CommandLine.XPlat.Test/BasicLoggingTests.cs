@@ -1,5 +1,4 @@
-﻿using NuGet.Test.Utility;
-using Xunit;
+﻿using Xunit;
 
 namespace NuGet.CommandLine.XPlat.Test
 {
@@ -9,7 +8,7 @@ namespace NuGet.CommandLine.XPlat.Test
         public void BasicLogging_VerifyExceptionLogged()
         {
             // Arrange
-            var log = new TestLogger();
+            var log = new TestCommandOutputLogger();
             Program.Log = log;
 
             var args = new string[]
@@ -33,7 +32,7 @@ namespace NuGet.CommandLine.XPlat.Test
         public void BasicLogging_NoParams_ExitCode()
         {
             // Arrange
-            var log = new TestLogger();
+            var log = new TestCommandOutputLogger();
             Program.Log = log;
 
             var args = new string[]
@@ -52,7 +51,7 @@ namespace NuGet.CommandLine.XPlat.Test
         public void BasicLogging_RestoreHelp_ExitCode()
         {
             // Arrange
-            var log = new TestLogger();
+            var log = new TestCommandOutputLogger();
             Program.Log = log;
 
             var args = new string[]
@@ -72,7 +71,7 @@ namespace NuGet.CommandLine.XPlat.Test
         public void BasicLogging_RestoreConfigFile_ExitCode()
         {
             // Arrange
-            var log = new TestLogger();
+            var log = new TestCommandOutputLogger();
             Program.Log = log;
 
             var args = new string[]
@@ -95,7 +94,7 @@ namespace NuGet.CommandLine.XPlat.Test
         public void BasicLogging_RestoreUnknownOption_ExitCode()
         {
             // Arrange
-            var log = new TestLogger();
+            var log = new TestCommandOutputLogger();
             Program.Log = log;
 
             var args = new string[]

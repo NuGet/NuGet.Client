@@ -1,11 +1,12 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
-using NuGet.Configuration;
-using NuGet.PackageManagement.UI;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -113,6 +114,8 @@ namespace NuGet.PackageManagement.UI.Test
 
         private class TestPackageFeed : IPackageFeed
         {
+            public bool IsMultiSource => false;
+
             public Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
             {
                 Assert.NotNull(continuationToken);

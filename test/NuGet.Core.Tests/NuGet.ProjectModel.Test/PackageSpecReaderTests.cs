@@ -8,7 +8,6 @@ namespace NuGet.ProjectModel.Test
 {
     public class PackageSpecReaderTests
     {
-
         [Fact]
         public void PackageSpecReader_PackageMissingVersion()
         {
@@ -145,6 +144,105 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.Equal(VersionRange.All, range);
+        }
+
+        [Fact]
+        public void PackageSpecReader_ToolVersionValue()
+        {
+            // Arrange
+            var json = @"{
+                           ""tools"": {
+                             ""packageA"": ""1.2.0-*"",
+                             ""packageB"": ""1.3.0-*""
+                           }
+                         }";
+
+            // Act
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            
+            // Assert
+            Assert.Equal(2, actual.Tools.Count);
+
+            Assert.Equal("packageA", actual.Tools[0].LibraryRange.Name);
+            Assert.Equal(VersionRange.Parse("1.2.0-*"), actual.Tools[0].LibraryRange.VersionRange);
+            Assert.Equal(LibraryDependencyTarget.Package, actual.Tools[0].LibraryRange.TypeConstraint);
+
+            Assert.Equal("packageB", actual.Tools[1].LibraryRange.Name);
+            Assert.Equal(VersionRange.Parse("1.3.0-*"), actual.Tools[1].LibraryRange.VersionRange);
+            Assert.Equal(LibraryDependencyTarget.Package, actual.Tools[1].LibraryRange.TypeConstraint);
+        }
+
+        [Fact]
+        public void PackageSpecReader_ToolsAreOnlyPackages()
+        {
+            // Arrange
+            var json = @"{
+                           ""tools"": {
+                             ""packageA"": {
+                               ""target"": ""project"",
+                               ""version"": ""1.2.0-*""
+                             }
+                           }
+                         }";
+
+            // Act
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            Assert.Equal(1, actual.Tools.Count);
+            Assert.Equal("packageA", actual.Tools[0].LibraryRange.Name);
+            Assert.Equal(VersionRange.Parse("1.2.0-*"), actual.Tools[0].LibraryRange.VersionRange);
+            Assert.Equal(LibraryDependencyTarget.Package, actual.Tools[0].LibraryRange.TypeConstraint);
+        }
+        
+        [Fact]
+        public void PackageSpecReader_ToolMissingVersion()
+        {
+            // Arrange
+            var json = @"{
+                           ""tools"": {
+                             ""packageA"": {
+                             }
+                           }
+                         }";
+
+            // Act & Assert
+            var actual = Assert.Throws<FileFormatException>(() => JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json"));
+            Assert.Contains("Tools must specify a version range.", actual.Message);
+        }
+
+        [Fact]
+        public void PackageSpecReader_ToolEmptyVersion()
+        {
+            // Arrange
+            var json = @"{
+                           ""tools"": {
+                             ""packageA"": {
+                               ""version"": """"
+                             }
+                           }
+                         }";
+
+            // Act & Assert
+            var actual = Assert.Throws<FileFormatException>(() => JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json"));
+            Assert.Contains("not a valid version string", actual.Message);
+        }
+
+        [Fact]
+        public void PackageSpecReader_ToolWhitespaceVersion()
+        {
+            // Arrange
+            var json = @"{
+                           ""tools"": {
+                             ""packageA"": {
+                               ""version"": "" ""
+                             }
+                           }
+                         }";
+
+            // Act & Assert
+            var actual = Assert.Throws<FileFormatException>(() => JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json"));
+            Assert.Contains("not a valid version string", actual.Message);
         }
     }
 }

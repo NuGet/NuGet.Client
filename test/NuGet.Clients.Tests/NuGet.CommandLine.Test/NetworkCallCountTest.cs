@@ -1447,16 +1447,10 @@ namespace NuGet.CommandLine.Test
                                                     }
                                             }");
 
-                var projectContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
-                                <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
-                                xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-                <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
-                </Project>";
-
-                Util.CreateFile(proj1Dir, "proj1.csproj", projectContent);
-                Util.CreateFile(proj2Dir, "proj2.csproj", projectContent);
-                Util.CreateFile(proj3Dir, "proj3.csproj", projectContent);
-                Util.CreateFile(proj4Dir, "proj4.csproj", projectContent);
+                Util.CreateFile(proj1Dir, "proj1.csproj", Util.GetCSProjXML("proj1"));
+                Util.CreateFile(proj2Dir, "proj2.csproj", Util.GetCSProjXML("proj2"));
+                Util.CreateFile(proj3Dir, "proj3.csproj", Util.GetCSProjXML("proj3"));
+                Util.CreateFile(proj4Dir, "proj4.csproj", Util.GetCSProjXML("proj4"));
 
                 var slnPath = Path.Combine(workingPath, "test.sln");
 

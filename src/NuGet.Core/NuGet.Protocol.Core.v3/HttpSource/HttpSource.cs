@@ -84,7 +84,7 @@ namespace NuGet.Protocol
             var result = await TryReadCacheFile(uri, cacheKey, cacheContext, log, cancellationToken);
             if (result.Stream != null)
             {
-                log.LogInformation(string.Format(CultureInfo.InvariantCulture, Strings.Http_RequestLog, "CACHE", uri));
+                log.LogInformation(string.Format(CultureInfo.InvariantCulture, "  " + Strings.Http_RequestLog, "CACHE", uri));
 
                 // Validate the content fetched from the cache.
                 try
