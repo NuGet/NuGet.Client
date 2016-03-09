@@ -81,8 +81,9 @@ namespace NuGet.Commands
                 _request.ExistingLockFile.IsLocked = false;
                 _logger.LogMinimal(Strings.Log_LockFileOutOfDate);
             }
-            
+
             var contextForProject = CreateRemoteWalkContext(_request);
+
             var graphs = await ExecuteRestoreAsync(localRepository, contextForProject, token);
 
             // Build the lock file

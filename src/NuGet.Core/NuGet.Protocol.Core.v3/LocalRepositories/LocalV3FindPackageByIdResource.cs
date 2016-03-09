@@ -109,6 +109,14 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
             var packages = new List<PackageInfo>();
             var idDir = new DirectoryInfo(Path.Combine(_source, id));
 
+            if (!Directory.Exists(_source))
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, _source);
+                Logger.LogError(message);
+
+                throw new FatalProtocolException(message);
+            }
+
             if (idDir.Exists)
             {
                 // packages\{packageId}\{version}\{packageId}.nuspec

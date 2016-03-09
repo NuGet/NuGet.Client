@@ -421,7 +421,7 @@ namespace NuGet.DependencyResolver
                 if (remoteMatch != null)
                 {
                     // Try to see if the specific version found on the remote exists locally. This avoids any unnecessary
-                    // remote access incase we already have it in the cache/local packages folder.
+                    // remote access incase we already have it in the cache/local packages folder 
                     var localMatch = await FindLibraryByVersion(remoteMatch.Library, framework, _context.LocalLibraryProviders, cancellationToken);
 
                     if (localMatch != null
@@ -441,7 +441,7 @@ namespace NuGet.DependencyResolver
             {
                 // Check for the specific version locally.
                 var localMatch = await FindLibraryByVersion(libraryRange, framework, _context.LocalLibraryProviders, cancellationToken);
-
+ 
                 if (localMatch != null
                     && localMatch.Library.Version.Equals(libraryRange.VersionRange.MinVersion))
                 {
@@ -612,6 +612,7 @@ namespace NuGet.DependencyResolver
             {
                 var task = await Task.WhenAny(tasks);
                 tasks.Remove(task);
+
                 var match = await task;
 
                 // If we found an exact match then use it.
