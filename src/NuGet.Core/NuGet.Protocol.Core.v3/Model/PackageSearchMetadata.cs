@@ -62,6 +62,7 @@ namespace NuGet.Protocol.Core.v3
 
         [JsonProperty(PropertyName = JsonProperties.RequireLicenseAcceptance, DefaultValueHandling = DefaultValueHandling.Populate)]
         [DefaultValue(false)]
+        [JsonConverter(typeof(SafeBoolConverter))]
         public bool RequireLicenseAcceptance { get; private set; }
 
         private string _summaryValue;
