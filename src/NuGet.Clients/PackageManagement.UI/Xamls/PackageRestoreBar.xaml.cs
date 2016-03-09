@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.Shell;
 using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using VsBrushes = Microsoft.VisualStudio.Shell.VsBrushes;
+using System.Windows.Media.Animation;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -25,6 +26,8 @@ namespace NuGet.PackageManagement.UI
         private ISolutionManager SolutionManager { get; }
         private Dispatcher UIDispatcher { get; }
         private Exception RestoreException { get; set; }
+        private Storyboard showRestoreBar;
+        private Storyboard hideRestoreBar;
 
         public PackageExtractionContext PackageExtractionContext { get; set; }
 
@@ -55,6 +58,9 @@ namespace NuGet.PackageManagement.UI
             StatusMessage.SetResourceReference(TextBlock.ForegroundProperty, VsBrushes.InfoTextKey);
             RestoreBar.SetResourceReference(Border.BackgroundProperty, VsBrushes.InfoBackgroundKey);
             RestoreBar.SetResourceReference(Border.BorderBrushProperty, VsBrushes.ActiveBorderKey);
+
+            showRestoreBar = this.FindResource("ShowSmoothly") as Storyboard;
+            hideRestoreBar = this.FindResource("HideSmoothly") as Storyboard;
         }
 
         public void CleanUp()
@@ -110,7 +116,8 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                RestoreBar.Visibility = Visibility.Collapsed;
+                showRestoreBar.Stop();
+                hideRestoreBar.Begin();
             }
         }
 
@@ -184,7 +191,11 @@ namespace NuGet.PackageManagement.UI
 
         private void ResetUI()
         {
-            RestoreBar.Visibility = Visibility.Visible;
+            if (RestoreBar.Visibility != Visibility.Visible)
+            {
+                showRestoreBar.Begin();                                
+            }
+
             RestoreButton.Visibility = Visibility.Visible;
             ProgressBar.Visibility = Visibility.Collapsed;
             StatusMessage.Text = UI.Resources.AskForRestoreMessage;
@@ -192,7 +203,11 @@ namespace NuGet.PackageManagement.UI
 
         private void ShowProgressUI()
         {
-            RestoreBar.Visibility = Visibility.Visible;
+            if (RestoreBar.Visibility != Visibility.Visible)
+            {
+                showRestoreBar.Begin();
+            }
+
             RestoreButton.Visibility = Visibility.Collapsed;
             ProgressBar.Visibility = Visibility.Visible;
             StatusMessage.Text = UI.Resources.PackageRestoreProgressMessage;
