@@ -82,6 +82,22 @@ namespace NuGet.PackageManagement.UI
             };
         }
 
+        public void SetError()
+        {
+            DataContext = new LoadingStatusViewModel
+            {
+                PackageSearchStatus = PackageSearchStatus.ErrorOccured
+            };
+        }
+
+        public void SetCancelled()
+        {
+            DataContext = new LoadingStatusViewModel
+            {
+                PackageSearchStatus = PackageSearchStatus.Cancelled
+            };
+        }
+
         private void ShowMoreResultsButton_Click(object sender, RoutedEventArgs e) => RaiseEvent(new RoutedEventArgs(ShowMoreResultsClickEvent));
 
         private void DismissButton_Click(object sender, RoutedEventArgs e) => RaiseEvent(new RoutedEventArgs(DismissClickEvent));
