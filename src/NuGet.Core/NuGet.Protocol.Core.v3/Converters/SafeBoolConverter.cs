@@ -21,16 +21,16 @@ namespace NuGet.Protocol.Core.v3
                 case JsonToken.Boolean:
                     return serializer.Deserialize<bool>(reader);
                 case JsonToken.String:
-                    return reader.Value.ToString().Equals("true", StringComparison.OrdinalIgnoreCase);
+                    bool flag;
+                    if (Boolean.TryParse(reader.Value.ToString().Trim(), out flag))
+                    {
+                        return flag;
+                    }
+                    return false;
                 case JsonToken.Integer:
                     return ((long)reader.Value) == 1;
-                case JsonToken.StartArray:
-                    reader.Skip();
-                    return false;
-                case JsonToken.StartObject:
-                    reader.Skip();
-                    return false;
                 default:
+                    reader.Skip();
                     return false;
             }
         }
