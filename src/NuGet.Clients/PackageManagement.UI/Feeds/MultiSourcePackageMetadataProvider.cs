@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -17,11 +20,13 @@ namespace NuGet.PackageManagement.UI
     {
         private readonly IEnumerable<SourceRepository> _sourceRepositories;
         private readonly SourceRepository _localRepository;
+        private readonly SourceRepository _globalLocalRepository;
         private readonly Logging.ILogger _logger;
 
         public MultiSourcePackageMetadataProvider(
             IEnumerable<SourceRepository> sourceRepositories,
             SourceRepository optionalLocalRepository,
+            SourceRepository optionalGlobalLocalRepository,
             Logging.ILogger logger)
         {
             if (sourceRepositories == null)
@@ -31,6 +36,8 @@ namespace NuGet.PackageManagement.UI
             _sourceRepositories = sourceRepositories;
 
             _localRepository = optionalLocalRepository;
+
+            _globalLocalRepository = optionalGlobalLocalRepository;
 
             if (logger == null)
             {
@@ -107,7 +114,12 @@ namespace NuGet.PackageManagement.UI
 
             if (result == null)
             {
-                return null;
+                result = await _globalLocalRepository?.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken);
+
+                if (result == null)
+                {
+                    return null;
+                }
             }
 
             return result.WithVersions(asyncValueFactory: () => FetchAndMergeVersionsAsync(identity, includePrerelease, cancellationToken));
