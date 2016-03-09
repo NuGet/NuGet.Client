@@ -92,6 +92,52 @@ namespace NuGet.CommandLine.Test
 
             return packageFileFullPath;
         }
+        
+        public static string CreateTestPackage(
+            string packageId,
+            string version,
+            string path,
+            List<NuGetFramework> frameworks,
+            params string[] contentFiles)
+        {
+            var packageBuilder = new PackageBuilder
+            {
+                Id = packageId,
+                Version = new SemanticVersion(version)
+            };
+            packageBuilder.Description = string.Format(
+                CultureInfo.InvariantCulture,
+                "desc of {0} {1}",
+                packageId, version);
+            foreach (var framework in frameworks)
+            {
+                var libPath = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "lib/{0}/{1}.dll",
+                    framework.GetShortFolderName(),
+                    packageId);
+
+                packageBuilder.Files.Add(CreatePackageFile(libPath));
+            }
+
+            foreach (var contentFile in contentFiles)
+            {
+                var packageFilePath = Path.Combine("content", contentFile);
+                var packageFile = CreatePackageFile(packageFilePath);
+                packageBuilder.Files.Add(packageFile);
+            }
+
+            packageBuilder.Authors.Add("test author");
+
+            var packageFileName = string.Format("{0}.{1}.nupkg", packageId, version);
+            var packageFileFullPath = Path.Combine(path, packageFileName);
+            using (var fileStream = File.Create(packageFileFullPath))
+            {
+                packageBuilder.Save(fileStream);
+            }
+
+            return packageFileFullPath;
+        }
 
         /// <summary>
         /// Creates a test package.

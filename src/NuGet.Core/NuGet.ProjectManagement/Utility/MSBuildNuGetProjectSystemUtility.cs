@@ -278,11 +278,19 @@ namespace NuGet.ProjectManagement
                             }
                             else
                             {
-                                var zipArchiveFileEntry = PathUtility.GetEntry(zipArchive, file);
-                                if (zipArchiveFileEntry != null)
+                                try
                                 {
-                                    DeleteFileSafe(path, zipArchiveFileEntry.Open, projectSystem);
+                                    var zipArchiveFileEntry = PathUtility.GetEntry(zipArchive, file);
+                                    if (zipArchiveFileEntry != null)
+                                    {
+                                        DeleteFileSafe(path, zipArchiveFileEntry.Open, projectSystem);
+                                    }
                                 }
+                                catch (Exception e)
+                                {
+                                    projectSystem.NuGetProjectContext.Log(MessageLevel.Warning, e.Message);
+                                }
+                                
                             }
                         }
                     }
