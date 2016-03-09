@@ -173,7 +173,7 @@ namespace NuGet.PackageManagement.UI
                 case TaskStatus.WaitingToRun:
                     return LoadingStatus.Loading;
                 case TaskStatus.Faulted:
-                    return LoadingStatus.ErrorOccured;
+                    return LoadingStatus.ErrorOccurred;
                 default:
                     return LoadingStatus.Unknown;
             }

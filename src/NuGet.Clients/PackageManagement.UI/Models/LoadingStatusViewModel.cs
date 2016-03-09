@@ -323,7 +323,7 @@ namespace NuGet.PackageManagement.UI
             {
                 case LoadingStatus.Cancelled:
                     return PackageSearchStatus.Cancelled;
-                case LoadingStatus.ErrorOccured:
+                case LoadingStatus.ErrorOccurred:
                     return PackageSearchStatus.ErrorOccurred;
                 case LoadingStatus.Loading:
                     return PackageSearchStatus.Loading;
