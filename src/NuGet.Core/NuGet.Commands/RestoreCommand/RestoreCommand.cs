@@ -86,6 +86,14 @@ namespace NuGet.Commands
 
             var graphs = await ExecuteRestoreAsync(localRepository, contextForProject, token);
 
+            // Only execute tool restore if the request lock file version is 2 or greater.
+            // Tools did not exist prior to v2 lock files.
+            var toolRestoreResults = Enumerable.Empty<ToolRestoreResult>();
+            if (_request.LockFileVersion >= 2)
+            {
+                toolRestoreResults = await ExecuteToolRestoresAsync(localRepository, token);
+            }
+
             // Build the lock file
             LockFile lockFile;
             if (_request.ExistingLockFile != null && _request.ExistingLockFile.IsLocked)
@@ -101,7 +109,8 @@ namespace NuGet.Commands
                         _request.Project,
                         graphs,
                         localRepository,
-                        contextForProject);
+                        contextForProject,
+                        toolRestoreResults);
 
                 // If the lock file was locked originally but we are re-locking it, well... re-lock it :)
                 lockFile.IsLocked = relockFile;
@@ -135,14 +144,6 @@ namespace NuGet.Commands
                         _logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackagesIncompatible, graph.Name));
                     }
                 }
-            }
-
-            // Only execute tool restore if the request lock file version is 2 or greater.
-            // Tools did not exist prior to v2 lock files.
-            var toolRestoreResults = Enumerable.Empty<ToolRestoreResult>();
-            if (_request.LockFileVersion >= 2)
-            {
-                toolRestoreResults = await ExecuteToolRestoresAsync(localRepository, token);
             }
 
             // Generate Targets/Props files
@@ -232,11 +233,12 @@ namespace NuGet.Commands
                 {
                     Name = Guid.NewGuid().ToString(), // make sure this package never collides with a dependency
                     Dependencies = new List<LibraryDependency>(),
+                    Tools = new List<ToolDependency>(),
                     TargetFrameworks =
                     {
                          new TargetFrameworkInformation
                         {
-                            FrameworkName = FrameworkConstants.CommonFrameworks.NetStandardApp15,
+                            FrameworkName = LockFile.ToolFramework,
                             Dependencies = new List<LibraryDependency>
                             {
                                 new LibraryDependency
@@ -277,7 +279,8 @@ namespace NuGet.Commands
                     project: toolPackageSpec,
                     targetGraphs: graphs,
                     repository: localRepository,
-                    context: contextForTool);
+                    context: contextForTool,
+                    toolRestoreResults: Enumerable.Empty<ToolRestoreResult>());
 
                 // Build the path based off of the resolved tool. For now, we assume there is only
                 // ever one target.
@@ -301,7 +304,13 @@ namespace NuGet.Commands
                     _success = false;
                 }
 
-                results.Add(new ToolRestoreResult(toolSuccess, graphs, lockFilePath, lockFile));
+                results.Add(new ToolRestoreResult(
+                    tool.LibraryRange.Name,
+                    toolSuccess,
+                    target,
+                    fileTargetLibrary,
+                    lockFilePath,
+                    lockFile));
             }
 
             return results;

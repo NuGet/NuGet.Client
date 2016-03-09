@@ -43,6 +43,8 @@ namespace NuGet.ProjectModel
         private const string PathProperty = "path";
         private const string MSBuildProjectProperty = "msbuildProject";
         private const string FrameworkProperty = "framework";
+        private const string ToolsProperty = "tools";
+        private const string ProjectFileToolGroupsProperty = "projectFileToolGroups";
 
         // Legacy property names
         private const string RuntimeAssembliesProperty = "runtimeAssemblies";
@@ -168,6 +170,8 @@ namespace NuGet.ProjectModel
             lockFile.Libraries = ReadObject(cursor[LibrariesProperty] as JObject, ReadLibrary);
             lockFile.Targets = ReadObject(cursor[TargetsProperty] as JObject, ReadTarget);
             lockFile.ProjectFileDependencyGroups = ReadObject(cursor[ProjectFileDependencyGroupsProperty] as JObject, ReadProjectFileDependencyGroup);
+            lockFile.Tools = ReadObject(cursor[ToolsProperty] as JObject, ReadTarget);
+            lockFile.ProjectFileToolGroups = ReadObject(cursor[ProjectFileToolGroupsProperty] as JObject, ReadProjectFileDependencyGroup);
             return lockFile;
         }
 
@@ -179,6 +183,8 @@ namespace NuGet.ProjectModel
             json[TargetsProperty] = WriteObject(lockFile.Targets, WriteTarget);
             json[LibrariesProperty] = WriteObject(lockFile.Libraries, WriteLibrary);
             json[ProjectFileDependencyGroupsProperty] = WriteObject(lockFile.ProjectFileDependencyGroups, WriteProjectFileDependencyGroup);
+            json[ToolsProperty] = WriteObject(lockFile.Tools, WriteTarget);
+            json[ProjectFileToolGroupsProperty] = WriteObject(lockFile.ProjectFileToolGroups, WriteProjectFileDependencyGroup);
             return json;
         }
 

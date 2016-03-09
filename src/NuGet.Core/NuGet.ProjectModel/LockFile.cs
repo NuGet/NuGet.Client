@@ -4,21 +4,24 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using NuGet.Frameworks;
-using NuGet.LibraryModel;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
     public class LockFile : IEquatable<LockFile>
     {
+        // Tools run under a hard coded framework.
+        public static readonly NuGetFramework ToolFramework = FrameworkConstants.CommonFrameworks.NetStandardApp15;
+
         // Set the version to the current default for new files.
         public int Version { get; set; } = LockFileFormat.Version;
         public bool IsLocked { get; set; }
         public IList<ProjectFileDependencyGroup> ProjectFileDependencyGroups { get; set; } = new List<ProjectFileDependencyGroup>();
         public IList<LockFileLibrary> Libraries { get; set; } = new List<LockFileLibrary>();
         public IList<LockFileTarget> Targets { get; set; } = new List<LockFileTarget>();
+        public IList<LockFileTarget> Tools { get; set; } = new List<LockFileTarget>();
+        public IList<ProjectFileDependencyGroup> ProjectFileToolGroups { get; set; } = new List<ProjectFileDependencyGroup>();
 
         public bool IsValidForPackageSpec(PackageSpec spec)
         {
@@ -32,6 +35,21 @@ namespace NuGet.ProjectModel
                 return false;
             }
 
+            if (!ValidateDependencies(spec))
+            {
+                return false;
+            }
+
+            if (!ValidateTools(spec))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool ValidateDependencies(PackageSpec spec)
+        {
             var actualTargetFrameworks = spec.TargetFrameworks;
 
             // The lock file should contain dependencies for each framework plus dependencies shared by all frameworks
@@ -43,10 +61,10 @@ namespace NuGet.ProjectModel
             foreach (var group in ProjectFileDependencyGroups)
             {
                 IOrderedEnumerable<string> actualDependencies;
-                var expectedDependencies = group.Dependencies.OrderBy(x => x, StringComparer.Ordinal);
+                var expectedDependencies = @group.Dependencies.OrderBy(x => x, StringComparer.Ordinal);
 
                 // If the framework name is empty, the associated dependencies are shared by all frameworks
-                if (string.IsNullOrEmpty(group.FrameworkName))
+                if (string.IsNullOrEmpty(@group.FrameworkName))
                 {
                     actualDependencies = spec.Dependencies
                         .Select(x => x.LibraryRange.ToLockFileDependencyGroupString())
@@ -56,7 +74,7 @@ namespace NuGet.ProjectModel
                 {
                     var framework = actualTargetFrameworks
                         .FirstOrDefault(f =>
-                            string.Equals(f.FrameworkName.ToString(), group.FrameworkName, StringComparison.OrdinalIgnoreCase));
+                            string.Equals(f.FrameworkName.ToString(), @group.FrameworkName, StringComparison.OrdinalIgnoreCase));
                     if (framework == null)
                     {
                         return false;
@@ -72,6 +90,43 @@ namespace NuGet.ProjectModel
                 {
                     return false;
                 }
+            }
+            return true;
+        }
+
+        private bool ValidateTools(PackageSpec spec)
+        {
+            // Skip this check if there are no tools at all.
+            if (ProjectFileToolGroups.Count == 0 && spec.Tools.Count == 0)
+            {
+                return true;
+            }
+
+            // The lock file should only contain tools for a single framework
+            if (ProjectFileToolGroups.Count != 1)
+            {
+                return false;
+            }
+
+            var group = ProjectFileToolGroups.First();
+            if (!StringComparer.OrdinalIgnoreCase.Equals(
+                group.FrameworkName,
+                ToolFramework.ToString()))
+            {
+                return false;
+            }
+
+            var lockDependencies = group
+                .Dependencies
+                .OrderBy(x => x, StringComparer.Ordinal);
+
+            var specDependencies = spec.Tools
+                .Select(x => x.LibraryRange.ToLockFileDependencyGroupString())
+                .OrderBy(x => x, StringComparer.Ordinal);
+
+            if (!specDependencies.SequenceEqual(lockDependencies))
+            {
+                return false;
             }
 
             return true;

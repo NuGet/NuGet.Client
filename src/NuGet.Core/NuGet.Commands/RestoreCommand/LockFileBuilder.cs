@@ -33,7 +33,8 @@ namespace NuGet.Commands
             PackageSpec project,
             IEnumerable<RestoreTargetGraph> targetGraphs,
             NuGetv3LocalRepository repository,
-            RemoteWalkContext context)
+            RemoteWalkContext context,
+            IEnumerable<ToolRestoreResult> toolRestoreResults)
         {
             var lockFile = new LockFile();
             lockFile.Version = _lockFileVersion;
@@ -286,7 +287,52 @@ namespace NuGet.Commands
                 lockFile.Targets.Add(target);
             }
 
+            PopulateProjectFileToolGroups(project, lockFile);
+
+            PopulateTools(toolRestoreResults, lockFile);
+
             return lockFile;
+        }
+
+        private static void PopulateTools(IEnumerable<ToolRestoreResult> toolRestoreResults, LockFile lockFile)
+        {
+            // Add the tool targets (this states what tools were actually restored)
+            var toolTargets = new Dictionary<string, LockFileTarget>();
+            foreach (var result in toolRestoreResults)
+            {
+                if (result.FileTargetLibrary == null)
+                {
+                    continue;
+                }
+
+                var newTarget = new LockFileTarget
+                {
+                    TargetFramework = result.LockFileTarget.TargetFramework,
+                    RuntimeIdentifier = result.LockFileTarget.RuntimeIdentifier
+                };
+                LockFileTarget existingTarget;
+                if (!toolTargets.TryGetValue(newTarget.Name, out existingTarget))
+                {
+                    toolTargets[newTarget.Name] = newTarget;
+                    existingTarget = newTarget;
+                    lockFile.Tools.Add(newTarget);
+                }
+
+                existingTarget.Libraries.Add(result.FileTargetLibrary);
+            }
+        }
+
+        private static void PopulateProjectFileToolGroups(PackageSpec project, LockFile lockFile)
+        {
+            // Add the tool dependencies (this states what the project requires)
+            if (project.Tools.Any())
+            {
+                lockFile.ProjectFileToolGroups.Add(new ProjectFileDependencyGroup(
+                    LockFile.ToolFramework.ToString(),
+                    project.Tools
+                        .Select(x => x.LibraryRange.ToLockFileDependencyGroupString())
+                        .OrderBy(dependency => dependency, StringComparer.Ordinal)));
+            }
         }
 
         private static LockFileLibrary CreateLockFileLibrary(LocalPackageInfo package, string sha512, string correctedPackageName)
