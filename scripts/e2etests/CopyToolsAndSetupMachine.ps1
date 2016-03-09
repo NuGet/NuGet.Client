@@ -35,6 +35,8 @@ if ($success -eq $false)
     exit 1
 }
 
+Clear-RecycleBin -Force
+
 $NuGetTestPath = Join-Path $FuncTestRoot "EndToEnd"
 CopyNuGetCITools $NuGetCIToolsFolder $NuGetTestPath
 

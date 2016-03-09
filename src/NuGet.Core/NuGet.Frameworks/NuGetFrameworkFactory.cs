@@ -398,29 +398,96 @@ namespace NuGet.Frameworks
         {
             framework = null;
 
-            if (StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "dotnet"))
+            frameworkString = frameworkString.ToLowerInvariant();
+
+            switch (frameworkString)
             {
-                framework = FrameworkConstants.CommonFrameworks.DotNet50;
-            }
-            else if (StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "dnx")
-                     || StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "dnx451"))
-            {
-                framework = FrameworkConstants.CommonFrameworks.Dnx451;
-            }
-            else if (StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "dnxcore")
-                     || StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "dnxcore50")
-                     || StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "dnxcore5"))
-            {
-                framework = FrameworkConstants.CommonFrameworks.DnxCore50;
-            }
-            else if (StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "net40")
-                     || StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "net4"))
-            {
-                framework = FrameworkConstants.CommonFrameworks.Net4;
-            }
-            else if (StringComparer.OrdinalIgnoreCase.Equals(frameworkString, "net45"))
-            {
-                framework = FrameworkConstants.CommonFrameworks.Net45;
+                case "dotnet":
+                case "dotnet50":
+                case "dotnet5.0":
+                    framework = FrameworkConstants.CommonFrameworks.DotNet50;
+                    break;
+                case "dotnet5.1":
+                    framework = FrameworkConstants.CommonFrameworks.DotNet51;
+                    break;
+                case "dotnet5.2":
+                    framework = FrameworkConstants.CommonFrameworks.DotNet52;
+                    break;
+                case "dotnet5.3":
+                    framework = FrameworkConstants.CommonFrameworks.DotNet53;
+                    break;
+                case "dotnet5.4":
+                    framework = FrameworkConstants.CommonFrameworks.DotNet54;
+                    break;
+                case "dotnet5.5":
+                    framework = FrameworkConstants.CommonFrameworks.DotNet55;
+                    break;
+                case "dotnet5.6":
+                    framework = FrameworkConstants.CommonFrameworks.DotNet56;
+                    break;
+                case "dnx451":
+                    framework = FrameworkConstants.CommonFrameworks.Dnx451;
+                    break;
+                case "dnxcore50":
+                case "dnxcore":
+                    framework = FrameworkConstants.CommonFrameworks.DnxCore50;
+                    break;
+                case "net40":
+                case "net4":
+                    framework = FrameworkConstants.CommonFrameworks.Net4;
+                    break;
+                case "net45":
+                    framework = FrameworkConstants.CommonFrameworks.Net45;
+                    break;
+                case "net451":
+                    framework = FrameworkConstants.CommonFrameworks.Net451;
+                    break;
+                case "net46":
+                    framework = FrameworkConstants.CommonFrameworks.Net46;
+                    break;
+                case "net461":
+                    framework = FrameworkConstants.CommonFrameworks.Net461;
+                    break;
+                case "net462":
+                    framework = FrameworkConstants.CommonFrameworks.Net462;
+                    break;
+                case "win8":
+                    framework = FrameworkConstants.CommonFrameworks.Win8;
+                    break;
+                case "win81":
+                    framework = FrameworkConstants.CommonFrameworks.Win81;
+                    break;
+                case "netstandard":
+                    framework = FrameworkConstants.CommonFrameworks.NetStandard;
+                    break;
+                case "netstandard1.0":
+                case "netstandard10":
+                    framework = FrameworkConstants.CommonFrameworks.NetStandard10;
+                    break;
+                case "netstandard1.1":
+                case "netstandard11":
+                    framework = FrameworkConstants.CommonFrameworks.NetStandard11;
+                    break;
+                case "netstandard1.2":
+                case "netstandard12":
+                    framework = FrameworkConstants.CommonFrameworks.NetStandard12;
+                    break;
+                case "netstandard1.3":
+                case "netstandard13":
+                    framework = FrameworkConstants.CommonFrameworks.NetStandard13;
+                    break;
+                case "netstandard1.4":
+                case "netstandard14":
+                    framework = FrameworkConstants.CommonFrameworks.NetStandard14;
+                    break;
+                case "netstandard1.5":
+                case "netstandard15":
+                    framework = FrameworkConstants.CommonFrameworks.NetStandard15;
+                    break;
+                case "netstandardapp1.5":
+                case "netstandardapp15":
+                    framework = FrameworkConstants.CommonFrameworks.NetStandardApp15;
+                    break;
             }
 
             return framework != null;

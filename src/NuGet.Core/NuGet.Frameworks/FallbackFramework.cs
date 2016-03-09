@@ -11,6 +11,7 @@ namespace NuGet.Frameworks
         /// List framework to fall back to.
         /// </summary>
         public IReadOnlyList<NuGetFramework> Fallback { get; }
+        private int? _hashCode;
 
         public FallbackFramework(NuGetFramework framework, IReadOnlyList<NuGetFramework> fallbackFrameworks)
             : base(framework)
@@ -40,16 +41,21 @@ namespace NuGet.Frameworks
 
         public override int GetHashCode()
         {
-            var combiner = new HashCodeCombiner();
-
-            combiner.AddInt32(NuGetFramework.Comparer.GetHashCode(this));
-
-            foreach (var each in Fallback)
+            if (_hashCode == null)
             {
-                combiner.AddInt32(NuGetFramework.Comparer.GetHashCode(each));
+                var combiner = new HashCodeCombiner();
+
+                combiner.AddInt32(NuGetFramework.Comparer.GetHashCode(this));
+
+                foreach (var each in Fallback)
+                {
+                    combiner.AddInt32(NuGetFramework.Comparer.GetHashCode(each));
+                }
+
+                _hashCode = combiner.CombinedHash;
             }
 
-            return combiner.CombinedHash;
+            return _hashCode.Value;
         }
 
         public bool Equals(FallbackFramework other)

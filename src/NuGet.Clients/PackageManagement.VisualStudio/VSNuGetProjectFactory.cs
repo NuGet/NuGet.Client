@@ -8,6 +8,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ProjectSystem.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Common;
 using NuGet.ProjectManagement;
 using EnvDTEProject = EnvDTE.Project;
 using IServiceProvider = Microsoft.VisualStudio.OLE.Interop.IServiceProvider;
@@ -73,7 +74,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 // Treat projects with project.json as build integrated projects
                 // Search for projectName.project.json first, then project.json
-                string jsonConfig = BuildIntegratedProjectUtility.GetProjectConfigPath(projectPath, projectName);
+                string jsonConfig = ProjectJsonPathUtilities.GetProjectConfigPath(projectPath, projectName);
 
                 if (File.Exists(jsonConfig))
                 {

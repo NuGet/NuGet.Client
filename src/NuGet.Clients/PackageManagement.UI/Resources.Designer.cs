@@ -133,6 +133,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Dismiss.
+        /// </summary>
+        public static string Button_Dismiss {
+            get {
+                return ResourceManager.GetString("Button_Dismiss", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to I Accept.
         /// </summary>
         public static string Button_IAccept {
@@ -936,7 +945,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error occured:{0}{1}.
+        ///   Looks up a localized string similar to Error occurred.
         /// </summary>
         public static string Text_ErrorOccurred {
             get {
@@ -1017,11 +1026,20 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No items found.
+        ///   Looks up a localized string similar to No more packages.
         /// </summary>
-        public static string Text_NoItemsFound {
+        public static string Text_NoMorePackages {
             get {
-                return ResourceManager.GetString("Text_NoItemsFound", resourceCulture);
+                return ResourceManager.GetString("Text_NoMorePackages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No packages found.
+        /// </summary>
+        public static string Text_NoPackagesFound {
+            get {
+                return ResourceManager.GetString("Text_NoPackagesFound", resourceCulture);
             }
         }
         
@@ -1040,6 +1058,24 @@ namespace NuGet.PackageManagement.UI {
         public static string Text_NotInstalled {
             get {
                 return ResourceManager.GetString("Text_NotInstalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Packages found.
+        /// </summary>
+        public static string Text_PackagesFound {
+            get {
+                return ResourceManager.GetString("Text_PackagesFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package sources:.
+        /// </summary>
+        public static string Text_PackageSources {
+            get {
+                return ResourceManager.GetString("Text_PackageSources", resourceCulture);
             }
         }
         
@@ -1080,7 +1116,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Search completed..
+        ///   Looks up a localized string similar to Search completed.
         /// </summary>
         public static string Text_SearchCompleted {
             get {
@@ -1089,7 +1125,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to These results might be incomplete. Search is still working..
+        ///   Looks up a localized string similar to Retrieving results from one or more sources.
         /// </summary>
         public static string Text_SearchIncomplete {
             get {
@@ -1107,7 +1143,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Search stopped while still incomplete..
+        ///   Looks up a localized string similar to Unable to retrieve results from one or more sources.
         /// </summary>
         public static string Text_SearchStopped {
             get {
@@ -1125,7 +1161,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Operation canceled by user..
+        ///   Looks up a localized string similar to Operation canceled by user.
         /// </summary>
         public static string Text_UserCanceled {
             get {

@@ -18,6 +18,7 @@ namespace NuGet.Frameworks
         private readonly Version _frameworkVersion;
         private readonly string _frameworkProfile;
         private const string _portable = "portable";
+        private int? _hashCode;
 
         public NuGetFramework(NuGetFramework framework)
             : this(framework.Framework, framework.Version, framework.Profile)
@@ -261,6 +262,22 @@ namespace NuGet.Frameworks
         }
 
         /// <summary>
+        /// True if the framework is only used for compilation, not for execution.
+        /// Ex: dotnet, netstandard, portable-*
+        /// </summary>
+        public bool IsCompileOnly
+        {
+            get
+            {
+                return FrameworkConstants.FrameworkIdentifiers.NetPlatform
+                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
+                    || FrameworkConstants.FrameworkIdentifiers.NetStandard
+                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
+                    || IsPCL;
+            } 
+        }
+
+        /// <summary>
         /// True if the framework is packages based.
         /// Ex: dotnet, dnxcore
         /// </summary>
@@ -342,7 +359,12 @@ namespace NuGet.Frameworks
 
         public override int GetHashCode()
         {
-            return Comparer.GetHashCode(this);
+            if (_hashCode == null)
+            {
+                _hashCode = Comparer.GetHashCode(this);
+            }
+
+            return _hashCode.Value;
         }
 
         public override bool Equals(object obj)

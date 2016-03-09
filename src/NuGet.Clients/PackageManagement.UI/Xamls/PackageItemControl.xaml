@@ -107,10 +107,6 @@
                     </Grid.RowDefinitions>
                     <Image
                       Grid.Row="0"
-                      Source="{Binding IconUrl,TargetNullValue={StaticResource BitmapImage_DefaultIcon}}"
-                      Height="32"
-                      Width="32"
-                      RenderOptions.BitmapScalingMode="HighQuality"
                       Style="{StaticResource PackageIconImageStyle}"
                       VerticalAlignment="Top"
                       Margin="0,0,16,0" />

@@ -10,6 +10,8 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     internal interface IPackageFeed
     {
+        bool IsMultiSource { get; }
+
         /// <summary>
         /// Starts new search.
         /// </summary>

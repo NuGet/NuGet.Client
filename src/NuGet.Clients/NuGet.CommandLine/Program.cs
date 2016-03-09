@@ -9,6 +9,7 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using NuGet.Common;
+using NuGet.Protocol;
 
 namespace NuGet.CommandLine
 {
@@ -66,6 +67,8 @@ namespace NuGet.CommandLine
                 // Keep mono limited to a single download to avoid issues.
                 ServicePointManager.DefaultConnectionLimit = 1;
             }
+
+            NetworkProtocolUtility.ConfigureSupportedSslProtocols();
 
             var console = new Common.Console();
             var fileSystem = new PhysicalFileSystem(workingDirectory);

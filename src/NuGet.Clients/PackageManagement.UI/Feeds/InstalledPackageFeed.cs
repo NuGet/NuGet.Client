@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
@@ -66,8 +67,8 @@ namespace NuGet.PackageManagement.UI
             }
 
             var items = await TaskCombinators.ThrottledAsync(
-                packages, 
-                (p, t) => _metadataProvider.GetPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t), 
+                packages,
+                (p, t) => _metadataProvider.GetLocalPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t),
                 cancellationToken);
 
             //  The packages were originally sorted which is important because we Skip and Take based on that sort

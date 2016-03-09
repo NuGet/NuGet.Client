@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -24,6 +27,8 @@ namespace NuGet.PackageManagement.UI
         public bool IsSolution { get; private set; }
 
         public IEnumerable<IVsPackageManagerProvider> PackageManagerProviders { get; private set; }
+
+        public PackageSearchMetadataCache CachedPackages { get; set; }
 
         public PackageLoadContext(
             IEnumerable<SourceRepository> sourceRepositories,

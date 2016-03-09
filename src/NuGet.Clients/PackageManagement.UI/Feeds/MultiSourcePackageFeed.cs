@@ -16,8 +16,10 @@ namespace NuGet.PackageManagement.UI
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(5);
         private const int PageSize = 25;
 
-        private readonly IEnumerable<SourceRepository> _sourceRepositories;
+        private readonly SourceRepository[] _sourceRepositories;
         private readonly Logging.ILogger _logger;
+
+        public bool IsMultiSource => _sourceRepositories.Length > 1;
 
         private class AggregatedContinuationToken : ContinuationToken
         {
@@ -171,7 +173,7 @@ namespace NuGet.PackageManagement.UI
                 case TaskStatus.WaitingToRun:
                     return LoadingStatus.Loading;
                 case TaskStatus.Faulted:
-                    return LoadingStatus.ErrorOccured;
+                    return LoadingStatus.ErrorOccurred;
                 default:
                     return LoadingStatus.Unknown;
             }

@@ -68,8 +68,8 @@ namespace NuGet.PackageManagement.UI
         {
             _searchResultPackage = searchResultPackage;
             _filter = filter;
-            OnPropertyChanged("Id");
-            OnPropertyChanged("IconUrl");
+            OnPropertyChanged(nameof(Id));
+            OnPropertyChanged(nameof(IconUrl));
 
             var versions = await searchResultPackage.GetVersionsAsync();
 

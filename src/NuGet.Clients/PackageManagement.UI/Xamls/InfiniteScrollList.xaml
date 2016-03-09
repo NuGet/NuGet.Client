@@ -6,11 +6,24 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   mc:Ignorable="d"
-  d:DesignHeight="300"
+  d:DesignHeight="200"
   d:DesignWidth="500">
   <UserControl.Resources>
     <nuget:InfiniteScrollListItemStyleSelector
       x:Key="itemStyleSelector" />
+
+    <DataTemplate
+      DataType="{x:Type nuget:PackageDependencyMetadata}">
+      <TextBlock
+        Text="{Binding}" />
+    </DataTemplate>
+
+    <DataTemplate
+      DataType="{x:Type nuget:PackageItemListViewModel}">
+      <nuget:PackageItemControl
+        DataContext="{Binding}" />
+    </DataTemplate>
+
     <DataTemplate
       DataType="{x:Type nuget:LoadingStatusIndicator}">
       <Grid
@@ -19,7 +32,7 @@
           Name="_noItemsFound"
           FontStyle="Italic"
           HorizontalAlignment="Center"
-          Text="{x:Static nuget:Resources.Text_NoItemsFound}"
+          Text="{x:Static nuget:Resources.Text_NoPackagesFound}"
           Visibility="Collapsed" />
 
         <TextBlock
@@ -244,6 +257,42 @@
             added by code when Standalone == false.
             -->
     </Style>
+
+    <Style TargetType="FrameworkElement" x:Key="FadeAnimationStyle">
+      <Setter Property="Visibility" Value="Hidden"/>
+      <Style.Triggers>
+        <Trigger Property="Visibility" Value="Visible">
+          <Trigger.EnterActions>
+            <BeginStoryboard>
+              <Storyboard>
+                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                             From="0.0" To="1.0" Duration="0:0:0.7"/>
+              </Storyboard>
+            </BeginStoryboard>
+          </Trigger.EnterActions>
+        </Trigger>
+      </Style.Triggers>
+    </Style>
+    <!--
+      This scrollviewer template has one change from the default - a -22 margin on the verical srollbar.
+      This enables the loadingStatusBar to appear to be in the listbox.
+    -->
+    <ControlTemplate x:Key="ScrollViewerWithScrollBarExtraLargeOnTop" TargetType="{x:Type ScrollViewer}">
+      <Grid x:Name="Grid" Background="{TemplateBinding Background}" >
+          <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+              <RowDefinition Height="*"/>
+              <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+          <Rectangle x:Name="Corner" Grid.Column="1" Fill="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Grid.Row="1"/>
+          <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" CanContentScroll="{TemplateBinding CanContentScroll}" CanHorizontallyScroll="False" CanVerticallyScroll="False" ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" Grid.Column="0" Margin="{TemplateBinding Padding}" Grid.Row="0"/>
+          <ScrollBar x:Name="PART_VerticalScrollBar" AutomationProperties.AutomationId="VerticalScrollBar" Cursor="Arrow" Grid.Column="1" Maximum="{TemplateBinding ScrollableHeight}" Margin="0,-22,0,0" Minimum="0" Grid.Row="0" Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}" Value="{Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" ViewportSize="{TemplateBinding ViewportHeight}"/>
+          <ScrollBar x:Name="PART_HorizontalScrollBar" AutomationProperties.AutomationId="HorizontalScrollBar" Cursor="Arrow" Grid.Column="0" Maximum="{TemplateBinding ScrollableWidth}" Minimum="0" Orientation="Horizontal" Grid.Row="1" Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" ViewportSize="{TemplateBinding ViewportWidth}"/>
+      </Grid>
+    </ControlTemplate>
   </UserControl.Resources>
   <DockPanel LastChildFill="True">
     <Border
@@ -278,15 +327,19 @@
           Content="{x:Static nuget:Resources.Button_Update}" />
       </Grid>
     </Border>
-    <Border
+    <Grid
       DockPanel.Dock="Top"
-      BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
-      BorderThickness="0,0,0,1">
+      Background="{DynamicResource {x:Static nuget:Brushes.ListPaneBackground}}"
+      Height="22">
       <nuget:LoadingStatusBar 
         x:Name="_loadingStatusBar"
-        ShowMoreResultsClicked="_loadingStatusBar_ShowMoreResultsClicked" />
-    </Border>
+        ShowMoreResultsClick="_loadingStatusBar_ShowMoreResultsClick"
+        DismissClick="_loadingStatusBar_DismissClick"
+        Style="{StaticResource FadeAnimationStyle}"
+        Visibility="Hidden"/>
+    </Grid>
     <ListBox
+      d:DataContext="{d:DesignData Source=/Design/PackageItemListViewSampleData.xaml,IsDesignTimeCreatable=True}"
       x:Name="_list"
       DockPanel.Dock="Bottom"
       PreviewKeyUp="List_PreviewKeyUp"
@@ -295,10 +348,15 @@
       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
       ScrollViewer.VerticalScrollBarVisibility="Visible"
       ItemContainerStyleSelector="{DynamicResource itemStyleSelector}"
+      VirtualizingPanel.IsVirtualizing="true"
+      VirtualizingPanel.VirtualizationMode="Recycling"
+      VirtualizingPanel.CacheLength="1,2"
+      VirtualizingPanel.CacheLengthUnit="Page"
       BorderThickness="0,0,0,0"
       HorizontalContentAlignment="Stretch"
       SelectionChanged="List_SelectionChanged"
-      Loaded="List_Loaded">
+      Loaded="List_Loaded"
+      ItemsSource="{Binding}">
       <!-- set the template to disable the background change when the IsEnabled is false. -->
       <ListBox.Template>
         <ControlTemplate
@@ -311,6 +369,7 @@
             Padding="1"
             SnapsToDevicePixels="true">
             <ScrollViewer
+              Template="{StaticResource ScrollViewerWithScrollBarExtraLargeOnTop}"
               Focusable="false"
               Padding="{TemplateBinding Padding}">
               <ItemsPresenter

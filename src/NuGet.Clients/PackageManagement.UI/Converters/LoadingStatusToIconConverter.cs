@@ -25,7 +25,7 @@ namespace NuGet.PackageManagement.UI
             switch (loadingStatus)
             {
                 case LoadingStatus.Cancelled:
-                case LoadingStatus.ErrorOccured:
+                case LoadingStatus.ErrorOccurred:
                     return ErrorIcon;
                 case LoadingStatus.Loading:
                 case LoadingStatus.NoItemsFound:

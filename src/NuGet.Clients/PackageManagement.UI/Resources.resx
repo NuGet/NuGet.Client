@@ -235,7 +235,7 @@
     <value>Restart search</value>
   </data>
   <data name="Text_ErrorOccurred" xml:space="preserve">
-    <value>Error occured:{0}{1}</value>
+    <value>Error occurred</value>
   </data>
   <data name="Label_Solution" xml:space="preserve">
     <value>Solution '{0}'</value>
@@ -279,8 +279,8 @@
   <data name="Text_Loading" xml:space="preserve">
     <value>Loading...</value>
   </data>
-  <data name="Text_NoItemsFound" xml:space="preserve">
-    <value>No items found</value>
+  <data name="Text_NoPackagesFound" xml:space="preserve">
+    <value>No packages found</value>
   </data>
   <data name="Text_Ready" xml:space="preserve">
     <value>Ready</value>
@@ -512,7 +512,7 @@ Packages installed into Website projects will not be restored during build. Cons
     <comment>In the solution package manager, if the select package is not installed, then this message is shown.</comment>
   </data>
   <data name="Text_UserCanceled" xml:space="preserve">
-    <value>Operation canceled by user.</value>
+    <value>Operation canceled by user</value>
   </data>
   <data name="AggregateSourceName" xml:space="preserve">
     <value>All</value>
@@ -522,14 +522,27 @@ Packages installed into Website projects will not be restored during build. Cons
   </data>
   <data name="Button_ShowMoreResults" xml:space="preserve">
     <value>Show {0} more results</value>
+    <comment>The string format has a single parameter "{0}", which is an integer number of how many more results will be displayed to the user when they click a button.</comment>
   </data>
   <data name="Text_SearchCompleted" xml:space="preserve">
-    <value>Search completed.</value>
+    <value>Search completed</value>
   </data>
   <data name="Text_SearchIncomplete" xml:space="preserve">
-    <value>These results might be incomplete. Search is still working.</value>
+    <value>Retrieving results from one or more sources</value>
   </data>
   <data name="Text_SearchStopped" xml:space="preserve">
-    <value>Search stopped while still incomplete.</value>
+    <value>Unable to retrieve results from one or more sources</value>
+  </data>
+  <data name="Text_NoMorePackages" xml:space="preserve">
+    <value>No more packages</value>
+  </data>
+  <data name="Text_PackageSources" xml:space="preserve">
+    <value>Package sources:</value>
+  </data>
+  <data name="Button_Dismiss" xml:space="preserve">
+    <value>Dismiss</value>
+  </data>
+  <data name="Text_PackagesFound" xml:space="preserve">
+    <value>Packages found</value>
   </data>
 </root>

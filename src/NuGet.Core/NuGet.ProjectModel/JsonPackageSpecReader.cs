@@ -141,6 +141,8 @@ namespace NuGet.ProjectModel
                 "dependencies",
                 isGacOrFrameworkReference: false);
 
+            packageSpec.Tools = ReadTools(rawPackageSpec, packageSpec.FilePath).ToList();
+
             // Read the runtime graph
             packageSpec.RuntimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(rawPackageSpec);
 
@@ -296,7 +298,7 @@ namespace NuGet.ProjectModel
                         if ((targetFlagsValue & LibraryDependencyTarget.Package) == LibraryDependencyTarget.Package)
                         {
                             throw FileFormatException.Create(
-                                new ArgumentException(Strings.MissingVersionProperty),
+                                new ArgumentException(Strings.MissingVersionOnDependency),
                                 dependency.Value,
                                 packageSpecPath);
                         }
@@ -322,6 +324,75 @@ namespace NuGet.ProjectModel
                         IncludeType = includeFlags,
                         SuppressParent = suppressParentFlagsValue
                     });
+                }
+            }
+        }
+
+        private static IEnumerable<ToolDependency> ReadTools(JObject rawPackageSpec, string packageSpecPath)
+        {
+            var tools = rawPackageSpec["tools"] as JObject;
+            if (tools != null)
+            {
+                foreach (var tool in tools)
+                {
+                    if (string.IsNullOrEmpty(tool.Key))
+                    {
+                        throw FileFormatException.Create(
+                            Strings.MissingToolName,
+                            tool.Value,
+                            packageSpecPath);
+                    }
+
+                    var value = tool.Value;
+                    JToken versionToken = null;
+                    string versionValue = null;
+                    if (value.Type == JTokenType.String)
+                    {
+                        versionToken = value;
+                        versionValue = value.Value<string>();
+                    }
+                    else
+                    {
+                        if (value.Type == JTokenType.Object)
+                        {
+                            versionToken = value["version"];
+                            if (versionToken != null && versionToken.Type == JTokenType.String)
+                            {
+                                versionValue = versionToken.Value<string>();
+                            }
+                        }
+                    }
+
+                    if (versionValue == null)
+                    {
+                        throw FileFormatException.Create(
+                            Strings.MissingVersionOnTool,
+                            tool.Value,
+                            packageSpecPath);
+                    }
+
+                    VersionRange versionRange;
+                    try
+                    {
+                        versionRange = VersionRange.Parse(versionValue);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw FileFormatException.Create(
+                            ex,
+                            versionToken,
+                            packageSpecPath);
+                    }
+
+                    yield return new ToolDependency
+                    {
+                        LibraryRange = new LibraryRange
+                        {
+                            Name = tool.Key,
+                            TypeConstraint = LibraryDependencyTarget.Package,
+                            VersionRange = versionRange
+                        }
+                    };
                 }
             }
         }
@@ -523,12 +594,6 @@ namespace NuGet.ProjectModel
         private static NuGetFramework GetFramework(string key)
         {
             return NuGetFramework.Parse(key);
-        }
-
-        private static string GetDirectoryName(string path)
-        {
-            path = path.TrimEnd(Path.DirectorySeparatorChar);
-            return path.Substring(Path.GetDirectoryName(path).Length).Trim(Path.DirectorySeparatorChar);
         }
     }
 }

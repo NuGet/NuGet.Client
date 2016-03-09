@@ -1,7 +1,6 @@
 # basic install into a build integrated project
 function Test-BuildIntegratedInstallPackage {
     # Arrange
-    Write-Host 'Test-BuildIntegratedInstallPackage. What??'
     $project = New-BuildIntegratedProj UAPApp
 
     # Act

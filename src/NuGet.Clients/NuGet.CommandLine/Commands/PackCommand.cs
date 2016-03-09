@@ -5,9 +5,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using NuGet.Common;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine
 {
+    using NuGet.Packaging;
+
     [Command(typeof(NuGetCommand), "pack", "PackageCommandDescription", MaxArgs = 1, UsageSummaryResourceName = "PackageCommandUsageSummary",
             UsageDescriptionResourceName = "PackageCommandUsageDescription", UsageExampleResourceName = "PackCommandUsageExamples")]
     public class PackCommand : Command
@@ -113,11 +116,11 @@ namespace NuGet.CommandLine
         public new string ConfigFile { get; set; }
 
         // The directory that contains msbuild
-        private string _msbuildDirectory;
+        private Lazy<string> _msbuildDirectory;
 
         public override void ExecuteCommand()
         {
-            _msbuildDirectory = MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console);
+            _msbuildDirectory = new Lazy<string>(() => MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console));
 
             if (Verbose)
             {
@@ -152,12 +155,12 @@ namespace NuGet.CommandLine
         {
             if (!String.IsNullOrEmpty(Version))
             {
-                builder.Version = new SemanticVersion(Version);
+                builder.Version = new NuGetVersion(Version);
             }
 
             if (!string.IsNullOrEmpty(Suffix))
             {
-                builder.Version = new SemanticVersion(builder.Version.Version, Suffix);
+                builder.Version = new NuGetVersion(builder.Version.Version, Suffix);
             }
 
             if (_minClientVersionValue != null)
@@ -365,19 +368,26 @@ namespace NuGet.CommandLine
                 Properties["version"] = Version;
             }
 
-            // Initialize the property provider based on what was passed in using the properties flag
-            var propertyProvider = new DictionaryPropertyProvider(Properties);
-
             if (String.IsNullOrEmpty(BasePath))
             {
-                return new PackageBuilder(path, propertyProvider, !ExcludeEmptyDirectories);
+                return new PackageBuilder(path, GetPropertyValue, !ExcludeEmptyDirectories);
             }
-            return new PackageBuilder(path, BasePath, propertyProvider, !ExcludeEmptyDirectories);
+            return new PackageBuilder(path, BasePath, GetPropertyValue, !ExcludeEmptyDirectories);
+        }
+
+        private string GetPropertyValue(string propertyName)
+        {
+            string value;
+            if (Properties.TryGetValue(propertyName, out value))
+            {
+                return value;
+            }
+            return null;
         }
 
         private IPackage BuildFromProjectFile(string path)
         {
-            var factory = new ProjectFactory(_msbuildDirectory, path, Properties)
+            var factory = new ProjectFactory(_msbuildDirectory.Value, path, Properties)
             {
                 IsTool = Tool,
                 Logger = Console,
@@ -497,26 +507,6 @@ namespace NuGet.CommandLine
             }
 
             return Path.GetFullPath(Path.Combine(CurrentDirectory, result));
-        }
-
-        private class DictionaryPropertyProvider : IPropertyProvider
-        {
-            private readonly IDictionary<string, string> _properties;
-
-            public DictionaryPropertyProvider(IDictionary<string, string> properties)
-            {
-                _properties = properties;
-            }
-
-            public dynamic GetPropertyValue(string propertyName)
-            {
-                string value;
-                if (_properties.TryGetValue(propertyName, out value))
-                {
-                    return value;
-                }
-                return null;
-            }
         }
     }
 }

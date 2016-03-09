@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
@@ -21,6 +22,9 @@ namespace NuGet.Common
             {
                 throw new ArgumentNullException(nameof(filePath));
             }
+
+            // limit the number of unauthorized, this should be around 30 seconds.
+            var unauthorizedAttemptsLeft = 3000;
 
             var lockPath = FileLockPath(filePath);
 
@@ -48,7 +52,23 @@ namespace NuGet.Common
                     }
                     catch (UnauthorizedAccessException)
                     {
+                        token.ThrowIfCancellationRequested();
+
+                        if (unauthorizedAttemptsLeft < 1)
+                        {
+                            var message = string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.UnauthorizedLockFail,
+                                lockPath,
+                                filePath);
+
+                            throw new InvalidOperationException(message);
+                        }
+
+                        unauthorizedAttemptsLeft--;
+
                         // This can occur when the file is being deleted
+                        // Or when an admin user has locked the file
                         await Task.Delay(10);
                         continue;
                     }

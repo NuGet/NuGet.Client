@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Xunit;
@@ -10,6 +11,164 @@ namespace NuGet.CommandLine.Test
 {
     public class RestoreProjectJsonTest
     {
+        [Fact]
+        public void RestoreProjectJson_RestoreFolder()
+        {
+            // Arrange
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var projectDir1 = Path.Combine(workingPath, "test1");
+                var projectDir2 = Path.Combine(workingPath, "test2");
+                var nugetexe = Util.GetNuGetExePath();
+
+                Directory.CreateDirectory(projectDir1);
+                Directory.CreateDirectory(projectDir2);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+                Util.CreateFile(projectDir1, "project.json",
+                                                @"{
+                                                    'dependencies': {
+                                                    },
+                                                    'frameworks': {
+                                                                'uap10.0': { }
+                                                            }
+                                                    }");
+
+                Util.CreateFile(projectDir2, "project.json",
+                                    @"{
+                                        'version': '1.0.0-*',
+                                        'dependencies': {
+                                        },
+                                        'frameworks': {
+                                                    'uap10.0': { }
+                                                }
+                                        }");
+
+                string[] args = new string[] {
+                    "restore",
+                    workingPath,
+                    "-Source",
+                    repositoryPath,
+                    "-solutionDir",
+                    workingPath
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
+                var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
+
+                Assert.True(test1Lock.Exists);
+                Assert.True(test2Lock.Exists);
+            }
+        }
+
+        [Fact]
+        public void RestoreProjectJson_RestoreForSingleProject()
+        {
+            // Arrange
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var projectDir1 = Path.Combine(workingPath, "test1");
+                var projectDir2 = Path.Combine(workingPath, "test2");
+                var nugetexe = Util.GetNuGetExePath();
+
+                Directory.CreateDirectory(projectDir1);
+                Directory.CreateDirectory(projectDir2);
+                Directory.CreateDirectory(Path.Combine(workingPath, ".nuget"));
+                Util.CreateConfigForGlobalPackagesFolder(workingPath);
+
+                Util.CreateFile(projectDir1, "project.json",
+                                                @"{
+                                                    'dependencies': {
+                                                    },
+                                                    'frameworks': {
+                                                                'uap10.0': { }
+                                                            }
+                                                    }");
+
+                var project1Path = Path.Combine(projectDir1, "test1.csproj");
+                Util.CreateFile(projectDir1, "test1.csproj", Util.GetCSProjXML("test1"));
+
+                Util.CreateFile(projectDir2, "project.json",
+                                    @"{
+                                        'version': '1.0.0-*',
+                                        'dependencies': {
+                                        },
+                                        'frameworks': {
+                                                    'uap10.0': { }
+                                                }
+                                        }");
+
+                Util.CreateFile(projectDir2, "test2.csproj", Util.GetCSProjXML("test2"));
+
+                var slnPath = Path.Combine(workingPath, "xyz.sln");
+
+                Util.CreateFile(workingPath, "xyz.sln",
+                           @"
+                        Microsoft Visual Studio Solution File, Format Version 12.00
+                        # Visual Studio 14
+                        VisualStudioVersion = 14.0.23107.0
+                        MinimumVisualStudioVersion = 10.0.40219.1
+                        Project(""{AAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test1"", ""test1\test1.csproj"", ""{AA6279C1-B5EE-4C6B-9FA3-A794CE195136}""
+                        EndProject
+                        Project(""{BBE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test2"", ""test2\test2.csproj"", ""{BB6279C1-B5EE-4C6B-9FA3-A794CE195136}""
+                        EndProject
+                        Global
+                            GlobalSection(SolutionConfigurationPlatforms) = preSolution
+                                Debug|Any CPU = Debug|Any CPU
+                                Release|Any CPU = Release|Any CPU
+                            EndGlobalSection
+                            GlobalSection(ProjectConfigurationPlatforms) = postSolution
+                                {AA6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                                {AA6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                                {BB6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                                {BB6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                            EndGlobalSection
+                            GlobalSection(SolutionProperties) = preSolution
+                                HideSolutionNode = FALSE
+                            EndGlobalSection
+                        EndGlobal
+                        ");
+
+                string[] args = new string[] {
+                    "restore",
+                    project1Path,
+                    "-Source",
+                    repositoryPath,
+                    "-solutionDir",
+                    workingPath
+                };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
+                var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
+
+                Assert.True(test1Lock.Exists);
+                Assert.False(test2Lock.Exists);
+            }
+        }
+
         [Fact]
         public void RestoreProjectJson_RestoreFromSlnWithCsproj()
         {
@@ -33,12 +192,7 @@ namespace NuGet.CommandLine.Test
                                                             }
                                                     }");
 
-                Util.CreateFile(projectDir1, "test1.csproj",
-                        @"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
-                                        xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-                            <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
-                        </Project>");
+                Util.CreateFile(projectDir1, "test1.csproj", Util.GetCSProjXML("test1"));
 
                 var slnPath = Path.Combine(workingPath, "xyz.sln");
 
@@ -127,12 +281,7 @@ namespace NuGet.CommandLine.Test
                                                             }
                                                     }");
 
-                    Util.CreateFile(projectDir, $"test{i}.csproj",
-                            @"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
-                                        xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-                            <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
-                        </Project>");
+                    Util.CreateFile(projectDir, $"test{i}.csproj", Util.GetCSProjXML($"test{i}"));
                 }
 
                 var slnPath = Path.Combine(workingPath, "xyz.sln");
@@ -250,19 +399,22 @@ namespace NuGet.CommandLine.Test
                                                             }
                                                     }");
 
-                Util.CreateFile(projectDir1, "test1.csproj",
-                        @"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
-                                        xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-                            <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
-                            <ItemGroup Label=""Project References"">
+                var test1Xml = Util.GetCSProjXML("test1");
+                var doc = XDocument.Parse(test1Xml);
+                var projectNode = doc.Root;
+
+                var projectRef = XElement.Parse(@"<ItemGroup Label=""Project References"">
                             <ProjectReference Include=""" + projectDir2 + @"\\test2.csproj"">
                               <Project>{BB6279C1-B5EE-4C6B-9FA3-A794CE195136}</Project>
                               <Name>Test2</Name>
                               <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
                             </ProjectReference>
-                            </ItemGroup>
-                        </Project>");
+                            </ItemGroup>");
+
+                projectNode.Add(projectRef);
+                var xml = doc.ToString().Replace("xmlns=\"\"", "");
+
+                Util.CreateFile(projectDir1, "test1.csproj", xml);
 
                 Util.CreateFile(projectDir2, "project.json",
                                     @"{
@@ -275,12 +427,7 @@ namespace NuGet.CommandLine.Test
                                                 }
                                         }");
 
-                Util.CreateFile(projectDir2, "test2.csproj",
-                        @"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
-                                        xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-                            <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
-                        </Project>");
+                Util.CreateFile(projectDir2, "test2.csproj", Util.GetCSProjXML("test2"));
 
                 var slnPath = Path.Combine(workingPath, "xyz.sln");
 
@@ -332,6 +479,9 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args),
                     waitForExit: true);
 
+                // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
                 var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
 
@@ -346,9 +496,6 @@ namespace NuGet.CommandLine.Test
                 var a2 = lockFile2.Libraries
                     .Where(lib => lib.Name.Equals("packageA", StringComparison.OrdinalIgnoreCase))
                     .FirstOrDefault();
-
-                // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 Assert.True(test1Lock.Exists);
                 Assert.True(test2Lock.Exists);
@@ -466,12 +613,7 @@ namespace NuGet.CommandLine.Test
                                                     }
                                             }");
 
-                Util.CreateFile(projectDir1, "test1.xproj",
-                                                @"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
-                        xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-        <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
-        </Project>");
+                Util.CreateFile(projectDir1, "test1.xproj", Util.GetCSProjXML("test1"));
 
                 string[] args = new string[] {
                     "restore",
@@ -522,12 +664,7 @@ namespace NuGet.CommandLine.Test
                                                     }
                                             }");
 
-                Util.CreateFile(projectDir1, "test1.abcproj",
-                      @"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
-                                        xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-                        <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
-                        </Project>");
+                Util.CreateFile(projectDir1, "test1.abcproj", Util.GetCSProjXML("test1"));
 
                 string[] args = new string[] {
                     "restore",
@@ -548,9 +685,8 @@ namespace NuGet.CommandLine.Test
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
 
                 // Assert
-                Assert.True(1 == r.Item1, r.Item2 + " " + r.Item3);
-                Assert.False(test1Lock.Exists);
-                Assert.Contains("error parsing solution file", r.Item3, StringComparison.OrdinalIgnoreCase);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(test1Lock.Exists);
             }
         }
 
@@ -588,12 +724,7 @@ namespace NuGet.CommandLine.Test
                                                     }
                                             }");
 
-                Util.CreateFile(projectDir1, "test1.csproj",
-                      @"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
-                           xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-                            <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
-                        </Project>");
+                Util.CreateFile(projectDir1, "test1.csproj", Util.GetCSProjXML("test1"));
 
                 Util.CreateFile(projectDir2, "project.json",
                                     @"{
@@ -606,12 +737,7 @@ namespace NuGet.CommandLine.Test
                                                 }
                                         }");
 
-                Util.CreateFile(projectDir2, "test2.abcproj",
-                       @"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
-                          xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-                            <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
-                       </Project>");
+                Util.CreateFile(projectDir2, "test2.abcproj", Util.GetCSProjXML("test2"));
 
                 var slnPath = Path.Combine(workingPath, "xyz.sln");
 
@@ -658,11 +784,11 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args),
                     waitForExit: true);
 
-                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
-                var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
-
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
+                var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
 
                 Assert.True(test1Lock.Exists);
                 Assert.True(test2Lock.Exists);
@@ -694,12 +820,7 @@ namespace NuGet.CommandLine.Test
                                                             }
                                                     }");
 
-                Util.CreateFile(projectDir1, "test1.csproj",
-                        @"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
-                                        xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-                            <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
-                        </Project>");
+                Util.CreateFile(projectDir1, "test1.csproj", Util.GetCSProjXML("test1"));
 
                 Util.CreateFile(projectDir2, "project.json",
                                     @"{
@@ -711,12 +832,7 @@ namespace NuGet.CommandLine.Test
                                                 }
                                         }");
 
-                Util.CreateFile(projectDir2, "test2.xproj",
-                        @"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <Project ToolsVersion=""14.0"" DefaultTargets=""Build""
-                        xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
-                        <Target Name=""_NuGet_GetProjectsReferencingProjectJsonInternal""></Target>
-                        </Project>");
+                Util.CreateFile(projectDir2, "test2.xproj", Util.GetXProjXML());
 
                 var slnPath = Path.Combine(workingPath, "xyz.sln");
 
@@ -763,11 +879,11 @@ namespace NuGet.CommandLine.Test
                     string.Join(" ", args),
                     waitForExit: true);
 
-                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
-                var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
-
                 // Assert
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
+                var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
 
                 Assert.True(test1Lock.Exists);
                 Assert.True(test2Lock.Exists);

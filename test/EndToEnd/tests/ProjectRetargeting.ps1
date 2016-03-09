@@ -35,8 +35,6 @@ function Test-ProjectRetargeting-ClearErrorUponCleanProject {
     Assert-Package $p 'PackageTargetingNet40AndNet40Client'
 
     # Act (change the target framework of the project to 4.0-Client and verify that an error is thrown )
-    Write-Host '1'
-
     $projectName = $p.Name
 
     Write-Host '2'
@@ -45,22 +43,15 @@ function Test-ProjectRetargeting-ClearErrorUponCleanProject {
 
 
     # Assert (Assert that an error has been added to the error list window)
-    Write-Host '3'
     $errorlist = Get-Errors
 
-    Write-Host '4'
     Assert-AreEqual 1 $errorlist.Count
 
-    Write-Host '5'
     Clean-Solution
 
-    Write-Host '6'
     $errorlist = Get-Errors
 
-    Write-Host '7'
     Assert-AreEqual 0 $errorlist.Count
-
-    Write-Host '8'
 }
 
 function Test-ProjectRetargeting-ClearErrorUponCloseSolution {

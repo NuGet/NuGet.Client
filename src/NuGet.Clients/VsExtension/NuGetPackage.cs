@@ -655,7 +655,7 @@ namespace NuGetVSExtension
             var vsShell = ServiceLocator.GetGlobalService<SVsShell, IVsShell4>();
             var control = new PackageManagerControl(model, Settings, vsWindowSearchHostfactory, vsShell);
             var windowPane = new PackageManagerWindowPane(control);
-            var guidEditorType = Guid.Empty;
+            var guidEditorType = GuidList.guidNuGetEditorType;
             var guidCommandUI = Guid.Empty;
             var caption = String.Format(
                 CultureInfo.CurrentCulture,
@@ -874,7 +874,7 @@ namespace NuGetVSExtension
             var vsShell = ServiceLocator.GetGlobalService<SVsShell, IVsShell4>();
             var control = new PackageManagerControl(model, Settings, vsWindowSearchHostfactory, vsShell);
             var windowPane = new PackageManagerWindowPane(control);
-            var guidEditorType = Guid.Empty;
+            var guidEditorType = GuidList.guidNuGetEditorType;
             var guidCommandUI = Guid.Empty;
             var caption = Resx.Label_SolutionNuGetWindowCaption;
             var documentName = _dte.Solution.FullName;

@@ -142,7 +142,7 @@ namespace NuGet.Configuration
             if (credentials != null)
             {
                 packageSource.UserName = credentials.Username;
-                packageSource.Password = credentials.Password;
+                packageSource.PasswordText = credentials.PasswordText;
                 packageSource.IsPasswordClearText = credentials.IsPasswordClearText;
             }
 
@@ -211,7 +211,7 @@ namespace NuGet.Configuration
                     var encryptedPassword = values.FirstOrDefault(k => k.Key.Equals(ConfigurationConstants.PasswordToken, StringComparison.OrdinalIgnoreCase)).Value;
                     if (!String.IsNullOrEmpty(encryptedPassword))
                     {
-                        return new PackageSourceCredential(userName, EncryptionUtility.DecryptString(encryptedPassword), isPasswordClearText: false);
+                        return new PackageSourceCredential(userName, encryptedPassword, isPasswordClearText: false);
                     }
 
                     var clearTextPassword = values.FirstOrDefault(k => k.Key.Equals(ConfigurationConstants.ClearTextPasswordToken, StringComparison.Ordinal)).Value;
@@ -393,7 +393,7 @@ namespace NuGet.Configuration
             // Overwrite the <packageSourceCredentials> section
             Settings.DeleteSection(ConfigurationConstants.CredentialsSectionName);
 
-            var sourceWithCredentials = sources.Where(s => !String.IsNullOrEmpty(s.UserName) && !String.IsNullOrEmpty(s.Password));
+            var sourceWithCredentials = sources.Where(s => !String.IsNullOrEmpty(s.UserName) && !String.IsNullOrEmpty(s.PasswordText));
             foreach (var source in sourceWithCredentials)
             {
                 Settings.SetNestedValues(ConfigurationConstants.CredentialsSectionName, source.Name, new[]
@@ -419,10 +419,18 @@ namespace NuGet.Configuration
 
         private static KeyValuePair<string, string> ReadPasswordValues(PackageSource source)
         {
-            var passwordToken = source.IsPasswordClearText ? ConfigurationConstants.ClearTextPasswordToken : ConfigurationConstants.PasswordToken;
-            var passwordValue = source.IsPasswordClearText ? source.Password : EncryptionUtility.EncryptString(source.Password);
+            try
+            {
+                var passwordToken = source.IsPasswordClearText ? ConfigurationConstants.ClearTextPasswordToken : ConfigurationConstants.PasswordToken;
+                var passwordValue = source.IsPasswordClearText ? source.PasswordText : EncryptionUtility.EncryptString(source.PasswordText);
 
-            return new KeyValuePair<string, string>(passwordToken, passwordValue);
+                return new KeyValuePair<string, string>(passwordToken, passwordValue);
+            }
+            catch (NotSupportedException e)
+            {
+                throw new NuGetConfigurationException(
+                           string.Format(CultureInfo.CurrentCulture, Resources.UnsupportedEncryptPassword, source.Source), e);
+            }
         }
 
         public void DisablePackageSource(PackageSource source)
@@ -487,14 +495,14 @@ namespace NuGet.Configuration
         {
             public string Username { get; private set; }
 
-            public string Password { get; private set; }
+            public string PasswordText { get; private set; }
 
             public bool IsPasswordClearText { get; private set; }
 
-            public PackageSourceCredential(string username, string password, bool isPasswordClearText)
+            public PackageSourceCredential(string username, string passwordText, bool isPasswordClearText)
             {
                 Username = username;
-                Password = password;
+                PasswordText = passwordText;
                 IsPasswordClearText = isPasswordClearText;
             }
         }

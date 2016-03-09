@@ -195,4 +195,7 @@
   <data name="FailedToUpdateBindingRedirects" xml:space="preserve">
     <value>Failed to update binding redirects for {0} : {1}</value>
   </data>
+  <data name="ConfigErrorDialogBoxTitle" xml:space="preserve">
+    <value>NuGet operation failed</value>
+  </data>
 </root>

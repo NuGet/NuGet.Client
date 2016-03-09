@@ -17,6 +17,7 @@ using Microsoft.CSharp.RuntimeBinder;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectManagement;
 using VSLangProj;
@@ -1308,13 +1309,13 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         public static async Task<bool> HasBuildIntegratedConfig(EnvDTEProject project)
         {
-            var projectNameConfig = BuildIntegratedProjectUtility.GetProjectConfigWithProjectName(project.Name);
+            var projectNameConfig = ProjectJsonPathUtilities.GetProjectConfigWithProjectName(project.Name);
 
             var containsProjectJson = await ContainsFile(project, projectNameConfig);
 
             var containsProjectNameJson = await ContainsFile(
                 project,
-                BuildIntegratedProjectUtility.ProjectConfigFileName);
+                ProjectJsonPathUtilities.ProjectConfigFileName);
 
             return containsProjectJson || containsProjectNameJson;
         }

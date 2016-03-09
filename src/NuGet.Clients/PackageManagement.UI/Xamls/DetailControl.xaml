@@ -50,12 +50,8 @@
         MinHeight="32"
         Margin="0,8">
         <Image
-          Source="{Binding Path=IconUrl,TargetNullValue={StaticResource BitmapImage_DefaultIcon}}"
           Margin="0,0,8,0"
-          Height="32"
-          Width="32"
-          Style="{StaticResource PackageIconImageStyle}"
-          RenderOptions.BitmapScalingMode="HighQuality" />
+          Style="{StaticResource PackageIconImageStyle}" />
         <TextBlock
           Text="{Binding Path=Id}"
           FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font155PercentSizeConverter}}" />

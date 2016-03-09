@@ -21,5 +21,21 @@ namespace NuGet.VisualStudio
         /// <exception cref="ArgumentException">If the provided string cannot be parsed.</exception>
         /// <returns>The parsed framework.</returns>
         FrameworkName ParseFrameworkName(string shortOrFullName);
+
+        /// <summary>
+        /// Gets the shortened version of the framework name from a <see cref="FrameworkName"/>
+        /// instance.
+        /// </summary>
+        /// <remarks>
+        /// For example, ".NETFramework,Version=v4.5" is converted to "net45". This is the value
+        /// used inside of .nupkg folder structures as well as in project.json files.
+        /// </remarks>
+        /// <param name="frameworkName">The framework name.</param>
+        /// <exception cref="ArgumentNullException">If the input is null.</exception>
+        /// <exception cref="ArgumentException">
+        /// If the provided framework name cannot be converted to a short name.
+        /// </exception>
+        /// <returns>The short framework name. </returns>
+        string GetShortFrameworkName(FrameworkName frameworkName);
     }
 }
