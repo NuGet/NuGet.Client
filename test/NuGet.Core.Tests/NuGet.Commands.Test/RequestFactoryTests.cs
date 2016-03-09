@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
+using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using Xunit;
@@ -8,6 +9,35 @@ namespace NuGet.Commands.Test
 {
     public class RequestFactoryTests
     {
+        [Fact]
+        public void RequestFactory_FindConfigInProjectFolder()
+        {
+            // Verifies that we include any config file found in the project folder
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var innerConfigFile = Path.Combine(workingDir, "sub", Settings.DefaultSettingsFileName);
+                var outerConfigFile = Path.Combine(workingDir, Settings.DefaultSettingsFileName);
+
+                var projectDirectory = Path.GetDirectoryName(innerConfigFile);
+                Directory.CreateDirectory(projectDirectory);
+
+                File.WriteAllText(innerConfigFile, InnerConfig);
+                File.WriteAllText(outerConfigFile, OuterConfig);
+
+                var restoreArgs = new RestoreArgs();
+
+                // Act
+                var settings = restoreArgs.GetSettings(projectDirectory);
+                var innerValue = settings.GetValue("SectionName", "inner-key");
+                var outerValue = settings.GetValue("SectionName", "outer-key");
+
+                // Assert
+                Assert.Equal("inner-value", innerValue);
+                Assert.Equal("outer-value", outerValue);
+            }
+        }
+
         [Fact]
         public async Task RequestFactory_FindProjectJsonFilesInDirectory()
         {
@@ -55,5 +85,21 @@ namespace NuGet.Commands.Test
                 }
               }
             }";
+
+        private static string InnerConfig =
+            @"<?xml version=""1.0"" encoding=""utf-8""?>
+              <configuration>
+                <SectionName>
+                  <add key=""inner-key"" value=""inner-value"" />
+                </SectionName>
+              </configuration>";
+
+        private static string OuterConfig =
+            @"<?xml version=""1.0"" encoding=""utf-8""?>
+              <configuration>
+                <SectionName>
+                  <add key=""outer-key"" value=""outer-value"" />
+                </SectionName>
+              </configuration>";
     }
 }

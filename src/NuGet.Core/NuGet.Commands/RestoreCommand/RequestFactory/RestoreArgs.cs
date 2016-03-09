@@ -58,19 +58,7 @@ namespace NuGet.Commands
 
         public ISettings GetSettings(string projectDirectory)
         {
-            // Ignore settings files inside the project directory itself, instead use the parent folder which 
-            // can be shared and cached between projects.
-            var parent = Directory.GetParent(projectDirectory);
-
-            if (parent == null)
-            {
-                // If the projet was somehow at the root of the drive, just use the project dir
-                parent = new DirectoryInfo(projectDirectory);
-            }
-
-            var parentDirectory = parent.FullName;
-
-            return _settingsCache.GetOrAdd(parentDirectory, (dir) =>
+            return _settingsCache.GetOrAdd(projectDirectory, (dir) =>
             {
                 return Settings.LoadDefaultSettings(dir,
                     ConfigFileName,
