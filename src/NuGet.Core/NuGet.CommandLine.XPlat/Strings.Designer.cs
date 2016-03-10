@@ -78,6 +78,24 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to The base path of the files defined in the nuspec file..
+        /// </summary>
+        internal static string BasePath_Description {
+            get {
+                return ResourceManager.GetString("BasePath_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to WARNING: {0}.
+        /// </summary>
+        internal static string CommandLine_Warning {
+            get {
+                return ResourceManager.GetString("CommandLine_Warning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to {0} (y/N) .
         /// </summary>
         internal static string ConsoleConfirmMessage {
@@ -128,6 +146,24 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Error_MissingSourceParameter {
             get {
                 return ResourceManager.GetString("Error_MissingSourceParameter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Prevent inclusion of empty directories when building the package..
+        /// </summary>
+        internal static string ExcludeEmptyDirectories_Description {
+            get {
+                return ResourceManager.GetString("ExcludeEmptyDirectories_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specify the location of the nuspec or project file to create a package..
+        /// </summary>
+        internal static string InputFile_Description {
+            get {
+                return ResourceManager.GetString("InputFile_Description", resourceCulture);
             }
         }
         
@@ -213,6 +249,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Set the minClientVersion attribute for the created package..
+        /// </summary>
+        internal static string MinClientVersion_Description {
+            get {
+                return ResourceManager.GetString("MinClientVersion_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to No API Key was provided and no API Key could be found for {0}. To save an API Key for a source use the &apos;setApiKey&apos; command..
         /// </summary>
         internal static string NoApiKeyFound {
@@ -222,11 +267,128 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Prevent default exclusion of NuGet package files and files and folders starting with a dot e.g. .svn..
+        /// </summary>
+        internal static string NoDefaultExcludes_Description {
+            get {
+                return ResourceManager.GetString("NoDefaultExcludes_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Do not prompt for user input or confirmations..
         /// </summary>
         internal static string NonInteractive_Description {
             get {
                 return ResourceManager.GetString("NonInteractive_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specify if the command should not run package analysis after building the package..
+        /// </summary>
+        internal static string NoPackageAnalysis_Description {
+            get {
+                return ResourceManager.GetString("NoPackageAnalysis_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to http://docs.nuget.org/.
+        /// </summary>
+        internal static string NuGetDocs {
+            get {
+                return ResourceManager.GetString("NuGetDocs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specifies the directory for the created NuGet package file. If not specified, uses the current directory.
+        /// </summary>
+        internal static string OutputDirectory_Description {
+            get {
+                return ResourceManager.GetString("OutputDirectory_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Added file &apos;{0}&apos;..
+        /// </summary>
+        internal static string PackageCommandAddedFile {
+            get {
+                return ResourceManager.GetString("PackageCommandAddedFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The value of MinClientVersion argument is not a valid version..
+        /// </summary>
+        internal static string PackageCommandInvalidMinClientVersion {
+            get {
+                return ResourceManager.GetString("PackageCommandInvalidMinClientVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Description: {0}.
+        /// </summary>
+        internal static string PackageCommandIssueDescription {
+            get {
+                return ResourceManager.GetString("PackageCommandIssueDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Solution: {0}.
+        /// </summary>
+        internal static string PackageCommandIssueSolution {
+            get {
+                return ResourceManager.GetString("PackageCommandIssueSolution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Issue: {0}.
+        /// </summary>
+        internal static string PackageCommandIssueTitle {
+            get {
+                return ResourceManager.GetString("PackageCommandIssueTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Failed to build package. Ensure &apos;{0}&apos; includes assembly files. For help on building symbols package, visit {1}..
+        /// </summary>
+        internal static string PackageCommandNoFilesForLibPackage {
+            get {
+                return ResourceManager.GetString("PackageCommandNoFilesForLibPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Failed to build package. Ensure &apos;{0}&apos; includes source and symbol files. For help on building symbols package, visit {1}..
+        /// </summary>
+        internal static string PackageCommandNoFilesForSymbolsPackage {
+            get {
+                return ResourceManager.GetString("PackageCommandNoFilesForSymbolsPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Issue found with package &apos;{1}&apos;..
+        /// </summary>
+        internal static string PackageCommandPackageIssueSummary {
+            get {
+                return ResourceManager.GetString("PackageCommandPackageIssueSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Creates a NuGet package based on the specified nuspec or project file.
+        /// </summary>
+        internal static string PackCommand_Description {
+            get {
+                return ResourceManager.GetString("PackCommand_Description", resourceCulture);
             }
         }
         
@@ -357,11 +519,65 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Appends a pre-release suffix to the internally generated version number..
+        /// </summary>
+        internal static string Suffix_Description {
+            get {
+                return ResourceManager.GetString("Suffix_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Minimal, Warning, Error..
         /// </summary>
         internal static string Switch_Verbosity {
             get {
                 return ResourceManager.GetString("Switch_Verbosity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Determines if a package containing sources and symbols should be created. When specified with a nuspec, creates a regular NuGet package file and the corresponding symbols package..
+        /// </summary>
+        internal static string Symbols_Description {
+            get {
+                return ResourceManager.GetString("Symbols_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Overrides the version number from the nuspec file..
+        /// </summary>
+        internal static string Version_Description {
+            get {
+                return ResourceManager.GetString("Version_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Version &quot;{0}&quot; does not follow semantic versioning guidelines..
+        /// </summary>
+        internal static string Warning_SemanticVersion {
+            get {
+                return ResourceManager.GetString("Warning_SemanticVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Update your nuspec file or use the AssemblyInformationalVersion assembly attribute to specify a semantic version as described at http://semver.org..
+        /// </summary>
+        internal static string Warning_SemanticVersionSolution {
+            get {
+                return ResourceManager.GetString("Warning_SemanticVersionSolution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Use semantic versioning.
+        /// </summary>
+        internal static string Warning_SemanticVersionTitle {
+            get {
+                return ResourceManager.GetString("Warning_SemanticVersionTitle", resourceCulture);
             }
         }
     }
