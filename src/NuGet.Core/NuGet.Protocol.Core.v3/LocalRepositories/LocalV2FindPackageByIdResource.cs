@@ -133,24 +133,26 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
                 throw new FatalProtocolException(message, ex);
             }
 
-            if (rootDirectoryInfo == null && !rootDirectoryInfo.Exists)
+            if (rootDirectoryInfo == null || !Directory.Exists(rootDirectoryInfo.FullName))
             {
                 yield break;
             }
 
             var filter = id + "*.nupkg";
-            foreach (var dir in rootDirectoryInfo.EnumerateDirectories(filter))
-            {
-                foreach (var path in dir.EnumerateFiles(filter))
-                {
-                    yield return path;
-                }
-            }
 
             // Check top level directory
             foreach (var path in rootDirectoryInfo.EnumerateFiles(filter))
             {
                 yield return path;
+            }
+
+            // Check sub directories
+            foreach (var dir in  rootDirectoryInfo.EnumerateDirectories(filter))
+            {
+                foreach (var path in dir.EnumerateFiles(filter))
+                {
+                    yield return path;
+                }
             }
         }
     }
