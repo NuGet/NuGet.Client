@@ -340,31 +340,9 @@ namespace NuGetVSExtension
                 this._outputConsoleLogger.OutputConsole.WriteLine,
                 nonInteractive: false);
 
-            HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(credentialService); ;
+            HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(credentialService);
 
-            // Set up proxy handling for v3 sources.
-            // We need to sync the v2 proxy cache and v3 proxy cache so that the user will not
-            // get prompted twice for the same authenticated proxy.
-            var v2ProxyCache = ProxyCache.Instance;
-            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForProxyCredentials =
-                async (uri, proxy, cancellationToken) =>
-                {
-                    var v2Credentials = v2ProxyCache?.GetProxy(uri)?.Credentials;
-                    if (v2Credentials != null && proxy.Credentials != v2Credentials)
-                    {
-                        // if cached v2 credentials have not been used, try using it first.
-                        return v2Credentials;
-                    }
-
-                    return await credentialService
-                        .GetCredentials(uri, proxy, isProxy: true, cancellationToken: cancellationToken);
-                };
-
-            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.ProxyPassed = proxy =>
-            {
-                // add the proxy to v2 proxy cache.
-                v2ProxyCache?.Add(proxy);
-            };
+            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.CredentialSerivce = credentialService;
 
             NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForCredentials =
                 async (uri, cancellationToken) =>

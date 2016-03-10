@@ -6,10 +6,10 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NuGet.Credentials
+namespace NuGet.Configuration
 {
     public interface ICredentialService
     {
-        Task<ICredentials> GetCredentials(Uri uri, IWebProxy proxy, bool isProxy, CancellationToken token);
+        Task<ICredentials> GetCredentials(Uri uri, IWebProxy proxy, bool isProxy, CancellationToken cancellationToken);
     }
 }

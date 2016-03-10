@@ -25,6 +25,7 @@ namespace NuGet.Protocol
     public class HttpSource : IDisposable
     {
         public static readonly TimeSpan DefaultDownloadTimeout = TimeSpan.FromSeconds(60);
+        private const int MaxAuthRetries = 3;
         private const int BufferSize = 8192;
         private readonly Func<Task<HttpHandlerResource>> _messageHandlerFactory;
         private readonly Uri _baseUri;
@@ -52,7 +53,7 @@ namespace NuGet.Protocol
             RuntimeEnvironmentHelper.IsMacOSX
                 ? new SemaphoreSlim(ConcurrencyLimit, ConcurrencyLimit)
                 : null;
-        
+
         public TimeSpan DownloadTimeout { get; set; } = DefaultDownloadTimeout;
 
         public HttpSource(PackageSource source, Func<Task<HttpHandlerResource>> messageHandlerFactory)
@@ -348,7 +349,7 @@ namespace NuGet.Protocol
                 response = await _retryHandler.SendAsync(
                     _httpClient,
                     requestWithStsFactory,
-                    HttpCompletionOption.ResponseHeadersRead, 
+                    HttpCompletionOption.ResponseHeadersRead,
                     log,
                     cancellationToken);
 
@@ -367,7 +368,7 @@ namespace NuGet.Protocol
 
                         // Give up after 3 tries.
                         _authRetries++;
-                        if (_authRetries > HttpHandlerResourceV3Provider.MaxAuthRetries)
+                        if (_authRetries > MaxAuthRetries)
                         {
                             return response;
                         }

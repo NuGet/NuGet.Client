@@ -1,23 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if !NETSTANDARDAPP1_5
 using System.Net;
 using Moq;
-#endif
 using Xunit;
 
 namespace NuGet.Configuration.Test
 {
     public class ProxyCacheTest
     {
-        [Fact(Skip = "Proxy feature is disabled on CoreCLR, need to enable and then all the tests below")]
-        public void ProxyTestsAreDisabledOnCoreClr()
-        {
-        }
-
-#if !NETSTANDARDAPP1_5
-
         private static readonly string _password = EncryptionUtility.EncryptString("password");
 
         [Fact]
@@ -70,10 +61,10 @@ namespace NuGet.Configuration.Test
             var proxyCache = new ProxyCache(settings.Object, environment);
 
             // Act
-            var proxy = proxyCache.GetUserConfiguredProxy();
+            var proxy = proxyCache.GetUserConfiguredProxy() as WebProxy;
 
             // Assert
-            AssertProxy(new { Host = host, User = user, Password = "password" }, proxy);
+            AssertProxy(host, user, "password", proxy);
         }
 
         [Fact]
@@ -90,11 +81,10 @@ namespace NuGet.Configuration.Test
             var proxyCache = new ProxyCache(settings.Object, environment);
 
             // Act
-            var proxy = proxyCache.GetUserConfiguredProxy();
+            var proxy = proxyCache.GetUserConfiguredProxy() as WebProxy;
 
             // Assert
-            Assert.Equal(host, proxy.Address.OriginalString);
-            Assert.Null(proxy.Credentials);
+            AssertProxy(host, null, null, proxy);
         }
 
         [Theory]
@@ -129,10 +119,10 @@ namespace NuGet.Configuration.Test
             var proxyCache = new ProxyCache(settings, environment.Object);
 
             // Act
-            var proxy = proxyCache.GetUserConfiguredProxy();
+            var proxy = proxyCache.GetUserConfiguredProxy() as WebProxy;
 
             // Assert
-            Assert.Equal("http://localhost:8081/", proxy.Address.OriginalString);
+            AssertProxy("http://localhost:8081/", null, null, proxy);
         }
 
         [Theory]
@@ -149,17 +139,17 @@ namespace NuGet.Configuration.Test
             var proxyCache = new ProxyCache(settings, environment.Object);
 
             // Act
-            var proxy = proxyCache.GetUserConfiguredProxy();
+            var proxy = proxyCache.GetUserConfiguredProxy() as WebProxy;
 
             // Assert
-            AssertProxy(new { Host = host, User = username, Password = password }, proxy);
+            AssertProxy(host, username, password, proxy);
         }
 
-        private static void AssertProxy(dynamic expected, WebProxy actual)
+        private static void AssertProxy(string proxyAddress, string username, string password, WebProxy actual)
         {
-            Assert.Equal(expected.Host, actual.Address.OriginalString);
+            Assert.Equal(proxyAddress, actual.ProxyAddress.OriginalString);
 
-            if (expected.User == null)
+            if (username == null)
             {
                 Assert.Null(actual.Credentials);
             }
@@ -167,10 +157,9 @@ namespace NuGet.Configuration.Test
             {
                 Assert.IsType<NetworkCredential>(actual.Credentials);
                 var credentials = (NetworkCredential)actual.Credentials;
-                Assert.Equal(expected.User, credentials.UserName);
-                Assert.Equal(expected.Password, credentials.Password);
+                Assert.Equal(username, credentials.UserName);
+                Assert.Equal(password, credentials.Password);
             }
         }
-#endif
     }
 }

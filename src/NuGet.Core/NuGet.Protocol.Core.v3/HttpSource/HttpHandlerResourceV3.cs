@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
 using System.Threading;
+using NuGet.Configuration;
 
 namespace NuGet.Protocol.Core.v3
 {
@@ -47,13 +48,7 @@ namespace NuGet.Protocol.Core.v3
         /// <summary>
         /// Function to be called to prompt user for proxy credentials.
         /// </summary> 
-        public static Func<Uri, IWebProxy, CancellationToken, Task<ICredentials>> PromptForProxyCredentials
-            { get; set; }
-
-        /// <summary>
-        /// Action to be called when the proxy is successfully used to make a request.
-        /// </summary> 
-        public static Action<IWebProxy> ProxyPassed { get; set; }
+        public static ICredentialService CredentialSerivce { get; set; }
 
         /// <summary>
         /// Gets or sets a delegate to be invoked to prompt user for authenticated feed credentials.
