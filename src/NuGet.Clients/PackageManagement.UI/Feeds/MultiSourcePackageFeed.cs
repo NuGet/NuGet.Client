@@ -110,7 +110,7 @@ namespace NuGet.PackageManagement.UI
 
         private async Task<SearchResult<IPackageSearchMetadata>> WaitForCompletionOrBailOutAsync(
             string searchText,
-            IDictionary<string, Task<SearchResult<IPackageSearchMetadata>>> searchTasks, 
+            IDictionary<string, Task<SearchResult<IPackageSearchMetadata>>> searchTasks,
             CancellationToken cancellationToken)
         {
             if (searchTasks.Count == 0)
@@ -183,7 +183,7 @@ namespace NuGet.PackageManagement.UI
         }
 
         private async Task<SearchResult<IPackageSearchMetadata>> AggregateSearchResultsAsync(
-            string searchText, 
+            string searchText,
             IEnumerable<SearchResult<IPackageSearchMetadata>> results)
         {
             SearchResult<IPackageSearchMetadata> result;
@@ -199,7 +199,7 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                var indexer = new LuceneSearchResultsIndexer();
+                var indexer = new RelevanceSearchResultsIndexer();
                 var aggregator = new SearchResultsAggregator(indexer);
                 var aggregatedItems = await aggregator.AggregateAsync(
                     searchText, nonEmptyResults.Select(r => r.Items).ToArray());

@@ -1,4 +1,7 @@
-﻿using Lucene.Net.Documents;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Lucene.Net.Documents;
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
@@ -11,9 +14,12 @@ namespace NuGet.Indexing
     /// <summary>
     /// Lucene-based search results indexer.
     /// </summary>
-    public class LuceneSearchResultsIndexer : ISearchResultsIndexer
+    public class RelevanceSearchResultsIndexer : ISearchResultsIndexer
     {
-        public IDictionary<string, int> Rank(string queryString, IEnumerable<IPackageSearchMetadata> entries)
+        // Default rank value will cause element to sink down to bottom of search results list
+        private const long DefaultRankValue = -1;
+
+        public IDictionary<string, long> Rank(string queryString, IEnumerable<IPackageSearchMetadata> entries)
         {
             using (var directory = new RAMDirectory())
             {
@@ -21,12 +27,12 @@ namespace NuGet.Indexing
 
                 var searcher = new IndexSearcher(directory);
                 var query = NuGetQuery.MakeQuery(queryString);
-                var topDocs = searcher.Search(query, 100);
+                var topDocs = searcher.Search(query, entries.Count());
 
                 var ranking = topDocs.ScoreDocs
                     .Select(d => searcher.Doc(d.Doc))
-                    .Zip(Enumerable.Range(0, topDocs.ScoreDocs.Length), (doc, rank) => new { doc, rank })
-                    .ToDictionary(x => x.doc.Get("Id"), x => x.rank);
+                    .Zip(Enumerable.Range(0, topDocs.ScoreDocs.Length).Reverse(), (doc, rank) => new { doc, rank })
+                    .ToDictionary(x => x.doc.Get("Id"), x => (long)x.rank);
 
                 return ranking;
             }
@@ -55,6 +61,28 @@ namespace NuGet.Indexing
             doc.Add(new Field("Title", item.Title ?? string.Empty, Field.Store.NO, Field.Index.ANALYZED));
             doc.Add(new Field("Tags", item.Tags ?? string.Empty, Field.Store.NO, Field.Index.ANALYZED));
             return doc;
+        }
+
+        // Fills gaps of missing ranks in a given sequence of search results.
+        // Helps to keep unranked elements in merged list.
+        // To illustrate the effect of this method consider sample sequence with ranks as following:
+        // [ 9, 2, -, -, 3, -, -, - ] => [ 9, 2, *3*, *3*, 3, *-1*, *-1*, *-1* ]
+        public IEnumerable<IPackageSearchMetadata> ProcessUnrankedEntries(IEnumerable<IPackageSearchMetadata> entries, IDictionary<string, long> ranking)
+        {
+            var defaultRank = DefaultRankValue;
+            foreach (var v in entries.Reverse().Select(e => e.Identity.Id))
+            {
+                if (!ranking.ContainsKey(v))
+                {
+                    ranking.Add(v, defaultRank);
+                }
+
+                // assign rank of element behind current
+                defaultRank = ranking[v];
+            }
+
+            // returns unmodified list for convenience
+            return entries;
         }
     }
 }
