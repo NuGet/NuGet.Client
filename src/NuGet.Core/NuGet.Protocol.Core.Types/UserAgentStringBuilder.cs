@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Reflection;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.Types
@@ -12,7 +13,7 @@ namespace NuGet.Protocol.Core.Types
         private const string UserAgentWithOSDescriptionTemplate = "{0}/{1} ({2})";
         private const string UserAgentTemplate = "{0}/{1}";
 
-        private readonly string _clientInfo;
+        private readonly string _clientName;
         private string _vsInfo;
         private string _osInfo;
 
@@ -21,13 +22,13 @@ namespace NuGet.Protocol.Core.Types
         {
         }
 
-        public UserAgentStringBuilder(string clientInfo)
+        public UserAgentStringBuilder(string clientName)
         {
-            _clientInfo = clientInfo;
+            _clientName = clientName;
             NuGetClientVersion = GetNuGetVersion();
         }
 
-        public NuGetVersion NuGetClientVersion { get; }
+        public string NuGetClientVersion { get; }
 
         public UserAgentStringBuilder WithOSDescription(string osInfo)
         {
@@ -45,7 +46,7 @@ namespace NuGet.Protocol.Core.Types
         {
             var osDescription = _osInfo ?? GetOSVersion();
 
-            var clientInfo = _clientInfo;
+            var clientInfo = _clientName;
             if (NuGetTestMode.Enabled)
             {
                 clientInfo = NuGetTestMode.NuGetTestClientName;
@@ -78,30 +79,46 @@ namespace NuGet.Protocol.Core.Types
                 return string.Format(
                     CultureInfo.InvariantCulture,
                     UserAgentWithOSDescriptionAndVisualStudioSKUTemplate,
-                    _clientInfo,
+                    _clientName,
                     NuGetClientVersion, /* NuGet version */
                     osDescription, /* OS version */
                     _vsInfo);  /* VS SKU + version */
             }
         }
 
-        private static NuGetVersion GetNuGetVersion()
+        private static string GetNuGetVersion()
         {
-            Version attr = null;
+            var nugetVersion = string.Empty;
 
 #if !DNXCORE50
-            attr = typeof(Repository).Assembly.GetName().Version;
-#endif
-
-            if (attr == null)
-            {
-                return new NuGetVersion(3, 4, 0, 0);
-            }
+            var attr = typeof(Repository).Assembly.GetName().Version;
 
             NuGetVersion version;
             NuGetVersion.TryParse(attr.ToString(), out version);
 
-            return version;
+            if (version != null)
+            {
+                nugetVersion = version.ToString();
+            }
+#else
+            var assembly = typeof(Repository).GetTypeInfo().Assembly;
+            var informationalVersionAttr = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+            if (informationalVersionAttr != null)
+            {
+                nugetVersion = informationalVersionAttr.InformationalVersion;
+            }
+            else
+            {
+                var versionAttr = assembly.GetCustomAttribute<AssemblyVersionAttribute>();
+                if (versionAttr != null)
+                {
+                    nugetVersion = versionAttr.Version.ToString();
+                }
+            }
+
+#endif
+
+            return nugetVersion;
         }
 
         private string GetOSVersion()

@@ -1,5 +1,4 @@
 ﻿using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -86,10 +85,13 @@ namespace NuGet.Protocol.Core.v3.Tests
             var userAgentString3 = builder.WithVisualStudioSKU("VS SKU/Version").Build();
             var userAgentString4 = builder.Build();
 
-            Assert.True(userAgentString.Contains(builder.NuGetClientVersion.ToString()));
-            Assert.True(userAgentString2.Contains(builder.NuGetClientVersion.ToString()));
-            Assert.True(userAgentString3.Contains(builder.NuGetClientVersion.ToString()));
-            Assert.True(userAgentString4.Contains(builder.NuGetClientVersion.ToString()));
+            _output.WriteLine("NuGet client version: " + builder.NuGetClientVersion);
+            Assert.NotNull(builder.NuGetClientVersion);
+            Assert.NotEmpty(builder.NuGetClientVersion);
+            Assert.True(userAgentString.Contains(builder.NuGetClientVersion));
+            Assert.True(userAgentString2.Contains(builder.NuGetClientVersion));
+            Assert.True(userAgentString3.Contains(builder.NuGetClientVersion));
+            Assert.True(userAgentString4.Contains(builder.NuGetClientVersion));
         }
     }
 }
