@@ -750,7 +750,10 @@ namespace NuGet.PackageManagement
                     foreach (var installedPackage in projectInstalledPackageReferences)
                     {
                         var packageInfo = await packagesFolderResource.ResolvePackage(installedPackage.PackageIdentity, targetFramework, log, token);
-                        availablePackageDependencyInfoWithSourceSet.Add(packageInfo);
+                        if (packageInfo != null)
+                        {
+                            availablePackageDependencyInfoWithSourceSet.Add(packageInfo);
+                        }
                     }
                 }
 
