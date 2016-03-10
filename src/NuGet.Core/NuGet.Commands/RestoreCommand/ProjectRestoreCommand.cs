@@ -316,10 +316,14 @@ namespace NuGet.Commands
             foreach (var dependency in dependencies)
             {
                 // Ignore floating or version-less (project) dependencies
-                if (dependency.LibraryRange.VersionRange != null && !dependency.LibraryRange.VersionRange.IsFloating)
+                // Avoid warnings for non-packages
+                if (dependency.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.Package)
+                    && dependency.LibraryRange.VersionRange != null && !dependency.LibraryRange.VersionRange.IsFloating)
                 {
                     var match = result.Flattened.FirstOrDefault(g => g.Key.Name.Equals(dependency.LibraryRange.Name));
-                    if (match != null && match.Key.Version > dependency.LibraryRange.VersionRange.MinVersion)
+                    if (match != null
+                        && LibraryTypes.Package == match.Key.Type
+                        && match.Key.Version > dependency.LibraryRange.VersionRange.MinVersion)
                     {
                         _logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_DependencyBumpedUp,
                             dependency.LibraryRange.Name,

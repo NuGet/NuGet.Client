@@ -72,9 +72,11 @@ namespace NuGet.ProjectModel
                 }
                 else
                 {
-                    var framework = actualTargetFrameworks
-                        .FirstOrDefault(f =>
-                            string.Equals(f.FrameworkName.ToString(), @group.FrameworkName, StringComparison.OrdinalIgnoreCase));
+                    var framework = actualTargetFrameworks.FirstOrDefault(f => string.Equals(
+                                f.FrameworkName.DotNetFrameworkName,
+                                @group.FrameworkName,
+                                StringComparison.OrdinalIgnoreCase));
+
                     if (framework == null)
                     {
                         return false;
@@ -166,7 +168,11 @@ namespace NuGet.ProjectModel
                         group => group.FrameworkName, StringComparer.OrdinalIgnoreCase))
                 && Libraries.OrderBy(library => library.Name, StringComparer.OrdinalIgnoreCase)
                     .SequenceEqual(other.Libraries.OrderBy(library => library.Name, StringComparer.OrdinalIgnoreCase))
-                && Targets.OrderBy(target => target.Name).SequenceEqual(other.Targets.OrderBy(target => target.Name));
+                && Targets.OrderBy(target => target.Name).SequenceEqual(other.Targets.OrderBy(target => target.Name))
+                && ProjectFileToolGroups.OrderBy(group => group.FrameworkName, StringComparer.OrdinalIgnoreCase)
+                    .SequenceEqual(other.ProjectFileToolGroups.OrderBy(
+                        group => group.FrameworkName, StringComparer.OrdinalIgnoreCase))
+                && Tools.OrderBy(target => target.Name).SequenceEqual(other.Tools.OrderBy(target => target.Name));
         }
 
         public override bool Equals(object obj)
@@ -181,23 +187,35 @@ namespace NuGet.ProjectModel
             combiner.AddObject(IsLocked);
             combiner.AddObject(Version);
 
-            foreach (var item in ProjectFileDependencyGroups.OrderBy(
-                group => group.FrameworkName, StringComparer.OrdinalIgnoreCase))
-            {
-                combiner.AddObject(item);
-            }
+            HashProjectFileDependencyGroups(combiner, ProjectFileDependencyGroups);
 
             foreach (var item in Libraries.OrderBy(library => library.Name, StringComparer.OrdinalIgnoreCase))
             {
                 combiner.AddObject(item);
             }
 
-            foreach (var item in Targets.OrderBy(target => target.Name, StringComparer.OrdinalIgnoreCase))
+            HashLockFileTargets(combiner, Targets);
+            HashProjectFileDependencyGroups(combiner, ProjectFileToolGroups);
+            HashLockFileTargets(combiner, Tools);
+
+            return combiner.CombinedHash;
+        }
+
+        private static void HashLockFileTargets(HashCodeCombiner combiner, IList<LockFileTarget> targets)
+        {
+            foreach (var item in targets.OrderBy(target => target.Name, StringComparer.OrdinalIgnoreCase))
             {
                 combiner.AddObject(item);
             }
+        }
 
-            return combiner.CombinedHash;
+        private static void HashProjectFileDependencyGroups(HashCodeCombiner combiner, IList<ProjectFileDependencyGroup> groups)
+        {
+            foreach (var item in groups.OrderBy(
+                group => @group.FrameworkName, StringComparer.OrdinalIgnoreCase))
+            {
+                combiner.AddObject(item);
+            }
         }
     }
 }

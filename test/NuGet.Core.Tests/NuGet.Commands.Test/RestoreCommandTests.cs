@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.Logging;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Xunit;
@@ -248,6 +249,124 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public async Task RestoreCommand_DoesNotRedoRestoreToolsWithValidLockFile()
+        {
+            // Arrange
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var tc = new ToolTestContext(workingDir)
+                {
+                    ProjectJson = @"
+                    {
+                        ""frameworks"": {
+                            ""net45"": { }
+                        },
+                        ""tools"": {
+                            ""packageA"": ""*""
+                        }
+                    }",
+                };
+
+                var packageA = new SimpleTestPackageContext("packageA");
+                packageA.AddFile("lib/netstandard1.3/a.dll");
+
+                SimpleTestPackageUtility.CreatePackages(tc.PackageSource.FullName, packageA);
+
+                tc.Initialize();
+
+                // the first restore
+                await (await tc.Command.ExecuteAsync()).CommitAsync(tc.Logger, CancellationToken.None);
+
+                // reset
+                tc.Logger = new TestLogger();
+                tc.Request.Log = tc.Logger;
+                tc.Initialize();
+                tc.Request.ExistingLockFile = LockFileUtilities.GetLockFile(tc.Request.LockFilePath, tc.Logger);
+
+                // Act
+                var result = await tc.Command.ExecuteAsync();
+                await result.CommitAsync(tc.Logger, CancellationToken.None);
+
+                // Assert
+                Assert.True(
+                    result.Success,
+                    "The command did not succeed. Error messages: "
+                    + Environment.NewLine + tc.Logger.ShowErrors());
+                Assert.Equal(1, result.ToolRestoreResults.Count());
+
+                Assert.Contains(
+                    $"Lock file has not changed. Skipping lock file write. Path: {result.LockFilePath}",
+                    tc.Logger.Messages);
+
+                var toolResult = result.ToolRestoreResults.First();
+                Assert.Contains(
+                    $"Tool lock file has not changed. Skipping lock file write. Path: {toolResult.LockFilePath}",
+                    tc.Logger.Messages);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_ObservesLockedFilesOnlyInProject()
+        {
+            // Arrange
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var tc = new ToolTestContext(workingDir)
+                {
+                    ProjectJson = @"
+                    {
+                        ""frameworks"": {
+                            ""net45"": { }
+                        },
+                        ""tools"": {
+                            ""packageA"": ""*""
+                        }
+                    }",
+                };
+
+                var packageA = new SimpleTestPackageContext("packageA");
+                packageA.AddFile("lib/netstandard1.3/a.dll");
+
+                SimpleTestPackageUtility.CreatePackages(tc.PackageSource.FullName, packageA);
+
+                tc.Initialize();
+
+                // the first restore
+                var initialResult = await tc.Command.ExecuteAsync();
+                await initialResult.CommitAsync(tc.Logger, CancellationToken.None);
+                
+                tc.SetIsLocked(initialResult.LockFilePath, true, tc.Logger);
+                tc.SetIsLocked(initialResult.ToolRestoreResults.First().LockFilePath, true, tc.Logger);
+
+                // reset
+                tc.Logger = new TestLogger();
+                tc.Request.Log = tc.Logger;
+                tc.Initialize();
+                tc.Request.ExistingLockFile = LockFileUtilities.GetLockFile(tc.Request.LockFilePath, tc.Logger);
+
+                // Act
+                var result = await tc.Command.ExecuteAsync();
+                await result.CommitAsync(tc.Logger, CancellationToken.None);
+
+                // Assert
+                Assert.True(
+                    result.Success,
+                    "The command did not succeed. Error messages: "
+                    + Environment.NewLine + tc.Logger.ShowErrors());
+                Assert.Equal(1, result.ToolRestoreResults.Count());
+                
+                // Since the files are locked and valid, the commit is completely skipped.
+                Assert.DoesNotContain(result.LockFilePath, tc.Logger.ShowMessages());
+
+                // Locking a tool lock file is not supported.
+                var toolResult = result.ToolRestoreResults.First();                
+                Assert.Contains(
+                    $"Tool lock file has not changed. Skipping lock file write. Path: {toolResult.LockFilePath}",
+                    tc.Logger.Messages);
+            }
+        }
+
+        [Fact]
         public async Task RestoreCommand_FailsCommandWhenToolRestoreFails()
         {
             // Arrange
@@ -379,7 +498,7 @@ namespace NuGet.Commands.Test
             }
 
             public DirectoryInfo PackageSource { get; }
-            public TestLogger Logger { get; }
+            public TestLogger Logger { get; set; }
             public string ProjectJson { private get; set; }
             public RestoreRequest Request { get; set;  }
             public RestoreCommand Command { get; private set;  }
@@ -398,6 +517,13 @@ namespace NuGet.Commands.Test
 
                 Request.LockFilePath = Path.Combine(Project.FullName, "project.lock.json");
                 Command = new RestoreCommand(Request);
+            }
+
+            public void SetIsLocked(string path, bool isLocked, ILogger logger)
+            {
+                var lockFile = LockFileUtilities.GetLockFile(path, logger);
+                lockFile.IsLocked = isLocked;
+                new LockFileFormat().Write(path, lockFile);
             }
         }
     }

@@ -5,7 +5,7 @@ using NuGet.ProjectModel;
 
 namespace NuGet.Commands
 {
-    public class ToolRestoreResult
+    public class ToolRestoreResult : IRestoreResult
     {
         public ToolRestoreResult(
             string toolName,
@@ -13,7 +13,8 @@ namespace NuGet.Commands
             LockFileTarget lockFileTarget,
             LockFileTargetLibrary fileTargetLibrary,
             string lockFilePath,
-            LockFile lockFile)
+            LockFile lockFile,
+            LockFile previousLockFile)
         {
             ToolName = toolName;
             Success = success;
@@ -21,6 +22,10 @@ namespace NuGet.Commands
             FileTargetLibrary = fileTargetLibrary;
             LockFilePath = lockFilePath;
             LockFile = lockFile;
+            PreviousLockFile = previousLockFile;
+            
+            // "locked" property is not supported on tools
+            RelockFile = false;
         }
 
         public string ToolName { get; }
@@ -29,5 +34,7 @@ namespace NuGet.Commands
         public LockFileTargetLibrary FileTargetLibrary { get; }
         public string LockFilePath { get; }
         public LockFile LockFile { get; }
+        public LockFile PreviousLockFile { get; }
+        public bool RelockFile { get; }
     }
 }

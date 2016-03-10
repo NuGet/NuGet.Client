@@ -12,10 +12,9 @@ namespace NuGet.ProjectModel.Test
     public class LockFileFormatTests
     {
         [Fact]
-        public void ReadBasicLockFile()
+        public void LockFileFormat_ReadsLockFileWithNoTools()
         {
-            const string lockFileContent = @"
-{
+            string lockFileContent = @"{
   ""locked"": true,
   ""version"": 1,
   ""targets"": {
@@ -90,44 +89,94 @@ namespace NuGet.ProjectModel.Test
             var netPlatDepGroup = lockFile.ProjectFileDependencyGroups.Last();
             Assert.Equal(NuGetFramework.Parse("dotnet").DotNetFrameworkName, netPlatDepGroup.FrameworkName);
             Assert.Empty(netPlatDepGroup.Dependencies);
+
+            Assert.Equal(0, lockFile.ProjectFileToolGroups.Count);
+            Assert.Equal(0, lockFile.Tools.Count);
         }
 
         [Fact]
-        public void WriteBasicLockFile()
+        public void LockFileFormat_ReadsLockFileWithTools()
+        {
+            string lockFileContent = @"{
+  ""tools"": {
+    "".NETStandard,Version=v1.2"": {
+      ""System.Runtime/4.0.20-beta-22927"": {
+        ""dependencies"": {
+          ""Frob"": ""[4.0.20, )""
+        },
+        ""compile"": {
+          ""ref/dotnet/System.Runtime.dll"": {}
+        }
+      }
+    }
+  },
+  ""projectFileToolGroups"": {
+    "".NETFramework,Version=v4.5.1"": [],
+    "".NETStandard,Version=v1.5"": [
+      ""System.Runtime [4.0.10-beta-*, )""
+    ]
+  }
+}";
+            var lockFileFormat = new LockFileFormat();
+            var lockFile = lockFileFormat.Parse(lockFileContent, "In Memory");
+
+            var tool = lockFile.Tools.Single();
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard12, tool.TargetFramework);
+
+            var runtimeTargetLibrary = tool.Libraries.Single();
+            Assert.Equal("System.Runtime", runtimeTargetLibrary.Name);
+            Assert.Equal(NuGetVersion.Parse("4.0.20-beta-22927"), runtimeTargetLibrary.Version);
+            Assert.Equal(0, runtimeTargetLibrary.NativeLibraries.Count);
+            Assert.Equal(0, runtimeTargetLibrary.ResourceAssemblies.Count);
+            Assert.Equal(0, runtimeTargetLibrary.FrameworkAssemblies.Count);
+            Assert.Equal(0, runtimeTargetLibrary.RuntimeAssemblies.Count);
+            Assert.Equal("ref/dotnet/System.Runtime.dll", runtimeTargetLibrary.CompileTimeAssemblies.Single().Path);
+
+            var net451Group = lockFile.ProjectFileToolGroups.First();
+            Assert.Equal(FrameworkConstants.CommonFrameworks.Net451, NuGetFramework.Parse(net451Group.FrameworkName));
+
+            var netStandardGroup = lockFile.ProjectFileToolGroups.Last();
+            Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard15, NuGetFramework.Parse(netStandardGroup.FrameworkName));
+            Assert.Equal("System.Runtime [4.0.10-beta-*, )", netStandardGroup.Dependencies.Single());
+        }
+
+        [Fact]
+        public void LockFileFormat_WritesLockFileWithNoTools()
         {
             // Arrange
-            const string lockFileContent = @"{
+            string lockFileContent = @"{
   ""locked"": true,
   ""version"": 2,
   ""targets"": {
-                "".NETPlatform,Version=v5.0"": {
-                    ""System.Runtime/4.0.20-beta-22927"": {
-                        ""type"": ""package"",
-                        ""dependencies"": {
-                            ""Frob"": ""4.0.20""
-                        },
+    "".NETPlatform,Version=v5.0"": {
+      ""System.Runtime/4.0.20-beta-22927"": {
+        ""type"": ""package"",
+        ""dependencies"": {
+          ""Frob"": ""4.0.20""
+        },
         ""compile"": {
-                            ""ref/dotnet/System.Runtime.dll"": {
-                            }
-                        }
-                    }
-                }
-            },
+          ""ref/dotnet/System.Runtime.dll"": {}
+        }
+      }
+    }
+  },
   ""libraries"": {
-                ""System.Runtime/4.0.20-beta-22927"": {
-                    ""sha512"": ""sup3rs3cur3"",
+    ""System.Runtime/4.0.20-beta-22927"": {
+      ""sha512"": ""sup3rs3cur3"",
       ""type"": ""package"",
       ""files"": [
         ""System.Runtime.nuspec""
       ]
     }
-},
+  },
   ""projectFileDependencyGroups"": {
     """": [
       ""System.Runtime [4.0.10-beta-*, )""
     ],
     "".NETPlatform,Version=v5.0"": []
-  }
+  },
+  ""tools"": {},
+  ""projectFileToolGroups"": {}
 }";
             var lockFile = new LockFile();
             lockFile.IsLocked = true;
@@ -162,6 +211,70 @@ namespace NuGet.ProjectModel.Test
             lockFile.ProjectFileDependencyGroups.Add(
                 new ProjectFileDependencyGroup("", new string[] { "System.Runtime [4.0.10-beta-*, )" }));
             lockFile.ProjectFileDependencyGroups.Add(
+                new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, new string[0]));
+
+            // Act
+            var lockFileFormat = new LockFileFormat();
+            var output = JObject.Parse(lockFileFormat.Render(lockFile));
+            var expected = JObject.Parse(lockFileContent);
+
+            // Assert
+            Assert.Equal(expected.ToString(), output.ToString());
+        }
+
+        [Fact]
+        public void LockFileFormat_WritesLockFileWithTools()
+        {
+            // Arrange
+            string lockFileContent = @"{
+  ""locked"": true,
+  ""version"": 2,
+  ""targets"": {},
+  ""libraries"": {},
+  ""projectFileDependencyGroups"": {},
+  ""tools"": {
+    "".NETPlatform,Version=v5.0"": {
+      ""System.Runtime/4.0.20-beta-22927"": {
+        ""type"": ""package"",
+        ""dependencies"": {
+          ""Frob"": ""4.0.20""
+        },
+        ""compile"": {
+          ""ref/dotnet/System.Runtime.dll"": {}
+        }
+      }
+    }
+  },
+  ""projectFileToolGroups"": {
+    """": [
+      ""System.Runtime [4.0.10-beta-*, )""
+    ],
+    "".NETPlatform,Version=v5.0"": []
+  }
+}";
+            var lockFile = new LockFile();
+            lockFile.IsLocked = true;
+            lockFile.Version = 2;
+
+            var target = new LockFileTarget()
+            {
+                TargetFramework = FrameworkConstants.CommonFrameworks.DotNet
+            };
+            var targetLib = new LockFileTargetLibrary()
+            {
+                Name = "System.Runtime",
+                Version = NuGetVersion.Parse("4.0.20-beta-22927"),
+                Type = LibraryTypes.Package
+            };
+            targetLib.Dependencies.Add(new NuGet.Packaging.Core.PackageDependency("Frob",
+                new VersionRange(NuGetVersion.Parse("4.0.20"))));
+            targetLib.CompileTimeAssemblies.Add(new LockFileItem("ref/dotnet/System.Runtime.dll"));
+            target.Libraries.Add(targetLib);
+            lockFile.Tools.Add(target);
+            
+            lockFile.ProjectFileToolGroups.Add(
+                new ProjectFileDependencyGroup("", new string[] { "System.Runtime [4.0.10-beta-*, )" }));
+            lockFile.ProjectFileToolGroups.Add(
                 new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, new string[0]));
 
             // Act
