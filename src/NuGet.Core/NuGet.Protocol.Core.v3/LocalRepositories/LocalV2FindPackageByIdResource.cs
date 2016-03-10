@@ -121,8 +121,19 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
         internal static IEnumerable<FileInfo> GetNupkgFiles(string sourceDir, string id)
         {
             // Check for package files one level deep.
-            var rootDirectoryInfo = new DirectoryInfo(sourceDir);
-            if (!rootDirectoryInfo.Exists)
+            DirectoryInfo rootDirectoryInfo = null;
+            try
+            {
+                rootDirectoryInfo = new DirectoryInfo(sourceDir);
+            }
+            catch(ArgumentException ex)
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, sourceDir);
+
+                throw new FatalProtocolException(message, ex);
+            }
+
+            if (rootDirectoryInfo == null && !rootDirectoryInfo.Exists)
             {
                 yield break;
             }
