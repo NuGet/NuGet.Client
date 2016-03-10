@@ -112,7 +112,7 @@ namespace NuGet.Protocol.Core.Types
             {
                 if (_OSVersion == null)
                 {
-                    _OSVersion = GetOSVersion();
+                    _OSVersion = OperatingSystemHelper.GetVersion();
                 }
                 return _OSVersion;
             }
@@ -135,17 +135,6 @@ namespace NuGet.Protocol.Core.Types
             NuGetVersion.TryParse(attr.ToString(), out version);
 
             return version;
-        }
-
-        private static string GetOSVersion()
-        {
-            string osVersion = string.Empty;
-
-#if !DNXCORE50
-            osVersion = Environment.OSVersion.ToString();
-#endif
-            // TODO: return OSVersion for DNXCORE50.
-            return osVersion;
         }
 
         private static class NuGetTestMode
