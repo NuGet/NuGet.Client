@@ -10,7 +10,8 @@ namespace NuGet.Protocol.Core.Types
     {
         static UserAgent()
         {
-            UserAgentString = string.Empty;
+            // Set default user agent string
+            UserAgentString = new UserAgentStringBuilder().Build();
         }
 
         public static void SetUserAgentString(UserAgentStringBuilder builder)
