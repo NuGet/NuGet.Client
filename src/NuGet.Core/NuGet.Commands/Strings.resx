@@ -261,4 +261,7 @@
 {0} is replaced with the tool ID.
 {1} is replaced with a path to the project that is being restored.</comment>
   </data>
+  <data name="Error_UnableToLocateRestoreTarget" xml:space="preserve">
+    <value>The folder '{0}' does not contain a project to restore.</value>
+  </data>
 </root>

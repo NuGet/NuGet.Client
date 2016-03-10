@@ -63,7 +63,17 @@ namespace NuGet.Commands
             // Create requests
             foreach (var input in inputs)
             {
-                foreach (var request in await CreateRequests(input, restoreContext))
+                var inputRequests = await CreateRequests(input, restoreContext);
+                if (inputRequests.Count == 0)
+                {
+                    // No need to throw here - the situation is harmless, and we want to report all possible
+                    // inputs that don't resolve to a project.
+                    log.LogWarning(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Error_UnableToLocateRestoreTarget,
+                            Path.GetFullPath(input)));
+                }
+                foreach (var request in inputRequests)
                 {
                     // De-dupe requests
                     if (uniqueRequest.Add(request.Request.LockFilePath))

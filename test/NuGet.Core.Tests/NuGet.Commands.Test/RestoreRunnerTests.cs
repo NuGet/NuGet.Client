@@ -355,5 +355,38 @@ namespace NuGet.Commands.Test
                 Assert.True(lockFile.Targets.Any(graph => graph.RuntimeIdentifier == "linux-x86"));
             }
         }
+
+        [Fact]
+        public async Task RestoreRunner_WarnIfNoProject()
+        {
+            // If an input folder is provided to RestoreRunner that doesn't contain a project,
+            // it should report an error.
+
+            using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var logger = new TestLogger();
+                var providerCache = new RestoreCommandProvidersCache();
+                var restoreContext = new RestoreArgs()
+                {
+                    CacheContext = new SourceCacheContext(),
+                    DisableParallel = true,
+                    Inputs = new List<string>() { workingDir },
+                    Log = logger,
+                    RequestProviders = new List<IRestoreRequestProvider>()
+                    {
+                        new ProjectJsonRestoreRequestProvider(providerCache)
+                    }
+                };
+
+                // Act
+                var summaries = await RestoreRunner.Run(restoreContext);
+
+                // Assert
+                Assert.Equal(0, summaries.Count);
+                var matchingError = logger.Messages.ToList().Find(error => error.Contains(workingDir));
+                Assert.NotNull(matchingError);
+            }
+        }
     }
 }
