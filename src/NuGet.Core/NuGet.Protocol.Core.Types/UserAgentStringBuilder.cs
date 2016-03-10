@@ -95,7 +95,7 @@ namespace NuGet.Protocol.Core.Types
 
             if (attr == null)
             {
-                return new NuGetVersion(3, 0, 0, 0);
+                return new NuGetVersion(3, 4, 0, 0);
             }
 
             NuGetVersion version;
