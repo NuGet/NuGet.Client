@@ -124,13 +124,6 @@ namespace NuGet.ProjectManagement
                 throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(fullPath));
             }
 
-            // MakeWriteable(fullPath); SourceControlManager will do that
-            var sourceControlManager = SourceControlUtility.GetSourceControlManager(nuGetProjectContext);
-            if (sourceControlManager != null)
-            {
-                return sourceControlManager.CreateFile(fullPath, nuGetProjectContext);
-            }
-
             return CreateFile(fullPath);
         }
 
