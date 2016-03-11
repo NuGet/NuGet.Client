@@ -497,8 +497,9 @@ function Test-GetFrameworksSupportingNetStandard
 
     # Assert
     Assert-AreEqual ".NETCore,Version=v5.0" ($actual | Select-Object -Index 0)
-    Assert-AreEqual ".NETFramework,Version=v4.5.1" ($actual | Select-Object -Index 1)
-    Assert-AreEqual ".NETPortable,Version=v0.0,Profile=Profile151" ($actual | Select-Object -Index 2)
+    Assert-AreEqual ".NETCoreApp,Version=v1.0" ($actual | Select-Object -Index 1)
+    Assert-AreEqual ".NETFramework,Version=v4.5.1" ($actual | Select-Object -Index 2)
+    Assert-AreEqual ".NETPortable,Version=v0.0,Profile=Profile151" ($actual | Select-Object -Index 3)
 }
 
 function Test-RestorePackageAPI
