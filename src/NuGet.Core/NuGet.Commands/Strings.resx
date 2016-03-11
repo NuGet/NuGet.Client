@@ -177,7 +177,7 @@
   <data name="Log_UsingSource" xml:space="preserve">
     <value>Using source {0}.</value>
   </data>
-  <data name="MSBuildWarning_MultiTarget" xml:space="preserve">
+  <data name="Warning_MultiTarget" xml:space="preserve">
     <value>Packages containing MSBuild targets and props files cannot be fully installed in projects targeting multiple frameworks. The MSBuild targets and props files have been ignored.</value>
   </data>
   <data name="Log_ResolverConflict" xml:space="preserve">
@@ -263,5 +263,53 @@
   </data>
   <data name="Error_UnableToLocateRestoreTarget" xml:space="preserve">
     <value>The folder '{0}' does not contain a project to restore.</value>
+  </data>
+  <data name="Log_PackageCommandAddedFile" xml:space="preserve">
+    <value>Added file '{0}'.</value>
+  </data>
+  <data name="Warning_PackageCommandIssueDescription" xml:space="preserve">
+    <value>Description: {0}</value>
+  </data>
+  <data name="Warning_PackageCommandIssueSolution" xml:space="preserve">
+    <value>Solution: {0}</value>
+  </data>
+  <data name="Warning_PackageCommandIssueTitle" xml:space="preserve">
+    <value>Issue: {0}</value>
+  </data>
+  <data name="Error_PackageCommandNoFilesForLibPackage" xml:space="preserve">
+    <value>Failed to build package. Ensure '{0}' includes assembly files. For help on building symbols package, visit {1}.</value>
+  </data>
+  <data name="Error_PackageCommandNoFilesForSymbolsPackage" xml:space="preserve">
+    <value>Failed to build package. Ensure '{0}' includes source and symbol files. For help on building symbols package, visit {1}.</value>
+  </data>
+  <data name="Warning_PackageCommandPackageIssueSummary" xml:space="preserve">
+    <value>Issue found with package '{1}'.</value>
+  </data>
+  <data name="Error_CannotFindMsbuild" xml:space="preserve">
+    <value>Cannot find version of msbuild.</value>
+  </data>
+  <data name="NuGetDocs" xml:space="preserve">
+    <value>http://docs.nuget.org/</value>
+  </data>
+  <data name="Log_PackageCommandAttemptingToBuildSymbolsPackage" xml:space="preserve">
+    <value>Attempting to build symbols package for '{0}'.</value>
+  </data>
+  <data name="Log_PackageCommandSuccess" xml:space="preserve">
+    <value>Successfully created package '{0}'.</value>
+  </data>
+  <data name="Warning_DuplicatePropertyKey" xml:space="preserve">
+    <value>'{0}' key already exists in Properties collection. Overriding value.</value>
+  </data>
+  <data name="Warning_SemanticVersion" xml:space="preserve">
+    <value>Version "{0}" does not follow semantic versioning guidelines.</value>
+  </data>
+  <data name="Warning_SemanticVersionSolution" xml:space="preserve">
+    <value>Update your nuspec file or use the AssemblyInformationalVersion assembly attribute to specify a semantic version as described at http://semver.org.</value>
+  </data>
+  <data name="Warning_SemanticVersionTitle" xml:space="preserve">
+    <value>Use semantic versioning</value>
+  </data>
+  <data name="MSBuildWarning_MultiTarget" xml:space="preserve">
+    <value>Packages containing MSBuild targets and props files cannot be fully installed in projects targeting multiple frameworks. The MSBuild targets and props files have been ignored.</value>
   </data>
 </root>

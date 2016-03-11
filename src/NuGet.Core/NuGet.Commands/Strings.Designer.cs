@@ -60,11 +60,38 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Cannot find version of msbuild..
+        /// </summary>
+        internal static string Error_CannotFindMsbuild {
+            get {
+                return ResourceManager.GetString("Error_CannotFindMsbuild", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Invalid input &apos;{0}&apos;. The file type was not recognized..
         /// </summary>
         internal static string Error_InvalidCommandLineInput {
             get {
                 return ResourceManager.GetString("Error_InvalidCommandLineInput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Failed to build package. Ensure &apos;{0}&apos; includes assembly files. For help on building symbols package, visit {1}..
+        /// </summary>
+        internal static string Error_PackageCommandNoFilesForLibPackage {
+            get {
+                return ResourceManager.GetString("Error_PackageCommandNoFilesForLibPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Failed to build package. Ensure &apos;{0}&apos; includes source and symbol files. For help on building symbols package, visit {1}..
+        /// </summary>
+        internal static string Error_PackageCommandNoFilesForSymbolsPackage {
+            get {
+                return ResourceManager.GetString("Error_PackageCommandNoFilesForSymbolsPackage", resourceCulture);
             }
         }
         
@@ -285,6 +312,33 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Added file &apos;{0}&apos;..
+        /// </summary>
+        internal static string Log_PackageCommandAddedFile {
+            get {
+                return ResourceManager.GetString("Log_PackageCommandAddedFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Attempting to build symbols package for &apos;{0}&apos;..
+        /// </summary>
+        internal static string Log_PackageCommandAttemptingToBuildSymbolsPackage {
+            get {
+                return ResourceManager.GetString("Log_PackageCommandAttemptingToBuildSymbolsPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Successfully created package &apos;{0}&apos;..
+        /// </summary>
+        internal static string Log_PackageCommandSuccess {
+            get {
+                return ResourceManager.GetString("Log_PackageCommandSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to {0} {1} is not compatible with {2}..
         /// </summary>
         internal static string Log_PackageNotCompatibleWithFx {
@@ -483,11 +537,101 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to http://docs.nuget.org/.
+        /// </summary>
+        internal static string NuGetDocs {
+            get {
+                return ResourceManager.GetString("NuGetDocs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to {0} (via {1}).
         /// </summary>
         internal static string ResolverRequest_ToStringFormat {
             get {
                 return ResourceManager.GetString("ResolverRequest_ToStringFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to &apos;{0}&apos; key already exists in Properties collection. Overriding value..
+        /// </summary>
+        internal static string Warning_DuplicatePropertyKey {
+            get {
+                return ResourceManager.GetString("Warning_DuplicatePropertyKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Packages containing MSBuild targets and props files cannot be fully installed in projects targeting multiple frameworks. The MSBuild targets and props files have been ignored..
+        /// </summary>
+        internal static string Warning_MultiTarget {
+            get {
+                return ResourceManager.GetString("Warning_MultiTarget", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Description: {0}.
+        /// </summary>
+        internal static string Warning_PackageCommandIssueDescription {
+            get {
+                return ResourceManager.GetString("Warning_PackageCommandIssueDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Solution: {0}.
+        /// </summary>
+        internal static string Warning_PackageCommandIssueSolution {
+            get {
+                return ResourceManager.GetString("Warning_PackageCommandIssueSolution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Issue: {0}.
+        /// </summary>
+        internal static string Warning_PackageCommandIssueTitle {
+            get {
+                return ResourceManager.GetString("Warning_PackageCommandIssueTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Issue found with package &apos;{1}&apos;..
+        /// </summary>
+        internal static string Warning_PackageCommandPackageIssueSummary {
+            get {
+                return ResourceManager.GetString("Warning_PackageCommandPackageIssueSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Version &quot;{0}&quot; does not follow semantic versioning guidelines..
+        /// </summary>
+        internal static string Warning_SemanticVersion {
+            get {
+                return ResourceManager.GetString("Warning_SemanticVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Update your nuspec file or use the AssemblyInformationalVersion assembly attribute to specify a semantic version as described at http://semver.org..
+        /// </summary>
+        internal static string Warning_SemanticVersionSolution {
+            get {
+                return ResourceManager.GetString("Warning_SemanticVersionSolution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Use semantic versioning.
+        /// </summary>
+        internal static string Warning_SemanticVersionTitle {
+            get {
+                return ResourceManager.GetString("Warning_SemanticVersionTitle", resourceCulture);
             }
         }
     }

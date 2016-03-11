@@ -248,29 +248,8 @@
   <data name="OutputDirectory_Description" xml:space="preserve">
     <value>Specifies the directory for the created NuGet package file. If not specified, uses the current directory</value>
   </data>
-  <data name="PackageCommandAddedFile" xml:space="preserve">
-    <value>Added file '{0}'.</value>
-  </data>
   <data name="PackageCommandInvalidMinClientVersion" xml:space="preserve">
     <value>The value of MinClientVersion argument is not a valid version.</value>
-  </data>
-  <data name="PackageCommandIssueDescription" xml:space="preserve">
-    <value>Description: {0}</value>
-  </data>
-  <data name="PackageCommandIssueSolution" xml:space="preserve">
-    <value>Solution: {0}</value>
-  </data>
-  <data name="PackageCommandIssueTitle" xml:space="preserve">
-    <value>Issue: {0}</value>
-  </data>
-  <data name="PackageCommandNoFilesForLibPackage" xml:space="preserve">
-    <value>Failed to build package. Ensure '{0}' includes assembly files. For help on building symbols package, visit {1}.</value>
-  </data>
-  <data name="PackageCommandNoFilesForSymbolsPackage" xml:space="preserve">
-    <value>Failed to build package. Ensure '{0}' includes source and symbol files. For help on building symbols package, visit {1}.</value>
-  </data>
-  <data name="PackageCommandPackageIssueSummary" xml:space="preserve">
-    <value>Issue found with package '{1}'.</value>
   </data>
   <data name="PackCommand_Description" xml:space="preserve">
     <value>Creates a NuGet package based on the specified nuspec or project file</value>
@@ -284,13 +263,22 @@
   <data name="Version_Description" xml:space="preserve">
     <value>Overrides the version number from the nuspec file.</value>
   </data>
-  <data name="Warning_SemanticVersion" xml:space="preserve">
-    <value>Version "{0}" does not follow semantic versioning guidelines.</value>
+  <data name="Build_Description" xml:space="preserve">
+    <value>Determines if the project should be built before building the package.</value>
   </data>
-  <data name="Warning_SemanticVersionSolution" xml:space="preserve">
-    <value>Update your nuspec file or use the AssemblyInformationalVersion assembly attribute to specify a semantic version as described at http://semver.org.</value>
+  <data name="IncludeReferencedProjects_Description" xml:space="preserve">
+    <value>Include referenced projects either as dependencies or as part of the package.</value>
   </data>
-  <data name="Warning_SemanticVersionTitle" xml:space="preserve">
-    <value>Use semantic versioning</value>
+  <data name="MsBuildVersion_Description" xml:space="preserve">
+    <value>Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild.</value>
+  </data>
+  <data name="PackageCommandAttemptingToBuildPackage" xml:space="preserve">
+    <value>Attempting to build package from '{0}'.</value>
+  </data>
+  <data name="PackageVersionInvalid" xml:space="preserve">
+    <value>Version string specified '{0}' is invalid.</value>
+  </data>
+  <data name="Tool_Description" xml:space="preserve">
+    <value>Determines if the output files of the project should be in the tool folder.</value>
   </data>
 </root>

@@ -74,42 +74,5 @@ namespace NuGet.CommandLine.XPlat
                 System.Console.ForegroundColor = currentColor;
             }
         }
-
-        public void WriteWarning(string value)
-        {
-            WriteWarning(prependWarningText: true, value: value, args: new object[0]);
-        }
-
-        public void WriteWarning(bool prependWarningText, string value, params object[] args)
-        {
-            string message = prependWarningText
-                                 ? String.Format(CultureInfo.CurrentCulture, Strings.CommandLine_Warning, value)
-                                 : value;
-
-            WriteColor(System.Console.Out, ConsoleColor.Yellow, message, args);
-        }
-
-        private static void WriteColor(TextWriter writer, ConsoleColor color, string value, params object[] args)
-        {
-            var currentColor = System.Console.ForegroundColor;
-            try
-            {
-                currentColor = System.Console.ForegroundColor;
-                System.Console.ForegroundColor = color;
-                if (args == null || !args.Any())
-                {
-                    // If it doesn't look like something that needs to be formatted, don't format it.
-                    writer.WriteLine(value);
-                }
-                else
-                {
-                    writer.WriteLine(value, args);
-                }
-            }
-            finally
-            {
-                System.Console.ForegroundColor = currentColor;
-            }
-        }
     }
 }

@@ -87,6 +87,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Determines if the project should be built before building the package..
+        /// </summary>
+        internal static string Build_Description {
+            get {
+                return ResourceManager.GetString("Build_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to WARNING: {0}.
         /// </summary>
         internal static string CommandLine_Warning {
@@ -155,6 +164,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string ExcludeEmptyDirectories_Description {
             get {
                 return ResourceManager.GetString("ExcludeEmptyDirectories_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Include referenced projects either as dependencies or as part of the package..
+        /// </summary>
+        internal static string IncludeReferencedProjects_Description {
+            get {
+                return ResourceManager.GetString("IncludeReferencedProjects_Description", resourceCulture);
             }
         }
         
@@ -258,6 +276,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild..
+        /// </summary>
+        internal static string MsBuildVersion_Description {
+            get {
+                return ResourceManager.GetString("MsBuildVersion_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to No API Key was provided and no API Key could be found for {0}. To save an API Key for a source use the &apos;setApiKey&apos; command..
         /// </summary>
         internal static string NoApiKeyFound {
@@ -312,11 +339,11 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Added file &apos;{0}&apos;..
+        ///    Looks up a localized string similar to Attempting to build package from &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandAddedFile {
+        internal static string PackageCommandAttemptingToBuildPackage {
             get {
-                return ResourceManager.GetString("PackageCommandAddedFile", resourceCulture);
+                return ResourceManager.GetString("PackageCommandAttemptingToBuildPackage", resourceCulture);
             }
         }
         
@@ -330,56 +357,11 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Description: {0}.
+        ///    Looks up a localized string similar to Version string specified &apos;{0}&apos; is invalid..
         /// </summary>
-        internal static string PackageCommandIssueDescription {
+        internal static string PackageVersionInvalid {
             get {
-                return ResourceManager.GetString("PackageCommandIssueDescription", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Solution: {0}.
-        /// </summary>
-        internal static string PackageCommandIssueSolution {
-            get {
-                return ResourceManager.GetString("PackageCommandIssueSolution", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Issue: {0}.
-        /// </summary>
-        internal static string PackageCommandIssueTitle {
-            get {
-                return ResourceManager.GetString("PackageCommandIssueTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Failed to build package. Ensure &apos;{0}&apos; includes assembly files. For help on building symbols package, visit {1}..
-        /// </summary>
-        internal static string PackageCommandNoFilesForLibPackage {
-            get {
-                return ResourceManager.GetString("PackageCommandNoFilesForLibPackage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Failed to build package. Ensure &apos;{0}&apos; includes source and symbol files. For help on building symbols package, visit {1}..
-        /// </summary>
-        internal static string PackageCommandNoFilesForSymbolsPackage {
-            get {
-                return ResourceManager.GetString("PackageCommandNoFilesForSymbolsPackage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Issue found with package &apos;{1}&apos;..
-        /// </summary>
-        internal static string PackageCommandPackageIssueSummary {
-            get {
-                return ResourceManager.GetString("PackageCommandPackageIssueSummary", resourceCulture);
+                return ResourceManager.GetString("PackageVersionInvalid", resourceCulture);
             }
         }
         
@@ -546,38 +528,20 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Determines if the output files of the project should be in the tool folder..
+        /// </summary>
+        internal static string Tool_Description {
+            get {
+                return ResourceManager.GetString("Tool_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Overrides the version number from the nuspec file..
         /// </summary>
         internal static string Version_Description {
             get {
                 return ResourceManager.GetString("Version_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Version &quot;{0}&quot; does not follow semantic versioning guidelines..
-        /// </summary>
-        internal static string Warning_SemanticVersion {
-            get {
-                return ResourceManager.GetString("Warning_SemanticVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Update your nuspec file or use the AssemblyInformationalVersion assembly attribute to specify a semantic version as described at http://semver.org..
-        /// </summary>
-        internal static string Warning_SemanticVersionSolution {
-            get {
-                return ResourceManager.GetString("Warning_SemanticVersionSolution", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Use semantic versioning.
-        /// </summary>
-        internal static string Warning_SemanticVersionTitle {
-            get {
-                return ResourceManager.GetString("Warning_SemanticVersionTitle", resourceCulture);
             }
         }
     }
