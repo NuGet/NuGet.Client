@@ -1,59 +1,65 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Dnx.Runtime.Common.CommandLine;
-using NuGet.Commands;
 using NuGet.Configuration;
-using NuGet.Logging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
-using System.Globalization;
 
 namespace NuGet.CommandLine.XPlat
 {
-    class Command
+    internal class CommandUtility
     {
         // Create a caching source provider with the default settings, the sources will be passed in
-        //TODO: need this?
-        private static CachingSourceProvider _sourceProvider = new CachingSourceProvider(
-            new PackageSourceProvider(
-                Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null)));
+        private static Lazy<CachingSourceProvider> _sourceProvider;
 
-        protected static async Task<PackageUpdateResource> GetPushCommandResource(
-             CommandOption source,
-             ISettings settings)
+        static CommandUtility()
         {
-            //TODO: understand and remove the comment below.
-            // CommandLineSourceRepositoryProvider caches repositories to avoid duplicates
-            var packageSourceProvider = new PackageSourceProvider(settings);
+            _sourceProvider = new Lazy<CachingSourceProvider>(() =>
+            {
+                ISettings settings = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
+                PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
+                return new CachingSourceProvider(packageSourceProvider);
+            });
+        }
 
+        public static CachingSourceProvider CachingSourceProvider
+        {
+            get
+            {
+                return _sourceProvider.Value;
+            }
+        }
+
+        public static async Task<PackageUpdateResource> GetPushCommandResource(string source, ISettings settings)
+        {
             // Take the passed in source
             IEnumerable<PackageSource> packageSources;
-            if (!string.IsNullOrEmpty(source.Value()))
+            if (!string.IsNullOrEmpty(source))
             {
-                packageSources = new PackageSource[] { new PackageSource(source.Value()) };
+                packageSources = new PackageSource[] { new PackageSource(source) };
             }
             else
             {
+                var packageSourceProvider = new PackageSourceProvider(settings);
+
                 packageSources = packageSourceProvider.LoadPackageSources().Where(src => src.IsEnabled);
             }
 
-            SourceRepository repo = packageSources.Select(src => _sourceProvider.CreateRepository(src))
+            SourceRepository repo = packageSources.Select(src => CachingSourceProvider.CreateRepository(src))
                 .Distinct()
                 .ToList().FirstOrDefault();
+
             if (repo == null)
             {
                 throw new InvalidOperationException("We don't have valid repository(TODO use resource strings)");
             }
-            else
-            {
-                return await repo.GetResourceAsync<PackageUpdateResource>();
-            }
+
+            return await repo.GetResourceAsync<PackageUpdateResource>();
         }
 
-        public bool Confirm(bool isNonInteractive, string description)
+        public static bool Confirm(bool isNonInteractive, string description)
         {
             if (isNonInteractive)
             {
