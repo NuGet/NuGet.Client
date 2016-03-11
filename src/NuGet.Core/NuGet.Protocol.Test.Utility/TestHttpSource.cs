@@ -26,14 +26,14 @@ namespace Test.Utility
             _responses = responses;
         }
         
-        protected override Task<HttpSourceResult> TryReadCacheFile(
+        protected override Task<HttpCacheResult> TryReadCacheFile(
             string uri,
             string cacheKey,
             HttpSourceCacheContext context,
             ILogger log,
             CancellationToken token)
         {
-            var result = new HttpSourceResult();
+            var result = new HttpCacheResult();
 
             string s;
             if (_responses.TryGetValue(uri, out s) && !string.IsNullOrEmpty(s))

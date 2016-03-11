@@ -120,7 +120,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 
                 try
                 {
-                    using (var data = await _httpSource.GetAsync(
+                    using (var result = await _httpSource.GetAsync(
                         uri,
                         $"list_{id}",
                         CreateCacheContext(retry),
@@ -129,18 +129,18 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         ensureValidContents: stream => HttpStreamValidation.ValidateJObject(uri, stream),
                         cancellationToken: cancellationToken))
                     {
-                        if (data.Stream == null)
+                        if (result.Status == HttpSourceResultStatus.NotFound)
                         {
                             return new SortedDictionary<NuGetVersion, PackageInfo>();
                         }
 
                         try
                         {
-                            return ConsumeFlatContainerIndex(data.Stream, id, baseUri);
+                            return ConsumeFlatContainerIndex(result.Stream, id, baseUri);
                         }
                         catch
                         {
-                            Logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_FileIsCorrupt, data.CacheFileName));
+                            Logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_FileIsCorrupt, result.CacheFileName));
 
                             throw;
                         }

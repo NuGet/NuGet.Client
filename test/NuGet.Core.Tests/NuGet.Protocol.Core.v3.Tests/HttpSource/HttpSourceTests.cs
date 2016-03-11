@@ -1,12 +1,17 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+using NuGet.Test.Server;
 using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
@@ -15,6 +20,66 @@ namespace NuGet.Protocol.Core.v3.Tests
 {
     public class HttpSourceTests
     {
+        private const string FakeSource = "https://fake.server/users.json";
+        
+        [Fact]
+        public void HttpSource_DefaultDownloadTimeout()
+        {
+            // Arrange
+            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var tc = new TestContext(td);
+                var expected = TimeSpan.FromSeconds(60);
+
+                // Act
+                var actual = tc.HttpSource.DownloadTimeout;
+
+                // Assert
+                Assert.Equal(expected, actual);
+            }
+        }
+        
+        [Fact]
+        public async Task HttpSource_TimesOutDownload()
+        {
+            // https://github.com/NuGet/Home/issues/2096
+            if (!RuntimeEnvironmentHelper.IsWindows)
+            {
+                return;
+            }
+            
+            // Arrange
+            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var expectedMilliseconds = 250;
+                var server = new TcpListenerServer
+                {
+                    Mode = TestServerMode.SlowResponseBody,
+                    SleepDuration = TimeSpan.FromSeconds(10)
+                };
+                var packageSource = new PackageSource(FakeSource);
+                var handler = new HttpClientHandler();
+                var handlerResource = new HttpHandlerResourceV3(handler, handler);
+                var httpSource = new HttpSource(packageSource, () => Task.FromResult((HttpHandlerResource)handlerResource))
+                {
+                    HttpCacheDirectory = td,
+                    DownloadTimeout = TimeSpan.FromMilliseconds(expectedMilliseconds)
+                };
+            
+                // Act & Assert
+                var actual = await Assert.ThrowsAsync<IOException>(() => 
+                    server.ExecuteAsync(uri => httpSource.GetJObjectAsync(
+                        new Uri(uri),
+                        false,
+                        new TestLogger(),
+                        CancellationToken.None)));
+                Assert.IsType<TimeoutException>(actual.InnerException);
+                Assert.EndsWith(
+                    $"timed out because no data was received for {expectedMilliseconds}ms.",
+                    actual.Message);
+            }
+        }
+        
         [Fact]
         public async Task HttpSource_ValidatesValidNetworkContent()
         {
@@ -124,7 +189,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             public TestContext(TestDirectory testDirectory)
             {
                 // data
-                var source = "https://fake.server/users.json";
+                var source = FakeSource;
                 CacheValidationException = new Exception();
                 NetworkValidationException = new Exception();
                 CacheContent = "cache";

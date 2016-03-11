@@ -19,6 +19,10 @@ namespace NuGet.Test.Server
                     startServer = StartServerProtocolViolationAsync;
                     break;
 
+                case TestServerMode.SlowResponseBody:
+                    startServer = StartSlowResponseBody;
+                    break;                    
+
                 default:
                     throw new InvalidOperationException($"The mode {Mode} is not supported by this server.");
             }
@@ -47,6 +51,37 @@ namespace NuGet.Test.Server
         }
 
         public TestServerMode Mode { get; set; } = TestServerMode.ServerProtocolViolation;
+        public TimeSpan SleepDuration { get; set; } = TimeSpan.FromSeconds(110); 
+
+        private async Task StartSlowResponseBody(TcpListener tcpListener, CancellationToken token)
+        {
+            // This server does not process any request body.
+            while (!token.IsCancellationRequested)
+            {
+                using (var client = await Task.Run(tcpListener.AcceptTcpClientAsync, token))
+                using (var stream = client.GetStream())
+                using (var reader = new StreamReader(stream, Encoding.ASCII, false, 1))
+                using (var writer = new StreamWriter(stream, Encoding.ASCII, 1, false))
+                {
+                    while (!string.IsNullOrEmpty(reader.ReadLine()))
+                    {
+                    }
+                    
+                    string contentBefore = @"{""a"": 1, ";
+                    string contentAfter = @"""b"": 2}";
+
+                    writer.WriteLine("HTTP/1.1 200 OK");
+                    writer.WriteLine($"Date: {DateTimeOffset.UtcNow:R}");
+                    writer.WriteLine($"Content-Length: {contentBefore.Length + contentAfter.Length}");
+                    writer.WriteLine("Content-Type: application/json");
+                    writer.WriteLine();
+                    writer.Write(contentBefore);
+                    writer.Flush();
+                    await Task.Delay(SleepDuration);
+                    writer.Write(contentAfter);
+                }
+            }
+        }
 
         private async Task StartServerProtocolViolationAsync(TcpListener tcpListener, CancellationToken token)
         {

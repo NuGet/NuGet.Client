@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Logging;
 using NuGet.Protocol.Core.v3;
 
@@ -68,73 +69,43 @@ namespace NuGet.Protocol
 
                 using (var request = requestFactory())
                 {
+                    var stopwatch = Stopwatch.StartNew();
+                    string requestUri = request.RequestUri.ToString();
+                    
                     try
                     {
-                        /*
-                         * Implement timeout. Two operations are started and run in parallel:
-                         *
-                         *   1) The HTTP request sent in by the caller is sent to HttpClient.
-                         *   2) A timer that fires after the duration of the timeout.
-                         *
-                         * If the timeout occurs first, the HTTP request should be cancelled. If the 
-                         * HTTP request completes before the timeout, the timeout should be cancelled.
-                         * If the timeout occurs first, consider this request a failure and, if all
-                         * retries are exhausted, throw a timeout exception to be clear to the user
-                         * what happened. If the request completes first, it could be that the response
-                         * came back or that the caller cancelled the request.
-                         */
-                        using (var timeoutTcs = new CancellationTokenSource())
-                        using (var responseTcs = new CancellationTokenSource())
-                        using (cancellationToken.Register(() => responseTcs.Cancel()))
+                        var timeoutMessage = string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Http_Timeout,
+                            request.Method,
+                            requestUri,
+                            (int)RequestTimeout.TotalMilliseconds);
+
+                        log.LogInformation("  " + string.Format(
+                            CultureInfo.InvariantCulture,
+                            Strings.Http_RequestLog,
+                            request.Method,
+                            requestUri));
+
+                        response = await TimeoutUtility.StartWithTimeout(
+                            timeoutToken => client.SendAsync(request, completionOption, timeoutToken),
+                            RequestTimeout,
+                            timeoutMessage,
+                            cancellationToken);
+
+                        log.LogInformation("  " + string.Format(
+                            CultureInfo.InvariantCulture,
+                            Strings.Http_ResponseLog,
+                            response.StatusCode,
+                            requestUri,
+                            stopwatch.ElapsedMilliseconds));
+
+                        if ((int)response.StatusCode >= 500)
                         {
-                            var timeoutTask = Task.Delay(RequestTimeout, timeoutTcs.Token);
-
-                            string requestUri = request.RequestUri.ToString();
-                            log.LogInformation("  " + string.Format(
-                                CultureInfo.InvariantCulture,
-                                Strings.Http_RequestLog,
-                                request.Method,
-                                requestUri));
-
-                            var stopwatch = Stopwatch.StartNew();
-                            var responseTask = client.SendAsync(request, completionOption, responseTcs.Token);
-
-                            if (timeoutTask == await Task.WhenAny(responseTask, timeoutTask))
-                            {
-                                responseTcs.Cancel();
-                                success = false;
-
-                                if (tries >= MaxTries)
-                                {
-                                    var message = string.Format(
-                                        CultureInfo.CurrentCulture,
-                                        Strings.Http_Timeout,
-                                        request.Method,
-                                        requestUri,
-                                        (int)RequestTimeout.TotalMilliseconds);
-                                    throw new TimeoutException(message);
-                                }
-                            }
-                            else
-                            {
-                                timeoutTcs.Cancel();
-                                response = await responseTask;
-
-                                log.LogInformation("  " + string.Format(
-                                    CultureInfo.InvariantCulture,
-                                    Strings.Http_ResponseLog,
-                                    response.StatusCode,
-                                    requestUri,
-                                    stopwatch.ElapsedMilliseconds));
-
-                                if ((int)response.StatusCode >= 500)
-                                {
-                                    success = false;
-                                }
-                            }
+                            success = false;
                         }
                     }
-                    catch
+                    catch (Exception e) when (!(e is OperationCanceledException))
                     {
                         success = false;
 
@@ -142,6 +113,15 @@ namespace NuGet.Protocol
                         {
                             throw;
                         }
+
+                        log.LogInformation(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Log_RetryingHttp,
+                            request.Method,
+                            requestUri,
+                            request)
+                            + Environment.NewLine
+                            + ExceptionUtilities.DisplayMessage(e));
                     }
                 }
             }

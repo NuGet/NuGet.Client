@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,14 +44,15 @@ namespace NuGet.Protocol
                     return await client.ProcessStreamAsync(
                         uri: uri,
                         ignoreNotFounds: true,
-                        process: async packageStream =>
+                        processAsync: async packageStream =>
                         {
                             if (packageStream == null)
                             {
                                 return new DownloadResourceResult(DownloadResourceResultStatus.NotFound);
                             }
 
-                            return await GlobalPackagesFolderUtility.AddPackageAsync(identity,
+                            return await GlobalPackagesFolderUtility.AddPackageAsync(
+                                identity,
                                 packageStream,
                                 settings,
                                 logger,
@@ -63,7 +65,10 @@ namespace NuGet.Protocol
                 {
                     return new DownloadResourceResult(DownloadResourceResultStatus.Cancelled);
                 }
-                catch (IOException ex) when (ex.InnerException is SocketException && i < 2)
+                catch (Exception ex) when ((
+                        (ex is IOException && ex.InnerException is SocketException)
+                        || ex is TimeoutException)
+                    && i < 2)
                 {
                     string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorDownloading, identity, uri)
                         + Environment.NewLine

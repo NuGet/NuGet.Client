@@ -368,79 +368,41 @@ namespace NuGet.Protocol
             var page = 1;
 
             // first request
-            Task<HttpResponseMessage> urlRequest = _httpSource.GetAsync(
-                new Uri(uri),
-                new[] { new MediaTypeWithQualityHeaderValue("application/atom+xml"), new MediaTypeWithQualityHeaderValue("application/xml") },
-                log,
-                token);
+            Task<XDocument> docRequest = LoadXmlAsync(uri, ignoreNotFounds, log, token);
 
             // TODO: re-implement caching at a higher level for both v2 and v3
-            while (!token.IsCancellationRequested && urlRequest != null)
+            while (!token.IsCancellationRequested && docRequest != null)
             {
                 // TODO: Pages for a package Id are cached separately.
                 // So we will get inaccurate data when a page shrinks.
                 // However, (1) In most cases the pages grow rather than shrink;
                 // (2) cache for pages is valid for only 30 min.
                 // So we decide to leave current logic and observe.
-                using (var data = await urlRequest)
+                string nextUri = null;
+                var doc = await docRequest;
+                if (doc != null)
                 {
-                    try
+                    var result = ParsePage(doc, id);
+                    results.AddRange(result);
+
+                    nextUri = GetNextUrl(doc);
+                }
+
+                docRequest = null;
+                if (max < 0 || results.Count < max)
+                {
+                    // Request the next url in parallel to parsing the current page
+                    if (!string.IsNullOrEmpty(nextUri) && uri != nextUri)
                     {
-                        string nextUri = null;
-                        if (data.StatusCode == HttpStatusCode.OK)
-                        {
-                            var doc = LoadXml(await data.Content.ReadAsStreamAsync());
+                        // a bug on the server side causes the same next link to be returned 
+                        // for every page. To avoid falling into an infinite loop we must
+                        // keep track here.
+                        uri = nextUri;
 
-                            // find results on the page
-                            var result = ParsePage(doc, id);
-                            results.AddRange(result);
-
-                            nextUri = GetNextUrl(doc);
-                        }
-                        else if (ignoreNotFounds && data.StatusCode == HttpStatusCode.NotFound)
-                        {
-                            // Treat "404 Not Found" and "204 No Content" as empty responses.
-                        }
-                        else if (data.StatusCode == HttpStatusCode.NoContent)
-                        {
-                            // Always treat "204 No Content" as exactly that.
-                        }
-                        else
-                        {
-                            throw new FatalProtocolException(string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.Log_FailedToFetchV2Feed,
-                                uri,
-                                (int)data.StatusCode,
-                                data.ReasonPhrase));
-                        }
-
-                        urlRequest = null;
-                        if (max < 0 || results.Count < max)
-                        {
-                            // Request the next url in parallel to parsing the current page
-                            if (!string.IsNullOrEmpty(nextUri) && uri != nextUri)
-                            {
-                                // a bug on the server side causes the same next link to be returned 
-                                // for every page. To avoid falling into an infinite loop we must
-                                // keep track here.
-                                uri = nextUri;
-
-                                urlRequest = _httpSource.GetAsync(
-                                    new Uri(nextUri), 
-                                    new[] { new MediaTypeWithQualityHeaderValue("application/atom+xml"), new MediaTypeWithQualityHeaderValue("application/xml") },
-                                    log, 
-                                    token);
-                            }
-
-                            page++;
-                        }
+                        docRequest = LoadXmlAsync(nextUri, ignoreNotFounds, log, token);
                     }
-                    catch (XmlException ex)
-                    {
-                        log.LogVerbose(ex.ToString());
-                        throw;
-                    }
+
+                    page++;
                 }
             }
 
@@ -451,6 +413,52 @@ namespace NuGet.Protocol
             }
 
             return results;
+        }
+        
+        internal async Task<XDocument> LoadXmlAsync(
+            string uri,
+            bool ignoreNotFounds,
+            ILogger log,
+            CancellationToken token)
+        {
+            return await _httpSource.ProcessResponseAsync(
+                () => 
+                {
+                    var request = new HttpRequestMessage(HttpMethod.Get, uri);
+                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/atom+xml"));
+                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));                    
+                    return request;
+                },
+                async response =>
+                {
+                    if (response.StatusCode == HttpStatusCode.OK)
+                    {
+                        var networkStream = await response.Content.ReadAsStreamAsync();
+                        var timeoutStream = new DownloadTimeoutStream(uri, networkStream, _httpSource.DownloadTimeout);
+                        return LoadXml(timeoutStream);
+                    }
+                    else if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        // Treat "404 Not Found" as an empty response.
+                        return null;
+                    }
+                    else if (response.StatusCode == HttpStatusCode.NoContent)
+                    {
+                        // Always treat "204 No Content" as exactly that.
+                        return null;
+                    }
+                    else
+                    {
+                        throw new FatalProtocolException(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Log_FailedToFetchV2Feed,
+                            uri,
+                            (int)response.StatusCode,
+                            response.ReasonPhrase));
+                    }
+                },
+                log,
+                token);
         }
 
         internal static string GetNextUrl(XDocument doc)
