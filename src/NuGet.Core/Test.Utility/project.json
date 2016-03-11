@@ -7,7 +7,7 @@
     "NuGet.PackageManagement": "3.4.0-*",
     "NuGet.ProjectManagement": "3.4.0-*",
     "NuGet.Protocol.VisualStudio": "3.4.0-*",
-    "Microsoft.VisualStudio.ProjectSystem.Interop": "",
+    "Microsoft.VisualStudio.ProjectSystem.Interop": "1.0.0",
     "xunit": "2.1.0",
     "NuGet.Test.Utility": "3.4.0-*"
   },
