@@ -502,18 +502,21 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                 var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context)
                 {
                     CachedPackages = Model.CachedUpdates
                 };
+
                 var packageFeed = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger);
+
                 var loader = new PackageItemLoader(
                     loadContext, packageFeed, searchText, IncludePrerelease);
                 var loadingMessage = string.IsNullOrWhiteSpace(searchText)
                     ? Resx.Resources.Text_Loading
                     : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
 
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 _packageList.LoadItems(loader, loadingMessage, _uiLogger);
             });
         }
