@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +16,7 @@ using System.Windows.Media;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using Mvs = Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using Resx = NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.UI
@@ -125,6 +125,8 @@ namespace NuGet.PackageManagement.UI
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
+                await TaskScheduler.Default;
+
                 try
                 {
                     await LoadItemsCoreAsync(currentLoader, loadCts.Token);
