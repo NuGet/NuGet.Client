@@ -351,7 +351,11 @@ namespace NuGet.Protocol
                 {
                     try
                     {
-                        var doc = LoadXml(await data.Content.ReadAsStreamAsync());
+                        var doc = await _httpSource.DownloadUtility.BufferAndProcessAsync(
+                            source: await data.Content.ReadAsStreamAsync(),
+                            process: stream => Task.FromResult(LoadXml(stream)),
+                            downloadName: uri,
+                            token: token);
 
                         // find results on the page
                         var result = ParsePage(doc, id);

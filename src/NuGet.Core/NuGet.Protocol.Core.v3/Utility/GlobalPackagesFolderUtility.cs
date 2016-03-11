@@ -70,7 +70,9 @@ namespace NuGet.Protocol
             return null;
         }
 
-        public static async Task<DownloadResourceResult> AddPackageAsync(PackageIdentity packageIdentity,
+        public static async Task<DownloadResourceResult> AddPackageAsync(
+            DownloadUtility downloadUtility,
+            PackageIdentity packageIdentity,
             Stream packageStream,
             ISettings settings,
             ILogger logger,
@@ -107,7 +109,11 @@ namespace NuGet.Protocol
                 xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
 
             await PackageExtractor.InstallFromSourceAsync(
-                stream => packageStream.CopyToAsync(stream, bufferSize: 8192, cancellationToken: token),
+                stream => downloadUtility.DownloadAsync(
+                        source: packageStream,
+                        destination: stream,
+                        downloadName: packageIdentity.ToString(),
+                        token: token),
                 versionFolderPathContext,
                 token: token);
 

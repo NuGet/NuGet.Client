@@ -12,6 +12,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
@@ -35,6 +37,7 @@ namespace NuGet.Protocol
         private Guid _lastAuthId = Guid.NewGuid();
         private readonly PackageSource _packageSource;
         private readonly HttpRetryHandler _retryHandler;
+        private DownloadUtility _downloadUtility;
 
         // Only one thread may re-create the http client at a time.
         private readonly SemaphoreSlim _httpClientLock = new SemaphoreSlim(1, 1);
@@ -125,7 +128,7 @@ namespace NuGet.Protocol
 
                 response.EnsureSuccessStatusCode();
 
-                await CreateCacheFile(result, response, cacheContext, ensureValidContents, cancellationToken);
+                await CreateCacheFile(result, uri, response, cacheContext, ensureValidContents, cancellationToken);
 
                 return result;
             }
@@ -178,7 +181,13 @@ namespace NuGet.Protocol
             return SendAsync(requestFactory, log, token);
         }
 
-        public async Task<T> ProcessStreamAsync<T>(Uri uri, bool ignoreNotFounds, Func<Stream, Task<T>> process, ILogger log, CancellationToken token)
+        public async Task<T> ProcessStreamAsync<T>(
+            Uri uri,
+            bool ignoreNotFounds,
+            bool bufferContent,
+            Func<Stream, Task<T>> process,
+            ILogger log,
+            CancellationToken token)
         {
             using (var response = await GetAsync(uri, log, token))
             {
@@ -191,37 +200,47 @@ namespace NuGet.Protocol
 
                 using (var stream = await response.Content.ReadAsStreamAsync())
                 {
-                    return await process(stream);
+                    if (bufferContent)
+                    {
+                        // Buffer the JSON into memory. This is acceptable because the
+                        // return type of this method is JObject, which itself is the entire
+                        // JSON document deserialized in memory.
+                        var downloadName = BuildDownloadNameForGet(uri.ToString());
+                        return await DownloadUtility.BufferAndProcessAsync(
+                            stream,
+                            process,
+                            downloadName,
+                            token);
+                    }
+                    else
+                    {
+                        return await process(stream);
+                    }
                 }
             }
         }
 
-        public Task<JObject> GetJObjectAsync(Uri uri, ILogger log, CancellationToken token)
-        {
-            return GetJObjectAsync(uri, ignoreNotFounds: false, log: log, token: token);
-        }
-
-        /// <summary>
-        /// Returns a json object from the url or null if a 404 was encountered.
-        /// </summary>
         public async Task<JObject> GetJObjectAsync(Uri uri, bool ignoreNotFounds, ILogger log, CancellationToken token)
         {
-            using (var response = await GetAsync(uri, log, token))
-            {
-                if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
+            return await ProcessStreamAsync(
+                uri: uri,
+                ignoreNotFounds: ignoreNotFounds,
+                bufferContent: true,
+                log: log,
+                process: stream =>
                 {
-                    return null;
-                }
+                    if (stream == null)
+                    {
+                        return Task.FromResult((JObject)null);
+                    }
 
-                response.EnsureSuccessStatusCode();
-
-                using (var stream = await response.Content.ReadAsStreamAsync())
-                using (var reader = new StreamReader(stream))
-                using (var jsonReader = new JsonTextReader(reader))
-                {
-                    return JObject.Load(jsonReader);
-                }
-            }
+                    using (var reader = new StreamReader(stream))
+                    using (var jsonReader = new JsonTextReader(reader))
+                    {
+                        return Task.FromResult(JObject.Load(jsonReader));
+                    }
+                },
+                token: token);
         }
 
         private async Task<HttpResponseMessage> SendWithCredentialSupportAsync(
@@ -402,8 +421,9 @@ namespace NuGet.Protocol
             _lastAuthId = Guid.NewGuid();
         }
 
-        private static Task CreateCacheFile(
+        private Task CreateCacheFile(
             HttpSourceResult result,
+            string uri,
             HttpResponseMessage response,
             HttpSourceCacheContext context,
             Action<Stream> ensureValidContents,
@@ -438,8 +458,13 @@ namespace NuGet.Protocol
                     {
                         using (var responseStream = await response.Content.ReadAsStreamAsync())
                         {
-                            await responseStream.CopyToAsync(stream, bufferSize: 8192, cancellationToken: token);
-                            await stream.FlushAsync(cancellationToken);
+                            var downloadName = BuildDownloadNameForGet(uri);
+
+                            await DownloadUtility.DownloadAsync(
+                                source: responseStream,
+                                destination: stream,
+                                downloadName: downloadName,
+                                token: token);
                         }
 
                         // Validate the content before putting it into the cache.
@@ -496,6 +521,30 @@ namespace NuGet.Protocol
             }
 
             set { _httpCacheDirectory = value; }
+        }
+
+        public DownloadUtility DownloadUtility
+        {
+            get
+            {
+                if (_downloadUtility == null)
+                {
+                    _downloadUtility = new DownloadUtility();
+                }
+
+                return _downloadUtility;
+            }
+
+            set { _downloadUtility = value; }
+        }
+
+        private static string BuildDownloadNameForGet(string uri)
+        {
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                Strings.Http_RequestLog,
+                HttpMethod.Get,
+                uri);
         }
 
         protected virtual async Task<HttpSourceResult> TryReadCacheFile(
