@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
@@ -67,7 +68,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
                 Assert.True(result.Success, logger.ShowErrors());
@@ -134,7 +135,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
                 Assert.False(result.Success, logger.ShowErrors());
@@ -202,7 +203,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
                 Assert.True(result.Success, logger.ShowErrors());
@@ -269,7 +270,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var failure = result.CompatibilityCheckResults.Where(r => !r.Success).Single().Issues.Single();
 
@@ -359,7 +360,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
                 Assert.True(result.Success, logger.ShowErrors());
@@ -431,7 +432,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
                 Assert.True(result.Success, logger.ShowErrors());
