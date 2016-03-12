@@ -17,6 +17,7 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet;
+using NuGet.Common;
 using NuGet.Credentials;
 using NuGet.Options;
 using NuGet.PackageManagement;
@@ -255,6 +256,7 @@ namespace NuGetVSExtension
         protected override void Initialize()
         {
             base.Initialize();
+            LoadSettings();
             Styles.LoadVsStyles();
             Brushes.LoadVsBrushes();
 
@@ -1125,6 +1127,19 @@ namespace NuGetVSExtension
 
             // Clean up optimized zips used by NuGet.Core as part of the V2 Protocol
             OptimizedZipPackage.PurgeCache();
+        }
+
+        private void LoadSettings()
+        {
+            try
+            {
+                _settings = ServiceLocator.GetInstance<ISettings>();
+                Debug.Assert(_settings != null);
+            }
+            catch (Exception e)
+            {
+                MessageHelper.ShowErrorMessage(ExceptionUtilities.DisplayMessage(e), Resources.ErrorDialogBoxTitle);
+            }
         }
 
         #region IVsPersistSolutionOpts implementation
