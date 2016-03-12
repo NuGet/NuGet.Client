@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Configuration;
@@ -1636,7 +1635,7 @@ namespace NuGet.Commands.Test
 
             // Act
             var result = await command.ExecuteAsync();
-            await result.CommitAsync(logger, CancellationToken.None);
+            result.Commit(logger);
 
             return result;
         }
@@ -1699,7 +1698,7 @@ namespace NuGet.Commands.Test
 
             // Act
             var result = await command.ExecuteAsync();
-            await result.CommitAsync(logger, CancellationToken.None);
+            result.Commit(logger);
 
             return result;
         }
@@ -1740,7 +1739,7 @@ namespace NuGet.Commands.Test
 
             // Act
             var result = await command.ExecuteAsync();
-            await result.CommitAsync(logger, CancellationToken.None);
+            result.Commit(logger);
 
             return result;
         }

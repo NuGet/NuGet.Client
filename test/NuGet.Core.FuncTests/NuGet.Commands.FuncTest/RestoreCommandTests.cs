@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
@@ -57,7 +56,7 @@ namespace NuGet.Commands.FuncTest
                 // Act
 
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
                 var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, framework, null);
                 var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
 
@@ -112,7 +111,7 @@ namespace NuGet.Commands.FuncTest
                 // Act
 
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
                 var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, framework, null);
                 var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
 
@@ -164,7 +163,7 @@ namespace NuGet.Commands.FuncTest
                 var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
                 logger.Clear();
 
                 // Act
@@ -174,7 +173,7 @@ namespace NuGet.Commands.FuncTest
                 request.ExistingLockFile = result.LockFile;
                 command = new RestoreCommand(request);
                 result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
@@ -280,7 +279,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Act
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
                 var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, framework, null);
                 var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
 
@@ -329,7 +328,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Act
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
                 var runtimeAssemblies = GetRuntimeAssemblies(result.LockFile.Targets, framework, null);
                 var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
                 var dependencies = string.Join("|", result.GetAllInstalled().Select(dependency => dependency.Name)
@@ -379,7 +378,7 @@ namespace NuGet.Commands.FuncTest
                 var command = new RestoreCommand(request);
                 var framework = new FallbackFramework(NuGetFramework.Parse("dotnet"), new List<NuGetFramework> { NuGetFramework.Parse("portable-net452+win81") });
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 // Act
                 var valid = result.LockFile.IsValidForPackageSpec(spec);
@@ -424,12 +423,12 @@ namespace NuGet.Commands.FuncTest
 
                 // Act
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
                 var assemblies = GetRuntimeAssemblies(result.LockFile.Targets, "net46", null);
 
                 // Build again to verify the noop works also
                 result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
                 var assemblies2 = GetRuntimeAssemblies(result.LockFile.Targets, "net46", null);
 
                 // Assert
@@ -475,7 +474,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Act
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
                 var assemblies = GetRuntimeAssemblies(result.LockFile.Targets, "net46", null);
 
                 // Assert
@@ -526,7 +525,7 @@ namespace NuGet.Commands.FuncTest
 
                 command = new RestoreCommand(request);
                 result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var lockFileFromDisk = lockFormat.Read(lockFilePath);
 
@@ -559,7 +558,7 @@ namespace NuGet.Commands.FuncTest
                 var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var lockFilePath = Path.Combine(projectDir, "project.lock.json");
 
@@ -576,7 +575,7 @@ namespace NuGet.Commands.FuncTest
 
                 command = new RestoreCommand(request);
                 result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, true, CancellationToken.None);
+                result.Commit(logger, true);
 
                 var output = File.ReadAllText(lockFilePath);
 
@@ -609,7 +608,7 @@ namespace NuGet.Commands.FuncTest
                 var lockFileFormat = new LockFileFormat();
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var lockFilePath = Path.Combine(projectDir, "project.lock.json");
 
@@ -631,7 +630,7 @@ namespace NuGet.Commands.FuncTest
 
                 command = new RestoreCommand(request);
                 result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var currentDate = File.GetLastWriteTime(lockFilePath);
 
@@ -803,7 +802,7 @@ namespace NuGet.Commands.FuncTest
                 var lockFile = result.LockFile;
                 var installed = result.GetAllInstalled();
                 var unresolved = result.GetAllUnresolved();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 // Assert
                 Assert.True(result.Success);

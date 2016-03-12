@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.LibraryModel;
@@ -80,7 +79,7 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 // Assert
                 Assert.True(result.Success);
@@ -155,7 +154,7 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 // Assert
                 Assert.True(result.Success);
@@ -230,7 +229,7 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 // Assert
                 Assert.True(result.Success);
@@ -347,7 +346,7 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var project3Lib = lockFile.GetLibrary("project3", NuGetVersion.Parse("1.0.0"));
 
@@ -417,7 +416,7 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 // Assert
                 Assert.True(result.Success);
@@ -492,7 +491,7 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 // Assert
                 Assert.True(result.Success);
@@ -582,7 +581,7 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 // Assert
                 Assert.False(result.Success);
@@ -657,7 +656,7 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var project2Lib = lockFile.GetLibrary("project2", NuGetVersion.Parse("1.0.0"));
 
@@ -718,7 +717,7 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var project2Lib = lockFile.GetLibrary("project2", NuGetVersion.Parse("1.0.0"));
 
@@ -806,7 +805,7 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var project2Lib = lockFile.GetLibrary("project2", NuGetVersion.Parse("1.0.0"));
 
@@ -891,7 +890,7 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var project2Lib = lockFile.GetLibrary("project2", NuGetVersion.Parse("1.0.0"));
 

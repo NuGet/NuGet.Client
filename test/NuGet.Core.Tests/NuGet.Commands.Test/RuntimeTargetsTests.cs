@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
@@ -74,7 +73,7 @@ namespace NuGet.Commands.Test
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
                 var lockFile = result.LockFile;
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var targetLib = lockFile.Targets.Single(graph => graph.RuntimeIdentifier == null).Libraries.Single();
 
@@ -147,7 +146,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var format = new LockFileFormat();
                 var lockFile = format.Read(request.LockFilePath);
@@ -241,7 +240,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var format = new LockFileFormat();
                 var lockFile = format.Read(request.LockFilePath);
@@ -336,7 +335,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var format = new LockFileFormat();
                 var lockFile = format.Read(request.LockFilePath);

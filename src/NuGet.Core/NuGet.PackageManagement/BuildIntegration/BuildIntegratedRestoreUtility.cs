@@ -76,7 +76,7 @@ namespace NuGet.PackageManagement
                 token.ThrowIfCancellationRequested();
 
                 // Write out the lock file and msbuild files
-                await result.CommitAsync(context.Logger, token);
+                result.Commit(context.Logger);
 
                 return result;
             }

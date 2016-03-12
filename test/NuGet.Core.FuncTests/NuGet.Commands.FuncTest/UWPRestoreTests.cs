@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
@@ -96,7 +95,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Act
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
@@ -152,7 +151,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Act
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var lockFileJson = JObject.Parse(File.OpenText(request.LockFilePath).ReadToEnd());
 
@@ -241,7 +240,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Act
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var lockFileJson = JObject.Parse(File.OpenText(request.LockFilePath).ReadToEnd());
 
@@ -301,7 +300,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Act
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var lockFileJson = JObject.Parse(File.OpenText(request.LockFilePath).ReadToEnd());
 
@@ -368,7 +367,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Act
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var lockFileJson = JObject.Parse(File.OpenText(request.LockFilePath).ReadToEnd());
 
@@ -423,7 +422,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Act
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
@@ -481,7 +480,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Act
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));

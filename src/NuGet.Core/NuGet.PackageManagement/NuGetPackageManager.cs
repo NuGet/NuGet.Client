@@ -1870,7 +1870,7 @@ namespace NuGet.PackageManagement
 
                 // Write out the lock file
                 var logger = new ProjectContextLogger(nuGetProjectContext);
-                await restoreResult.CommitAsync(logger, token);
+                restoreResult.Commit(logger);
 
                 // Write out a message for each action
                 foreach (var action in nuGetProjectActions)

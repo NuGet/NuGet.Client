@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -76,7 +75,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var lockFile = format.Read(request.LockFilePath, logger);
 
@@ -162,7 +161,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var lockFile = format.Read(request.LockFilePath, logger);
 
@@ -287,7 +286,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var lockFile = format.Read(request.LockFilePath, logger);
 
@@ -383,7 +382,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 // Assert
                 Assert.True(result.Success);
@@ -460,7 +459,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var lockFile = format.Read(request.LockFilePath, logger);
 
@@ -546,7 +545,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var lockFile = format.Read(request.LockFilePath, logger);
 
@@ -655,7 +654,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var lockFile = format.Read(request.LockFilePath, logger);
 
@@ -776,7 +775,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var lockFile = format.Read(request.LockFilePath, logger);
 
@@ -904,7 +903,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-                await result.CommitAsync(logger, CancellationToken.None);
+                result.Commit(logger);
 
                 var lockFile = format.Read(request.LockFilePath, logger);
 
