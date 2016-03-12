@@ -51,7 +51,7 @@ namespace NuGet.Commands
             // If there are no inputs, use the current directory
             if (!inputs.Any())
             {
-                inputs.Add(Path.GetFullPath("."));
+                inputs.Add(Directory.GetCurrentDirectory());
             }
 
             // Ignore casing on windows and mac

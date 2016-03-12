@@ -7,8 +7,6 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Common;
-using NuGet.Logging;
-using NuGet.Protocol;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -54,16 +52,17 @@ namespace NuGet.CommandLine.XPlat
             NetworkProtocolUtility.ConfigureSupportedSslProtocols();
 
             //register push and delete command
-            new PushCommand(app, () =>
-            {
-                return Log;
-            });
-            new DeleteCommand(app, () =>
+            PushCommand.Register(app, () =>
             {
                 return Log;
             });
 
-            RestoreCommand.Register(app,() =>
+            DeleteCommand.Register(app, () =>
+            {
+                return Log;
+            });
+
+            RestoreCommand.Register(app, () =>
             {
                 return Log;
             });

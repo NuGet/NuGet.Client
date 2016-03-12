@@ -4,11 +4,9 @@ using System.Linq;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using Microsoft.Extensions.PlatformAbstractions;
 using NuGet.Commands;
-using NuGet.Configuration;
 using NuGet.Logging;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -92,7 +90,7 @@ namespace NuGet.CommandLine.XPlat
                             RequestProviders = providers,
                             Sources = sources.Values,
                             FallbackSources = fallBack.Values,
-                            CachingSourceProvider = _sourceProvider
+                            CachingSourceProvider = CommandUtility.CachingSourceProvider
                         };
 
                         var defaultRuntimes = RequestRuntimeUtility.GetDefaultRestoreRuntimes(
@@ -110,10 +108,5 @@ namespace NuGet.CommandLine.XPlat
                 });
             }));
         }
-
-        // Create a caching source provider with the default settings, the sources will be passed in
-        private static CachingSourceProvider _sourceProvider = new CachingSourceProvider(
-            new PackageSourceProvider(
-                Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null)));
     }
 }

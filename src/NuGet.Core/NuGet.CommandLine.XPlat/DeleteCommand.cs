@@ -1,21 +1,15 @@
 ﻿using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
-using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.Logging;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3;
-using System.Threading;
 
 namespace NuGet.CommandLine.XPlat
 {
-    class DeleteCommand : Command
+    internal static class DeleteCommand
     {
-        public DeleteCommand(CommandLineApplication app, Func<ILogger> getLogger)
+        public static void Register(CommandLineApplication app, Func<ILogger> getLogger)
         {
             app.Command("delete", delete =>
             {
@@ -43,29 +37,28 @@ namespace NuGet.CommandLine.XPlat
 
                 delete.OnExecute(async () =>
                 {
-                    var logger = getLogger();
-
                     if (arguments.Values.Count < 2)
                     {
                         throw new ArgumentException(Strings.Delete_MissingArguments);
                     }
-                    var packageId = arguments.Values[0];
-                    var packageVersion = arguments.Values[1];
+
+                    string packageId = arguments.Values[0];
+                    string packageVersion = arguments.Values[1];
 
                     if (!source.HasValue())
                     {
                         throw new ArgumentException(Strings.Error_MissingSourceParameter);
                     }
 
-                    var setting = Settings.LoadDefaultSettings(Path.GetFullPath("."),
-                                        configFileName: null,
-                                        machineWideSettings: null);
-                    var pushCommandResource = await GetPushCommandResource(source, setting);
+                    ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory(), configFileName: null, machineWideSettings: null);
+                    PackageUpdateResource pushCommandResource = await CommandUtility.GetPushCommandResource(source.Value(), settings);
+
                     await pushCommandResource.Delete(packageId,
                         packageVersion,
                         s => apikey.Value(),
-                        (desc) => Confirm(nonInteractive.HasValue(), desc),
-                        logger);
+                        (desc) => CommandUtility.Confirm(nonInteractive.HasValue(), desc),
+                        getLogger());
+
                     return 0;
                 });
             });
