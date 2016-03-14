@@ -127,7 +127,7 @@ namespace NuGet.Protocol
                 package.Id,
                 package.Version.ToNormalizedString());
 
-            var packages = new List<V2FeedPackageInfo>();
+            IReadOnlyList<V2FeedPackageInfo> packages = new List<V2FeedPackageInfo>();
 
             try
             {
@@ -145,7 +145,7 @@ namespace NuGet.Protocol
             // If not found use FindPackagesById
             if (packages.Count < 1)
             {
-                var allPackages = await FindPackagesByIdAsync(package.Id, log, token);
+                packages = await FindPackagesByIdAsync(package.Id, log, token);
 
                 return packages.Where(p => p.Version == package.Version)
                     .FirstOrDefault();
