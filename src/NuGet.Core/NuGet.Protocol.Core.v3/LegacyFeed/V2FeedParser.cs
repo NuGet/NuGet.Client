@@ -457,7 +457,8 @@ namespace NuGet.Protocol
                 CloseInput = true,
                 IgnoreWhitespace = true,
                 IgnoreComments = true,
-                IgnoreProcessingInstructions = true
+                IgnoreProcessingInstructions = true,
+                DtdProcessing = DtdProcessing.Ignore, // for consistency with earlier behavior (v3.3 and before)
             });
 
             return XDocument.Load(xmlReader, LoadOptions.None);
