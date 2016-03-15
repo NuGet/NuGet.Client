@@ -126,7 +126,11 @@ namespace NuGet.Commands
                                 ranges = new HashSet<ResolverRequest>();
                                 conflicts[node.Key.Name] = ranges;
                             }
-                            ranges.Add(new ResolverRequest(node.OuterNode.Item.Key, node.Key));
+
+                            // OuterNode may be null if the project itself conflicts with a package name
+                            var requestor = node.OuterNode == null ? node.Item.Key : node.OuterNode.Item.Key;
+
+                            ranges.Add(new ResolverRequest(requestor, node.Key));
                         }
 
                         if (string.Equals(node?.Item?.Key?.Type, LibraryTypes.Unresolved))
