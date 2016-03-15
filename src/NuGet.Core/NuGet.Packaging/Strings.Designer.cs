@@ -123,7 +123,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Fail to write packages.config as XML file while accessing {0}: {1}.
+        ///    Looks up a localized string similar to Failed to write packages.config as XML file &apos;{0}&apos;. Error: &apos;{1}&apos;..
         /// </summary>
         internal static string FailToWritePackagesConfig {
             get {
