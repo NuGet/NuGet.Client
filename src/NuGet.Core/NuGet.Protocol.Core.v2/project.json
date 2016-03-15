@@ -14,13 +14,19 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Configuration": "3.4.0-*",
-    "NuGet.Packaging": "3.4.0-*",
-    "NuGet.Protocol.Core.Types": "3.4.0-*",
+    "NuGet.Configuration": {
+      "target": "project"
+    },
+    "NuGet.Packaging": {
+      "target": "project"
+    },
+    "NuGet.Protocol.Core.Types": {
+      "target": "project"
+    },
     "NuGet.Core": "2.11.0",
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.0-*"
+      "target": "project"
     }
   },
   "frameworks": {

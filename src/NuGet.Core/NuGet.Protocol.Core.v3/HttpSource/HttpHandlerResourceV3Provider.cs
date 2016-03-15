@@ -55,7 +55,7 @@ namespace NuGet.Protocol
             return resource;
         }
 
-#if DNXCORE50
+#if NETSTANDARD1_5
         public static HttpClientHandler CreateCredentialHandler(PackageSource packageSource)
         {
             var handler = new HttpClientHandler();

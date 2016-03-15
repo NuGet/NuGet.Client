@@ -55,7 +55,7 @@ namespace NuGet.Common
             }
         }
 
-#if DNXCORE50
+#if NETSTANDARD1_5
         private static string GetFolderPath(SpecialFolder folder)
         {
             switch (folder)

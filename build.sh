@@ -10,36 +10,44 @@ done
 
 RESULTCODE=0
 
-# install dnx
-if ! type dnvm > /dev/null 2>&1; then
-    source ~/.dnx/dnvm/dnvm.sh
-fi
+# Download the CLI install script to cli
+echo "Installing dotnet CLI"
+mkdir -p cli
+curl -o cli/install.sh https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/install.sh
 
-if ! type dnx > /dev/null 2>&1 || [ -z "$SKIP_DNX_INSTALL" ]; then
-    dnvm install 1.0.0-rc1-update1 -runtime coreclr -alias default
-    dnvm install 1.0.0-rc1-update1 -runtime mono -alias default
-fi
+# Run install.sh
+chmod +x cli/install.sh
+cli/install.sh --destination cli
 
-dnvm use 1.0.0-rc1-update1 -runtime coreclr
+# Display current version
+DOTNET="$(pwd)/cli/bin/dotnet"
+$DOTNET --version
+
+echo "================="
 
 # init the repo
-
 git submodule init
 git submodule update
 
 # clear caches
 if [ "$CLEAR_CACHE" == "1" ]
 then
-    echo "Clearing the dnu cache folder"
-    rm -r -f ~/.local/share/dnu/cache/*
+    echo "Clearing the nuget web cache folder"
+    rm -r -f ~/.local/share/nuget/cache/*
 
-    echo "Clearing the dnx packages folder"
-    rm -r -f ~/.dnx/packages/*
+    echo "Clearing the nuget packages folder"
+    rm -r -f ~/.nuget/packages/*
 fi
 
 # restore packages
-dnu restore
-dnu restore test/NuGet.Core.Tests
+$DOTNET restore src/NuGet.Core test/NuGet.Core.Tests --verbosity minimal
+if [ $? -ne 0 ]; then
+	echo "Restore failed!!"
+	exit 1
+fi
+
+# build NuGet.Shared to work around a dotnet build issue
+$DOTNET build src/NuGet.Core/NuGet.Shared --framework netstandard1.5 --configuration release
 
 # run tests
 for testProject in `find test/NuGet.Core.Tests -type f -name project.json`
@@ -53,20 +61,33 @@ do
         echo "Skipping tests in $testProject because they hang"
         continue
     fi
-	
-	if grep -q dnxcore50 "$testProject"; then
-         echo "Running tests in $testProject on CoreCLR"
-		 
-		 dnvm use 1.0.0-rc1-update1 -runtime coreclr
-		 dnx --project $testProject test -parallel none
-		 
-		 if [ $? -ne 0 ]; then
-			echo "$testProject FAILED on CoreCLR"
+	testDir="$(pwd)/$(dirname $testProject)"
+
+	if grep -q "netstandardapp1.5" "$testProject"; then
+		pushd $testDir
+
+         	echo "Running tests in $testDir on CoreCLR"
+         	echo "$DOTNET build $testDir"
+		$DOTNET build $testDir --framework netstandardapp1.5 --configuration release
+
+	 	if [ $? -ne 0 ]; then
+                        echo "$testDir FAILED build on CoreCLR"
+                        RESULTCODE=1
+                fi
+
+        	echo "$DOTNET test $testDir"
+		$DOTNET test $testDir --configuration release
+
+		if [ $? -ne 0 ]; then
+			echo "$testDir FAILED on CoreCLR"
 			RESULTCODE=1
-		 fi		 
+		fi
+
+		popd
 	else
-         echo "Skipping the tests in $testProject on CoreCLR"
-	fi	
+        	echo "Skipping the tests in $testDir on CoreCLR"
+	fi
+
 done
 
 exit $RESULTCODE

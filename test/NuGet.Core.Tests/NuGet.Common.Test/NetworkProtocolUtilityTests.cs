@@ -20,7 +20,7 @@ namespace NuGet.Common.Test
 
         [Theory]
         [InlineData(Ssl20Name, Ssl20TestUrl, false)] // not supported
-        [InlineData(Ssl30Name, Ssl30TestUrl, null)]  // platform-specific support
+        //[InlineData(Ssl30Name, Ssl30TestUrl, null)]  // platform-specific support
         [InlineData(Tls10Name, Tls10TestUrl, true)]  // supported everywhere
         [InlineData(Tls11Name, Tls11TestUrl, true)]  // supported everywhere
         [InlineData(Tls12Name, Tls12TestUrl, true)]  // supported everywhere
@@ -32,7 +32,7 @@ namespace NuGet.Common.Test
 
             if (!supported.HasValue)
             {
-#if DNXCORE50
+#if NETSTANDARDAPP1_5
                 // .NET Core bug: https://github.com/dotnet/corefx/issues/6668
                 if (name == Ssl30Name)
                 {

@@ -16,10 +16,14 @@
   ],
   "dependencies": {
     "Lucene.Net": "3.0.3",
-    "NuGet.Versioning": "3.4.0-*",
-    "NuGet.Protocol.Core.Types": "3.4.0-*"
+    "NuGet.Versioning": {
+      "target": "project"
+    },
+    "NuGet.Protocol.Core.Types": {
+      "target": "project"
+    }
   },
   "frameworks": {
-    "net45": { }
+    "net45": {}
   }
 }

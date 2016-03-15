@@ -5,13 +5,21 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.ProjectManagement": "3.4.0-*",
-    "NuGet.Commands": "3.4.0-*",
-    "NuGet.Protocol.Core.v2": "3.4.0-*",
-    "NuGet.Resolver": "3.4.0-*",
+    "NuGet.ProjectManagement": {
+      "target": "project"
+    },
+    "NuGet.Commands": {
+      "target": "project"
+    },
+    "NuGet.Protocol.Core.v2": {
+      "target": "project"
+    },
+    "NuGet.Resolver": {
+      "target": "project"
+    },
     "NuGet.Shared": {
-      "version": "3.4.0-*",
-      "type": "build"
+      "type": "build",
+      "target": "project"
     }
   },
   "frameworks": {

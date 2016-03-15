@@ -33,7 +33,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
             // Act & Assert
             var exception = await ThrowsException<HttpRequestException>(server);
-#if DNXCORE50
+#if NETSTANDARDAPP1_5
             Assert.NotNull(exception.InnerException);
             Assert.Equal("A connection with the server could not be established", exception.InnerException.Message);
 #else
@@ -56,7 +56,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
             // Act & Assert
             var exception = await ThrowsException<HttpRequestException>(server);
-#if DNXCORE50
+#if NETSTANDARDAPP1_5
             Assert.NotNull(exception.InnerException);
             Assert.Equal("The server returned an invalid or unrecognized response", exception.InnerException.Message);
 #else
@@ -79,7 +79,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
             // Act & Assert
             var exception = await ThrowsException<HttpRequestException>(server);
-#if DNXCORE50
+#if NETSTANDARDAPP1_5
             Assert.NotNull(exception.InnerException);
             Assert.Equal("The server name or address could not be resolved", exception.InnerException.Message);
 #else

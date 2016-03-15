@@ -8,8 +8,8 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.PlatformAbstractions;
 using Moq;
+using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -275,7 +275,7 @@ namespace NuGet.Configuration.Test
             // - source b is persisted in <packageSources> and <disabledPackageSources>
             // - source c is not spersisted at all since its IsPersistable is false and it's enabled.
             // - source d is persisted in <disabledPackageSources> only since its IsPersistable is false and it's disabled.
-#if !DNXCORE50
+#if !NETSTANDARDAPP1_5
             var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 #else
             string appDataPath = Environment.GetEnvironmentVariable("AppData");
@@ -1190,7 +1190,7 @@ namespace NuGet.Configuration.Test
             Assert.Null(values[1].Password);
         }
 
-#if !DNXCORE50
+#if !NETSTANDARDAPP1_5
         [Fact]
         public void LoadPackageSourcesReadsCredentialPairsFromSettings()
         {
@@ -1436,7 +1436,7 @@ namespace NuGet.Configuration.Test
             settings.Verify();
         }
 
-#if !DNXCORE50
+#if !NETSTANDARDAPP1_5
         [Fact]
         public void SavePackageSourcesSavesCredentials()
         {
@@ -2097,7 +2097,7 @@ namespace NuGet.Configuration.Test
                 Assert.Equal("Microsoft and .NET", sources[1].Name);
                 Assert.False(sources[1].IsEnabled);
 
-                if (PlatformServices.Default.Runtime.OperatingSystem.Equals("windows", StringComparison.OrdinalIgnoreCase))
+                if (RuntimeEnvironmentHelper.IsWindows)
                 {
                     Assert.Equal("LocalNuGet", sources[2].Name);
                     Assert.True(sources[2].IsEnabled);
@@ -2320,7 +2320,7 @@ namespace NuGet.Configuration.Test
             }
         }
 
-#if DNXCORE50
+#if NETSTANDARDAPP1_5
         [Fact]
         public void LoadPackageSource_NotDecryptPassword() 
         {

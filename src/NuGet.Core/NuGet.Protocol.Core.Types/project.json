@@ -14,12 +14,18 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Common": "3.4.0-*",
-    "NuGet.Configuration": "3.4.0-*",
-    "NuGet.Packaging": "3.4.0-*",
+    "NuGet.Common": {
+      "target": "project"
+    },
+    "NuGet.Configuration": {
+      "target": "project"
+    },
+    "NuGet.Packaging": {
+      "target": "project"
+    },
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.0-*"
+      "target": "project"
     }
   },
   "frameworks": {
@@ -28,10 +34,17 @@
         "System.Net.Http": ""
       }
     },
-    "dnxcore50": {
+    "netstandard1.5": {
       "dependencies": {
-        "System.Net.Http": "4.0.0-beta-23109"
-      }
+        "NETStandard.Library": "1.0.0-rc2-23811",
+        "System.Net.Http": "4.0.1-rc2-23811",
+        "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-rc2-23826"
+      },
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ]
     }
   }
 }

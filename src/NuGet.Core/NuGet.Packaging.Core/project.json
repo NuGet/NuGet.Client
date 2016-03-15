@@ -11,10 +11,12 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Packaging.Core.Types": "3.4.0-*",
+    "NuGet.Packaging.Core.Types": {
+      "target": "project"
+    },
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.0-*"
+      "target": "project"
     }
   },
   "frameworks": {
@@ -25,12 +27,16 @@
         "System.IO.Compression": ""
       }
     },
-    "dnxcore50": {
+    "netstandard1.5": {
       "dependencies": {
-        "System.IO": "4.0.10-beta-23109",
-        "System.IO.Compression": "4.0.0-beta-23109",
-        "System.Xml.XDocument": "4.0.10-beta-23109"
-      }
+        "NETStandard.Library": "1.0.0-rc2-23811",
+        "System.Xml.XDocument": "4.0.11-rc2-23811"
+      },
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ]
     }
   }
 }

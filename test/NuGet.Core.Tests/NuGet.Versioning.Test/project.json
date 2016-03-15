@@ -1,19 +1,31 @@
 ﻿{
   "dependencies": {
-    "NuGet.Versioning": "3.4.0-*",
-    "xunit": "2.1.0",
-    "xunit.runner.dnx": "2.1.0-rc1-build204"
-  },
-  "commands": {
-    "test": "xunit.runner.dnx"
+    "NuGet.Versioning": {
+      "target": "project"
+    },
+    "xunit": "2.1.0"
   },
   "frameworks": {
-    "dnx451": {},
-    "dnxcore50": {
-      "imports": [ "portable-net45+win8" ],
+    "netstandardapp1.5": {
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ],
       "dependencies": {
-        "System.Collections": "4.0.0-beta-23109"
+        "NETStandard.Library": "1.0.0-rc2-23811",
+        "dotnet-test-xunit": "1.0.0-dev-48273-16"
+      }
+    },
+    "net46": {
+      "frameworkAssemblies": {
+        "Microsoft.CSharp": "",
+        "System": "",
+        "System.Core": "",
+        "System.Runtime": "",
+        "System.Threading.Tasks": ""
       }
     }
-  }
+  },
+  "testRunner": "xunit"
 }

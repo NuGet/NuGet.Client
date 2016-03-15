@@ -3,14 +3,14 @@
 
 using System;
 using System.Collections.Generic;
-#if !DNXCORE50
+#if !NETSTANDARD1_5
 using System.IdentityModel.Protocols.WSTrust;
 using System.IdentityModel.Tokens;
 using System.Linq;
 #endif
 using System.Net;
 using System.Net.Http;
-#if !DNXCORE50
+#if !NETSTANDARD1_5
 using System.ServiceModel;
 using System.ServiceModel.Security;
 #endif
@@ -44,7 +44,7 @@ namespace NuGet.Protocol
             CredentialStore credentialStore,
             HttpRequestMessage request)
         {
-#if !DNXCORE50
+#if !NETSTANDARD1_5
             var credentials = credentialStore.GetCredentials(feedUri) as STSCredentials;
 
             if (credentials != null)
@@ -62,7 +62,7 @@ namespace NuGet.Protocol
             CredentialStore credentialStore,
             HttpResponseMessage response)
         {
-#if DNXCORE50
+#if NETSTANDARD1_5
             return false;
 #else
             if (response.StatusCode != HttpStatusCode.Unauthorized)

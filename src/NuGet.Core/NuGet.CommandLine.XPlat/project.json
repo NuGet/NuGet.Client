@@ -12,10 +12,12 @@
     },
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-rc1-final",
     "Microsoft.NETCore.Platforms": "1.0.1-beta-*",
-    "NuGet.Commands": "3.4.0-*",
+    "NuGet.Commands": {
+      "target": "project"
+    },
     "NuGet.Shared": {
-      "version": "3.4.0-*",
-      "type": "build"
+      "type": "build",
+      "target": "project"
     },
     "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-rc2-23826",
     "System.Runtime.Serialization.Primitives": "4.0.0"
@@ -24,18 +26,22 @@
     "NuGet.CommandLine.XPlat": "NuGet.CommandLine.XPlat"
   },
   "frameworks": {
-    "dnx451": {
+    "net46": {
       "frameworkAssemblies": {
         "Microsoft.Build.Framework": "14.0.0",
         "Microsoft.Build": "14.0.0",
         "System.Collections": ""
       }
     },
-    "dnxcore50": {
-      "imports": [ "portable-net45+win8" ],
+    "netstandardapp1.5": {
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ],
       "dependencies": {
-        "System.Threading.Tasks": "4.0.11-beta-23516",
-        "System.Console": "4.0.0-beta-23409"
+        "NETStandard.Library": "1.0.0-rc2-23811",
+        "System.Console": "4.0.0-rc2-23811"
       }
     }
   }

@@ -50,7 +50,7 @@ namespace NuGet.Configuration
 
         private IEnumerable<PackageSource> LoadConfigurationDefaultSources(IEnumerable<PackageSource> configurationDefaultSources)
         {
-#if !DNXCORE50
+#if !NETSTANDARD1_5
             // Global default NuGet source doesn't make sense on Mono
             if (RuntimeEnvironmentHelper.IsMono)
             {
