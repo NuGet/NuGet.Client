@@ -363,7 +363,7 @@ namespace NuGet.Protocol
             var page = 1;
 
             // first request
-            Task<HttpResponseMessage> urlRequest = _httpSource.GetAsync(new Uri(uri), log, token);
+            Task<HttpResponseMessage> urlRequest = _httpSource.GetAsync(new Uri(uri), "application/atom+xml,application/xml", log, token);
 
             // TODO: re-implement caching at a higher level for both v2 and v3
             while (!token.IsCancellationRequested && urlRequest != null)
@@ -415,7 +415,7 @@ namespace NuGet.Protocol
                                 // keep track here.
                                 uri = nextUri;
 
-                                urlRequest = _httpSource.GetAsync(new Uri(nextUri), log, token);
+                                urlRequest = _httpSource.GetAsync(new Uri(nextUri), "application/atom+xml,application/xml", log, token);
                             }
 
                             page++;

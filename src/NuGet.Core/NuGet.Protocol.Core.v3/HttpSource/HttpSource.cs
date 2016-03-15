@@ -19,6 +19,7 @@ using NuGet.Configuration;
 using NuGet.Logging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
+using System.Net.Http.Headers;
 
 namespace NuGet.Protocol
 {
@@ -169,6 +170,19 @@ namespace NuGet.Protocol
                     _throttle.Release();
                 }
             }
+        }
+
+        public Task<HttpResponseMessage> GetAsync(Uri uri, ILogger log, MediaTypeWithQualityHeaderValue[] accept, CancellationToken token)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            foreach (var a in accept)
+            {
+                request.Headers.Accept.Add(a);
+            }
+
+            Func<HttpRequestMessage> requestFactory = () => request;
+
+            return SendAsync(requestFactory, log, token);
         }
 
         public Task<HttpResponseMessage> GetAsync(Uri uri, ILogger log, CancellationToken token)
