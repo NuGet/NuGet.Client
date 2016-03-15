@@ -66,8 +66,8 @@ namespace NuGet.Packaging.Xml
             elem.Add(GetXElementFromGroupableItemSets(
                 ns,
                 metadata.PackageAssemblyReferences,
-                set => set.TargetFramework.IsSpecificFramework,
-                set => set.TargetFramework.GetFrameworkString(),
+                set => set.TargetFramework != null ? set.TargetFramework.IsSpecificFramework : false,
+                set => set.TargetFramework != null ? set.TargetFramework.GetFrameworkString() : null,
                 set => set.References,
                 GetXElementFromPackageReference,
                 References,
