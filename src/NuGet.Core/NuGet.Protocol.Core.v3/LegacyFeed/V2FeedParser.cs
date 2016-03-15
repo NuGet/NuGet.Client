@@ -127,14 +127,25 @@ namespace NuGet.Protocol
                 package.Id,
                 package.Version.ToNormalizedString());
 
-            // Try to find the package directly
-            // Set max count to -1, get all packages 
-            var packages = await QueryV2Feed(uri, package.Id, -1, log, token);
+            IReadOnlyList<V2FeedPackageInfo> packages = new List<V2FeedPackageInfo>();
+
+            try
+            {
+                // Try to find the package directly for better perf
+                // Set max count to -1, get all packages 
+                packages = await QueryV2Feed(uri, package.Id, -1, log, token);
+            }
+            catch(XmlException e)
+            {
+                // ProGet does not support normalized version
+                // Catch all XMl exceptions for ProGet
+                log.LogDebug(e.ToString());
+            }
 
             // If not found use FindPackagesById
             if (packages.Count < 1)
             {
-                var allPackages = await FindPackagesByIdAsync(package.Id, log, token);
+                packages = await FindPackagesByIdAsync(package.Id, log, token);
 
                 return packages.Where(p => p.Version == package.Version)
                     .FirstOrDefault();
