@@ -135,10 +135,10 @@ namespace NuGet.Protocol
                 // Set max count to -1, get all packages 
                 packages = await QueryV2Feed(uri, package.Id, -1, log, token);
             }
-            catch(Exception e)
+            catch(XmlException e)
             {
                 // ProGet does not support normalized version
-                // Catch all exceptions for /Packages endpoint when server throw
+                // Catch all XMl exceptions for ProGet
                 log.LogDebug(e.ToString());
             }
 
