@@ -15,6 +15,8 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
 using NuGet.Versioning;
+using System.Net.Http.Headers;
+using NuGet.Frameworks;
 
 namespace NuGet.Protocol
 {
@@ -203,10 +205,13 @@ namespace NuGet.Protocol
         public async Task<IReadOnlyList<V2FeedPackageInfo>> Search(string searchTerm, SearchFilter filters, int skip, int take, ILogger log, CancellationToken cancellationToken)
         {
             var targetFramework = String.Join(@"/", filters.SupportedFrameworks);
+
+            var shortFormTargetFramework = NuGetFramework.Parse(targetFramework).GetShortFolderName();
+
             var uri = String.Format(CultureInfo.InvariantCulture, _searchEndPointFormat,
                                     filters.IncludePrerelease ? IsAbsoluteLatestVersionFilterFlag : IsLatestVersionFilterFlag,
                                     searchTerm,
-                                    targetFramework,
+                                    shortFormTargetFramework,
                                     filters.IncludePrerelease.ToString().ToLowerInvariant(),
                                     skip,
                                     take);
@@ -363,7 +368,11 @@ namespace NuGet.Protocol
             var page = 1;
 
             // first request
-            Task<HttpResponseMessage> urlRequest = _httpSource.GetAsync(new Uri(uri), "application/atom+xml,application/xml", log, token);
+            Task<HttpResponseMessage> urlRequest = _httpSource.GetAsync(
+                new Uri(uri),
+                new[] { new MediaTypeWithQualityHeaderValue("application/atom+xml"), new MediaTypeWithQualityHeaderValue("application/xml") },
+                log,
+                token);
 
             // TODO: re-implement caching at a higher level for both v2 and v3
             while (!token.IsCancellationRequested && urlRequest != null)
@@ -415,7 +424,11 @@ namespace NuGet.Protocol
                                 // keep track here.
                                 uri = nextUri;
 
-                                urlRequest = _httpSource.GetAsync(new Uri(nextUri), "application/atom+xml,application/xml", log, token);
+                                urlRequest = _httpSource.GetAsync(
+                                    new Uri(nextUri), 
+                                    new[] { new MediaTypeWithQualityHeaderValue("application/atom+xml"), new MediaTypeWithQualityHeaderValue("application/xml") },
+                                    log, 
+                                    token);
                             }
 
                             page++;

@@ -172,7 +172,7 @@ namespace NuGet.Protocol
             }
         }
 
-        public Task<HttpResponseMessage> GetAsync(Uri uri, ILogger log, MediaTypeWithQualityHeaderValue[] accept, CancellationToken token)
+        public Task<HttpResponseMessage> GetAsync(Uri uri, MediaTypeWithQualityHeaderValue[] accept, ILogger log, CancellationToken token)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, uri);
             foreach (var a in accept)
