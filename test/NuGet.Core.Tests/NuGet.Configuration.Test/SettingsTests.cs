@@ -1864,7 +1864,7 @@ namespace NuGet.Configuration.Test
                 ConfigurationFileTestUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, "nuget", "Config","IDE","Version","SKU"), fileContent);
                 ConfigurationFileTestUtility.CreateConfigurationFile("a3.xconfig", Path.Combine(mockBaseDirectory, "nuget", "Config","IDE","Version","SKU"), fileContent);
                 ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "nuget", "Config","IDE","Version","SKU","Dir"), fileContent);
-                ConfigurationFileTestUtility.CreateConfigurationFile("a1_upcase.Config", Path.Combine(mockBaseDirectory, "nuget", "Config"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1_uppercase.Config", Path.Combine(mockBaseDirectory, "nuget", "Config"), fileContent);
 
                 // Act
                 var settings = Settings.LoadMachineWideSettings(
@@ -1882,7 +1882,7 @@ namespace NuGet.Configuration.Test
                 Assert.True(files.Contains(Path.Combine(mockBaseDirectory, "nuget", "Config", "IDE", "a1.config")));
                 Assert.True(files.Contains(Path.Combine(mockBaseDirectory, "nuget", "Config", "a2.config")));
                 Assert.True(files.Contains(Path.Combine(mockBaseDirectory, "nuget", "Config", "a1.config")));
-                Assert.True(files.Contains(Path.Combine(mockBaseDirectory, "nuget", "Config", "a1_upcase.Config")));
+                Assert.True(files.Contains(Path.Combine(mockBaseDirectory, "nuget", "Config", "a1_uppercase.Config")));
             }
         }
 
