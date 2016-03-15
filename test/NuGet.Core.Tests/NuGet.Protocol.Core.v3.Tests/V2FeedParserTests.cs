@@ -154,7 +154,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-Client'&includePrerelease=false&$skip=0&$top=1",
+            responses.Add("http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-client'&includePrerelease=false&$skip=0&$top=1",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.AzureSearch.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses);
@@ -197,9 +197,9 @@ namespace NuGet.Protocol.Core.v3.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-Client'&includePrerelease=false&$skip=0&$top=100",
+            responses.Add("http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-client'&includePrerelease=false&$skip=0&$top=100",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.AzureSearch100.xml", GetType()));
-            responses.Add("https://www.nuget.org/api/v2/Search?searchTerm='azure'&targetFramework='net40-Client'&includePrerelease=false&$filter=IsLatestVersion&$skiptoken='Haven.ServiceBus.Azure.ServiceBus.Publisher','1.0.5835.19676',100",
+            responses.Add("https://www.nuget.org/api/v2/Search?searchTerm='azure'&targetFramework='net40-client'&includePrerelease=false&$filter=IsLatestVersion&$skiptoken='Haven.ServiceBus.Azure.ServiceBus.Publisher','1.0.5835.19676',100",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.AzureSearchNext100.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses);
@@ -222,7 +222,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-Client'&includePrerelease=false&$skip=0&$top=1",
+            responses.Add("http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-client'&includePrerelease=false&$skip=0&$top=1",
                 string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses);
@@ -244,7 +244,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 CancellationToken.None));
 
             Assert.Equal(
-                "The V2 feed at 'http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-Client'&includePrerelease=false&$skip=0&$top=1' " +
+                "The V2 feed at 'http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-client'&includePrerelease=false&$skip=0&$top=1' " +
                 "returned an unexpected status code '404 Not Found'.",
                 exception.Message);
         }
@@ -254,7 +254,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-Client'&includePrerelease=false&$skip=0&$top=1",
+            responses.Add("http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-client'&includePrerelease=false&$skip=0&$top=1",
                 null);
 
             var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses);
@@ -276,7 +276,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 CancellationToken.None));
 
             Assert.Equal(
-                "The V2 feed at 'http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-Client'&includePrerelease=false&$skip=0&$top=1' " +
+                "The V2 feed at 'http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-client'&includePrerelease=false&$skip=0&$top=1' " +
                 "returned an unexpected status code '500 Internal Server Error'.",
                 exception.Message);
         }
