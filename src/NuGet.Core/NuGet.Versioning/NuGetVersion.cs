@@ -184,5 +184,13 @@ namespace NuGet.Versioning
         {
             get { return _version.Revision; }
         }
+
+        /// <summary>
+        /// Returns true if version is a SemVer 2.0.0 version
+        /// </summary>
+        public bool IsSemVer2
+        {
+            get { return this.ReleaseLabels.Count() > 1 || this.HasMetadata; }
+        }
     }
 }

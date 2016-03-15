@@ -249,6 +249,15 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Versions using SemVer 2.0.0 are not supported: {0}..
+        /// </summary>
+        internal static string SemVer2VersionsNotSupported {
+            get {
+                return ResourceManager.GetString("SemVer2VersionsNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to The special version part cannot exceed 20 characters..
         /// </summary>
         internal static string SemVerSpecialVersionTooLong {
