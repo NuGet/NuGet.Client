@@ -276,6 +276,15 @@ namespace NuGet.Protocol.Core.v3 {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to The V2 feed at &apos;{0}&apos; returned an unexpected status code &apos;{1} {2}&apos;..
+        /// </summary>
+        internal static string Log_FailedToFetchV2Feed {
+            get {
+                return ResourceManager.GetString("Log_FailedToFetchV2Feed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Unable to load package &apos;{0}&apos;..
         /// </summary>
         internal static string Log_FailedToGetNupkgStream {

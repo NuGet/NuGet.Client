@@ -115,7 +115,10 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 != r.Item1, r.Item2 + " " + r.Item3);
 
                 Assert.Equal(1, hitsByUrl["/index.json"]);
-                Assert.Equal(100, hitsByUrl2.Count);
+                Assert.Equal(100, hitsByUrl2.Keys.Count(s => s.StartsWith("/nuget/Packages")));
+
+                // The "/Packages" endpoint falls back to "/FindPackagesById" if no package is found.
+                Assert.Equal(100, hitsByUrl2.Keys.Count(s => s.StartsWith("/nuget/FindPackagesById")));
 
                 Assert.Equal(0, allPackages.Count());
             }
@@ -1680,12 +1683,12 @@ namespace NuGet.CommandLine.Test
                 else if (path.StartsWith("/nuget/FindPackagesById()"))
                 {
                     var id = request.QueryString.Get("id").Trim('\'');
-                    var package = localRepo.FindPackagesById(id).Single();
+                    var packages = localRepo.FindPackagesById(id);
 
                     return new Action<HttpListenerResponse>(response =>
                     {
                         response.ContentType = "application/atom+xml;type=feed;charset=utf-8";
-                        var feed = server.ToODataFeed(new[] { package }, "FindPackagesById");
+                        var feed = server.ToODataFeed(packages, "FindPackagesById");
                         MockServer.SetResponseContent(response, feed);
                     });
                 }
