@@ -4,6 +4,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.LibraryModel;
 using NuGet.Logging;
 using NuGet.ProjectModel;
@@ -97,9 +100,9 @@ namespace NuGet.Commands
         /// </summary>
         /// <remarks>If <see cref="PreviousLockFile"/> and <see cref="LockFile"/> are identical
         ///  the file will not be written to disk.</remarks>
-        public void Commit(ILogger log)
+        public async Task CommitAsync(ILogger log, CancellationToken token)
         {
-            Commit(log, forceWrite: false);
+            await CommitAsync(log, forceWrite: false, token: token);
         }
 
         /// <summary>
@@ -108,8 +111,10 @@ namespace NuGet.Commands
         /// </summary>
         /// <remarks>If <see cref="PreviousLockFile"/> and <see cref="LockFile"/> are identical
         ///  the file will not be written to disk.</remarks>
+        /// <param name="log">The logger.</param>
         /// <param name="forceWrite">Write out the lock file even if no changes exist.</param>
-        public void Commit(ILogger log, bool forceWrite)
+        /// <param name="token">The cancellation token.</param>
+        public async Task CommitAsync(ILogger log, bool forceWrite, CancellationToken token)
         {
             // Write the lock file
             var lockFileFormat = new LockFileFormat();
@@ -140,9 +145,16 @@ namespace NuGet.Commands
                 {
                     log.LogDebug($"Writing tool lock file to disk. Path: {toolRestoreResult.LockFilePath}");
 
-                    var lockFileDirectory = Path.GetDirectoryName(toolRestoreResult.LockFilePath);
-                    Directory.CreateDirectory(lockFileDirectory);
-                    lockFileFormat.Write(toolRestoreResult.LockFilePath, toolRestoreResult.LockFile);
+                    await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
+                        toolRestoreResult.LockFilePath,
+                        lockedToken =>
+                        {
+                            var lockFileDirectory = Path.GetDirectoryName(toolRestoreResult.LockFilePath);
+                            Directory.CreateDirectory(lockFileDirectory);
+                            lockFileFormat.Write(toolRestoreResult.LockFilePath, toolRestoreResult.LockFile);
+                            return Task.FromResult((object)null);
+                        },
+                        token);
                 }
             }
 

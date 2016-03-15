@@ -9,6 +9,7 @@ using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Xunit;
 using System.Linq;
+using System.Threading;
 
 namespace NuGet.Commands.Test
 {
@@ -140,7 +141,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var runtimeGraph = result.RestoreGraphs.Single(graph => graph.RuntimeIdentifier == "unix").RuntimeGraph;
 
@@ -207,7 +208,7 @@ namespace NuGet.Commands.Test
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
                 Assert.True(result.Success);

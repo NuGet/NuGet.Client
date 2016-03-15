@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.ProjectModel;
@@ -137,7 +138,7 @@ namespace NuGet.Commands
 
             // Commit the result
             log.LogInformation(Strings.Log_Committing);
-            result.Commit(request.Log);
+            await result.CommitAsync(request.Log, CancellationToken.None);
 
             sw.Stop();
 
