@@ -387,9 +387,11 @@ namespace NuGet.Protocol
 
                             nextUri = GetNextUrl(doc);
                         }
-                        else if (ignoreNotFounds && data.StatusCode == HttpStatusCode.NotFound)
+                        else if (ignoreNotFounds &&
+                                 (data.StatusCode == HttpStatusCode.NotFound ||
+                                  data.StatusCode == HttpStatusCode.NoContent))
                         {
-                            // ignore the "404 Not Found"
+                            // Treat "404 Not Found" and "204 No Content" as empty responses.
                         }
                         else
                         {
@@ -397,7 +399,7 @@ namespace NuGet.Protocol
                                 CultureInfo.CurrentCulture,
                                 Strings.Log_FailedToFetchV2Feed,
                                 uri,
-                                (int) data.StatusCode,
+                                (int)data.StatusCode,
                                 data.ReasonPhrase));
                         }
 
