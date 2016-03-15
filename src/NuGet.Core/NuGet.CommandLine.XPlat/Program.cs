@@ -54,16 +54,17 @@ namespace NuGet.CommandLine.XPlat
             NetworkProtocolUtility.ConfigureSupportedSslProtocols();
 
             //register push and delete command
-            new PushCommand(app, () =>
-            {
-                return Log;
-            });
-            new DeleteCommand(app, () =>
+            PushCommand.Register(app, () =>
             {
                 return Log;
             });
 
-            RestoreCommand.Register(app,() =>
+            DeleteCommand.Register(app, () =>
+            {
+                return Log;
+            });
+
+            RestoreCommand.Register(app, () =>
             {
                 return Log;
             });

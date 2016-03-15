@@ -11,6 +11,9 @@ using NuGet.ProjectModel;
 
 namespace NuGet.Commands
 {
+    /// <summary>
+    /// Shared code to run the "restore" command from the command line projects
+    /// </summary>
     public static class RestoreRunner
     {
         public static async Task<IReadOnlyList<RestoreSummary>> Run(RestoreArgs restoreContext)

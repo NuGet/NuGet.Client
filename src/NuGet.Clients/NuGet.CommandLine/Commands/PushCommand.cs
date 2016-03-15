@@ -1,15 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Common;
-using NuGet.Configuration;
-using NuGet.Protocol.Core.Types;
+using NuGet.Commands;
 
 namespace NuGet.CommandLine
 {
@@ -32,84 +25,37 @@ namespace NuGet.CommandLine
 
         public override async Task ExecuteCommandAsync()
         {
-            // First argument should be the package
-            var packagePath = Arguments[0];
+            string packagePath = Arguments[0];
+            string sourcePath = Source;
+            string apiKeyValue = ApiKey;
+            int timeoutSeconds = Timeout;
 
-            var source = ResolveSource(packagePath, ConfigurationDefaults.Instance.DefaultPushSource);
-            if (string.IsNullOrEmpty(source))
+            if (string.IsNullOrEmpty(apiKeyValue) && Arguments.Count > 1)
             {
-                throw new CommandLineException(
-                    LocalizedResourceManager.GetString(nameof(NuGetResources.Error_MissingSourceParameter)));
+                apiKeyValue = Arguments[1];
             }
 
-            var packageUpdateResource = await GetPackageUpdateResource(source);
             try
             {
-                await packageUpdateResource.Push(packagePath,
-                    Timeout != 0 ? Timeout : 5 * 60,
-                    endpoint => { return GetApiKey(endpoint); },
+                await PushRunner.Run(
+                    Settings,
+                    SourceProvider,
+                    packagePath,
+                    Source,
+                    apiKeyValue,
+                    Timeout,
+                    DisableBuffering,
                     Console);
             }
             catch (Exception ex)
             {
                 if (ex is HttpRequestException && ex.InnerException is WebException)
                 {
-                    ex = ex.InnerException;
+                    throw ex.InnerException;
                 }
-                throw ex;
+
+                throw;
             }
-        }
-
-        private async Task<PackageUpdateResource> GetPackageUpdateResource(string source)
-        {
-            var packageSource = new Configuration.PackageSource(source);
-
-            var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
-
-            var sourceRepository = sourceRepositoryProvider.CreateRepository(packageSource);
-            return await sourceRepository.GetResourceAsync<PackageUpdateResource>();
-        }
-
-        private string ResolveSource(string packagePath, string configurationDefaultPushSource = null)
-        {
-            var source = Source;
-
-            if (!String.IsNullOrEmpty(source))
-            {
-                source = SourceProvider.ResolveAndValidateSource(source);
-            }
-
-            if (string.IsNullOrEmpty(source))
-            {
-                throw new CommandLineException(
-                    LocalizedResourceManager.GetString(nameof(NuGetResources.Error_MissingSourceParameter)));
-            }
-
-            return source;
-        }
-
-        private string GetApiKey(string source)
-        {
-            if (!String.IsNullOrEmpty(ApiKey))
-            {
-                return ApiKey;
-            }
-
-            string apiKey = null;
-
-            // Second argument, if present, should be the API Key
-            if (Arguments.Count > 1)
-            {
-                apiKey = Arguments[1];
-            }
-
-            // If the user did not pass an API Key look in the config file
-            if (String.IsNullOrEmpty(apiKey))
-            {
-                apiKey = SettingsUtility.GetDecryptedValue(Settings, "apikeys", source);
-            }
-
-            return apiKey;
         }
     }
 }

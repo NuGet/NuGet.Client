@@ -433,6 +433,14 @@ namespace NuGet.Configuration
             }
         }
 
+        public string DefaultPushSource
+        {
+            get
+            {
+                return Settings.GetValue(ConfigurationConstants.Config, ConfigurationConstants.DefaultPushSource);
+            }
+        }
+
         public void DisablePackageSource(PackageSource source)
         {
             if (source == null)

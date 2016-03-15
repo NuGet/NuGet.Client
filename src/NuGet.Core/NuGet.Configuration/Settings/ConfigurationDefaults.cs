@@ -94,7 +94,7 @@ namespace NuGet.Configuration
 
         public string DefaultPackageRestoreConsent
         {
-            get { return _settingsManager.GetValue(ConfigurationConstants.PackageRestore, ConfigurationConstants.enabled); }
+            get { return _settingsManager.GetValue(ConfigurationConstants.PackageRestore, ConfigurationConstants.Enabled); }
         }
     }
 }
