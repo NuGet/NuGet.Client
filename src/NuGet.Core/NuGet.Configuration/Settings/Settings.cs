@@ -37,6 +37,11 @@ namespace NuGet.Configuration
                 DefaultSettingsFileName  // NuGet v2 style
             };
 
+        public static readonly string[] SupportedMachineWideConfigExtension =
+            RuntimeEnvironmentHelper.IsWindows?
+            new[] { "*.config" } :
+            new[] { "*.Config", "*.config" };
+
         private XDocument ConfigXDocument { get; }
         public string FileName { get; }
         private bool IsMachineWideSettings { get; }
@@ -341,7 +346,7 @@ namespace NuGet.Configuration
             while (true)
             {
                 // load setting files in directory
-                foreach (var file in FileSystemUtility.GetFilesRelativeToRoot(root, combinedPath, "*.config", SearchOption.TopDirectoryOnly))
+                foreach (var file in FileSystemUtility.GetFilesRelativeToRoot(root, combinedPath, SupportedMachineWideConfigExtension, SearchOption.TopDirectoryOnly))
                 {
                     var settings = ReadSettings(root, file, true);
                     if (settings != null)
