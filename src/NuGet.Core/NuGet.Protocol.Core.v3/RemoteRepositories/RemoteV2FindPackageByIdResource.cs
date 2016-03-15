@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -126,6 +127,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         // So we decide to leave current logic and observe.
                         using (var data = await _httpSource.GetAsync(
                             uri,
+                            new[] { new MediaTypeWithQualityHeaderValue("application/atom+xml"), new MediaTypeWithQualityHeaderValue("application/xml") },
                             $"list_{id}_page{page}",
                             CreateCacheContext(retry),
                             Logger,

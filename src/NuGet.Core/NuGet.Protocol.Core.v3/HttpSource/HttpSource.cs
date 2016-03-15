@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -69,11 +70,36 @@ namespace NuGet.Protocol
             _messageHandlerFactory = messageHandlerFactory;
             _retryHandler = new HttpRetryHandler();
         }
-        
+
         /// <summary>
         /// Caching Get request.
         /// </summary>
-        public async Task<HttpSourceResult> GetAsync(string uri,
+        public Task<HttpSourceResult> GetAsync(
+            string uri,
+            string cacheKey,
+            HttpSourceCacheContext cacheContext,
+            ILogger log,
+            bool ignoreNotFounds,
+            Action<Stream> ensureValidContents,
+            CancellationToken cancellationToken)
+        {
+            return GetAsync(
+                uri,
+                new MediaTypeWithQualityHeaderValue[0],
+                cacheKey,
+                cacheContext,
+                log,
+                ignoreNotFounds,
+                ensureValidContents,
+                cancellationToken);
+        }
+
+        /// <summary>
+        /// Caching Get request.
+        /// </summary>
+        public async Task<HttpSourceResult> GetAsync(
+            string uri,
+            MediaTypeWithQualityHeaderValue[] accept,
             string cacheKey,
             HttpSourceCacheContext cacheContext,
             ILogger log,
@@ -106,8 +132,16 @@ namespace NuGet.Protocol
                     log.LogWarning(message);
                 }
             }
-            
-            Func<HttpRequestMessage> requestFactory = () => new HttpRequestMessage(HttpMethod.Get, uri);
+
+            Func<HttpRequestMessage> requestFactory = () =>
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, uri);
+                foreach (var a in accept)
+                {
+                    request.Headers.Accept.Add(a);
+                }
+                return request;
+            };
 
             // Read the response headers before reading the entire stream to avoid timeouts from large packages.
             Func<Task<HttpResponseMessage>> throttleRequest = () => SendWithCredentialSupportAsync(
@@ -169,6 +203,21 @@ namespace NuGet.Protocol
                     _throttle.Release();
                 }
             }
+        }
+
+        public Task<HttpResponseMessage> GetAsync(Uri uri, MediaTypeWithQualityHeaderValue[] accept, ILogger log, CancellationToken token)
+        {
+            Func<HttpRequestMessage> requestFactory = () =>
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, uri);
+                foreach (var a in accept)
+                {
+                    request.Headers.Accept.Add(a);
+                }
+                return request;
+            };
+
+            return SendAsync(requestFactory, log, token);
         }
 
         public Task<HttpResponseMessage> GetAsync(Uri uri, ILogger log, CancellationToken token)

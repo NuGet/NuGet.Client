@@ -17,7 +17,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-Client'&includePrerelease=false&$skip=0&$top=1",
+            responses.Add("http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-client'&includePrerelease=false&$skip=0&$top=1",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.AzureSearch.xml", GetType()));
 
             var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses);
@@ -58,7 +58,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-Client'&includePrerelease=false&$skip=0&$top=100",
+            responses.Add("http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-client'&includePrerelease=false&$skip=0&$top=100",
      TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.AzureSearch100.xml", GetType()));
 
             var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses);
