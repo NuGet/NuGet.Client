@@ -187,6 +187,6 @@
     <value>The element package\metadata\references\group must contain at least one &lt;reference&gt; child element.</value>
   </data>
   <data name="SemVer2VersionsNotSupported" xml:space="preserve">
-    <value>Versions using SemVer 2.0.0.0 are not supported: {0}.</value>
+    <value>Versions using SemVer 2.0.0 are not supported: {0}.</value>
   </data>
 </root>

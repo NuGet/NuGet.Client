@@ -269,7 +269,7 @@ namespace NuGet.Packaging
 
             if (Version != null && Version.IsSemVer2)
             {
-                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGetResources.SemVer2VersionsNotSupported, Version.ToString()));
+                throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGetResources.SemVer2VersionsNotSupported, Version));
             }
 
             ValidateDependencyGroups(Version, DependencyGroups);
@@ -398,12 +398,12 @@ namespace NuGet.Packaging
                 {
                     if (dep.VersionRange.HasLowerBound && dep.VersionRange.MinVersion.IsSemVer2)
                     {
-                        throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGetResources.SemVer2VersionsNotSupported, dep.VersionRange.MinVersion.ToString()));
+                        throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGetResources.SemVer2VersionsNotSupported, dep.VersionRange.MinVersion));
                     }
 
                     if (dep.VersionRange.HasUpperBound && dep.VersionRange.MaxVersion.IsSemVer2)
                     {
-                        throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGetResources.SemVer2VersionsNotSupported, dep.VersionRange.MaxVersion.ToString()));
+                        throw new InvalidOperationException(String.Format(CultureInfo.CurrentCulture, NuGetResources.SemVer2VersionsNotSupported, dep.VersionRange.MaxVersion));
                     }
                 }
             }
