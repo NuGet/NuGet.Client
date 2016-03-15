@@ -579,8 +579,13 @@ namespace NuGet.Packaging
             }
             catch (Exception ex)
             {
-                throw new PackagesConfigWriterException(string.Format(CultureInfo.CurrentCulture, 
-                    Strings.FailToWritePackagesConfig, ex.Message), ex);
+                throw new PackagesConfigWriterException(
+                    string.Format(
+                        CultureInfo.CurrentCulture, 
+                        Strings.FailToWritePackagesConfig,
+                        fullPath,
+                        ex.Message),
+                    ex);
             }
         }
 
