@@ -134,7 +134,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/Packages(Id='xunit',Version='1.0.0-notfound')", null);
+            responses.Add("http://testsource/v2/Packages(Id='xunit',Version='1.0.0-notfound')", string.Empty);
             responses.Add("http://testsource/v2/FindPackagesById()?Id='xunit'",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
 
@@ -222,6 +222,70 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
+        public async Task V2FeedParser_Search_NotFound()
+        {
+            // Arrange
+            var responses = new Dictionary<string, string>();
+            responses.Add("http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-Client'&includePrerelease=false&$skip=0&$top=1",
+                string.Empty);
+
+            var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses);
+
+            V2FeedParser parser = new V2FeedParser(httpSource, "http://testsource/v2/");
+            var searchFilter = new SearchFilter()
+            {
+                IncludePrerelease = false,
+                SupportedFrameworks = new string[] { "net40-Client" }
+            };
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<FatalProtocolException>(() => parser.Search(
+                "azure",
+                searchFilter,
+                0,
+                1,
+                NullLogger.Instance,
+                CancellationToken.None));
+
+            Assert.Equal(
+                "The V2 feed at 'http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-Client'&includePrerelease=false&$skip=0&$top=1' " +
+                "returned an unexpected status code '404 Not Found'.",
+                exception.Message);
+        }
+
+        [Fact]
+        public async Task V2FeedParser_Search_InternalServerError()
+        {
+            // Arrange
+            var responses = new Dictionary<string, string>();
+            responses.Add("http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-Client'&includePrerelease=false&$skip=0&$top=1",
+                null);
+
+            var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses);
+
+            V2FeedParser parser = new V2FeedParser(httpSource, "http://testsource/v2/");
+            var searchFilter = new SearchFilter()
+            {
+                IncludePrerelease = false,
+                SupportedFrameworks = new string[] { "net40-Client" }
+            };
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<FatalProtocolException>(() => parser.Search(
+                "azure",
+                searchFilter,
+                0,
+                1,
+                NullLogger.Instance,
+                CancellationToken.None));
+
+            Assert.Equal(
+                "The V2 feed at 'http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-Client'&includePrerelease=false&$skip=0&$top=1' " +
+                "returned an unexpected status code '500 Internal Server Error'.",
+                exception.Message);
+        }
+
+        [Fact]
         public async Task V2FeedParser_GetPackage()
         {
             // Arrange
@@ -259,13 +323,13 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
-        public async Task V2FeedParser_GetPackage_notfound()
+        public async Task V2FeedParser_GetPackage_NotFound()
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/Packages(Id='xunit',Version='1.0.0-notfound')", null);
+            responses.Add("http://testsource/v2/Packages(Id='xunit',Version='1.0.0-notfound')", string.Empty);
             responses.Add("http://testsource/v2/FindPackagesById()?Id='xunit'",
-               TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses,
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
@@ -280,22 +344,75 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
-        public async Task V2FeedParser_FindPackagesById_notFound()
+        public async Task V2FeedParser_GetPackage_InternalServerError()
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='not-found'",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.NotFoundFindPackagesById.xml", GetType()));
+            responses.Add("http://testsource/v2/Packages(Id='xunit',Version='1.0.0-InternalServerError')", null);
 
-            var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses);
+            var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses,
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
+
+            V2FeedParser parser = new V2FeedParser(httpSource, "http://testsource/v2/");
+            var packageIdentity = new PackageIdentity("xunit", new NuGetVersion("1.0.0-InternalServerError"));
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<FatalProtocolException>(() => parser.GetPackage(
+                packageIdentity,
+                NullLogger.Instance,
+                CancellationToken.None));
+            Assert.Equal(
+                "The V2 feed at 'http://testsource/v2/Packages(Id='xunit',Version='1.0.0-InternalServerError')' " +
+                "returned an unexpected status code '500 Internal Server Error'.",
+                exception.Message);
+        }
+
+        [Fact]
+        public async Task V2FeedParser_FindPackagesById_NotFound()
+        {
+            // Arrange
+            var responses = new Dictionary<string, string>();
+            responses.Add("http://testsource/v2/FindPackagesById()?Id='xunit'", string.Empty);
+
+            var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses,
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
 
             V2FeedParser parser = new V2FeedParser(httpSource, "http://testsource/v2/");
 
-            // Act
-            var packages = await parser.FindPackagesByIdAsync("not-found", NullLogger.Instance, CancellationToken.None);
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<FatalProtocolException>(() => parser.FindPackagesByIdAsync(
+                "xunit",
+                NullLogger.Instance,
+                CancellationToken.None));
 
-            // Assert
-            Assert.Equal(0, packages.Count());
+            Assert.Equal(
+                "The V2 feed at 'http://testsource/v2/FindPackagesById()?Id='xunit'' " +
+                "returned an unexpected status code '404 Not Found'.",
+                exception.Message);
+        }
+
+        [Fact]
+        public async Task V2FeedParser_FindPackagesById_InternalServerError()
+        {
+            // Arrange
+            var responses = new Dictionary<string, string>();
+            responses.Add("http://testsource/v2/FindPackagesById()?Id='xunit'", null);
+
+            var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses,
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
+
+            V2FeedParser parser = new V2FeedParser(httpSource, "http://testsource/v2/");
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<FatalProtocolException>(() => parser.FindPackagesByIdAsync(
+                "xunit",
+                NullLogger.Instance,
+                CancellationToken.None));
+
+            Assert.Equal(
+                "The V2 feed at 'http://testsource/v2/FindPackagesById()?Id='xunit'' " +
+                "returned an unexpected status code '500 Internal Server Error'.",
+                exception.Message);
         }
     }
 }
