@@ -186,7 +186,7 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        /// Returns true is version is a semver2 version
+        /// Returns true if version is a SemVer 2.0.0 version
         /// </summary>
         public bool IsSemVer2
         {

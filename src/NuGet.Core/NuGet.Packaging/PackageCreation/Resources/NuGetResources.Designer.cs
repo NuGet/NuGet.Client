@@ -249,7 +249,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Versions using semver2 are not supported: {0}..
+        ///    Looks up a localized string similar to Versions using SemVer 2.0.0.0 are not supported: {0}..
         /// </summary>
         internal static string SemVer2VersionsNotSupported {
             get {
