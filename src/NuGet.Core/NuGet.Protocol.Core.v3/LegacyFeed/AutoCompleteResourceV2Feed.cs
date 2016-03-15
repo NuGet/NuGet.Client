@@ -80,9 +80,7 @@ namespace NuGet.Protocol
             return await _httpSource.ProcessStreamAsync(
                    uri: apiEndpointUri,
                    ignoreNotFounds: false,
-                   bufferContent: true,
-                   log: logger,
-                   process: stream =>
+                   processAsync: stream =>
                    {
                        using (var reader = new StreamReader(stream))
                        using (var jsonReader = new JsonTextReader(reader))
@@ -92,6 +90,7 @@ namespace NuGet.Protocol
                            return Task.FromResult(json);
                        }
                    },
+                   log: logger,
                    token: token);
         }
     }

@@ -71,7 +71,6 @@ namespace NuGet.Protocol
         }
 
         public static async Task<DownloadResourceResult> AddPackageAsync(
-            DownloadUtility downloadUtility,
             PackageIdentity packageIdentity,
             Stream packageStream,
             ISettings settings,
@@ -109,11 +108,7 @@ namespace NuGet.Protocol
                 xmlDocFileSaveMode: PackageExtractionBehavior.XmlDocFileSaveMode);
 
             await PackageExtractor.InstallFromSourceAsync(
-                stream => downloadUtility.DownloadAsync(
-                        source: packageStream,
-                        destination: stream,
-                        downloadName: packageIdentity.ToString(),
-                        token: token),
+                stream => packageStream.CopyToAsync(stream, 8192, token),
                 versionFolderPathContext,
                 token: token);
 
