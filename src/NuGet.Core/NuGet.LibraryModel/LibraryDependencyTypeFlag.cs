@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Concurrent;
 
 namespace NuGet.LibraryModel
@@ -14,6 +15,7 @@ namespace NuGet.LibraryModel
         public static readonly LibraryDependencyTypeFlag MainSource = Declare("MainSource");
         public static readonly LibraryDependencyTypeFlag MainExport = Declare("MainExport");
         public static readonly LibraryDependencyTypeFlag PreprocessReference = Declare("PreprocessReference");
+        public static readonly LibraryDependencyTypeFlag SharedFramework = Declare("SharedFramework");
 
         public static readonly LibraryDependencyTypeFlag RuntimeComponent = Declare("RuntimeComponent");
         public static readonly LibraryDependencyTypeFlag DevComponent = Declare("DevComponent");
@@ -28,6 +30,17 @@ namespace NuGet.LibraryModel
         public static LibraryDependencyTypeFlag Declare(string keyword)
         {
             return _flags.GetOrAdd(keyword, x => new LibraryDependencyTypeFlag(x));
+        }
+
+        public override bool Equals(object obj)
+        {
+            LibraryDependencyTypeFlag other = obj as LibraryDependencyTypeFlag;
+            return other != null && string.Equals(_value, other._value, System.StringComparison.Ordinal);
+        }
+
+        public override int GetHashCode()
+        {
+            return StringComparer.Ordinal.GetHashCode(_value);
         }
 
         public override string ToString()

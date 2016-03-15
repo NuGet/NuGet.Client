@@ -236,6 +236,13 @@ namespace NuGet.ProjectModel
                             {
                                 suppressParentFlagsValue = LibraryIncludeFlags.All;
                             }
+                            else if(dependencyTypeValue.Contains(LibraryDependencyTypeFlag.SharedFramework))
+                            {
+                                dependencyIncludeFlagsValue =
+                                    LibraryIncludeFlags.Build |
+                                    LibraryIncludeFlags.Compile |
+                                    LibraryIncludeFlags.Analyzers;
+                            }
                         }
 
                         if (TryGetStringEnumerable(dependencyValue["include"], out strings))

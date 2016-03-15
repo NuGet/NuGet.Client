@@ -244,5 +244,85 @@ namespace NuGet.ProjectModel.Test
             var actual = Assert.Throws<FileFormatException>(() => JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json"));
             Assert.Contains("not a valid version string", actual.Message);
         }
+
+        [Fact]
+        public void PackageSpecReader_SetsPlatformDependencyFlagsCorrectly()
+        {
+            // Arrange
+            var json = @"{
+                           ""dependencies"": {
+                             ""redist"": {
+                               ""version"": ""1.0.0"",
+                               ""type"": ""platform""
+                             }
+                           }
+                         }";
+
+            // Act
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("redist"));
+            Assert.NotNull(dep);
+            Assert.Equal(LibraryDependencyTypeKeyword.Platform.CreateType(), dep.Type);
+
+            var expected = LibraryIncludeFlags.Build |
+                LibraryIncludeFlags.Compile |
+                LibraryIncludeFlags.Analyzers;
+            Assert.Equal(expected, dep.IncludeType);
+        }
+
+        [Fact]
+        public void PackageSpecReader_ExplicitExcludesAddToTypePlatform()
+        {
+            // Arrange
+            var json = @"{
+                           ""dependencies"": {
+                             ""redist"": {
+                               ""version"": ""1.0.0"",
+                               ""type"": ""platform"",
+                               ""exclude"": ""analyzers""
+                             }
+                           }
+                         }";
+
+            // Act
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("redist"));
+            Assert.NotNull(dep);
+            Assert.Equal(LibraryDependencyTypeKeyword.Platform.CreateType(), dep.Type);
+
+            var expected = LibraryIncludeFlags.Build |
+                LibraryIncludeFlags.Compile;
+            Assert.Equal(expected, dep.IncludeType);
+        }
+
+        [Fact]
+        public void PackageSpecReader_ExplicitIncludesOverrideTypePlatform()
+        {
+            // Arrange
+            var json = @"{
+                           ""dependencies"": {
+                             ""redist"": {
+                               ""version"": ""1.0.0"",
+                               ""type"": ""platform"",
+                               ""include"": ""analyzers""
+                             }
+                           }
+                         }";
+
+            // Act
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+
+            // Assert
+            var dep = actual.Dependencies.FirstOrDefault(d => d.Name.Equals("redist"));
+            Assert.NotNull(dep);
+            Assert.Equal(LibraryDependencyTypeKeyword.Platform.CreateType(), dep.Type);
+
+            var expected = LibraryIncludeFlags.Analyzers;
+            Assert.Equal(expected, dep.IncludeType);
+        }
     }
 }
