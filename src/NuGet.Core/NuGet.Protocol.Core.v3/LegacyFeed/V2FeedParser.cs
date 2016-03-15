@@ -337,50 +337,57 @@ namespace NuGet.Protocol
             var page = 1;
 
             // first request
-            Task<HttpResponseMessage> urlRequest = _httpSource.GetAsync(new Uri(uri), log, token);
+            Task<XDocument> docRequestTask = _httpSource.ProcessStreamAsync(
+                new Uri(uri),
+                ignoreNotFounds: false,
+                processAsync: stream => Task.FromResult(LoadXml(stream)),
+                log: log, 
+                token: token);
 
             // TODO: re-implement caching at a higher level for both v2 and v3
-            while (!token.IsCancellationRequested && urlRequest != null)
+            while (!token.IsCancellationRequested && docRequestTask != null)
             {
                 // TODO: Pages for a package Id are cached separately.
                 // So we will get inaccurate data when a page shrinks.
                 // However, (1) In most cases the pages grow rather than shrink;
                 // (2) cache for pages is valid for only 30 min.
                 // So we decide to leave current logic and observe.
-                using (var data = await urlRequest)
+                try
                 {
-                    try
+                    var doc = await docRequestTask;
+
+                    // find results on the page
+                    var result = ParsePage(doc, id);
+                    results.AddRange(result);
+
+                    var nextUri = GetNextUrl(doc);
+
+                    docRequestTask = null;
+                    if (max < 0 || results.Count < max)
                     {
-                        var doc = LoadXml(await data.Content.ReadAsStreamAsync());
-
-                        // find results on the page
-                        var result = ParsePage(doc, id);
-                        results.AddRange(result);
-
-                        var nextUri = GetNextUrl(doc);
-
-                        urlRequest = null;
-                        if (max < 0 || results.Count < max)
+                        // Request the next url in parallel to parsing the current page
+                        if (!string.IsNullOrEmpty(nextUri) && uri != nextUri)
                         {
-                            // Request the next url in parallel to parsing the current page
-                            if (!string.IsNullOrEmpty(nextUri) && uri != nextUri)
-                            {
-                                // a bug on the server side causes the same next link to be returned 
-                                // for every page. To avoid falling into an infinite loop we must
-                                // keep track here.
-                                uri = nextUri;
+                            // a bug on the server side causes the same next link to be returned 
+                            // for every page. To avoid falling into an infinite loop we must
+                            // keep track here.
+                            uri = nextUri;
 
-                                urlRequest = _httpSource.GetAsync(new Uri(nextUri), log, token);
-                            }
-
-                            page++;
+                            docRequestTask = _httpSource.ProcessStreamAsync(
+                                new Uri(nextUri),
+                                ignoreNotFounds: false,
+                                processAsync: stream => Task.FromResult(LoadXml(stream)),
+                                log: log,
+                                token: token);
                         }
+
+                        page++;
                     }
-                    catch (XmlException ex)
-                    {
-                        log.LogVerbose(ex.ToString());
-                        throw;
-                    }
+                }
+                catch (XmlException ex)
+                {
+                    log.LogVerbose(ex.ToString());
+                    throw;
                 }
             }
 

@@ -79,7 +79,11 @@ namespace NuGet.Protocol.Core.v3
                     JObject searchJson = null;
                     try
                     {
-                        searchJson = await _client.GetJObjectAsync(queryUrl.Uri, log, cancellationToken);
+                        searchJson = await _client.GetJObjectAsync(
+                            uri: queryUrl.Uri,
+                            ignoreNotFounds: false,
+                            log: log,
+                            token: cancellationToken);
                     }
                     catch when (i < _searchEndpoints.Length - 1)
                     {

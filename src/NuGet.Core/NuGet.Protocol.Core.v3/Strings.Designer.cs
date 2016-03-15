@@ -204,6 +204,15 @@ namespace NuGet.Protocol.Core.v3 {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to The download of &apos;{0}&apos; took more than {1}ms and therefore timed out..
+        /// </summary>
+        internal static string DownloadTimeout {
+            get {
+                return ResourceManager.GetString("DownloadTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to {0} {1}.
         /// </summary>
         internal static string Http_RequestLog {
@@ -344,6 +353,15 @@ namespace NuGet.Protocol.Core.v3 {
         internal static string Log_RetryingFindPackagesById {
             get {
                 return ResourceManager.GetString("Log_RetryingFindPackagesById", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to An error was encountered when fetching &apos;{0} {1}&apos;. The request will now be retried..
+        /// </summary>
+        internal static string Log_RetryingHttp {
+            get {
+                return ResourceManager.GetString("Log_RetryingHttp", resourceCulture);
             }
         }
         

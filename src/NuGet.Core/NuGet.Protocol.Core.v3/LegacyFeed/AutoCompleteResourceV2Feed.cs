@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -75,14 +77,21 @@ namespace NuGet.Protocol
             Logging.ILogger logger,
             CancellationToken token)
         {
-            using (var httpResponseMessage = await _httpSource.GetAsync(apiEndpointUri, logger, token))
-            {
-                httpResponseMessage.EnsureSuccessStatusCode();
-
-                var json = await httpResponseMessage.Content.ReadAsStringAsync();
-
-                return JsonConvert.DeserializeObject<string[]>(json);
-            }
+            return await _httpSource.ProcessStreamAsync(
+                   uri: apiEndpointUri,
+                   ignoreNotFounds: false,
+                   processAsync: stream =>
+                   {
+                       using (var reader = new StreamReader(stream))
+                       using (var jsonReader = new JsonTextReader(reader))
+                       {
+                           var serializer = JsonSerializer.Create();
+                           var json = serializer.Deserialize<string[]>(jsonReader);
+                           return Task.FromResult(json);
+                       }
+                   },
+                   log: logger,
+                   token: token);
         }
     }
 }
