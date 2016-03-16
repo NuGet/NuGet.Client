@@ -35,12 +35,6 @@
           Text="{x:Static nuget:Resources.Text_NoPackagesFound}"
           Visibility="Collapsed" />
 
-        <TextBlock
-          Name="_ready"
-          HorizontalAlignment="Center"
-          Text="{x:Static nuget:Resources.Text_Ready}"
-          Visibility="Collapsed" />
-
         <Grid
           Name="_progressBar"
           Visibility="Collapsed"
@@ -78,7 +72,7 @@
           Binding="{Binding Path=Status}"
           Value="Ready">
           <Setter
-            TargetName="_ready"
+            TargetName="_progressBar"
             Property="Visibility"
             Value="Visible" />
         </DataTrigger>
