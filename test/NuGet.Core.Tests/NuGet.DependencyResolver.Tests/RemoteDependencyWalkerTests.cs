@@ -690,120 +690,6 @@ namespace NuGet.DependencyResolver.Tests
         }
 
         [Fact]
-        public async Task FrameworkAssemblyWinsOverPackageWithSameName()
-        {
-            var context = new RemoteWalkContext();
-            var provider = new DependencyProvider();
-
-            provider.Package("A", "1.0")
-                    .DependsOn("B", "1.0.0")
-                    .DependsOn("C", "1.0.0")
-                    .DependsOn("D", "1.0.0");
-
-            provider.Package("B", "1.0.0")
-                    .DependsOn("System.Runtime", "4.0.0", LibraryDependencyTarget.Package);
-
-            provider.Package("C", "1.0.0")
-                    .DependsOn("System.Runtime", "4.0.1", LibraryDependencyTarget.Package);
-
-            provider.Package("D", "1.0.0")
-                    .DependsOn("System.Runtime", LibraryDependencyTarget.Reference);
-
-            provider.Package("System.Runtime", "4.0.0");
-            provider.Package("System.Runtime", "4.0.1");
-
-            context.LocalLibraryProviders.Add(provider);
-            var walker = new RemoteDependencyWalker(context);
-            var node = await DoWalkAsync(walker, "A");
-
-            var result = node.Analyze();
-            var set = new HashSet<string>();
-            GraphNode<RemoteResolveResult> systemRuntimeNode = null;
-            node.ForEach(n =>
-            {
-                if (n.Disposition == Disposition.Accepted)
-                {
-                    systemRuntimeNode = n;
-                    Assert.True(set.Add(n.Key.Name), n.Key.Name + " was duplicated in the graph");
-                }
-            });
-            Assert.Equal("System.Runtime", systemRuntimeNode.Key.Name);
-            Assert.Equal(LibraryDependencyTarget.Reference, systemRuntimeNode.Key.TypeConstraint);
-        }
-
-        [Fact]
-        public async Task MultipleFrameworkAssembliesPicksHighestVersion()
-        {
-            var context = new RemoteWalkContext();
-            var provider = new DependencyProvider();
-
-            provider.Package("A", "1.0")
-                    .DependsOn("B", "1.0.0")
-                    .DependsOn("C", "1.0.0");
-
-            provider.Package("B", "1.0.0")
-                    .DependsOn("System.Runtime", "4.0.0.0", LibraryDependencyTarget.Reference);
-
-            provider.Package("C", "1.0.0")
-                    .DependsOn("System.Runtime", "4.0.10.0", LibraryDependencyTarget.Reference);
-
-            context.LocalLibraryProviders.Add(provider);
-            var walker = new RemoteDependencyWalker(context);
-            var node = await DoWalkAsync(walker, "A");
-
-            var result = node.Analyze();
-            var set = new HashSet<string>();
-            GraphNode<RemoteResolveResult> systemRuntimeNode = null;
-            node.ForEach(n =>
-            {
-                if (n.Disposition == Disposition.Accepted)
-                {
-                    systemRuntimeNode = n;
-                    Assert.True(set.Add(n.Key.Name), n.Key.Name + " was duplicated in the graph");
-                }
-            });
-            Assert.Equal("System.Runtime", systemRuntimeNode.Key.Name);
-            Assert.Equal("4.0.10.0", systemRuntimeNode.Item.Key.Version.ToString());
-            Assert.Equal(LibraryDependencyTarget.Reference, systemRuntimeNode.Key.TypeConstraint);
-        }
-
-        [Fact]
-        public async Task VersionedAndNonVersionedFrameworkAssemblyVersionedWins()
-        {
-            var context = new RemoteWalkContext();
-            var provider = new DependencyProvider();
-
-            provider.Package("A", "1.0")
-                    .DependsOn("B", "1.0.0")
-                    .DependsOn("C", "1.0.0");
-
-            provider.Package("B", "1.0.0")
-                    .DependsOn("System.Runtime", LibraryDependencyTarget.Reference);
-
-            provider.Package("C", "1.0.0")
-                    .DependsOn("System.Runtime", "4.0.10.0", LibraryDependencyTarget.Reference);
-
-            context.LocalLibraryProviders.Add(provider);
-            var walker = new RemoteDependencyWalker(context);
-            var node = await DoWalkAsync(walker, "A");
-
-            var result = node.Analyze();
-            var set = new HashSet<string>();
-            GraphNode<RemoteResolveResult> systemRuntimeNode = null;
-            node.ForEach(n =>
-            {
-                if (n.Disposition == Disposition.Accepted)
-                {
-                    systemRuntimeNode = n;
-                    Assert.True(set.Add(n.Key.Name), n.Key.Name + " was duplicated in the graph");
-                }
-            });
-            Assert.Equal("System.Runtime", systemRuntimeNode.Key.Name);
-            Assert.Equal("4.0.10.0", systemRuntimeNode.Item.Key.Version.ToString());
-            Assert.Equal(LibraryDependencyTarget.Reference, systemRuntimeNode.Key.TypeConstraint);
-        }
-
-        [Fact]
         public void IsGreaterThanEqualTo_ReturnsTrue_IfLeftVersionIsUnbound()
         {
             // Arrange
@@ -987,29 +873,27 @@ namespace NuGet.DependencyResolver.Tests
                     _dependencies = dependencies;
                 }
 
-                public TestPackage DependsOn(string id, LibraryDependencyTarget target = LibraryDependencyTarget.All)
+                public TestPackage DependsOn(string id)
                 {
                     _dependencies.Add(new LibraryDependency
                     {
                         LibraryRange = new LibraryRange
                         {
-                            Name = id,
-                            TypeConstraint = target
+                            Name = id
                         }
                     });
 
                     return this;
                 }
 
-                public TestPackage DependsOn(string id, string version, LibraryDependencyTarget target = LibraryDependencyTarget.All)
+                public TestPackage DependsOn(string id, string version)
                 {
                     _dependencies.Add(new LibraryDependency
                     {
                         LibraryRange = new LibraryRange
                         {
                             Name = id,
-                            VersionRange = VersionRange.Parse(version),
-                            TypeConstraint = target
+                            VersionRange = VersionRange.Parse(version)
                         }
                     });
 

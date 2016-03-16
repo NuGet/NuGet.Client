@@ -170,7 +170,15 @@ namespace NuGet.DependencyResolver
                             return false;
                         }
 
-                        tracker.Track(node.Item);
+                        // HACK(anurse): Reference nodes win all battles.
+                        if (node.Item.Key.Type == LibraryTypes.Reference)
+                        {
+                            tracker.Lock(node.Item);
+                        }
+                        else
+                        {
+                            tracker.Track(node.Item);
+                        }
                         return true;
                     });
 
