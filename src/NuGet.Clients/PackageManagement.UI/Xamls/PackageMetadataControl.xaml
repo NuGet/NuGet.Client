@@ -34,7 +34,8 @@
       Grid.Row="0"
       Text="{x:Static nuget:Resources.Label_Description}"
       FontWeight="Bold" />
-    <TextBlock
+    <TextBox
+      Style="{DynamicResource SelectableTextBlockStyle}" 
       Grid.Row="1"
       x:Name="_description"
       Margin="0,8,0,0"
@@ -55,6 +56,7 @@
         <RowDefinition />
         <RowDefinition />
         <RowDefinition />
+        <RowDefinition />
       </Grid.RowDefinitions>
       <Grid.ColumnDefinitions>
         <ColumnDefinition
@@ -64,13 +66,14 @@
 
       <!-- version -->
       <TextBlock
-        Visibility="{Binding Path=Authors,Converter={StaticResource NullToVisibilityConverter}}"
+        Visibility="{Binding Path=Version,Converter={StaticResource NullToVisibilityConverter}}"
         Grid.Row="0"
         Grid.Column="0"
         Margin="0,8,0,0"
         FontWeight="Bold"
         Text="{x:Static nuget:Resources.Label_Version}" />
-      <TextBlock
+      <TextBox
+        Style="{DynamicResource SelectableTextBlockStyle}" 
         Grid.Row="0"
         Grid.Column="1"
         Visibility="{Binding Path=Version,Converter={StaticResource NullToVisibilityConverter}}"
@@ -78,26 +81,44 @@
         Margin="8,8,0,0"
         TextWrapping="Wrap" />
 
-      <!-- Author(s) -->
+      <!-- Owner(s) -->
       <TextBlock
-        Visibility="{Binding Path=Authors,Converter={StaticResource NullToVisibilityConverter}}"
+        Visibility="{Binding Path=Owners,Converter={StaticResource NullToVisibilityConverter}}"
         Grid.Row="1"
         Grid.Column="0"
         Margin="0,8,0,0"
         FontWeight="Bold"
-        Text="{x:Static nuget:Resources.Label_Authors}" />
-      <TextBlock
-        Visibility="{Binding Path=Authors,Converter={StaticResource NullToVisibilityConverter}}"
-        Text="{Binding Path=Authors}"
+        Text="{x:Static nuget:Resources.Label_Owners}" />
+      <TextBox
+        Style="{DynamicResource SelectableTextBlockStyle}" 
+        Visibility="{Binding Path=Owners,Converter={StaticResource NullToVisibilityConverter}}"
+        Text="{Binding Path=Owners}"
         Margin="8,8,0,0"
         TextWrapping="Wrap"
         Grid.Row="1"
         Grid.Column="1" />
 
+      <!-- Author(s) -->
+      <TextBlock
+        Visibility="{Binding Path=Authors,Converter={StaticResource NullToVisibilityConverter}}"
+        Grid.Row="2"
+        Grid.Column="0"
+        Margin="0,8,0,0"
+        FontWeight="Bold"
+        Text="{x:Static nuget:Resources.Label_Authors}" />
+      <TextBox
+        Style="{DynamicResource SelectableTextBlockStyle}" 
+        Visibility="{Binding Path=Authors,Converter={StaticResource NullToVisibilityConverter}}"
+        Text="{Binding Path=Authors}"
+        Margin="8,8,0,0"
+        TextWrapping="Wrap"
+        Grid.Row="2"
+        Grid.Column="1" />
+
       <!-- License -->
       <TextBlock
         Visibility="{Binding Path=LicenseUrl,Converter={StaticResource NullToVisibilityConverter}}"
-        Grid.Row="2"
+        Grid.Row="3"
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
@@ -106,7 +127,7 @@
         Visibility="{Binding Path=LicenseUrl,Converter={StaticResource NullToVisibilityConverter}}"
         TextWrapping="Wrap"
         Margin="8,8,0,0"
-        Grid.Row="2"
+        Grid.Row="3"
         Grid.Column="1">
         <Hyperlink
           NavigateUri="{Binding Path=LicenseUrl}"
@@ -119,39 +140,41 @@
       <!-- downloads -->
       <TextBlock
         Visibility="{Binding Path=DownloadCount,Converter={StaticResource  DownloadCountToVisibilityConverter}}"
-        Grid.Row="3"
+        Grid.Row="4"
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
         Text="{x:Static nuget:Resources.Label_Downloads}" />
-      <TextBlock
+      <TextBox
+        Style="{DynamicResource SelectableTextBlockStyle}" 
         Visibility="{Binding Path=DownloadCount,Converter={StaticResource DownloadCountToVisibilityConverter}}"
         Text="{Binding Path=DownloadCount,StringFormat={}{0:N0}}"
         Margin="8,8,0,0"
         TextWrapping="Wrap"
-        Grid.Row="3"
-        Grid.Column="1"></TextBlock>
+        Grid.Row="4"
+        Grid.Column="1" />
 
       <!--Date Published -->
       <TextBlock
         Visibility="{Binding Path=Published,Converter={StaticResource NullToVisibilityConverter}}"
-        Grid.Row="4"
+        Grid.Row="5"
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
         Text="{x:Static nuget:Resources.Label_DatePublished}" />
-      <TextBlock
+      <TextBox
+        Style="{DynamicResource SelectableTextBlockStyle}" 
         Visibility="{Binding Path=Published,Converter={StaticResource NullToVisibilityConverter}}"
         Text="{Binding Path=Published,StringFormat={}{0:D} ({0:d})}"
         Margin="8,8,0,0"
         TextWrapping="Wrap"
-        Grid.Row="4"
-        Grid.Column="1"></TextBlock>
+        Grid.Row="5"
+        Grid.Column="1" />
 
       <!-- Project Url -->
       <TextBlock
         Visibility="{Binding Path=ProjectUrl,Converter={StaticResource NullToVisibilityConverter}}"
-        Grid.Row="5"
+        Grid.Row="6"
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
@@ -161,7 +184,7 @@
         Visibility="{Binding Path=ProjectUrl,Converter={StaticResource NullToVisibilityConverter}}"
         TextWrapping="Wrap"
         Margin="8,8,0,0"
-        Grid.Row="5"
+        Grid.Row="6"
         Grid.Column="1">
         <Hyperlink
           NavigateUri="{Binding Path=ProjectUrl}"
@@ -174,7 +197,7 @@
       <!-- Report abuse Url -->
       <TextBlock
         Visibility="{Binding Path=ReportAbuseUrl,Converter={StaticResource NullToVisibilityConverter}}"
-        Grid.Row="6"
+        Grid.Row="7"
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
@@ -184,7 +207,7 @@
         Visibility="{Binding Path=ReportAbuseUrl,Converter={StaticResource NullToVisibilityConverter}}"
         TextWrapping="Wrap"
         Margin="8,8,0,0"
-        Grid.Row="6"
+        Grid.Row="7"
         Grid.Column="1">
         <Hyperlink
           NavigateUri="{Binding Path=ReportAbuseUrl}"
@@ -197,17 +220,18 @@
       <!-- Tags -->
       <TextBlock
         Visibility="{Binding Path=Tags,Converter={StaticResource NullToVisibilityConverter}}"
-        Grid.Row="7"
+        Grid.Row="8"
         Grid.Column="0"
         FontWeight="Bold"
         Margin="0,8,0,0"
         Text="{x:Static nuget:Resources.Label_Tags}" />
-      <TextBlock
+      <TextBox
+        Style="{DynamicResource SelectableTextBlockStyle}" 
         Visibility="{Binding Path=Tags,Converter={StaticResource NullToVisibilityConverter}}"
         Text="{Binding Path=Tags}"
         Margin="8,8,0,0"
         TextWrapping="Wrap"
-        Grid.Row="7"
+        Grid.Row="8"
         Grid.Column="1" />
     </Grid>
 
@@ -239,8 +263,9 @@
                 IsTabStop="False">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate>
-                    <TextBlock
-                      Text="{Binding}"></TextBlock>
+                    <TextBox 
+                      Style="{DynamicResource SelectableTextBlockStyle}"
+                      Text="{Binding Mode=OneWay}"/>
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>

@@ -43,7 +43,7 @@
       Grid.Column="0"
       FontWeight="Bold"
       VerticalAlignment="Center"
-       Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}}"
+      Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}}"
       Text="{x:Static local:Resources.Label_InstalledColon}" />
 
     <Border
@@ -54,7 +54,8 @@
       Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}}"
       BorderThickness="1"
       VerticalAlignment="Center">
-      <TextBlock
+      <TextBox
+        Style="{DynamicResource SelectableTextBlockStyle}"
         VerticalAlignment="Center"
         AutomationProperties.AutomationId="InstalledVersion"
         Margin="4,0,0,0"

@@ -628,6 +628,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Owner(s): .
+        /// </summary>
+        public static string Label_Owners {
+            get {
+                return ResourceManager.GetString("Label_Owners", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to NuGet Package Manager: {0}.
         /// </summary>
         public static string Label_PackageManager {

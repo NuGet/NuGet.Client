@@ -177,6 +177,9 @@
   <data name="Label_Options" xml:space="preserve">
     <value>Options</value>
   </data>
+  <data name="Label_Owners" xml:space="preserve">
+    <value>Owner(s):</value>
+  </data>
   <data name="Label_LegalDisclaimer" xml:space="preserve">
     <value>Legal Disclaimer</value>
   </data>
