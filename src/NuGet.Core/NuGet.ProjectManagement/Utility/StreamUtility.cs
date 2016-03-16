@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace NuGet.Configuration
+namespace NuGet.ProjectManagement
 {
     public static class StreamUtility
     {
@@ -73,11 +73,11 @@ namespace NuGet.Configuration
                 {
                     var line = reader.ReadLine();
 
-                    if (line.IndexOf(ConfigurationConstants.EndIgnoreMarker, StringComparison.OrdinalIgnoreCase) > -1)
+                    if (line.IndexOf(Constants.EndIgnoreMarker, StringComparison.OrdinalIgnoreCase) > -1)
                     {
                         hasSeenBeginLine = false;
                     }
-                    else if (line.IndexOf(ConfigurationConstants.BeginIgnoreMarker, StringComparison.OrdinalIgnoreCase) > -1)
+                    else if (line.IndexOf(Constants.BeginIgnoreMarker, StringComparison.OrdinalIgnoreCase) > -1)
                     {
                         hasSeenBeginLine = true;
                     }

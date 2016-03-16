@@ -103,9 +103,6 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "PackageCommandMinClientVersion")]
         public string MinClientVersion { get; set; }
 
-        [ImportMany]
-        public IEnumerable<IPackageRule> Rules { get; set; }
-
         [Option(typeof(NuGetCommand), "CommandMSBuildVersion")]
         public string MSBuildVersion { get; set; }
 
@@ -117,6 +114,7 @@ namespace NuGet.CommandLine
         {
             PackArgs packArgs = new PackArgs();
             packArgs.Logger = Console;
+            packArgs.Arguments = Arguments;
 
             // The directory that contains msbuild
             packArgs.MsBuildDirectory = new Lazy<string>(() => MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console));
@@ -143,7 +141,6 @@ namespace NuGet.CommandLine
                 }
             }
 
-            packArgs.Arguments = Arguments;
             packArgs.BasePath = BasePath;
             packArgs.Build = Build;
             packArgs.ExcludeEmptyDirectories = ExcludeEmptyDirectories;
@@ -180,7 +177,7 @@ namespace NuGet.CommandLine
             packArgs.Tool = Tool;
             packArgs.Version = Version;
 
-            PackCommandRunner packCommandRunner = new PackCommandRunner(packArgs);
+            PackCommandRunner packCommandRunner = new PackCommandRunner(packArgs, ProjectFactory.ProjectCreator);
             packCommandRunner.BuildPackage();
         }
    }

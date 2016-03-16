@@ -30,7 +30,6 @@ namespace NuGet.Packaging
             return container.Elements().Where(e => e.Name.LocalName == localName);
         }
 
-        // REVIEW: We can use a stack if the perf is bad for Except and MergeWith
         public static XElement Except(this XElement source, XElement target)
         {
             if (target == null)

@@ -23,6 +23,13 @@ namespace NuGet.Packaging
 
         private const string ExcludeExtension = ".nupkg.sha512";
 
+        public static bool IsAssembly(string path)
+        { 
+            return path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) || 
+                   path.EndsWith(".winmd", StringComparison.OrdinalIgnoreCase) || 
+                   path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase); 
+        }
+
         public static bool IsManifest(string path)
         {
             return Path.GetExtension(path).Equals(PackagingCoreConstants.NuspecExtension, StringComparison.OrdinalIgnoreCase);

@@ -283,7 +283,7 @@
     <value>Failed to build package. Ensure '{0}' includes source and symbol files. For help on building symbols package, visit {1}.</value>
   </data>
   <data name="Warning_PackageCommandPackageIssueSummary" xml:space="preserve">
-    <value>Issue found with package '{1}'.</value>
+    <value>Issue found with package '{0}'.</value>
   </data>
   <data name="Error_CannotFindMsbuild" xml:space="preserve">
     <value>Cannot find version of msbuild.</value>

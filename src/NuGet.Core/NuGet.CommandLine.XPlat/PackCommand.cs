@@ -134,7 +134,7 @@ namespace NuGet.CommandLine.XPlat
                         packArgs.Version = versionOption.Value();
                     }
 
-                    PackCommandRunner packCommandRunner = new PackCommandRunner(packArgs);
+                    PackCommandRunner packCommandRunner = new PackCommandRunner(packArgs, null);
                     packCommandRunner.BuildPackage();
 
                     return 0;

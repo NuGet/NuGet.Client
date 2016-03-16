@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using NuGet.Packaging;
 
-namespace NuGet.CommandLine.Rules
+namespace NuGet.Commands.Rules
 {
     internal class WinRTNameIsObsoleteRule : IPackageRule
     {
         private static string[] Prefixes = new string[]
             { "content\\winrt45\\", "lib\\winrt45\\", "tools\\winrt45\\", "content\\winrt\\", "lib\\winrt\\", "tools\\winrt\\" };
 
-        public IEnumerable<PackageIssue> Validate(IPackage package)
+        public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
         {
-            foreach (var file in package.GetFiles())
+            foreach (var file in builder.Files)
             {
                 foreach (string prefix in Prefixes)
                 {

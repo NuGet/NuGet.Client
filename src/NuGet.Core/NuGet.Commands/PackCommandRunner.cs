@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using NuGet.Commands.Rules;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Logging;
@@ -13,8 +14,12 @@ namespace NuGet.Commands
 {
     public class PackCommandRunner
     {
+        public delegate IProjectFactory CreateProjectFactory(PackArgs packArgs, string path);
+
         private PackArgs packArgs;
         internal static readonly string SymbolsExtension = ".symbols" + NuGetConstants.PackageExtension;
+        private CreateProjectFactory createProjectFactory;
+
 
         private static readonly HashSet<string> _allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
             NuGetConstants.ManifestExtension,
@@ -47,19 +52,18 @@ namespace NuGet.Commands
 
         private readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        public PackCommandRunner(PackArgs packArgs)
+        public IEnumerable<IPackageRule> Rules { get; set; }
+
+        public PackCommandRunner(PackArgs packArgs, CreateProjectFactory createProjectFactory)
         {
+            this.createProjectFactory = createProjectFactory;
             this.packArgs = packArgs;
+            Rules = DefaultPackageRuleSet.Rules;
         }
 
         public void BuildPackage()
         {
             PackageArchiveReader package = BuildPackage(Path.GetFullPath(Path.Combine(packArgs.CurrentDirectory, packArgs.Path)));
-
-            if (package != null && !packArgs.NoPackageAnalysis)
-            {
-                AnalyzePackage(package);
-            }
         }
 
         private PackageArchiveReader BuildPackage(string path)
@@ -98,6 +102,11 @@ namespace NuGet.Commands
                 BuildSymbolsPackage(path);
             }
 
+            if (package != null && !packArgs.NoPackageAnalysis)
+            {
+                AnalyzePackage(package, packageBuilder);
+            }
+
             return package;
         }
 
@@ -118,30 +127,22 @@ namespace NuGet.Commands
 
         private PackageArchiveReader BuildFromProjectFile(string path)
         {
-            if (String.IsNullOrEmpty(packArgs.MsBuildDirectory.Value))
+            if (String.IsNullOrEmpty(packArgs.MsBuildDirectory.Value) || createProjectFactory == null)
             {
                 packArgs.Logger.LogError(Strings.Error_CannotFindMsbuild);
                 return null;
             }
 
-            var factory = new ProjectFactory(packArgs.MsBuildDirectory.Value, path, packArgs.Properties)
-            {
-                IsTool = packArgs.Tool,
-                LogLevel = packArgs.LogLevel,
-                Logger = packArgs.Logger,
-                MachineWideSettings = packArgs.MachineWideSettings,
-                Build = packArgs.Build,
-                IncludeReferencedProjects = packArgs.IncludeReferencedProjects
-            };
+            var factory = createProjectFactory.Invoke(packArgs, path);
 
             // Add the additional Properties to the properties of the Project Factory
             foreach (var property in packArgs.Properties)
             {
-                if (factory.ProjectProperties.ContainsKey(property.Key))
+                if (factory.GetProjectProperties().ContainsKey(property.Key))
                 {
                     packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_DuplicatePropertyKey, property.Key));
                 }
-                factory.ProjectProperties[property.Key] = property.Value;
+                factory.GetProjectProperties()[property.Key] = property.Value;
             }
 
             // Create a builder for the main package as well as the sources/symbols package
@@ -149,6 +150,11 @@ namespace NuGet.Commands
 
             // Build the main package
             PackageArchiveReader package = BuildPackage(mainPackageBuilder);
+
+            if (package != null && !packArgs.NoPackageAnalysis)
+            {
+                AnalyzePackage(package, mainPackageBuilder);
+            }
 
             // If we're excluding symbols then do nothing else
             if (!packArgs.Symbols)
@@ -159,7 +165,7 @@ namespace NuGet.Commands
             WriteLine(String.Empty);
             WriteLine(Strings.Log_PackageCommandAttemptingToBuildSymbolsPackage, Path.GetFileName(path));
 
-            factory.IncludeSymbols = true;
+            factory.SetIncludeSymbols(true);
             PackageBuilder symbolsBuilder = factory.CreateBuilder(packArgs.BasePath);
             symbolsBuilder.Version = mainPackageBuilder.Version;
 
@@ -314,28 +320,44 @@ namespace NuGet.Commands
             BuildPackage(symbolsBuilder, outputPath);
         }
 
-        internal void AnalyzePackage(PackageArchiveReader package)
+        internal void AnalyzePackage(PackageArchiveReader package, PackageBuilder builder)
         {
+            IEnumerable<IPackageRule> packageRules = Rules;
+            IList<PackageIssue> issues = new List<PackageIssue>();
             NuGetVersion version;
+
             if (!NuGetVersion.TryParseStrict(package.GetIdentity().Version.ToString(), out version))
             {
-                packArgs.Logger.LogWarning(
-                    String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandPackageIssueSummary, package.GetIdentity().Id));
-                PrintPackageIssue(Strings.Warning_SemanticVersionTitle,
+                issues.Add(new PackageIssue(Strings.Warning_SemanticVersionTitle,
                     String.Format(CultureInfo.CurrentCulture, Strings.Warning_SemanticVersion, package.GetIdentity().Version),
-                    Strings.Warning_SemanticVersionSolution);
+                    Strings.Warning_SemanticVersionSolution));
+            }
+
+            foreach (var rule in packageRules)
+            {
+                issues.AddRange(rule.Validate(builder).OrderBy(p => p.Title, StringComparer.CurrentCulture));
+            }
+
+            if (issues.Count > 0)
+            {
+                packArgs.Logger.LogWarning(
+                    String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandPackageIssueSummary, builder.Id));
+                foreach (var issue in issues)
+                {
+                    PrintPackageIssue(issue);
+                }
             }
         }
 
-        private void PrintPackageIssue(string title, string description, string solution)
+        private void PrintPackageIssue(PackageIssue issue)
         {
             WriteLine(String.Empty);
-            packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueTitle, title));
-            packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueDescription, description));
+            packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueTitle, issue.Title));
+            packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueDescription, issue.Description));
 
-            if (!String.IsNullOrEmpty(solution))
+            if (!String.IsNullOrEmpty(issue.Solution))
             {
-                packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueSolution, solution));
+                packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueSolution, issue.Solution));
             }
         }
 

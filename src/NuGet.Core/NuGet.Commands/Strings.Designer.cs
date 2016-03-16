@@ -717,7 +717,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Issue found with package &apos;{1}&apos;..
+        ///    Looks up a localized string similar to Issue found with package &apos;{0}&apos;..
         /// </summary>
         internal static string Warning_PackageCommandPackageIssueSummary {
             get {

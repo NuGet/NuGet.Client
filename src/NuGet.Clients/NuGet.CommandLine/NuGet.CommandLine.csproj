@@ -43,11 +43,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnalysisResources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>AnalysisResources.resx</DependentUpon>
-    </Compile>
     <Compile Include="CommandLineMachineWideSettings.cs" />
     <Compile Include="CommandLineParser.cs" />
     <Compile Include="CommandLineSourceRepositoryProvider.cs" />
@@ -101,8 +96,6 @@
     <Compile Include="Common\Verbosity.cs" />
     <Compile Include="ConsoleExtensions.cs" />
     <Compile Include="DebugHelper.cs" />
-    <Compile Include="DefaultManifestValuesRule.cs" />
-    <Compile Include="DefaultPackageRules.cs" />
     <Compile Include="DiagnosticCommands.cs" />
     <Compile Include="ExtensionLocator.cs" />
     <Compile Include="FileConflictAction.cs" />
@@ -123,25 +116,12 @@
     <Compile Include="PackageServer.cs" />
     <Compile Include="PackageSourceBuilder.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Rules\DefaultPackageRuleSet.cs" />
-    <Compile Include="Rules\InitScriptNotUnderToolsRule.cs" />
-    <Compile Include="Rules\InvalidFrameworkFolderRule.cs" />
-    <Compile Include="Rules\MisplacedAssemblyRule.cs" />
-    <Compile Include="Rules\MisplacedScriptFileRule.cs" />
-    <Compile Include="Rules\MisplacedTransformFileRule.cs" />
-    <Compile Include="Rules\MissingSummaryRule.cs" />
-    <Compile Include="Rules\WinRTNameIsObsoleteRule.cs" />
     <Compile Include="SettingsCredentialProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsToLegacySettings.cs" />
     <Compile Include="StrictSemanticVersionValidationRule.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="AnalysisResources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>AnalysisResources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
     <EmbeddedResource Include="NuGetCommand.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>NuGetCommand.Designer.cs</LastGenOutput>

@@ -7,7 +7,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using NuGet.Configuration;
 using NuGet.Packaging;
 
 namespace NuGet.ProjectManagement

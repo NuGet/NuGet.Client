@@ -5,13 +5,13 @@ using System.IO;
 using System.Linq;
 using NuGet.Packaging;
 
-namespace NuGet.CommandLine.Rules
+namespace NuGet.Commands.Rules
 {
     internal class MisplacedAssemblyRule : IPackageRule
     {
-        public IEnumerable<PackageIssue> Validate(IPackage package)
+        public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
         {
-            foreach (IPackageFile file in package.GetFiles())
+            foreach (IPackageFile file in builder.Files)
             {
                 string path = file.Path;
                 string directory = Path.GetDirectoryName(path);

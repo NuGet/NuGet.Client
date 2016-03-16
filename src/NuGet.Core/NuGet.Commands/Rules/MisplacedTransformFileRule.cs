@@ -2,17 +2,20 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using NuGet.Packaging;
 
-namespace NuGet.CommandLine.Rules
+namespace NuGet.Commands.Rules
 {
     internal class MisplacedTransformFileRule : IPackageRule
     {
         private const string CodeTransformExtension = ".pp";
         private const string ConfigTransformExtension = ".transform";
+        private const string ContentDirectory = "content";
+        private const string ContentFilesDirectory = "contentFiles";
 
-        public IEnumerable<PackageIssue> Validate(IPackage package)
+        public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
         {
-            foreach (IPackageFile file in package.GetFiles())
+            foreach (IPackageFile file in builder.Files)
             {
                 string path = file.Path;
 
@@ -24,9 +27,9 @@ namespace NuGet.CommandLine.Rules
                 }
 
                 // if not inside 'content' folder, warn
-                if (!path.StartsWith(Constants.ContentDirectory + Path.DirectorySeparatorChar,
+                if (!path.StartsWith(ContentDirectory + Path.DirectorySeparatorChar,
                     StringComparison.OrdinalIgnoreCase)
-                    && !path.StartsWith(Constants.ContentFilesDirectory + Path.DirectorySeparatorChar,
+                    && !path.StartsWith(ContentFilesDirectory + Path.DirectorySeparatorChar,
                     StringComparison.OrdinalIgnoreCase))
                 {
                     yield return CreatePackageIssueForMisplacedContent(path);
