@@ -20,5 +20,10 @@ namespace NuGet.Protocol.Core.v3.Tests
                 return reader.ReadToEnd();
             }
         }
+
+        public static string CreateServiceAddress()
+        {
+            return string.Format("http://{0}/", Guid.NewGuid());
+        }
     }
 }
