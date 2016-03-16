@@ -61,9 +61,6 @@ namespace NuGet.Protocol
 
         private readonly HttpSource _httpSource;
         private readonly PackageSource _source;
-        private readonly string _findPackagesByIdFormat;
-        private readonly string _searchEndPointFormat;
-        private readonly string _getPackagesFormat;
 
         public PackageSource Source { get { return _source; } }
 
@@ -91,9 +88,6 @@ namespace NuGet.Protocol
 
             _httpSource = httpSource;
             _source = source;
-            _findPackagesByIdFormat = source.Source.TrimEnd('/') + FindPackagesByIdFormat;
-            _searchEndPointFormat = source.Source.TrimEnd('/') + SearchEndPointFormat;
-            _getPackagesFormat = source.Source.TrimEnd('/') + GetPackagesFormat;
         }
 
         /// <summary>
@@ -126,7 +120,7 @@ namespace NuGet.Protocol
 
             var uri = String.Format(
                 CultureInfo.InvariantCulture,
-                _getPackagesFormat,
+                GetPackagesFormat,
                 package.Id,
                 package.Version.ToNormalizedString());
 
@@ -178,7 +172,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(token));
             }
 
-            var uri = string.Format(CultureInfo.InvariantCulture, _findPackagesByIdFormat, id);
+            var uri = string.Format(CultureInfo.InvariantCulture, FindPackagesByIdFormat, id);
             // Set max count to -1, get all packages
             var packages = await QueryV2Feed(
                 uri,
@@ -208,7 +202,7 @@ namespace NuGet.Protocol
 
             var shortFormTargetFramework = NuGetFramework.Parse(targetFramework).GetShortFolderName();
 
-            var uri = String.Format(CultureInfo.InvariantCulture, _searchEndPointFormat,
+            var uri = String.Format(CultureInfo.InvariantCulture, SearchEndPointFormat,
                                     filters.IncludePrerelease ? IsAbsoluteLatestVersionFilterFlag : IsLatestVersionFilterFlag,
                                     searchTerm,
                                     shortFormTargetFramework,
@@ -356,8 +350,34 @@ namespace NuGet.Protocol
             return value;
         }
 
+        //TODO: move this logic into a separate resource AND therefore get some caching hotness
+        private async Task<string> GetBaseAddress()
+        {
+            using (var cacheContext = HttpSourceCacheContext.CreateCacheContext(new SourceCacheContext()))
+            {
+                HttpSourceResult response = await _httpSource.GetAsync(
+                    _source.Source,
+                    "odata-service-document",
+                    cacheContext,
+                    log,
+                    ignoreNotFounds: false,
+                    ensureValidContents: null,
+                    cancellationToken: token);
+
+                XDocument serviceDocument = LoadXml(response.Stream);
+                var xmlBase = serviceDocument.Document.Root.Attribute(XNamespace.Get("http://www.w3.org/XML/1998/namespace").GetName("base")).Value;
+                return xmlBase;
+            }
+        }
+
+        private async Task<string> ResolveAddress(string relativeUri, ILogger log, CancellationToken token)
+        {
+            var baseAddress = GetBaseAddress();
+            return string.Format("{0}{1}", xmlBase, relativeUri);
+        }
+
         private async Task<List<V2FeedPackageInfo>> QueryV2Feed(
-            string uri,
+            string relative,
             string id,
             int max,
             bool ignoreNotFounds,
@@ -367,8 +387,10 @@ namespace NuGet.Protocol
             var results = new List<V2FeedPackageInfo>();
             var page = 1;
 
+            string uri = await ResolveAddress(relative, log, token);
+
             // first request
-            Task<HttpResponseMessage> urlRequest = _httpSource.GetAsync(
+            Task <HttpResponseMessage> urlRequest = _httpSource.GetAsync(
                 new Uri(uri),
                 new[] { new MediaTypeWithQualityHeaderValue("application/atom+xml"), new MediaTypeWithQualityHeaderValue("application/xml") },
                 log,
