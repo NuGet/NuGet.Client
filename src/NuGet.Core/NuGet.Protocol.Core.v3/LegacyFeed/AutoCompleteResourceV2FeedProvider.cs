@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3;
 
 namespace NuGet.Protocol
 {
@@ -24,9 +25,11 @@ namespace NuGet.Protocol
 
             if (FeedTypeUtility.GetFeedType(source.PackageSource) == FeedType.HttpV2)
             {
+                var serviceDocument = await source.GetResourceAsync<ODataServiceDocumentResourceV2>(token);
+
                 var httpSource = await source.GetResourceAsync<HttpSourceResource>(token);
 
-                resource = new AutoCompleteResourceV2Feed(httpSource, source.PackageSource);
+                resource = new AutoCompleteResourceV2Feed(httpSource, serviceDocument.BaseAddress, source.PackageSource);
             }
 
             return new Tuple<bool, INuGetResource>(resource != null, resource);

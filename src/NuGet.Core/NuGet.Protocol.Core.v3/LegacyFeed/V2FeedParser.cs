@@ -25,6 +25,7 @@ namespace NuGet.Protocol
     /// </summary>
     public sealed class V2FeedParser
     {
+        private const string Xml = "http://www.w3.org/XML/1998/namespace";
         private const string W3Atom = "http://www.w3.org/2005/Atom";
         private const string MetadataNS = "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata";
         private const string DataServicesNS = "http://schemas.microsoft.com/ado/2007/08/dataservices";
@@ -58,14 +59,18 @@ namespace NuGet.Protocol
         private static readonly XName _xnamePackageHash = XName.Get("PackageHash", DataServicesNS);
         private static readonly XName _xnamePackageHashAlgorithm = XName.Get("PackageHashAlgorithm", DataServicesNS);
         private static readonly XName _xnameMinClientVersion = XName.Get("MinClientVersion", DataServicesNS);
+        private static readonly XName _xnameXmlBase = XName.Get("base", Xml);
 
         private readonly HttpSource _httpSource;
-        private readonly PackageSource _source;
+        private readonly string _baseAddress;
 
-        public PackageSource Source { get { return _source; } }
-
-        public V2FeedParser(HttpSource httpSource, string sourceUrl)
-            : this(httpSource, new PackageSource(sourceUrl))
+        /// <summary>
+        /// Creates a V2 parser
+        /// </summary>
+        /// <param name="httpHandler">Message handler containing auth/proxy support</param>
+        /// <param name="baseAddress">base address for all services from this OData service</param>
+        public V2FeedParser(HttpSource httpSource, string baseAddress)
+            : this(httpSource, baseAddress, new PackageSource(baseAddress))
         {
         }
 
@@ -73,12 +78,18 @@ namespace NuGet.Protocol
         /// Creates a V2 parser
         /// </summary>
         /// <param name="httpHandler">Message handler containing auth/proxy support</param>
-        /// <param name="source">endpoint source</param>
-        public V2FeedParser(HttpSource httpSource, PackageSource source)
+        /// <param name="baseAddress">base address for all services from this OData service</param>
+        /// <param name="source">PackageSource useful for reporting meaningful errors that relate back to the configuration</param>
+        public V2FeedParser(HttpSource httpSource, string baseAddress, PackageSource source)
         {
             if (httpSource == null)
             {
                 throw new ArgumentNullException(nameof(httpSource));
+            }
+
+            if (baseAddress == null)
+            {
+                throw new ArgumentNullException(nameof(baseAddress));
             }
 
             if (source == null)
@@ -87,8 +98,11 @@ namespace NuGet.Protocol
             }
 
             _httpSource = httpSource;
-            _source = source;
+            _baseAddress = baseAddress;
+            Source = source;
         }
+
+        public PackageSource Source { get; private set; }
 
         /// <summary>
         /// Get an exact package
@@ -350,34 +364,8 @@ namespace NuGet.Protocol
             return value;
         }
 
-        //TODO: move this logic into a separate resource AND therefore get some caching hotness
-        private async Task<string> GetBaseAddress()
-        {
-            using (var cacheContext = HttpSourceCacheContext.CreateCacheContext(new SourceCacheContext()))
-            {
-                HttpSourceResult response = await _httpSource.GetAsync(
-                    _source.Source,
-                    "odata-service-document",
-                    cacheContext,
-                    log,
-                    ignoreNotFounds: false,
-                    ensureValidContents: null,
-                    cancellationToken: token);
-
-                XDocument serviceDocument = LoadXml(response.Stream);
-                var xmlBase = serviceDocument.Document.Root.Attribute(XNamespace.Get("http://www.w3.org/XML/1998/namespace").GetName("base")).Value;
-                return xmlBase;
-            }
-        }
-
-        private async Task<string> ResolveAddress(string relativeUri, ILogger log, CancellationToken token)
-        {
-            var baseAddress = GetBaseAddress();
-            return string.Format("{0}{1}", xmlBase, relativeUri);
-        }
-
         private async Task<List<V2FeedPackageInfo>> QueryV2Feed(
-            string relative,
+            string relativeUri,
             string id,
             int max,
             bool ignoreNotFounds,
@@ -387,7 +375,7 @@ namespace NuGet.Protocol
             var results = new List<V2FeedPackageInfo>();
             var page = 1;
 
-            string uri = await ResolveAddress(relative, log, token);
+            string uri = string.Format("{0}{1}", _baseAddress, relativeUri);
 
             // first request
             Task <HttpResponseMessage> urlRequest = _httpSource.GetAsync(
@@ -471,6 +459,12 @@ namespace NuGet.Protocol
             }
 
             return results;
+        }
+
+        public static string GetBaseAddress(Stream stream)
+        {
+            XDocument serviceDocumentXml = V2FeedParser.LoadXml(stream);
+            return serviceDocumentXml.Document.Root.Attribute(_xnameXmlBase)?.Value;
         }
 
         internal static string GetNextUrl(XDocument doc)
