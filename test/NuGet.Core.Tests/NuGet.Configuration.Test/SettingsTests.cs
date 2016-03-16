@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Xml;
-using Microsoft.Extensions.PlatformAbstractions;
 using Moq;
 using NuGet.Common;
 using NuGet.Test.Utility;
@@ -25,7 +23,7 @@ namespace NuGet.Configuration.Test
         [InlineData(@"/", "nuget.config", @"/", "nuget.config","linux")]
         public void TestGetFileNameAndItsRoot(string root, string settingsPath, string expectedRoot, string expectedFileName, string os)
         {
-            if (PlatformServices.Default.Runtime.OperatingSystem.Equals(os, StringComparison.OrdinalIgnoreCase))
+            if ((os == "linux" && RuntimeEnvironmentHelper.IsLinux) || (os == "windows" && RuntimeEnvironmentHelper.IsWindows))
             {
                 // Act
                 var tuple = Settings.GetFileNameAndItsRoot(root, settingsPath);
@@ -39,7 +37,7 @@ namespace NuGet.Configuration.Test
         [Fact] 
         public void TestNuGetEnviromentPath()
         {
-            if (PlatformServices.Default.Runtime.OperatingSystem.Equals("windows", StringComparison.OrdinalIgnoreCase))
+            if (RuntimeEnvironmentHelper.IsWindows)
             {
                 // Act
                 var machineWidePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.MachineWideSettingsBaseDirectory), "NuGet.Config");
@@ -47,7 +45,7 @@ namespace NuGet.Configuration.Test
                 var machineWidePathTuple = Settings.GetFileNameAndItsRoot("test root", machineWidePath);
                 var globalConfigTuple = Settings.GetFileNameAndItsRoot("test root", globalConfigPath);
 
-#if DNXCORE50
+#if NETSTANDARDAPP1_5
                 var commonApplicationData = Environment.GetEnvironmentVariable("PROGRAMDATA") ??
                     Environment.GetEnvironmentVariable("ALLUSERSPROFILE") ?? null;
                 var userSetting = Environment.GetEnvironmentVariable("APPDATA");
@@ -61,7 +59,7 @@ namespace NuGet.Configuration.Test
                 Assert.Equal(Path.Combine(userSetting,"NuGet"), globalConfigTuple.Item2);
                 Assert.Equal("NuGet.Config", globalConfigTuple.Item1);
             }
-            else if(PlatformServices.Default.Runtime.OperatingSystem.Equals("linux", StringComparison.OrdinalIgnoreCase))
+            else if(RuntimeEnvironmentHelper.IsLinux)
             {
                 // Act
                 var machineWidePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.MachineWideSettingsBaseDirectory), "NuGet.Config");
@@ -69,7 +67,7 @@ namespace NuGet.Configuration.Test
                 var machineWidePathTuple = Settings.GetFileNameAndItsRoot("test root", machineWidePath);
                 var globalConfigTuple = Settings.GetFileNameAndItsRoot("test root", globalConfigPath);
 
-#if DNXCORE50
+#if NETSTANDARDAPP1_5
                 var commonApplicationData = @"/etc/opt";
                 var userSetting = Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".nuget");
 #else
@@ -82,7 +80,7 @@ namespace NuGet.Configuration.Test
                 Assert.Equal(Path.Combine(userSetting, "NuGet"), globalConfigTuple.Item2);
                 Assert.Equal("NuGet.Config", globalConfigTuple.Item1);
             }
-            else if (PlatformServices.Default.Runtime.OperatingSystem.Equals("mac", StringComparison.OrdinalIgnoreCase))
+            else if (RuntimeEnvironmentHelper.IsMacOSX)
             {
                 // Act
                 var machineWidePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.MachineWideSettingsBaseDirectory), "NuGet.Config");
@@ -90,7 +88,7 @@ namespace NuGet.Configuration.Test
                 var machineWidePathTuple = Settings.GetFileNameAndItsRoot("test root", machineWidePath);
                 var globalConfigTuple = Settings.GetFileNameAndItsRoot("test root", globalConfigPath);
 
-#if DNXCORE50
+#if NETSTANDARDAPP1_5
                 var commonApplicationData = @"/Library/Application Support";
                 var userSetting = Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".nuget");
 #else
@@ -1065,7 +1063,7 @@ namespace NuGet.Configuration.Test
             }
         }
 
-#if !DNXCORE50
+#if !NETSTANDARDAPP1_5
         [Fact]
         public void SettingsUtility_SetEncryptedValue()
         {
@@ -1255,7 +1253,6 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
-            string os = PlatformServices.Default.Runtime.OperatingSystem;
             var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
@@ -1272,7 +1269,7 @@ namespace NuGet.Configuration.Test
   </SectionName>
 </configuration>";
 
-            if (!os.Equals("windows", StringComparison.OrdinalIgnoreCase))
+            if (!RuntimeEnvironmentHelper.IsWindows)
             {
                 config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -1298,7 +1295,7 @@ namespace NuGet.Configuration.Test
                 var result = settings.GetSettingValues("SectionName", isPath: true);
 
                 // Assert
-                if (os.Equals("windows", StringComparison.OrdinalIgnoreCase))
+                if (RuntimeEnvironmentHelper.IsWindows)
                 {
                     AssertEqualCollections(
                     result,
@@ -1766,7 +1763,7 @@ namespace NuGet.Configuration.Test
         [InlineData(@"/a/b/c","linux")]
         public void GetValueReturnsPathWhenPathIsRooted(string value, string os)
         {
-            if (PlatformServices.Default.Runtime.OperatingSystem.Equals(os, StringComparison.OrdinalIgnoreCase))
+            if ((os == "linux" && RuntimeEnvironmentHelper.IsLinux) || (os == "windows" && RuntimeEnvironmentHelper.IsWindows))
             {
                 // Arrange
                 using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
@@ -2194,11 +2191,11 @@ namespace NuGet.Configuration.Test
         public void GetGlobalPackagesFolder_Default()
         {
             // Arrange
-#if !DNXCORE50
+#if !NETSTANDARDAPP1_5
             var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 #else
             string userProfile = null;
-            if (PlatformServices.Default.Runtime.OperatingSystem.Equals("windows", StringComparison.OrdinalIgnoreCase))
+            if (RuntimeEnvironmentHelper.IsWindows)
             {
                 userProfile = Environment.GetEnvironmentVariable("UserProfile");
             }

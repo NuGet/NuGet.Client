@@ -4,18 +4,22 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Protocol.Core.v3": "3.4.0-*"
+    "NuGet.Protocol.Core.v3": {
+      "target": "project"
+    }
   },
   "frameworks": {
-    "dnx451": {
+    "net46": {
       "dependencies": {}
     },
-    "dnxcore50": {
-      "imports": [ "portable-net45+win8" ],
+    "netstandard1.5": {
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ],
       "dependencies": {
-        "System.Runtime": "4.0.20-beta-23109",
-        "System.Net.Http": "4.0.0-beta-23109",
-        "System.Net.Primitives": "4.0.10-beta-23109"
+        "NETStandard.Library": "1.5.0-rc2-23911"
       }
     }
   }

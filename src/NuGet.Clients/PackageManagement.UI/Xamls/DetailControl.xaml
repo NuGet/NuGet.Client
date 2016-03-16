@@ -52,8 +52,13 @@
         <Image
           Margin="0,0,8,0"
           Style="{StaticResource PackageIconImageStyle}" />
-        <TextBlock
-          Text="{Binding Path=Id}"
+        <TextBox
+          Background="Transparent"
+          Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
+          BorderThickness="0"
+          Margin="-2,0,-2,0"
+          Text="{Binding Path=Id, Mode=OneWay}"
+          IsReadOnly="True"
           FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font155PercentSizeConverter}}" />
       </StackPanel>
 

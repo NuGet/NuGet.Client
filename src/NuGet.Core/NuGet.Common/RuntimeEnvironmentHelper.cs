@@ -10,7 +10,7 @@ namespace NuGet.Common
         {
             get
             {
-#if DNXCORE50
+#if NETSTANDARD1_5
                 // This API does work on full framework but it requires a newer nuget client (RID aware)
                 if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
                 {
@@ -34,7 +34,7 @@ namespace NuGet.Common
         {
             get
             {
-#if DNXCORE50
+#if NETSTANDARD1_5
                 // This API does work on full framework but it requires a newer nuget client (RID aware)
                 if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
                 {
@@ -53,7 +53,7 @@ namespace NuGet.Common
         {
             get
             {
-#if DNXCORE50
+#if NETSTANDARD1_5
                 // This API does work on full framework but it requires a newer nuget client (RID aware)
                 if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux))
                 {

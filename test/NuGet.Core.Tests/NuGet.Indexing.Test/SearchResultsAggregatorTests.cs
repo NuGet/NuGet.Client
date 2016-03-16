@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
 using NuGet.Versioning;
@@ -25,26 +23,56 @@ namespace NuGet.Indexing.Test
         [Fact]
         public async Task AggregateAsync_MergesVersions()
         {
-            var indexer = new LuceneSearchResultsIndexer();
+            var indexer = new RelevanceSearchResultsIndexer();
             var aggregator = new SearchResultsAggregator(indexer);
 
             var queryString = "nuget";
-            var rawSearch1 = LoadTestResponse("searchResults1.json");
-            var package1 = FindNuGetCorePackage(rawSearch1.data);
+
+            var rawSearch1 = TestUtility.LoadTestResponse("mergeVersions1.json");
+            var package1 = FindNuGetCorePackage(rawSearch1);
             var v1 = await GetPackageVersionsAsync(package1);
             Assert.NotEmpty(v1);
 
-            var rawSearch2 = LoadTestResponse("searchResults2.json");
-            var package2 = FindNuGetCorePackage(rawSearch2.data);
+            var rawSearch2 = TestUtility.LoadTestResponse("mergeVersions2.json");
+            var package2 = FindNuGetCorePackage(rawSearch2);
             var v2 = await GetPackageVersionsAsync(package2);
             Assert.NotEmpty(v2);
 
-            var results = await aggregator.AggregateAsync(queryString, rawSearch1.data, rawSearch2.data);
+            var results = await aggregator.AggregateAsync(queryString, rawSearch1, rawSearch2);
 
             var mergedPackage = FindNuGetCorePackage(results);
             var vm = await GetPackageVersionsAsync(mergedPackage);
             Assert.Superset(v1, vm);
             Assert.Superset(v2, vm);
+        }
+
+        [Fact]
+        public async Task AggregateAsync_MaintainsOrder()
+        {
+            var indexer = new DownloadCountResultsIndexer();
+            var aggregator = new SearchResultsAggregator(indexer);
+
+            var queryString = "nuget";
+
+            var rawSearch1 = TestUtility.LoadTestResponse("relativeOrder1.json");
+            var rawSearch2 = TestUtility.LoadTestResponse("relativeOrder2.json");
+            var rawSearch3 = TestUtility.LoadTestResponse("relativeOrder3.json");
+
+            var results = await aggregator.AggregateAsync(queryString, rawSearch1, rawSearch2, rawSearch3);
+
+            AssertRelativeOrder(rawSearch1, results);
+            AssertRelativeOrder(rawSearch2, results);
+            AssertRelativeOrder(rawSearch3, results);
+        }
+
+        private static void AssertRelativeOrder(IEnumerable<PackageSearchMetadata> rawSearch1, IEnumerable<IPackageSearchMetadata> results)
+        {
+            var packageIdsOrderedInInitialOrder = rawSearch1
+                .Select(r => r.Identity.Id)
+                .ToArray();
+            Assert.Equal(
+                expected: packageIdsOrderedInInitialOrder, 
+                actual: results.Select(r => r.Identity.Id).Where(id => packageIdsOrderedInInitialOrder.Contains(id)));
         }
 
         private static async Task<ISet<NuGetVersion>> GetPackageVersionsAsync(IPackageSearchMetadata package)
@@ -56,28 +84,6 @@ namespace NuGet.Indexing.Test
         {
             return searchResults
                 .First(p => string.Equals(p.Identity.Id, NuGetCore, StringComparison.OrdinalIgnoreCase));
-        }
-
-        private static PackageSearchResponse LoadTestResponse(string fileName)
-        {
-            var assembly = typeof(SearchResultsAggregatorTests).Assembly;
-
-            var serializer = JsonSerializer.Create(JsonExtensions.ObjectSerializationSettings);
-
-            var resourcePath = string.Join(".", typeof(SearchResultsAggregatorTests).Namespace, "compiler.resources", fileName);
-            using (var stream = assembly.GetManifestResourceStream(resourcePath))
-            {
-                if (stream == null)
-                {
-                    return null;
-                }
-
-                using (var streamReader = new StreamReader(stream))
-                using (var jsonReader = new JsonTextReader(streamReader))
-                {
-                    return serializer.Deserialize<PackageSearchResponse>(jsonReader);
-                }
-            }
         }
     }
 }

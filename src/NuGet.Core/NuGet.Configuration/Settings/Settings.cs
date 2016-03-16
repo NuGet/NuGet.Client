@@ -252,6 +252,12 @@ namespace NuGet.Configuration
                 else
                 {
                     var userSettingsDir = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+
+                    // If there is no user settings directory, return no appdata settings
+                    if (userSettingsDir == null)
+                    {
+                        return;
+                    }
                     defaultSettingsFilePath = Path.Combine(userSettingsDir, DefaultSettingsFileName);
                 }
 
@@ -502,7 +508,7 @@ namespace NuGet.Configuration
         public void UpdateSections(string section, IReadOnlyList<SettingValue> values)
         {
             // machine wide settings cannot be changed.
-            if (IsMachineWideSettings || 
+            if (IsMachineWideSettings ||
                 ((section == ConfigurationConstants.PackageSources || section == ConfigurationConstants.DisabledPackageSources) && Cleared))
             {
                 if (_next == null)
@@ -1012,7 +1018,7 @@ namespace NuGet.Configuration
             ExecuteSynchronized(() => FileSystemUtility.AddFile(ConfigFilePath, ConfigXDocument.Save));
         }
 
-#if DNXCORE50
+#if NETSTANDARD1_5
         private static Mutex _globalMutex = new Mutex(initiallyOwned: false);
 
         /// <summary>

@@ -3,7 +3,26 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Loaded="UserControl_Loaded"
              xmlns:resx="clr-namespace:NuGet.PackageManagement.UI">
-    <Border x:Name="RestoreBar" VerticalAlignment="Center" Visibility="Collapsed" BorderThickness="0,0,0,1">
+    <UserControl.Resources>
+      <Storyboard x:Key="ShowSmoothly">
+        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="RestoreBar">
+          <DiscreteObjectKeyFrame KeyTime="0:0:0.3" Value="{x:Static Visibility.Visible}"/>
+        </ObjectAnimationUsingKeyFrames>
+        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="RestoreBar">
+          <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="0"/>
+          <EasingDoubleKeyFrame KeyTime="0:0:0.9" Value="1"/>
+        </DoubleAnimationUsingKeyFrames>
+      </Storyboard>
+      <Storyboard x:Key="HideSmoothly">
+        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="RestoreBar">
+          <EasingDoubleKeyFrame KeyTime="0:0:0.6" Value="0"/>
+        </DoubleAnimationUsingKeyFrames>
+        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Visibility)" Storyboard.TargetName="RestoreBar">
+          <DiscreteObjectKeyFrame KeyTime="0:0:0.6" Value="{x:Static Visibility.Collapsed}"/>
+        </ObjectAnimationUsingKeyFrames>
+      </Storyboard>
+    </UserControl.Resources>
+    <Border x:Name="RestoreBar" VerticalAlignment="Center" Visibility="Collapsed" Opacity="0" BorderThickness="0,0,0,1">
         <Grid Margin="0,4,0,6">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />

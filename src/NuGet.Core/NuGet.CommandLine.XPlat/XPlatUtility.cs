@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Runtime.InteropServices;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Common;
 using NuGet.Logging;
@@ -25,14 +26,12 @@ namespace NuGet.CommandLine.XPlat
 
         public static void SetUserAgent()
         {
-            UserAgent.UserAgentString
-                = UserAgent.CreateUserAgentString(
-                    $"NuGet xplat");
+			UserAgent.SetUserAgentString(new UserAgentStringBuilder("NuGet xplat"));
         }
 
         public static void SetConnectionLimit()
         {
-#if !DNXCORE50
+#if !NETSTANDARDAPP1_5
             // Increase the maximum number of connections per server.
             if (!RuntimeEnvironmentHelper.IsMono)
             {

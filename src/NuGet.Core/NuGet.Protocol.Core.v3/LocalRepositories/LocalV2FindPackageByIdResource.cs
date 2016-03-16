@@ -121,25 +121,38 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
         internal static IEnumerable<FileInfo> GetNupkgFiles(string sourceDir, string id)
         {
             // Check for package files one level deep.
-            var rootDirectoryInfo = new DirectoryInfo(sourceDir);
-            if (!rootDirectoryInfo.Exists)
+            DirectoryInfo rootDirectoryInfo = null;
+            try
+            {
+                rootDirectoryInfo = new DirectoryInfo(sourceDir);
+            }
+            catch(ArgumentException ex)
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, sourceDir);
+
+                throw new FatalProtocolException(message, ex);
+            }
+
+            if (rootDirectoryInfo == null || !Directory.Exists(rootDirectoryInfo.FullName))
             {
                 yield break;
             }
 
             var filter = id + "*.nupkg";
-            foreach (var dir in rootDirectoryInfo.EnumerateDirectories(filter))
-            {
-                foreach (var path in dir.EnumerateFiles(filter))
-                {
-                    yield return path;
-                }
-            }
 
             // Check top level directory
             foreach (var path in rootDirectoryInfo.EnumerateFiles(filter))
             {
                 yield return path;
+            }
+
+            // Check sub directories
+            foreach (var dir in  rootDirectoryInfo.EnumerateDirectories(filter))
+            {
+                foreach (var path in dir.EnumerateFiles(filter))
+                {
+                    yield return path;
+                }
             }
         }
     }

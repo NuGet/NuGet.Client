@@ -316,6 +316,15 @@ namespace NuGetVSExtension {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Credential provider gave an invalid response..
+        /// </summary>
+        internal static string ProviderException_MalformedResponse {
+            get {
+                return ResourceManager.GetString("ProviderException_MalformedResponse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Restored NuGet package {0}..
         /// </summary>
         internal static string RestoredPackage {
@@ -348,6 +357,15 @@ namespace NuGetVSExtension {
         internal static string SolutionIsNotSavedPromptReopen {
             get {
                 return ResourceManager.GetString("SolutionIsNotSavedPromptReopen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error loading VisualStudioAcountProvider. {0}.
+        /// </summary>
+        internal static string VsCredentialProviderImporter_LoadErrorFormat {
+            get {
+                return ResourceManager.GetString("VsCredentialProviderImporter_LoadErrorFormat", resourceCulture);
             }
         }
     }

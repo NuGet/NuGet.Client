@@ -1,26 +1,45 @@
-{
-    "dependencies": {
-        "NuGet.Configuration": "3.4.0-*",
-        "xunit": "2.1.0",
-        "xunit.runner.dnx": "2.1.0-rc1-build204",
-        "NuGet.Test.Utility": "3.4.0-*",
-        "NuGet.Common": "3.4.0-*"
+﻿{
+  "dependencies": {
+    "NuGet.Configuration": {
+      "target": "project"
     },
-    "commands": {
-        "test": "xunit.runner.dnx"
+    "xunit": "2.1.0",
+    "NuGet.Test.Utility": {
+      "target": "project"
     },
-    "frameworks": {
-        "dnx451": {
-          "dependencies": {
-            "Moq": "4.2.1510.2205"
-          }
-        },
-        "dnxcore50": {
-            "imports": "portable-net45+win8",
-            "dependencies": {
-                "moq.netcore": "4.4.0-beta8",
-                "System.Threading.Tasks.Parallel": "4.0.1-beta-23516"
-            }
-        }
+    "NuGet.Common": {
+      "target": "project"
     }
+  },
+  "frameworks": {
+    "netstandardapp1.5": {
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ],
+      "dependencies": {
+        "moq.netcore": "4.4.0-beta8",
+        "NETStandard.Library": "1.5.0-rc2-23911",
+        "dotnet-test-xunit": "1.0.0-dev-48273-16",
+        "System.Threading.Tasks.Parallel": "4.0.1-rc2-23911",
+        "runtime.any.System.Linq.Expressions": "4.0.11-rc2-23911"
+      }
+    },
+    "net46": {
+      "frameworkAssemblies": {
+        "Microsoft.CSharp": "",
+        "System": "",
+        "System.Core": "",
+        "System.Runtime": "",
+        "System.Threading.Tasks": "",
+        "System.Net": "",
+        "System.Net.Http": ""
+      },
+      "dependencies": {
+        "Moq": "4.2.1510.2205"
+      }
+    }
+  },
+  "testRunner": "xunit"
 }

@@ -101,7 +101,7 @@ namespace NuGet.Configuration
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "We want to return the object.")]
         private HashAlgorithm GetHashAlgorithm()
         {
-#if !DNXCORE50
+#if !NETSTANDARD1_5
             if (_hashAlgorithm.Equals(SHA256HashAlgorithm, StringComparison.OrdinalIgnoreCase))
             {
                 return AllowOnlyFipsAlgorithms ? (HashAlgorithm)new SHA256CryptoServiceProvider() : (HashAlgorithm)new SHA256Managed();
@@ -121,7 +121,7 @@ namespace NuGet.Configuration
 
         private static bool ReadFipsConfigValue()
         {
-#if !DNXCORE50
+#if !NETSTANDARD1_5
             // Mono does not currently support this method. Have this in a separate method to avoid JITing exceptions.
             var cryptoConfig = typeof(CryptoConfig);
 

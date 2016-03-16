@@ -30,6 +30,7 @@ namespace NuGet.Frameworks
 
         public static class FrameworkIdentifiers
         {
+            public const string NetCoreApp = ".NETCoreApp";
             public const string NetStandardApp = ".NETStandardApp";
             public const string NetStandard = ".NETStandard";
             public const string NetPlatform = ".NETPlatform";
@@ -147,6 +148,9 @@ namespace NuGet.Frameworks
 
             public static readonly NuGetFramework UAP10
                 = new NuGetFramework(FrameworkIdentifiers.UAP, Version10);
+
+            public static readonly NuGetFramework NetCoreApp10
+                = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(1, 0, 0, 0));
         }
     }
 }

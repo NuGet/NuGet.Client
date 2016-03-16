@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -129,14 +130,21 @@ namespace NuGet.Protocol
 
             // Try to find the package directly
             // Set max count to -1, get all packages 
-            var packages = await QueryV2Feed(uri, package.Id, -1, log, token);
+            var packages = await QueryV2Feed(
+                uri,
+                package.Id,
+                max: -1,
+                ignoreNotFounds: true,
+                log: log,
+                token: token);
 
             // If not found use FindPackagesById
             if (packages.Count < 1)
             {
                 var allPackages = await FindPackagesByIdAsync(package.Id, log, token);
 
-                return packages.Where(p => p.Version == package.Version)
+                return allPackages
+                    .Where(p => p.Version == package.Version)
                     .FirstOrDefault();
             }
 
@@ -170,7 +178,13 @@ namespace NuGet.Protocol
 
             var uri = string.Format(CultureInfo.InvariantCulture, _findPackagesByIdFormat, id);
             // Set max count to -1, get all packages
-            var packages = await QueryV2Feed(uri, id, -1, log, token);
+            var packages = await QueryV2Feed(
+                uri,
+                id,
+                max: -1,
+                ignoreNotFounds: false,
+                log: log,
+                token: token);
 
             var filtered = packages.Where(p => (includeUnlisted || p.IsListed)
                 && (includePrerelease || !p.Version.IsPrerelease));
@@ -197,7 +211,13 @@ namespace NuGet.Protocol
                                     skip,
                                     take);
 
-            return await QueryV2Feed(uri, null, take, log, cancellationToken);
+            return await QueryV2Feed(
+                uri,
+                id: null,
+                max: take,
+                ignoreNotFounds: false,
+                log: log,
+                token: cancellationToken);
         }
 
         public async Task<DownloadResourceResult> DownloadFromUrl(PackageIdentity package,
@@ -331,7 +351,13 @@ namespace NuGet.Protocol
             return value;
         }
 
-        private async Task<List<V2FeedPackageInfo>> QueryV2Feed(string uri, string id, int max, ILogger log, CancellationToken token)
+        private async Task<List<V2FeedPackageInfo>> QueryV2Feed(
+            string uri,
+            string id,
+            int max,
+            bool ignoreNotFounds,
+            ILogger log,
+            CancellationToken token)
         {
             var results = new List<V2FeedPackageInfo>();
             var page = 1;
@@ -351,13 +377,32 @@ namespace NuGet.Protocol
                 {
                     try
                     {
-                        var doc = LoadXml(await data.Content.ReadAsStreamAsync());
+                        string nextUri = null;
+                        if (data.StatusCode == HttpStatusCode.OK)
+                        {
+                            var doc = LoadXml(await data.Content.ReadAsStreamAsync());
 
-                        // find results on the page
-                        var result = ParsePage(doc, id);
-                        results.AddRange(result);
+                            // find results on the page
+                            var result = ParsePage(doc, id);
+                            results.AddRange(result);
 
-                        var nextUri = GetNextUrl(doc);
+                            nextUri = GetNextUrl(doc);
+                        }
+                        else if (ignoreNotFounds &&
+                                 (data.StatusCode == HttpStatusCode.NotFound ||
+                                  data.StatusCode == HttpStatusCode.NoContent))
+                        {
+                            // Treat "404 Not Found" and "204 No Content" as empty responses.
+                        }
+                        else
+                        {
+                            throw new FatalProtocolException(string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.Log_FailedToFetchV2Feed,
+                                uri,
+                                (int)data.StatusCode,
+                                data.ReasonPhrase));
+                        }
 
                         urlRequest = null;
                         if (max < 0 || results.Count < max)
@@ -412,7 +457,8 @@ namespace NuGet.Protocol
                 CloseInput = true,
                 IgnoreWhitespace = true,
                 IgnoreComments = true,
-                IgnoreProcessingInstructions = true
+                IgnoreProcessingInstructions = true,
+                DtdProcessing = DtdProcessing.Ignore, // for consistency with earlier behavior (v3.3 and before)
             });
 
             return XDocument.Load(xmlReader, LoadOptions.None);

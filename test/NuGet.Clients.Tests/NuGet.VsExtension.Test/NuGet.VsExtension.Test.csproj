@@ -39,9 +39,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
+    <Reference Include="EnvDTE, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="System" />
   </ItemGroup>
   <Choose>
@@ -57,8 +55,10 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="VsCredentialProviderImporterTests.cs" />
     <Compile Include="VisualStudioAccountProviderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VsCredentialProviderAdapterTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />
@@ -67,6 +67,10 @@
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.Credentials\NuGet.Credentials.csproj">
       <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
       <Name>NuGet.Credentials</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\VisualStudio\VisualStudio.csproj">
+      <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
+      <Name>VisualStudio</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\src\NuGet.Clients\VsExtension\VsExtension.csproj">
       <Project>{d0f9864b-d782-4471-81a2-29555e5dc0d7}</Project>

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Text;
@@ -47,6 +46,8 @@ namespace NuGet.PackageManagement
 
         public SourceRepository PackagesFolderSourceRepository { get; set; }
 
+        public SourceRepository GlobalPackagesFolderSourceRepository { get; set; }
+
         /// <summary>
         /// To construct a NuGetPackageManager that does not need a SolutionManager like NuGet.exe
         /// </summary>
@@ -84,6 +85,8 @@ namespace NuGet.PackageManagement
             Settings = settings;
 
             InitializePackagesFolderInfo(packagesFolderPath, excludeVersion);
+
+            GlobalPackagesFolderSourceRepository = null;
         }
 
         /// <summary>
@@ -131,6 +134,13 @@ namespace NuGet.PackageManagement
 
             InitializePackagesFolderInfo(PackagesFolderPathUtility.GetPackagesFolderPath(SolutionManager, Settings), excludeVersion);
             DeleteOnRestartManager = deleteOnRestartManager;
+
+            string globalPackagesFolder = BuildIntegratedProjectUtility.GetEffectiveGlobalPackagesFolderOrNull(solutionManager.SolutionDirectory, settings);
+            if (globalPackagesFolder != null)
+            {
+                var globalPackagesSource = new Configuration.PackageSource(globalPackagesFolder);
+                GlobalPackagesFolderSourceRepository = SourceRepositoryProvider.CreateRepository(globalPackagesSource);
+            }
         }
 
         private void InitializePackagesFolderInfo(string packagesFolderPath, bool excludeVersion = false)
@@ -740,7 +750,10 @@ namespace NuGet.PackageManagement
                     foreach (var installedPackage in projectInstalledPackageReferences)
                     {
                         var packageInfo = await packagesFolderResource.ResolvePackage(installedPackage.PackageIdentity, targetFramework, log, token);
-                        availablePackageDependencyInfoWithSourceSet.Add(packageInfo);
+                        if (packageInfo != null)
+                        {
+                            availablePackageDependencyInfoWithSourceSet.Add(packageInfo);
+                        }
                     }
                 }
 
@@ -1857,7 +1870,7 @@ namespace NuGet.PackageManagement
 
                 // Write out the lock file
                 var logger = new ProjectContextLogger(nuGetProjectContext);
-                restoreResult.Commit(logger);
+                await restoreResult.CommitAsync(logger, token);
 
                 // Write out a message for each action
                 foreach (var action in nuGetProjectActions)

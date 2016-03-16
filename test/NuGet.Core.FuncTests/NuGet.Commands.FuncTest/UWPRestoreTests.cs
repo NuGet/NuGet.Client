@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
@@ -95,7 +96,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
@@ -151,7 +152,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var lockFileJson = JObject.Parse(File.OpenText(request.LockFilePath).ReadToEnd());
 
@@ -240,7 +241,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var lockFileJson = JObject.Parse(File.OpenText(request.LockFilePath).ReadToEnd());
 
@@ -300,7 +301,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var lockFileJson = JObject.Parse(File.OpenText(request.LockFilePath).ReadToEnd());
 
@@ -367,7 +368,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 var lockFileJson = JObject.Parse(File.OpenText(request.LockFilePath).ReadToEnd());
 
@@ -422,11 +423,11 @@ namespace NuGet.Commands.FuncTest
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
+                Assert.True(0 == logger.Errors, logger.ShowMessages());
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(86, result.GetAllInstalled().Count);
             }
@@ -480,7 +481,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Act
                 var result = await command.ExecuteAsync();
-                result.Commit(logger);
+                await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));

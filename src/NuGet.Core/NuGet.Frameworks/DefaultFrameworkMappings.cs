@@ -56,6 +56,7 @@ namespace NuGet.Frameworks
                 {
                     _identifierShortNames = new KeyValuePair<string, string>[]
                         {
+                            new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, "netcoreapp"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetStandardApp, "netstandardapp"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetStandard, "netstandard"),
                             new KeyValuePair<string, string>(FrameworkConstants.FrameworkIdentifiers.NetPlatform, "dotnet"),
@@ -325,7 +326,15 @@ namespace NuGet.Frameworks
                             new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.Windows, FrameworkConstants.MaxVersion)),
                             new FrameworkRange(
                                 new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WinRT, FrameworkConstants.EmptyVersion),
-                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WinRT, new Version(4, 5, 0, 0))))
+                                new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.WinRT, new Version(4, 5, 0, 0)))),
+
+                        // NetCoreApp projects support NetStandard
+                        new OneWayCompatibilityMappingEntry(new FrameworkRange(
+                            new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, new Version(1, 0, 0, 0)),
+                            new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, FrameworkConstants.MaxVersion)),
+                            new FrameworkRange(
+                                FrameworkConstants.CommonFrameworks.NetStandard10,
+                                FrameworkConstants.CommonFrameworks.NetStandard15))
                     }
                         .Concat(new[]
                         {
@@ -538,6 +547,7 @@ namespace NuGet.Frameworks
                 {
                     _packageBasedFrameworkPrecedence = new[]
                     {
+                        FrameworkConstants.FrameworkIdentifiers.NetCoreApp,
                         FrameworkConstants.FrameworkIdentifiers.NetStandardApp,
                         FrameworkConstants.FrameworkIdentifiers.NetStandard,
                         FrameworkConstants.FrameworkIdentifiers.NetPlatform

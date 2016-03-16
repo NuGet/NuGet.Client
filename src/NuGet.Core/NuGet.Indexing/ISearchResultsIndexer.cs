@@ -1,4 +1,7 @@
-﻿using NuGet.Protocol.Core.Types;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using NuGet.Protocol.Core.Types;
 using System.Collections.Generic;
 
 namespace NuGet.Indexing
@@ -14,6 +17,14 @@ namespace NuGet.Indexing
         /// <param name="queryString">Relevance ranking criteria</param>
         /// <param name="entries">Search results</param>
         /// <returns>Dictionary of package to rank associations</returns>
-        IDictionary<string, int> Rank(string queryString, IEnumerable<IPackageSearchMetadata> entries);
+        IDictionary<string, long> Rank(string queryString, IEnumerable<IPackageSearchMetadata> entries);
+
+        /// <summary>
+        /// Represents a strategy of dealing with unranked elements. Specific to an indexer.
+        /// </summary>
+        /// <param name="entries">Subset of search results sequence. Generally, elements from a single feed.</param>
+        /// <param name="ranking">Ranking as computed in <see cref="Rank(string, IEnumerable{IPackageSearchMetadata})"/></param>
+        /// <returns>Altered sequence of search results.</returns>
+        IEnumerable<IPackageSearchMetadata> ProcessUnrankedEntries(IEnumerable<IPackageSearchMetadata> entries, IDictionary<string, long> ranking);
     }
 }

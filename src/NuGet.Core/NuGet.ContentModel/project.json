@@ -1,25 +1,26 @@
 ﻿{
-  "version": "3.4.0-*",
+  "version": "3.5.0-*",
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.0-*"
+      "target": "project"
     }
   },
   "frameworks": {
     "net45": {},
-    "dnxcore50": {
+    "netstandard1.5": {
       "dependencies": {
-        "System.Collections": "4.0.10-beta-23109",
-        "System.ObjectModel": "4.0.10-beta-23109",
-        "System.IO.FileSystem": "4.0.0-beta-23109",
-        "System.Linq": "4.0.0-beta-23109",
-        "System.Runtime": "4.0.20-beta-23109",
-        "System.Runtime.Extensions": "4.0.10-beta-23109"
-      }
+        "NETStandard.Library": "1.5.0-rc2-23911",
+        "System.ObjectModel": "4.0.11-rc2-23911"
+      },
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ]
     }
   }
 }

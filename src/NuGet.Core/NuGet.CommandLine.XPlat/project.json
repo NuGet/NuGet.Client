@@ -1,40 +1,44 @@
 ﻿{
-  "version": "3.4.0-*",
+  "version": "3.5.0-*",
   "description": "NuGet 3 restore for dotnet CLI, DNX, and UWP",
   "compilationOptions": {
     "emitEntryPoint": true,
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-rc1-final",
-    "Microsoft.NETCore.Platforms": "1.0.1-beta-*",
-    "NuGet.Commands": "3.4.0-*",
-    "NuGet.Shared": {
-      "version": "3.4.0-*",
-      "type": "build"
-    },
-    "System.Runtime.Serialization.Primitives": "4.0.0",
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-rc2-20100",
     "Microsoft.Extensions.CommandLineUtils.Sources": {
       "version": "1.0.0-*",
       "type": "build"
-    }
+    },
+    "NuGet.Commands": {
+      "target": "project"
+    },
+    "NuGet.Shared": {
+      "type": "build",
+      "target": "project"
+    },
+    "System.Runtime.Serialization.Primitives": "4.1.0-rc2-23911"
   },
   "commands": {
     "NuGet.CommandLine.XPlat": "NuGet.CommandLine.XPlat"
   },
   "frameworks": {
-    "dnx451": {
+    "net46": {
       "frameworkAssemblies": {
         "Microsoft.Build.Framework": "14.0.0",
         "Microsoft.Build": "14.0.0",
         "System.Collections": ""
       }
     },
-    "dnxcore50": {
-      "imports": [ "portable-net45+win8" ],
+    "netstandardapp1.5": {
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ],
       "dependencies": {
-        "System.Threading.Tasks": "4.0.11-beta-23516",
-        "System.Console": "4.0.0-beta-23409"
+        "NETStandard.Library": "1.5.0-rc2-23911"
       }
     }
   }

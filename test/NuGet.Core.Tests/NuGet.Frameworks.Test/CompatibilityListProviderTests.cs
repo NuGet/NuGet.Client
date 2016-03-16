@@ -23,6 +23,7 @@ namespace NuGet.Frameworks.Test
             // Assert
             // positive
             Assert.Contains(".NETCore,Version=v5.0", actual);
+            Assert.Contains(".NETCoreApp,Version=v1.0", actual);
             Assert.Contains(".NETFramework,Version=v4.5.1", actual);
             Assert.Contains(".NETPortable,Version=v0.0,Profile=Profile151", actual); // PCL frameworks are not reduced
             Assert.Contains(".NETPortable,Version=v0.0,Profile=Profile32", actual);
@@ -67,6 +68,7 @@ namespace NuGet.Frameworks.Test
 
             // Assert
             // positive
+            Assert.Contains(".NETCoreApp,Version=v1.0", actual);
             Assert.Contains(".NETFramework,Version=v4.6.2", actual);
             Assert.Contains(".NETStandard,Version=v1.5", actual);
             Assert.Contains(".NETStandardApp,Version=v1.5", actual);

@@ -1,5 +1,5 @@
 ﻿{
-  "version": "3.4.0-*",
+  "version": "3.5.0-*",
   "authors": [
     "NuGet"
   ],
@@ -16,10 +16,12 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Common": "3.4.0-*",
+    "NuGet.Common": {
+      "target": "project"
+    },
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.0-*"
+      "target": "project"
     }
   },
   "frameworks": {
@@ -31,25 +33,18 @@
         "System.Xml.Linq": ""
       }
     },
-    "dnxcore50": {
+    "netstandard1.5": {
       "dependencies": {
-        "System.Runtime.Extensions": "4.0.10-beta-23109",
-        "System.Collections": "4.0.10-beta-23109",
-        "System.Collections.Concurrent": "4.0.10-beta-23109",
-        "System.Diagnostics.Debug": "4.0.10-beta-23109",
-        "System.Diagnostics.Tools": "4.0.0-beta-23109",
-        "System.Globalization": "4.0.10-beta-23109",
-        "System.IO": "4.0.10-beta-23109",
-        "System.IO.FileSystem": "4.0.0-beta-23109",
-        "System.Linq": "4.0.0-beta-23109",
-        "System.Net.Primitives": "4.0.10-beta-23109",
-        "System.Resources.ResourceManager": "4.0.0-beta-23109",
-        "System.Text.RegularExpressions": "4.0.10-beta-23109",
-        "System.Threading": "4.0.10-beta-23109",
-        "System.Xml.XDocument": "4.0.10-beta-23109",
-        "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-23225",
-        "System.Security.Cryptography.Hashing": "4.0.0-beta-23225"
-      }
+        "NETStandard.Library": "1.5.0-rc2-23911",
+        "System.Xml.XDocument": "4.0.11-rc2-23911",
+        "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-23311",
+        "System.Security.Cryptography.Hashing": "4.0.0-beta-23311"
+      },
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ]
     }
   }
 }

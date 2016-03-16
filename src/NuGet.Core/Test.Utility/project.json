@@ -1,15 +1,20 @@
 ﻿{
-  "version": "3.4.0-*",
+  "version": "3.5.0-*",
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.PackageManagement": "3.4.0-*",
-    "NuGet.ProjectManagement": "3.4.0-*",
-    "NuGet.Protocol.VisualStudio": "3.4.0-*",
-    "Microsoft.VisualStudio.ProjectSystem.Interop": "",
     "xunit": "2.1.0",
-    "NuGet.Test.Utility": "3.4.0-*"
+    "Microsoft.VisualStudio.ProjectSystem.Interop": "1.0.0-*",
+    "NuGet.PackageManagement": {
+      "target": "project"
+    },
+    "NuGet.Protocol.VisualStudio": {
+      "target": "project"
+    },
+    "NuGet.Test.Utility": {
+      "target": "project"
+    }
   },
   "frameworks": {
     "net45": {

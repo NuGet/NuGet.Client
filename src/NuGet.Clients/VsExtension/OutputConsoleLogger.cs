@@ -15,9 +15,6 @@ namespace NuGetVSExtension
 {
     internal class OutputConsoleLogger : INuGetUILogger
     {
-        // Copied from EnvDTE interop
-        private const string vsWindowKindOutput = "{34E76E81-EE4A-11D0-AE2E-00A0C90FFFC3}";
-
         // keeps a reference to BuildEvents so that our event handler
         // won't get disconnected because of GC.
         private BuildEvents _buildEvents;
@@ -69,20 +66,12 @@ namespace NuGetVSExtension
         private void ActivateOutputWindow()
         {
             var uiShell = ServiceLocator.GetGlobalService<SVsUIShell, IVsUIShell>();
-            if (uiShell == null)
+            if (uiShell != null)
             {
-                return;
+                IVsWindowFrame toolWindow = null;
+                uiShell.FindToolWindow(0, ref GuidList.guidVsWindowKindOutput, out toolWindow);
+                toolWindow?.Show();
             }
-
-            var guid = new Guid(vsWindowKindOutput);
-            IVsWindowFrame f = null;
-            uiShell.FindToolWindow(0, ref guid, out f);
-            if (f == null)
-            {
-                return;
-            }
-
-            f.Show();
         }
 
         public void Start()

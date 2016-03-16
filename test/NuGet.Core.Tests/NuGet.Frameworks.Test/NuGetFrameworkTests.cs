@@ -96,6 +96,7 @@ namespace NuGet.Test
         [InlineData("netstandard1.0", true)]
         [InlineData("dotnet5.1", true)]
         [InlineData("dotnet", true)]
+        [InlineData("netcoreapp1.0", true)]
         public void NuGetFramework_IsPackageBased(string framework, bool isPackageBased)
         {
             var fw = NuGetFramework.Parse(framework);

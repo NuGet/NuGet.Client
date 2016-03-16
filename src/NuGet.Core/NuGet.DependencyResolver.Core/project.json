@@ -1,23 +1,40 @@
 ﻿{
-  "version": "3.4.0-*",
+  "version": "3.5.0-*",
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.LibraryModel": "3.4.0-*",
-    "NuGet.Frameworks": "3.4.0-*",
-    "NuGet.Protocol.Core.v3": "3.4.0-*",
-    "NuGet.Repositories": "3.4.0-*",
-    "NuGet.RuntimeModel": "3.4.0-*",
+    "NuGet.LibraryModel": {
+      "target": "project"
+    },
+    "NuGet.Frameworks": {
+      "target": "project"
+    },
+    "NuGet.Protocol.Core.v3": {
+      "target": "project"
+    },
+    "NuGet.Repositories": {
+      "target": "project"
+    },
+    "NuGet.RuntimeModel": {
+      "target": "project"
+    },
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.0-*"
+      "target": "project"
     }
   },
   "frameworks": {
     "net45": {},
-    "dnxcore50": {
-      "imports": [ "portable-net45+win8" ]
+    "netstandard1.5": {
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ],
+      "dependencies": {
+        "NETStandard.Library": "1.5.0-rc2-23911"
+      }
     }
   }
 }

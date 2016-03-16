@@ -488,6 +488,10 @@ namespace NuGet.Frameworks
                 case "netstandardapp15":
                     framework = FrameworkConstants.CommonFrameworks.NetStandardApp15;
                     break;
+                case "netcoreapp1.0":
+                case "netcoreapp10":
+                    framework = FrameworkConstants.CommonFrameworks.NetCoreApp10;
+                    break;
             }
 
             return framework != null;

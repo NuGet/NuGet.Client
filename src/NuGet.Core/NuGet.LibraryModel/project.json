@@ -1,10 +1,12 @@
 ﻿{
-  "version": "3.4.0-*",
+  "version": "3.5.0-*",
   "dependencies": {
-    "NuGet.Versioning": "3.4.0-*",
+    "NuGet.Versioning": {
+      "target": "project"
+    },
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.0-*"
+      "target": "project"
     }
   },
   "compilationOptions": {
@@ -12,11 +14,15 @@
   },
   "frameworks": {
     "net45": {},
-    "dnxcore50": {
+    "netstandard1.5": {
       "dependencies": {
-        "System.Runtime": "4.0.20-*",
-        "System.Collections.Concurrent": "4.0.10-*"
-      }
+        "NETStandard.Library": "1.5.0-rc2-23911"
+      },
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ]
     }
   }
 }

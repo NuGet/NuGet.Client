@@ -13,7 +13,7 @@ namespace NuGet.Configuration
 
         public static string EncryptString(string value)
         {
-#if DNXCORE50
+#if NETSTANDARD1_5
             throw new NotSupportedException();
 #else
             var decryptedByteArray = Encoding.UTF8.GetBytes(value);
@@ -25,7 +25,7 @@ namespace NuGet.Configuration
 
         public static string DecryptString(string encryptedString)
         {
-#if DNXCORE50
+#if NETSTANDARD1_5
             throw new NotSupportedException();
 #else
             var encryptedByteArray = Convert.FromBase64String(encryptedString);

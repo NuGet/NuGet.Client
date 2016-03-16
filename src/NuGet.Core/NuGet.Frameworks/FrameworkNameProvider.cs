@@ -187,8 +187,8 @@ namespace NuGet.Frameworks
                     versionParts.Pop();
                 }
 
-                // Always use decimals and 2+ digits for dotnet, netstandard, or netstandardapp
-                // if any parts of the version are over 9 we need to use decimals
+                // Always use decimals and 2+ digits for dotnet, netstandard, netstandardapp,
+                // netcoreapp, or if any parts of the version are over 9 we need to use decimals
                 if (string.Equals(
                         framework,
                         FrameworkConstants.FrameworkIdentifiers.NetPlatform,
@@ -200,6 +200,10 @@ namespace NuGet.Frameworks
                     || string.Equals(
                         framework,
                         FrameworkConstants.FrameworkIdentifiers.NetStandardApp,
+                        StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(
+                        framework,
+                        FrameworkConstants.FrameworkIdentifiers.NetCoreApp,
                         StringComparison.OrdinalIgnoreCase)
                     || versionParts.Any(x => x > 9))
                 {

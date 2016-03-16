@@ -89,7 +89,7 @@ namespace StandaloneUI
                 context,
                 new NuGetUIProjectContext(new StandaloneUILogger(_textBox, _scrollViewer), _sourceControlManagerProvider, _commonOperations));
 
-            var model = new PackageManagerModel(uiController, context, isSolution: false);
+            var model = new PackageManagerModel(uiController, context, isSolution: false, editorFactoryGuid: Guid.Empty);
             model.SolutionName = "test solution";
             _packageManagerControl =
                 new PackageManagerControl(model, _settings, new SimpleSearchBoxFactory(), vsShell: null);

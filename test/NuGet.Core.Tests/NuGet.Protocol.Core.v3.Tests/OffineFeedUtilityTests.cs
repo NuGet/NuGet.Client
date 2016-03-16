@@ -7,7 +7,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 //Negative tests here won't run well on *nix because bad test data used will trigger new exceptions
 //TODO: we can revisit to catch them if there is value.
 
-#if !DNXCORE50
+#if !NETSTANDARDAPP1_5
     public class OffineFeedUtilityTests
     {
         [Theory]

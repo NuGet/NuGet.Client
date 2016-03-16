@@ -553,20 +553,20 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
                 IncludeDelisted = false
             };
 
-            var packageFeed = new MultiSourcePackageFeed(PrimarySourceRepositories, Logging.NullLogger.Instance);
+            var packageFeed = new MultiSourcePackageFeed(PrimarySourceRepositories, logger: null);
             var searchTask = packageFeed.SearchAsync(searchString, searchFilter, Token);
             return PackageFeedEnumerator.Enumerate(packageFeed, searchTask, Token);
         }
 
         protected async Task<IEnumerable<IPackageSearchMetadata>> GetPackagesFromRemoteSourceAsync(string packageId, bool includePrerelease)
         {
-            var metadataProvider = new MultiSourcePackageMetadataProvider(PrimarySourceRepositories, optionalLocalRepository: null, logger: Logging.NullLogger.Instance);
+            var metadataProvider = new MultiSourcePackageMetadataProvider(PrimarySourceRepositories, optionalLocalRepository: null, optionalGlobalLocalRepository: null, logger: Logging.NullLogger.Instance);
             return await metadataProvider.GetPackageMetadataListAsync(packageId, includePrerelease, false, Token);
         }
 
         protected async Task<IPackageSearchMetadata> GetLatestPackageFromRemoteSourceAsync(PackageIdentity identity, bool includePrerelease)
         {
-            var metadataProvider = new MultiSourcePackageMetadataProvider(PrimarySourceRepositories, optionalLocalRepository: null, logger: Logging.NullLogger.Instance);
+            var metadataProvider = new MultiSourcePackageMetadataProvider(PrimarySourceRepositories, optionalLocalRepository: null, optionalGlobalLocalRepository: null, logger: Logging.NullLogger.Instance);
             return await metadataProvider.GetLatestPackageMetadataAsync(identity, includePrerelease, Token);
         }
 

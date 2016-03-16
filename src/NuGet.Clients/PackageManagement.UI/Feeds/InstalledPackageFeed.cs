@@ -1,9 +1,11 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
@@ -68,7 +70,7 @@ namespace NuGet.PackageManagement.UI
 
             var items = await TaskCombinators.ThrottledAsync(
                 packages,
-                (p, t) => _metadataProvider.GetLocalPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t),
+                (p, t) => GetPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t),
                 cancellationToken);
 
             //  The packages were originally sorted which is important because we Skip and Take based on that sort
@@ -96,6 +98,18 @@ namespace NuGet.PackageManagement.UI
             }
 
             return result;
+        }
+
+        private async Task<IPackageSearchMetadata> GetPackageMetadataAsync(PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
+        {
+            // first we try and load the metadata from a local package
+            var packageMetadata = await _metadataProvider.GetLocalPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+            if (packageMetadata == null)
+            {
+                // and failing that we go to the network
+                packageMetadata = await _metadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+            }
+            return packageMetadata;
         }
     }
 }

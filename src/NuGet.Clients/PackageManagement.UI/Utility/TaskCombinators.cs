@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,6 +42,31 @@ namespace NuGet.PackageManagement.UI
             await Task.WhenAll(tasks);
 
             return values;
+        }
+
+        public static IDictionary<string, Task<TValue>> ObserveErrorsAsync<TSource, TValue>(
+            IEnumerable<TSource> sources,
+            Func<TSource, string> keySelector,
+            Func<TSource, CancellationToken, Task<TValue>> valueSelector,
+            Action<Task, object> observeErrorAction,
+            CancellationToken cancellationToken)
+        {
+            var tasks = sources
+                .ToDictionary(
+                    s => keySelector(s),
+                    s =>
+                    {
+                        var valueTask = valueSelector(s, cancellationToken);
+                        var ignored = valueTask.ContinueWith(
+                            observeErrorAction, 
+                            s, 
+                            cancellationToken, 
+                            TaskContinuationOptions.OnlyOnFaulted, 
+                            TaskScheduler.Current);
+                        return valueTask;
+                    });
+
+            return tasks;
         }
     }
 }

@@ -30,7 +30,11 @@ trap
     exit 1
 }
 
+$CLIRoot=$PSScriptRoot
+$env:DOTNET_INSTALL_DIR=$CLIRoot
+
 . "$PSScriptRoot\build\common.ps1"
+
 
 $RunTests = (-not $SkipTests) -and (-not $Fast)
 
@@ -52,6 +56,7 @@ Invoke-BuildStep 'Updating sub-modules' { Update-SubModules } `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Cleaning artifacts' { Clear-Artifacts } `
+    -skip:$SkipXProj `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Cleaning nupkgs' { Clear-Nupkgs } `
@@ -65,12 +70,12 @@ Invoke-BuildStep 'Cleaning package cache' { Clear-PackageCache } `
 Invoke-BuildStep 'Installing NuGet.exe' { Install-NuGet } `
     -ev +BuildErrors
 
+Invoke-BuildStep 'Installing dotnet CLI' { Install-DotnetCLI } `
+    -ev +BuildErrors
+
 # Restoring tools required for build
 Invoke-BuildStep 'Restoring solution packages' { Restore-SolutionPackages } `
     -skip:$SkipRestore `
-    -ev +BuildErrors
-
-Invoke-BuildStep 'Installing runtime' { Install-DNX CoreCLR; Install-DNX CLR -Default } `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Enabling delayed signing' {
@@ -99,17 +104,17 @@ Invoke-BuildStep 'Building NuGet.Clients projects' {
 
 Invoke-BuildStep 'Running NuGet.Core tests' {
         param($SkipRestore, $Fast)
-        Test-CoreProjects -SkipRestore:$SkipRestore -Fast:$Fast
+        Test-CoreProjects -SkipRestore:$SkipRestore -Fast:$Fast -Configuration:$Configuration
     } `
-    -args $SkipRestore, $Fast `
-    -skip:($SkipXProj -or (-not $RunTests)) `
+    -args $SkipRestore, $Fast, $Configuration `
+    -skip:(-not $RunTests) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Running NuGet.Clients tests' {
         param($Configuration) Test-ClientsProjects $Configuration
     } `
     -args $Configuration `
-    -skip:($SkipCSproj -or (-not $RunTests)) `
+    -skip:(-not $RunTests) `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Merging NuGet.exe' {

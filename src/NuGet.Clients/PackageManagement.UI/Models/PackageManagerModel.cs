@@ -20,14 +20,15 @@ namespace NuGet.PackageManagement.UI
     /// </remarks>
     public class PackageManagerModel : IVsPersistDocData, INotifyPropertyChanged
     {
-        internal const string EditorFactoryGuidString = "EC269AD5-3EA8-4A13-AAF8-76741843B3CD";
-        public static readonly Guid EditorFactoryGuid = new Guid(EditorFactoryGuidString);
+        private readonly Guid _editorFactoryGuid;
 
-        public PackageManagerModel(INuGetUI uiController, INuGetUIContext context, bool isSolution)
+        public PackageManagerModel(INuGetUI uiController, INuGetUIContext context, bool isSolution, Guid editorFactoryGuid)
         {
             Context = context;
             UIController = uiController;
             IsSolution = isSolution;
+
+            _editorFactoryGuid = editorFactoryGuid;
         }
 
         public INuGetUIContext Context { get; }
@@ -63,7 +64,7 @@ namespace NuGet.PackageManagement.UI
 
         public int GetGuidEditorType(out Guid pClassID)
         {
-            pClassID = EditorFactoryGuid;
+            pClassID = _editorFactoryGuid;
             return VSConstants.S_OK;
         }
 

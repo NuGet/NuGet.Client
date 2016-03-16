@@ -292,6 +292,8 @@ namespace NuGet.Frameworks
                     || FrameworkConstants.FrameworkIdentifiers.NetStandard
                     .Equals(Framework, StringComparison.OrdinalIgnoreCase)
                     || FrameworkConstants.FrameworkIdentifiers.NetStandardApp
+                    .Equals(Framework, StringComparison.OrdinalIgnoreCase)
+                    || FrameworkConstants.FrameworkIdentifiers.NetCoreApp
                     .Equals(Framework, StringComparison.OrdinalIgnoreCase);
             }
         }

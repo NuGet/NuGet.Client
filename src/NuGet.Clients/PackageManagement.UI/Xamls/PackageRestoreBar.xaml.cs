@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using System.Xml.Linq;
 using Microsoft.VisualStudio.Shell;
@@ -25,6 +26,8 @@ namespace NuGet.PackageManagement.UI
         private ISolutionManager SolutionManager { get; }
         private Dispatcher UIDispatcher { get; }
         private Exception RestoreException { get; set; }
+        private Storyboard showRestoreBar;
+        private Storyboard hideRestoreBar;
 
         public PackageExtractionContext PackageExtractionContext { get; set; }
 
@@ -55,6 +58,10 @@ namespace NuGet.PackageManagement.UI
             StatusMessage.SetResourceReference(TextBlock.ForegroundProperty, VsBrushes.InfoTextKey);
             RestoreBar.SetResourceReference(Border.BackgroundProperty, VsBrushes.InfoBackgroundKey);
             RestoreBar.SetResourceReference(Border.BorderBrushProperty, VsBrushes.ActiveBorderKey);
+
+            // Find storyboards that will be used to smoothly show and hide the restore bar.
+            showRestoreBar = this.FindResource("ShowSmoothly") as Storyboard;
+            hideRestoreBar = this.FindResource("HideSmoothly") as Storyboard;
         }
 
         public void CleanUp()
@@ -110,7 +117,11 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                RestoreBar.Visibility = Visibility.Collapsed;
+                // In order to hide the restore bar:
+                // * stop the reveal animation, in case it was still going.
+                // * begin the hide animation.
+                showRestoreBar.Stop();
+                hideRestoreBar.Begin();
             }
         }
 
@@ -182,9 +193,18 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private void RevealRestoreBar()
+        {
+            // If the restoreBar isn't visible, begin the animation to reveal it.
+            if (RestoreBar.Visibility != Visibility.Visible)
+            {
+                showRestoreBar.Begin();
+            }
+        }
+
         private void ResetUI()
         {
-            RestoreBar.Visibility = Visibility.Visible;
+            RevealRestoreBar();
             RestoreButton.Visibility = Visibility.Visible;
             ProgressBar.Visibility = Visibility.Collapsed;
             StatusMessage.Text = UI.Resources.AskForRestoreMessage;
@@ -192,7 +212,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ShowProgressUI()
         {
-            RestoreBar.Visibility = Visibility.Visible;
+            RevealRestoreBar();
             RestoreButton.Visibility = Visibility.Collapsed;
             ProgressBar.Visibility = Visibility.Visible;
             StatusMessage.Text = UI.Resources.PackageRestoreProgressMessage;

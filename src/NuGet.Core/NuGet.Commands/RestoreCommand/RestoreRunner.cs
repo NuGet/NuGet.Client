@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.ProjectModel;
@@ -63,7 +64,17 @@ namespace NuGet.Commands
             // Create requests
             foreach (var input in inputs)
             {
-                foreach (var request in await CreateRequests(input, restoreContext))
+                var inputRequests = await CreateRequests(input, restoreContext);
+                if (inputRequests.Count == 0)
+                {
+                    // No need to throw here - the situation is harmless, and we want to report all possible
+                    // inputs that don't resolve to a project.
+                    log.LogWarning(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Error_UnableToLocateRestoreTarget,
+                            Path.GetFullPath(input)));
+                }
+                foreach (var request in inputRequests)
                 {
                     // De-dupe requests
                     if (uniqueRequest.Add(request.Request.LockFilePath))
@@ -127,7 +138,7 @@ namespace NuGet.Commands
 
             // Commit the result
             log.LogInformation(Strings.Log_Committing);
-            result.Commit(request.Log);
+            await result.CommitAsync(request.Log, CancellationToken.None);
 
             sw.Stop();
 

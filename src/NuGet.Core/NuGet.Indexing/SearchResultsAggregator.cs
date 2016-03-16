@@ -1,4 +1,7 @@
-﻿using NuGet.Protocol.Core.Types;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using NuGet.Protocol.Core.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +29,7 @@ namespace NuGet.Indexing
         public async Task<IEnumerable<IPackageSearchMetadata>> AggregateAsync(string queryString, params IEnumerable<IPackageSearchMetadata>[] inputResults)
         {
             var mergedIndex = new MergedIndex();
-            foreach(var inputResult in inputResults)
+            foreach (var inputResult in inputResults)
             {
                 await mergedIndex.MergeAsync(inputResult);
             }
@@ -34,15 +37,27 @@ namespace NuGet.Indexing
             var ranking = _indexer.Rank(queryString, mergedIndex.Entries);
 
             var inputQueues = inputResults
-                .Select(result => new Queue<string>(result.Select(entry => entry.Identity.Id)))
+                .Select(result => new Queue<string>(
+                    _indexer.ProcessUnrankedEntries(result, ranking).Select(entry => entry.Identity.Id)))
                 .ToArray();
 
-            var enqueued = new HashSet<string>();
+            var enqueued = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var outputQueue = new Queue<IPackageSearchMetadata>(mergedIndex.Entries.Count());
 
-            while (inputQueues.Any(q => q.Count > 0))
+            var queues = inputQueues.Where(q => q.Count > 0);
+            while (queues.Count() > 1)
             {
-                foreach(var queue in inputQueues)
+                var candidates = queues.Select(q => q.Peek()).ToArray();
+
+                var winnerRank = candidates.Max(x => ranking[x]);
+                var winners = candidates.Where(x => ranking[x] == winnerRank);
+                foreach (var winner in winners.Where(w => !enqueued.Contains(w)))
+                {
+                    enqueued.Add(winner);
+                    outputQueue.Enqueue(mergedIndex[winner]);
+                }
+
+                foreach (var queue in queues)
                 {
                     // remove elements with no rank and already enqueued ones
                     while ((queue.Count > 0) && (enqueued.Contains(queue.Peek()) || !ranking.ContainsKey(queue.Peek())))
@@ -50,14 +65,13 @@ namespace NuGet.Indexing
                         queue.Dequeue();
                     }
                 }
+            }
 
-                var candidates = inputQueues.Where(q => q.Count > 0).Select(q => q.Peek()).ToArray();
-                if (candidates.Length > 0)
-                {
-                    var winner = candidates.Aggregate((w, x) => (w == null || ranking[x] > ranking[w]) ? x : w);
-                    enqueued.Add(winner);
-                    outputQueue.Enqueue(mergedIndex[winner]);
-                }
+            // process the last single queue
+            foreach(var entry in queues.FirstOrDefault()?.Where(e => !enqueued.Contains(e)))
+            {
+                // don't have to update enqueued as this is the last queue
+                outputQueue.Enqueue(mergedIndex[entry]);
             }
 
             return outputQueue;

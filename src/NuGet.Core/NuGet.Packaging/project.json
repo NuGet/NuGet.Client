@@ -1,5 +1,5 @@
 ﻿{
-  "version": "3.4.0-*",
+  "version": "3.5.0-*",
   "description": "NuGet's implementation for reading nupkg package and nuspec package specification files.",
   "authors": [
     "NuGet"
@@ -15,35 +15,40 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Common": "3.4.0-*",
-    "NuGet.Frameworks": "3.4.0-*",
+    "NuGet.Common": {
+      "target": "project"
+    },
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.0-*"
+      "target": "project"
     },
-    "NuGet.Packaging.Core": "3.4.0-*",
-    "NuGet.Logging": "3.4.0-*",
-    "NuGet.Versioning": "3.4.0-*"
+    "NuGet.Packaging.Core": {
+      "target": "project"
+    },
+    "NuGet.Logging": {
+      "target": "project"
+    }
   },
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
-        "mscorlib": "",
+        "System.Runtime": "",
         "System.Xml": "",
         "System.Xml.Linq": "",
         "System.IO.Compression": ""
       }
     },
-    "dnxcore50": {
+    "netstandard1.5": {
       "dependencies": {
-        "System.ObjectModel": "4.0.10-beta-23109",
-        "System.IO.Compression": "4.0.0-beta-23109",
-        "System.IO.FileSystem": "4.0.0-beta-23109",
-        "System.Xml.XDocument": "4.0.10-beta-23109",
-        "System.Runtime.Extensions": "4.0.10-beta-23109",
-        "System.Reflection.Extensions": "4.0.0-beta-23109",
-        "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-23225"
-      }
+        "NETStandard.Library": "1.5.0-rc2-23911",
+        "System.IO.Compression": "4.1.0-rc2-23911",
+        "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-23311"
+      },
+      "imports": [
+        "dotnet5.6",
+        "dnxcore50",
+        "portable-net45+win8"
+      ]
     }
   }
 }

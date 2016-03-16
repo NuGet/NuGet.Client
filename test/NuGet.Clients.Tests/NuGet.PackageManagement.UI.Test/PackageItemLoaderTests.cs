@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement.UI.Test
             var repositories = sourceRepositoryProvider.GetRepositories();
 
             var context = new PackageLoadContext(repositories, false, uiContext);
-            var packageFeed = new MultiSourcePackageFeed(repositories, new NuGet.Logging.NullLogger());
+            var packageFeed = new MultiSourcePackageFeed(repositories, logger: null);
             var loader = new PackageItemLoader(context, packageFeed, "nuget");
 
             var loaded = new List<PackageItemListViewModel>();
@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.UI.Test
             var repositories = sourceRepositoryProvider.GetRepositories();
 
             var context = new PackageLoadContext(repositories, false, uiContext);
-            var packageFeed = new MultiSourcePackageFeed(repositories, new NuGet.Logging.NullLogger());
+            var packageFeed = new MultiSourcePackageFeed(repositories, logger: null);
             var loader = new PackageItemLoader(context, packageFeed, "nuget");
 
             var totalCount = await loader.GetTotalCountAsync(100, CancellationToken.None);

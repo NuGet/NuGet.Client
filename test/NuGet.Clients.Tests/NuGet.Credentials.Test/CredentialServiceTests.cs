@@ -39,7 +39,7 @@ namespace NuGet.Credentials.Test
         public async Task GetCredentials_PassesAllParametersToProviders()
         {
             var service = new CredentialService(
-                new[] { _mockProvider.Object },
+                () => new[] { _mockProvider.Object },
                 TestableErrorWriter,
                 nonInteractive: true);
             var webProxy = new WebProxy();
@@ -55,7 +55,7 @@ namespace NuGet.Credentials.Test
         public async Task GetCredentials_FirstCallHasRetryFalse()
         {
             var service = new CredentialService(
-                new[] {_mockProvider.Object},
+                () => new[] { _mockProvider.Object },
                 TestableErrorWriter,
                 nonInteractive: false);
             _mockProvider.Setup(x => x.Get(It.IsAny<Uri>(), It.IsAny<IWebProxy>(), It.IsAny<bool>(),
@@ -79,7 +79,7 @@ namespace NuGet.Credentials.Test
         public async Task GetCredentials_SecondCallHasRetryTrue()
         {
             var service = new CredentialService(
-                new[] {_mockProvider.Object},
+                () => new[] { _mockProvider.Object },
                 TestableErrorWriter,
                 nonInteractive: false);
             _mockProvider.Setup(x => x.Get(It.IsAny<Uri>(), It.IsAny<IWebProxy>(), It.IsAny<bool>(),
@@ -105,7 +105,7 @@ namespace NuGet.Credentials.Test
         {
             // Arrange
             var service = new CredentialService(
-                new[] { _mockProvider.Object },
+                () => new[] { _mockProvider.Object },
                 TestableErrorWriter,
                 nonInteractive: true);
             var webProxy = new WebProxy();
@@ -138,7 +138,7 @@ namespace NuGet.Credentials.Test
         public async Task GetCredentials_WhenUriHasSameAuthority_ThenReturnsCachedCredential()
         {
             var service = new CredentialService(
-                new[] {_mockProvider.Object},
+                () => new[] { _mockProvider.Object },
                 TestableErrorWriter,
                 nonInteractive: false);
             _mockProvider.Setup(x => x.Get(It.IsAny<Uri>(), It.IsAny<IWebProxy>(), It.IsAny<bool>(),
@@ -164,7 +164,7 @@ namespace NuGet.Credentials.Test
         public async Task GetCredentials_NullResponsesAreCached()
         {
             var service = new CredentialService(
-                new[] {_mockProvider.Object},
+                () => new[] { _mockProvider.Object },
                 TestableErrorWriter,
                 nonInteractive: false);
             _mockProvider.Setup(x => x.Get(It.IsAny<Uri>(), It.IsAny<IWebProxy>(), It.IsAny<bool>(),
@@ -206,7 +206,7 @@ namespace NuGet.Credentials.Test
                     Task.FromResult<CredentialResponse>(new CredentialResponse(CredentialStatus.ProviderNotApplicable)));
             mockProvider2.Setup(x => x.Id).Returns("2");
             var service = new CredentialService(
-                new[] {mockProvider1.Object, mockProvider2.Object},
+                () => new[] {mockProvider1.Object, mockProvider2.Object},
                 TestableErrorWriter,
                 nonInteractive: false);
             var uri1 = new Uri("http://host/some/path");
@@ -230,7 +230,7 @@ namespace NuGet.Credentials.Test
         public async Task GetCredentials_WhenRetry_ThenDoesNotReturnCachedCredential()
         {
             var service = new CredentialService(
-                new[] {_mockProvider.Object},
+                () => new[] { _mockProvider.Object },
                 TestableErrorWriter,
                 nonInteractive: false);
             _mockProvider

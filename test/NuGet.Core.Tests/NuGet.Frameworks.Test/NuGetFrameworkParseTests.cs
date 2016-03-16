@@ -231,6 +231,10 @@ namespace NuGet.Test
         [InlineData("netstandardapp1.0", ".NETStandardApp,Version=v1.0")]
         [InlineData("netstandardapp1.5", ".NETStandardApp,Version=v1.5")]
         [InlineData("netstandardapp2.0", ".NETStandardApp,Version=v2.0")]
+        [InlineData("netcoreapp", ".NETCoreApp,Version=v0.0")]
+        [InlineData("netcoreapp1.0", ".NETCoreApp,Version=v1.0")]
+        [InlineData("netcoreapp1.5", ".NETCoreApp,Version=v1.5")]
+        [InlineData("netcoreapp2.0", ".NetCoreApp,Version=v2.0")]
         public void NuGetFramework_ParseToShortName(string expected, string fullName)
         {
             // Arrange
@@ -274,6 +278,11 @@ namespace NuGet.Test
         [InlineData("netstandardapp1", ".NETStandardApp,Version=v1.0")]
         [InlineData("netstandardapp1.5", ".NETStandardApp,Version=v1.5")]
         [InlineData("netstandardapp2", ".NETStandardApp,Version=v2.0")]
+        [InlineData("netcoreapp", ".NETCoreApp,Version=v0.0")]
+        [InlineData("netcoreapp0.0", ".NETCoreApp,Version=v0.0")]
+        [InlineData("netcoreapp1", ".NETCoreApp,Version=v1.0")]
+        [InlineData("netcoreapp1.5", ".NETCoreApp,Version=v1.5")]
+        [InlineData("netcoreapp2", ".NETCoreApp,Version=v2.0")]
         public void NuGetFramework_Basic(string folderName, string fullName)
         {
             string output = NuGetFramework.Parse(folderName).DotNetFrameworkName;

@@ -118,7 +118,8 @@ namespace NuGet.CommandLine
                 SourceProvider = PackageSourceBuilder.CreateSourceProvider(Settings);
                 SetDefaultCredentialProvider();
                 RepositoryFactory = new CommandLineRepositoryFactory(Console);
-                UserAgent.UserAgentString = UserAgent.CreateUserAgentString(CommandLineConstants.UserAgent);
+
+                UserAgent.SetUserAgentString(new UserAgentStringBuilder(CommandLineConstants.UserAgent));
 
                 ExecuteCommandAsync().Wait();
             }
@@ -130,15 +131,7 @@ namespace NuGet.CommandLine
         /// </summary>
         protected void SetDefaultCredentialProvider()
         {
-            var extensionLocator = new ExtensionLocator();
-            var providers = new List<Credentials.ICredentialProvider>();
-            var pluginProviders = new PluginCredentialProviderBuilder(extensionLocator, Settings).BuildAll();
-
-            providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console)));
-            providers.AddRange(pluginProviders);
-            providers.Add(new ConsoleCredentialProvider(Console));
-
-            var credentialService = new CredentialService(providers, Console.WriteError, NonInteractive);
+            var credentialService = new CredentialService(GetCredentialProviders, Console.WriteError, NonInteractive);
 
             HttpClient.DefaultCredentialProvider = new CredentialServiceAdapter(credentialService);
 
@@ -175,6 +168,19 @@ namespace NuGet.CommandLine
                 NuGet.CredentialStore.Instance.Add(uri, credentials);
                 NuGet.Configuration.CredentialStore.Instance.Add(uri, credentials);
             };
+        }
+
+        private IEnumerable<NuGet.Credentials.ICredentialProvider> GetCredentialProviders()
+        {
+            var extensionLocator = new ExtensionLocator();
+            var providers = new List<Credentials.ICredentialProvider>();
+            var pluginProviders = new PluginCredentialProviderBuilder(extensionLocator, Settings).BuildAll();
+
+            providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console)));
+            providers.AddRange(pluginProviders);
+            providers.Add(new ConsoleCredentialProvider(Console));
+
+            return providers;
         }
 
         public virtual Task ExecuteCommandAsync()

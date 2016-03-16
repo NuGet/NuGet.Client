@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +16,7 @@ using System.Windows.Media;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using Mvs = Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using Resx = NuGet.PackageManagement.UI;
 
 namespace NuGet.PackageManagement.UI
@@ -37,6 +37,7 @@ namespace NuGet.PackageManagement.UI
 
         private CancellationTokenSource _loadCts;
         private IItemLoader<PackageItemListViewModel> _loader;
+        private INuGetUILogger _logger;
 
         private const string LogEntrySource = "NuGet Package Manager";
 
@@ -83,9 +84,10 @@ namespace NuGet.PackageManagement.UI
         public PackageItemListViewModel SelectedPackageItem => _list.SelectedItem as PackageItemListViewModel;
 
         // Load items using the specified loader
-        internal void LoadItems(IItemLoader<PackageItemListViewModel> loader, string loadingMessage)
+        internal void LoadItems(IItemLoader<PackageItemListViewModel> loader, string loadingMessage, INuGetUILogger logger)
         {
             _loader = loader;
+            _logger = logger;
             _loadingStatusIndicator.Reset(loadingMessage);
             _loadingStatusBar.Visibility = Visibility.Hidden;
             _loadingStatusBar.Reset(loadingMessage, loader.IsMultiSource);
@@ -123,6 +125,8 @@ namespace NuGet.PackageManagement.UI
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
+                await TaskScheduler.Default;
+
                 try
                 {
                     await LoadItemsCoreAsync(currentLoader, loadCts.Token);
@@ -144,6 +148,8 @@ namespace NuGet.PackageManagement.UI
                     // The user cancelled the login, but treat as a load error in UI
                     // So the retry button and message is displayed
                     // Do not log to the activity log, since it is not a NuGet error
+                    _logger.Log(ProjectManagement.MessageLevel.Error, Resx.Resources.Text_UserCanceled);
+
                     _loadingStatusIndicator.SetError(Resx.Resources.Text_UserCanceled);
 
                     _loadingStatusBar.SetCancelled();
@@ -159,7 +165,10 @@ namespace NuGet.PackageManagement.UI
 
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    _loadingStatusIndicator.SetError(ExceptionUtilities.DisplayMessage(ex));
+                    var errorMessage = ExceptionUtilities.DisplayMessage(ex);
+                    _logger.Log(ProjectManagement.MessageLevel.Error, errorMessage);
+
+                    _loadingStatusIndicator.SetError(errorMessage);
 
                     _loadingStatusBar.SetError();
                     _loadingStatusBar.Visibility = Visibility.Visible;

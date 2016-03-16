@@ -58,19 +58,7 @@ namespace NuGet.Commands
 
         public ISettings GetSettings(string projectDirectory)
         {
-            // Ignore settings files inside the project directory itself, instead use the parent folder which 
-            // can be shared and cached between projects.
-            var parent = Directory.GetParent(projectDirectory);
-
-            if (parent == null)
-            {
-                // If the projet was somehow at the root of the drive, just use the project dir
-                parent = new DirectoryInfo(projectDirectory);
-            }
-
-            var parentDirectory = parent.FullName;
-
-            return _settingsCache.GetOrAdd(parentDirectory, (dir) =>
+            return _settingsCache.GetOrAdd(projectDirectory, (dir) =>
             {
                 return Settings.LoadDefaultSettings(dir,
                     ConfigFileName,
@@ -80,18 +68,15 @@ namespace NuGet.Commands
 
         public string GetEffectiveGlobalPackagesFolder(string rootDirectory, ISettings settings)
         {
-            string globalPath = null;
-
             if (!string.IsNullOrEmpty(GlobalPackagesFolder))
             {
-                globalPath = GlobalPackagesFolder;
-            }
-            else
-            {
-                globalPath = SettingsUtility.GetGlobalPackagesFolder(settings);
+                // Resolve as relative to the CWD
+                return Path.GetFullPath(GlobalPackagesFolder);
             }
 
-            // Resolve relative paths
+            // Load from environment, nuget.config or default location, and resolve relative paths
+            // to the project root.
+            string globalPath = SettingsUtility.GetGlobalPackagesFolder(settings);
             return Path.GetFullPath(Path.Combine(rootDirectory, globalPath));
         }
 
