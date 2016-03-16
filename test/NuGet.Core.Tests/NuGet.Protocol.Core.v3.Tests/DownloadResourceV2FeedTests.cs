@@ -20,12 +20,15 @@ namespace NuGet.Protocol.Core.v3.Tests
         public async Task DownloadResourceFromIdentityInvalidId()
         {
             // Arrange
-            var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/Packages(Id='xunit',Version='1.0.0-notfound')", string.Empty);
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='xunit'",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
+            var serviceAddress = TestUtility.CreateServiceAddress();
 
-            var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses,
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "Packages(Id='xunit',Version='1.0.0-notfound')", string.Empty);
+            responses.Add(serviceAddress + "FindPackagesById()?Id='xunit'",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses,
                  TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
 
             var downloadResource = await repo.GetResourceAsync<DownloadResource>();

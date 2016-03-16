@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3;
 
 namespace NuGet.Protocol
 {
@@ -12,19 +13,21 @@ namespace NuGet.Protocol
         {
         }
 
-        public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
+        public override async Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
         {
             MetadataResource resource = null;
 
             if ((FeedTypeUtility.GetFeedType(source.PackageSource) & FeedType.HttpV2) != FeedType.None)
             {
+                var serviceDocument = await source.GetResourceAsync<ODataServiceDocumentResourceV2>(token);
+
                 var httpSource = HttpSource.Create(source);
-                var parser = new V2FeedParser(httpSource, source.PackageSource);
+                var parser = new V2FeedParser(httpSource, serviceDocument.BaseAddress, source.PackageSource);
 
                 resource = new MetadataResourceV2Feed(parser, source);
             }
 
-            return Task.FromResult(new Tuple<bool, INuGetResource>(resource != null, resource));
+            return new Tuple<bool, INuGetResource>(resource != null, resource);
         }
     }
 }

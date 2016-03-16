@@ -18,11 +18,14 @@ namespace NuGet.Protocol.Core.v3.Tests
         public async Task MetaDataResourceGetLatestVersion()
         {
             // Arrange
-            var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='WindowsAzure.Storage'",
-                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
+            var serviceAddress = TestUtility.CreateServiceAddress();
 
-            var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses);
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "FindPackagesById()?Id='WindowsAzure.Storage'",
+                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
             var metadataResource = await repo.GetResourceAsync<MetadataResource>();
 
@@ -37,11 +40,14 @@ namespace NuGet.Protocol.Core.v3.Tests
         public async Task MetaDataResourceGetLatestVersionStable()
         {
             // Arrange
-            var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='WindowsAzure.Storage'",
-                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
+            var serviceAddress = TestUtility.CreateServiceAddress();
 
-            var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses);
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "FindPackagesById()?Id='WindowsAzure.Storage'",
+                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
             var metadataResource = await repo.GetResourceAsync<MetadataResource>();
 
@@ -56,11 +62,14 @@ namespace NuGet.Protocol.Core.v3.Tests
         public async Task MetaDataResourceGetVersionsStable()
         {
             // Arrange
-            var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='WindowsAzure.Storage'",
-                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
+            var serviceAddress = TestUtility.CreateServiceAddress();
 
-            var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses);
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "FindPackagesById()?Id='WindowsAzure.Storage'",
+                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
             var metadataResource = await repo.GetResourceAsync<MetadataResource>();
 
@@ -75,11 +84,14 @@ namespace NuGet.Protocol.Core.v3.Tests
         public async Task MetaDataResourceGetVersions()
         {
             // Arrange
-            var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='WindowsAzure.Storage'",
-                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
+            var serviceAddress = TestUtility.CreateServiceAddress();
 
-            var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses);
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "FindPackagesById()?Id='WindowsAzure.Storage'",
+                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
             var metadataResource = await repo.GetResourceAsync<MetadataResource>();
 
@@ -94,11 +106,14 @@ namespace NuGet.Protocol.Core.v3.Tests
         public async Task MetaDataResourceIdExist()
         {
             // Arrange
-            var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='WindowsAzure.Storage'",
-                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
+            var serviceAddress = TestUtility.CreateServiceAddress();
 
-            var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses);
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "FindPackagesById()?Id='WindowsAzure.Storage'",
+                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
             var metadataResource = await repo.GetResourceAsync<MetadataResource>();
 
@@ -113,11 +128,14 @@ namespace NuGet.Protocol.Core.v3.Tests
         public async Task MetaDataResourceIdentityExist()
         {
             // Arrange
-            var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/Packages(Id='WindowsAzure.Storage',Version='4.3.2-preview')",
-                  TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageGetPackages.xml", GetType()));
+            var serviceAddress = TestUtility.CreateServiceAddress();
 
-            var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses);
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "Packages(Id='WindowsAzure.Storage',Version='4.3.2-preview')",
+                  TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageGetPackages.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
             var metadataResource = await repo.GetResourceAsync<MetadataResource>();
 
@@ -134,13 +152,16 @@ namespace NuGet.Protocol.Core.v3.Tests
         public async Task MetaDataResourceGetLatestVersions()
         {
             // Arrange
-            var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='WindowsAzure.Storage'",
-                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='xunit'",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
+            var serviceAddress = TestUtility.CreateServiceAddress();
 
-            var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses);
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "FindPackagesById()?Id='WindowsAzure.Storage'",
+                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
+            responses.Add(serviceAddress + "FindPackagesById()?Id='xunit'",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
             var metadataResource = await repo.GetResourceAsync<MetadataResource>();
 
@@ -160,12 +181,14 @@ namespace NuGet.Protocol.Core.v3.Tests
         public async Task MetaDataResourceGetLatestVersionInvalidId()
         {
             // Arrange
+            var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='not-found'",
+            responses.Add(serviceAddress + "FindPackagesById()?Id='not-found'",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.NotFoundFindPackagesById.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
 
-            var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses);
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
             var metadataResource = await repo.GetResourceAsync<MetadataResource>();
 
@@ -180,11 +203,14 @@ namespace NuGet.Protocol.Core.v3.Tests
         public async Task MetaDataResourceGetVersionsInvalidId()
         {
             // Arrange
-            var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='not-found'",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.NotFoundFindPackagesById.xml", GetType()));
+            var serviceAddress = TestUtility.CreateServiceAddress();
 
-            var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses);
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "FindPackagesById()?Id='not-found'",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.NotFoundFindPackagesById.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
             var metadataResource = await repo.GetResourceAsync<MetadataResource>();
 
@@ -198,12 +224,15 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task MetaDataResourceIdentityExistInvalidIdentity()
         {
-            var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/Packages(Id='xunit',Version='1.0.0-notfound')", string.Empty);
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='xunit'",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
+            var serviceAddress = TestUtility.CreateServiceAddress();
 
-            var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses,
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "Packages(Id='xunit',Version='1.0.0-notfound')", string.Empty);
+            responses.Add(serviceAddress + "FindPackagesById()?Id='xunit'",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses,
                  TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
 
             var metadataResource = await repo.GetResourceAsync<MetadataResource>();
@@ -221,11 +250,14 @@ namespace NuGet.Protocol.Core.v3.Tests
         public async Task MetaDataResourceIdExistNotFoundId()
         {
             // Arrange
-            var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='not-found'",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.NotFoundFindPackagesById.xml", GetType()));
+            var serviceAddress = TestUtility.CreateServiceAddress();
 
-            var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses);
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "FindPackagesById()?Id='not-found'",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.NotFoundFindPackagesById.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
             var metadataResource = await repo.GetResourceAsync<MetadataResource>();
 

@@ -20,7 +20,7 @@ namespace NuGet.Protocol
         private readonly HttpSource _httpSource;
         private readonly Uri _baseUri;
 
-        public AutoCompleteResourceV2Feed(HttpSourceResource httpSourceResource, Configuration.PackageSource packageSource)
+        public AutoCompleteResourceV2Feed(HttpSourceResource httpSourceResource, string baseAddress, Configuration.PackageSource packageSource)
         {
             if (httpSourceResource == null)
             {
@@ -34,9 +34,7 @@ namespace NuGet.Protocol
 
             _httpSource = httpSourceResource.HttpSource;
 
-            var withoutTrailingSlash = packageSource.Source.TrimEnd('/');
-
-            _baseUri = UriUtility.CreateSourceUri($"{withoutTrailingSlash}/");
+            _baseUri = UriUtility.CreateSourceUri($"{baseAddress}/");
         }
 
         public override async Task<IEnumerable<string>> IdStartsWith(

@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3;
 
 namespace NuGet.Protocol
 {
@@ -25,7 +26,9 @@ namespace NuGet.Protocol
             {
                 var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
 
-                resource = new PackageMetadataResourceV2Feed(httpSourceResource, source.PackageSource);
+                var serviceDocument = await source.GetResourceAsync<ODataServiceDocumentResourceV2>(token);
+
+                resource = new PackageMetadataResourceV2Feed(httpSourceResource, serviceDocument.BaseAddress, source.PackageSource);
             }
 
             return new Tuple<bool, INuGetResource>(resource != null, resource);

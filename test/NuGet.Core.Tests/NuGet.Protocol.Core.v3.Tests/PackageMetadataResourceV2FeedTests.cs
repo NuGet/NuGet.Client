@@ -17,11 +17,14 @@ namespace NuGet.Protocol.Core.v3.Tests
         public async Task PackageMetadataResource_Basic()
         {
             // Arrange
-            var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='WindowsAzure.Storage'",
-                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
+            var serviceAddress = TestUtility.CreateServiceAddress();
 
-            var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses);
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "FindPackagesById()?Id='WindowsAzure.Storage'",
+                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
             var packageMetadataResource = await repo.GetResourceAsync<PackageMetadataResource>();
 
@@ -55,11 +58,14 @@ namespace NuGet.Protocol.Core.v3.Tests
         public async Task PackageMetadataResource_NotFound()
         {
             // Arrange
-            var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='not-found'",
-                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.NotFoundFindPackagesById.xml", GetType()));
+            var serviceAddress = TestUtility.CreateServiceAddress();
 
-            var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses);
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "FindPackagesById()?Id='not-found'",
+                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.NotFoundFindPackagesById.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
             var packageMetadataResource = await repo.GetResourceAsync<PackageMetadataResource>();
 

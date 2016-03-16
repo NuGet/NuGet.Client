@@ -16,11 +16,14 @@ namespace NuGet.Protocol.Core.v3.Tests
         public async Task AutoCompleteResourceV2Feed_IdStartsWith()
         {
             // Arrange
-            var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/package-ids?partialId=Azure&includePrerelease=False",
-                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.AzureAutoComplete.json", GetType()));
+            var serviceAddress = TestUtility.CreateServiceAddress();
 
-            var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses);
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "package-ids?partialId=Azure&includePrerelease=False",
+                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.AzureAutoComplete.json", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
             var autoCompleteResource = await repo.GetResourceAsync<AutoCompleteResource>();
 
@@ -35,11 +38,14 @@ namespace NuGet.Protocol.Core.v3.Tests
         public async Task AutoCompleteResourceV2Feed_VersionStartsWith()
         {
             // Arrange
-            var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/package-versions/xunit?includePrerelease=False",
-                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitVersionAutoComplete.json", GetType()));
+            var serviceAddress = TestUtility.CreateServiceAddress();
 
-            var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses);
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "package-versions/xunit?includePrerelease=False",
+                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitVersionAutoComplete.json", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
             var autoCompleteResource = await repo.GetResourceAsync<AutoCompleteResource>();
 
@@ -54,10 +60,13 @@ namespace NuGet.Protocol.Core.v3.Tests
         public async Task AutoCompleteResourceV2Feed_VersionStartsWithInvalidId()
         {
             // Arrange
-            var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/package-versions/azure?includePrerelease=False", "[]");
+            var serviceAddress = TestUtility.CreateServiceAddress();
 
-            var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses);
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "package-versions/azure?includePrerelease=False", "[]");
+            responses.Add(serviceAddress, string.Empty);
+
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
 
             var autoCompleteResource = await repo.GetResourceAsync<AutoCompleteResource>();
 
