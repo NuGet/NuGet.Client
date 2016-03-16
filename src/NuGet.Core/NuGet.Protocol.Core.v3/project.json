@@ -46,8 +46,8 @@
         "portable-net45+win8"
       ],
       "dependencies": {
-        "NETStandard.Library": "1.0.0-rc2-23811",
-        "System.Dynamic.Runtime": "4.0.11-rc2-23811"
+        "NETStandard.Library": "1.5.0-rc2-23911",
+        "System.Dynamic.Runtime": "4.0.11-rc2-23911"
       }
     }
   }

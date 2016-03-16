@@ -15,7 +15,8 @@ $MSBuildExe = Join-Path ${env:ProgramFiles(x86)} 'MSBuild\14.0\Bin\msbuild.exe'
 $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
 $ILMerge = Join-Path $NuGetClientRoot 'packages\ILMerge.2.14.1208\tools\ILMerge.exe'
 $XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console.2.1.0\tools\xunit.console.x86.exe'
-$DotNetExe = Join-Path $NuGetClientRoot 'cli\bin\dotnet.exe'
+$CLIRoot = Join-Path $NuGetClientRoot 'cli'
+$DotNetExe = Join-Path $CLIRoot 'bin\dotnet.exe'
 $Nupkgs = Join-Path $NuGetClientRoot nupkgs
 $Artifacts = Join-Path $NuGetClientRoot artifacts
 $Intermediate = Join-Path $Artifacts obj
@@ -141,9 +142,16 @@ Function Install-DotnetCLI {
     param()
     Trace-Log 'Downloading Dotnet CLI'
 
-    if (-not (Test-Path $DotNetExe))
-    {
-        &{$wc=New-Object System.Net.WebClient;$wc.Proxy=[System.Net.WebRequest]::DefaultWebProxy;$wc.Proxy.Credentials=[System.Net.CredentialCache]::DefaultNetworkCredentials;Invoke-Expression ($wc.DownloadString('https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/install.ps1'))}
+    $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
+
+    New-Item -ItemType Directory -Force -Path $CLIRoot
+
+    wget https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/install.ps1 -OutFile cli/install.ps1
+
+    & cli/install.ps1 -Channel dev -Version 1.0.1.001606
+
+    if (-not (Test-Path $DotNetExe)) {
+        Error-Log "Unable to find dotnet.exe. The CLI install may have failed."
     }
 }
 

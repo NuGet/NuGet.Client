@@ -13,8 +13,8 @@
     "net45": {},
     "netstandard1.5": {
       "dependencies": {
-        "NETStandard.Library": "1.0.0-rc2-23811",
-        "System.ObjectModel": "4.0.11-rc2-23811"
+        "NETStandard.Library": "1.5.0-rc2-23911",
+        "System.ObjectModel": "4.0.11-rc2-23911"
       },
       "imports": [
         "dotnet5.6",

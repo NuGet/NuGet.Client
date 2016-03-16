@@ -40,8 +40,8 @@
     },
     "netstandard1.5": {
       "dependencies": {
-        "NETStandard.Library": "1.0.0-rc2-23811",
-        "System.IO.Compression": "4.1.0-rc2-23811",
+        "NETStandard.Library": "1.5.0-rc2-23911",
+        "System.IO.Compression": "4.1.0-rc2-23911",
         "System.Security.Cryptography.Hashing.Algorithms": "4.0.0-beta-23311"
       },
       "imports": [

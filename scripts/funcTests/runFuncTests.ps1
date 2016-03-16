@@ -42,6 +42,9 @@ Invoke-BuildStep 'Cleaning package cache' { Clear-PackageCache } `
 Invoke-BuildStep 'Installing NuGet.exe' { Install-NuGet } `
     -ev +BuildErrors
 
+Invoke-BuildStep 'Restoring solution packages' { Restore-SolutionPackages } `
+    -ev +BuildErrors
+
 Invoke-BuildStep 'Installing dotnet CLI' { Install-DotnetCLI } `
     -ev +BuildErrors
 
