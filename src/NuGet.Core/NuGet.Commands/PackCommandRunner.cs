@@ -124,11 +124,12 @@ namespace NuGet.Commands
                 return null;
             }
 
-            /*
             var factory = new ProjectFactory(packArgs.MsBuildDirectory.Value, path, packArgs.Properties)
             {
                 IsTool = packArgs.Tool,
+                LogLevel = packArgs.LogLevel,
                 Logger = packArgs.Logger,
+                MachineWideSettings = packArgs.MachineWideSettings,
                 Build = packArgs.Build,
                 IncludeReferencedProjects = packArgs.IncludeReferencedProjects
             };
@@ -156,7 +157,7 @@ namespace NuGet.Commands
             }
 
             WriteLine(String.Empty);
-            WriteLine(Strings.PackageCommandAttemptingToBuildSymbolsPackage, Path.GetFileName(path));
+            WriteLine(Strings.Log_PackageCommandAttemptingToBuildSymbolsPackage, Path.GetFileName(path));
 
             factory.IncludeSymbols = true;
             PackageBuilder symbolsBuilder = factory.CreateBuilder(packArgs.BasePath);
@@ -165,10 +166,6 @@ namespace NuGet.Commands
             // Get the file name for the sources package and build it
             string outputPath = GetOutputPath(symbolsBuilder, symbols: true);
             BuildPackage(symbolsBuilder, outputPath);
-            */
-
-            // Temporary fake package until Project files are supported
-            PackageArchiveReader package = new PackageArchiveReader(new MemoryStream());
 
             // this is the real package, not the symbol package
             return package;

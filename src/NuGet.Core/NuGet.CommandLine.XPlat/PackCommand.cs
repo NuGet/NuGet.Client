@@ -116,7 +116,7 @@ namespace NuGet.CommandLine.XPlat
                         }
                         packArgs.MinClientVersion = version;
                     }
-
+                    packArgs.MachineWideSettings = new CommandLineXPlatMachineWideSetting();
                     packArgs.MsBuildDirectory = new Lazy<string>(() => string.Empty);
                     packArgs.NoDefaultExcludes = noDefaultExcludes.HasValue();
                     packArgs.NoPackageAnalysis = noPackageAnalysis.HasValue();

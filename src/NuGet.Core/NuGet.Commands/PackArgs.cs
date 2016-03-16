@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using NuGet.Configuration;
 using NuGet.Logging;
 
 namespace NuGet.Commands
@@ -17,6 +18,7 @@ namespace NuGet.Commands
         public ILogger Logger { get; set; }
         public LogLevel LogLevel { get; set; }
         public bool IncludeReferencedProjects { get; set; }
+        public IMachineWideSettings MachineWideSettings { get; set; }
         public Version MinClientVersion { get; set; }
         public Lazy<string> MsBuildDirectory { get; set; }
         public bool NoDefaultExcludes { get; set; }

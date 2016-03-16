@@ -60,6 +60,24 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Add file &apos;{0}&apos; to package as &apos;{1}&apos;.
+        /// </summary>
+        internal static string AddFileToPackage {
+            get {
+                return ResourceManager.GetString("AddFileToPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Building project &apos;{0}&apos; for target framework &apos;{1}&apos;..
+        /// </summary>
+        internal static string BuildingProjectTargetingFramework {
+            get {
+                return ResourceManager.GetString("BuildingProjectTargetingFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Cannot find version of msbuild..
         /// </summary>
         internal static string Error_CannotFindMsbuild {
@@ -96,6 +114,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Error occurred when processing file &apos;{0}&apos;: {1}.
+        /// </summary>
+        internal static string Error_ProcessingNuspecFile {
+            get {
+                return ResourceManager.GetString("Error_ProcessingNuspecFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to The folder &apos;{0}&apos; does not contain a project to restore..
         /// </summary>
         internal static string Error_UnableToLocateRestoreTarget {
@@ -110,6 +137,24 @@ namespace NuGet.Commands {
         internal static string Error_UnknownBuildAction {
             get {
                 return ResourceManager.GetString("Error_UnknownBuildAction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Failed to build &apos;{0}&apos;..
+        /// </summary>
+        internal static string FailedToBuildProject {
+            get {
+                return ResourceManager.GetString("FailedToBuildProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to File &apos;{0}&apos; is not added because the package already contains file &apos;{1}&apos;.
+        /// </summary>
+        internal static string FileNotAddedToPackage {
+            get {
+                return ResourceManager.GetString("FileNotAddedToPackage", resourceCulture);
             }
         }
         
@@ -546,6 +591,33 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to File from dependency is not changed. File &apos;{0}&apos; is not added..
+        /// </summary>
+        internal static string PackageCommandFileFromDependencyIsChanged {
+            get {
+                return ResourceManager.GetString("PackageCommandFileFromDependencyIsChanged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to File from dependency is not changed. File &apos;{0}&apos; is not added..
+        /// </summary>
+        internal static string PackageCommandFileFromDependencyIsNotChanged {
+            get {
+                return ResourceManager.GetString("PackageCommandFileFromDependencyIsNotChanged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Packing files from &apos;{0}&apos;..
+        /// </summary>
+        internal static string PackagingFilesFromOutputPath {
+            get {
+                return ResourceManager.GetString("PackagingFilesFromOutputPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to {0} (via {1}).
         /// </summary>
         internal static string ResolverRequest_ToStringFormat {
@@ -555,11 +627,56 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Unable to extract metadata from &apos;{0}&apos;..
+        /// </summary>
+        internal static string UnableToExtractAssemblyMetadata {
+            get {
+                return ResourceManager.GetString("UnableToExtractAssemblyMetadata", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unable to find &apos;{0}&apos;. Make sure the project has been built..
+        /// </summary>
+        internal static string UnableToFindBuildOutput {
+            get {
+                return ResourceManager.GetString("UnableToFindBuildOutput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Using &apos;{0}&apos; for metadata..
+        /// </summary>
+        internal static string UsingNuspecForMetadata {
+            get {
+                return ResourceManager.GetString("UsingNuspecForMetadata", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Found packages.config. Using packages listed as dependencies.
+        /// </summary>
+        internal static string UsingPackagesConfigForDependencies {
+            get {
+                return ResourceManager.GetString("UsingPackagesConfigForDependencies", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to &apos;{0}&apos; key already exists in Properties collection. Overriding value..
         /// </summary>
         internal static string Warning_DuplicatePropertyKey {
             get {
                 return ResourceManager.GetString("Warning_DuplicatePropertyKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to &apos;{0}&apos; was included in the project but doesn&apos;t exist. Skipping....
+        /// </summary>
+        internal static string Warning_FileDoesNotExist {
+            get {
+                return ResourceManager.GetString("Warning_FileDoesNotExist", resourceCulture);
             }
         }
         
@@ -632,6 +749,24 @@ namespace NuGet.Commands {
         internal static string Warning_SemanticVersionTitle {
             get {
                 return ResourceManager.GetString("Warning_SemanticVersionTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to &apos;{0}&apos; was included in the project but the path could not be resolved. Skipping....
+        /// </summary>
+        internal static string Warning_UnresolvedFilePath {
+            get {
+                return ResourceManager.GetString("Warning_UnresolvedFilePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to {0} was not specified. Using &apos;{1}&apos;..
+        /// </summary>
+        internal static string Warning_UnspecifiedField {
+            get {
+                return ResourceManager.GetString("Warning_UnspecifiedField", resourceCulture);
             }
         }
     }
