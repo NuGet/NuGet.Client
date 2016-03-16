@@ -178,7 +178,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip="Inconsistent")]
         public void RestoreCommand_NoCancelledOrNotFoundMessages()
         {
             // Arrange
