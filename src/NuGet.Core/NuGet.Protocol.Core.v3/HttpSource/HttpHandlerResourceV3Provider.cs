@@ -40,7 +40,7 @@ namespace NuGet.Protocol
         private static HttpHandlerResourceV3 CreateResource(PackageSource packageSource)
         {
             var uri = packageSource.SourceUri;
-            var proxy = ProxyCredentialCache.Instance.GetProxy(uri);
+            var proxy = ProxyCache.Instance.GetProxy(uri);
 
             // replace the handler with the proxy aware handler
             var clientHandler = new HttpClientHandler
@@ -54,8 +54,7 @@ namespace NuGet.Protocol
 
             if (proxy != null && HttpHandlerResourceV3.CredentialSerivce != null)
             {
-                var driver = new ProxyCredentialDriver(HttpHandlerResourceV3.CredentialSerivce, ProxyCredentialCache.Instance);
-                messageHandler = new ProxyCredentialHandler(clientHandler, driver);
+                messageHandler = new ProxyCredentialHandler(clientHandler, HttpHandlerResourceV3.CredentialSerivce, ProxyCache.Instance);
             }
 
             var resource = new HttpHandlerResourceV3(clientHandler, messageHandler);

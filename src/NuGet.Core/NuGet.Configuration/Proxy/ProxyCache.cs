@@ -7,9 +7,9 @@ using System.Net;
 
 namespace NuGet.Configuration
 {
-    public class ProxyCredentialCache : IProxyCredentialCache, ICredentials
+    public class ProxyCache : IProxyCache, IProxyCredentialCache
     {
-#if !NETSTANDARD1_5 && !DNXCORE50
+#if !NETSTANDARD1_5
         /// <summary>
         /// Capture the default System Proxy so that it can be re-used by the IProxyFinder
         /// because we can't rely on WebRequest.DefaultWebProxy since someone can modify the DefaultWebProxy
@@ -26,23 +26,23 @@ namespace NuGet.Configuration
 
         // It's not likely that http proxy settings are set in machine wide settings,
         // so not passing machine wide settings to Settings.LoadDefaultSettings() should be fine.
-        private static readonly Lazy<ProxyCredentialCache> _instance = new Lazy<ProxyCredentialCache>(() => FromDefaultSettings());
+        private static readonly Lazy<ProxyCache> _instance = new Lazy<ProxyCache>(() => FromDefaultSettings());
 
-        private static ProxyCredentialCache FromDefaultSettings()
+        private static ProxyCache FromDefaultSettings()
         {
-            return new ProxyCredentialCache(
+            return new ProxyCache(
                 Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null),
                 new EnvironmentVariableWrapper());
         }
 
-        public static ProxyCredentialCache Instance
+        public static ProxyCache Instance
         {
             get { return _instance.Value; }
         }
 
         public Guid Version { get; private set; } = Guid.NewGuid();
 
-        public ProxyCredentialCache(ISettings settings, IEnvironmentVariableReader environment)
+        public ProxyCache(ISettings settings, IEnvironmentVariableReader environment)
         {
             _settings = settings;
             _environment = environment;
@@ -59,7 +59,7 @@ namespace NuGet.Configuration
                 return configuredProxy;
             }
 
-#if !NETSTANDARD1_5 && !DNXCORE50
+#if !NETSTANDARD1_5
             if (IsSystemProxySet(sourceUri))
             {
                 var systemProxy = GetSystemProxy(sourceUri);
@@ -79,7 +79,7 @@ namespace NuGet.Configuration
             return _cachedCredentials.TryAdd(configuredProxy.ProxyAddress, proxyCredentials);
         }
 
-        private WebProxy GetUserConfiguredProxy()
+        public WebProxy GetUserConfiguredProxy()
         {
             // Try reading from the settings. The values are stored as 3 config values http_proxy, http_proxy_user, http_proxy_password
             var host = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationConstants.HostKey);
@@ -136,7 +136,7 @@ namespace NuGet.Configuration
             return null;
         }
 
-        public void Add(Uri proxyAddress, NetworkCredential credentials)
+        public void UpdateCredential(Uri proxyAddress, NetworkCredential credentials)
         {
             if (credentials == null)
             {
@@ -160,7 +160,17 @@ namespace NuGet.Configuration
             return null;
         }
 
-#if !NETSTANDARD1_5 && !DNXCORE50
+        [Obsolete("Retained for backcompat only. Use UpdateCredential instead")]
+        public void Add(IWebProxy proxy)
+        {
+            var webProxy = proxy as WebProxy;
+            if (webProxy != null)
+            {
+                _cachedCredentials.TryAdd(webProxy.ProxyAddress, webProxy.Credentials);
+            }
+        }
+
+#if !NETSTANDARD1_5
         private static WebProxy GetSystemProxy(Uri uri)
         {
             // WebRequest.DefaultWebProxy seems to be more capable in terms of getting the default

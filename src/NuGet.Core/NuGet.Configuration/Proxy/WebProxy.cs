@@ -13,7 +13,7 @@ namespace NuGet.Configuration
     /// Internal implementation of <see cref="IWebProxy"/> mirroring default desktop one.
     /// Introduced for XPlat coreFx support.
     /// </summary>
-    internal class WebProxy : IWebProxy
+    public class WebProxy : IWebProxy
     {
         private IReadOnlyList<string> _bypassList = new string[] { };
         private Regex[] _regExBypassList; // can be null
@@ -53,12 +53,17 @@ namespace NuGet.Configuration
                 _bypassList = value ?? new string[] { };
                 UpdateRegExList();
             }
-        } 
+        }
 
         public Uri GetProxy(Uri destination) => ProxyAddress;
 
         public bool IsBypassed(Uri uri)
         {
+            if (uri == null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
             if (_regExBypassList != null && _regExBypassList.Length > 0)
             {
                 var normalizedUri = uri.Scheme + "://" + uri.Host + ((!uri.IsDefaultPort) ? (":" + uri.Port) : "");
@@ -76,7 +81,7 @@ namespace NuGet.Configuration
                 .ToArray();
         }
 
-        public static string WildcardToRegex(string pattern)
+        private static string WildcardToRegex(string pattern)
         {
             return Regex.Escape(pattern)
                 .Replace(@"\*", ".*?")

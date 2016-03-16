@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Configuration;
 
 namespace NuGet.Protocol.Core.v3
 {
@@ -13,29 +14,46 @@ namespace NuGet.Protocol.Core.v3
     /// A message handler responsible for retrying request for authenticated proxies
     /// with missing credentials.
     /// </summary>
-    internal class ProxyCredentialHandler : DelegatingHandler
+    public class ProxyCredentialHandler : DelegatingHandler
     {
-        private readonly IProxyCredentialDriver _credentialsDriver;
+        public static readonly int MaxAuthRetries = 3;
+        private const string BasicAuthenticationType = "Basic";
+
+        // Only one source may prompt at a time
+        private static readonly SemaphoreSlim _credentialPromptLock = new SemaphoreSlim(1, 1);
+
         private readonly HttpClientHandler _clientHandler;
+        private readonly ICredentialService _credentialService;
+        private readonly IProxyCredentialCache _credentialCache;
+
+        private int _authRetries;
 
         public ProxyCredentialHandler(
             HttpClientHandler clientHandler,
-            IProxyCredentialDriver credentialsDrvier)
+            ICredentialService credentialService,
+            IProxyCredentialCache credentialCache)
             : base(clientHandler)
         {
-            if (credentialsDrvier == null)
-            {
-                throw new ArgumentNullException(nameof(credentialsDrvier));
-            }
-
-            _credentialsDriver = credentialsDrvier;
-
             if (clientHandler == null)
             {
                 throw new ArgumentNullException(nameof(clientHandler));
             }
 
             _clientHandler = clientHandler;
+
+            if (credentialService == null)
+            {
+                throw new ArgumentNullException(nameof(credentialService));
+            }
+
+            _credentialService = credentialService;
+
+            if (credentialCache == null)
+            {
+                throw new ArgumentNullException(nameof(credentialCache));
+            }
+
+            _credentialCache = credentialCache;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
@@ -43,6 +61,9 @@ namespace NuGet.Protocol.Core.v3
         {
             while (true)
             {
+                // Store the auth start before sending the request
+                var cacheVersion = _credentialCache.Version;
+
                 try
                 {
                     var response = await base.SendAsync(request, cancellationToken);
@@ -52,24 +73,19 @@ namespace NuGet.Protocol.Core.v3
                         return response;
                     }
 
-                    var proxyAdress = _clientHandler.Proxy.GetProxy(request.RequestUri);
+                    if (_clientHandler.Proxy == null)
+                    {
+                        return response;
+                    }
 
-                    var proxyCredentials = await _credentialsDriver.AcquireCredentialsAsync(
-                        proxyAdress, _clientHandler.Proxy, cancellationToken);
-
-                    if (proxyCredentials == null)
+                    if (!await AcquireCredentialsAsync(request.RequestUri, cacheVersion, cancellationToken))
                     {
                         return response;
                     }
                 }
-                catch (HttpRequestException ex) when (ProxyAuthenticationRequired(ex))
+                catch (HttpRequestException ex) when (ProxyAuthenticationRequired(ex) && _clientHandler.Proxy != null)
                 {
-                    var proxyAdress = _clientHandler.Proxy.GetProxy(request.RequestUri);
-
-                    var proxyCredentials = await _credentialsDriver.AcquireCredentialsAsync(
-                        proxyAdress, _clientHandler.Proxy, cancellationToken);
-
-                    if (proxyCredentials == null)
+                    if (!await AcquireCredentialsAsync(request.RequestUri, cacheVersion, cancellationToken))
                     {
                         throw;
                     }
@@ -77,7 +93,7 @@ namespace NuGet.Protocol.Core.v3
             }
         }
 
-#if !NETSTANDARD1_5 && !DNXCORE50
+#if !NETSTANDARD1_5
         // Returns true if the cause of the exception is proxy authentication failure
         private static bool ProxyAuthenticationRequired(Exception ex)
         {
@@ -97,5 +113,55 @@ namespace NuGet.Protocol.Core.v3
             return false;
         }
 #endif
+
+        private async Task<bool> AcquireCredentialsAsync(Uri requestUri, Guid cacheVersion, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _credentialPromptLock.WaitAsync();
+
+                // Check if the credentials have already changed
+                if (cacheVersion != _credentialCache.Version)
+                {
+                    // retry the request with updated credentials
+                    return true;
+                }
+
+                // Limit the number of retries
+                _authRetries++;
+                if (_authRetries >= MaxAuthRetries)
+                {
+                    // user prompting no more
+                    return false;
+                }
+
+                var proxyAddress = _clientHandler.Proxy.GetProxy(requestUri);
+
+                // prompt user for proxy credentials.
+                var credentials = await PromptForProxyCredentialsAsync(proxyAddress, _clientHandler.Proxy, cancellationToken);
+
+                if (credentials == null)
+                {
+                    // user cancelled
+                    return false;
+                }
+
+                _credentialCache.UpdateCredential(proxyAddress, credentials);
+
+                // use the user provided credential to send the request again.
+                return true;
+            }
+            finally
+            {
+                _credentialPromptLock.Release();
+            }
+        }
+
+        private async Task<NetworkCredential> PromptForProxyCredentialsAsync(Uri proxyAddress, IWebProxy proxy, CancellationToken cancellationToken)
+        {
+            var credentials = await _credentialService.GetCredentials(
+                proxyAddress, proxy, isProxy: true, cancellationToken: cancellationToken);
+            return credentials?.GetCredential(proxyAddress, BasicAuthenticationType);
+        }
     }
 }

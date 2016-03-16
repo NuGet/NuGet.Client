@@ -6,12 +6,21 @@ using System.Net;
 
 namespace NuGet.Configuration
 {
-    public interface IProxyCredentialCache
+    /// <summary>
+    /// <see cref="CredentialCache"/>-like interface with Update credential semantics rather than Add/Remove
+    /// </summary>
+    public interface IProxyCredentialCache : ICredentials
     {
+        /// <summary>
+        /// Tracks the cache version. Changes every time proxy credential is updated.
+        /// </summary>
         Guid Version { get; }
 
-        void Add(Uri proxyAddress, NetworkCredential credentials);
-
-        IWebProxy GetProxy(Uri sourceUri);
+        /// <summary>
+        /// Add or update proxy credential
+        /// </summary>
+        /// <param name="proxyAddress">Proxy network address</param>
+        /// <param name="credentials">New credential object</param>
+        void UpdateCredential(Uri proxyAddress, NetworkCredential credentials);
     }
 }

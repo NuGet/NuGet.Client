@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
+using NuGet.Configuration;
 using Xunit;
 
 namespace NuGet.Protocol.Core.v3.Tests
@@ -18,21 +19,16 @@ namespace NuGet.Protocol.Core.v3.Tests
         {
             var defaultClientHandler = GetDefaultClientHandler();
 
-            var driver = Mock.Of<IProxyCredentialDriver>();
-            var handler = new ProxyCredentialHandler(defaultClientHandler, driver);
-
-            var innerHandler = GetLambdaHandler(HttpStatusCode.OK);
-            handler.InnerHandler = innerHandler;
-
-            var request = new HttpRequestMessage(HttpMethod.Get, "http://foo");
-
-            using (var client = new HttpClient(handler))
+            var service = Mock.Of<ICredentialService>();
+            var handler = new ProxyCredentialHandler(defaultClientHandler, service, ProxyCache.Instance)
             {
-                var response = await client.SendAsync(request);
+                InnerHandler = GetLambdaHandler(HttpStatusCode.OK)
+            };
 
-                Assert.NotNull(response);
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            }
+            var response = await SendAsync(handler);
+
+            Assert.NotNull(response);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
@@ -40,24 +36,19 @@ namespace NuGet.Protocol.Core.v3.Tests
         {
             var defaultClientHandler = GetDefaultClientHandler();
 
-            var driver = Mock.Of<IProxyCredentialDriver>();
-            var handler = new ProxyCredentialHandler(defaultClientHandler, driver);
-
-            var innerHandler = GetLambdaHandler(HttpStatusCode.ProxyAuthenticationRequired);
-            handler.InnerHandler = innerHandler;
-
-            var request = new HttpRequestMessage(HttpMethod.Get, "http://foo");
-
-            using (var client = new HttpClient(handler))
+            var service = Mock.Of<ICredentialService>();
+            var handler = new ProxyCredentialHandler(defaultClientHandler, service, ProxyCache.Instance)
             {
-                var response = await client.SendAsync(request);
+                InnerHandler = GetLambdaHandler(HttpStatusCode.ProxyAuthenticationRequired)
+            };
 
-                Mock.Get(driver)
-                    .Verify(x => x.AcquireCredentialsAsync(ProxyAddress, It.IsAny<IWebProxy>(), It.IsAny<CancellationToken>()), Times.Once());
+            var response = await SendAsync(handler);
 
-                Assert.NotNull(response);
-                Assert.Equal(HttpStatusCode.ProxyAuthenticationRequired, response.StatusCode);
-            }
+            Assert.NotNull(response);
+            Assert.Equal(HttpStatusCode.ProxyAuthenticationRequired, response.StatusCode);
+
+            Mock.Get(service)
+                .Verify(x => x.GetCredentials(ProxyAddress, It.IsAny<IWebProxy>(), true, It.IsAny<CancellationToken>()), Times.Once());
         }
 
         [Fact]
@@ -65,12 +56,12 @@ namespace NuGet.Protocol.Core.v3.Tests
         {
             var defaultClientHandler = GetDefaultClientHandler();
 
-            var driver = Mock.Of<IProxyCredentialDriver>();
-            Mock.Get(driver)
-                .Setup(x => x.AcquireCredentialsAsync(ProxyAddress, It.IsAny<IWebProxy>(), It.IsAny<CancellationToken>()))
-                .Returns(() => Task.FromResult(new NetworkCredential()));
+            var service = Mock.Of<ICredentialService>();
+            Mock.Get(service)
+                .Setup(x => x.GetCredentials(ProxyAddress, It.IsAny<IWebProxy>(), true, It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult<ICredentials>(new NetworkCredential()));
 
-            var handler = new ProxyCredentialHandler(defaultClientHandler, driver);
+            var handler = new ProxyCredentialHandler(defaultClientHandler, service, ProxyCache.Instance);
 
             var responses = new Queue<HttpStatusCode>(
                 new[] { HttpStatusCode.ProxyAuthenticationRequired, HttpStatusCode.OK });
@@ -78,18 +69,41 @@ namespace NuGet.Protocol.Core.v3.Tests
                 _ => new HttpResponseMessage(responses.Dequeue()));
             handler.InnerHandler = innerHandler;
 
-            var request = new HttpRequestMessage(HttpMethod.Get, "http://foo");
+            var response = await SendAsync(handler);
 
-            using (var client = new HttpClient(handler))
-            {
-                var response = await client.SendAsync(request);
+            Assert.NotNull(response);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-                Mock.Get(driver)
-                    .Verify(x => x.AcquireCredentialsAsync(ProxyAddress, It.IsAny<IWebProxy>(), It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(service)
+                .Verify(x => x.GetCredentials(ProxyAddress, It.IsAny<IWebProxy>(), true, It.IsAny<CancellationToken>()), Times.Once());
+        }
 
-                Assert.NotNull(response);
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            }
+        [Fact]
+        public async Task SendAsync_WithWrongCredentials_StopsRetryingAfter3Times()
+        {
+            var defaultClientHandler = GetDefaultClientHandler();
+
+            var service = Mock.Of<ICredentialService>();
+            Mock.Get(service)
+                .Setup(x => x.GetCredentials(ProxyAddress, It.IsAny<IWebProxy>(), true, It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult<ICredentials>(new NetworkCredential()));
+
+            var handler = new ProxyCredentialHandler(defaultClientHandler, service, ProxyCache.Instance);
+
+            int retryCount = 0;
+            var innerHandler = new LambdaMessageHandler(
+                _ => { retryCount++; return new HttpResponseMessage(HttpStatusCode.ProxyAuthenticationRequired); });
+            handler.InnerHandler = innerHandler;
+
+            var response = await SendAsync(handler);
+
+            Assert.NotNull(response);
+            Assert.Equal(HttpStatusCode.ProxyAuthenticationRequired, response.StatusCode);
+
+            Assert.Equal(ProxyCredentialHandler.MaxAuthRetries, retryCount);
+
+            Mock.Get(service)
+                .Verify(x => x.GetCredentials(ProxyAddress, It.IsAny<IWebProxy>(), true, It.IsAny<CancellationToken>()), Times.Exactly(2));
         }
 
         private static HttpClientHandler GetDefaultClientHandler()
@@ -102,6 +116,14 @@ namespace NuGet.Protocol.Core.v3.Tests
         {
             return new LambdaMessageHandler(
                 _ => new HttpResponseMessage(statusCode));
+        }
+
+        private static async Task<HttpResponseMessage> SendAsync(HttpMessageHandler handler, HttpRequestMessage request = null)
+        {
+            using (var client = new HttpClient(handler))
+            {
+                return await client.SendAsync(request ?? new HttpRequestMessage(HttpMethod.Get, "http://foo"));
+            }
         }
     }
 }
