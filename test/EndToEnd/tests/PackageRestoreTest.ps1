@@ -339,13 +339,13 @@ function Test-PackageRestore-AllSourcesAreUsed {
 function Test-PackageRestore-InitCalled
 {
     # Arrange    
-    $p = New-ClassLibrary
+    $proj = New-ClassLibrary
     
     # Point to package folder to allow restore to work
     [NuGet.PackageManagement.VisualStudio.SettingsHelper]::AddSource('restoreSource', (Join-Path "$($context.RepositoryRoot)" PackageRestore-InitCalled));
 
     $global:InitRun = $false
-    #$p | Install-Package RestorePackage -Source $context.RepositoryPath
+    
     # create package file to point to package containing init.ps1 script
     [xml]$packages = '<?xml version="1.0" encoding="utf-8"?>
                       <packages>
@@ -358,10 +358,8 @@ function Test-PackageRestore-InitCalled
     try 
     {   
         # Act - cause package restore
-        #Build-Solution
+        Build-Solution
     
-    [API.Test.InternalAPITestHook]::RestorePackageApi()
-
         # Assert - init called on package restore
         Assert-AreEqual $true $global:InitRun
     } 
