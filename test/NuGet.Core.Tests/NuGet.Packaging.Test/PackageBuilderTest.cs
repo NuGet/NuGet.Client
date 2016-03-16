@@ -2199,7 +2199,7 @@ Enabling license acceptance requires a license url.");
 <package xmlns=""http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd"">
     <metadata>
         <id>SourceDepotClient</id>
-        <version>2.8.0.0</version>   
+        <version>2.8.0.0</version>
            <authors>pranjalg</authors>
            <owners>pranjalg</owners>
            <licenseUrl>http://cbt-userguide/NugetCanUseInLabs.html</licenseUrl>
@@ -2211,9 +2211,11 @@ Enabling license acceptance requires a license url.");
                </references>
            </metadata>
        </package>";
+            var ms = new MemoryStream();
 
             // Act
             var packageBuilder = new PackageBuilder(spec.AsStream(), null);
+            Manifest.Create(packageBuilder).Save(ms);
 
             // Assert
             Assert.Equal("SourceDepotClient", packageBuilder.Id);
@@ -2221,6 +2223,26 @@ Enabling license acceptance requires a license url.");
             Assert.Equal("pranjalg", packageBuilder.Authors.Single());
             Assert.Equal("Source Depot Client assembly with SDApi.", packageBuilder.Description);
             Assert.Equal("SourceDepotClient.dll", packageBuilder.PackageAssemblyReferences.First().References.First());
+
+            ms.Seek(0, SeekOrigin.Begin);
+
+            // Assert
+            Assert.Equal(@"<?xml version=""1.0"" encoding=""utf-8""?>
+<package xmlns=""http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd"">
+  <metadata>
+    <id>SourceDepotClient</id>
+    <version>2.8.0</version>
+    <authors>pranjalg</authors>
+    <owners>pranjalg</owners>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <licenseUrl>http://cbt-userguide/NugetCanUseInLabs.html</licenseUrl>
+    <description>Source Depot Client assembly with SDApi.</description>
+    <copyright>Copyright 2015</copyright>
+    <references>
+      <reference file=""SourceDepotClient.dll"" />
+    </references>
+  </metadata>
+</package>", ms.ReadToEnd());
         }
 
         [Fact]
