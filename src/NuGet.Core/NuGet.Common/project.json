@@ -13,7 +13,7 @@
     "netstandard1.5": {
       "dependencies": {
         "NETStandard.Library": "1.0.0-rc2-23811",
-        "System.Security.Cryptography.Cng": "4.0.0-rc2-23811",
+        "System.Security.Cryptography.Algorithms": "4.0.0-rc2-23811",
         "System.Diagnostics.Process": "4.1.0-rc2-23811"
       },
       "imports": [
