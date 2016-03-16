@@ -1,7 +1,7 @@
 ﻿{
   "version": "3.5.0-*",
   "dependencies": {
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-rc1-final",
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-rc2-20100",
     "NuGet.CommandLine.XPlat": {
       "target": "project"
     },

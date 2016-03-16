@@ -6,11 +6,11 @@
     "warningsAsErrors": true
   },
   "dependencies": {
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-rc2-20100",
     "Microsoft.Extensions.CommandLineUtils.Sources": {
       "version": "1.0.0-*",
       "type": "build"
     },
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-rc1-final",
     "Microsoft.NETCore.Platforms": "1.0.1-beta-*",
     "NuGet.Commands": {
       "target": "project"
@@ -19,8 +19,8 @@
       "type": "build",
       "target": "project"
     },
-    "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-rc2-23826",
-    "System.Runtime.Serialization.Primitives": "4.0.0"
+  "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-rc2-23826",
+    "System.Runtime.Serialization.Primitives": "4.1.0-rc2-23811"
   },
   "commands": {
     "NuGet.CommandLine.XPlat": "NuGet.CommandLine.XPlat"
@@ -41,8 +41,15 @@
       ],
       "dependencies": {
         "NETStandard.Library": "1.0.0-rc2-23811",
-        "System.Console": "4.0.0-rc2-23811"
+        "System.Console": "4.0.0-rc2-23811",
+        "System.Private.Uri": "4.0.1-rc2-23811",
+        "System.Runtime": "4.1.0-rc2-23811",
+        "System.Runtime.Extensions": "4.1.0-rc2-23811",
+        "runtime.win7.System.Runtime.Extensions": "4.1.0-rc2-23811"
       }
-    }
+    },
+  "runtimes": {
+    "win7-x64": { }
+  }
   }
 }

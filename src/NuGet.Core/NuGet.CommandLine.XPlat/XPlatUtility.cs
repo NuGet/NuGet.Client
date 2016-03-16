@@ -26,8 +26,12 @@ namespace NuGet.CommandLine.XPlat
 
         public static void SetUserAgent()
         {
+#if !NETSTANDARDAPP1_5
             UserAgent.SetUserAgentString(new UserAgentStringBuilder("NuGet xplat")
                 .WithOSDescription(RuntimeInformation.OSDescription));
+#else
+            UserAgent.SetUserAgentString(new UserAgentStringBuilder("NuGet xplat"));
+#endif
         }
 
         public static void SetConnectionLimit()
