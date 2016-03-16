@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using NuGet.Configuration;
 using NuGet.Logging;
 using NuGet.Packaging.Core;
@@ -65,7 +61,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
-        public async Task V2FeedParser_PackageInfo()
+        public async Task V2FeedParser_FindPackagesByIdAsync()
         {
             // Arrange
             var responses = new Dictionary<string, string>();
@@ -134,7 +130,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/Packages(Id='xunit',Version='1.0.0-notfound')", null);
+            responses.Add("http://testsource/v2/Packages(Id='xunit',Version='1.0.0-notfound')", string.Empty);
             responses.Add("http://testsource/v2/FindPackagesById()?Id='xunit'",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
 
@@ -222,6 +218,70 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
+        public async Task V2FeedParser_Search_NotFound()
+        {
+            // Arrange
+            var responses = new Dictionary<string, string>();
+            responses.Add("http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-Client'&includePrerelease=false&$skip=0&$top=1",
+                string.Empty);
+
+            var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses);
+
+            V2FeedParser parser = new V2FeedParser(httpSource, "http://testsource/v2/");
+            var searchFilter = new SearchFilter()
+            {
+                IncludePrerelease = false,
+                SupportedFrameworks = new string[] { "net40-Client" }
+            };
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<FatalProtocolException>(() => parser.Search(
+                "azure",
+                searchFilter,
+                0,
+                1,
+                NullLogger.Instance,
+                CancellationToken.None));
+
+            Assert.Equal(
+                "The V2 feed at 'http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-Client'&includePrerelease=false&$skip=0&$top=1' " +
+                "returned an unexpected status code '404 Not Found'.",
+                exception.Message);
+        }
+
+        [Fact]
+        public async Task V2FeedParser_Search_InternalServerError()
+        {
+            // Arrange
+            var responses = new Dictionary<string, string>();
+            responses.Add("http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-Client'&includePrerelease=false&$skip=0&$top=1",
+                null);
+
+            var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses);
+
+            V2FeedParser parser = new V2FeedParser(httpSource, "http://testsource/v2/");
+            var searchFilter = new SearchFilter()
+            {
+                IncludePrerelease = false,
+                SupportedFrameworks = new string[] { "net40-Client" }
+            };
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<FatalProtocolException>(() => parser.Search(
+                "azure",
+                searchFilter,
+                0,
+                1,
+                NullLogger.Instance,
+                CancellationToken.None));
+
+            Assert.Equal(
+                "The V2 feed at 'http://testsource/v2/Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-Client'&includePrerelease=false&$skip=0&$top=1' " +
+                "returned an unexpected status code '500 Internal Server Error'.",
+                exception.Message);
+        }
+
+        [Fact]
         public async Task V2FeedParser_GetPackage()
         {
             // Arrange
@@ -259,13 +319,13 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
-        public async Task V2FeedParser_GetPackage_notfound()
+        public async Task V2FeedParser_GetPackage_NotFoundOnPackages()
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/Packages(Id='xunit',Version='1.0.0-notfound')", null);
+            responses.Add("http://testsource/v2/Packages(Id='xunit',Version='1.0.0-notfound')", string.Empty);
             responses.Add("http://testsource/v2/FindPackagesById()?Id='xunit'",
-               TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses,
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
@@ -280,22 +340,141 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
-        public async Task V2FeedParser_FindPackagesById_notFound()
+        public async Task V2FeedParser_GetPackage_NotFoundOnPackagesFoundOnFindPackagesById()
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='not-found'",
-                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.NotFoundFindPackagesById.xml", GetType()));
+            responses.Add("http://testsource/v2/Packages(Id='WindowsAzure.Storage',Version='4.3.2-preview')", string.Empty);
+            responses.Add("http://testsource/v2/FindPackagesById()?Id='WindowsAzure.Storage'",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses);
 
             V2FeedParser parser = new V2FeedParser(httpSource, "http://testsource/v2/");
+            var packageIdentity = new PackageIdentity("WindowsAzure.Storage", new NuGetVersion("4.3.2-preview"));
 
             // Act
-            var packages = await parser.FindPackagesByIdAsync("not-found", NullLogger.Instance, CancellationToken.None);
+            var package = await parser.GetPackage(packageIdentity, NullLogger.Instance, CancellationToken.None);
 
             // Assert
-            Assert.Equal(0, packages.Count());
+            Assert.Equal("WindowsAzure.Storage", package.Id);
+            Assert.Equal("4.3.2-preview", package.Version.ToNormalizedString());
+            Assert.Equal("WindowsAzure.Storage", package.Title);
+            Assert.Equal("Microsoft", String.Join(",", package.Authors));
+            Assert.Equal("", String.Join(",", package.Owners));
+            Assert.True(package.Description.StartsWith("This client library enables"));
+            Assert.Equal(3957668, package.DownloadCountAsInt);
+            Assert.Equal("https://www.nuget.org/api/v2/package/WindowsAzure.Storage/4.3.2-preview", package.DownloadUrl);
+            Assert.Equal("http://go.microsoft.com/fwlink/?LinkID=288890", package.IconUrl);
+            Assert.Equal("http://go.microsoft.com/fwlink/?LinkId=331471", package.LicenseUrl);
+            Assert.Equal("http://go.microsoft.com/fwlink/?LinkId=235168", package.ProjectUrl);
+            Assert.Equal(DateTimeOffset.Parse("2014-11-12T22:19:16.297"), package.Published.Value);
+            Assert.Equal("https://www.nuget.org/package/ReportAbuse/WindowsAzure.Storage/4.3.2-preview", package.ReportAbuseUrl);
+            Assert.True(package.RequireLicenseAcceptance);
+            Assert.Equal("A client library for working with Microsoft Azure storage services including blobs, files, tables, and queues.", package.Summary);
+            Assert.Equal("Microsoft Azure Storage Table Blob File Queue Scalable windowsazureofficial", package.Tags);
+            Assert.Equal("Microsoft.Data.OData:5.6.3:aspnetcore50|Microsoft.Data.Services.Client:5.6.3:aspnetcore50|System.Spatial:5.6.3:aspnetcore50|System.Collections:4.0.10-beta-22231:aspnetcore50|System.Collections.Concurrent:4.0.0-beta-22231:aspnetcore50|System.Collections.Specialized:4.0.0-beta-22231:aspnetcore50|System.Diagnostics.Debug:4.0.10-beta-22231:aspnetcore50|System.Diagnostics.Tools:4.0.0-beta-22231:aspnetcore50|System.Diagnostics.TraceSource:4.0.0-beta-22231:aspnetcore50|System.Diagnostics.Tracing:4.0.10-beta-22231:aspnetcore50|System.Dynamic.Runtime:4.0.0-beta-22231:aspnetcore50|System.Globalization:4.0.10-beta-22231:aspnetcore50|System.IO:4.0.10-beta-22231:aspnetcore50|System.IO.FileSystem:4.0.0-beta-22231:aspnetcore50|System.IO.FileSystem.Primitives:4.0.0-beta-22231:aspnetcore50|System.Linq:4.0.0-beta-22231:aspnetcore50|System.Linq.Expressions:4.0.0-beta-22231:aspnetcore50|System.Linq.Queryable:4.0.0-beta-22231:aspnetcore50|System.Net.Http:4.0.0-beta-22231:aspnetcore50|System.Net.Primitives:4.0.10-beta-22231:aspnetcore50|System.Reflection:4.0.10-beta-22231:aspnetcore50|System.Reflection.Extensions:4.0.0-beta-22231:aspnetcore50|System.Reflection.TypeExtensions:4.0.0-beta-22231:aspnetcore50|System.Runtime:4.0.20-beta-22231:aspnetcore50|System.Runtime.Extensions:4.0.10-beta-22231:aspnetcore50|System.Runtime.InteropServices:4.0.20-beta-22231:aspnetcore50|System.Runtime.Serialization.Primitives:4.0.0-beta-22231:aspnetcore50|System.Runtime.Serialization.Xml:4.0.10-beta-22231:aspnetcore50|System.Security.Cryptography.Encoding:4.0.0-beta-22231:aspnetcore50|System.Security.Cryptography.Encryption:4.0.0-beta-22231:aspnetcore50|System.Security.Cryptography.Hashing:4.0.0-beta-22231:aspnetcore50|System.Security.Cryptography.Hashing.Algorithms:4.0.0-beta-22231:aspnetcore50|System.Text.Encoding:4.0.10-beta-22231:aspnetcore50|System.Text.Encoding.Extensions:4.0.10-beta-22231:aspnetcore50|System.Text.RegularExpressions:4.0.10-beta-22231:aspnetcore50|System.Threading:4.0.0-beta-22231:aspnetcore50|System.Threading.Tasks:4.0.10-beta-22231:aspnetcore50|System.Threading.Thread:4.0.0-beta-22231:aspnetcore50|System.Threading.ThreadPool:4.0.10-beta-22231:aspnetcore50|System.Threading.Timer:4.0.0-beta-22231:aspnetcore50|System.Xml.ReaderWriter:4.0.10-beta-22231:aspnetcore50|System.Xml.XDocument:4.0.0-beta-22231:aspnetcore50|System.Xml.XmlSerializer:4.0.0-beta-22231:aspnetcore50|Microsoft.Data.OData:5.6.3:aspnet50|Microsoft.Data.Services.Client:5.6.3:aspnet50|System.Spatial:5.6.3:aspnet50|Microsoft.Data.OData:5.6.2:net40-Client|Newtonsoft.Json:5.0.8:net40-Client|Microsoft.Data.Services.Client:5.6.2:net40-Client|Microsoft.WindowsAzure.ConfigurationManager:1.8.0.0:net40-Client|Microsoft.Data.OData:5.6.2:win80|Microsoft.Data.OData:5.6.2:wpa|Microsoft.Data.OData:5.6.2:wp80|Newtonsoft.Json:5.0.8:wp80", package.Dependencies);
+            Assert.Equal(6, package.DependencySets.Count());
+            Assert.Equal("aspnetcore50", package.DependencySets.First().TargetFramework.GetShortFolderName());
+        }
+
+        [Fact]
+        public async Task V2FeedParser_GetPackage_NotFoundOnBoth()
+        {
+            // Arrange
+            var responses = new Dictionary<string, string>();
+            responses.Add("http://testsource/v2/Packages(Id='xunit',Version='1.0.0-notfound')", string.Empty);
+            responses.Add("http://testsource/v2/FindPackagesById()?Id='xunit'", string.Empty);
+
+            var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses,
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
+
+            V2FeedParser parser = new V2FeedParser(httpSource, "http://testsource/v2/");
+            var packageIdentity = new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound"));
+
+            // Act
+
+            var exception = await Assert.ThrowsAsync<FatalProtocolException>(() => parser.GetPackage(
+                packageIdentity,
+                NullLogger.Instance,
+                CancellationToken.None));
+
+            Assert.Equal(
+                "The V2 feed at 'http://testsource/v2/FindPackagesById()?Id='xunit'' " +
+                "returned an unexpected status code '404 Not Found'.",
+                exception.Message);
+        }
+
+        [Fact]
+        public async Task V2FeedParser_GetPackage_InternalServerError()
+        {
+            // Arrange
+            var responses = new Dictionary<string, string>();
+            responses.Add("http://testsource/v2/Packages(Id='xunit',Version='1.0.0-InternalServerError')", null);
+
+            var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses,
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
+
+            V2FeedParser parser = new V2FeedParser(httpSource, "http://testsource/v2/");
+            var packageIdentity = new PackageIdentity("xunit", new NuGetVersion("1.0.0-InternalServerError"));
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<FatalProtocolException>(() => parser.GetPackage(
+                packageIdentity,
+                NullLogger.Instance,
+                CancellationToken.None));
+            Assert.Equal(
+                "The V2 feed at 'http://testsource/v2/Packages(Id='xunit',Version='1.0.0-InternalServerError')' " +
+                "returned an unexpected status code '500 Internal Server Error'.",
+                exception.Message);
+        }
+
+        [Fact]
+        public async Task V2FeedParser_FindPackagesById_NotFound()
+        {
+            // Arrange
+            var responses = new Dictionary<string, string>();
+            responses.Add("http://testsource/v2/FindPackagesById()?Id='xunit'", string.Empty);
+
+            var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses,
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
+
+            V2FeedParser parser = new V2FeedParser(httpSource, "http://testsource/v2/");
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<FatalProtocolException>(() => parser.FindPackagesByIdAsync(
+                "xunit",
+                NullLogger.Instance,
+                CancellationToken.None));
+
+            Assert.Equal(
+                "The V2 feed at 'http://testsource/v2/FindPackagesById()?Id='xunit'' " +
+                "returned an unexpected status code '404 Not Found'.",
+                exception.Message);
+        }
+
+        [Fact]
+        public async Task V2FeedParser_FindPackagesById_InternalServerError()
+        {
+            // Arrange
+            var responses = new Dictionary<string, string>();
+            responses.Add("http://testsource/v2/FindPackagesById()?Id='xunit'", null);
+
+            var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses,
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
+
+            V2FeedParser parser = new V2FeedParser(httpSource, "http://testsource/v2/");
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<FatalProtocolException>(() => parser.FindPackagesByIdAsync(
+                "xunit",
+                NullLogger.Instance,
+                CancellationToken.None));
+
+            Assert.Equal(
+                "The V2 feed at 'http://testsource/v2/FindPackagesById()?Id='xunit'' " +
+                "returned an unexpected status code '500 Internal Server Error'.",
+                exception.Message);
         }
     }
 }
