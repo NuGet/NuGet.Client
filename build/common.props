@@ -32,7 +32,7 @@
 		  Update for every public release.
 		-->
 		<SemanticVersionMajor>3</SemanticVersionMajor>
-		<SemanticVersionMinor>4</SemanticVersionMinor>
+		<SemanticVersionMinor>5</SemanticVersionMinor>
 		<SemanticVersionPatch>0</SemanticVersionPatch>
 		<PreReleaseVersion>0</PreReleaseVersion>
 	</PropertyGroup>
