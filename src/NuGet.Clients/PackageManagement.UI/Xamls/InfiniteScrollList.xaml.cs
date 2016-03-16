@@ -94,7 +94,6 @@ namespace NuGet.PackageManagement.UI
 
             var selectedPackageItem = SelectedPackageItem;
             ClearPackageList();
-            UpdateCheckBoxStatus();
 
             _selectedCount = 0;
 
@@ -173,6 +172,8 @@ namespace NuGet.PackageManagement.UI
                     _loadingStatusBar.SetError();
                     _loadingStatusBar.Visibility = Visibility.Visible;
                 }
+
+                UpdateCheckBoxStatus();
             });
         }
 
