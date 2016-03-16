@@ -427,7 +427,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
-                Assert.Equal(0, logger.Errors);
+                Assert.True(0 == logger.Errors, logger.ShowMessages());
                 Assert.Equal(0, logger.Warnings);
                 Assert.Equal(86, result.GetAllInstalled().Count);
             }

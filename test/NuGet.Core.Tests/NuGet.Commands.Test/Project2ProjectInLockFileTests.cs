@@ -314,11 +314,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-        // This test appears to be invalid. This test was based on a problem
-        // with restore in Roslyn. Using recent changes and restoring Roslyn
-        // works without issue which suggests that this test was 
-        // verifying inorrect behavior.
-        [Fact(Skip="This test appears to be invalid.")]
+        [Fact]
         public async Task Project2ProjectInLockFile_PackageReferenceConflict()
         {
             // Arrange
