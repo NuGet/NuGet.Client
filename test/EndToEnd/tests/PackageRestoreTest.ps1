@@ -189,7 +189,7 @@ function Test-PackageRestore-PackageAlreadyInstalled {
 
     # Assert
     $output = Get-BuildOutput
-	Write-Host "OUTPUT: $output"
+
     # Assert-True ($output.Contains('All packages are already installed and there is nothing to restore.'))
 	Assert-False ($output.Contains('NuGet package restore finished.'))
 }
@@ -282,9 +282,9 @@ function Test-PackageRestore-AllSourcesAreUsed {
     $tempDirectory = $Env:temp
     $source1 = Join-Path $tempDirectory ([System.IO.Path]::GetRandomFileName()) 
     $source2 = Join-Path $tempDirectory ([System.IO.Path]::GetRandomFileName()) 
-	Write-Host "SBOUT"
+
 	cp ([System.IO.Path]::Combine("$ENV:APPDATA", "NuGet", "NuGet.Config")) ([System.IO.Path]::Combine("$ENV:APPDATA", "NuGet", "NuGet.Config.bak"))
-	Write-Host "Hmmm"
+
     try {
 		# Arrange		
         New-Item $source1 -ItemType directory
@@ -333,6 +333,44 @@ function Test-PackageRestore-AllSourcesAreUsed {
 	
 		cp ([System.IO.Path]::Combine("$ENV:APPDATA", "NuGet", "NuGet.Config.bak")) ([System.IO.Path]::Combine("$ENV:APPDATA", "NuGet", "NuGet.Config"))
 	}
+}
+
+# Tests that during package restore that init.ps1 is called for each restored package
+function Test-PackageRestore-InitCalled
+{
+    # Arrange    
+    $p = New-ClassLibrary
+    
+    # Point to package folder to allow restore to work
+    [NuGet.PackageManagement.VisualStudio.SettingsHelper]::AddSource('restoreSource', (Join-Path "$($context.RepositoryRoot)" PackageRestore-InitCalled));
+
+    $global:InitRun = $false
+    #$p | Install-Package RestorePackage -Source $context.RepositoryPath
+    # create package file to point to package containing init.ps1 script
+    [xml]$packages = '<?xml version="1.0" encoding="utf-8"?>
+                      <packages>
+                          <package id="RestorePackage" version="1.0.0" targetFramework="net45" />
+                      </packages>'
+    
+    $packageConfigFilename = Join-Path (Get-ProjectDir $p) "packages.config"
+    $packages.Save($packageConfigFilename)
+
+    try 
+    {   
+        # Act - cause package restore
+        #Build-Solution
+    
+    [API.Test.InternalAPITestHook]::RestorePackageApi()
+
+        # Assert - init called on package restore
+        Assert-AreEqual $true $global:InitRun
+    } 
+    finally
+    {
+        # clean up
+        [NuGet.PackageManagement.VisualStudio.SettingsHelper]::RemoveSource('restoreSource')
+        Remove-Variable InitRun -Scope Global 
+    }
 }
 
 # Create a test package 
@@ -387,9 +425,3 @@ function RemoveDirectory {
     }
 }
 
-function Get-ParentNugetConfigPath
-{
-	$location = Get-Item (Get-SolutionDir)
-	while ($location -ne $null -and -not (Test-Path "$($location.FullName)\NuGet.Config")) { $location = $location.parent }
-	return $location.FullName
-}
