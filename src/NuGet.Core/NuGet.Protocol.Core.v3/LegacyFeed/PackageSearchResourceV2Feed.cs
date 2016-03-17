@@ -18,7 +18,7 @@ namespace NuGet.Protocol
         private readonly Configuration.PackageSource _packageSource;
         private readonly V2FeedParser _feedParser;
 
-        public PackageSearchResourceV2Feed(HttpSourceResource httpSourceResource, Configuration.PackageSource packageSource)
+        public PackageSearchResourceV2Feed(HttpSourceResource httpSourceResource, string baseAddress, Configuration.PackageSource packageSource)
         {
             if (httpSourceResource == null)
             {
@@ -32,7 +32,7 @@ namespace NuGet.Protocol
 
             _httpSource = httpSourceResource.HttpSource;
             _packageSource = packageSource;
-            _feedParser = new V2FeedParser(_httpSource, packageSource);
+            _feedParser = new V2FeedParser(_httpSource, baseAddress, packageSource);
         }
 
         public async override Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(

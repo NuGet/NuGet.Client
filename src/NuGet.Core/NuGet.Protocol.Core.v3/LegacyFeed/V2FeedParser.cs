@@ -15,6 +15,8 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
 using NuGet.Versioning;
+using System.Net.Http.Headers;
+using NuGet.Frameworks;
 
 namespace NuGet.Protocol
 {
@@ -23,6 +25,7 @@ namespace NuGet.Protocol
     /// </summary>
     public sealed class V2FeedParser
     {
+        private const string Xml = "http://www.w3.org/XML/1998/namespace";
         private const string W3Atom = "http://www.w3.org/2005/Atom";
         private const string MetadataNS = "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata";
         private const string DataServicesNS = "http://schemas.microsoft.com/ado/2007/08/dataservices";
@@ -56,17 +59,18 @@ namespace NuGet.Protocol
         private static readonly XName _xnamePackageHash = XName.Get("PackageHash", DataServicesNS);
         private static readonly XName _xnamePackageHashAlgorithm = XName.Get("PackageHashAlgorithm", DataServicesNS);
         private static readonly XName _xnameMinClientVersion = XName.Get("MinClientVersion", DataServicesNS);
+        private static readonly XName _xnameXmlBase = XName.Get("base", Xml);
 
         private readonly HttpSource _httpSource;
-        private readonly PackageSource _source;
-        private readonly string _findPackagesByIdFormat;
-        private readonly string _searchEndPointFormat;
-        private readonly string _getPackagesFormat;
+        private readonly string _baseAddress;
 
-        public PackageSource Source { get { return _source; } }
-
-        public V2FeedParser(HttpSource httpSource, string sourceUrl)
-            : this(httpSource, new PackageSource(sourceUrl))
+        /// <summary>
+        /// Creates a V2 parser
+        /// </summary>
+        /// <param name="httpHandler">Message handler containing auth/proxy support</param>
+        /// <param name="baseAddress">base address for all services from this OData service</param>
+        public V2FeedParser(HttpSource httpSource, string baseAddress)
+            : this(httpSource, baseAddress, new PackageSource(baseAddress))
         {
         }
 
@@ -74,12 +78,18 @@ namespace NuGet.Protocol
         /// Creates a V2 parser
         /// </summary>
         /// <param name="httpHandler">Message handler containing auth/proxy support</param>
-        /// <param name="source">endpoint source</param>
-        public V2FeedParser(HttpSource httpSource, PackageSource source)
+        /// <param name="baseAddress">base address for all services from this OData service</param>
+        /// <param name="source">PackageSource useful for reporting meaningful errors that relate back to the configuration</param>
+        public V2FeedParser(HttpSource httpSource, string baseAddress, PackageSource source)
         {
             if (httpSource == null)
             {
                 throw new ArgumentNullException(nameof(httpSource));
+            }
+
+            if (baseAddress == null)
+            {
+                throw new ArgumentNullException(nameof(baseAddress));
             }
 
             if (source == null)
@@ -88,11 +98,11 @@ namespace NuGet.Protocol
             }
 
             _httpSource = httpSource;
-            _source = source;
-            _findPackagesByIdFormat = source.Source.TrimEnd('/') + FindPackagesByIdFormat;
-            _searchEndPointFormat = source.Source.TrimEnd('/') + SearchEndPointFormat;
-            _getPackagesFormat = source.Source.TrimEnd('/') + GetPackagesFormat;
+            _baseAddress = baseAddress;
+            Source = source;
         }
+
+        public PackageSource Source { get; private set; }
 
         /// <summary>
         /// Get an exact package
@@ -124,7 +134,7 @@ namespace NuGet.Protocol
 
             var uri = String.Format(
                 CultureInfo.InvariantCulture,
-                _getPackagesFormat,
+                GetPackagesFormat,
                 package.Id,
                 package.Version.ToNormalizedString());
 
@@ -176,7 +186,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(token));
             }
 
-            var uri = string.Format(CultureInfo.InvariantCulture, _findPackagesByIdFormat, id);
+            var uri = string.Format(CultureInfo.InvariantCulture, FindPackagesByIdFormat, id);
             // Set max count to -1, get all packages
             var packages = await QueryV2Feed(
                 uri,
@@ -203,10 +213,13 @@ namespace NuGet.Protocol
         public async Task<IReadOnlyList<V2FeedPackageInfo>> Search(string searchTerm, SearchFilter filters, int skip, int take, ILogger log, CancellationToken cancellationToken)
         {
             var targetFramework = String.Join(@"/", filters.SupportedFrameworks);
-            var uri = String.Format(CultureInfo.InvariantCulture, _searchEndPointFormat,
+
+            var shortFormTargetFramework = NuGetFramework.Parse(targetFramework).GetShortFolderName();
+
+            var uri = String.Format(CultureInfo.InvariantCulture, SearchEndPointFormat,
                                     filters.IncludePrerelease ? IsAbsoluteLatestVersionFilterFlag : IsLatestVersionFilterFlag,
                                     searchTerm,
-                                    targetFramework,
+                                    shortFormTargetFramework,
                                     filters.IncludePrerelease.ToString().ToLowerInvariant(),
                                     skip,
                                     take);
@@ -352,7 +365,7 @@ namespace NuGet.Protocol
         }
 
         private async Task<List<V2FeedPackageInfo>> QueryV2Feed(
-            string uri,
+            string relativeUri,
             string id,
             int max,
             bool ignoreNotFounds,
@@ -362,8 +375,14 @@ namespace NuGet.Protocol
             var results = new List<V2FeedPackageInfo>();
             var page = 1;
 
+            string uri = string.Format("{0}{1}", _baseAddress, relativeUri);
+
             // first request
-            Task<HttpResponseMessage> urlRequest = _httpSource.GetAsync(new Uri(uri), log, token);
+            Task <HttpResponseMessage> urlRequest = _httpSource.GetAsync(
+                new Uri(uri),
+                new[] { new MediaTypeWithQualityHeaderValue("application/atom+xml"), new MediaTypeWithQualityHeaderValue("application/xml") },
+                log,
+                token);
 
             // TODO: re-implement caching at a higher level for both v2 and v3
             while (!token.IsCancellationRequested && urlRequest != null)
@@ -415,7 +434,11 @@ namespace NuGet.Protocol
                                 // keep track here.
                                 uri = nextUri;
 
-                                urlRequest = _httpSource.GetAsync(new Uri(nextUri), log, token);
+                                urlRequest = _httpSource.GetAsync(
+                                    new Uri(nextUri), 
+                                    new[] { new MediaTypeWithQualityHeaderValue("application/atom+xml"), new MediaTypeWithQualityHeaderValue("application/xml") },
+                                    log, 
+                                    token);
                             }
 
                             page++;
@@ -436,6 +459,12 @@ namespace NuGet.Protocol
             }
 
             return results;
+        }
+
+        public static string GetBaseAddress(Stream stream)
+        {
+            XDocument serviceDocumentXml = V2FeedParser.LoadXml(stream);
+            return serviceDocumentXml.Document.Root.Attribute(_xnameXmlBase)?.Value;
         }
 
         internal static string GetNextUrl(XDocument doc)
