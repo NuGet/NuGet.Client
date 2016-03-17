@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using EnvDTE;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
@@ -74,6 +75,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
             {
                 ExecutionContext = new IDEExecutionContext(_commonOperations);
             }
+
+            ActivityCorrelationContext.StartNew();
         }
 
         #region Properties

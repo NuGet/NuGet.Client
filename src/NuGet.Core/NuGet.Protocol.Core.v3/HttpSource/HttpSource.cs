@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -24,12 +26,11 @@ namespace NuGet.Protocol
     public class HttpSource : IDisposable
     {
         public static readonly TimeSpan DefaultDownloadTimeout = TimeSpan.FromSeconds(60);
-        private const int MaxAuthRetries = 3;
         private const int BufferSize = 8192;
         private readonly Func<Task<HttpHandlerResource>> _messageHandlerFactory;
         private readonly Uri _baseUri;
         private HttpClient _httpClient;
-        private int _authRetries;
+        private Dictionary<string, AmbientAuthenticationState> _authStates = new Dictionary<string, AmbientAuthenticationState>();
         private HttpHandlerResource _httpHandler;
         private CredentialHelper _credentials;
         private string _httpCacheDirectory;
@@ -361,9 +362,11 @@ namespace NuGet.Protocol
                             continue;
                         }
 
-                        // Give up after 3 tries.
-                        _authRetries++;
-                        if (_authRetries > MaxAuthRetries)
+                        var authState = GetAuthenticationState();
+
+                        authState.Increment();
+
+                        if (authState.IsBlocked)
                         {
                             return response;
                         }
@@ -387,6 +390,11 @@ namespace NuGet.Protocol
                             await UpdateHttpClient(promptCredentials);
                             continue;
                         }
+
+                        // null means cancelled by user
+                        // block subsequent attempts to annoy user with prompts
+                        authState.IsBlocked = true;
+                        return response;
                     }
                     finally
                     {
@@ -403,6 +411,24 @@ namespace NuGet.Protocol
             }
         }
 
+        private AmbientAuthenticationState GetAuthenticationState()
+        {
+            var correlationId = ActivityCorrelationContext.Current.CorrelationId;
+
+            AmbientAuthenticationState authState;
+            if (!_authStates.TryGetValue(correlationId, out authState))
+            {
+                authState = new AmbientAuthenticationState
+                {
+                    IsBlocked = false,
+                    AuthenticationRetriesCount = 0
+                };
+                _authStates[correlationId] = authState;
+            }
+
+            return authState;
+        }
+
         private async Task<ICredentials> PromptForCredentials(CancellationToken cancellationToken)
         {
             ICredentials promptCredentials = null;
@@ -416,6 +442,15 @@ namespace NuGet.Protocol
 
                     promptCredentials =
                         await HttpHandlerResourceV3.PromptForCredentials(_baseUri, cancellationToken);
+                }
+                catch (TaskCanceledException)
+                {
+                    throw; // pass-thru
+                }
+                catch (OperationCanceledException)
+                {
+                    // A valid response for VS dialog when user hits cancel button
+                    promptCredentials = null;
                 }
                 finally
                 {
@@ -586,7 +621,7 @@ namespace NuGet.Protocol
                 if (!Directory.Exists(cacheFolder))
                 {
                     Directory.CreateDirectory(cacheFolder);
-                }   
+                }
             }
 
             if (File.Exists(cacheFile))
