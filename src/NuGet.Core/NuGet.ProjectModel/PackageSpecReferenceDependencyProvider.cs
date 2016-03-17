@@ -200,46 +200,6 @@ namespace NuGet.ProjectModel
                     }));
             }
 
-            if (resolvedUsingDirectory && targetFramework.IsDesktop())
-            {
-                // For xproj add in the default references for Desktop
-                dependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = "mscorlib",
-                        TypeConstraint = LibraryDependencyTarget.Reference
-                    }
-                });
-
-                dependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = "System",
-                        TypeConstraint = LibraryDependencyTarget.Reference
-                    }
-                });
-
-                dependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = "System.Core",
-                        TypeConstraint = LibraryDependencyTarget.Reference
-                    }
-                });
-
-                dependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = "Microsoft.CSharp",
-                        TypeConstraint = LibraryDependencyTarget.Reference
-                    }
-                });
-            }
-
             // Mark the library as unresolved if there were specified frameworks
             // and none of them resolved
             var resolved = true;

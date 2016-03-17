@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.LibraryModel;
 
 namespace NuGet.DependencyResolver
 {
@@ -41,18 +40,7 @@ namespace NuGet.DependencyResolver
         {
             var entry = GetEntry(item);
 
-            // If there are any references then that's the only list we need to consider since
-            // it always wins over non-references
-            var candidates = entry.List.Where(known => known.Key.Type == LibraryTypes.Reference);
-
-            if (!candidates.Any())
-            {
-                // No references, just use the entire set
-                candidates = entry.List;
-            }
-
-            // Normal version check
-            return candidates.Contains(item) && candidates.All(known => item.Key.Version >= known.Key.Version);
+            return entry.List.All(known => item.Key.Version >= known.Key.Version);
         }
 
         public IEnumerable<GraphItem<TItem>> GetDisputes(GraphItem<TItem> item) => GetEntry(item).List;

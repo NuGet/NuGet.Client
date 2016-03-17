@@ -83,18 +83,6 @@ namespace NuGet.ProjectModel
             libraryDependencies.AddRange(
                     library.Dependencies.Select(PackagingUtility.GetLibraryDependencyFromNuspec));
 
-            foreach (var name in library.FrameworkAssemblies)
-            {
-                libraryDependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = name,
-                        TypeConstraint = LibraryDependencyTarget.Reference
-                    }
-                });
-            }
-
             return libraryDependencies;
         }
     }
