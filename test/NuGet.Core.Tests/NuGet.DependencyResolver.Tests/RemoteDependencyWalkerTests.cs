@@ -873,27 +873,29 @@ namespace NuGet.DependencyResolver.Tests
                     _dependencies = dependencies;
                 }
 
-                public TestPackage DependsOn(string id)
-                {
-                    _dependencies.Add(new LibraryDependency
-                    {
-                        LibraryRange = new LibraryRange
-                        {
-                            Name = id
-                        }
-                    });
-
-                    return this;
-                }
-
-                public TestPackage DependsOn(string id, string version)
+                public TestPackage DependsOn(string id, LibraryDependencyTarget target = LibraryDependencyTarget.All)
                 {
                     _dependencies.Add(new LibraryDependency
                     {
                         LibraryRange = new LibraryRange
                         {
                             Name = id,
-                            VersionRange = VersionRange.Parse(version)
+                            TypeConstraint = target
+                        }
+                    });
+
+                    return this;
+                }
+
+                public TestPackage DependsOn(string id, string version, LibraryDependencyTarget target = LibraryDependencyTarget.All)
+                {
+                    _dependencies.Add(new LibraryDependency
+                    {
+                        LibraryRange = new LibraryRange
+                        {
+                            Name = id,
+                            VersionRange = VersionRange.Parse(version),
+                            TypeConstraint = target
                         }
                     });
 

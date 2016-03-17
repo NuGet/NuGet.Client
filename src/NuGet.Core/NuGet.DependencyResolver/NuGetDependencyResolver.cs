@@ -67,16 +67,11 @@ namespace NuGet.DependencyResolver
                 targetFramework,
                 item => item.TargetFramework);
 
-            var frameworkAssemblies = NuGetFrameworkUtility.GetNearest(nuspecReader.GetFrameworkReferenceGroups(),
-                targetFramework,
-                item => item.TargetFramework);
-
-            return GetDependencies(targetFramework, dependencies, frameworkAssemblies);
+            return GetDependencies(targetFramework, dependencies);
         }
 
         private static IList<LibraryDependency> GetDependencies(NuGetFramework targetFramework,
-            PackageDependencyGroup dependencies,
-            FrameworkSpecificGroup frameworkAssemblies)
+            PackageDependencyGroup dependencies)
         {
             var libraryDependencies = new List<LibraryDependency>();
 
@@ -84,35 +79,6 @@ namespace NuGet.DependencyResolver
             {
                 libraryDependencies.AddRange(
                     dependencies.Packages.Select(PackagingUtility.GetLibraryDependencyFromNuspec));
-            }
-
-            if (frameworkAssemblies == null)
-            {
-                return libraryDependencies;
-            }
-
-            if (!targetFramework.IsDesktop())
-            {
-                // REVIEW: This isn't 100% correct since none *can* mean 
-                // any in theory, but in practice it means .NET full reference assembly
-                // If there's no supported target frameworks and we're not targeting
-                // the desktop framework then skip it.
-
-                // To do this properly we'll need all reference assemblies supported
-                // by each supported target framework which isn't always available.
-                return libraryDependencies;
-            }
-
-            foreach (var name in frameworkAssemblies.Items)
-            {
-                libraryDependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = name,
-                        TypeConstraint = LibraryDependencyTarget.Reference
-                    }
-                });
             }
 
             return libraryDependencies;

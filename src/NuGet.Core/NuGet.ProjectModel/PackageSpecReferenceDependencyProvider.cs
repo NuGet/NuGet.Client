@@ -121,6 +121,9 @@ namespace NuGet.ProjectModel
                 targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
                 dependencies.AddRange(targetFrameworkInfo.Dependencies);
 
+                // Remove all framework assemblies
+                dependencies.RemoveAll(d => d.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference);
+
                 // Disallow projects (resolved by directory) for non-xproj msbuild projects.
                 // If there is no msbuild path then resolving by directory is allowed.
                 // CSProj does not allow directory to directory look up.
@@ -198,46 +201,6 @@ namespace NuGet.ProjectModel
                             TypeConstraint = LibraryDependencyTarget.ExternalProject
                         }
                     }));
-            }
-
-            if (resolvedUsingDirectory && targetFramework.IsDesktop())
-            {
-                // For xproj add in the default references for Desktop
-                dependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = "mscorlib",
-                        TypeConstraint = LibraryDependencyTarget.Reference
-                    }
-                });
-
-                dependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = "System",
-                        TypeConstraint = LibraryDependencyTarget.Reference
-                    }
-                });
-
-                dependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = "System.Core",
-                        TypeConstraint = LibraryDependencyTarget.Reference
-                    }
-                });
-
-                dependencies.Add(new LibraryDependency
-                {
-                    LibraryRange = new LibraryRange
-                    {
-                        Name = "Microsoft.CSharp",
-                        TypeConstraint = LibraryDependencyTarget.Reference
-                    }
-                });
             }
 
             // Mark the library as unresolved if there were specified frameworks
