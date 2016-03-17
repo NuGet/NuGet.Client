@@ -124,7 +124,7 @@ namespace NuGet.PackageManagement.UI
 
             Loaded += (_, __) =>
             {
-                SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+                SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString, useCache: false);
                 RefreshAvailableUpdatesCount();
                 RefreshConsolidatablePackagesCount();
             };
@@ -283,7 +283,7 @@ namespace NuGet.PackageManagement.UI
                 if (prevSelectedItem != SelectedSource)
                 {
                     SaveSettings();
-                    SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+                    SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString, useCache: false);
                     RefreshAvailableUpdatesCount();
                 }
             }
@@ -498,15 +498,17 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
         /// </summary>
-        private void SearchPackageInActivePackageSource(string searchText)
+        private void SearchPackageInActivePackageSource(string searchText, bool useCache)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context)
+                var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
+
+                if (useCache)
                 {
-                    CachedPackages = Model.CachedUpdates
+                    loadContext.CachedPackages = Model.CachedUpdates;
                 };
 
                 var packageFeed = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger);
@@ -658,7 +660,7 @@ namespace NuGet.PackageManagement.UI
 
                 //Model.Context.SourceProvider.PackageSourceProvider.SaveActivePackageSource(ActiveSource.PackageSource);
                 SaveSettings();
-                SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+                SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString, useCache: false);
                 RefreshAvailableUpdatesCount();
             }
         }
@@ -668,7 +670,7 @@ namespace NuGet.PackageManagement.UI
             if (_initialized)
             {
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
-                SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+                SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString, useCache: true);
 
                 _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
             }
@@ -682,7 +684,7 @@ namespace NuGet.PackageManagement.UI
             if (_topPanel.Filter != ItemFilter.All)
             {
                 // refresh the whole package list
-                SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+                SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString, useCache: false);
             }
             else
             {
@@ -711,7 +713,7 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString, useCache: true);
         }
 
         private void CheckboxPrerelease_CheckChanged(object sender, EventArgs e)
@@ -724,7 +726,7 @@ namespace NuGet.PackageManagement.UI
             RegistrySettingUtility.SetBooleanSetting(
                 Constants.IncludePrereleaseRegistryName,
                 _topPanel.CheckboxPrerelease.IsChecked == true);
-            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString, useCache: false);
             RefreshAvailableUpdatesCount();
         }
 
@@ -750,12 +752,12 @@ namespace NuGet.PackageManagement.UI
 
         public void ClearSearch()
         {
-            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString, useCache: true);
         }
 
         public IVsSearchTask CreateSearch(uint dwCookie, IVsSearchQuery pSearchQuery, IVsSearchCallback pSearchCallback)
         {
-            SearchPackageInActivePackageSource(pSearchQuery.SearchString);
+            SearchPackageInActivePackageSource(pSearchQuery.SearchString, useCache: true);
             return null;
         }
 
@@ -967,7 +969,9 @@ namespace NuGet.PackageManagement.UI
 
         private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
         {
-            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString);
+            SearchPackageInActivePackageSource(_windowSearchHost.SearchQuery.SearchString, useCache: false);
+            RefreshAvailableUpdatesCount();
+            RefreshConsolidatablePackagesCount();
         }
     }
 }
