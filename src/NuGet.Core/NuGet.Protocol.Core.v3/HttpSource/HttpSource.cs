@@ -366,6 +366,11 @@ namespace NuGet.Protocol
                             await UpdateHttpClient(promptCredentials);
                             continue;
                         }
+
+                        // null means cancelled by user
+                        // block subsequent attempts to annoy user with prompts
+                        _authRetries = HttpHandlerResourceV3Provider.MaxAuthRetries;
+                        return response;
                     }
                     finally
                     {
@@ -395,6 +400,11 @@ namespace NuGet.Protocol
 
                     promptCredentials =
                         await HttpHandlerResourceV3.PromptForCredentials(_baseUri, cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    // A valid response for VS dialog when user hits cancel button
+                    promptCredentials = null;
                 }
                 finally
                 {
