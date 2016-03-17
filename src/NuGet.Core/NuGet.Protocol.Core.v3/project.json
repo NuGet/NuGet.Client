@@ -13,11 +13,10 @@
   "compilationOptions": {
     "warningsAsErrors": true
   },
+  "compile": [
+    "../NuGet.Shared/*.cs"
+  ],
   "dependencies": {
-    "NuGet.Shared": {
-      "type": "build",
-      "target": "project"
-    },
     "NuGet.Logging": {
       "target": "project"
     },

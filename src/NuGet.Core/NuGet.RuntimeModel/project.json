@@ -3,12 +3,11 @@
   "compilationOptions": {
     "warningsAsErrors": true
   },
+  "compile": [
+    "../NuGet.Shared/*.cs"
+  ],
   "dependencies": {
     "Newtonsoft.Json": "6.0.4",
-    "NuGet.Shared": {
-      "type": "build",
-      "target": "project"
-    },
     "NuGet.Versioning": {
       "target": "project"
     },

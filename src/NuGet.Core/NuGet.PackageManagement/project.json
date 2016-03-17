@@ -4,6 +4,9 @@
   "compilationOptions": {
     "warningsAsErrors": true
   },
+  "compile": [
+    "../NuGet.Shared/*.cs"
+  ],
   "dependencies": {
     "NuGet.ProjectManagement": {
       "target": "project"
@@ -15,10 +18,6 @@
       "target": "project"
     },
     "NuGet.Resolver": {
-      "target": "project"
-    },
-    "NuGet.Shared": {
-      "type": "build",
       "target": "project"
     }
   },

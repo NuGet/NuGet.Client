@@ -14,20 +14,13 @@
   "compilationOptions": {
     "warningsAsErrors": true
   },
-  "dependencies": {
-    "NuGet.Shared": {
-      "type": "build",
-      "target": "project"
-    }
-  },
+  "compile": [
+    "../NuGet.Shared/*.cs"
+  ],
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
-        "System.IO.Compression": "",
-        "Microsoft.CSharp": "",
-        "System": "",
-        "System.Core": "",
-        "System.Runtime": ""
+        "System.IO.Compression": ""
       }
     },
     "netstandard1.5": {

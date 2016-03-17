@@ -3,6 +3,9 @@
   "compilationOptions": {
     "warningsAsErrors": true
   },
+  "compile": [
+    "../NuGet.Shared/*.cs"
+  ],
   "dependencies": {
     "NuGet.Protocol.Core.v3": {
       "target": "project"
@@ -10,7 +13,7 @@
   },
   "frameworks": {
     "net46": {
-      "dependencies": {}
+      "dependencies": { }
     },
     "netstandard1.5": {
       "imports": [

@@ -13,6 +13,9 @@
   "compilationOptions": {
     "warningsAsErrors": true
   },
+  "compile": [
+    "../NuGet.Shared/*.cs"
+  ],
   "dependencies": {
     "NuGet.Configuration": {
       "target": "project"
@@ -23,11 +26,7 @@
     "NuGet.Protocol.Core.Types": {
       "target": "project"
     },
-    "NuGet.Core": "2.11.0",
-    "NuGet.Shared": {
-      "type": "build",
-      "target": "project"
-    }
+    "NuGet.Core": "2.11.0"
   },
   "frameworks": {
     "net45": {

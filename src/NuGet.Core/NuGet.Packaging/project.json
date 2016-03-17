@@ -14,12 +14,11 @@
   "compilationOptions": {
     "warningsAsErrors": true
   },
+  "compile": [
+    "../NuGet.Shared/*.cs"
+  ],
   "dependencies": {
     "NuGet.Common": {
-      "target": "project"
-    },
-    "NuGet.Shared": {
-      "type": "build",
       "target": "project"
     },
     "NuGet.Packaging.Core": {

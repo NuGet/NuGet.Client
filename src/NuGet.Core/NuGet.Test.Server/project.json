@@ -3,13 +3,16 @@
   "compilationOptions": {
     "warningsAsErrors": true
   },
+  "compile": [
+    "../NuGet.Shared/*.cs"
+  ],
   "dependencies": {
     "NuGet.Common": {
       "target": "project"
     }
   },
   "frameworks": {
-    "net46": {},
+    "net46": { },
     "netstandard1.5": {
       "dependencies": {
         "NETStandard.Library": "1.5.0-rc2-23911",

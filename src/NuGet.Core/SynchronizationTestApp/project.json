@@ -12,12 +12,11 @@
   "compilationOptions": {
     "emitEntryPoint": true
   },
+  "compile": [
+    "../NuGet.Shared/*.cs"
+  ],
   "dependencies": {
     "NuGet.Common": {
-      "target": "project"
-    },
-    "NuGet.Shared": {
-      "type": "build",
       "target": "project"
     }
   },
@@ -36,6 +35,6 @@
         "portable-net45+win8"
       ]
     },
-    "net46": {}
+    "net46": { }
   }
 }

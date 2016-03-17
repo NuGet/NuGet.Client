@@ -1,13 +1,12 @@
 ﻿{
   "version": "3.5.0-*",
+  "compile": [
+    "../NuGet.Shared/*.cs"
+  ],
   "frameworks": {
     "net45": {
       "frameworkAssemblies": {
-        "System.IO.Compression": "",
-        "Microsoft.CSharp": "",
-        "System": "",
-        "System.Core": "",
-        "System.Runtime": ""
+        "System.IO.Compression": ""
       }
     },
     "netstandard1.5": {

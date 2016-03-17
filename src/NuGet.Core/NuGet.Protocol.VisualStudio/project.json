@@ -13,6 +13,9 @@
   "compilationOptions": {
     "warningsAsErrors": true
   },
+  "compile": [
+    "../NuGet.Shared/*.cs"
+  ],
   "dependencies": {
     "NuGet.Configuration": {
       "target": "project"
@@ -21,10 +24,6 @@
       "target": "project"
     },
     "NuGet.Protocol.Core.v3": {
-      "target": "project"
-    },
-    "NuGet.Shared": {
-      "type": "build",
       "target": "project"
     }
   },

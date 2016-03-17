@@ -3,6 +3,9 @@
   "compilationOptions": {
     "warningsAsErrors": true
   },
+  "compile": [
+    "../NuGet.Shared/*.cs"
+  ],
   "dependencies": {
     "xunit": "2.1.0",
     "NuGet.Packaging": {

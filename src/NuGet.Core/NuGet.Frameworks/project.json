@@ -10,17 +10,16 @@
   "compilationOptions": {
     "warningsAsErrors": true
   },
+  "compile": [
+    "../NuGet.Shared/*.cs"
+  ],
   "dependencies": {
     "NuGet.Versioning": {
-      "target": "project"
-    },
-    "NuGet.Shared": {
-      "type": "build",
       "target": "project"
     }
   },
   "frameworks": {
-    "net45": {},
+    "net45": { },
     "netstandard1.5": {
       "dependencies": {
         "NETStandard.Library": "1.5.0-rc2-23911"

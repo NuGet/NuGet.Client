@@ -5,6 +5,7 @@
     "warningsAsErrors": true
   },
   "compile": [
+    "../NuGet.Shared/*.cs",
     "../../../submodules/FileSystem/src/Microsoft.Extensions.FileSystemGlobbing/**/*.cs",
     "../../../submodules/FileSystem/src/Microsoft.AspNet.FileProviders.Abstractions/**/*.cs",
     "../../../submodules/FileSystem/src/Microsoft.AspNet.FileProviders.Sources/**/*.cs",
@@ -33,10 +34,6 @@
       "target": "project"
     },
     "NuGet.RuntimeModel": {
-      "target": "project"
-    },
-    "NuGet.Shared": {
-      "type": "build",
       "target": "project"
     }
   },

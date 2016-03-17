@@ -5,6 +5,9 @@
     "emitEntryPoint": true,
     "warningsAsErrors": true
   },
+  "compile": [
+    "../NuGet.Shared/*.cs"
+  ],
   "dependencies": {
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-rc2-20100",
     "Microsoft.Extensions.CommandLineUtils.Sources": {
@@ -12,10 +15,6 @@
       "type": "build"
     },
     "NuGet.Commands": {
-      "target": "project"
-    },
-    "NuGet.Shared": {
-      "type": "build",
       "target": "project"
     },
     "System.Runtime.Serialization.Primitives": "4.1.0-rc2-23911"

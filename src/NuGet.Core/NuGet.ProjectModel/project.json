@@ -1,12 +1,11 @@
 ﻿{
   "version": "3.5.0-*",
+  "compile": [
+    "../NuGet.Shared/*.cs"
+  ],
   "dependencies": {
     "Newtonsoft.Json": "6.0.4",
     "NuGet.DependencyResolver.Core": {
-      "target": "project"
-    },
-    "NuGet.Shared": {
-      "type": "build",
       "target": "project"
     }
   },
@@ -14,7 +13,7 @@
     "warningsAsErrors": true
   },
   "frameworks": {
-    "net45": {},
+    "net45": { },
     "netstandard1.5": {
       "imports": [
         "dotnet5.6",

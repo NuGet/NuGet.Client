@@ -3,6 +3,9 @@
   "compilationOptions": {
     "warningsAsErrors": true
   },
+  "compile": [
+    "../NuGet.Shared/*.cs"
+  ],
   "dependencies": {
     "NuGet.Packaging": {
       "target": "project"
@@ -12,14 +15,10 @@
     },
     "NuGet.DependencyResolver.Core": {
       "target": "project"
-    },
-    "NuGet.Shared": {
-      "type": "build",
-      "target": "project"
     }
   },
   "frameworks": {
-    "net45": {},
+    "net45": { },
     "netstandard1.5": {
       "imports": [
         "dotnet5.6",
