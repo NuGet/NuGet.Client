@@ -3,45 +3,47 @@
 
 namespace NuGet.Configuration
 {
-    internal static class ConfigurationConstants
+    public static class ConfigurationConstants
     {
-        internal static string DisabledPackageSources = "disabledPackageSources";
+        public static string ApiKeys = "apikeys";
 
-        internal static string PackageSources = "packageSources";
+        public static string DisabledPackageSources = "disabledPackageSources";
 
-        internal static string DefaultPushSource = "DefaultPushSource";
+        public static string PackageSources = "packageSources";
 
-        internal static string PackageRestore = "packageRestore";
+        public static string DefaultPushSource = "DefaultPushSource";
 
-        internal static string Config = "config";
+        public static string PackageRestore = "packageRestore";
 
-        internal static string enabled = "enabled";
+        public static string Config = "config";
 
-        internal static string ConfigurationDefaultsFile = "NuGetDefaults.config";
+        public static string Enabled = "enabled";
 
-        internal static string CredentialsSectionName = "packageSourceCredentials";
+        public static string ConfigurationDefaultsFile = "NuGetDefaults.config";
 
-        internal static string UsernameToken = "Username";
+        public static string CredentialsSectionName = "packageSourceCredentials";
 
-        internal static string PasswordToken = "Password";
+        public static string UsernameToken = "Username";
 
-        internal static string ClearTextPasswordToken = "ClearTextPassword";
+        public static string PasswordToken = "Password";
 
-        internal static string ActivePackageSourceSectionName = "activePackageSource";
+        public static string ClearTextPasswordToken = "ClearTextPassword";
 
-        internal static string HostKey = "http_proxy";
+        public static string ActivePackageSourceSectionName = "activePackageSource";
 
-        internal static string UserKey = "http_proxy.user";
+        public static string HostKey = "http_proxy";
 
-        internal static string PasswordKey = "http_proxy.password";
+        public static string UserKey = "http_proxy.user";
+
+        public static string PasswordKey = "http_proxy.password";
         
-        internal static string NoProxy     = "no_proxy";
+        public static string NoProxy     = "no_proxy";
 
-        internal static string KeyAttribute = "key";
+        public static string KeyAttribute = "key";
 
-        internal static string ValueAttribute = "value";
+        public static string ValueAttribute = "value";
 
-        internal static string ProtocolVersionAttribute = "protocolVersion";
+        public static string ProtocolVersionAttribute = "protocolVersion";
 
     }
 }

@@ -69,6 +69,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Source parameter was not specified..
+        /// </summary>
+        internal static string Error_MissingSourceParameter {
+            get {
+                return ResourceManager.GetString("Error_MissingSourceParameter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to The folder &apos;{0}&apos; does not contain a project to restore..
         /// </summary>
         internal static string Error_UnableToLocateRestoreTarget {
@@ -83,6 +92,15 @@ namespace NuGet.Commands {
         internal static string Error_UnknownBuildAction {
             get {
                 return ResourceManager.GetString("Error_UnknownBuildAction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The specified source &apos;{0}&apos; is invalid. Please provide a valid source..
+        /// </summary>
+        internal static string InvalidSource {
+            get {
+                return ResourceManager.GetString("InvalidSource", resourceCulture);
             }
         }
         

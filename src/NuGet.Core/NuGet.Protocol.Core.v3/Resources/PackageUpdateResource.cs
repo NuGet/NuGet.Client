@@ -27,6 +27,7 @@ namespace NuGet.Protocol.Core.Types
 
         private HttpSource _httpSource;
         private string _source;
+        private bool _disableBuffering;
 
         public PackageUpdateResource(string source,
             HttpSource httpSource)
@@ -35,11 +36,16 @@ namespace NuGet.Protocol.Core.Types
             _httpSource = httpSource;
         }
 
-        public async Task Push(string packagePath,
+        public async Task Push(
+            string packagePath,
             int timeoutInSecond,
+            bool disableBuffering,
             Func<string, string> getApiKey,
             ILogger log)
         {
+            // TODO: Figure out how to hook this up with the HTTP request
+            _disableBuffering = disableBuffering;
+
             using (var tokenSource = new CancellationTokenSource())
             {
                 if (timeoutInSecond > 0)
@@ -143,6 +149,7 @@ namespace NuGet.Protocol.Core.Types
             var packagesToPush = GetPackagesToPush(packagePath);
 
             EnsurePackageFileExists(packagePath, packagesToPush);
+
             foreach (string packageToPush in packagesToPush)
             {
                 await PushPackageCore(source, apiKey, packageToPush, log, token);

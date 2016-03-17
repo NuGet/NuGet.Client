@@ -138,6 +138,9 @@
   <data name="Delete_PackageIdAndVersion_Description" xml:space="preserve">
     <value>The Package Id and version.</value>
   </data>
+  <data name="DisableBuffering_Description" xml:space="preserve">
+    <value>Disable buffering when pushing to an HTTP(S) server to decrease memory usage.</value>
+  </data>
   <data name="Log_Committing" xml:space="preserve">
     <value>Committing restore...</value>
   </data>

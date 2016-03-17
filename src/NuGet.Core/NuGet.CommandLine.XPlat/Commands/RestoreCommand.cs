@@ -79,6 +79,9 @@ namespace NuGet.CommandLine.XPlat
                         providers.Add(new MSBuildP2PRestoreRequestProvider(providerCache));
                         providers.Add(new ProjectJsonRestoreRequestProvider(providerCache));
 
+                        ISettings defaultSettings = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
+                        CachingSourceProvider sourceProvider = new CachingSourceProvider(new PackageSourceProvider(defaultSettings));
+
                         var restoreContext = new RestoreArgs()
                         {
                             CacheContext = cacheContext,
@@ -92,7 +95,7 @@ namespace NuGet.CommandLine.XPlat
                             RequestProviders = providers,
                             Sources = sources.Values,
                             FallbackSources = fallBack.Values,
-                            CachingSourceProvider = _sourceProvider
+                            CachingSourceProvider = sourceProvider
                         };
 
                         var defaultRuntimes = RequestRuntimeUtility.GetDefaultRestoreRuntimes(
@@ -110,10 +113,5 @@ namespace NuGet.CommandLine.XPlat
                 });
             }));
         }
-
-        // Create a caching source provider with the default settings, the sources will be passed in
-        private static CachingSourceProvider _sourceProvider = new CachingSourceProvider(
-            new PackageSourceProvider(
-                Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null)));
     }
 }

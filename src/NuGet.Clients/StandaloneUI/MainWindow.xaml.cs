@@ -162,6 +162,11 @@ namespace StandaloneUI
             get { throw new NotImplementedException(); }
         }
 
+        public string DefaultPushSource
+        {
+            get { throw new NotImplementedException(); }
+        }
+
         public void SaveActivePackageSource(PackageSource source)
         {
             throw new NotImplementedException();

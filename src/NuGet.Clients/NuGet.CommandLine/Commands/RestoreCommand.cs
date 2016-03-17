@@ -11,15 +11,11 @@ using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.DependencyResolver;
 using NuGet.Logging;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
-using NuGet.ProjectManagement;
-using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
-using NuGet.Repositories;
 
 namespace NuGet.CommandLine
 {

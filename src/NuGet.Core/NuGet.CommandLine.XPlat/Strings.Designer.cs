@@ -123,6 +123,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Disable buffering when pushing to an HTTP(S) server to decrease memory usage..
+        /// </summary>
+        internal static string DisableBuffering_Description {
+            get {
+                return ResourceManager.GetString("DisableBuffering_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Source parameter was not specified..
         /// </summary>
         internal static string Error_MissingSourceParameter {

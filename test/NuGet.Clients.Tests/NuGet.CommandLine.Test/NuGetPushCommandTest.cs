@@ -79,6 +79,43 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Fact]
+        public void PushCommand_PushToV2FileSystemDefaultPushSource()
+        {
+            string nugetexe = Util.GetNuGetExePath();
+
+            using (TestDirectory packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (TestDirectory source = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                string packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                string config = string.Format(
+$@"<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <config>
+    <add key='DefaultPushSource' value='{source}' />
+  </config>
+</configuration>");
+
+                string configFileName = Path.Combine(packageDirectory, "nuget.config");
+                File.WriteAllText(configFileName, config);
+
+                // Act
+                string[] args = new string[] { "push", packageFileName };
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    packageDirectory,
+                    string.Join(" ", args),
+                    true);
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                Assert.True(File.Exists(Path.Combine(source, "testPackage1.1.1.0.nupkg")));
+                var output = result.Item2;
+                Assert.DoesNotContain("WARNING: No API Key was provided", output);
+            }
+        }
+
         // Same as PushCommand_PushToFileSystemSource, except that the directory is specified
         // in unix style.
         [Fact]

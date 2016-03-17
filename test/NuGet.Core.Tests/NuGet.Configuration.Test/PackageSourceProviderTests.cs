@@ -2320,6 +2320,52 @@ namespace NuGet.Configuration.Test
             }
         }
 
+        [Fact]
+        public void DefaultPushSourceInNuGetConfig()
+        {
+            using (TestDirectory mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                string configContentsWithDefault =
+@"<?xml version='1.0'?>
+<configuration>
+    <config>
+        <add key='DefaultPushSource' value='\\myshare\packages' />
+    </config>
+    <packageSources>
+        <add key='NuGet.org' value='https://NuGet.org' />
+    </packageSources>
+</configuration>";
+                string configContentWithoutDefault = configContentsWithDefault.Replace("DefaultPushSource", "WithoutDefaultPushSource");
+
+                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "WithDefaultPushSource.config"), configContentsWithDefault);
+                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "WithoutDefaultPushSource.config"), configContentWithoutDefault);
+
+                ISettings settingsWithDefault = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
+                   configFileName: "WithDefaultPushSource.config",
+                   machineWideSettings: null,
+                   loadAppDataSettings: true,
+                   useTestingGlobalPath: false);
+
+                ISettings settingsWithoutDefault = Settings.LoadDefaultSettings(mockBaseDirectory.Path,
+                   configFileName: "WithoutDefaultPushSource.config",
+                   machineWideSettings: null,
+                   loadAppDataSettings: true,
+                   useTestingGlobalPath: false);
+
+                PackageSourceProvider packageSourceProviderWithDefault = new PackageSourceProvider(settingsWithDefault);
+                PackageSourceProvider packageSourceProviderWithoutDefault = new PackageSourceProvider(settingsWithoutDefault);
+
+                // Act
+                string defaultPushSourceWithDefault = packageSourceProviderWithDefault.DefaultPushSource;
+                string defaultPushSourceWithoutDefault = packageSourceProviderWithoutDefault.DefaultPushSource;
+
+                // Assert
+                Assert.Equal(@"\\myshare\packages", defaultPushSourceWithDefault);
+                Assert.Null(defaultPushSourceWithoutDefault);
+            }
+        }
+
 #if NETSTANDARDAPP1_5
         [Fact]
         public void LoadPackageSource_NotDecryptPassword() 

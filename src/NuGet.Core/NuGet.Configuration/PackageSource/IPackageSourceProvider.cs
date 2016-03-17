@@ -17,6 +17,7 @@ namespace NuGet.Configuration
         bool IsPackageSourceEnabled(PackageSource source);
 
         string ActivePackageSourceName { get; }
+        string DefaultPushSource { get; }
 
         void SaveActivePackageSource(PackageSource source);
     }
