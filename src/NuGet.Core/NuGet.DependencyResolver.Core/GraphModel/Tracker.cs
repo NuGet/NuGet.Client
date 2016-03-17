@@ -4,18 +4,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.LibraryModel;
 
 namespace NuGet.DependencyResolver
 {
     public class Tracker<TItem>
     {
-        private readonly Dictionary<string, Entry> _entries 
+        private readonly Dictionary<string, Entry> _entries
             = new Dictionary<string, Entry>(StringComparer.OrdinalIgnoreCase);
 
         public void Track(GraphItem<TItem> item)
         {
             var entry = GetEntry(item);
-            if (!entry.List.Contains(item) && !entry.Locked)
+            if (!entry.List.Contains(item))
             {
                 entry.List.Add(item);
             }
@@ -39,7 +40,19 @@ namespace NuGet.DependencyResolver
         public bool IsBestVersion(GraphItem<TItem> item)
         {
             var entry = GetEntry(item);
-            return entry.List.All(known => item.Key.Version >= known.Key.Version);
+
+            // If there are any references then that's the only list we need to consider since
+            // it always wins over non-references
+            var candidates = entry.List.Where(known => known.Key.Type == LibraryTypes.Reference);
+
+            if (!candidates.Any())
+            {
+                // No references, just use the entire set
+                candidates = entry.List;
+            }
+
+            // Normal version check
+            return candidates.Contains(item) && candidates.All(known => item.Key.Version >= known.Key.Version);
         }
 
         public IEnumerable<GraphItem<TItem>> GetDisputes(GraphItem<TItem> item) => GetEntry(item).List;
@@ -55,14 +68,6 @@ namespace NuGet.DependencyResolver
             return itemList;
         }
 
-        internal void Lock(GraphItem<TItem> item)
-        {
-            var entry = GetEntry(item);
-            entry.List.Clear();
-            entry.List.Add(item);
-            entry.Locked = true;
-        }
-
         private class Entry
         {
             public Entry()
@@ -73,7 +78,6 @@ namespace NuGet.DependencyResolver
             public HashSet<GraphItem<TItem>> List { get; set; }
 
             public bool Ambiguous { get; set; }
-            public bool Locked { get; set; }
         }
     }
 }
