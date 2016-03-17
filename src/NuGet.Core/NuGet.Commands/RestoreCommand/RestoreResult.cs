@@ -128,13 +128,13 @@ namespace NuGet.Commands
                     || PreviousLockFile == null
                     || !PreviousLockFile.Equals(LockFile))
                 {
-                    log.LogDebug($"Writing lock file to disk. Path: {LockFilePath}");
+                    log.LogMinimal($"Writing lock file to disk. Path: {LockFilePath}");
 
                     lockFileFormat.Write(LockFilePath, LockFile);
                 }
                 else
                 {
-                    log.LogDebug($"Lock file has not changed. Skipping lock file write. Path: {LockFilePath}");
+                    log.LogMinimal($"Lock file has not changed. Skipping lock file write. Path: {LockFilePath}");
                 }
             }
 

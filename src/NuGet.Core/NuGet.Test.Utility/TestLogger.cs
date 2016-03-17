@@ -9,6 +9,8 @@ namespace NuGet.Test.Utility
         /// Logged messages
         /// </summary>
         public ConcurrentQueue<string> Messages { get; } = new ConcurrentQueue<string>();
+        public ConcurrentQueue<string> DebugMessages { get; } = new ConcurrentQueue<string>();
+        public ConcurrentQueue<string> MinimalMessages { get; } = new ConcurrentQueue<string>();
         public ConcurrentQueue<string> ErrorMessages { get; } = new ConcurrentQueue<string>();
 
         public int Errors { get; set; }
@@ -18,6 +20,7 @@ namespace NuGet.Test.Utility
         public void LogDebug(string data)
         {
             Messages.Enqueue(data);
+            DebugMessages.Enqueue(data);
             DumpMessage("DEBUG", data);
         }
 
@@ -38,6 +41,7 @@ namespace NuGet.Test.Utility
         public void LogMinimal(string data)
         {
             Messages.Enqueue(data);
+            MinimalMessages.Enqueue(data);
             DumpMessage("LOG  ", data);
         }
 
