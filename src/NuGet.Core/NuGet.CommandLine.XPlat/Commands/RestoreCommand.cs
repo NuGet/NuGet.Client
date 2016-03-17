@@ -53,6 +53,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.Restore_Switch_NoCache_Description,
                     CommandOptionType.NoValue);
 
+                var inferRuntimes = restore.Option(
+                    "--infer-runtimes",
+                    "Temporary option to allow NuGet to infer RIDs for legacy repositories",
+                    CommandOptionType.NoValue);
+
                 var verbosity = restore.Option(
                     XPlatUtility.VerbosityOption,
                     Strings.Switch_Verbosity,
@@ -104,10 +109,13 @@ namespace NuGet.CommandLine.XPlat
                             CachingSourceProvider = sourceProvider
                         };
 
-                        var defaultRuntimes = RequestRuntimeUtility.GetDefaultRestoreRuntimes(
-                            PlatformServices.Default.Runtime.OperatingSystem,
-                            PlatformServices.Default.Runtime.GetRuntimeOsName());
-                        restoreContext.FallbackRuntimes.UnionWith(defaultRuntimes);
+                        if (inferRuntimes.HasValue())
+                        {
+                            var defaultRuntimes = RequestRuntimeUtility.GetDefaultRestoreRuntimes(
+                                PlatformServices.Default.Runtime.OperatingSystem,
+                                PlatformServices.Default.Runtime.GetRuntimeOsName());
+                            restoreContext.FallbackRuntimes.UnionWith(defaultRuntimes);
+                        }
 
                         var restoreSummaries = await RestoreRunner.Run(restoreContext);
 
