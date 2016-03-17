@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using NuGet.Packaging;
 
-namespace NuGet.CommandLine.Rules
+namespace NuGet.Commands.Rules
 {
     internal class InitScriptNotUnderToolsRule : IPackageRule
     {
-        public IEnumerable<PackageIssue> Validate(IPackage package)
+        public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
         {
-            foreach (var file in package.GetToolFiles())
+            foreach (var file in builder.Files)
             {
                 string name = Path.GetFileName(file.Path);
                 if (file.TargetFramework != null && name.Equals("init.ps1", StringComparison.OrdinalIgnoreCase))

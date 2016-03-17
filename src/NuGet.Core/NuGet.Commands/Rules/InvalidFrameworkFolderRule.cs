@@ -4,55 +4,59 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
+using NuGet.Packaging;
 
-namespace NuGet.CommandLine.Rules
+namespace NuGet.Commands.Rules
 {
     internal class InvalidFrameworkFolderRule : IPackageRule
     {
-        public IEnumerable<PackageIssue> Validate(IPackage package)
+        private const string LibDirectory = "lib";
+
+        public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
         {
             var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var file in package.GetFiles())
+            foreach (var file in builder.Files)
             {
                 string path = file.Path;
                 string[] parts = path.Split(Path.DirectorySeparatorChar);
-                if (parts.Length >= 3 && parts[0].Equals(Constants.LibDirectory, StringComparison.OrdinalIgnoreCase))
+                if (parts.Length >= 3 && parts[0].Equals(LibDirectory, StringComparison.OrdinalIgnoreCase))
                 {
-                    set.Add(parts[1]);
+                    set.Add(path);
                 }
             }
 
-            return set.Where(s => !IsValidFrameworkName(s) && !IsValidCultureName(package, s))
+            return set.Where(s => !IsValidFrameworkName(s) && !IsValidCultureName(builder, s))
                       .Select(CreatePackageIssue);
         }
 
-        private static bool IsValidFrameworkName(string name)
+        private static bool IsValidFrameworkName(string path)
         {
             FrameworkName fx;
             try
             {
-                fx = VersionUtility.ParseFrameworkName(name);
+                string effectivePath;
+                fx = FrameworkNameUtility.ParseFrameworkNameFromFilePath(path, out effectivePath);
             }
             catch (ArgumentException)
             {
-                fx = VersionUtility.UnsupportedFrameworkName;
+                fx = null;
             }
 
-            return fx != VersionUtility.UnsupportedFrameworkName;
+            return fx != null;
         }
 
-        private static bool IsValidCultureName(IPackage package, string name)
+        private static bool IsValidCultureName(PackageBuilder builder, string name)
         {
             // starting from NuGet 1.8, we support localized packages, which
             // can have a culture folder under lib, e.g. lib\fr-FR\strings.resources.dll
 
-            if (String.IsNullOrEmpty(package.Language))
+            if (String.IsNullOrEmpty(builder.Language))
             {
                 return false;
             }
 
             // the folder name is considered valid if it matches the package's Language property.
-            return name.Equals(package.Language, StringComparison.OrdinalIgnoreCase);
+            return name.Equals(builder.Language, StringComparison.OrdinalIgnoreCase);
         }
 
         private PackageIssue CreatePackageIssue(string target)

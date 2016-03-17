@@ -220,4 +220,65 @@
   <data name="Restore_Switch_NoCache_Description" xml:space="preserve">
     <value>Do not cache packages and http requests.</value>
   </data>
+  <data name="BasePath_Description" xml:space="preserve">
+    <value>The base path of the files defined in the nuspec file.</value>
+  </data>
+  <data name="CommandLine_Warning" xml:space="preserve">
+    <value>WARNING: {0}</value>
+  </data>
+  <data name="ExcludeEmptyDirectories_Description" xml:space="preserve">
+    <value>Prevent inclusion of empty directories when building the package.</value>
+  </data>
+  <data name="InputFile_Description" xml:space="preserve">
+    <value>Specify the location of the nuspec or project file to create a package.</value>
+  </data>
+  <data name="MinClientVersion_Description" xml:space="preserve">
+    <value>Set the minClientVersion attribute for the created package.</value>
+    <comment>Please don't localize "minClientVersion"</comment>
+  </data>
+  <data name="NoDefaultExcludes_Description" xml:space="preserve">
+    <value>Prevent default exclusion of NuGet package files and files and folders starting with a dot e.g. .svn.</value>
+  </data>
+  <data name="NoPackageAnalysis_Description" xml:space="preserve">
+    <value>Specify if the command should not run package analysis after building the package.</value>
+  </data>
+  <data name="NuGetDocs" xml:space="preserve">
+    <value>http://docs.nuget.org/</value>
+  </data>
+  <data name="OutputDirectory_Description" xml:space="preserve">
+    <value>Specifies the directory for the created NuGet package file. If not specified, uses the current directory</value>
+  </data>
+  <data name="PackageCommandInvalidMinClientVersion" xml:space="preserve">
+    <value>The value of MinClientVersion argument is not a valid version.</value>
+  </data>
+  <data name="PackCommand_Description" xml:space="preserve">
+    <value>Creates a NuGet package based on the specified nuspec or project file</value>
+  </data>
+  <data name="Suffix_Description" xml:space="preserve">
+    <value>Appends a pre-release suffix to the internally generated version number.</value>
+  </data>
+  <data name="Symbols_Description" xml:space="preserve">
+    <value>Determines if a package containing sources and symbols should be created. When specified with a nuspec, creates a regular NuGet package file and the corresponding symbols package.</value>
+  </data>
+  <data name="Version_Description" xml:space="preserve">
+    <value>Overrides the version number from the nuspec file.</value>
+  </data>
+  <data name="Build_Description" xml:space="preserve">
+    <value>Determines if the project should be built before building the package.</value>
+  </data>
+  <data name="IncludeReferencedProjects_Description" xml:space="preserve">
+    <value>Include referenced projects either as dependencies or as part of the package.</value>
+  </data>
+  <data name="MsBuildVersion_Description" xml:space="preserve">
+    <value>Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild.</value>
+  </data>
+  <data name="PackageCommandAttemptingToBuildPackage" xml:space="preserve">
+    <value>Attempting to build package from '{0}'.</value>
+  </data>
+  <data name="PackageVersionInvalid" xml:space="preserve">
+    <value>Version string specified '{0}' is invalid.</value>
+  </data>
+  <data name="Tool_Description" xml:space="preserve">
+    <value>Determines if the output files of the project should be in the tool folder.</value>
+  </data>
 </root>

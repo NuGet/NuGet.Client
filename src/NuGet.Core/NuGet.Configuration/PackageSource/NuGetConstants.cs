@@ -20,6 +20,7 @@ namespace NuGet.Configuration
         public static readonly string PackageExtension = ".nupkg";
         public static readonly string SymbolsExtension = ".symbols" + PackageExtension;
         public static readonly string ManifestExtension = ".nuspec";
+        public static readonly string PackageReferenceFile = "packages.config";
 
         public static readonly string FeedName = "nuget.org";
 
