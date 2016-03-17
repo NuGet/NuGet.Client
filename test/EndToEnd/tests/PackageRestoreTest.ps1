@@ -351,10 +351,9 @@ function Test-PackageRestore-InitCalled
                       <packages>
                           <package id="RestorePackage" version="1.0.0" targetFramework="net45" />
                       </packages>'
-    
-    $packageConfigFilename = Join-Path (Get-ProjectDir $p) "packages.config"
+    $packageConfigFilename = Join-Path (Get-ProjectDir $proj) "packages.config"
     $packages.Save($packageConfigFilename)
-
+    
     try 
     {   
         # Act - cause package restore
