@@ -121,6 +121,9 @@ namespace NuGet.ProjectModel
                 targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
                 dependencies.AddRange(targetFrameworkInfo.Dependencies);
 
+                // Remove all framework assemblies
+                dependencies.RemoveAll(d => !d.LibraryRange.TypeConstraintAllows(LibraryDependencyTarget.PackageProjectExternal));
+
                 // Disallow projects (resolved by directory) for non-xproj msbuild projects.
                 // If there is no msbuild path then resolving by directory is allowed.
                 // CSProj does not allow directory to directory look up.
