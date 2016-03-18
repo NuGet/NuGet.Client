@@ -164,7 +164,7 @@ namespace NuGet.Protocol.Core.v2
             if (dataServiceRepo != null)
             {
                 // Clone the repo to allow for concurrent calls
-                var sourceUri = new Uri(dataServiceRepo.Source);
+                var sourceUri = UriUtility.CreateSourceUri(dataServiceRepo.Source);
                 dataServiceRepo = new DataServicePackageRepository(sourceUri);
 
                 var package = dataServiceRepo.FindPackage(identity.Id, version);

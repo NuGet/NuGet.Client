@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using NuGet.Common;
 
 namespace NuGet.Configuration
 {
@@ -20,6 +21,22 @@ namespace NuGet.Configuration
         public string Name { get; private set; }
 
         public string Source { get; set; }
+
+        /// <summary>
+        /// Returns null if Source is an invalid URI
+        /// </summary>
+        public Uri TrySourceAsUri
+        {
+            get { return UriUtility.TryCreateSourceUri(Source, UriKind.Absolute); }
+        }
+
+        /// <summary>
+        /// Throws if Source is an invalid URI
+        /// </summary>
+        public Uri SourceUri
+        {
+            get { return UriUtility.CreateSourceUri(Source, UriKind.Absolute); }
+        }
 
         /// <summary>
         /// This does not represent just the NuGet Official Feed alone
@@ -92,8 +109,8 @@ namespace NuGet.Configuration
             {
                 if (!_isLocal.HasValue)
                 {
-                    Uri uri;
-                    if (Uri.TryCreate(Source, UriKind.Absolute, out uri))
+                    Uri uri = TrySourceAsUri;
+                    if (uri != null)
                     {
                         _isLocal = uri.IsFile;
                     }

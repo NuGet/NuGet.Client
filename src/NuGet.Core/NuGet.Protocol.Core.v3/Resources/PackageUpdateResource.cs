@@ -165,7 +165,7 @@ namespace NuGet.Protocol.Core.Types
             ILogger log,
             CancellationToken token)
         {
-            var sourceUri = new Uri(source);
+            var sourceUri = UriUtility.CreateSourceUri(source);
             var sourceName = GetSourceDisplayName(source);
 
             log.LogInformation(string.Format(CultureInfo.CurrentCulture,
@@ -369,7 +369,7 @@ namespace NuGet.Protocol.Core.Types
         // Deletes a package from a FileSystem.
         private void DeletePackageFromFileSystem(string source, string packageId, string packageVersion, ILogger logger)
         {
-            var sourceuri = new Uri(source);
+            var sourceuri = UriUtility.CreateSourceUri(source);
             var root = sourceuri.LocalPath;
             var resolver = new PackagePathResolver(sourceuri.AbsolutePath, useSideBySidePaths: true);
             resolver.GetPackageFileName(new Packaging.Core.PackageIdentity(packageId, new NuGetVersion(packageVersion)));
@@ -444,7 +444,7 @@ namespace NuGet.Protocol.Core.Types
                 value += "/";
             }
 
-            return new Uri(value);
+            return UriUtility.CreateSourceUri(value);
         }
 
         private bool IsV2LocalRepository(string root)

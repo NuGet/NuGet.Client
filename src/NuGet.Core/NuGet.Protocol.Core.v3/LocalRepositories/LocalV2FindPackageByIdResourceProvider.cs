@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol.Core.v3.LocalRepositories
@@ -30,8 +31,8 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
         {
             INuGetResource resource = null;
 
-            Uri uri;
-            if (!Uri.TryCreate(source.PackageSource.Source, UriKind.Absolute, out uri) || uri.IsFile)
+            Uri uri = source.PackageSource.TrySourceAsUri;
+            if (uri == null || uri.IsFile)
             {
                 if (!LocalV2FindPackageByIdResource.GetNupkgFiles(source.PackageSource.Source, id: string.Empty).Any())
                 {

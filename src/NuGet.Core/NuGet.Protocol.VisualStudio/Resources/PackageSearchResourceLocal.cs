@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v2;
 using NuGet.Versioning;
@@ -111,8 +112,8 @@ namespace NuGet.Protocol.VisualStudio
                 return false;
             }
 
-            Uri uri;
-            if (Uri.TryCreate(source, UriKind.Absolute, out uri))
+            Uri uri = UriUtility.TryCreateSourceUri(source, UriKind.Absolute);
+            if (uri != null)
             {
                 return (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
             }
@@ -124,8 +125,8 @@ namespace NuGet.Protocol.VisualStudio
 
         private static bool IsLocalOrUNC(string currentSource)
         {
-            Uri currentURI;
-            if (Uri.TryCreate(currentSource, UriKind.RelativeOrAbsolute, out currentURI))
+            Uri currentURI = UriUtility.TryCreateSourceUri(currentSource, UriKind.RelativeOrAbsolute);
+            if (currentURI != null)
             {
                 if (currentURI.IsFile || currentURI.IsUnc)
                 {

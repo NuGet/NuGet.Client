@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
@@ -66,7 +67,7 @@ namespace NuGet.Protocol
 
         public static HttpClientHandler CreateCredentialHandler(PackageSource packageSource)
         {
-            var uri = new Uri(packageSource.Source);
+            var uri = packageSource.SourceUri;
             var proxy = ProxyCache.Instance.GetProxy(uri);
 
             if (proxy != null

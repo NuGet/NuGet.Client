@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Net;
+using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -13,7 +14,7 @@ namespace NuGet.Protocol.Core.v2
     {
         public static bool IsV2(Configuration.PackageSource source)
         {
-            var url = new Uri(source.Source);
+            var url = source.SourceUri;
 
             // If the url is a directory, then it's a V2 source
             if (url.IsFile
