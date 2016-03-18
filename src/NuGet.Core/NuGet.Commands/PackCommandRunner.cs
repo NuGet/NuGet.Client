@@ -16,9 +16,9 @@ namespace NuGet.Commands
     {
         public delegate IProjectFactory CreateProjectFactory(PackArgs packArgs, string path);
 
-        private PackArgs packArgs;
+        private PackArgs _packArgs;
         internal static readonly string SymbolsExtension = ".symbols" + NuGetConstants.PackageExtension;
-        private CreateProjectFactory createProjectFactory;
+        private CreateProjectFactory _createProjectFactory;
 
 
         private static readonly HashSet<string> _allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
@@ -56,14 +56,14 @@ namespace NuGet.Commands
 
         public PackCommandRunner(PackArgs packArgs, CreateProjectFactory createProjectFactory)
         {
-            this.createProjectFactory = createProjectFactory;
-            this.packArgs = packArgs;
+            this._createProjectFactory = createProjectFactory;
+            this._packArgs = packArgs;
             Rules = DefaultPackageRuleSet.Rules;
         }
 
         public void BuildPackage()
         {
-            PackageArchiveReader package = BuildPackage(Path.GetFullPath(Path.Combine(packArgs.CurrentDirectory, packArgs.Path)));
+            PackageArchiveReader package = BuildPackage(Path.GetFullPath(Path.Combine(_packArgs.CurrentDirectory, _packArgs.Path)));
         }
 
         private PackageArchiveReader BuildPackage(string path)
@@ -84,7 +84,7 @@ namespace NuGet.Commands
         {
             PackageBuilder packageBuilder = CreatePackageBuilderFromNuspec(path);
 
-            if (packArgs.Symbols)
+            if (_packArgs.Symbols)
             {
                 // remove source related files when building the lib package
                 ExcludeFilesForLibPackage(packageBuilder.Files);
@@ -97,12 +97,12 @@ namespace NuGet.Commands
 
             PackageArchiveReader package = BuildPackage(packageBuilder);
 
-            if (packArgs.Symbols)
+            if (_packArgs.Symbols)
             {
                 BuildSymbolsPackage(path);
             }
 
-            if (package != null && !packArgs.NoPackageAnalysis)
+            if (package != null && !_packArgs.NoPackageAnalysis)
             {
                 AnalyzePackage(package, packageBuilder);
             }
@@ -113,51 +113,51 @@ namespace NuGet.Commands
         private PackageBuilder CreatePackageBuilderFromNuspec(string path)
         {
             // Set the version property if the flag is set
-            if (!String.IsNullOrEmpty(packArgs.Version))
+            if (!String.IsNullOrEmpty(_packArgs.Version))
             {
-                packArgs.Properties["version"] = packArgs.Version;
+                _packArgs.Properties["version"] = _packArgs.Version;
             }
 
-            if (String.IsNullOrEmpty(packArgs.BasePath))
+            if (String.IsNullOrEmpty(_packArgs.BasePath))
             {
-                return new PackageBuilder(path, packArgs.GetPropertyValue, !packArgs.ExcludeEmptyDirectories);
+                return new PackageBuilder(path, _packArgs.GetPropertyValue, !_packArgs.ExcludeEmptyDirectories);
             }
-            return new PackageBuilder(path, packArgs.BasePath, packArgs.GetPropertyValue, !packArgs.ExcludeEmptyDirectories);
+            return new PackageBuilder(path, _packArgs.BasePath, _packArgs.GetPropertyValue, !_packArgs.ExcludeEmptyDirectories);
         }
 
         private PackageArchiveReader BuildFromProjectFile(string path)
         {
-            if (String.IsNullOrEmpty(packArgs.MsBuildDirectory.Value) || createProjectFactory == null)
+            if (String.IsNullOrEmpty(_packArgs.MsBuildDirectory.Value) || _createProjectFactory == null)
             {
-                packArgs.Logger.LogError(Strings.Error_CannotFindMsbuild);
+                _packArgs.Logger.LogError(Strings.Error_CannotFindMsbuild);
                 return null;
             }
 
-            var factory = createProjectFactory.Invoke(packArgs, path);
+            var factory = _createProjectFactory.Invoke(_packArgs, path);
 
             // Add the additional Properties to the properties of the Project Factory
-            foreach (var property in packArgs.Properties)
+            foreach (var property in _packArgs.Properties)
             {
                 if (factory.GetProjectProperties().ContainsKey(property.Key))
                 {
-                    packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_DuplicatePropertyKey, property.Key));
+                    _packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_DuplicatePropertyKey, property.Key));
                 }
                 factory.GetProjectProperties()[property.Key] = property.Value;
             }
 
             // Create a builder for the main package as well as the sources/symbols package
-            PackageBuilder mainPackageBuilder = factory.CreateBuilder(packArgs.BasePath);
+            PackageBuilder mainPackageBuilder = factory.CreateBuilder(_packArgs.BasePath);
 
             // Build the main package
             PackageArchiveReader package = BuildPackage(mainPackageBuilder);
 
-            if (package != null && !packArgs.NoPackageAnalysis)
+            if (package != null && !_packArgs.NoPackageAnalysis)
             {
                 AnalyzePackage(package, mainPackageBuilder);
             }
 
             // If we're excluding symbols then do nothing else
-            if (!packArgs.Symbols)
+            if (!_packArgs.Symbols)
             {
                 return package;
             }
@@ -166,7 +166,7 @@ namespace NuGet.Commands
             WriteLine(Strings.Log_PackageCommandAttemptingToBuildSymbolsPackage, Path.GetFileName(path));
 
             factory.SetIncludeSymbols(true);
-            PackageBuilder symbolsBuilder = factory.CreateBuilder(packArgs.BasePath);
+            PackageBuilder symbolsBuilder = factory.CreateBuilder(_packArgs.BasePath);
             symbolsBuilder.Version = mainPackageBuilder.Version;
 
             // Get the file name for the sources package and build it
@@ -179,19 +179,19 @@ namespace NuGet.Commands
 
         private PackageArchiveReader BuildPackage(PackageBuilder builder, string outputPath = null)
         {
-            if (!String.IsNullOrEmpty(packArgs.Version))
+            if (!String.IsNullOrEmpty(_packArgs.Version))
             {
-                builder.Version = new NuGetVersion(packArgs.Version);
+                builder.Version = new NuGetVersion(_packArgs.Version);
             }
 
-            if (!string.IsNullOrEmpty(packArgs.Suffix))
+            if (!string.IsNullOrEmpty(_packArgs.Suffix))
             {
-                builder.Version = new NuGetVersion(builder.Version.Version, packArgs.Suffix);
+                builder.Version = new NuGetVersion(builder.Version.Version, _packArgs.Suffix);
             }
 
-            if (packArgs.MinClientVersion != null)
+            if (_packArgs.MinClientVersion != null)
             {
-                builder.MinClientVersion = packArgs.MinClientVersion;
+                builder.MinClientVersion = _packArgs.MinClientVersion;
             }
 
             outputPath = outputPath ?? GetOutputPath(builder);
@@ -216,7 +216,7 @@ namespace NuGet.Commands
                 throw;
             }
 
-            if (packArgs.LogLevel == LogLevel.Verbose)
+            if (_packArgs.LogLevel == LogLevel.Verbose)
             {
                 PrintVerbose(outputPath, builder);
             }
@@ -272,7 +272,7 @@ namespace NuGet.Commands
             // Review: This exclusion should be done by the package builder because it knows which file would collide with the auto-generated
             // manifest file.
             var wildCards = _excludes.Concat(new[] { @"**\*" + NuGetConstants.ManifestExtension });
-            if (!packArgs.NoDefaultExcludes)
+            if (!_packArgs.NoDefaultExcludes)
             {
                 // The user has not explicitly disabled default filtering.
                 wildCards = wildCards.Concat(_defaultExcludes);
@@ -294,12 +294,12 @@ namespace NuGet.Commands
             var path = physicalPackageFile.SourcePath;
             // Make sure that the basepath has a directory separator
 
-            int index = path.IndexOf(packArgs.BasePath.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+            int index = path.IndexOf(_packArgs.BasePath.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
             if (index != -1)
             {
                 // Since wildcards are going to be relative to the base path, remove the BasePath portion of the file's source path.
                 // Also remove any leading path separator slashes
-                path = path.Substring(index + packArgs.BasePath.Length).TrimStart(Path.DirectorySeparatorChar);
+                path = path.Substring(index + _packArgs.BasePath.Length).TrimStart(Path.DirectorySeparatorChar);
             }
 
             return path;
@@ -340,7 +340,7 @@ namespace NuGet.Commands
 
             if (issues.Count > 0)
             {
-                packArgs.Logger.LogWarning(
+                _packArgs.Logger.LogWarning(
                     String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandPackageIssueSummary, builder.Id));
                 foreach (var issue in issues)
                 {
@@ -352,12 +352,12 @@ namespace NuGet.Commands
         private void PrintPackageIssue(PackageIssue issue)
         {
             WriteLine(String.Empty);
-            packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueTitle, issue.Title));
-            packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueDescription, issue.Description));
+            _packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueTitle, issue.Title));
+            _packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueDescription, issue.Description));
 
             if (!String.IsNullOrEmpty(issue.Solution))
             {
-                packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueSolution, issue.Solution));
+                _packArgs.Logger.LogWarning(String.Format(CultureInfo.CurrentCulture, Strings.Warning_PackageCommandIssueSolution, issue.Solution));
             }
         }
 
@@ -373,7 +373,7 @@ namespace NuGet.Commands
 
         private string GetOutputPath(PackageBuilder builder, bool symbols = false)
         {
-            string version = String.IsNullOrEmpty(packArgs.Version) ? builder.Version.ToString() : packArgs.Version;
+            string version = String.IsNullOrEmpty(_packArgs.Version) ? builder.Version.ToString() : _packArgs.Version;
 
             // Output file is {id}.{version}
             string outputFile = builder.Id + "." + version;
@@ -388,7 +388,7 @@ namespace NuGet.Commands
                 outputFile += NuGetConstants.PackageExtension;
             }
 
-            string outputDirectory = packArgs.OutputDirectory ?? packArgs.CurrentDirectory;
+            string outputDirectory = _packArgs.OutputDirectory ?? _packArgs.CurrentDirectory;
             return Path.Combine(outputDirectory, outputFile);
         }
 
@@ -426,7 +426,7 @@ namespace NuGet.Commands
 
         private void WriteLine(string message, object arg = null)
         {
-            packArgs.Logger.LogInformation(String.Format(CultureInfo.CurrentCulture, message, arg?.ToString()));
+            _packArgs.Logger.LogInformation(String.Format(CultureInfo.CurrentCulture, message, arg?.ToString()));
         }
     }
 }
