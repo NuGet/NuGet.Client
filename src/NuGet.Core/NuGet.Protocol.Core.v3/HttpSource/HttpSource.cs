@@ -24,32 +24,13 @@ using NuGet.Protocol.Core.v3;
 
 namespace NuGet.Protocol
 {
-    /// <summary>
-    /// Represents a source status per active operation
-    /// </summary>
-    public class AuthenticationAmbientState
-    {
-        public bool IsBlocked { get; set; }
-        public int AuthenticationRetriesCount { get; set; }
-
-        public void Increment()
-        {
-            AuthenticationRetriesCount++;
-
-            if (AuthenticationRetriesCount > HttpHandlerResourceV3Provider.MaxAuthRetries)
-            {
-                IsBlocked = true;
-            }
-        }
-    }
-
     public class HttpSource : IDisposable
     {
         private const int BufferSize = 8192;
         private readonly Func<Task<HttpHandlerResource>> _messageHandlerFactory;
         private readonly Uri _baseUri;
         private HttpClient _httpClient;
-        private Dictionary<string, AuthenticationAmbientState> _authStates = new Dictionary<string, AuthenticationAmbientState>();
+        private Dictionary<string, AmbientAuthenticationState> _authStates = new Dictionary<string, AmbientAuthenticationState>();
         private HttpHandlerResource _httpHandler;
         private CredentialHelper _credentials;
         private string _httpCacheDirectory;
@@ -410,13 +391,13 @@ namespace NuGet.Protocol
             }
         }
 
-        private AuthenticationAmbientState GetAuthenticationState()
+        private AmbientAuthenticationState GetAuthenticationState()
         {
-            var correlationId = ActivityCorrelationContext.Current?.CorrelationId ?? string.Empty;
+            var correlationId = ActivityCorrelationContext.Current.CorrelationId;
 
             if (!_authStates.ContainsKey(correlationId))
             {
-                _authStates[correlationId] = new AuthenticationAmbientState
+                _authStates[correlationId] = new AmbientAuthenticationState
                 {
                     IsBlocked = false,
                     AuthenticationRetriesCount = 0

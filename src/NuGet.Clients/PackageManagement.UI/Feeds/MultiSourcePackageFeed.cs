@@ -58,8 +58,6 @@ namespace NuGet.PackageManagement.UI
 
         public async Task<SearchResult<IPackageSearchMetadata>> SearchAsync(string searchText, SearchFilter filter, CancellationToken cancellationToken)
         {
-            ActivityCorrelationContext.StartNew();
-
             var searchTasks = TaskCombinators.ObserveErrorsAsync(
                 _sourceRepositories,
                 r => r.PackageSource.Name,
