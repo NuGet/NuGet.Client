@@ -688,7 +688,7 @@ namespace NuGet.Commands
         private void DowngradeLockFileToV1(LockFile lockFile)
         {
             // Remove projects from the library section
-            var libraryProjects = lockFile.Libraries.Where(lib => lib.Type == LibraryTypes.Project).ToArray();
+            var libraryProjects = lockFile.Libraries.Where(lib => lib.Type == LibraryType.Project).ToArray();
 
             foreach (var library in libraryProjects)
             {
@@ -698,7 +698,7 @@ namespace NuGet.Commands
             // Remove projects from the targets section
             foreach (var target in lockFile.Targets)
             {
-                var targetProjects = target.Libraries.Where(lib => lib.Type == LibraryTypes.Project).ToArray();
+                var targetProjects = target.Libraries.Where(lib => lib.Type == LibraryType.Project).ToArray();
 
                 foreach (var library in targetProjects)
                 {

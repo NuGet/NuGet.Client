@@ -84,7 +84,7 @@ namespace NuGet.DependencyResolver
                 {
                     Name = libraryRange.Name,
                     Version = packageVersion,
-                    Type = LibraryTypes.Package
+                    Type = LibraryType.Package
                 };
             }
 

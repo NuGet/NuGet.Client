@@ -407,7 +407,7 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 Assert.True(result.Success);
-                Assert.Equal(LibraryTypes.Project, project3Lib.Type);
+                Assert.Equal(LibraryType.Project, project3Lib.Type);
             }
         }
 
@@ -718,7 +718,7 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.True(result.Success);
                 Assert.Equal(0, result.GetAllUnresolved().Count);
-                Assert.Equal(LibraryTypes.Project, project2Lib.Type);
+                Assert.Equal(LibraryType.Project, project2Lib.Type);
             }
         }
 
@@ -867,7 +867,7 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.True(result.Success);
                 Assert.Equal(0, result.GetAllUnresolved().Count);
-                Assert.Equal(LibraryTypes.Project, project2Lib.Type);
+                Assert.Equal(LibraryType.Project, project2Lib.Type);
             }
         }
 
@@ -952,7 +952,7 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.True(result.Success);
                 Assert.Equal(0, result.GetAllUnresolved().Count);
-                Assert.Equal(LibraryTypes.Project, project2Lib.Type);
+                Assert.Equal(LibraryType.Project, project2Lib.Type);
             }
         }
     }

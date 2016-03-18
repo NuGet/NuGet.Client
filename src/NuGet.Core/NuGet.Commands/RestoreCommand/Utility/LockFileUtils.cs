@@ -55,7 +55,7 @@ namespace NuGet.Commands
             // it has the correct casing that runtime needs during dependency resolution.
             lockFileLib.Name = correctedPackageName ?? package.Id;
             lockFileLib.Version = package.Version;
-            lockFileLib.Type = LibraryTypes.Package;
+            lockFileLib.Type = LibraryType.Package;
 
             IList<string> files;
             var contentItems = new ContentItemCollection();
@@ -66,11 +66,11 @@ namespace NuGet.Commands
             {
                 using (var packageReader = new PackageArchiveReader(package.ZipPath))
                 {
-                    if (Path.DirectorySeparatorChar != '/')
+                    if (Path.DirectorySeparatorChar != LockFile.DirectorySeparatorChar)
                     {
                         files = packageReader
                             .GetFiles()
-                            .Select(p => p.Replace(Path.DirectorySeparatorChar, '/'))
+                            .Select(p => p.Replace(Path.DirectorySeparatorChar, LockFile.DirectorySeparatorChar))
                             .ToList();
                     }
                     else
@@ -83,9 +83,9 @@ namespace NuGet.Commands
             }
             else
             {
-                if (Path.DirectorySeparatorChar != '/')
+                if (Path.DirectorySeparatorChar != LockFile.DirectorySeparatorChar)
                 {
-                    files = library.Files.Select(p => p.Replace(Path.DirectorySeparatorChar, '/')).ToList();
+                    files = library.Files.Select(p => p.Replace(Path.DirectorySeparatorChar, LockFile.DirectorySeparatorChar)).ToList();
                 }
                 else
                 {
@@ -195,7 +195,7 @@ namespace NuGet.Commands
                 // that could be contained in the runtime specific target graphs.
                 // These items are contained in a flat list and have additional properties 
                 // for the RID and lock file section the assembly would belong to.
-                var runtimeTargetItems = new List<LockFileItem>();
+                var runtimeTargetItems = new List<LockFileRuntimeTarget>();
 
                 // Runtime
                 runtimeTargetItems.AddRange(GetRuntimeTargetLockFileItems(
@@ -304,7 +304,7 @@ namespace NuGet.Commands
         /// Clears a lock file group and replaces the first item with _._ if 
         /// the group has items. Empty groups are left alone.
         /// </summary>
-        private static void ClearIfExists(IList<LockFileItem> group)
+        private static void ClearIfExists<T>(IList<T> group) where T: LockFileItem
         {
             if (GroupHasNonEmptyItems(group))
             {
@@ -324,7 +324,7 @@ namespace NuGet.Commands
                 group.Clear();
 
                 // Create a new item with the _._ path
-                var emptyItem = new LockFileItem(emptyDir);
+                var emptyItem = (T)Activator.CreateInstance(typeof(T), new [] { emptyDir });
 
                 // Copy over the properties from the first 
                 foreach (var pair in firstItem.Properties)
@@ -339,7 +339,7 @@ namespace NuGet.Commands
         /// <summary>
         /// True if the group has items that do not end with _._
         /// </summary>
-        private static bool GroupHasNonEmptyItems(IList<LockFileItem> group)
+        private static bool GroupHasNonEmptyItems(IEnumerable<LockFileItem> group)
         {
             return group?.Any(item => !item.Path.EndsWith(PackagingCoreConstants.ForwardSlashEmptyFolder)) == true;
         }
@@ -408,7 +408,7 @@ namespace NuGet.Commands
             return groups;
         }
 
-        private static List<LockFileItem> GetRuntimeTargetLockFileItems(
+        private static List<LockFileRuntimeTarget> GetRuntimeTargetLockFileItems(
             RestoreTargetGraph targetGraph,
             LockFileTargetLibrary lockFileLib,
             ContentItemCollection contentItems,
@@ -430,7 +430,7 @@ namespace NuGet.Commands
 
             if ((dependencyType & groupType) == LibraryIncludeFlags.None)
             {
-                ClearIfExists(items);
+                ClearIfExists<LockFileRuntimeTarget>(items);
             }
 
             return items;
@@ -441,9 +441,9 @@ namespace NuGet.Commands
         /// </summary>
         /// <param name="groups">Library items grouped by RID.</param>
         /// <param name="groupLabel">Lock file section the items apply to.</param>
-        private static List<LockFileItem> GetRuntimeTargetItems(List<ContentItemGroup> groups, string assetType)
+        private static List<LockFileRuntimeTarget> GetRuntimeTargetItems(List<ContentItemGroup> groups, string assetType)
         {
-            var results = new List<LockFileItem>();
+            var results = new List<LockFileRuntimeTarget>();
 
             // Loop through RID groups
             foreach (var group in groups)
@@ -453,15 +453,11 @@ namespace NuGet.Commands
                 // Create lock file entries for each assembly.
                 foreach (var item in group.Items)
                 {
-                    var lockFileItem = new LockFileItem(item.Path);
-
-                    // Group this item would be in, ex: runtime, native, resources
-                    lockFileItem.Properties.Add("assetType", assetType);
-
-                    // RID to filter on when the app runs.
-                    lockFileItem.Properties.Add(ManagedCodeConventions.PropertyNames.RuntimeIdentifier, rid);
-
-                    results.Add(lockFileItem);
+                    results.Add(new LockFileRuntimeTarget(item.Path)
+                    {
+                        AssetType = assetType,
+                        Runtime = rid
+                    });
                 }
             }
 

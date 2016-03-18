@@ -21,7 +21,7 @@ namespace NuGet.ProjectModel
         public static readonly int Version = 2;
         public static readonly string LockFileName = "project.lock.json";
 
-        private static readonly char[] PathSplitChars = new[] { '/' };
+        private static readonly char[] PathSplitChars = new[] { LockFile.DirectorySeparatorChar };
 
         private const string LockedProperty = "locked";
         private const string VersionProperty = "version";
@@ -108,7 +108,9 @@ namespace NuGet.ProjectModel
                         }
                     }
                     var token = JToken.Load(jsonReader);
-                    return ReadLockFile(token as JObject);
+                    var lockFile = ReadLockFile(token as JObject);
+                    lockFile.Path = path;
+                    return lockFile;
                 }
             }
             catch (Exception ex)
@@ -121,7 +123,8 @@ namespace NuGet.ProjectModel
                 return new LockFile
                 {
                     IsLocked = false,
-                    Version = int.MinValue
+                    Version = int.MinValue,
+                    Path = path
                 };
             }
         }
@@ -297,8 +300,8 @@ namespace NuGet.ProjectModel
             library.CompileTimeAssemblies = ReadObject(json[CompileProperty] as JObject, ReadFileItem);
             library.ResourceAssemblies = ReadObject(json[ResourceProperty] as JObject, ReadFileItem);
             library.NativeLibraries = ReadObject(json[NativeProperty] as JObject, ReadFileItem);
-            library.ContentFiles = ReadObject(json[ContentFilesProperty] as JObject, ReadFileItem);
-            library.RuntimeTargets = ReadObject(json[RuntimeTargetsProperty] as JObject, ReadFileItem);
+            library.ContentFiles = ReadObject(json[ContentFilesProperty] as JObject, ReadContentFile);
+            library.RuntimeTargets = ReadObject(json[RuntimeTargetsProperty] as JObject, ReadRuntimeTarget);
 
             return library;
         }
@@ -376,6 +379,16 @@ namespace NuGet.ProjectModel
             return new JProperty(library.Name + "/" + library.Version.ToNormalizedString(), json);
         }
 
+        private static LockFileRuntimeTarget ReadRuntimeTarget(string property, JToken json)
+        {
+            return ReadFileItem(property, json, path => new LockFileRuntimeTarget(path));
+        }
+
+        private static LockFileContentFile ReadContentFile(string property, JToken json)
+        {
+            return ReadFileItem(property, json, path => new LockFileContentFile(path));
+        }
+
         private static ProjectFileDependencyGroup ReadProjectFileDependencyGroup(string property, JToken json)
         {
             return new ProjectFileDependencyGroup(
@@ -422,7 +435,12 @@ namespace NuGet.ProjectModel
 
         private static LockFileItem ReadFileItem(string property, JToken json)
         {
-            var item = new LockFileItem(property);
+            return ReadFileItem(property, json, path => new LockFileItem(path));
+        }
+
+        private static T ReadFileItem<T>(string property, JToken json, Func<string, T> factory) where T: LockFileItem
+        {
+            var item = factory(property);
             foreach (var subProperty in json.OfType<JProperty>())
             {
                 item.Properties[subProperty.Name] = subProperty.Value.Value<string>();

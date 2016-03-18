@@ -14,8 +14,11 @@ namespace NuGet.ProjectModel
         // Tools run under a hard coded framework.
         public static readonly NuGetFramework ToolFramework = FrameworkConstants.CommonFrameworks.NetStandardApp15;
 
+        public static readonly char DirectorySeparatorChar = '/';
+
         // Set the version to the current default for new files.
         public int Version { get; set; } = LockFileFormat.Version;
+        public string Path { get; set; }
         public bool IsLocked { get; set; }
         public IList<ProjectFileDependencyGroup> ProjectFileDependencyGroups { get; set; } = new List<ProjectFileDependencyGroup>();
         public IList<LockFileLibrary> Libraries { get; set; } = new List<LockFileLibrary>();

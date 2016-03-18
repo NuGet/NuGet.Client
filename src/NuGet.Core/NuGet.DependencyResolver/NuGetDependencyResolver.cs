@@ -46,7 +46,7 @@ namespace NuGet.DependencyResolver
                     {
                         Name = package.Id,
                         Version = package.Version,
-                        Type = LibraryTypes.Package
+                        Type = LibraryType.Package
                     },
                     Path = package.ManifestPath,
                     Dependencies = GetDependencies(nuspecReader, targetFramework)

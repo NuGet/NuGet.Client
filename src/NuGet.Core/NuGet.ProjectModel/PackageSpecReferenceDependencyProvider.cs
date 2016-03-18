@@ -232,7 +232,7 @@ namespace NuGet.ProjectModel
                 {
                     Name = externalReference?.ProjectName ?? packageSpec.Name,
                     Version = packageSpec?.Version ?? NuGetVersion.Parse("1.0.0"),
-                    Type = LibraryTypes.Project,
+                    Type = LibraryType.Project,
                 },
                 Path = packageSpec?.FilePath,
                 Dependencies = uniqueDependencies,

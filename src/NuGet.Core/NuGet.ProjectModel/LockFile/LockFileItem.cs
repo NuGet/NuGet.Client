@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace NuGet.ProjectModel
 {
@@ -59,6 +60,20 @@ namespace NuGet.ProjectModel
             }
 
             return combiner.CombinedHash;
+        }
+
+        public static implicit operator LockFileItem(string path) => new LockFileItem(path);
+
+        protected string GetProperty(string name)
+        {
+            string value;
+            Properties.TryGetValue(name, out value);
+            return value;
+        }
+
+        protected void SetProperty(string name, string value)
+        {
+            Properties[name] = value;
         }
     }
 }

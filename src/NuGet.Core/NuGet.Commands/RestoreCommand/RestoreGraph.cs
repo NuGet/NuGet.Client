@@ -133,7 +133,7 @@ namespace NuGet.Commands
                             ranges.Add(new ResolverRequest(requestor, node.Key));
                         }
 
-                        if (string.Equals(node?.Item?.Key?.Type, LibraryTypes.Unresolved))
+                        if (string.Equals(node?.Item?.Key?.Type, LibraryType.Unresolved))
                         {
                             if (node.Key.VersionRange != null)
                             {

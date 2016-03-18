@@ -380,7 +380,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
-                Assert.Equal(3, target.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
+                Assert.Equal(3, target.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
 
 
                 Assert.Equal(0, GetNonEmptyCount(targets["packageY"].RuntimeAssemblies));
@@ -648,8 +648,8 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
-                Assert.Equal(3, target.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
-                Assert.Equal(3, result.LockFile.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
+                Assert.Equal(3, target.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
+                Assert.Equal(3, result.LockFile.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
                 Assert.Equal(0, msbuildTargets["TestProject1"].Count);
             }
         }
@@ -696,8 +696,8 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
-                Assert.Equal(3, target.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
-                Assert.Equal(3, result.LockFile.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
+                Assert.Equal(3, target.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
+                Assert.Equal(3, result.LockFile.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
                 Assert.Equal(3, msbuildTargets["TestProject1"].Count);
             }
         }
@@ -743,8 +743,8 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
-                Assert.Equal(3, target.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
-                Assert.Equal(3, result.LockFile.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
+                Assert.Equal(3, target.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
+                Assert.Equal(3, result.LockFile.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
                 Assert.Equal(0, msbuildTargets["TestProject1"].Count);
             }
         }
@@ -788,9 +788,9 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
-                Assert.Equal(3, target.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
-                Assert.Equal(3, result.LockFile.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
-                Assert.True(target.Libraries.Where(lib => lib.Type == LibraryTypes.Package).All(lib => IsEmptyFolder(lib.ContentFiles)));
+                Assert.Equal(3, target.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
+                Assert.Equal(3, result.LockFile.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
+                Assert.True(target.Libraries.Where(lib => lib.Type == LibraryType.Package).All(lib => IsEmptyFolder(lib.ContentFiles)));
             }
         }
 
@@ -835,10 +835,10 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
-                Assert.Equal(1, target.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
-                Assert.Equal(1, result.LockFile.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
-                Assert.Equal("packageZ", target.Libraries.Single(lib => lib.Type == LibraryTypes.Package).Name);
-                Assert.Equal(1, target.Libraries.Single(lib => lib.Type == LibraryTypes.Package).CompileTimeAssemblies.Count);
+                Assert.Equal(1, target.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
+                Assert.Equal(1, result.LockFile.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
+                Assert.Equal("packageZ", target.Libraries.Single(lib => lib.Type == LibraryType.Package).Name);
+                Assert.Equal(1, target.Libraries.Single(lib => lib.Type == LibraryType.Package).CompileTimeAssemblies.Count);
             }
         }
 
@@ -887,10 +887,10 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
-                Assert.Equal(1, target.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
-                Assert.Equal(1, result.LockFile.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
-                Assert.Equal("packageZ", target.Libraries.Single(lib => lib.Type == LibraryTypes.Package).Name);
-                Assert.Equal(1, target.Libraries.Single(lib => lib.Type == LibraryTypes.Package).CompileTimeAssemblies.Count);
+                Assert.Equal(1, target.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
+                Assert.Equal(1, result.LockFile.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
+                Assert.Equal("packageZ", target.Libraries.Single(lib => lib.Type == LibraryType.Package).Name);
+                Assert.Equal(1, target.Libraries.Single(lib => lib.Type == LibraryType.Package).CompileTimeAssemblies.Count);
             }
         }
 
@@ -935,8 +935,8 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
-                Assert.Equal(0, target.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
-                Assert.Equal(0, result.LockFile.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
+                Assert.Equal(0, target.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
+                Assert.Equal(0, result.LockFile.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
             }
         }
 
@@ -981,8 +981,8 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
-                Assert.Equal(0, target.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
-                Assert.Equal(0, result.LockFile.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
+                Assert.Equal(0, target.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
+                Assert.Equal(0, result.LockFile.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
                 Assert.Equal(0, dependencies.Count());
             }
         }
@@ -1039,8 +1039,8 @@ namespace NuGet.Commands.Test
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
                 Assert.Equal(0, logger.Errors);
                 Assert.Equal(0, logger.Warnings);
-                Assert.Equal(2, target.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
-                Assert.Equal(2, result.LockFile.Libraries.Where(lib => lib.Type == LibraryTypes.Package).Count());
+                Assert.Equal(2, target.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
+                Assert.Equal(2, result.LockFile.Libraries.Where(lib => lib.Type == LibraryType.Package).Count());
                 Assert.True(target.Libraries.Any(lib => lib.Name == "packageX"));
                 Assert.True(target.Libraries.Any(lib => lib.Name == "packageY"));
             }
@@ -1809,12 +1809,12 @@ namespace NuGet.Commands.Test
             SimpleTestPackageUtility.CreatePackages(packages, repositoryDir);
         }
 
-        private bool IsEmptyFolder(IList<LockFileItem> group)
+        private bool IsEmptyFolder(IEnumerable<LockFileItem> group)
         {
             return group.SingleOrDefault()?.Path.EndsWith("/_._") == true;
         }
 
-        private int GetNonEmptyCount(IList<LockFileItem> group)
+        private int GetNonEmptyCount(IEnumerable<LockFileItem> group)
         {
             return group.Where(e => !e.Path.EndsWith("/_._")).Count();
         }

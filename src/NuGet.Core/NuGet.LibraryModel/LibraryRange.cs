@@ -9,6 +9,21 @@ namespace NuGet.LibraryModel
 {
     public class LibraryRange : IEquatable<LibraryRange>
     {
+        public LibraryRange()
+        {
+        }
+
+        public LibraryRange(string name, LibraryDependencyTarget typeConstraint): this(name, null, typeConstraint)
+        {
+        }
+
+        public LibraryRange(string name, VersionRange versionRange, LibraryDependencyTarget typeConstraint)
+        {
+            Name = name;
+            VersionRange = versionRange;
+            TypeConstraint = typeConstraint;
+        }
+
         public string Name { get; set; }
 
         public VersionRange VersionRange { get; set; }
@@ -29,14 +44,14 @@ namespace NuGet.LibraryModel
             switch (TypeConstraint)
             {
                 case LibraryDependencyTarget.Reference:
-                    contraintString = LibraryTypes.Reference;
+                    contraintString = LibraryType.Reference;
                     break;
                 case LibraryDependencyTarget.ExternalProject:
-                    contraintString = LibraryTypes.ExternalProject;
+                    contraintString = LibraryType.ExternalProject;
                     break;
                 case LibraryDependencyTarget.Project:
                 case LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject:
-                    contraintString = LibraryTypes.Project;
+                    contraintString = LibraryType.Project;
                     break;
             }
 

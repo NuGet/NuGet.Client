@@ -72,7 +72,7 @@ namespace NuGet.Commands
                     continue;
                 }
 
-                if (library.Type == LibraryTypes.Project || library.Type == LibraryTypes.ExternalProject)
+                if (library.Type == LibraryType.Project || library.Type == LibraryType.ExternalProject)
                 {
                     // Project
                     LocalMatch localMatch = (LocalMatch)item.Data.Match;
@@ -81,7 +81,7 @@ namespace NuGet.Commands
                     {
                         Name = library.Name,
                         Version = library.Version,
-                        Type = LibraryTypes.Project,
+                        Type = LibraryType.Project,
                     };
 
                     // Set the relative path if a path exists
@@ -108,7 +108,7 @@ namespace NuGet.Commands
 
                     lockFile.Libraries.Add(projectLib);
                 }
-                else if (library.Type == LibraryTypes.Package)
+                else if (library.Type == LibraryType.Package)
                 {
                     // Packages
                     var packageInfo = repository.FindPackagesById(library.Name)
@@ -134,11 +134,11 @@ namespace NuGet.Commands
                             sha512,
                             correctedPackageName: library.Name);
                     }
-                    else if (Path.DirectorySeparatorChar != '/')
+                    else if (Path.DirectorySeparatorChar != LockFile.DirectorySeparatorChar)
                     {
                         // Fix slashes for content model patterns
                         lockFileLib.Files = lockFileLib.Files
-                            .Select(p => p.Replace(Path.DirectorySeparatorChar, '/'))
+                            .Select(p => p.Replace(Path.DirectorySeparatorChar, LockFile.DirectorySeparatorChar))
                             .ToList();
                     }
 
@@ -172,7 +172,7 @@ namespace NuGet.Commands
                 {
                     var library = graphItem.Key;
 
-                    if (library.Type == LibraryTypes.Project || library.Type == LibraryTypes.ExternalProject)
+                    if (library.Type == LibraryType.Project || library.Type == LibraryType.ExternalProject)
                     {
                         if (project.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase))
                         {
@@ -199,7 +199,7 @@ namespace NuGet.Commands
                         {
                             Name = library.Name,
                             Version = library.Version,
-                            Type = LibraryTypes.Project,
+                            Type = LibraryType.Project,
                             Framework = projectFramework,
 
                             // Find all dependencies which would be in the nuspec
@@ -228,7 +228,7 @@ namespace NuGet.Commands
                         target.Libraries.Add(lib);
                         continue;
                     }
-                    else if (library.Type == LibraryTypes.Package)
+                    else if (library.Type == LibraryType.Package)
                     {
                         var packageInfo = repository.FindPackagesById(library.Name)
                             .FirstOrDefault(p => p.Version == library.Version);
@@ -344,7 +344,7 @@ namespace NuGet.Commands
             // it has the correct casing that runtime needs during dependency resolution.
             lockFileLib.Name = correctedPackageName ?? package.Id;
             lockFileLib.Version = package.Version;
-            lockFileLib.Type = LibraryTypes.Package;
+            lockFileLib.Type = LibraryType.Package;
             lockFileLib.Sha512 = sha512;
 
             using (var packageReader = new PackageFolderReader(package.ExpandedPath))

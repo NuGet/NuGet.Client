@@ -61,7 +61,7 @@ namespace NuGet.ProjectModel
                     {
                         Name = library.Name,
                         Version = library.Version,
-                        Type = LibraryTypes.Package
+                        Type = LibraryType.Package
                     },
                     Resolved = true,
                     Dependencies = dependencies,

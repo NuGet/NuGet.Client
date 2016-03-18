@@ -285,8 +285,8 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.True(result.Success);
 
-                Assert.Equal(LibraryTypes.Project, packageALib.Type);
-                Assert.Equal(LibraryTypes.Project, packageATarget.Type);
+                Assert.Equal(LibraryType.Project, packageALib.Type);
+                Assert.Equal(LibraryType.Project, packageATarget.Type);
             }
         }
 
@@ -394,8 +394,8 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.True(result.Success);
 
-                Assert.Equal(LibraryTypes.Package, packageALib.Type);
-                Assert.Equal(LibraryTypes.Package, packageATarget.Type);
+                Assert.Equal(LibraryType.Package, packageALib.Type);
+                Assert.Equal(LibraryType.Package, packageATarget.Type);
             }
         }
 
@@ -497,8 +497,8 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.True(result.Success);
 
-                Assert.Equal(LibraryTypes.Project, packageALib.Type);
-                Assert.Equal(LibraryTypes.Project, packageATarget.Type);
+                Assert.Equal(LibraryType.Project, packageALib.Type);
+                Assert.Equal(LibraryType.Project, packageATarget.Type);
             }
         }
     }

@@ -372,7 +372,7 @@ namespace NuGet.DependencyResolver
             var identity = new LibraryIdentity()
             {
                 Name = libraryRange.Name,
-                Type = LibraryTypes.Unresolved,
+                Type = LibraryType.Unresolved,
                 Version = libraryRange.VersionRange?.MinVersion
             };
             return new GraphItem<RemoteResolveResult>(identity)
@@ -529,7 +529,7 @@ namespace NuGet.DependencyResolver
         private static string GetRootPathForParentProject(GraphEdge<RemoteResolveResult> outerEdge)
         {
             if (outerEdge != null
-                && LibraryTypes.Project.Equals(outerEdge.Item.Key.Type, StringComparison.Ordinal)
+                && outerEdge.Item.Key.Type == LibraryType.Project
                 && outerEdge.Item.Data.Match.Path != null)
             {
                 var projectJsonPath = new FileInfo(outerEdge.Item.Data.Match.Path);

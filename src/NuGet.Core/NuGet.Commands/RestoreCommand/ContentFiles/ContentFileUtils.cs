@@ -17,66 +17,7 @@ namespace NuGet.Commands
     internal static class ContentFileUtils
     {
         private const string ContentFilesFolderName = "contentFiles/";
-        private const string BuildAction = "buildAction";
-        private const string CopyToOutput = "copyToOutput";
-        private const string CodeLanguage = "codeLanguage";
-        private const string None = "None";
-
-        /// <summary>
-        /// Normalizes build action casing and validates the action string.
-        /// Returns null if the action is an unknown string.
-        /// </summary>
-        internal static string GetBuildActionOrNull(string action)
-        {
-            // Case sensitive compare
-            if (BuildActionList.Contains(action))
-            {
-                return action;
-            }
-
-            // Find the correct casing
-            var correctCase = BuildActionList.FirstOrDefault(buildAction => string.Equals(
-                action,
-                buildAction,
-                StringComparison.OrdinalIgnoreCase));
-
-            return correctCase;
-        }
-
-        private static HashSet<string> _buildActionList = null;
-
-        /// <summary>
-        /// Build action white list used for nuspec data.
-        /// </summary>
-        private static HashSet<string> BuildActionList
-        {
-            get
-            {
-                if (_buildActionList == null)
-                {
-                    _buildActionList = new HashSet<string>(new string[]
-                    {
-                        "None",
-                        "Compile",
-                        "Content",
-                        "EmbeddedResource",
-                        "ApplicationDefinition",
-                        "Page",
-                        "Resource",
-                        "SplashScreen",
-                        "DesignData",
-                        "DesignDataWithDesignTimeCreatableTypes",
-                        "CodeAnalysisDictionary",
-                        "AndroidAsset",
-                        "AndroidResource",
-                        "BundleResource"
-                    }, StringComparer.Ordinal);
-                }
-
-                return _buildActionList;
-            }
-        }
-
+        
         /// <summary>
         /// Get all content groups that have the nearest TxM
         /// </summary>
@@ -126,12 +67,12 @@ namespace NuGet.Commands
         /// <summary>
         /// Apply build actions from the nuspec to items from the contentFiles folder.
         /// </summary>
-        internal static List<LockFileItem> GetContentFileGroup(
+        internal static List<LockFileContentFile> GetContentFileGroup(
             NuGetFramework framework,
             NuspecReader nuspec,
             List<ContentItemGroup> contentFileGroups)
         {
-            var results = new List<LockFileItem>(contentFileGroups.Count);
+            var results = new List<LockFileContentFile>(contentFileGroups.Count);
             var rootFolderPathLength = ContentFilesFolderName.Length;
 
             // Read the contentFiles section of the nuspec
@@ -209,14 +150,14 @@ namespace NuGet.Commands
             foreach (var file in entryMappings.Keys)
             {
                 // defaults
-                var action = PackagingConstants.ContentFilesDefaultBuildAction;
+                var action = BuildAction.Parse(PackagingConstants.ContentFilesDefaultBuildAction);
                 var copyToOutput = false;
                 var flatten = false;
 
                 // _._ is needed for empty codeLanguage groups
                 if (file.EndsWith(PackagingCoreConstants.ForwardSlashEmptyFolder, StringComparison.Ordinal))
                 {
-                    action = None;
+                    action = BuildAction.None;
                 }
                 else
                 {
@@ -227,7 +168,7 @@ namespace NuGet.Commands
                     {
                         if (!string.IsNullOrEmpty(filesEntry.BuildAction))
                         {
-                            action = filesEntry.BuildAction;
+                            action = BuildAction.Parse(filesEntry.BuildAction);
                         }
 
                         if (filesEntry.CopyToOutput.HasValue)
@@ -243,26 +184,20 @@ namespace NuGet.Commands
                 }
 
                 // Add attributes to the lock file item
-                var lockFileItem = new LockFileItem(file);
+                var lockFileItem = new LockFileContentFile(file);
 
                 // Add the language from the directory path
-                lockFileItem.Properties.Add(
-                    CodeLanguage,
-                    languageMappings[file].ToLowerInvariant());
+                lockFileItem.CodeLanguage = languageMappings[file].ToLowerInvariant();
 
-                // normalize and validate the build action name
-                // the action will be null if the string was unrecognized
-                var normalizedAction = GetBuildActionOrNull(action);
-
-                if (normalizedAction == null)
+                if (!action.IsKnown)
                 {
                     // Throw an error containing the package identity, invalid action, and file where it occurred.
                     var message = string.Format(CultureInfo.CurrentCulture, Strings.Error_UnknownBuildAction, nuspec.GetIdentity(), action, file);
                     throw new PackagingException(message);
                 }
 
-                lockFileItem.Properties.Add(BuildAction, normalizedAction);
-                lockFileItem.Properties.Add(CopyToOutput, copyToOutput.ToString());
+                lockFileItem.BuildAction = action;
+                lockFileItem.CopyToOutput = copyToOutput;
 
                 // Check if this is a .pp transform. If the filename is ".pp" ignore it since it will
                 // have no file name after the transform.
@@ -290,7 +225,7 @@ namespace NuGet.Commands
                         destination = destination.Substring(0, destination.Length - 3);
                     }
 
-                    lockFileItem.Properties.Add("outputPath", destination);
+                    lockFileItem.OutputPath = destination;
                 }
 
                 // Add the pp transform file if one exists
@@ -299,7 +234,7 @@ namespace NuGet.Commands
                     var destination = lockFileItem.Path.Substring(0, lockFileItem.Path.Length - 3);
                     destination = GetContentFileFolderRelativeToFramework(destination);
 
-                    lockFileItem.Properties.Add("ppOutputPath", destination);
+                    lockFileItem.PPOutputPath = destination;
                 }
 
                 results.Add(lockFileItem);
@@ -311,14 +246,14 @@ namespace NuGet.Commands
         /// <summary>
         /// Create an empty lock file item for any/any
         /// </summary>
-        internal static LockFileItem CreateEmptyItem()
+        internal static LockFileContentFile CreateEmptyItem()
         {
-            var item = new LockFileItem("contentFiles/any/any/_._");
-            item.Properties.Add(BuildAction, None);
-            item.Properties.Add(CopyToOutput, Boolean.FalseString);
-            item.Properties.Add(CodeLanguage, "any");
-
-            return item;
+            return new LockFileContentFile("contentFiles/any/any/_._")
+            {
+                BuildAction = BuildAction.None,
+                CopyToOutput = false,
+                CodeLanguage = ManagedCodeConventions.PropertyNames.AnyValue
+            };
         }
 
         // Find path relative to the TxM

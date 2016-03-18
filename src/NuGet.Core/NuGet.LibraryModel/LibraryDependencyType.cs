@@ -11,10 +11,12 @@ namespace NuGet.LibraryModel
         private readonly HashSet<LibraryDependencyTypeFlag> _keywords;
 
         public static LibraryDependencyType Default;
+        public static LibraryDependencyType Build;
 
         static LibraryDependencyType()
         {
             Default = new LibraryDependencyType(LibraryDependencyTypeKeyword.Default.FlagsToAdd);
+            Build = new LibraryDependencyType(LibraryDependencyTypeKeyword.Build.FlagsToAdd);
         }
 
         public LibraryDependencyType()

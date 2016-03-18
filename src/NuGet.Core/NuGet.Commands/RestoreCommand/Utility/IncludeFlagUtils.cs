@@ -189,9 +189,9 @@ namespace NuGet.Commands
 
         private static bool IsPackageOrProject(GraphItem<RemoteResolveResult> item)
         {
-            return item.Key.Type == LibraryTypes.Package
-                || item.Key.Type == LibraryTypes.Project
-                || item.Key.Type == LibraryTypes.ExternalProject;
+            return item.Key.Type == LibraryType.Package
+                || item.Key.Type == LibraryType.Project
+                || item.Key.Type == LibraryType.ExternalProject;
         }
 
         /// <summary>
@@ -201,14 +201,17 @@ namespace NuGet.Commands
         /// <returns></returns>
         private static int OrderType(GraphItem<RemoteResolveResult> item)
         {
-            switch (item.Key.Type)
+            if (item.Key.Type == LibraryType.Project)
             {
-                case LibraryTypes.Project:
-                    return 0;
-                case LibraryTypes.ExternalProject:
-                    return 1;
-                case LibraryTypes.Package:
-                    return 2;
+                return 0;
+            }
+            else if (item.Key.Type == LibraryType.ExternalProject)
+            {
+                return 1;
+            }
+            else if (item.Key.Type == LibraryType.Package)
+            {
+                return 2;
             }
 
             return 5;

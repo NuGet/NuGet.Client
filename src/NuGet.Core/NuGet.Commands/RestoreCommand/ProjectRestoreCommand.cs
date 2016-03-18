@@ -322,7 +322,7 @@ namespace NuGet.Commands
                 {
                     var match = result.Flattened.FirstOrDefault(g => g.Key.Name.Equals(dependency.LibraryRange.Name));
                     if (match != null
-                        && LibraryTypes.Package == match.Key.Type
+                        && LibraryType.Package == match.Key.Type
                         && match.Key.Version > dependency.LibraryRange.VersionRange.MinVersion)
                     {
                         _logger.LogWarning(string.Format(CultureInfo.CurrentCulture, Strings.Log_DependencyBumpedUp,

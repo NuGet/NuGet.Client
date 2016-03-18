@@ -80,7 +80,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("System.Runtime", runtimeLibrary.Name);
             Assert.Equal(NuGetVersion.Parse("4.0.20-beta-22927"), runtimeLibrary.Version);
             Assert.False(string.IsNullOrEmpty(runtimeLibrary.Sha512));
-            Assert.Equal(LibraryTypes.Package, runtimeLibrary.Type);
+            Assert.Equal(LibraryType.Package, runtimeLibrary.Type);
             Assert.Equal(10, runtimeLibrary.Files.Count);
 
             var emptyDepGroup = lockFile.ProjectFileDependencyGroups.First();
@@ -190,7 +190,7 @@ namespace NuGet.ProjectModel.Test
             {
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
-                Type = LibraryTypes.Package
+                Type = LibraryType.Package
             };
             targetLib.Dependencies.Add(new NuGet.Packaging.Core.PackageDependency("Frob",
                 new VersionRange(NuGetVersion.Parse("4.0.20"))));
@@ -202,7 +202,7 @@ namespace NuGet.ProjectModel.Test
             {
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
-                Type = LibraryTypes.Package,
+                Type = LibraryType.Package,
                 Sha512 = "sup3rs3cur3"
             };
             lib.Files.Add("System.Runtime.nuspec");
@@ -264,7 +264,7 @@ namespace NuGet.ProjectModel.Test
             {
                 Name = "System.Runtime",
                 Version = NuGetVersion.Parse("4.0.20-beta-22927"),
-                Type = LibraryTypes.Package
+                Type = LibraryType.Package
             };
             targetLib.Dependencies.Add(new NuGet.Packaging.Core.PackageDependency("Frob",
                 new VersionRange(NuGetVersion.Parse("4.0.20"))));
