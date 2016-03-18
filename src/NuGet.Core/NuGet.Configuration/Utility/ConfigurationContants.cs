@@ -45,5 +45,7 @@ namespace NuGet.Configuration
 
         public static string ProtocolVersionAttribute = "protocolVersion";
 
+        public static readonly string BeginIgnoreMarker = "NUGET: BEGIN LICENSE TEXT";
+        public static readonly string EndIgnoreMarker = "NUGET: END LICENSE TEXT";
     }
 }

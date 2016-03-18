@@ -63,6 +63,10 @@ namespace NuGet.CommandLine.XPlat
             {
                 return Log;
             });
+            new PackCommand(app, () =>
+            {
+                return Log;
+            });
 
             RestoreCommand.Register(app, () =>
             {

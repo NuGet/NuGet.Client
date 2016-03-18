@@ -2,16 +2,18 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using NuGet.Packaging;
 
-namespace NuGet.CommandLine.Rules
+namespace NuGet.Commands.Rules
 {
     internal class MisplacedScriptFileRule : IPackageRule
     {
         private const string ScriptExtension = ".ps1";
+        private const string ToolsDirectory = "tools";
 
-        public IEnumerable<PackageIssue> Validate(IPackage package)
+        public IEnumerable<PackageIssue> Validate(PackageBuilder builder)
         {
-            foreach (IPackageFile file in package.GetFiles())
+            foreach (IPackageFile file in builder.Files)
             {
                 string path = file.Path;
                 if (!path.EndsWith(ScriptExtension, StringComparison.OrdinalIgnoreCase))
@@ -19,7 +21,7 @@ namespace NuGet.CommandLine.Rules
                     continue;
                 }
 
-                if (!path.StartsWith(Constants.ToolsDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                if (!path.StartsWith(ToolsDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
                 {
                     yield return CreatePackageIssueForMisplacedScript(path);
                 }

@@ -78,6 +78,33 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to The base path of the files defined in the nuspec file..
+        /// </summary>
+        internal static string BasePath_Description {
+            get {
+                return ResourceManager.GetString("BasePath_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Determines if the project should be built before building the package..
+        /// </summary>
+        internal static string Build_Description {
+            get {
+                return ResourceManager.GetString("Build_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to WARNING: {0}.
+        /// </summary>
+        internal static string CommandLine_Warning {
+            get {
+                return ResourceManager.GetString("CommandLine_Warning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to {0} (y/N) .
         /// </summary>
         internal static string ConsoleConfirmMessage {
@@ -137,6 +164,33 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Error_MissingSourceParameter {
             get {
                 return ResourceManager.GetString("Error_MissingSourceParameter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Prevent inclusion of empty directories when building the package..
+        /// </summary>
+        internal static string ExcludeEmptyDirectories_Description {
+            get {
+                return ResourceManager.GetString("ExcludeEmptyDirectories_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Include referenced projects either as dependencies or as part of the package..
+        /// </summary>
+        internal static string IncludeReferencedProjects_Description {
+            get {
+                return ResourceManager.GetString("IncludeReferencedProjects_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specify the location of the nuspec or project file to create a package..
+        /// </summary>
+        internal static string InputFile_Description {
+            get {
+                return ResourceManager.GetString("InputFile_Description", resourceCulture);
             }
         }
         
@@ -222,6 +276,24 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Set the minClientVersion attribute for the created package..
+        /// </summary>
+        internal static string MinClientVersion_Description {
+            get {
+                return ResourceManager.GetString("MinClientVersion_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild..
+        /// </summary>
+        internal static string MsBuildVersion_Description {
+            get {
+                return ResourceManager.GetString("MsBuildVersion_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to No API Key was provided and no API Key could be found for {0}. To save an API Key for a source use the &apos;setApiKey&apos; command..
         /// </summary>
         internal static string NoApiKeyFound {
@@ -231,11 +303,83 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Prevent default exclusion of NuGet package files and files and folders starting with a dot e.g. .svn..
+        /// </summary>
+        internal static string NoDefaultExcludes_Description {
+            get {
+                return ResourceManager.GetString("NoDefaultExcludes_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Do not prompt for user input or confirmations..
         /// </summary>
         internal static string NonInteractive_Description {
             get {
                 return ResourceManager.GetString("NonInteractive_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specify if the command should not run package analysis after building the package..
+        /// </summary>
+        internal static string NoPackageAnalysis_Description {
+            get {
+                return ResourceManager.GetString("NoPackageAnalysis_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to http://docs.nuget.org/.
+        /// </summary>
+        internal static string NuGetDocs {
+            get {
+                return ResourceManager.GetString("NuGetDocs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Specifies the directory for the created NuGet package file. If not specified, uses the current directory.
+        /// </summary>
+        internal static string OutputDirectory_Description {
+            get {
+                return ResourceManager.GetString("OutputDirectory_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Attempting to build package from &apos;{0}&apos;..
+        /// </summary>
+        internal static string PackageCommandAttemptingToBuildPackage {
+            get {
+                return ResourceManager.GetString("PackageCommandAttemptingToBuildPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The value of MinClientVersion argument is not a valid version..
+        /// </summary>
+        internal static string PackageCommandInvalidMinClientVersion {
+            get {
+                return ResourceManager.GetString("PackageCommandInvalidMinClientVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Version string specified &apos;{0}&apos; is invalid..
+        /// </summary>
+        internal static string PackageVersionInvalid {
+            get {
+                return ResourceManager.GetString("PackageVersionInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Creates a NuGet package based on the specified nuspec or project file.
+        /// </summary>
+        internal static string PackCommand_Description {
+            get {
+                return ResourceManager.GetString("PackCommand_Description", resourceCulture);
             }
         }
         
@@ -366,11 +510,47 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Appends a pre-release suffix to the internally generated version number..
+        /// </summary>
+        internal static string Suffix_Description {
+            get {
+                return ResourceManager.GetString("Suffix_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Minimal, Warning, Error..
         /// </summary>
         internal static string Switch_Verbosity {
             get {
                 return ResourceManager.GetString("Switch_Verbosity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Determines if a package containing sources and symbols should be created. When specified with a nuspec, creates a regular NuGet package file and the corresponding symbols package..
+        /// </summary>
+        internal static string Symbols_Description {
+            get {
+                return ResourceManager.GetString("Symbols_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Determines if the output files of the project should be in the tool folder..
+        /// </summary>
+        internal static string Tool_Description {
+            get {
+                return ResourceManager.GetString("Tool_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Overrides the version number from the nuspec file..
+        /// </summary>
+        internal static string Version_Description {
+            get {
+                return ResourceManager.GetString("Version_Description", resourceCulture);
             }
         }
     }

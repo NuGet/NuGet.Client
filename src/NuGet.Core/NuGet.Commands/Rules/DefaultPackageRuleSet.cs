@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace NuGet.CommandLine.Rules
+namespace NuGet.Commands.Rules
 {
     public static class DefaultPackageRuleSet
     {
@@ -17,7 +14,8 @@ namespace NuGet.CommandLine.Rules
                 new MisplacedTransformFileRule(),
                 new MissingSummaryRule(),
                 new InitScriptNotUnderToolsRule(),
-                new WinRTNameIsObsoleteRule()
+                new WinRTNameIsObsoleteRule(),
+                new DefaultManifestValuesRule()
             }
         );
 

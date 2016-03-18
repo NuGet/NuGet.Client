@@ -8,12 +8,14 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Versioning;
 using System.Xml.Linq;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Versioning;
 
 namespace NuGet.CommandLine
 {
+    using Logging;
     using Microsoft.Build.Evaluation;
     using Microsoft.Build.Execution;
     using NuGet.Frameworks;
@@ -22,7 +24,7 @@ namespace NuGet.CommandLine
     using Console = System.Console;
 
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-    public class ProjectFactory : MSBuildUser
+    public class ProjectFactory : MSBuildUser, IProjectFactory
     {
         // Its type is Microsoft.Build.Evaluation.Project
         private dynamic _project;
@@ -57,6 +59,19 @@ namespace NuGet.CommandLine
 
         [Import]
         public Configuration.IMachineWideSettings MachineWideSettings { get; set; }
+
+        public static IProjectFactory ProjectCreator(PackArgs packArgs, string path)
+        {
+            return new ProjectFactory(packArgs.MsBuildDirectory.Value, path, packArgs.Properties)
+            {
+                IsTool = packArgs.Tool,
+                LogLevel = packArgs.LogLevel,
+                Logger = packArgs.Logger,
+                MachineWideSettings = packArgs.MachineWideSettings,
+                Build = packArgs.Build,
+                IncludeReferencedProjects = packArgs.IncludeReferencedProjects
+            };
+        }
 
         public ProjectFactory(string msbuildDirectory, string path, IDictionary<string, string> projectProperties)
         {
@@ -101,6 +116,26 @@ namespace NuGet.CommandLine
             {
                 TargetFramework = new FrameworkName(targetFrameworkMoniker);
             }
+
+            IConsole console = Logger as IConsole;
+            switch (LogLevel)
+            {
+                case LogLevel.Verbose:
+                {
+                    console.Verbosity = Verbosity.Detailed;
+                    break;
+                }
+                case LogLevel.Information:
+                {
+                    console.Verbosity = Verbosity.Normal;
+                    break;
+                }
+                case LogLevel.Minimal:
+                {
+                    console.Verbosity = Verbosity.Quiet;
+                    break;
+                }
+            }                
         }
 
         private Configuration.ISettings DefaultSettings
@@ -130,15 +165,25 @@ namespace NuGet.CommandLine
             set;
         }
 
+        public void SetIncludeSymbols(bool includeSymbols)
+        {
+            IncludeSymbols = includeSymbols;
+        }
         public bool IncludeSymbols { get; set; }
 
         public bool IncludeReferencedProjects { get; set; }
 
         public bool Build { get; set; }
 
+        public Dictionary<string, string> GetProjectProperties()
+        {
+            return ProjectProperties;
+        }
         public Dictionary<string, string> ProjectProperties { get; private set; }
 
         public bool IsTool { get; set; }
+
+        public LogLevel LogLevel { get; set; }
 
         public Logging.ILogger Logger
         {
