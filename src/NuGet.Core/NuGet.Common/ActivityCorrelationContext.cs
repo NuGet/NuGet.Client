@@ -16,7 +16,7 @@ namespace NuGet.Common
     /// Single activity engages multiple method calls at different layers. 
     /// Sometimes it's necessary to identify separate calls belonging to the same activity if shared state is needed.
     /// </summary>
-    public class ActivityCorrelationContext
+    public class ActivityCorrelationContext : IDisposable
     {
         private static readonly string DataSlotId = "NuGet.ActivityCorrelationContext";
 
@@ -67,6 +67,18 @@ namespace NuGet.Common
             CallContext.LogicalSetData(DataSlotId, context);
 #endif
             return context;
+        }
+
+        public void Dispose()
+        {
+#if !DNXCORE50
+            var context = CallContext.LogicalGetData(DataSlotId);
+
+            if (this == context)
+            { 
+                CallContext.FreeNamedDataSlot(DataSlotId);
+            }
+#endif
         }
     }
 }
