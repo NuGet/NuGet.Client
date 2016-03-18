@@ -16,7 +16,7 @@ $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
 $ILMerge = Join-Path $NuGetClientRoot 'packages\ILMerge.2.14.1208\tools\ILMerge.exe'
 $XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console.2.1.0\tools\xunit.console.x86.exe'
 $CLIRoot = Join-Path $NuGetClientRoot 'cli'
-$DotNetExe = Join-Path $CLIRoot 'bin\dotnet.exe'
+$DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
 $Nupkgs = Join-Path $NuGetClientRoot nupkgs
 $Artifacts = Join-Path $NuGetClientRoot artifacts
 $Intermediate = Join-Path $Artifacts obj
@@ -140,18 +140,23 @@ Function Install-NuGet {
 Function Install-DotnetCLI {
     [CmdletBinding()]
     param()
-    Trace-Log 'Downloading Dotnet CLI'
 
-    $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
+    if (-not (Test-Path $DotNetExe))
+    {
+        Trace-Log 'Downloading Dotnet CLI'
 
-    New-Item -ItemType Directory -Force -Path $CLIRoot
+        New-Item -ItemType Directory -Force -Path $CLIRoot | Out-Null
 
-    wget https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/install.ps1 -OutFile cli/install.ps1
+        $zipPath = Join-Path $CLIRoot "dotnet.zip"
 
-    & cli/install.ps1 -Channel dev -Version 1.0.1.001606
+        wget https://dotnetcli.blob.core.windows.net/dotnet/beta/Binaries/1.0.0.001840/dotnet-combined-framework-sdk-host-win-x64.1.0.0.001840.zip -OutFile $zipPath
 
-    if (-not (Test-Path $DotNetExe)) {
-        Error-Log "Unable to find dotnet.exe. The CLI install may have failed."
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath, $CLIRoot)
+
+        if (-not (Test-Path $DotNetExe)) {
+            Error-Log "Unable to find dotnet.exe. The CLI install may have failed."
+        }
     }
 }
 
