@@ -141,6 +141,9 @@
   <data name="DisableBuffering_Description" xml:space="preserve">
     <value>Disable buffering when pushing to an HTTP(S) server to decrease memory usage.</value>
   </data>
+  <data name="NoSymbols_Description" xml:space="preserve">
+    <value>If a symbols package exists, it will not be pushed to a symbols server.</value>
+  </data>
   <data name="Log_Committing" xml:space="preserve">
     <value>Committing restore...</value>
   </data>

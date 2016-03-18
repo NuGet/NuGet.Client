@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Commands;
@@ -35,6 +35,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.DisableBuffering_Description,
                     CommandOptionType.SingleValue);
 
+                var noSymbols = push.Option(
+                    "-n|--no-symbols",
+                    Strings.NoSymbols_Description,
+                    CommandOptionType.SingleValue);
+
                 var arguments = push.Argument(
                     "[root]",
                     Strings.Push_Package_ApiKey_Description,
@@ -51,6 +56,7 @@ namespace NuGet.CommandLine.XPlat
                     string sourcePath = source.Value();
                     string apiKeyValue = apikey.Value();
                     bool disableBufferingValue = disableBuffering.HasValue();
+                    bool noSymbolsValue = noSymbols.HasValue();
                     int timeoutSeconds = 0;
 
                     if (timeout.HasValue() && !int.TryParse(timeout.Value(), out timeoutSeconds))
@@ -68,6 +74,7 @@ namespace NuGet.CommandLine.XPlat
                         apiKeyValue,
                         timeoutSeconds,
                         disableBufferingValue,
+                        noSymbolsValue,
                         getLogger());
 
                     return 0;

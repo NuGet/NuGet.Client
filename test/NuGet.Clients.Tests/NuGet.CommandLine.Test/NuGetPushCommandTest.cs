@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Security.Principal;
 using System.Text;
+using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -215,6 +216,40 @@ $@"<?xml version='1.0' encoding='utf-8'?>
                     Assert.Contains("Your package was pushed.", output);
                     AssertFileEqual(packageFileName, outputFileName);
                 }
+            }
+        }
+
+        [Fact]
+        public void PushCommand_PushToServerNoSymbols()
+        {
+            // Test pushing to an http source, but leaving out the symbols package (-NoSymbols).
+            // The symbols package would try to get pushed to a public symbols server if
+            // the -NoSymbols switch wasn't set.
+
+            using (TestDirectory packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (MockServer server = new MockServer())
+            {
+                // Arrange
+                string packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                string symbolFileName = packageFileName.Replace(".nupkg", ".symbols.nupkg");
+                File.WriteAllText(symbolFileName, "This must be invalid so symbols would fail if they were actually pushed");
+
+                server.Get.Add("/push", r => "OK");
+                server.Put.Add("/push", r => HttpStatusCode.Created);
+                server.Start();
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    Directory.GetCurrentDirectory(),
+                    $"push {packageFileName} -Source {server.Uri}push -NoSymbols",
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(0, result.Item1);
+                Assert.Contains("Your package was pushed.", result.Item2);
+                Assert.DoesNotContain("symbol", result.Item2);
+                Assert.DoesNotContain(NuGetConstants.DefaultSymbolServerUrl, result.Item2);
             }
         }
 

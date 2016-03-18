@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -38,6 +38,7 @@ namespace NuGet.Protocol.Core.Types
 
         public async Task Push(
             string packagePath,
+            string symbolsSource, // empty to not push symbols
             int timeoutInSecond,
             bool disableBuffering,
             Func<string, string> getApiKey,
@@ -57,9 +58,10 @@ namespace NuGet.Protocol.Core.Types
 
                 await PushPackage(packagePath, _source, apiKey, log, tokenSource.Token);
 
-                if (!IsFileSource())
+                if (!string.IsNullOrEmpty(symbolsSource) && !IsFileSource())
                 {
-                    await PushSymbols(packagePath, apiKey, log, tokenSource.Token);
+                    string symbolsApiKey = getApiKey(symbolsSource);
+                    await PushSymbols(packagePath, symbolsSource, symbolsApiKey, log, tokenSource.Token);
                 }
             }
         }
@@ -100,6 +102,7 @@ namespace NuGet.Protocol.Core.Types
         }
 
         private async Task PushSymbols(string packagePath,
+            string source,
             string apiKey,
             ILogger log,
             CancellationToken token)
@@ -118,7 +121,7 @@ namespace NuGet.Protocol.Core.Types
                         Path.GetFileName(symbolPackagePath),
                         Strings.DefaultSymbolServer));
                 }
-                var source = NuGetConstants.DefaultSymbolServerUrl;
+
                 await PushPackage(symbolPackagePath, source, apiKey, log, token);
             }
         }

@@ -384,6 +384,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to If a symbols package exists, it will not be pushed to a symbols server..
+        /// </summary>
+        internal static string NoSymbols_Description {
+            get {
+                return ResourceManager.GetString("NoSymbols_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Pushes a package to the server and publishes it..
         /// </summary>
         internal static string Push_Description {

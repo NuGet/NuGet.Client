@@ -18,6 +18,7 @@ namespace NuGet.Commands
             string apiKey,
             int timeoutSeconds,
             bool disableBuffering,
+            bool noSymbols,
             ILogger logger)
         {
             source = CommandRunnerUtility.ResolveSource(sourceProvider, source);
@@ -29,8 +30,13 @@ namespace NuGet.Commands
 
             PackageUpdateResource packageUpdateResource = await CommandRunnerUtility.GetPackageUpdateResource(sourceProvider, source);
 
+            string symbolsSource = !noSymbols
+                ? NuGetConstants.DefaultSymbolServerUrl
+                : string.Empty;
+
             await packageUpdateResource.Push(
                 packagePath,
+                symbolsSource,
                 timeoutSeconds,
                 disableBuffering,
                 endpoint => CommandRunnerUtility.GetApiKey(settings, endpoint, apiKey),

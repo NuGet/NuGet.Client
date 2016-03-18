@@ -360,7 +360,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A list of packages sources to use as fallbacks for this command..
+        ///   Looks up a localized string similar to A list of package sources to use as fallbacks for this command..
         /// </summary>
         internal static string CommandFallbackSourceDescription {
             get {
@@ -8858,6 +8858,15 @@ namespace NuGet.CommandLine {
         internal static string PushCommandDisableBufferingDescription {
             get {
                 return ResourceManager.GetString("PushCommandDisableBufferingDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to If a symbols package exists, it will not be pushed to a symbols server..
+        /// </summary>
+        internal static string PushCommandNoSymbolsDescription {
+            get {
+                return ResourceManager.GetString("PushCommandNoSymbolsDescription", resourceCulture);
             }
         }
         

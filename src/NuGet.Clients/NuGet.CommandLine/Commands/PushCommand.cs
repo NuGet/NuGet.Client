@@ -23,6 +23,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "PushCommandDisableBufferingDescription")]
         public bool DisableBuffering { get; set; }
 
+        [Option(typeof(NuGetCommand), "PushCommandNoSymbolsDescription")]
+        public bool NoSymbols { get; set; }
+
         public override async Task ExecuteCommandAsync()
         {
             string packagePath = Arguments[0];
@@ -45,6 +48,7 @@ namespace NuGet.CommandLine
                     apiKeyValue,
                     Timeout,
                     DisableBuffering,
+                    NoSymbols,
                     Console);
             }
             catch (Exception ex)
