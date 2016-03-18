@@ -4,6 +4,9 @@
     "NuGet.ProjectModel": {
       "target": "project"
     },
+    "NuGet.Test.Utility": {
+      "target": "project"
+    },
     "xunit": "2.1.0"
   },
   "frameworks": {
