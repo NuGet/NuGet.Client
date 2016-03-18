@@ -12,7 +12,7 @@ using NuGet.Versioning;
 
 namespace NuGet.Test.Utility
 {
-    public class SimpleTestPackageUtility
+    public static class SimpleTestPackageUtility
     {
         /// <summary>
         /// Creates a net45 package containing lib, build, native, tools, and contentFiles

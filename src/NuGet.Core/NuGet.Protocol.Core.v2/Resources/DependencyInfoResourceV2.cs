@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -194,7 +195,7 @@ namespace NuGet.Protocol.Core.v2
 
             if (repository != null)
             {
-                var sourceUri = new Uri(repository.Source);
+                var sourceUri = UriUtility.CreateSourceUri(repository.Source);
                 repository = new DataServicePackageRepository(sourceUri);
             }
 

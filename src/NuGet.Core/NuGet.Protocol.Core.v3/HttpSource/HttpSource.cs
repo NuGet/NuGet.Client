@@ -68,7 +68,7 @@ namespace NuGet.Protocol
             }
 
             _packageSource = source;
-            _baseUri = new Uri(source.Source);
+            _baseUri = source.SourceUri;
             _messageHandlerFactory = messageHandlerFactory;
             _retryHandler = new HttpRetryHandler();
         }

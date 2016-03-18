@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
 
 namespace NuGet.Commands
@@ -40,8 +41,8 @@ namespace NuGet.Commands
 
         private static void ValidateSource(string source)
         {
-            Uri result;
-            if (!Uri.TryCreate(source, UriKind.Absolute, out result))
+            Uri result = UriUtility.TryCreateSourceUri(source, UriKind.Absolute);
+            if (result == null)
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.InvalidSource, source));
             }

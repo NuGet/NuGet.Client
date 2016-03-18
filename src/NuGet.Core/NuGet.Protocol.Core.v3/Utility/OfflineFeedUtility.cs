@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
@@ -75,8 +76,8 @@ namespace NuGet.Protocol.Core.Types
 
         public static void ThrowIfInvalid(string path)
         {
-            Uri pathUri;
-            if (!Uri.TryCreate(path, UriKind.RelativeOrAbsolute, out pathUri))
+            Uri pathUri = UriUtility.TryCreateSourceUri(path, UriKind.RelativeOrAbsolute);
+            if (pathUri == null)
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                     Strings.Path_Invalid,
