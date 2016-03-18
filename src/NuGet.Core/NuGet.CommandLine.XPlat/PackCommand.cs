@@ -17,47 +17,32 @@ namespace NuGet.CommandLine.XPlat
                 pack.Description = Strings.PackCommand_Description;
 
                 var basePath = pack.Option(
-                    "-b|--basePath <basePath>",
+                    "-b|--base-path <basePath>",
                     Strings.BasePath_Description,
                     CommandOptionType.SingleValue);
 
-                var build = pack.Option(
-                    "--build",
-                    Strings.Build_Description,
-                    CommandOptionType.NoValue);
-
                 var excludeEmpty = pack.Option(
-                    "-e|--excludeEmptyDirectories",
+                    "-e|--exclude-empty-directories",
                     Strings.ExcludeEmptyDirectories_Description,
                     CommandOptionType.NoValue);
 
-                var includeReferencedProjects = pack.Option(
-                    "-e|--includeReferencedProjects",
-                    Strings.IncludeReferencedProjects_Description,
-                    CommandOptionType.NoValue);
-
                 var minClientVersion = pack.Option(
-                    "--minClientVersion <version>",
+                    "--min-client-version <version>",
                     Strings.MinClientVersion_Description,
                     CommandOptionType.SingleValue);
 
-                var msBuildVersion = pack.Option(
-                    "--msBuildVersion <version>",
-                    Strings.MsBuildVersion_Description,
-                    CommandOptionType.SingleValue);
-
                 var noDefaultExcludes = pack.Option(
-                    "--noDefaultExcludes",
+                    "--no-default-excludes",
                     Strings.NoDefaultExcludes_Description,
                     CommandOptionType.NoValue);
 
                 var noPackageAnalysis = pack.Option(
-                    "--noPackageAnalysis",
+                    "--no-package-analysis",
                     Strings.NoPackageAnalysis_Description,
                     CommandOptionType.NoValue);
 
                 var outputDirectory = pack.Option(
-                    "-o|--outputDirectory <outputDirectory>",
+                    "-o|--output-directory <outputDirectory>",
                     Strings.OutputDirectory_Description,
                     CommandOptionType.SingleValue);
 
@@ -71,11 +56,6 @@ namespace NuGet.CommandLine.XPlat
                     Strings.Symbols_Description,
                     CommandOptionType.NoValue);
 
-                var tool = pack.Option(
-                    "--tool",
-                    Strings.Tool_Description,
-                    CommandOptionType.NoValue);
-
                 var verbosity = pack.Option(
                     "--verbosity <level>",
                     Strings.Switch_Verbosity,
@@ -87,7 +67,7 @@ namespace NuGet.CommandLine.XPlat
                     CommandOptionType.SingleValue);
 
                 var arguments = pack.Argument(
-                    "nuspec or project file",
+                    "nuspec file",
                     Strings.InputFile_Description,
                     multipleValues: true);
 
@@ -103,7 +83,6 @@ namespace NuGet.CommandLine.XPlat
 
                     // If the BasePath is not specified, use the directory of the input file (nuspec / proj) file
                     packArgs.BasePath = !basePath.HasValue() ? Path.GetDirectoryName(Path.GetFullPath(packArgs.Path)) : basePath.Value();
-                    packArgs.Build = build.HasValue();
 
                     packArgs.ExcludeEmptyDirectories = excludeEmpty.HasValue();
                     packArgs.LogLevel = XPlatUtility.GetLogLevel(verbosity);
@@ -116,6 +95,7 @@ namespace NuGet.CommandLine.XPlat
                         }
                         packArgs.MinClientVersion = version;
                     }
+
                     packArgs.MachineWideSettings = new CommandLineXPlatMachineWideSetting();
                     packArgs.MsBuildDirectory = new Lazy<string>(() => string.Empty);
                     packArgs.NoDefaultExcludes = noDefaultExcludes.HasValue();
@@ -123,7 +103,6 @@ namespace NuGet.CommandLine.XPlat
                     packArgs.OutputDirectory = outputDirectory.Value();
                     packArgs.Suffix = suffix.Value();
                     packArgs.Symbols = symbols.HasValue();
-                    packArgs.Tool = tool.HasValue();
                     if (versionOption.HasValue())
                     {
                         Version version;

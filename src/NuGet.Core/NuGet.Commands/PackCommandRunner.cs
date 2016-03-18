@@ -394,7 +394,7 @@ namespace NuGet.Commands
 
         public static string GetInputFile(PackArgs packArgs)
         {
-            IEnumerable <string> files = packArgs.Arguments != null && packArgs.Arguments.Any() ? packArgs.Arguments : Directory.GetFiles(packArgs.CurrentDirectory);
+            IEnumerable<string> files = packArgs.Arguments != null && packArgs.Arguments.Any() ? packArgs.Arguments : Directory.GetFiles(packArgs.CurrentDirectory);
 
             return GetInputFile(packArgs, files);
         }

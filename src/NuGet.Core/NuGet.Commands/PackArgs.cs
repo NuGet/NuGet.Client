@@ -36,6 +36,7 @@ namespace NuGet.Commands
                 return _properties;
             }
         }
+
         public string CurrentDirectory
         {
             get
@@ -47,7 +48,6 @@ namespace NuGet.Commands
                 _currentDirectory = value;
             }
         }
-
 
         public string GetPropertyValue(string propertyName)
         {
