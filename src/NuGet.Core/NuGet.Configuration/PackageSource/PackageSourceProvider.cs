@@ -12,9 +12,9 @@ namespace NuGet.Configuration
 {
     public class PackageSourceProvider : IPackageSourceProvider
     {
-        private const int MaxSupportedProtocolVersion = 3;
+        public ISettings Settings { get; private set; }
 
-        private ISettings Settings { get; set; }
+        private const int MaxSupportedProtocolVersion = 3;
         private readonly IDictionary<PackageSource, PackageSource> _migratePackageSources;
         private readonly IEnumerable<PackageSource> _configurationDefaultSources;
 
@@ -42,6 +42,7 @@ namespace NuGet.Configuration
             {
                 throw new ArgumentNullException(nameof(settings));
             }
+
             Settings = settings;
             Settings.SettingsChanged += (_, __) => { OnPackageSourcesChanged(); };
             _migratePackageSources = migratePackageSources;
