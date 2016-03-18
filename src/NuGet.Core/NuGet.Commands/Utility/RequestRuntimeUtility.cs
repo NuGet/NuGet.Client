@@ -43,6 +43,10 @@ namespace NuGet.Commands
                 yield return "win7-x86";
                 yield return "win7-x64";
             }
+            else if(string.Equals(os, "ubuntu", StringComparison.Ordinal)){
+                yield return runtimeOsName + "-x64";
+                yield return runtimeOsName + "-arm";
+            }
             else
             {
                 // Core CLR only supports x64 on non-windows OSes.
