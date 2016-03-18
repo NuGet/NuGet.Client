@@ -48,6 +48,20 @@ namespace NuGet.Protocol.Core.v3.Tests
         {
             await VerifyFailureOnReadAsync(ReadStreamAsync);
         }
+
+#if !NETSTANDARDAPP1_5
+        [Fact]
+        public async Task DownloadTimeoutStream_ApmNotSupported()
+        {
+            // Arrange
+            var memoryStream = GetStream("foobar");
+            var timeoutStream = new DownloadTimeoutStream("download", memoryStream, TimeSpan.FromSeconds(1));
+            
+            // Act & Assert
+            await Assert.ThrowsAsync<NotSupportedException>(() =>
+                ReadStreamApm(timeoutStream));
+        }
+#endif
         
         [Fact]
         public async Task DownloadTimeoutStream_SuccessSync()
@@ -137,7 +151,30 @@ namespace NuGet.Protocol.Core.v3.Tests
             stream.CopyTo(destination, 1);
             return Encoding.ASCII.GetString(destination.ToArray());
         }
-        
+
+#if !NETSTANDARDAPP1_5
+        private async Task<string> ReadStreamApm(Stream stream)
+        {
+            var destination = new MemoryStream();
+            var buffer = new byte[1];
+            var read = -1;
+            while (read != 0)
+            {
+                read = await Task.Factory.FromAsync<byte[], int, int, int>(
+                    stream.BeginRead,
+                    stream.EndRead,
+                    buffer,
+                    0,
+                    buffer.Length,
+                    null);
+                Console.WriteLine(read);
+                destination.Write(buffer, 0, read);
+            }
+            
+            return Encoding.ASCII.GetString(destination.ToArray());
+        }
+#endif
+
         private async Task<string> ReadStreamAsync(Stream stream)
         {
             var destination = new MemoryStream();

@@ -48,6 +48,23 @@ namespace NuGet.Protocol
                 throw e.InnerException;
             }
         }
+        
+#if !NETSTANDARD1_5
+        public override IAsyncResult BeginRead(
+            byte[] buffer,
+            int offset,
+            int count,
+            AsyncCallback callback,
+            object state)
+        {
+            throw new NotSupportedException();
+        }
+        
+        public override int EndRead(IAsyncResult asyncResult)
+        {
+            throw new NotSupportedException();
+        }
+#endif
 
         public override async Task<int> ReadAsync(
             byte[] buffer,
