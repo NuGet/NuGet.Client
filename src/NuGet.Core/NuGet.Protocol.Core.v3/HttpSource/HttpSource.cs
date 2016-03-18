@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -23,13 +24,32 @@ using NuGet.Protocol.Core.v3;
 
 namespace NuGet.Protocol
 {
+    /// <summary>
+    /// Represents a source status per active operation
+    /// </summary>
+    public class AuthenticationAmbientState
+    {
+        public bool IsBlocked { get; set; }
+        public int AuthenticationRetriesCount { get; set; }
+
+        public void Increment()
+        {
+            AuthenticationRetriesCount++;
+
+            if (AuthenticationRetriesCount > HttpHandlerResourceV3Provider.MaxAuthRetries)
+            {
+                IsBlocked = true;
+            }
+        }
+    }
+
     public class HttpSource : IDisposable
     {
         private const int BufferSize = 8192;
         private readonly Func<Task<HttpHandlerResource>> _messageHandlerFactory;
         private readonly Uri _baseUri;
         private HttpClient _httpClient;
-        private int _authRetries;
+        private Dictionary<string, AuthenticationAmbientState> _authStates = new Dictionary<string, AuthenticationAmbientState>();
         private HttpHandlerResource _httpHandler;
         private CredentialHelper _credentials;
         private string _httpCacheDirectory;
@@ -341,9 +361,12 @@ namespace NuGet.Protocol
                             continue;
                         }
 
+                        var authState = GetAuthenticationState();
+
                         // Give up after 3 tries.
-                        _authRetries++;
-                        if (_authRetries > HttpHandlerResourceV3Provider.MaxAuthRetries)
+                        authState.Increment();
+
+                        if (authState.IsBlocked)
                         {
                             return response;
                         }
@@ -369,7 +392,7 @@ namespace NuGet.Protocol
 
                         // null means cancelled by user
                         // block subsequent attempts to annoy user with prompts
-                        _authRetries = HttpHandlerResourceV3Provider.MaxAuthRetries;
+                        authState.IsBlocked = true;
                         return response;
                     }
                     finally
@@ -387,6 +410,23 @@ namespace NuGet.Protocol
             }
         }
 
+        private AuthenticationAmbientState GetAuthenticationState()
+        {
+            var correlationId = ActivityCorrelationContext.Current?.CorrelationId ?? string.Empty;
+
+            if (!_authStates.ContainsKey(correlationId))
+            {
+                _authStates[correlationId] = new AuthenticationAmbientState
+                {
+                    IsBlocked = false,
+                    AuthenticationRetriesCount = 0
+                };
+            }
+
+            var authState = _authStates[correlationId];
+            return authState;
+        }
+
         private async Task<ICredentials> PromptForCredentials(CancellationToken cancellationToken)
         {
             ICredentials promptCredentials = null;
@@ -400,6 +440,10 @@ namespace NuGet.Protocol
 
                     promptCredentials =
                         await HttpHandlerResourceV3.PromptForCredentials(_baseUri, cancellationToken);
+                }
+                catch (TaskCanceledException)
+                {
+                    throw; // pass-thru
                 }
                 catch (OperationCanceledException)
                 {
