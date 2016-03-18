@@ -336,7 +336,7 @@ namespace NuGetVSExtension
         private void SetDefaultCredentialProvider()
         {
             var credentialService = new CredentialService(
-                GetCredentialProviders,
+                GetCredentialProviders(),
                 this._outputConsoleLogger.OutputConsole.WriteLine,
                 nonInteractive: false);
 
