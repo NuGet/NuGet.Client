@@ -1,19 +1,28 @@
 ﻿using System;
+using System.IO;
 using System.Net;
-using System.Runtime.InteropServices;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Logging;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat
 {
-    public class XPlatUtility
+    internal static class XPlatUtility
     {
-        internal const string HelpOption = "-h|--help";
-        internal const string VerbosityOption = "-v|--verbosity <verbosity>";
+        public const string HelpOption = "-h|--help";
+        public const string VerbosityOption = "-v|--verbosity <verbosity>";
 
-        internal static LogLevel GetLogLevel(CommandOption verbosity)
+        public static ISettings CreateDefaultSettings()
+        {
+            return Settings.LoadDefaultSettings(
+                Directory.GetCurrentDirectory(),
+                configFileName: null,
+                machineWideSettings: new CommandLineXPlatMachineWideSetting());
+        }
+
+        public static LogLevel GetLogLevel(CommandOption verbosity)
         {
             LogLevel level;
             if (!Enum.TryParse(value: verbosity.Value(), ignoreCase: true, result: out level))
@@ -26,7 +35,7 @@ namespace NuGet.CommandLine.XPlat
 
         public static void SetUserAgent()
         {
-			UserAgent.SetUserAgentString(new UserAgentStringBuilder("NuGet xplat"));
+            UserAgent.SetUserAgentString(new UserAgentStringBuilder("NuGet xplat"));
         }
 
         public static void SetConnectionLimit()

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using NuGet.Common;
 using NuGet.Configuration;
 
-
 namespace NuGet.CommandLine.XPlat
 {
     public class CommandLineXPlatMachineWideSetting : IMachineWideSettings

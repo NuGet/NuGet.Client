@@ -58,11 +58,10 @@ namespace NuGet.CommandLine.XPlat
                         throw new ArgumentException(Strings.Push_InvalidTimeout);
                     }
 
-                    ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory(), configFileName: null, machineWideSettings: null);
-                    PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+                    PackageSourceProvider sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings());
 
                     await PushRunner.Run(
-                        settings,
+                        sourceProvider.Settings,
                         sourceProvider,
                         packagePath,
                         sourcePath,

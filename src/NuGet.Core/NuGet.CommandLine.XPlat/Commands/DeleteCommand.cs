@@ -49,11 +49,10 @@ namespace NuGet.CommandLine.XPlat
                     string apiKeyValue = apikey.Value();
                     bool nonInteractiveValue = nonInteractive.HasValue();
 
-                    ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory(), configFileName: null, machineWideSettings: null);
-                    PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+                    PackageSourceProvider sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings());
 
                     await DeleteRunner.Run(
-                        settings,
+                        sourceProvider.Settings,
                         sourceProvider,
                         packageId,
                         packageVersion,
