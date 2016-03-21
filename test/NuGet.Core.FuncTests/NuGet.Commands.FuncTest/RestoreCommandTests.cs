@@ -1576,7 +1576,7 @@ namespace NuGet.Commands.FuncTest
                 var logger = new TestLogger();
                 var context = new SourceCacheContext();
                 context.IgnoreFailedSources = true;
-                var cachingSourceProvider = new CachingSourceProvider(null);
+                var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                 var provider = RestoreCommandProviders.Create(packagesDir, sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, logger);
                 var request = new RestoreRequest(spec, provider, logger);              
@@ -1621,7 +1621,7 @@ namespace NuGet.Commands.FuncTest
                 var logger = new TestLogger();
                 var context = new SourceCacheContext();
                 context.IgnoreFailedSources = true;
-                var cachingSourceProvider = new CachingSourceProvider(null);
+                var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
 
                 var provider = RestoreCommandProviders.Create(packagesDir, sources.Select(p => cachingSourceProvider.CreateRepository(p)), context, logger);
                 var request = new RestoreRequest(spec, provider, logger); 

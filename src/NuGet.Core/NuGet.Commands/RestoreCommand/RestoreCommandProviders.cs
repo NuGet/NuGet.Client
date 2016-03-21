@@ -77,7 +77,7 @@ namespace NuGet.Commands
             var localProviders = new List<IRemoteDependencyProvider>()
             {
                 // Do not throw or warn for gloabal cache
-                new SourceRepositoryDependencyProvider(globalPackagesSource, log, cacheContext, true, true)
+                new SourceRepositoryDependencyProvider(globalPackagesSource, log, cacheContext, ignoreFailedSources: true, ignoreWarning: true)
             };
 
             var remoteProviders = new List<IRemoteDependencyProvider>();

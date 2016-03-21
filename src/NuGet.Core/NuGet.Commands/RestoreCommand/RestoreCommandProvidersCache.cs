@@ -42,7 +42,7 @@ namespace NuGet.Commands
                 var pathSource = Repository.Factory.GetCoreV3(path);
 
                 // Do not throw or warn for gloabal cache 
-                return new SourceRepositoryDependencyProvider(pathSource, log, cacheContext, true, true);
+                return new SourceRepositoryDependencyProvider(pathSource, log, cacheContext, ignoreFailedSources: true, ignoreWarning: true);
             });
 
             var localProviders = new List<IRemoteDependencyProvider>() { local };
