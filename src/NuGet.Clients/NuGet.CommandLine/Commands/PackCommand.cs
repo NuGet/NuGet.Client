@@ -55,9 +55,6 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "PackageCommandBasePathDescription")]
         public string BasePath { get; set; }
 
-        [Option(typeof(NuGetCommand), "PackageCommandVerboseDescription")]
-        public bool Verbose { get; set; }
-
         [Option(typeof(NuGetCommand), "PackageCommandVersionDescription")]
         public string Version { get; set; }
 
@@ -118,12 +115,6 @@ namespace NuGet.CommandLine
 
             // The directory that contains msbuild
             packArgs.MsBuildDirectory = new Lazy<string>(() => MsBuildUtility.GetMsbuildDirectory(MSBuildVersion, Console));
-
-            if (Verbose)
-            {
-                Console.WriteWarning(LocalizedResourceManager.GetString("Option_VerboseDeprecated"));
-                Verbosity = Verbosity.Detailed;
-            }
 
             // Get the input file
             string path = PackCommandRunner.GetInputFile(packArgs);
