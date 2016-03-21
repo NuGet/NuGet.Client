@@ -85,7 +85,7 @@ namespace NuGet.PackageManagement.UI.Test
             var packageFeed = new TestPackageFeed();
             var loader = new PackageItemLoader(context, packageFeed, TestSearchTerm, true);
 
-            Assert.Equal(LoadingStatus.Ready, loader.State.LoadingStatus);
+            Assert.Equal(LoadingStatus.Unknown, loader.State.LoadingStatus);
             var initial = loader.GetCurrent();
             Assert.Empty(initial);
 
