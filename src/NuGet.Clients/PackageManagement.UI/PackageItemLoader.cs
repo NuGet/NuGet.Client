@@ -60,7 +60,7 @@ namespace NuGet.PackageManagement.UI
                     if (_results == null)
                     {
                         // initial status when no load called before
-                        return LoadingStatus.Ready;
+                        return LoadingStatus.Unknown;
                     }
 
                     return AggregateLoadingStatus(SourceLoadingStatus?.Values);
