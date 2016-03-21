@@ -67,11 +67,17 @@ namespace NuGet.Indexing
                 }
             }
 
-            // process the last single queue
-            foreach(var entry in queues.FirstOrDefault()?.Where(e => !enqueued.Contains(e)))
+            // append tail elements from the last queue (should be one or none)
+            // in most cases input queues are unbalanced, i.e. contain different amount of search results.
+            // in that scenario merging algorithm ends leaving a "tail" in a longer queue.
+            // although in certain rare edge cases it might empty all queues at once.
+            if (queues.Any())
             {
-                // don't have to update enqueued as this is the last queue
-                outputQueue.Enqueue(mergedIndex[entry]);
+                foreach (var entry in queues.Single().Where(e => !enqueued.Contains(e)))
+                {
+                    // don't have to update enqueued as this is the last queue
+                    outputQueue.Enqueue(mergedIndex[entry]);
+                }
             }
 
             return outputQueue;

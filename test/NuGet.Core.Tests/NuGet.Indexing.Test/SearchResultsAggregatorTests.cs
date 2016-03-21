@@ -65,14 +65,30 @@ namespace NuGet.Indexing.Test
             AssertRelativeOrder(rawSearch3, results);
         }
 
-        private static void AssertRelativeOrder(IEnumerable<PackageSearchMetadata> rawSearch1, IEnumerable<IPackageSearchMetadata> results)
+        [Fact]
+        public async Task AggregateAsync_IdenticalFeeds()
         {
-            var packageIdsOrderedInInitialOrder = rawSearch1
+            var indexer = new DownloadCountResultsIndexer();
+            var aggregator = new SearchResultsAggregator(indexer);
+
+            var queryString = "nuget";
+
+            var rawSearch1 = TestUtility.LoadTestResponse("relativeOrder1.json");
+            var rawSearch2 = TestUtility.LoadTestResponse("relativeOrder1.json");
+
+            var results = await aggregator.AggregateAsync(queryString, rawSearch1, rawSearch2);
+
+            Assert.Equal(rawSearch1.Select(r => r.Identity), results.Select(r => r.Identity));
+        }
+
+        private static void AssertRelativeOrder(IEnumerable<PackageSearchMetadata> rawSearchResults, IEnumerable<IPackageSearchMetadata> mergedSearchResults)
+        {
+            var packageIdsOrderedInInitialOrder = rawSearchResults
                 .Select(r => r.Identity.Id)
                 .ToArray();
             Assert.Equal(
                 expected: packageIdsOrderedInInitialOrder, 
-                actual: results.Select(r => r.Identity.Id).Where(id => packageIdsOrderedInInitialOrder.Contains(id)));
+                actual: mergedSearchResults.Select(r => r.Identity.Id).Where(id => packageIdsOrderedInInitialOrder.Contains(id)));
         }
 
         private static async Task<ISet<NuGetVersion>> GetPackageVersionsAsync(IPackageSearchMetadata package)
