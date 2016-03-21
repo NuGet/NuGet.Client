@@ -286,6 +286,7 @@
   </data>
   <data name="Tool_Description" xml:space="preserve">
     <value>Determines if the output files of the project should be in the tool folder.</value>
+  </data>
   <data name="Restore_Switch_IgnoreFailedSource_Description" xml:space="preserve">
     <value>Only warning failed sources if there are packages meeting version requirement</value>
   </data>
