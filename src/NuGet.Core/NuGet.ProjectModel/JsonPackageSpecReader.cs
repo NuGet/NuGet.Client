@@ -141,7 +141,7 @@ namespace NuGet.ProjectModel
                 "dependencies",
                 isGacOrFrameworkReference: false);
 
-            packageSpec.Tools = ReadTools(rawPackageSpec, packageSpec.FilePath).ToList();
+            packageSpec.Tools = ReadTools(packageSpec, rawPackageSpec).ToList();
 
             // Read the runtime graph
             packageSpec.RuntimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(rawPackageSpec);
@@ -335,7 +335,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static IEnumerable<ToolDependency> ReadTools(JObject rawPackageSpec, string packageSpecPath)
+        private static IEnumerable<ToolDependency> ReadTools(PackageSpec packageSpec, JObject rawPackageSpec)
         {
             var tools = rawPackageSpec["tools"] as JObject;
             if (tools != null)
@@ -347,12 +347,13 @@ namespace NuGet.ProjectModel
                         throw FileFormatException.Create(
                             Strings.MissingToolName,
                             tool.Value,
-                            packageSpecPath);
+                            packageSpec.FilePath);
                     }
 
                     var value = tool.Value;
                     JToken versionToken = null;
                     string versionValue = null;
+                    var imports = new List<NuGetFramework>();
                     if (value.Type == JTokenType.String)
                     {
                         versionToken = value;
@@ -367,6 +368,8 @@ namespace NuGet.ProjectModel
                             {
                                 versionValue = versionToken.Value<string>();
                             }
+                            
+                            imports.AddRange(GetImports((JObject) value, packageSpec));
                         }
                     }
 
@@ -375,7 +378,7 @@ namespace NuGet.ProjectModel
                         throw FileFormatException.Create(
                             Strings.MissingVersionOnTool,
                             tool.Value,
-                            packageSpecPath);
+                            packageSpec.FilePath);
                     }
 
                     VersionRange versionRange;
@@ -388,7 +391,7 @@ namespace NuGet.ProjectModel
                         throw FileFormatException.Create(
                             ex,
                             versionToken,
-                            packageSpecPath);
+                            packageSpec.FilePath);
                     }
 
                     yield return new ToolDependency
@@ -398,7 +401,8 @@ namespace NuGet.ProjectModel
                             Name = tool.Key,
                             TypeConstraint = LibraryDependencyTarget.Package,
                             VersionRange = versionRange
-                        }
+                        },
+                        Imports = imports
                     };
                 }
             }
@@ -517,21 +521,21 @@ namespace NuGet.ProjectModel
 
             var properties = targetFramework.Value.Value<JObject>();
 
-            var importFramework = GetImports(properties, packageSpec);
+            var importFrameworks = GetImports(properties, packageSpec);
 
             // If a fallback framework exists, update the framework to contain both.
             var updatedFramework = frameworkName;
 
-            if (importFramework.Count != 0)
+            if (importFrameworks.Count != 0)
             {
-                updatedFramework = new FallbackFramework(frameworkName, importFramework);
+                updatedFramework = new FallbackFramework(frameworkName, importFrameworks);
             }
 
             var targetFrameworkInformation = new TargetFrameworkInformation
             {
                 FrameworkName = updatedFramework,
                 Dependencies = new List<LibraryDependency>(),
-                Imports = GetImports(properties, packageSpec),
+                Imports = importFrameworks,
                 Warn = GetWarnSetting(properties)
             };
 
@@ -559,7 +563,7 @@ namespace NuGet.ProjectModel
 
         private static List<NuGetFramework> GetImports(JObject properties, PackageSpec packageSpec)
         {
-            List<NuGetFramework> framework = new List<NuGetFramework>();
+            List<NuGetFramework> frameworks = new List<NuGetFramework>();
 
             var importsProperty = properties["imports"];
 
@@ -568,20 +572,22 @@ namespace NuGet.ProjectModel
                 IEnumerable<string> importArray = new List<string>();
                 if (TryGetStringEnumerableFromJArray(importsProperty, out importArray))
                 {
-                    framework = importArray.Where(p => !string.IsNullOrEmpty(p)).Select(p => NuGetFramework.Parse(p)).ToList();
+                    frameworks = importArray.Where(p => !string.IsNullOrEmpty(p)).Select(p => NuGetFramework.Parse(p)).ToList();
                 }
             }
 
-            if (framework.Any(p => !p.IsSpecificFramework))
+            if (frameworks.Any(p => !p.IsSpecificFramework))
             {
                 throw FileFormatException.Create(
-                           string.Format(Strings.Log_InvalidImportFramework, importsProperty.ToString().Replace(Environment.NewLine,string.Empty),
-                                            PackageSpec.PackageSpecFileName),
+                           string.Format(
+                               Strings.Log_InvalidImportFramework,
+                               importsProperty.ToString().Replace(Environment.NewLine, string.Empty),
+                               PackageSpec.PackageSpecFileName),
                            importsProperty,
                            packageSpec.FilePath);
             }
 
-            return framework;
+            return frameworks;
         }
 
         private static bool GetWarnSetting(JObject properties)

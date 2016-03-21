@@ -698,12 +698,12 @@ namespace NuGet.Commands.Test
                     ProjectJson = @"
                     {
                         ""frameworks"": {
-                        ""net45"": { }
+                            ""net45"": { }
                         },
                         ""tools"": {
-                        ""packageA"": ""*"",
-                        ""packageB"": ""*"",
-                        ""packageC"": ""*""
+                            ""packageA"": ""*"",
+                            ""packageB"": ""*"",
+                            ""packageC"": ""*""
                         }
                     }"
                 };
@@ -743,6 +743,132 @@ namespace NuGet.Commands.Test
                 Assert.NotNull(packageCResult.LockFile);
                 Assert.Equal(1, packageCResult.LockFile.Targets.Count);
                 Assert.False(packageCResult.Success, "packageC tool restore should not have succeeded.");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_MatchingToolImports()
+        {
+            // Arrange
+            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var tc = new ToolTestContext(testDirectory)
+                {
+                    ProjectJson = @"
+                    {
+                        ""frameworks"": {
+                            ""net45"": { }
+                        },
+                        ""tools"": {
+                            ""packageA"": {
+                                ""version"": ""*"",
+                                ""imports"": [ ""net40"", ""net46"" ]
+                            }
+                        }
+                    }"
+                };
+
+                var packageA = new SimpleTestPackageContext("packageA");
+                packageA.AddFile("lib/net45/a.dll");
+
+                SimpleTestPackageUtility.CreatePackages(tc.PackageSource.FullName, packageA);
+
+                tc.Initialize();
+
+                // Act
+                var result = await tc.Command.ExecuteAsync();
+                await result.CommitAsync(tc.Logger, CancellationToken.None);
+
+                // Assert
+                Assert.True(
+                    result.Success,
+                    "The command did not succeed. Error messages: "
+                    + Environment.NewLine + tc.Logger.ShowErrors());
+                Assert.Equal(1, result.ToolRestoreResults.Count());
+
+                var toolResult = result.ToolRestoreResults.First();
+                Assert.NotNull(toolResult.LockFilePath);
+                Assert.True(
+                    File.Exists(toolResult.LockFilePath),
+                    $"The tool lock file at {toolResult.LockFilePath} does not exist.");
+                Assert.NotNull(toolResult.LockFile);
+                Assert.Equal(1, toolResult.LockFile.Targets.Count);
+
+                var target = toolResult.LockFile.Targets[0];
+                Assert.Null(target.RuntimeIdentifier);
+                Assert.Equal(
+                    new FallbackFramework(
+                        FrameworkConstants.CommonFrameworks.NetStandardApp15,
+                        new[] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net46") }),
+                    (FallbackFramework) target.TargetFramework);
+                Assert.Equal(1, target.Libraries.Count);
+                
+                var library = target.Libraries.First(l => l.Name == "packageA");
+                Assert.NotNull(library);
+                Assert.Equal("lib/net45/a.dll", library.RuntimeAssemblies[0].Path);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_NoMatchingToolImports()
+        {
+            // Arrange
+            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var tc = new ToolTestContext(testDirectory)
+                {
+                    ProjectJson = @"
+                    {
+                        ""frameworks"": {
+                            ""net45"": { }
+                        },
+                        ""tools"": {
+                            ""packageA"": {
+                                ""version"": ""*"",
+                                ""imports"": [ ""net40"", ""net46"" ]
+                            }
+                        }
+                    }"
+                };
+
+                var packageA = new SimpleTestPackageContext("packageA");
+                packageA.AddFile("lib/win8/a.dll");
+
+                SimpleTestPackageUtility.CreatePackages(tc.PackageSource.FullName, packageA);
+
+                tc.Initialize();
+
+                // Act
+                var result = await tc.Command.ExecuteAsync();
+                await result.CommitAsync(tc.Logger, CancellationToken.None);
+
+                // Assert
+                Assert.True(
+                    result.Success,
+                    "The command should have succeeded. Error messages: "
+                    + Environment.NewLine + tc.Logger.ShowErrors());
+                Assert.Equal(1, result.ToolRestoreResults.Count());
+
+                var toolResult = result.ToolRestoreResults.First();
+                Assert.NotNull(toolResult.LockFilePath);
+                Assert.True(
+                    File.Exists(toolResult.LockFilePath),
+                    $"The tool lock file at {toolResult.LockFilePath} does not exist.");
+                Assert.NotNull(toolResult.LockFile);
+                Assert.Equal(1, toolResult.LockFile.Targets.Count);
+
+                var target = toolResult.LockFile.Targets[0];
+                Assert.Null(target.RuntimeIdentifier);
+                Assert.Equal(
+                    new FallbackFramework(
+                        FrameworkConstants.CommonFrameworks.NetStandardApp15,
+                        new[] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net46") }),
+                    (FallbackFramework) target.TargetFramework);
+                Assert.Equal(1, target.Libraries.Count);
+                
+                var library = target.Libraries.First(l => l.Name == "packageA");
+                Assert.NotNull(library);
+                Assert.Equal(0, library.RuntimeAssemblies.Count);
             }
         }
 

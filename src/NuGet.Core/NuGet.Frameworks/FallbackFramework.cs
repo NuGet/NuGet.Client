@@ -28,7 +28,7 @@ namespace NuGet.Frameworks
 
             if (fallbackFrameworks.Count == 0)
             {
-                throw new ArgumentException("Empty fallbackFrameworks is invalid",nameof(fallbackFrameworks));
+                throw new ArgumentException("Empty fallbackFrameworks is invalid", nameof(fallbackFrameworks));
             }
 
             Fallback = fallbackFrameworks;

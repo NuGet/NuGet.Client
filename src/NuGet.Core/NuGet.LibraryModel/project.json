@@ -6,6 +6,9 @@
   "dependencies": {
     "NuGet.Versioning": {
       "target": "project"
+    },
+    "NuGet.Frameworks": {
+      "target": "project"
     }
   },
   "compilationOptions": {

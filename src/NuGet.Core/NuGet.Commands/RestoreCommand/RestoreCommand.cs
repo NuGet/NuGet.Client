@@ -251,6 +251,13 @@ namespace NuGet.Commands
                     Strings.Log_RestoringToolPackages,
                     tool.LibraryRange.Name,
                     _request.Project.FilePath));
+                    
+                // Build the fallback framework (which uses the "imports").
+                var framework = LockFile.ToolFramework;
+                if (tool.Imports.Any())
+                {
+                    framework = new FallbackFramework(framework, tool.Imports);
+                }
 
                 // Build a package spec in memory to execute the tool restore as if it were
                 // its own project. For now, we always restore for a null runtime and a single
@@ -262,9 +269,9 @@ namespace NuGet.Commands
                     Tools = new List<ToolDependency>(),
                     TargetFrameworks =
                     {
-                         new TargetFrameworkInformation
+                        new TargetFrameworkInformation
                         {
-                            FrameworkName = LockFile.ToolFramework,
+                            FrameworkName = framework,
                             Dependencies = new List<LibraryDependency>
                             {
                                 new LibraryDependency

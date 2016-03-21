@@ -193,6 +193,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal("packageA", actual.Tools[0].LibraryRange.Name);
             Assert.Equal(VersionRange.Parse("1.2.0-*"), actual.Tools[0].LibraryRange.VersionRange);
             Assert.Equal(LibraryDependencyTarget.Package, actual.Tools[0].LibraryRange.TypeConstraint);
+            Assert.Equal(0, actual.Tools[0].Imports.Count);
         }
         
         [Fact]
@@ -243,6 +244,104 @@ namespace NuGet.ProjectModel.Test
             // Act & Assert
             var actual = Assert.Throws<FileFormatException>(() => JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json"));
             Assert.Contains("not a valid version string", actual.Message);
+        }
+
+        [Fact]
+        public void PackageSpecReader_ToolInvalidImports()
+        {
+            // Arrange
+            var json = @"{
+                           ""tools"": {
+                             ""packageA"": {
+                               ""imports"": ""a"",
+                               ""version"": ""1.2.0-*""
+                             }
+                           }
+                         }";
+
+            // Act & Assert
+            var actual = Assert.Throws<FileFormatException>(() => JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json"));
+            Assert.Contains("Imports contains an invalid framework: 'a' in 'project.json'.", actual.Message);
+        }
+
+        [Fact]
+        public void PackageSpecReader_ToolCommaSeparatedImports()
+        {
+            // Arrange
+            var json = @"{
+                           ""tools"": {
+                             ""packageA"": {
+                               ""imports"": ""net45, dnxcore50"",
+                               ""version"": ""1.2.0-*""
+                             }
+                           }
+                         }";
+
+            // Act
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            
+            // Assert
+            Assert.Equal(1, actual.Tools.Count);
+            Assert.Equal("packageA", actual.Tools[0].LibraryRange.Name);
+            Assert.Equal(VersionRange.Parse("1.2.0-*"), actual.Tools[0].LibraryRange.VersionRange);
+            Assert.Equal(LibraryDependencyTarget.Package, actual.Tools[0].LibraryRange.TypeConstraint);
+            Assert.Equal(1, actual.Tools[0].Imports.Count());
+            
+            // comma-separated frameworks are not supported
+            Assert.Equal("net45,Version=v0.0", actual.Tools[0].Imports.First().ToString());
+        }
+
+        [Fact]
+        public void PackageSpecReader_ToolSingleImport()
+        {
+            // Arrange
+            var json = @"{
+                           ""tools"": {
+                             ""packageA"": {
+                               ""imports"": ""net45"",
+                               ""version"": ""1.2.0-*""
+                             }
+                           }
+                         }";
+
+            // Act
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            
+            // Assert
+            Assert.Equal(1, actual.Tools.Count);
+            Assert.Equal("packageA", actual.Tools[0].LibraryRange.Name);
+            Assert.Equal(VersionRange.Parse("1.2.0-*"), actual.Tools[0].LibraryRange.VersionRange);
+            Assert.Equal(LibraryDependencyTarget.Package, actual.Tools[0].LibraryRange.TypeConstraint);
+            Assert.Equal(1, actual.Tools[0].Imports.Count());
+            
+            // comma-separated frameworks are not supported
+            Assert.Equal(".NETFramework,Version=v4.5", actual.Tools[0].Imports[0].ToString());
+        }
+
+        [Fact]
+        public void PackageSpecReader_ToolArrayImports()
+        {
+            // Arrange
+            var json = @"{
+                           ""tools"": {
+                             ""packageA"": {
+                               ""imports"": [""net45"", ""dnxcore50""],
+                               ""version"": ""1.2.0-*""
+                             }
+                           }
+                         }";
+
+            // Act
+            var actual = JsonPackageSpecReader.GetPackageSpec(json, "TestProject", "project.json");
+            
+            // Assert
+            Assert.Equal(1, actual.Tools.Count);
+            Assert.Equal("packageA", actual.Tools[0].LibraryRange.Name);
+            Assert.Equal(VersionRange.Parse("1.2.0-*"), actual.Tools[0].LibraryRange.VersionRange);
+            Assert.Equal(LibraryDependencyTarget.Package, actual.Tools[0].LibraryRange.TypeConstraint);
+            Assert.Equal(2, actual.Tools[0].Imports.Count());
+            Assert.Equal(".NETFramework,Version=v4.5", actual.Tools[0].Imports[0].ToString());
+            Assert.Equal("DNXCore,Version=v5.0", actual.Tools[0].Imports[1].ToString());
         }
 
         [Fact]
