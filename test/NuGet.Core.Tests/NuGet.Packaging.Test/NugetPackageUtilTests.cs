@@ -313,7 +313,7 @@ namespace Commands.Test
                         return Task.FromResult(true);
                     };
 
-                    var actual = await ConcurrencyUtilities.ExecuteWithFileLockedAsync(filePathToLock, action, cts.Token);
+                    await ConcurrencyUtilities.ExecuteWithFileLockedAsync(filePathToLock, action, cts.Token);
                 }
 
                 AssertDirectoryExists(packageDir, packageDir + " does not exist");
@@ -322,7 +322,7 @@ namespace Commands.Test
 
                 using (var stream = package.File.OpenRead())
                 {
-                    await PackageExtractor.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d, 8192, new CancellationToken()),
+                    await PackageExtractor.InstallFromSourceAsync(async (d) => await stream.CopyToAsync(d),
                                                                    versionFolderPathContext,
                                                                    token);
                 }
