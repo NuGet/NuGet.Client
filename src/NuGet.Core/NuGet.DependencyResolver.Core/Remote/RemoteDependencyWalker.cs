@@ -19,6 +19,7 @@ namespace NuGet.DependencyResolver
     public class RemoteDependencyWalker
     {
         private readonly RemoteWalkContext _context;
+        private static readonly int maxTasks = 4;
 
         public RemoteDependencyWalker(RemoteWalkContext context)
         {
@@ -585,7 +586,9 @@ namespace NuGet.DependencyResolver
             IEnumerable<IRemoteDependencyProvider> providers,
             Func<IRemoteDependencyProvider, Task<LibraryIdentity>> action)
         {
-            var tasks = new List<Task<RemoteMatch>>();
+            var tasks = new List<Task<RemoteMatch>>(maxTasks);
+            var taskRequests = new Queue<Func<Task<RemoteMatch>>>();
+
             foreach (var provider in providers)
             {
                 Func<Task<RemoteMatch>> taskWrapper = async () =>
@@ -603,34 +606,42 @@ namespace NuGet.DependencyResolver
                     return null;
                 };
 
-                tasks.Add(taskWrapper());
+                taskRequests.Enqueue(taskWrapper);
             }
 
             RemoteMatch bestMatch = null;
 
-            while (tasks.Count > 0)
+            while (taskRequests.Count > 0)
             {
-                var task = await Task.WhenAny(tasks);
-                tasks.Remove(task);
-                var match = await task;
-
-                // If we found an exact match then use it.
-                // This allows us to shortcircuit slow feeds even if there's an exact match
-                if (!libraryRange.VersionRange.IsFloating &&
-                    match?.Library?.Version != null &&
-                    libraryRange.VersionRange.IsMinInclusive &&
-                    match.Library.Version.Equals(libraryRange.VersionRange.MinVersion))
+                if (tasks.Count == maxTasks)
                 {
-                    return match;
+                    var doneTask = await Task.WhenAny(tasks);
+                    tasks.Remove(doneTask);
+                    var match = await doneTask;
+
+                    // If we found an exact match then use it.
+                    // This allows us to shortcircuit slow feeds even if there's an exact match
+                    if (!libraryRange.VersionRange.IsFloating &&
+                        match?.Library?.Version != null &&
+                        libraryRange.VersionRange.IsMinInclusive &&
+                        match.Library.Version.Equals(libraryRange.VersionRange.MinVersion))
+                    {
+                        return match;
+                    }
+
+                    // Otherwise just find the best out of the matches
+                    if (libraryRange.VersionRange.IsBetter(
+                        current: bestMatch?.Library?.Version,
+                        considering: match?.Library?.Version))
+                    {
+                        bestMatch = match;
+                    }
                 }
 
-                // Otherwise just find the best out of the matches
-                if (libraryRange.VersionRange.IsBetter(
-                    current: bestMatch?.Library?.Version,
-                    considering: match?.Library?.Version))
-                {
-                    bestMatch = match;
-                }
+                var request = taskRequests.Dequeue();
+
+                var task = Task.Run(async () => await request());
+                tasks.Add(task);
             }
 
             return bestMatch;
