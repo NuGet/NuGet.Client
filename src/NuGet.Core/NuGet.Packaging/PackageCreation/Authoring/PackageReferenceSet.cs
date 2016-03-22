@@ -13,16 +13,30 @@ namespace NuGet.Packaging
 {
     public class PackageReferenceSet
     {
+        /// <summary>
+        /// Creates a new Package Reference Set
+        /// </summary>
+        /// <param name="references">IEnumerable set of string references</param>
         public PackageReferenceSet(IEnumerable<string> references)
             : this((NuGetFramework)null, references)
         {
         }
 
+        /// <summary>
+        /// Creates a new Package Reference Set
+        /// </summary>
+        /// <param name="targetFramework">The target framework to use, pass Any for AnyFramework. Does not allow null.</param>
+        /// <param name="references">IEnumerable set of string references</param>
         public PackageReferenceSet(string targetFramework, IEnumerable<string> references)
             : this(targetFramework != null ? NuGetFramework.Parse(targetFramework) : null, references)
         {
         }
 
+        /// <summary>
+        /// Creates a new Package Reference Set
+        /// </summary>
+        /// <param name="targetFramework">The target framework to use.</param>
+        /// <param name="references">IEnumerable set of string references</param>
         public PackageReferenceSet(NuGetFramework targetFramework, IEnumerable<string> references)
         {
             if (references == null)
