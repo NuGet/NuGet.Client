@@ -64,7 +64,8 @@ namespace NuGet.Packaging
         /// </summary>
         public override Stream GetNuspec()
         {
-            var nuspecFiles = _root.GetFiles("*.nuspec", SearchOption.TopDirectoryOnly);
+            // This needs to be explicitly case insensitive in order to work on XPlat, since GetFiles is normally case sensitive on non-Windows
+            var nuspecFiles = _root.GetFiles("*.*", SearchOption.TopDirectoryOnly).Where(f => f.Name.EndsWith(".nuspec", StringComparison.OrdinalIgnoreCase)).ToArray();
 
             if (nuspecFiles.Length == 0)
             {
