@@ -123,7 +123,7 @@ namespace NuGet.Packaging.Test
             {
                 using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
                 {
-                    zip.AddEntry("lib/net45/a.dll", new byte[0]);
+                    zip.AddEntry("lib" + Path.DirectorySeparatorChar + "net45" + Path.DirectorySeparatorChar + "a.dll", new byte[0]);
                     zip.AddEntry("package.NUSPEC", new byte[0]);
                     zip.AddEntry("package2.nuspec", new byte[0]);
                 }

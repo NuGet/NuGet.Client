@@ -13,8 +13,6 @@ namespace NuGet.Packaging
 {
     public class PackageReferenceSet
     {
-        private static readonly char[] _referenceFileInvalidCharacters = Path.GetInvalidFileNameChars();
-
         public PackageReferenceSet(IEnumerable<string> references)
             : this((NuGetFramework)null, references)
         {
@@ -48,7 +46,7 @@ namespace NuGet.Packaging
                 {
                     yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_RequiredElementMissing, "File");
                 }
-                else if (reference.IndexOfAny(_referenceFileInvalidCharacters) != -1)
+                else if (reference.IndexOfAny(ManifestFile.ReferenceFileInvalidCharacters) != -1)
                 {
                     yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_InvalidReferenceFile, reference);
                 }
