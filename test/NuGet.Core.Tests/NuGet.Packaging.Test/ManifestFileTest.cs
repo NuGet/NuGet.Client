@@ -37,7 +37,7 @@ namespace NuGet.Packaging.Test
         public void ManifestFileReturnsValidationResultIfSourceContainsInvalidCharacters()
         {
             // Arrange
-            var manifestFile = new ManifestFile { Source = "bin\\|\\*.dll".Replace('\\', Path.DirectorySeparatorChar), Target = @"lib" };
+            var manifestFile = new ManifestFile { Source = @"bin\\|\\*.dll".Replace('\\', Path.DirectorySeparatorChar), Target = @"lib" };
 
             // Act
             var result = manifestFile.Validate().ToList();
