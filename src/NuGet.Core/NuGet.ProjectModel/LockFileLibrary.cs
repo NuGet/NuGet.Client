@@ -47,9 +47,9 @@ namespace NuGet.ProjectModel
             if (string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase)
                 && string.Equals(Type, other.Type, StringComparison.OrdinalIgnoreCase)
                 && string.Equals(Path, other.Path, StringComparison.Ordinal)
-                && string.Equals(Path, other.MSBuildProject, StringComparison.Ordinal)
+                && string.Equals(MSBuildProject, other.MSBuildProject, StringComparison.Ordinal)
                 && IsServiceable == other.IsServiceable
-                && Sha512 == other.Sha512
+                && string.Equals(Sha512, other.Sha512, StringComparison.Ordinal)
                 && Version == other.Version)
             {
                 return Files.OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
