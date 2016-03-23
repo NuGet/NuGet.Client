@@ -147,6 +147,8 @@ namespace NuGet.PackageManagement.UI
             // Go off the UI thread to perform non-UI operations
             await TaskScheduler.Default;
 
+            ActivityCorrelationContext.StartNew();
+
             int totalCount = 0;
             ContinuationToken nextToken = null;
             do
@@ -167,6 +169,8 @@ namespace NuGet.PackageManagement.UI
         {
             // Go off the UI thread to perform non-UI operations
             await TaskScheduler.Default;
+
+            ActivityCorrelationContext.StartNew();
 
             var packages = new List<IPackageSearchMetadata>();
             ContinuationToken nextToken = null;
@@ -189,6 +193,8 @@ namespace NuGet.PackageManagement.UI
 
         public async Task LoadNextAsync(IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
         {
+            ActivityCorrelationContext.StartNew();
+
             cancellationToken.ThrowIfCancellationRequested();
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadBegin);
