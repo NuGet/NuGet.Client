@@ -25,12 +25,6 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task HttpRetryHandler_HandlesFailureToConnect()
         {
-            // https://github.com/NuGet/Home/issues/2096
-            if (!RuntimeEnvironmentHelper.IsWindows)
-            {
-                return;
-            }
-
             // Arrange
             var server = new NotListeningServer { Mode = TestServerMode.ConnectFailure };
 
@@ -38,7 +32,14 @@ namespace NuGet.Protocol.Core.v3.Tests
             var exception = await ThrowsException<HttpRequestException>(server);
 #if NETSTANDARDAPP1_5
             Assert.NotNull(exception.InnerException);
-            Assert.Equal("A connection with the server could not be established", exception.InnerException.Message);
+            if (!RuntimeEnvironmentHelper.IsWindows)
+            {
+                Assert.Equal("Couldn't connect to server", exception.InnerException.Message);
+            }
+            else
+            {
+                Assert.Equal("A connection with the server could not be established", exception.InnerException.Message);
+            }
 #else
             var innerException = Assert.IsType<WebException>(exception.InnerException);
             Assert.Equal(WebExceptionStatus.ConnectFailure, innerException.Status);
@@ -48,20 +49,22 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task HttpRetryHandler_HandlesInvalidProtocol()
         {
-            // https://github.com/NuGet/Home/issues/2096
-            if (!RuntimeEnvironmentHelper.IsWindows)
-            {
-                return;
-            }
-
             // Arrange
             var server = new TcpListenerServer { Mode = TestServerMode.ServerProtocolViolation };
 
             // Act & Assert
             var exception = await ThrowsException<HttpRequestException>(server);
 #if NETSTANDARDAPP1_5
-            Assert.NotNull(exception.InnerException);
-            Assert.Equal("The server returned an invalid or unrecognized response", exception.InnerException.Message);
+            if (!RuntimeEnvironmentHelper.IsWindows)
+            {
+                Assert.Null(exception.InnerException);
+                Assert.Equal("The server returned an invalid or unrecognized response.", exception.Message);
+            }
+            else
+            {
+                Assert.NotNull(exception.InnerException);
+                Assert.Equal("The server returned an invalid or unrecognized response", exception.InnerException.Message);
+            }
 #else
             var innerException = Assert.IsType<WebException>(exception.InnerException);
             Assert.Equal(WebExceptionStatus.ServerProtocolViolation, innerException.Status);
@@ -71,12 +74,6 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task HttpRetryHandler_HandlesNameResolutionFailure()
         {
-            // https://github.com/NuGet/Home/issues/2096
-            if (!RuntimeEnvironmentHelper.IsWindows)
-            {
-                return;
-            }
-
             // Arrange
             var server = new UnknownDnsServer { Mode = TestServerMode.NameResolutionFailure };
 
@@ -84,7 +81,14 @@ namespace NuGet.Protocol.Core.v3.Tests
             var exception = await ThrowsException<HttpRequestException>(server);
 #if NETSTANDARDAPP1_5
             Assert.NotNull(exception.InnerException);
-            Assert.Equal("The server name or address could not be resolved", exception.InnerException.Message);
+            if (!RuntimeEnvironmentHelper.IsWindows)
+            {
+                Assert.Equal("Couldn't resolve host name", exception.InnerException.Message);
+            }
+            else
+            {
+                Assert.Equal("The server name or address could not be resolved", exception.InnerException.Message);
+            }
 #else
             var innerException = Assert.IsType<WebException>(exception.InnerException);
             Assert.Equal(WebExceptionStatus.NameResolutionFailure, innerException.Status);

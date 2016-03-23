@@ -42,12 +42,6 @@ namespace NuGet.Protocol.Core.v3.Tests
         [Fact]
         public async Task HttpSource_TimesOutDownload()
         {
-            // https://github.com/NuGet/Home/issues/2096
-            if (!RuntimeEnvironmentHelper.IsWindows)
-            {
-                return;
-            }
-            
             // Arrange
             using (var td = TestFileSystemUtility.CreateRandomTestFolder())
             {

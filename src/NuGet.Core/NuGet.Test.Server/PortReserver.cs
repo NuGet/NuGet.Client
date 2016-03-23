@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -49,7 +50,7 @@ namespace NuGet.Test.Server
                 }
 
                 // ListUsedTCPPort prevents port contention with other apps.
-                if (ListUsedTcpPort().Any(endPoint => endPoint.Port == port))
+                if (!IsTcpPortAvailable(port))
                 {
                     continue;
                 }
@@ -70,12 +71,23 @@ namespace NuGet.Test.Server
                 }
             }
         }
-
-        private static IPEndPoint[] ListUsedTcpPort()
+        
+        private static bool IsTcpPortAvailable(int port)
         {
-            IPGlobalProperties ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
-
-            return ipGlobalProperties.GetActiveTcpListeners();
+            var tcpListener = new TcpListener(IPAddress.Loopback, port);
+            try
+            {
+                tcpListener.Start();
+                return true;
+            }
+            catch (SocketException)
+            {
+                return false;
+            }
+            finally
+            {
+                tcpListener.Stop();
+            }
         }
     }
 }
