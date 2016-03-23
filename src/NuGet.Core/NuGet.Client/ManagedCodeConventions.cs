@@ -204,6 +204,12 @@ namespace NuGet.Client
 
             public SelectionCriteria ForFrameworkAndRuntime(NuGetFramework framework, string runtimeIdentifier)
             {
+                if (framework is FallbackFramework)
+                {
+                    // Fallback frameworks are not handled by content model
+                    throw new NotSupportedException("FallbackFramework is not supported.");
+                }
+
                 // Both criteria must specify a RID
 
                 var builder = new SelectionCriteriaBuilder(_conventions.Properties);
