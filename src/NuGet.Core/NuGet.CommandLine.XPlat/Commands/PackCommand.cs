@@ -8,9 +8,9 @@ using NuGet.Logging;
 
 namespace NuGet.CommandLine.XPlat
 {
-    class PackCommand
+    internal static class PackCommand
     {
-        public PackCommand(CommandLineApplication app, Func<ILogger> getLogger)
+        public static void Register(CommandLineApplication app, Func<ILogger> getLogger)
         {
             app.Command("pack", pack =>
             {
