@@ -21,11 +21,13 @@ namespace NuGet.CommandLine.XPlat
 #if DEBUG
             if (args.Contains("--debug"))
             {
-                args = args.Skip(1).ToArray();
+                args = args.Where(arg => arg != "--debug").ToArray();
+
                 while (!Debugger.IsAttached)
                 {
-
+                    System.Threading.Thread.Sleep(100);
                 }
+
                 Debugger.Break();
             }
 #endif
@@ -53,25 +55,11 @@ namespace NuGet.CommandLine.XPlat
             // This method has no effect on .NET Core.
             NetworkProtocolUtility.ConfigureSupportedSslProtocols();
 
-            //register push and delete command
-            PushCommand.Register(app, () =>
-            {
-                return Log;
-            });
-
-            DeleteCommand.Register(app, () =>
-            {
-                return Log;
-            });
-            new PackCommand(app, () =>
-            {
-                return Log;
-            });
-
-            RestoreCommand.Register(app, () =>
-            {
-                return Log;
-            });
+            // Register commands
+            DeleteCommand.Register(app, () => Log);
+            PackCommand.Register(app, () => Log);
+            PushCommand.Register(app, () => Log);
+            RestoreCommand.Register(app, () => Log);
 
             app.OnExecute(() =>
             {
@@ -79,7 +67,7 @@ namespace NuGet.CommandLine.XPlat
                 return 0;
             });
 
-            var exitCode = 0;
+            int exitCode = 0;
 
             try
             {
