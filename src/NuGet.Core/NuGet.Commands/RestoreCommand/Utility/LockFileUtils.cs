@@ -143,30 +143,43 @@ namespace NuGet.Commands
                 }
             }
 
-            var managedCriteria = targetGraph.Conventions.Criteria.ForFrameworkAndRuntime(framework, targetGraph.RuntimeIdentifier);
+            // Create an ordered list of selection criteria. Each will be applied, if the result is empty
+            // fallback frameworks from "imports" will be tried.
+            // These are only used for framework/RID combinations where content model handles everything.
+            var orderedCriteria = CreateCriteria(targetGraph, framework);
 
-            var compileGroup = contentItems.FindBestItemGroup(managedCriteria, targetGraph.Conventions.Patterns.CompileAssemblies, targetGraph.Conventions.Patterns.RuntimeAssemblies);
+            // Compile
+            var compileGroup = GetLockFileItems(
+                orderedCriteria,
+                contentItems,
+                targetGraph.Conventions.Patterns.CompileAssemblies,
+                targetGraph.Conventions.Patterns.RuntimeAssemblies);
 
-            if (compileGroup != null)
-            {
-                lockFileLib.CompileTimeAssemblies = compileGroup.Items.Select(t => new LockFileItem(t.Path)).ToList();
-            }
+            lockFileLib.CompileTimeAssemblies.AddRange(compileGroup);
 
-            var runtimeGroup = contentItems.FindBestItemGroup(managedCriteria, targetGraph.Conventions.Patterns.RuntimeAssemblies);
-            if (runtimeGroup != null)
-            {
-                lockFileLib.RuntimeAssemblies = runtimeGroup.Items.Select(p => new LockFileItem(p.Path)).ToList();
-            }
+            // Runtime
+            var runtimeGroup = GetLockFileItems(
+                orderedCriteria,
+                contentItems,
+                targetGraph.Conventions.Patterns.RuntimeAssemblies);
 
-            var resourceGroup = contentItems.FindBestItemGroup(managedCriteria, targetGraph.Conventions.Patterns.ResourceAssemblies);
-            if (resourceGroup != null)
-            {
-                lockFileLib.ResourceAssemblies = resourceGroup.Items.Select(ToResourceLockFileItem).ToList();
-            }
+            lockFileLib.RuntimeAssemblies.AddRange(runtimeGroup);
 
+            // Resources
+            var resourceGroup = GetLockFileItems(
+                orderedCriteria,
+                contentItems,
+                targetGraph.Conventions.Patterns.ResourceAssemblies);
+
+            lockFileLib.ResourceAssemblies.AddRange(resourceGroup);
+
+            // Native
             var nativeCriteria = targetGraph.Conventions.Criteria.ForRuntime(targetGraph.RuntimeIdentifier);
 
-            var nativeGroup = contentItems.FindBestItemGroup(nativeCriteria, targetGraph.Conventions.Patterns.NativeLibraries);
+            var nativeGroup = contentItems.FindBestItemGroup(
+                nativeCriteria,
+                targetGraph.Conventions.Patterns.NativeLibraries);
+
             if (nativeGroup != null)
             {
                 lockFileLib.NativeLibraries = nativeGroup.Items.Select(p => new LockFileItem(p.Path)).ToList();
@@ -282,6 +295,80 @@ namespace NuGet.Commands
             }
 
             return lockFileLib;
+        }
+
+        /// <summary>
+        /// Create lock file items for the best matching group.
+        /// </summary>
+        /// <remarks>Enumerate this once after calling.</remarks>
+        private static IEnumerable<LockFileItem> GetLockFileItems(
+            IReadOnlyList<SelectionCriteria> criteria,
+            ContentItemCollection items,
+            params PatternSet[] patterns)
+        {
+            // Loop through each criteria taking the first one that matches one or more items.
+            foreach (var managedCriteria in criteria)
+            {
+                var group = items.FindBestItemGroup(
+                    managedCriteria,
+                    patterns);
+
+                if (group != null)
+                {
+                    foreach (var item in group.Items)
+                    {
+                        yield return new LockFileItem(item.Path);
+                    }
+
+                    // Take only the first group that has items
+                    break;
+                }
+            }
+
+            yield break;
+        }
+
+        /// <summary>
+        /// Creates an ordered list of selection criteria to use. This supports fallback frameworks.
+        /// </summary>
+        private static IReadOnlyList<SelectionCriteria> CreateCriteria(
+            RestoreTargetGraph targetGraph,
+            NuGetFramework framework)
+        {
+            var managedCriteria = new List<SelectionCriteria>(1);
+
+            var fallbackFramework = framework as FallbackFramework;
+
+            if (fallbackFramework == null)
+            {
+                var standardCriteria = targetGraph.Conventions.Criteria.ForFrameworkAndRuntime(
+                    framework,
+                    targetGraph.RuntimeIdentifier);
+
+                managedCriteria.Add(standardCriteria);
+            }
+            else
+            {
+                // Add the project framework
+                var primaryFramework = NuGetFramework.Parse(fallbackFramework.DotNetFrameworkName);
+                var primaryCriteria = targetGraph.Conventions.Criteria.ForFrameworkAndRuntime(
+                    primaryFramework,
+                    targetGraph.RuntimeIdentifier);
+
+                managedCriteria.Add(primaryCriteria);
+
+                // Add each fallback framework in order
+                foreach (var fallback in fallbackFramework.Fallback)
+                {
+                    var fallbackCriteria = targetGraph.Conventions.Criteria.ForFrameworkAndRuntime(
+                        fallback,
+                        targetGraph.RuntimeIdentifier);
+
+                    managedCriteria.Add(fallbackCriteria);
+                }
+            }
+
+            return managedCriteria;
         }
 
         private static bool HasItems(ContentItemGroup compileGroup)
