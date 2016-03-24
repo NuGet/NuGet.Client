@@ -14,6 +14,7 @@ namespace NuGet.Commands
         public IEnumerable<string> Arguments { get; set; }
         public string BasePath { get; set; }
         public bool Build { get; set; }
+        public IEnumerable<string> Exclude { get; set; }
         public bool ExcludeEmptyDirectories { get; set; }
         public ILogger Logger { get; set; }
         public LogLevel LogLevel { get; set; }
