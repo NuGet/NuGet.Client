@@ -344,7 +344,7 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.False(result.Success);
                 Assert.Equal(1, result.GetAllUnresolved().Count);
-                Assert.True(logger.ErrorMessages.Contains("Unable to resolve project1 (>= 1.0.0) for .NETFramework,Version=v4.5."));
+                Assert.True(logger.ErrorMessages.Contains("Unable to resolve 'project1 (>= 1.0.0)' for '.NETFramework,Version=v4.5'."));
             }
         }
 
