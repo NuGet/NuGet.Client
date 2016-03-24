@@ -169,7 +169,7 @@ namespace NuGet.Commands.Test
         {
             // Arrange
             var logger = new TestLogger();
-            var framework = "net46";
+            var framework = "dotnet";
 
             using (var workingDir = CreateTestFolders())
             {
@@ -211,7 +211,7 @@ namespace NuGet.Commands.Test
                 await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
-                Assert.True(result.Success);
+                Assert.True(result.Success, logger.ShowMessages());
             }
         }
 

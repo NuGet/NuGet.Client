@@ -94,7 +94,7 @@ namespace NuGet.Commands
                 toolRestoreResults,
                 relockFile);
 
-            if(!ValidateRestoreGraphs(graphs, _logger))
+            if (!ValidateRestoreGraphs(graphs, _logger))
             {
                 _success = false;
             }
@@ -115,11 +115,34 @@ namespace NuGet.Commands
                     checkResults.Add(res);
                     if (res.Success)
                     {
-                        _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackagesAreCompatible, graph.Name));
+                        _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackagesAndProjectsAreCompatible, graph.Name));
                     }
                     else
                     {
-                        _logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackagesIncompatible, graph.Name));
+                        // Get error counts on a project vs package basis
+                        var projectCount = res.Issues.Count(issue => issue.Type == CompatibilityIssueType.ProjectIncompatible);
+                        var packageCount = res.Issues.Count(issue => issue.Type != CompatibilityIssueType.ProjectIncompatible);
+
+                        // Log a summary with compatibility error counts
+                        if (projectCount > 0)
+                        {
+                            _logger.LogError(
+                                string.Format(CultureInfo.CurrentCulture,
+                                    Strings.Log_ProjectsIncompatible,
+                                    graph.Name));
+
+                            _logger.LogDebug($"Incompatible projects: {projectCount}");
+                        }
+
+                        if (packageCount > 0)
+                        {
+                            _logger.LogError(
+                                string.Format(CultureInfo.CurrentCulture,
+                                    Strings.Log_PackagesIncompatible,
+                                    graph.Name));
+
+                            _logger.LogDebug($"Incompatible packages: {packageCount}");
+                        }
                     }
                 }
             }
@@ -251,7 +274,7 @@ namespace NuGet.Commands
                     Strings.Log_RestoringToolPackages,
                     tool.LibraryRange.Name,
                     _request.Project.FilePath));
-                    
+
                 // Build the fallback framework (which uses the "imports").
                 var framework = LockFile.ToolFramework;
                 if (tool.Imports.Any())
@@ -327,7 +350,7 @@ namespace NuGet.Commands
                     _request,
                     toolPackageSpec,
                     existingToolLockFile,
-                    new Dictionary<NuGetFramework, RuntimeGraph>(), 
+                    new Dictionary<NuGetFramework, RuntimeGraph>(),
                     _runtimeGraphCacheByPackage);
                 var projectRestoreCommand = new ProjectRestoreCommand(_logger, projectRestoreRequest);
                 var result = await projectRestoreCommand.TryRestore(
@@ -456,7 +479,7 @@ namespace NuGet.Commands
             // the external project provider is specific to the current restore project
             var projectResolver = new PackageSpecResolver(_request.Project);
             context.ProjectLibraryProviders.Add(
-                    new PackageSpecReferenceDependencyProvider(projectResolver, updatedExternalProjects));
+                    new PackageSpecReferenceDependencyProvider(projectResolver, updatedExternalProjects, _logger));
 
             var remoteWalker = new RemoteDependencyWalker(context);
 
@@ -583,7 +606,7 @@ namespace NuGet.Commands
         private static RemoteWalkContext CreateRemoteWalkContext(RestoreRequest request)
         {
             var context = new RemoteWalkContext();
-            
+
             foreach (var provider in request.DependencyProviders.LocalProviders)
             {
                 context.LocalLibraryProviders.Add(provider);
@@ -718,7 +741,7 @@ namespace NuGet.Commands
                 // Null out all target types, these did not exist in v1
                 library.Type = null;
             }
-            
+
             // Remove tools
             lockFile.Tools = null;
             lockFile.ProjectFileToolGroups = null;

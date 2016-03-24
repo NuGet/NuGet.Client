@@ -9,6 +9,7 @@ using System.Linq;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Logging;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
@@ -30,9 +31,12 @@ namespace NuGet.ProjectModel
         private readonly Dictionary<string, IPackageSpecResolver> _resolverCache
             = new Dictionary<string, IPackageSpecResolver>(StringComparer.Ordinal);
 
+        private readonly ILogger _logger;
+
         public PackageSpecReferenceDependencyProvider(
             IPackageSpecResolver projectResolver,
-            IEnumerable<ExternalProjectReference> externalProjects)
+            IEnumerable<ExternalProjectReference> externalProjects,
+            ILogger logger)
         {
             if (projectResolver == null)
             {
@@ -44,7 +48,13 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(externalProjects));
             }
 
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             _defaultResolver = projectResolver;
+            _logger = logger;
 
             _resolverCache.Add(projectResolver.RootPath, projectResolver);
 
@@ -82,6 +92,7 @@ namespace NuGet.ProjectModel
 
         public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework, string rootPath)
         {
+            Library library = null;
             var name = libraryRange.Name;
 
             ExternalProjectReference externalReference = null;
@@ -152,7 +163,7 @@ namespace NuGet.ProjectModel
 
                 // Non-Xproj projects may only have one TxM, all external references should be 
                 // included if this is an msbuild based project.
-                if (packageSpec != null 
+                if (packageSpec != null
                     && !XProjUtility.IsMSBuildBasedProject(externalReference.MSBuildProjectPath))
                 {
                     // Create an exclude list of all references from the non-selected TxM
@@ -203,15 +214,6 @@ namespace NuGet.ProjectModel
                     }));
             }
 
-            // Mark the library as unresolved if there were specified frameworks
-            // and none of them resolved
-            var resolved = true;
-            if (targetFrameworkInfo != null)
-            {
-                resolved = !(targetFrameworkInfo.FrameworkName == null &&
-                                     packageSpec.TargetFrameworks.Any());
-            }
-
             // Remove duplicate dependencies. A reference can exist both in csproj and project.json
             // dependencies is already ordered by importance here
             var uniqueDependencies = new List<LibraryDependency>(dependencies.Count);
@@ -225,7 +227,7 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            var library = new Library
+            library = new Library
             {
                 LibraryRange = libraryRange,
                 Identity = new LibraryIdentity
@@ -236,7 +238,7 @@ namespace NuGet.ProjectModel
                 },
                 Path = packageSpec?.FilePath,
                 Dependencies = uniqueDependencies,
-                Resolved = resolved
+                Resolved = true
             };
 
             if (packageSpec != null)
@@ -268,9 +270,25 @@ namespace NuGet.ProjectModel
                 library[KnownLibraryProperties.MSBuildProjectPath] = msbuildPath;
             }
 
+            if (packageSpec != null)
+            {
+                // Record all frameworks in the project
+                library[KnownLibraryProperties.ProjectFrameworks] = new List<NuGetFramework>(
+                    packageSpec.TargetFrameworks.Select(fw => fw.FrameworkName));
+            }
+
             if (targetFrameworkInfo != null)
             {
                 library[KnownLibraryProperties.TargetFrameworkInformation] = targetFrameworkInfo;
+
+                // Add framework references
+                var frameworkReferences = targetFrameworkInfo.Dependencies
+                    .Where(d => d.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference)
+                    .Select(d => d.Name)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                library[KnownLibraryProperties.FrameworkAssemblies] = frameworkReferences;
 
                 // Add a compile asset for msbuild to xproj projects
                 if (targetFrameworkInfo.FrameworkName != null

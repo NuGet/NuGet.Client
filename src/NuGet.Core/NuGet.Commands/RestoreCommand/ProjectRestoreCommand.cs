@@ -252,9 +252,25 @@ namespace NuGet.Commands
                     success = false;
                     foreach (var unresolved in graph.Unresolved)
                     {
-                        _logger.LogError(string.Format(CultureInfo.CurrentCulture, Strings.Log_UnresolvedDependency, unresolved.Name,
-                            unresolved.VersionRange.ToNonSnapshotRange().PrettyPrint(),
-                            graph.Name));
+                        string packageDisplayName = null;
+                        var displayVersionRange = unresolved.VersionRange.ToNonSnapshotRange().PrettyPrint();
+
+                        // Projects may not have a version range
+                        if (string.IsNullOrEmpty(displayVersionRange))
+                        {
+                            packageDisplayName = unresolved.Name;
+                        }
+                        else
+                        {
+                            packageDisplayName = $"{unresolved.Name} {displayVersionRange}";
+                        }
+
+                        var message = string.Format(CultureInfo.CurrentCulture,
+                            Strings.Log_UnresolvedDependency,
+                            packageDisplayName,
+                            graph.Name);
+
+                        _logger.LogError(message);
                     }
                 }
             }

@@ -190,8 +190,11 @@ namespace NuGet.Commands
                             KnownLibraryProperties.TargetFrameworkInformation,
                             out frameworkInfoObject))
                         {
+                            // Retrieve the resolved framework name, if this is null it means that the
+                            // project is incompatible. This is marked as Unsupported.
                             var targetFrameworkInformation = (TargetFrameworkInformation)frameworkInfoObject;
-                            projectFramework = targetFrameworkInformation.FrameworkName?.DotNetFrameworkName;
+                            projectFramework = targetFrameworkInformation.FrameworkName?.DotNetFrameworkName
+                                ?? NuGetFramework.UnsupportedFramework.DotNetFrameworkName;
                         }
 
                         // Create the target entry
@@ -223,6 +226,15 @@ namespace NuGet.Commands
                             var item = new LockFileItem((string)compileAssetObject);
                             lib.CompileTimeAssemblies.Add(item);
                             lib.RuntimeAssemblies.Add(item);
+                        }
+
+                        // Add frameworkAssemblies for projects
+                        object frameworkAssembliesObject;
+                        if (localMatch.LocalLibrary.Items.TryGetValue(
+                            KnownLibraryProperties.FrameworkAssemblies,
+                            out frameworkAssembliesObject))
+                        {
+                            lib.FrameworkAssemblies.AddRange((List<string>)frameworkAssembliesObject);
                         }
 
                         target.Libraries.Add(lib);

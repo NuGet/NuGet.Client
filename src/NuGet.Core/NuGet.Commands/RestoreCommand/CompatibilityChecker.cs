@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using NuGet.Client;
+using NuGet.ContentModel;
+using NuGet.DependencyResolver;
+using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Logging;
 using NuGet.Packaging;
@@ -58,6 +62,36 @@ namespace NuGet.Commands
             {
                 _log.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingPackageCompatibility, node.Key.Name, node.Key.Version, graph.Name));
 
+                // Check project compatibility
+                if (node.Key.Type == LibraryType.Project)
+                {
+                    // Get the full library
+                    var localMatch = node.Data?.Match as LocalMatch;
+                    if (localMatch == null || !IsProjectCompatible(localMatch.LocalLibrary))
+                    {
+                        var available = new List<NuGetFramework>();
+
+                        // If the project info is available find all available frameworks
+                        if (localMatch?.LocalLibrary != null)
+                        {
+                            available = GetProjectFrameworks(localMatch.LocalLibrary);
+                        }
+
+                        // Create issue
+                        var issue = CompatibilityIssue.IncompatibleProject(
+                            new PackageIdentity(node.Key.Name, node.Key.Version),
+                            graph.Framework,
+                            graph.RuntimeIdentifier,
+                            available);
+
+                        issues.Add(issue);
+                        _log.LogError(issue.Format());
+                    }
+
+                    // Skip further checks on projects
+                    continue;
+                }
+
                 // Find the include/exclude flags for this package
                 LibraryIncludeFlags packageIncludeFlags;
                 if (!includeFlags.TryGetValue(node.Key.Name, out packageIncludeFlags))
@@ -68,7 +102,7 @@ namespace NuGet.Commands
                 // If the package has compile and runtime assets excluded the compatibility check
                 // is not needed. Packages with no ref or lib entries are considered
                 // compatible in IsCompatible.
-                if ((packageIncludeFlags & 
+                if ((packageIncludeFlags &
                         (LibraryIncludeFlags.Compile
                         | LibraryIncludeFlags.Runtime)) == LibraryIncludeFlags.None)
                 {
@@ -83,10 +117,14 @@ namespace NuGet.Commands
 
                 if (!IsCompatible(compatibilityData))
                 {
-                    var issue = CompatibilityIssue.Incompatible(
+                    var available = GetPackageFrameworks(compatibilityData, graph);
+
+                    var issue = CompatibilityIssue.IncompatiblePackage(
                         new PackageIdentity(node.Key.Name, node.Key.Version),
                         graph.Framework,
-                        graph.RuntimeIdentifier);
+                        graph.RuntimeIdentifier,
+                        available);
+
                     issues.Add(issue);
                     _log.LogError(issue.Format());
                 }
@@ -159,12 +197,88 @@ namespace NuGet.Commands
                         new PackageIdentity(compile.Value.Name, compile.Value.Version),
                         graph.Framework,
                         graph.RuntimeIdentifier);
+
                     issues.Add(issue);
                     _log.LogError(issue.Format());
                 }
             }
 
             return new CompatibilityCheckResult(graph, issues);
+        }
+
+        private static List<NuGetFramework> GetPackageFrameworks(
+            CompatibilityData compatibilityData,
+            RestoreTargetGraph graph)
+        {
+            var available = new HashSet<NuGetFramework>();
+
+            var contentItems = new ContentItemCollection();
+            contentItems.Load(compatibilityData.Files);
+
+            var patterns = new[]
+            {
+                graph.Conventions.Patterns.ResourceAssemblies,
+                graph.Conventions.Patterns.CompileAssemblies,
+                graph.Conventions.Patterns.RuntimeAssemblies,
+                graph.Conventions.Patterns.ContentFiles
+            };
+
+            foreach (var pattern in patterns)
+            {
+                foreach (var group in contentItems.FindItemGroups(pattern))
+                {
+                    object tfmObj = null;
+                    object ridObj = null;
+                    group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.RuntimeIdentifier, out ridObj);
+                    group.Properties.TryGetValue(ManagedCodeConventions.PropertyNames.TargetFrameworkMoniker, out tfmObj);
+
+                    NuGetFramework tfm = tfmObj as NuGetFramework;
+
+                    // RID specific items should be ignored here since they are only used in the runtime assem check
+                    if (ridObj == null && tfm?.IsSpecificFramework == true)
+                    {
+                        available.Add(tfm);
+                    }
+                }
+            }
+
+            return available.ToList();
+        }
+
+        private static List<NuGetFramework> GetProjectFrameworks(Library localLibrary)
+        {
+            var available = new List<NuGetFramework>();
+
+            object frameworksObject;
+            if (localLibrary.Items.TryGetValue(
+                KnownLibraryProperties.ProjectFrameworks,
+                out frameworksObject))
+            {
+                available = (List<NuGetFramework>)frameworksObject;
+            }
+
+            return available;
+        }
+
+        private static bool IsProjectCompatible(Library library)
+        {
+            object frameworkInfoObject;
+            if (library.Items.TryGetValue(
+                KnownLibraryProperties.TargetFrameworkInformation,
+                out frameworkInfoObject))
+            {
+                var targetFrameworkInformation = (TargetFrameworkInformation)frameworkInfoObject;
+
+                // Verify that a valid framework was selected
+                return (targetFrameworkInformation.FrameworkName != null
+                    && targetFrameworkInformation.FrameworkName != NuGetFramework.UnsupportedFramework);
+            }
+            else
+            {
+                // For external projects that do not have any target framework info, assume
+                // compatibility was checked before hand
+                return true;
+            }
         }
 
         private bool IsCompatible(CompatibilityData compatibilityData)
@@ -176,8 +290,8 @@ namespace NuGet.Commands
                 compatibilityData.TargetLibrary.FrameworkAssemblies.Count > 0 ||                        // Framework Assemblies, or
                 compatibilityData.TargetLibrary.ContentFiles.Count > 0 ||                               // Shared content
                 compatibilityData.TargetLibrary.ResourceAssemblies.Count > 0 ||                         // Resources (satellite package)
-                !compatibilityData.Files.Any(p => 
-                    p.StartsWith("ref/", StringComparison.OrdinalIgnoreCase) 
+                !compatibilityData.Files.Any(p =>
+                    p.StartsWith("ref/", StringComparison.OrdinalIgnoreCase)
                     || p.StartsWith("lib/", StringComparison.OrdinalIgnoreCase));                       // No assemblies at all (for any TxM)
         }
 

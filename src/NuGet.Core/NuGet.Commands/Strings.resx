@@ -142,16 +142,17 @@
     <value>{0} {1} provides a compile-time reference assembly for {2} on {3}, but there is no run-time assembly compatible with {4}.</value>
   </data>
   <data name="Log_PackageNotCompatibleWithFx" xml:space="preserve">
-    <value>{0} {1} is not compatible with {2}.</value>
+    <value>Package {0} {1} is not compatible with {2}.</value>
+    <comment>0 - package id, 1 - version, 2 - target framework</comment>
   </data>
-  <data name="Log_PackagesAreCompatible" xml:space="preserve">
-    <value>All packages are compatible with {0}.</value>
+  <data name="Log_PackagesAndProjectsAreCompatible" xml:space="preserve">
+    <value>All packages and projects are compatible with {0}.</value>
   </data>
   <data name="Log_PackagesIncompatible" xml:space="preserve">
-    <value>Some packages are not compatible with {0}.</value>
+    <value>One or more packages are incompatible with {0}.</value>
   </data>
   <data name="Log_ProjectDoesNotSpecifyTargetFrameworks" xml:space="preserve">
-    <value>The project '{0}' does not specify any target frameworks in '{1}'.</value>
+    <value>The project {0} does not specify any target frameworks in {1}.</value>
   </data>
   <data name="Log_ResolvingConflicts" xml:space="preserve">
     <value>Resolving conflicts for {0}...</value>
@@ -169,7 +170,7 @@
     <value>Skipping runtime dependency walk, no runtimes defined in project.json.</value>
   </data>
   <data name="Log_UnresolvedDependency" xml:space="preserve">
-    <value>Unable to resolve {0} {1} for {2}.</value>
+    <value>Unable to resolve '{0}' for '{1}'.</value>
   </data>
   <data name="Log_UnknownCompatibilityProfile" xml:space="preserve">
     <value>Unknown Compatibility Profile: {0}</value>
@@ -362,5 +363,32 @@
   </data>
   <data name="Warning_UnspecifiedField" xml:space="preserve">
     <value>{0} was not specified. Using '{1}'.</value>
+  </data>
+  <data name="Log_ProjectNotCompatibleWithFx" xml:space="preserve">
+    <value>Project {0} is not compatible with {1}.</value>
+  </data>
+  <data name="Log_PackageNotCompatibleWithFx_Supports" xml:space="preserve">
+    <value>Package {0} {1} supports:</value>
+    <comment>0 - package id, 1 - version</comment>
+  </data>
+  <data name="Log_ProjectNotCompatibleWithFx_Supports" xml:space="preserve">
+    <value>Project {0} supports:</value>
+  </data>
+  <data name="Log_FrameworkDisplay" xml:space="preserve">
+    <value>{0} ({1})</value>
+    <comment>0 - framwork short name, 1 - System.FrameworkName</comment>
+  </data>
+  <data name="Log_FrameworkRIDDisplay" xml:space="preserve">
+    <value>{0} ({1}) / {2}</value>
+    <comment>0 - framwork short name, 1 - System.FrameworkName, 2 - Runtime ID</comment>
+  </data>
+  <data name="Log_PackageNotCompatibleWithFx_NoSupports" xml:space="preserve">
+    <value>Package {0} {1} does not support any target frameworks.</value>
+  </data>
+  <data name="Log_ProjectNotCompatibleWithFx_NoSupports" xml:space="preserve">
+    <value>Project {0} does not support any target frameworks.</value>
+  </data>
+  <data name="Log_ProjectsIncompatible" xml:space="preserve">
+    <value>One or more projects are incompatible with {0}.</value>
   </data>
 </root>

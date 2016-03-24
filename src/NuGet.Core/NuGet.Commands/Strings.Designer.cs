@@ -276,6 +276,24 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to {0} ({1}).
+        /// </summary>
+        public static string Log_FrameworkDisplay {
+            get {
+                return ResourceManager.GetString("Log_FrameworkDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to {0} ({1}) / {2}.
+        /// </summary>
+        public static string Log_FrameworkRIDDisplay {
+            get {
+                return ResourceManager.GetString("Log_FrameworkRIDDisplay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Generating MSBuild file {0}..
         /// </summary>
         public static string Log_GeneratingMsBuildFile {
@@ -402,7 +420,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to {0} {1} is not compatible with {2}..
+        ///    Looks up a localized string similar to Package {0} {1} is not compatible with {2}..
         /// </summary>
         public static string Log_PackageNotCompatibleWithFx {
             get {
@@ -411,16 +429,34 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to All packages are compatible with {0}..
+        ///    Looks up a localized string similar to Package {0} {1} does not support any target frameworks..
         /// </summary>
-        public static string Log_PackagesAreCompatible {
+        public static string Log_PackageNotCompatibleWithFx_NoSupports {
             get {
-                return ResourceManager.GetString("Log_PackagesAreCompatible", resourceCulture);
+                return ResourceManager.GetString("Log_PackageNotCompatibleWithFx_NoSupports", resourceCulture);
             }
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Some packages are not compatible with {0}..
+        ///    Looks up a localized string similar to Package {0} {1} supports:.
+        /// </summary>
+        public static string Log_PackageNotCompatibleWithFx_Supports {
+            get {
+                return ResourceManager.GetString("Log_PackageNotCompatibleWithFx_Supports", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to All packages and projects are compatible with {0}..
+        /// </summary>
+        public static string Log_PackagesAndProjectsAreCompatible {
+            get {
+                return ResourceManager.GetString("Log_PackagesAndProjectsAreCompatible", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to One or more packages are incompatible with {0}..
         /// </summary>
         public static string Log_PackagesIncompatible {
             get {
@@ -429,11 +465,47 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to The project &apos;{0}&apos; does not specify any target frameworks in &apos;{1}&apos;..
+        ///    Looks up a localized string similar to The project {0} does not specify any target frameworks in {1}..
         /// </summary>
         public static string Log_ProjectDoesNotSpecifyTargetFrameworks {
             get {
                 return ResourceManager.GetString("Log_ProjectDoesNotSpecifyTargetFrameworks", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Project {0} is not compatible with {1}..
+        /// </summary>
+        public static string Log_ProjectNotCompatibleWithFx {
+            get {
+                return ResourceManager.GetString("Log_ProjectNotCompatibleWithFx", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Project {0} does not support any target frameworks..
+        /// </summary>
+        public static string Log_ProjectNotCompatibleWithFx_NoSupports {
+            get {
+                return ResourceManager.GetString("Log_ProjectNotCompatibleWithFx_NoSupports", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Project {0} supports:.
+        /// </summary>
+        public static string Log_ProjectNotCompatibleWithFx_Supports {
+            get {
+                return ResourceManager.GetString("Log_ProjectNotCompatibleWithFx_Supports", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to One or more projects are incompatible with {0}..
+        /// </summary>
+        public static string Log_ProjectsIncompatible {
+            get {
+                return ResourceManager.GetString("Log_ProjectsIncompatible", resourceCulture);
             }
         }
         
@@ -555,7 +627,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Unable to resolve {0} {1} for {2}..
+        ///    Looks up a localized string similar to Unable to resolve &apos;{0}&apos; for &apos;{1}&apos;..
         /// </summary>
         public static string Log_UnresolvedDependency {
             get {
