@@ -21,6 +21,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.BasePath_Description,
                     CommandOptionType.SingleValue);
 
+                var exclude = pack.Option(
+                    "--exclude",
+                    Strings.Exclude_Description,
+                    CommandOptionType.MultipleValue);
+
                 var excludeEmpty = pack.Option(
                     "-e|--exclude-empty-directories",
                     Strings.ExcludeEmptyDirectories_Description,
@@ -84,6 +89,7 @@ namespace NuGet.CommandLine.XPlat
                     // If the BasePath is not specified, use the directory of the input file (nuspec / proj) file
                     packArgs.BasePath = !basePath.HasValue() ? Path.GetDirectoryName(Path.GetFullPath(packArgs.Path)) : basePath.Value();
 
+                    packArgs.Exclude = exclude.Values;
                     packArgs.ExcludeEmptyDirectories = excludeEmpty.HasValue();
                     packArgs.LogLevel = XPlatUtility.GetLogLevel(verbosity);
                     if (minClientVersion.HasValue())

@@ -22,7 +22,7 @@ namespace NuGet.CommandLine.XPlat {
     // with the /str option, or rebuild your VS project.
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Strings {
+    public class Strings {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -35,7 +35,7 @@ namespace NuGet.CommandLine.XPlat {
         ///    Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.CommandLine.XPlat.Strings", typeof(Strings).GetTypeInfo().Assembly);
@@ -50,7 +50,7 @@ namespace NuGet.CommandLine.XPlat {
         ///    resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -62,7 +62,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to The API key for the server..
         /// </summary>
-        internal static string ApiKey_Description {
+        public static string ApiKey_Description {
             get {
                 return ResourceManager.GetString("ApiKey_Description", resourceCulture);
             }
@@ -71,7 +71,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to NuGet Command Line.
         /// </summary>
-        internal static string App_FullName {
+        public static string App_FullName {
             get {
                 return ResourceManager.GetString("App_FullName", resourceCulture);
             }
@@ -80,7 +80,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to The base path of the files defined in the nuspec file..
         /// </summary>
-        internal static string BasePath_Description {
+        public static string BasePath_Description {
             get {
                 return ResourceManager.GetString("BasePath_Description", resourceCulture);
             }
@@ -89,7 +89,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Determines if the project should be built before building the package..
         /// </summary>
-        internal static string Build_Description {
+        public static string Build_Description {
             get {
                 return ResourceManager.GetString("Build_Description", resourceCulture);
             }
@@ -98,7 +98,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to WARNING: {0}.
         /// </summary>
-        internal static string CommandLine_Warning {
+        public static string CommandLine_Warning {
             get {
                 return ResourceManager.GetString("CommandLine_Warning", resourceCulture);
             }
@@ -107,7 +107,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to {0} (y/N) .
         /// </summary>
-        internal static string ConsoleConfirmMessage {
+        public static string ConsoleConfirmMessage {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessage", resourceCulture);
             }
@@ -116,7 +116,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to y.
         /// </summary>
-        internal static string ConsoleConfirmMessageAccept {
+        public static string ConsoleConfirmMessageAccept {
             get {
                 return ResourceManager.GetString("ConsoleConfirmMessageAccept", resourceCulture);
             }
@@ -125,7 +125,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Deletes a package from the server..
         /// </summary>
-        internal static string Delete_Description {
+        public static string Delete_Description {
             get {
                 return ResourceManager.GetString("Delete_Description", resourceCulture);
             }
@@ -134,7 +134,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Please provide arguments for package id and package version..
         /// </summary>
-        internal static string Delete_MissingArguments {
+        public static string Delete_MissingArguments {
             get {
                 return ResourceManager.GetString("Delete_MissingArguments", resourceCulture);
             }
@@ -143,7 +143,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to The Package Id and version..
         /// </summary>
-        internal static string Delete_PackageIdAndVersion_Description {
+        public static string Delete_PackageIdAndVersion_Description {
             get {
                 return ResourceManager.GetString("Delete_PackageIdAndVersion_Description", resourceCulture);
             }
@@ -152,7 +152,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Disable buffering when pushing to an HTTP(S) server to decrease memory usage..
         /// </summary>
-        internal static string DisableBuffering_Description {
+        public static string DisableBuffering_Description {
             get {
                 return ResourceManager.GetString("DisableBuffering_Description", resourceCulture);
             }
@@ -161,16 +161,25 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Source parameter was not specified..
         /// </summary>
-        internal static string Error_MissingSourceParameter {
+        public static string Error_MissingSourceParameter {
             get {
                 return ResourceManager.GetString("Error_MissingSourceParameter", resourceCulture);
             }
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Specifies one or more wildcard patterns to exclude when creating a package..
+        /// </summary>
+        public static string Exclude_Description {
+            get {
+                return ResourceManager.GetString("Exclude_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Prevent inclusion of empty directories when building the package..
         /// </summary>
-        internal static string ExcludeEmptyDirectories_Description {
+        public static string ExcludeEmptyDirectories_Description {
             get {
                 return ResourceManager.GetString("ExcludeEmptyDirectories_Description", resourceCulture);
             }
@@ -179,7 +188,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Include referenced projects either as dependencies or as part of the package..
         /// </summary>
-        internal static string IncludeReferencedProjects_Description {
+        public static string IncludeReferencedProjects_Description {
             get {
                 return ResourceManager.GetString("IncludeReferencedProjects_Description", resourceCulture);
             }
@@ -188,7 +197,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Specify the location of the nuspec or project file to create a package..
         /// </summary>
-        internal static string InputFile_Description {
+        public static string InputFile_Description {
             get {
                 return ResourceManager.GetString("InputFile_Description", resourceCulture);
             }
@@ -197,7 +206,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Committing restore....
         /// </summary>
-        internal static string Log_Committing {
+        public static string Log_Committing {
             get {
                 return ResourceManager.GetString("Log_Committing", resourceCulture);
             }
@@ -206,7 +215,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Found project root directory: {0}..
         /// </summary>
-        internal static string Log_FoundProjectRoot {
+        public static string Log_FoundProjectRoot {
             get {
                 return ResourceManager.GetString("Log_FoundProjectRoot", resourceCulture);
             }
@@ -215,7 +224,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Loaded project {0} from {1}..
         /// </summary>
-        internal static string Log_LoadedProject {
+        public static string Log_LoadedProject {
             get {
                 return ResourceManager.GetString("Log_LoadedProject", resourceCulture);
             }
@@ -224,7 +233,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Reading project file {0}..
         /// </summary>
-        internal static string Log_ReadingProject {
+        public static string Log_ReadingProject {
             get {
                 return ResourceManager.GetString("Log_ReadingProject", resourceCulture);
             }
@@ -233,7 +242,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Restore completed in {0}ms..
         /// </summary>
-        internal static string Log_RestoreComplete {
+        public static string Log_RestoreComplete {
             get {
                 return ResourceManager.GetString("Log_RestoreComplete", resourceCulture);
             }
@@ -242,7 +251,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Restore failed in {0}ms..
         /// </summary>
-        internal static string Log_RestoreFailed {
+        public static string Log_RestoreFailed {
             get {
                 return ResourceManager.GetString("Log_RestoreFailed", resourceCulture);
             }
@@ -251,7 +260,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Running non-parallel restore..
         /// </summary>
-        internal static string Log_RunningNonParallelRestore {
+        public static string Log_RunningNonParallelRestore {
             get {
                 return ResourceManager.GetString("Log_RunningNonParallelRestore", resourceCulture);
             }
@@ -260,7 +269,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Running restore with {0} concurrent jobs..
         /// </summary>
-        internal static string Log_RunningParallelRestore {
+        public static string Log_RunningParallelRestore {
             get {
                 return ResourceManager.GetString("Log_RunningParallelRestore", resourceCulture);
             }
@@ -269,7 +278,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Using packages directory: {0}..
         /// </summary>
-        internal static string Log_UsingPackagesDirectory {
+        public static string Log_UsingPackagesDirectory {
             get {
                 return ResourceManager.GetString("Log_UsingPackagesDirectory", resourceCulture);
             }
@@ -278,7 +287,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Set the minClientVersion attribute for the created package..
         /// </summary>
-        internal static string MinClientVersion_Description {
+        public static string MinClientVersion_Description {
             get {
                 return ResourceManager.GetString("MinClientVersion_Description", resourceCulture);
             }
@@ -287,7 +296,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild..
         /// </summary>
-        internal static string MsBuildVersion_Description {
+        public static string MsBuildVersion_Description {
             get {
                 return ResourceManager.GetString("MsBuildVersion_Description", resourceCulture);
             }
@@ -296,7 +305,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to No API Key was provided and no API Key could be found for {0}. To save an API Key for a source use the &apos;setApiKey&apos; command..
         /// </summary>
-        internal static string NoApiKeyFound {
+        public static string NoApiKeyFound {
             get {
                 return ResourceManager.GetString("NoApiKeyFound", resourceCulture);
             }
@@ -305,7 +314,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Prevent default exclusion of NuGet package files and files and folders starting with a dot e.g. .svn..
         /// </summary>
-        internal static string NoDefaultExcludes_Description {
+        public static string NoDefaultExcludes_Description {
             get {
                 return ResourceManager.GetString("NoDefaultExcludes_Description", resourceCulture);
             }
@@ -314,7 +323,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Do not prompt for user input or confirmations..
         /// </summary>
-        internal static string NonInteractive_Description {
+        public static string NonInteractive_Description {
             get {
                 return ResourceManager.GetString("NonInteractive_Description", resourceCulture);
             }
@@ -323,16 +332,25 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Specify if the command should not run package analysis after building the package..
         /// </summary>
-        internal static string NoPackageAnalysis_Description {
+        public static string NoPackageAnalysis_Description {
             get {
                 return ResourceManager.GetString("NoPackageAnalysis_Description", resourceCulture);
             }
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to If a symbols package exists, it will not be pushed to a symbols server..
+        /// </summary>
+        public static string NoSymbols_Description {
+            get {
+                return ResourceManager.GetString("NoSymbols_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to http://docs.nuget.org/.
         /// </summary>
-        internal static string NuGetDocs {
+        public static string NuGetDocs {
             get {
                 return ResourceManager.GetString("NuGetDocs", resourceCulture);
             }
@@ -341,7 +359,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Specifies the directory for the created NuGet package file. If not specified, uses the current directory.
         /// </summary>
-        internal static string OutputDirectory_Description {
+        public static string OutputDirectory_Description {
             get {
                 return ResourceManager.GetString("OutputDirectory_Description", resourceCulture);
             }
@@ -350,7 +368,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Attempting to build package from &apos;{0}&apos;..
         /// </summary>
-        internal static string PackageCommandAttemptingToBuildPackage {
+        public static string PackageCommandAttemptingToBuildPackage {
             get {
                 return ResourceManager.GetString("PackageCommandAttemptingToBuildPackage", resourceCulture);
             }
@@ -359,7 +377,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to The value of MinClientVersion argument is not a valid version..
         /// </summary>
-        internal static string PackageCommandInvalidMinClientVersion {
+        public static string PackageCommandInvalidMinClientVersion {
             get {
                 return ResourceManager.GetString("PackageCommandInvalidMinClientVersion", resourceCulture);
             }
@@ -368,7 +386,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Version string specified &apos;{0}&apos; is invalid..
         /// </summary>
-        internal static string PackageVersionInvalid {
+        public static string PackageVersionInvalid {
             get {
                 return ResourceManager.GetString("PackageVersionInvalid", resourceCulture);
             }
@@ -377,25 +395,16 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Creates a NuGet package based on the specified nuspec or project file.
         /// </summary>
-        internal static string PackCommand_Description {
+        public static string PackCommand_Description {
             get {
                 return ResourceManager.GetString("PackCommand_Description", resourceCulture);
             }
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to If a symbols package exists, it will not be pushed to a symbols server..
-        /// </summary>
-        internal static string NoSymbols_Description {
-            get {
-                return ResourceManager.GetString("NoSymbols_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///    Looks up a localized string similar to Pushes a package to the server and publishes it..
         /// </summary>
-        internal static string Push_Description {
+        public static string Push_Description {
             get {
                 return ResourceManager.GetString("Push_Description", resourceCulture);
             }
@@ -404,7 +413,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Invalid timeout parameter value..
         /// </summary>
-        internal static string Push_InvalidTimeout {
+        public static string Push_InvalidTimeout {
             get {
                 return ResourceManager.GetString("Push_InvalidTimeout", resourceCulture);
             }
@@ -413,7 +422,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Please specify the path to the package..
         /// </summary>
-        internal static string Push_MissingArguments {
+        public static string Push_MissingArguments {
             get {
                 return ResourceManager.GetString("Push_MissingArguments", resourceCulture);
             }
@@ -422,7 +431,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Specify the path to the package and your API key to push the package to the server..
         /// </summary>
-        internal static string Push_Package_ApiKey_Description {
+        public static string Push_Package_ApiKey_Description {
             get {
                 return ResourceManager.GetString("Push_Package_ApiKey_Description", resourceCulture);
             }
@@ -431,7 +440,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Specifies the timeout for pushing to a server in seconds. Defaults to 300 seconds (5 minutes)..
         /// </summary>
-        internal static string Push_Timeout_Description {
+        public static string Push_Timeout_Description {
             get {
                 return ResourceManager.GetString("Push_Timeout_Description", resourceCulture);
             }
@@ -440,7 +449,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to List of projects and project folders to restore. Each value can be: a path to a project.json or global.json file, or a folder to recursively search for project.json files..
         /// </summary>
-        internal static string Restore_Arg_ProjectName_Description {
+        public static string Restore_Arg_ProjectName_Description {
             get {
                 return ResourceManager.GetString("Restore_Arg_ProjectName_Description", resourceCulture);
             }
@@ -449,7 +458,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Restores packages for a project and writes a lock file..
         /// </summary>
-        internal static string Restore_Description {
+        public static string Restore_Description {
             get {
                 return ResourceManager.GetString("Restore_Description", resourceCulture);
             }
@@ -458,7 +467,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to The NuGet configuration file to use..
         /// </summary>
-        internal static string Restore_Switch_ConfigFile_Description {
+        public static string Restore_Switch_ConfigFile_Description {
             get {
                 return ResourceManager.GetString("Restore_Switch_ConfigFile_Description", resourceCulture);
             }
@@ -467,7 +476,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Disables restoring multiple projects in parallel..
         /// </summary>
-        internal static string Restore_Switch_DisableParallel_Description {
+        public static string Restore_Switch_DisableParallel_Description {
             get {
                 return ResourceManager.GetString("Restore_Switch_DisableParallel_Description", resourceCulture);
             }
@@ -476,7 +485,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to A list of packages sources to use as a fallback..
         /// </summary>
-        internal static string Restore_Switch_Fallback_Description {
+        public static string Restore_Switch_Fallback_Description {
             get {
                 return ResourceManager.GetString("Restore_Switch_Fallback_Description", resourceCulture);
             }
@@ -485,7 +494,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Only warning failed sources if there are packages meeting version requirement.
         /// </summary>
-        internal static string Restore_Switch_IgnoreFailedSource_Description {
+        public static string Restore_Switch_IgnoreFailedSource_Description {
             get {
                 return ResourceManager.GetString("Restore_Switch_IgnoreFailedSource_Description", resourceCulture);
             }
@@ -494,7 +503,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Do not cache packages and http requests..
         /// </summary>
-        internal static string Restore_Switch_NoCache_Description {
+        public static string Restore_Switch_NoCache_Description {
             get {
                 return ResourceManager.GetString("Restore_Switch_NoCache_Description", resourceCulture);
             }
@@ -503,7 +512,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Directory to install packages in..
         /// </summary>
-        internal static string Restore_Switch_Packages_Description {
+        public static string Restore_Switch_Packages_Description {
             get {
                 return ResourceManager.GetString("Restore_Switch_Packages_Description", resourceCulture);
             }
@@ -512,7 +521,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Specifies a NuGet package source to use during the restore..
         /// </summary>
-        internal static string Restore_Switch_Source_Description {
+        public static string Restore_Switch_Source_Description {
             get {
                 return ResourceManager.GetString("Restore_Switch_Source_Description", resourceCulture);
             }
@@ -521,7 +530,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Specifies the server URL.
         /// </summary>
-        internal static string Source_Description {
+        public static string Source_Description {
             get {
                 return ResourceManager.GetString("Source_Description", resourceCulture);
             }
@@ -530,7 +539,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Appends a pre-release suffix to the internally generated version number..
         /// </summary>
-        internal static string Suffix_Description {
+        public static string Suffix_Description {
             get {
                 return ResourceManager.GetString("Suffix_Description", resourceCulture);
             }
@@ -539,7 +548,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Minimal, Warning, Error..
         /// </summary>
-        internal static string Switch_Verbosity {
+        public static string Switch_Verbosity {
             get {
                 return ResourceManager.GetString("Switch_Verbosity", resourceCulture);
             }
@@ -548,7 +557,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Determines if a package containing sources and symbols should be created. When specified with a nuspec, creates a regular NuGet package file and the corresponding symbols package..
         /// </summary>
-        internal static string Symbols_Description {
+        public static string Symbols_Description {
             get {
                 return ResourceManager.GetString("Symbols_Description", resourceCulture);
             }
@@ -557,7 +566,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Determines if the output files of the project should be in the tool folder..
         /// </summary>
-        internal static string Tool_Description {
+        public static string Tool_Description {
             get {
                 return ResourceManager.GetString("Tool_Description", resourceCulture);
             }
@@ -566,7 +575,7 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///    Looks up a localized string similar to Overrides the version number from the nuspec file..
         /// </summary>
-        internal static string Version_Description {
+        public static string Version_Description {
             get {
                 return ResourceManager.GetString("Version_Description", resourceCulture);
             }
