@@ -277,6 +277,7 @@ namespace NuGet.Commands
                 // The user has not explicitly disabled default filtering.
                 wildCards = wildCards.Concat(_defaultExcludes);
             }
+            wildCards = wildCards.Concat(_packArgs.Exclude);
 
             PathResolver.FilterPackageFiles(packageFiles, ResolvePath, wildCards);
         }

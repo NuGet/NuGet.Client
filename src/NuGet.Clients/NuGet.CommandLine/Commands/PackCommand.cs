@@ -134,6 +134,7 @@ namespace NuGet.CommandLine
 
             packArgs.BasePath = BasePath;
             packArgs.Build = Build;
+            packArgs.Exclude = Exclude;
             packArgs.ExcludeEmptyDirectories = ExcludeEmptyDirectories;
             packArgs.IncludeReferencedProjects = IncludeReferencedProjects;
             switch (Verbosity)
