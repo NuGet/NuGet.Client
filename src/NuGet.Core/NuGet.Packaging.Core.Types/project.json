@@ -1,5 +1,8 @@
-﻿{
+{
   "version": "3.5.0-*",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "projectUrl": "https://github.com/NuGet/NuGet.Client",
+  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
   "dependencies": {
     "NuGet.Frameworks": {
       "target": "project"
@@ -12,7 +15,7 @@
     "../NuGet.Shared/*.cs"
   ],
   "frameworks": {
-    "net45": { },
+    "net45": {},
     "netstandard1.5": {
       "dependencies": {
         "NETStandard.Library": "1.5.0-rc2-23911"

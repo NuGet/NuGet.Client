@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0.0-*",
   "description": "SynchronizationTestApp Console Application",
   "authors": [
@@ -7,8 +7,9 @@
   "tags": [
     ""
   ],
-  "projectUrl": "",
-  "licenseUrl": "",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "projectUrl": "https://github.com/NuGet/NuGet.Client",
+  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
   "compilationOptions": {
     "emitEntryPoint": true
   },
@@ -35,6 +36,6 @@
         "portable-net45+win8"
       ]
     },
-    "net46": { }
+    "net46": {}
   }
 }

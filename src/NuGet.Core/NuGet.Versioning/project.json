@@ -1,12 +1,12 @@
-﻿{
+{
   "version": "3.5.0-*",
   "authors": [
     "NuGet"
   ],
   "description": "NuGet's implementation of Semantic Versioning.",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
-  "projectUrl": "https://github.com/NuGet/NuGet.Versioning/",
-  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Versioning/master/LICENSE",
+  "projectUrl": "https://github.com/NuGet/NuGet.Client",
+  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
   "tags": [
     "semver",
     "semantic versioning"

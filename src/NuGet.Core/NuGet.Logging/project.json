@@ -1,12 +1,12 @@
-﻿{
+{
   "version": "3.5.0-*",
   "authors": [
     "NuGet"
   ],
   "description": "Logger abstractions for NuGet",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
-  "projectUrl": "https://github.com/NuGet/NuGet.Home/",
-  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Home/master/LICENSE",
+  "projectUrl": "https://github.com/NuGet/NuGet.Client",
+  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
   "compilationOptions": {
     "warningsAsErrors": true
   },
@@ -14,7 +14,7 @@
     "../NuGet.Shared/*.cs"
   ],
   "frameworks": {
-    "net45": { },
+    "net45": {},
     "netstandard1.5": {
       "dependencies": {
         "NETStandard.Library": "1.5.0-rc2-23911"

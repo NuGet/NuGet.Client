@@ -1,5 +1,8 @@
-﻿{
+{
   "version": "3.5.0-*",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "projectUrl": "https://github.com/NuGet/NuGet.Client",
+  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
   "description": "Complete commands common to command-line and GUI NuGet clients",
   "compilationOptions": {
     "warningsAsErrors": true

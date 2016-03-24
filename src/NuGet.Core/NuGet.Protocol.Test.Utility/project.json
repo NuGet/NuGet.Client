@@ -1,5 +1,8 @@
-﻿{
+{
   "version": "1.0.0-*",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "projectUrl": "https://github.com/NuGet/NuGet.Client",
+  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
   "compilationOptions": {
     "warningsAsErrors": true
   },
@@ -13,7 +16,7 @@
   },
   "frameworks": {
     "net46": {
-      "dependencies": { }
+      "dependencies": {}
     },
     "netstandard1.5": {
       "imports": [
