@@ -20,6 +20,12 @@ function WriteToTeamCity
     [Parameter(Mandatory=$true)]
     [string]$singleResult)
 
+    if (!$singleResult)
+    {
+        # If singleResult is null or empty, simply return $false
+        return $false
+    }
+
     $parts = $singleResult -split " "
 
     if ($parts.Length -lt 3)
