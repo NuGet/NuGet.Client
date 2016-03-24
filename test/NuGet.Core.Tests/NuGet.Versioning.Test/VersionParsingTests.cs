@@ -37,7 +37,7 @@ namespace NuGet.Versioning.Test
             // Assert
             foreach (var v in versions)
             {
-                Assert.Equal(version, v.ToNormalizedString());
+                Assert.Equal(version, v.ToFullString());
             }
         }
 

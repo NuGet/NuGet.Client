@@ -9,11 +9,16 @@ namespace NuGet.Versioning
 {
     public class VersionFormatter : IFormatProvider, ICustomFormatter
     {
+        /// <summary>
+        /// A static instance of the VersionFormatter class.
+        /// </summary>
+        public static readonly VersionFormatter Instance = new VersionFormatter();
+
         public string Format(string format, object arg, IFormatProvider formatProvider)
         {
             if (arg == null)
             {
-                throw new ArgumentNullException("arg");
+                throw new ArgumentNullException(nameof(arg));
             }
 
             string formatted = null;
@@ -72,25 +77,35 @@ namespace NuGet.Versioning
             return null;
         }
 
+        /// <summary>
+        /// Create a normalized version string. This string is unique for each version 'identity' 
+        /// and does not include leading zeros or metadata.
+        /// </summary>
         private static string GetNormalizedString(SemanticVersion version)
         {
-            var sb = new StringBuilder();
-
-            sb.Append(Format('V', version));
+            var normalized = Format('V', version);
 
             if (version.IsPrerelease)
             {
-                sb.Append('-');
-                sb.Append(version.Release);
+                normalized = $"{normalized}-{version.Release}";
             }
+
+            return normalized;
+        }
+
+        /// <summary>
+        /// Create the full version string including metadata. This is primarily for display purposes.
+        /// </summary>
+        private static string GetFullString(SemanticVersion version)
+        {
+            var fullString = GetNormalizedString(version);
 
             if (version.HasMetadata)
             {
-                sb.Append('+');
-                sb.Append(version.Metadata);
+                fullString = $"{fullString}+{version.Metadata}";
             }
 
-            return sb.ToString();
+            return fullString;
         }
 
         private static string Format(char c, SemanticVersion version)
@@ -111,18 +126,21 @@ namespace NuGet.Versioning
                 case 'V':
                     s = FormatVersion(version);
                     break;
+                case 'F':
+                    s = GetFullString(version);
+                    break;
                 case 'x':
-                    s = String.Format(CultureInfo.InvariantCulture, "{0}", version.Major);
+                    s = string.Format(CultureInfo.InvariantCulture, "{0}", version.Major);
                     break;
                 case 'y':
-                    s = String.Format(CultureInfo.InvariantCulture, "{0}", version.Minor);
+                    s = string.Format(CultureInfo.InvariantCulture, "{0}", version.Minor);
                     break;
                 case 'z':
-                    s = String.Format(CultureInfo.InvariantCulture, "{0}", version.Patch);
+                    s = string.Format(CultureInfo.InvariantCulture, "{0}", version.Patch);
                     break;
                 case 'r':
                     var nuGetVersion = version as NuGetVersion;
-                    s = String.Format(CultureInfo.InvariantCulture, "{0}", nuGetVersion != null && nuGetVersion.IsLegacyVersion ? nuGetVersion.Version.Revision : 0);
+                    s = string.Format(CultureInfo.InvariantCulture, "{0}", nuGetVersion != null && nuGetVersion.IsLegacyVersion ? nuGetVersion.Version.Revision : 0);
                     break;
             }
 
@@ -134,8 +152,8 @@ namespace NuGet.Versioning
             var nuGetVersion = version as NuGetVersion;
             var legacy = nuGetVersion != null && nuGetVersion.IsLegacyVersion;
 
-            return String.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}{3}", version.Major, version.Minor, version.Patch,
-                legacy ? String.Format(CultureInfo.InvariantCulture, ".{0}", nuGetVersion.Version.Revision) : null);
+            return string.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}{3}", version.Major, version.Minor, version.Patch,
+                legacy ? string.Format(CultureInfo.InvariantCulture, ".{0}", nuGetVersion.Version.Revision) : null);
         }
     }
 }
