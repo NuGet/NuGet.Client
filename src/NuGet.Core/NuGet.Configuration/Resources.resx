@@ -156,9 +156,6 @@
   <data name="UnsupportedEncryptPassword" xml:space="preserve">
     <value>Password encryption failed for source : '{0}' is unsupported on this platform. A clear text password may be used instead.</value>
   </data>
-  <data name="UnsupportedHashAlgorithm" xml:space="preserve">
-    <value>Hash algorithm '{0}' is unsupported. Supported algorithms include: SHA512 and SHA256.</value>
-  </data>
   <data name="UserSettings_UnableToParseConfigFile" xml:space="preserve">
     <value>Unable to parse config file '{0}'.</value>
   </data>

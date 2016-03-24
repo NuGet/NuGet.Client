@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -285,10 +284,7 @@ namespace NuGet.Packaging
 
                                 string packageHash;
                                 nupkgStream.Position = 0;
-                                using (var sha512 = SHA512.Create())
-                                {
-                                    packageHash = Convert.ToBase64String(sha512.ComputeHash(nupkgStream));
-                                }
+                                packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(nupkgStream));
 
                                 File.WriteAllText(tempHashPath, packageHash);
                             }
