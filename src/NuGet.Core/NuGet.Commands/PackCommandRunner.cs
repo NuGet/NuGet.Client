@@ -33,21 +33,21 @@ namespace NuGet.Commands
 
         private static readonly string[] _defaultExcludes = new[] {
             // Exclude previous package files
-            @"**\*" + NuGetConstants.PackageExtension,
+            @"**\*".Replace('\\', Path.DirectorySeparatorChar) + NuGetConstants.PackageExtension,
             // Exclude all files and directories that begin with "."
-            @"**\\.**", ".**"
+            @"**\\.**".Replace('\\', Path.DirectorySeparatorChar), ".**"
         };
 
         // Target file paths to exclude when building the lib package for symbol server scenario
         private static readonly string[] _libPackageExcludes = new[] {
-            @"**\*.pdb",
-            @"src\**\*"
+            @"**\*.pdb".Replace('\\', Path.DirectorySeparatorChar),
+            @"src\**\*".Replace('\\', Path.DirectorySeparatorChar)
         };
 
         // Target file paths to exclude when building the symbols package for symbol server scenario
         private static readonly string[] _symbolPackageExcludes = new[] {
-            @"content\**\*",
-            @"tools\**\*.ps1"
+            @"content\**\*".Replace('\\', Path.DirectorySeparatorChar),
+            @"tools\**\*.ps1".Replace('\\', Path.DirectorySeparatorChar)
         };
 
         private readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
