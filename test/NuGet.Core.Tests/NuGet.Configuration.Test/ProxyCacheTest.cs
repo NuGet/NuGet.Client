@@ -10,8 +10,11 @@ namespace NuGet.Configuration.Test
 {
     public class ProxyCacheTest
     {
+#if !NETSTANDARDAPP1_5
         private static readonly string _password = EncryptionUtility.EncryptString("password");
-
+#else
+        private static readonly string _password = null;
+#endif
         [Fact]
         public void GetUserConfiguredProxyReturnsNullIfValueIsNotFoundInEnvironmentOrSettings()
         {
@@ -65,7 +68,11 @@ namespace NuGet.Configuration.Test
             var proxy = proxyCache.GetUserConfiguredProxy() as WebProxy;
 
             // Assert
+#if !NETSTANDARDAPP1_5
             AssertProxy(host, user, "password", proxy);
+#else
+            AssertProxy(host, null, null, proxy);
+#endif
         }
 
         [Fact]

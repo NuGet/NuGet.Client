@@ -87,6 +87,8 @@ namespace NuGet.Configuration
             {
                 // The host is the minimal value we need to assume a user configured proxy.
                 var webProxy = new WebProxy(host);
+
+#if !NETSTANDARD1_5
                 var userName = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationConstants.UserKey);
                 var password = SettingsUtility.GetDecryptedValue(_settings, SettingsUtility.ConfigSection, ConfigurationConstants.PasswordKey);
 
@@ -95,6 +97,7 @@ namespace NuGet.Configuration
                 {
                     webProxy.Credentials = new NetworkCredential(userName, password);
                 }
+#endif
 
                 var noProxy = _settings.GetValue(SettingsUtility.ConfigSection, ConfigurationConstants.NoProxy);
                 if (!string.IsNullOrEmpty(noProxy))
