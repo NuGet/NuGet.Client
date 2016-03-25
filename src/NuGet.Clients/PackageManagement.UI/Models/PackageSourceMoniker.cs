@@ -13,6 +13,14 @@ namespace NuGet.PackageManagement.UI
 
         public string SourceName { get; private set; }
 
+        public bool IsAggregateSource
+        {
+            get
+            {
+                return SourceRepositories.Length > 1;
+            }
+        }
+
         public PackageSourceMoniker(string sourceName, IEnumerable<SourceRepository> sourceRepositories)
         {
             SourceName = sourceName;
