@@ -1,4 +1,4 @@
-﻿{
+{
   "dependencies": {
     "NuGet.Configuration": {
       "target": "project"
@@ -20,10 +20,10 @@
       ],
       "dependencies": {
         "moq.netcore": "4.4.0-beta8",
-        "NETStandard.Library": "1.5.0-rc2-23911",
+        "NETStandard.Library": "1.5.0-rc2-23925",
         "dotnet-test-xunit": "1.0.0-dev-48273-16",
-        "System.Threading.Tasks.Parallel": "4.0.1-rc2-23911",
-        "runtime.any.System.Linq.Expressions": "4.0.11-rc2-23911"
+        "System.Threading.Tasks.Parallel": "4.0.1-rc2-23925",
+        "runtime.any.System.Linq.Expressions": "4.0.11-rc2-23925"
       }
     },
     "net46": {

@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0.0-*",
   "dependencies": {
     "NuGet.DependencyResolver": {
@@ -14,7 +14,7 @@
         "portable-net45+win8"
       ],
       "dependencies": {
-        "NETStandard.Library": "1.5.0-rc2-23911",
+        "NETStandard.Library": "1.5.0-rc2-23925",
         "dotnet-test-xunit": "1.0.0-dev-48273-16"
       }
     },
