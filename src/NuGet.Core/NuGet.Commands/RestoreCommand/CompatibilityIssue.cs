@@ -205,7 +205,9 @@ namespace NuGet.Commands
                 Equals(Framework, other.Framework) &&
                 string.Equals(RuntimeIdentifier, other.RuntimeIdentifier, StringComparison.Ordinal) &&
                 string.Equals(AssemblyName, other.AssemblyName, StringComparison.Ordinal) &&
-                Equals(Package, other.Package);
+                Equals(Package, other.Package) &&
+                new HashSet<NuGetFramework>(AvailableFrameworks, NuGetFramework.Comparer)
+                    .SetEquals(other.AvailableFrameworks);
         }
     }
 
