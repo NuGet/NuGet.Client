@@ -29,6 +29,8 @@
 
         public void LogWarning(string data) { }
 
-        public void LogSummary(string data) { }
+        public void LogInformationSummary(string data) { }
+        
+        public void LogErrorSummary(string data) { }
     }
 }

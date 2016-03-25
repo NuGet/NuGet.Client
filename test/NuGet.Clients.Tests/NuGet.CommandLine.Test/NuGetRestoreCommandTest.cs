@@ -1545,12 +1545,12 @@ EndProject";
                 Assert.False(r.Item2.IndexOf("exception", StringComparison.OrdinalIgnoreCase) > -1);
                 Assert.False(r.Item3.IndexOf("exception", StringComparison.OrdinalIgnoreCase) > -1);
 
-                var firstIndex = r.Item2.IndexOf("Unable to find version '1.1.0' of package 'packageA'.",
+                var firstIndex = r.Item2.IndexOf(
+                    "Unable to find version '1.1.0' of package 'packageA'.",
                     StringComparison.OrdinalIgnoreCase);
                 Assert.True(firstIndex > -1);
-                var secondIndex = r.Item2.IndexOf(
+                var secondIndex = r.Item3.IndexOf(
                     "Unable to find version '1.1.0' of package 'packageA'.",
-                    firstIndex + 1,
                     StringComparison.OrdinalIgnoreCase);
                 Assert.True(secondIndex > -1);
             }

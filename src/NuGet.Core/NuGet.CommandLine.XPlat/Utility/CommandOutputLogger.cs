@@ -36,12 +36,6 @@ namespace NuGet.CommandLine.XPlat
         {
             LogInternal(LogLevel.Error, data);
         }
-
-        public void LogSummary(string data)
-        {
-            Console.WriteLine(data);
-        }
-
         public void LogInformation(string data)
         {
             LogInternal(LogLevel.Information, data);
@@ -60,6 +54,19 @@ namespace NuGet.CommandLine.XPlat
         public void LogWarning(string data)
         {
             LogInternal(LogLevel.Warning, data);
+        }
+
+        public void LogInformationSummary(string data)
+        {
+            if (_logLevel <= LogLevel.Information)
+            {
+                Console.WriteLine(data);
+            }
+        }
+
+        public void LogErrorSummary(string data)
+        {
+            Console.Error.WriteLine(data);
         }
 
         protected virtual void LogInternal(LogLevel logLevel, string message)

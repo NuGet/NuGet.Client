@@ -960,7 +960,13 @@ namespace NuGetVSExtension
             LogToVS(VerbosityLevel.Quiet, data);
         }
 
-        public void LogSummary(string data)
+        public void LogInformationSummary(string data)
+        {
+            // Treat Summary as Debug
+            LogDebug(data);
+        }
+
+        public void LogErrorSummary(string data)
         {
             // Treat Summary as Debug
             LogDebug(data);

@@ -20,6 +20,8 @@ namespace NuGet.Logging
 
         void LogError(string data);
 
-        void LogSummary(string data);
+        void LogInformationSummary(string data);
+        
+        void LogErrorSummary(string data);
     }
 }

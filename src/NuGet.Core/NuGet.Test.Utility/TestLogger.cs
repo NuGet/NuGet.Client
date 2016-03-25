@@ -58,10 +58,16 @@ namespace NuGet.Test.Utility
             DumpMessage("WARN ", data);
         }
 
-        public void LogSummary(string data)
+        public void LogInformationSummary(string data)
         {
             Messages.Enqueue(data);
-            DumpMessage("SUMRY", data);
+            DumpMessage("ISMRY", data);
+        }
+
+        public void LogErrorSummary(string data)
+        {
+            Messages.Enqueue(data);
+            DumpMessage("ESMRY", data);
         }
 
         private void DumpMessage(string level, string data)

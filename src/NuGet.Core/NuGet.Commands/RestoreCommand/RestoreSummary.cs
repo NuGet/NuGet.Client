@@ -73,7 +73,7 @@ namespace NuGet.Commands
             Errors = errors.ToArray();
         }
 
-        public static void Log(ILogger logger, IEnumerable<RestoreSummary> restoreSummaries, bool showInformation)
+        public static void Log(ILogger logger, IEnumerable<RestoreSummary> restoreSummaries)
         {
             if (!restoreSummaries.Any())
             {
@@ -88,61 +88,62 @@ namespace NuGet.Commands
                     continue;
                 }
 
-                logger.LogSummary(string.Empty);
-                logger.LogSummary(string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorSummary, restoreSummary.InputPath));
+                logger.LogErrorSummary(string.Empty);
+                logger.LogErrorSummary(string.Format(CultureInfo.CurrentCulture, Strings.Log_ErrorSummary, restoreSummary.InputPath));
                 foreach (var error in restoreSummary.Errors)
                 {
                     foreach (var line in IndentLines(error))
                     {
-                        logger.LogSummary(line);
+                        logger.LogErrorSummary(line);
                     }
                 }
             }
 
-            if (showInformation)
+            // Display the information summary
+            var configFiles = restoreSummaries
+                .SelectMany(summary => summary.ConfigFiles)
+                .Distinct();
+
+            if (configFiles.Any())
             {
-                // Display the information summary
-                var configFiles = restoreSummaries
-                    .SelectMany(summary => summary.ConfigFiles)
-                    .Distinct();
-
-                if (configFiles.Any())
+                logger.LogInformationSummary(string.Empty);
+                logger.LogInformationSummary(Strings.Log_ConfigFileSummary);
+                foreach (var configFile in configFiles)
                 {
-                    logger.LogSummary(string.Empty);
-                    logger.LogSummary(Strings.Log_ConfigFileSummary);
-                    foreach (var configFile in configFiles)
-                    {
-                        logger.LogSummary($"    {configFile}");
-                    }
+                    logger.LogInformationSummary($"    {configFile}");
                 }
+            }
 
-                var feedsUsed = restoreSummaries
-                    .SelectMany(summary => summary.FeedsUsed)
-                    .Distinct();
+            var feedsUsed = restoreSummaries
+                .SelectMany(summary => summary.FeedsUsed)
+                .Distinct();
 
-                if (feedsUsed.Any())
+            if (feedsUsed.Any())
+            {
+                logger.LogInformationSummary(string.Empty);
+                logger.LogInformationSummary(Strings.Log_FeedsUsedSummary);
+                foreach (var feedUsed in feedsUsed)
                 {
-                    logger.LogSummary(string.Empty);
-                    logger.LogSummary(Strings.Log_FeedsUsedSummary);
-                    foreach (var feedUsed in feedsUsed)
-                    {
-                        logger.LogSummary($"    {feedUsed}");
-                    }
+                    logger.LogInformationSummary($"    {feedUsed}");
                 }
+            }
 
-                var installed = restoreSummaries
-                    .GroupBy(summary => summary.InputPath, summary => summary.InstallCount)
-                    .Select(group => new KeyValuePair<string, int>(group.Key, group.Sum()))
-                    .Where(pair => pair.Value > 0);
+            var installed = restoreSummaries
+                .GroupBy(summary => summary.InputPath, summary => summary.InstallCount)
+                .Select(group => new KeyValuePair<string, int>(group.Key, group.Sum()))
+                .Where(pair => pair.Value > 0);
 
-                if (installed.Any())
+            if (installed.Any())
+            {
+                logger.LogInformationSummary(string.Empty);
+                logger.LogInformationSummary(Strings.Log_InstalledSummary);
+                foreach (var pair in installed)
                 {
-                    logger.LogSummary(string.Empty);
-                    logger.LogSummary(Strings.Log_InstalledSummary);
-                    foreach (var pair in installed)
-                    {
-                        logger.LogSummary("    " + string.Format(CultureInfo.CurrentCulture, Strings.Log_InstalledSummaryCount, pair.Value, pair.Key));
-                    }
+                    logger.LogInformationSummary("    " + string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.Log_InstalledSummaryCount,
+                        pair.Value,
+                        pair.Key));
                 }
             }
         }

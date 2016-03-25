@@ -131,7 +131,7 @@ namespace NuGet.CommandLine
             }
 
             // Summaries
-            RestoreSummary.Log(Console, restoreSummaries, Verbosity != Verbosity.Quiet);
+            RestoreSummary.Log(Console, restoreSummaries);
 
             if (restoreSummaries.Any(x => !x.Success))
             {

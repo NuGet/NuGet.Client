@@ -52,9 +52,14 @@ namespace NuGet.Logging
             _innerLogger.LogError(data);
         }
 
-        public void LogSummary(string data)
+        public void LogInformationSummary(string data)
         {
-            _innerLogger.LogSummary(data);
+            _innerLogger.LogInformationSummary(data);
+        }
+
+        public void LogErrorSummary(string data)
+        {
+            _innerLogger.LogErrorSummary(data);
         }
 
         public IEnumerable<string> Errors => _errors.ToArray();

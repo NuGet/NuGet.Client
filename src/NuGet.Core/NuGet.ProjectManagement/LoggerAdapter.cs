@@ -40,11 +40,6 @@ namespace NuGet.ProjectManagement
             ProjectLogger.Log(MessageLevel.Info, data);
         }
 
-        public void LogSummary(string data)
-        {
-            ProjectLogger.Log(MessageLevel.Debug, data);
-        }
-
         public void LogVerbose(string data)
         {
             ProjectLogger.Log(MessageLevel.Debug, data);
@@ -53,6 +48,16 @@ namespace NuGet.ProjectManagement
         public void LogWarning(string data)
         {
             ProjectLogger.Log(MessageLevel.Warning, data);
+        }
+
+        public void LogInformationSummary(string data)
+        {
+            ProjectLogger.Log(MessageLevel.Debug, data);
+        }
+
+        public void LogErrorSummary(string data)
+        {
+            ProjectLogger.Log(MessageLevel.Debug, data);
         }
     }
 }

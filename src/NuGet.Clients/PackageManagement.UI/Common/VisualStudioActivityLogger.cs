@@ -18,10 +18,12 @@ namespace NuGet.PackageManagement.UI
 
         public void LogMinimal(string data) => ActivityLog.LogInformation(LogEntrySource, data);
 
-        public void LogSummary(string data) => ActivityLog.LogInformation(LogEntrySource, data);
-
         public void LogVerbose(string data) => ActivityLog.LogInformation(LogEntrySource, data);
 
         public void LogWarning(string data) => ActivityLog.LogWarning(LogEntrySource, data);
+        
+        public void LogInformationSummary(string data) => LogInformation(data);
+        
+        public void LogErrorSummary(string data) => LogError(data);
     }
 }

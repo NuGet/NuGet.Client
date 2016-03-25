@@ -1069,8 +1069,11 @@ namespace NuGet.Commands.FuncTest
                 var runtimeAssembly = runtimeAssemblies.FirstOrDefault();
 
                 // Assert
-                var expectedIssue = CompatibilityIssue.Incompatible(
-                    new PackageIdentity("NuGet.Core", new NuGetVersion(2, 8, 3)), FrameworkConstants.CommonFrameworks.NetCore50, null);
+                var expectedIssue = CompatibilityIssue.IncompatiblePackage(
+                    new PackageIdentity("NuGet.Core", new NuGetVersion(2, 8, 3)),
+                    FrameworkConstants.CommonFrameworks.NetCore50,
+                    null,
+                    new [] { NuGetFramework.Parse("net40-client") });
                 Assert.Contains(expectedIssue, result.CompatibilityCheckResults.SelectMany(c => c.Issues).ToArray());
                 Assert.False(result.CompatibilityCheckResults.Any(c => c.Success));
                 Assert.Contains(expectedIssue.Format(), logger.Messages);

@@ -120,7 +120,7 @@ namespace NuGet.CommandLine.XPlat
                         var restoreSummaries = await RestoreRunner.Run(restoreContext);
 
                         // Summary
-                        RestoreSummary.Log(log, restoreSummaries, logLevel < LogLevel.Minimal);
+                        RestoreSummary.Log(log, restoreSummaries);
 
                         return restoreSummaries.All(x => x.Success) ? 0 : 1;
                     }

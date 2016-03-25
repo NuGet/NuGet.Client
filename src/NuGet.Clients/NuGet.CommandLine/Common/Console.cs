@@ -395,12 +395,17 @@ namespace NuGet.Common
 
         public void LogError(string data)
         {
-            WriteError(data);
+            WriteLine(ConsoleColor.Red, data);
         }
 
-        public void LogSummary(string data)
+        public void LogInformationSummary(string data)
         {
-            WriteLine(data);
+            LogInformation(data);
+        }
+
+        public void LogErrorSummary(string data)
+        {
+            WriteError(data);
         }
     }
 }
