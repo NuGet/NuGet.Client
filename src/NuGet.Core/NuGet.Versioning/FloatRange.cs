@@ -156,7 +156,9 @@ namespace NuGet.Versioning
                 {
                     range = new FloatRange(NuGetVersionFloatBehavior.Major, new NuGetVersion(new Version(0, 0)));
                 }
-                else if (starPos == versionString.Length - 1)
+                // * must appear as the last char in the string. 
+                // * cannot appear in the metadata section after the +
+                else if (starPos == versionString.Length - 1 && versionString.IndexOf('+') == -1)
                 {
                     var behavior = NuGetVersionFloatBehavior.None;
 
@@ -240,7 +242,7 @@ namespace NuGet.Versioning
                     result = MinVersion.ToNormalizedString();
                     break;
                 case NuGetVersionFloatBehavior.Prerelease:
-                    result = String.Format(new VersionFormatter(), "{0:V}-{1}*", MinVersion, _releasePrefix);
+                    result = String.Format(VersionFormatter.Instance, "{0:V}-{1}*", MinVersion, _releasePrefix);
                     break;
                 case NuGetVersionFloatBehavior.Revision:
                     result = String.Format(CultureInfo.InvariantCulture, "{0}.{1}.{2}.*", MinVersion.Major, MinVersion.Minor, MinVersion.Patch);

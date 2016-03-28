@@ -12,10 +12,21 @@ namespace NuGet.Versioning
     {
         /// <summary>
         /// Gives a normalized representation of the version.
+        /// This string is unique to the identity of the version and does not contain metadata.
         /// </summary>
         public virtual string ToNormalizedString()
         {
-            return ToString("N", new VersionFormatter());
+            return ToString("N", VersionFormatter.Instance);
+        }
+
+        /// <summary>
+        /// Gives a full representation of the version include metadata.
+        /// This string is not unique to the identity of the version. Other versions 
+        /// that differ on metadata will have a different full string representation.
+        /// </summary>
+        public virtual string ToFullString()
+        {
+            return ToString("F", VersionFormatter.Instance);
         }
 
         public override string ToString()

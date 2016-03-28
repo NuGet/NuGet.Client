@@ -53,17 +53,17 @@ namespace NuGet.Versioning.Test
             NuGetVersion.TryParseStrict(versionString, out semVer);
 
             // Assert
-            Assert.Equal<string>(versionString, semVer.ToNormalizedString());
-            Assert.Equal<string>(versionString, semVer.ToString());
+            Assert.Equal<string>(versionString, semVer.ToFullString());
+            Assert.Equal<string>(semVer.ToNormalizedString(), semVer.ToString());
         }
 
         [Theory]
-        [InlineData("1.0.0", "1.0.0.0", "")]
-        [InlineData("2.3-alpha", "2.3.0.0", "alpha")]
-        [InlineData("3.4.0.3-RC-3", "3.4.0.3", "RC-3")]
-        [InlineData("1.0.0-beta.x.y.5.79.0+aa", "1.0.0.0", "beta.x.y.5.79.0")]
-        [InlineData("1.0.0-beta.x.y.5.79.0+AA", "1.0.0.0", "beta.x.y.5.79.0")]
-        public void StringConstructorParsesValuesCorrectly(string version, string versionValueString, string specialValue)
+        [InlineData("1.0.0", "1.0.0.0", "", "")]
+        [InlineData("2.3-alpha", "2.3.0.0", "alpha", "")]
+        [InlineData("3.4.0.3-RC-3", "3.4.0.3", "RC-3", "")]
+        [InlineData("1.0.0-beta.x.y.5.79.0+aa", "1.0.0.0", "beta.x.y.5.79.0", "aa")]
+        [InlineData("1.0.0-beta.x.y.5.79.0+AA", "1.0.0.0", "beta.x.y.5.79.0", "AA")]
+        public void StringConstructorParsesValuesCorrectly(string version, string versionValueString, string specialValue, string metadata)
         {
             // Arrange
             var versionValue = new Version(versionValueString);
@@ -74,7 +74,7 @@ namespace NuGet.Versioning.Test
             // Assert
             Assert.Equal(versionValue, semanticVersion.Version);
             Assert.Equal(specialValue, semanticVersion.Release);
-            Assert.Equal(version, semanticVersion.ToString());
+            Assert.Equal(metadata, semanticVersion.Metadata);
         }
 
         [Fact]
@@ -95,6 +95,8 @@ namespace NuGet.Versioning.Test
         [InlineData("1.34.2Alpha")]
         [InlineData("1.34.2Release Candidate")]
         [InlineData("1.4.7-")]
+        [InlineData("1.4.7-*")]
+        [InlineData("1.4.7+*")]
         public void ParseThrowsIfStringIsNotAValidSemVer(string versionString)
         {
             ExceptionAssert.ThrowsArgumentException(() => NuGetVersion.Parse(versionString),
@@ -247,6 +249,22 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.Equal(version, semVer.ToString());
+        }
+
+        [Theory]
+        [InlineData("1.0+A", "1.0.0", "1.0.0+A")]
+        [InlineData("1.0-1.1", "1.0.0-1.1", "1.0.0-1.1")]
+        [InlineData("1.0-1.1+B.B", "1.0.0-1.1", "1.0.0-1.1+B.B")]
+        [InlineData("1.0.0009.01-1.1+A", "1.0.9.1-1.1", "1.0.9.1-1.1+A")]
+        public void ToStringReturnsNormalizedForSemVer2(string version, string expected, string full)
+        {
+            // Act
+            var semVer = NuGetVersion.Parse(version);
+
+            // Assert
+            Assert.Equal(expected, semVer.ToString());
+            Assert.Equal(expected, semVer.ToNormalizedString());
+            Assert.Equal(full, semVer.ToFullString());
         }
 
         [Theory]
