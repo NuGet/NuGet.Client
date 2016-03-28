@@ -40,7 +40,8 @@
         "portable-net45+win8"
       ],
       "dependencies": {
-        "NETStandard.Library": "1.5.0-rc2-23925"
+        "NETStandard.Library": "1.5.0-rc2-23925",
+        "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-rc2-23925"
       }
     }
   }

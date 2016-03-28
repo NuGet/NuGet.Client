@@ -1,6 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+#if NETSTANDARDAPP1_5
+using System.Runtime.InteropServices;
+#endif
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -35,7 +38,12 @@ namespace NuGet.CommandLine.XPlat
 
         public static void SetUserAgent()
         {
+#if NETSTANDARDAPP1_5
+            UserAgent.SetUserAgentString(new UserAgentStringBuilder("NuGet xplat")
+                .WithOSDescription(RuntimeInformation.OSDescription));
+#else
             UserAgent.SetUserAgentString(new UserAgentStringBuilder("NuGet xplat"));
+#endif
         }
 
         public static void SetConnectionLimit()
