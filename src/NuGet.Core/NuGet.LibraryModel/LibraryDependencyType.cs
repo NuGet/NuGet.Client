@@ -12,11 +12,13 @@ namespace NuGet.LibraryModel
 
         public static LibraryDependencyType Default;
         public static LibraryDependencyType Build;
+        public static LibraryDependencyType Platform;
 
         static LibraryDependencyType()
         {
             Default = new LibraryDependencyType(LibraryDependencyTypeKeyword.Default.FlagsToAdd);
             Build = new LibraryDependencyType(LibraryDependencyTypeKeyword.Build.FlagsToAdd);
+            Platform = new LibraryDependencyType(LibraryDependencyTypeKeyword.Platform.FlagsToAdd);
         }
 
         public LibraryDependencyType()
