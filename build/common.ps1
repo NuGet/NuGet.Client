@@ -466,15 +466,25 @@ Function Test-ClientsProjects {
         | ?{ -not $_.EndsWith('WebAppTest.csproj') }
 
     foreach($testProj in $testProjects) {
-        $opts = $testProj, "/t:RunTests", "/p:Configuration=$Configuration;RunTests=true"
-        if (-not $VerbosePreference) {
-            $opts += '/verbosity:minimal'
-        }
-        Trace-Log "$MSBuildExe $opts"
-        & $MSBuildExe $opts
-        if (-not $?) {
-            Error-Log "Tests failed @""$testProj"". Code: $LASTEXITCODE"
-        }
+        Test-ClientProject $testProj -Configuration $Configuration
+    }
+}
+
+Function Test-ClientProject {
+    [CmdletBinding()]
+    param(
+        [parameter(ValueFromPipeline=$True, Mandatory=$True, Position=0)]
+        [string]$testProj,
+        [string]$Configuration = $DefaultConfiguration
+    )
+    $opts = $testProj, "/t:RunTests", "/p:Configuration=$Configuration;RunTests=true"
+    if (-not $VerbosePreference) {
+        $opts += '/verbosity:minimal'
+    }
+    Trace-Log "$MSBuildExe $opts"
+    & $MSBuildExe $opts
+    if (-not $?) {
+        Error-Log "Tests failed @""$testProj"". Code: $LASTEXITCODE"
     }
 }
 

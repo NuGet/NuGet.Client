@@ -9,12 +9,15 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using NuGet.Common;
-using NuGet.Protocol;
 
 namespace NuGet.CommandLine
 {
     public class Program
     {
+        private const string Utf8Option = "-utf8";
+        private const string ForceEnglishOutputOption = "-forceEnglishOutput";
+        private const string DebugOption = "--debug";
+
         private static readonly string ThisExecutableName = typeof(Program).Assembly.GetName().Name;
 
         [Import]
@@ -34,9 +37,9 @@ namespace NuGet.CommandLine
         public static int Main(string[] args)
         {
 #if DEBUG
-            if (args.Contains("--debug", StringComparer.OrdinalIgnoreCase))
+            if (args.Contains(DebugOption, StringComparer.OrdinalIgnoreCase))
             {
-                args = args.Where(arg => !string.Equals(arg, "--debug", StringComparison.OrdinalIgnoreCase)).ToArray();
+                args = args.Where(arg => !string.Equals(arg, DebugOption, StringComparison.OrdinalIgnoreCase)).ToArray();
                 System.Diagnostics.Debugger.Launch();
             }
 #endif
@@ -46,15 +49,21 @@ namespace NuGet.CommandLine
 
         public static int MainCore(string workingDirectory, string[] args)
         {
+            // First, optionally disable localization in resources.
+            if (args.Any(arg => string.Equals(arg, ForceEnglishOutputOption, StringComparison.OrdinalIgnoreCase)))
+            {
+                CultureUtility.DisableLocalization();
+            }
+
             // This is to avoid applying weak event pattern usage, which breaks under Mono or restricted environments, e.g. Windows Azure Web Sites.
             EnvironmentUtility.SetRunningFromCommandLine();
 
             // set output encoding to UTF8 if -utf8 is specified
             var oldOutputEncoding = System.Console.OutputEncoding;
-            if (args.Any(arg => String.Equals(arg, "-utf8", StringComparison.OrdinalIgnoreCase)))
+            if (args.Any(arg => string.Equals(arg, Utf8Option, StringComparison.OrdinalIgnoreCase)))
             {
-                args = args.Where(arg => !String.Equals(arg, "-utf8", StringComparison.OrdinalIgnoreCase)).ToArray();
-                SetConsoleOutputEncoding(System.Text.Encoding.UTF8);
+                args = args.Where(arg => !string.Equals(arg, Utf8Option, StringComparison.OrdinalIgnoreCase)).ToArray();
+                SetConsoleOutputEncoding(Encoding.UTF8);
             }
 
             // Increase the maximum number of connections per server.
@@ -95,7 +104,7 @@ namespace NuGet.CommandLine
                 // Parse the command
                 ICommand command = parser.ParseCommandLine(args) ?? p.HelpCommand;
                 command.CurrentDirectory = workingDirectory;
-
+                
                 // Fallback on the help command if we failed to parse a valid command
                 if (!ArgumentCountValid(command))
                 {

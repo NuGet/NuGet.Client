@@ -6,10 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.Credentials;
-using System.Net;
 
 namespace NuGet.CommandLine
 {
@@ -50,6 +48,9 @@ namespace NuGet.CommandLine
 
         [Option(typeof(NuGetCommand), "Option_ConfigFile")]
         public string ConfigFile { get; set; }
+
+        [Option(typeof(NuGetCommand), "Option_ForceEnglishOutput")]
+        public bool ForceEnglishOutput { get; set; }
 
         // Used to check if credential has been requested for a uri. 
         private readonly HashSet<Uri> _credentialRequested;

@@ -16,6 +16,11 @@ namespace NuGet.CommandLine.XPlat
             {
                 pack.Description = Strings.PackCommand_Description;
 
+                pack.Option(
+                    CommandConstants.ForceEnglishOutputOption,
+                    Strings.ForceEnglishOutput_Description,
+                    CommandOptionType.NoValue);
+
                 var basePath = pack.Option(
                     "-b|--base-path <basePath>",
                     Strings.BasePath_Description,
@@ -84,7 +89,7 @@ namespace NuGet.CommandLine.XPlat
                     packArgs.Arguments = arguments.Values;
                     packArgs.Path = PackCommandRunner.GetInputFile(packArgs);
 
-                    logger.LogInformation(String.Format(CultureInfo.CurrentCulture, Strings.PackageCommandAttemptingToBuildPackage, Path.GetFileName(packArgs.Path)));
+                    logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.PackageCommandAttemptingToBuildPackage, Path.GetFileName(packArgs.Path)));
 
                     // If the BasePath is not specified, use the directory of the input file (nuspec / proj) file
                     packArgs.BasePath = !basePath.HasValue() ? Path.GetDirectoryName(Path.GetFullPath(packArgs.Path)) : basePath.Value();
@@ -96,7 +101,7 @@ namespace NuGet.CommandLine.XPlat
                     if (minClientVersion.HasValue())
                     {
                         Version version;
-                        if (!System.Version.TryParse(minClientVersion.Value(), out version))
+                        if (!Version.TryParse(minClientVersion.Value(), out version))
                         {
                             throw new ArgumentException(Strings.PackageCommandInvalidMinClientVersion);
                         }

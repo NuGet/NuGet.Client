@@ -6086,6 +6086,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Forces the application to run using an invariant, English-based culture..
+        /// </summary>
+        internal static string Option_ForceEnglishOutput {
+            get {
+                return ResourceManager.GetString("Option_ForceEnglishOutput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Do not prompt for user input or confirmations..
         /// </summary>
         internal static string Option_NonInteractive {

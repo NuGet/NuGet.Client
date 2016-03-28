@@ -16,6 +16,11 @@ namespace NuGet.CommandLine.XPlat
             {
                 delete.Description = Strings.Delete_Description;
 
+                delete.Option(
+                    CommandConstants.ForceEnglishOutputOption,
+                    Strings.ForceEnglishOutput_Description,
+                    CommandOptionType.NoValue);
+
                 var source = delete.Option(
                     "-s|--source <source>",
                     Strings.Source_Description,

@@ -5311,4 +5311,7 @@ nuget locals global-packages -list</value>
   <data name="PackageCommandSuffixDescription" xml:space="preserve">
     <value>Appends a pre-release suffix to the internally generated version number.</value>
   </data>
+  <data name="Option_ForceEnglishOutput" xml:space="preserve">
+    <value>Forces the application to run using an invariant, English-based culture.</value>
+  </data>
 </root>

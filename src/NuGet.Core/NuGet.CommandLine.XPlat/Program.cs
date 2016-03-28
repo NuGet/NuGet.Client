@@ -2,27 +2,26 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Common;
-using NuGet.Logging;
-using NuGet.Protocol;
 
 namespace NuGet.CommandLine.XPlat
 {
     public class Program
     {
+        private const string DebugOption = "--debug";
         public static CommandOutputLogger Log { get; set; }
 
         public static int Main(string[] args)
         {
 #if DEBUG
-            if (args.Contains("--debug"))
+            if (args.Contains(DebugOption))
             {
-                args = args.Where(arg => arg != "--debug").ToArray();
+                args = args.Where(arg => !StringComparer.OrdinalIgnoreCase.Equals(arg, DebugOption)).ToArray();
 
                 while (!Debugger.IsAttached)
                 {
@@ -32,6 +31,12 @@ namespace NuGet.CommandLine.XPlat
                 Debugger.Break();
             }
 #endif
+
+            // First, optionally disable localization.
+            if (args.Any(arg => string.Equals(arg, CommandConstants.ForceEnglishOutputOption, StringComparison.OrdinalIgnoreCase)))
+            {
+                CultureUtility.DisableLocalization();
+            }
 
             var app = new CommandLineApplication();
             app.Name = "nuget3";
@@ -65,6 +70,7 @@ namespace NuGet.CommandLine.XPlat
             app.OnExecute(() =>
             {
                 app.ShowHelp();
+
                 return 0;
             });
 

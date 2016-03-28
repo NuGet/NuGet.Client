@@ -16,6 +16,11 @@ namespace NuGet.CommandLine.XPlat
             {
                 push.Description = Strings.Push_Description;
 
+                push.Option(
+                    CommandConstants.ForceEnglishOutputOption,
+                    Strings.ForceEnglishOutput_Description,
+                    CommandOptionType.NoValue);
+
                 var source = push.Option(
                     "-s|--source <source>",
                     Strings.Source_Description,

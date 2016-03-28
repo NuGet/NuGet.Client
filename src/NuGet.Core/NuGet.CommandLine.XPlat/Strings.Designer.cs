@@ -186,6 +186,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Forces the application to run using an invariant, English-based culture..
+        /// </summary>
+        public static string ForceEnglishOutput_Description {
+            get {
+                return ResourceManager.GetString("ForceEnglishOutput_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Include referenced projects either as dependencies or as part of the package..
         /// </summary>
         public static string IncludeReferencedProjects_Description {

@@ -57,6 +57,7 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConsoleCredentialProviderTest.cs" />
     <Compile Include="ConsoleTest.cs" />
     <Compile Include="DefaultConfigurationFilePreserver.cs" />
     <Compile Include="LocalResourceUtilsTest.cs" />
@@ -96,6 +97,10 @@
     <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.CommandLine\NuGet.CommandLine.csproj">
       <Project>{957c4e99-3644-47dd-8f9a-ae36f41ebe4a}</Project>
       <Name>NuGet.CommandLine</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\src\NuGet.Clients\NuGet.Credentials\NuGet.Credentials.csproj">
+      <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
+      <Name>NuGet.Credentials</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\src\NuGet.Clients\SampleCommandLineExtensions\SampleCommandLineExtensions.csproj">
       <Project>{f2f53b1a-b973-4932-80cb-5eda38f9d74c}</Project>

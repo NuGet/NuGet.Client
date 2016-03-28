@@ -5,7 +5,6 @@ using Microsoft.Dnx.Runtime.Common.CommandLine;
 using Microsoft.Extensions.PlatformAbstractions;
 using NuGet.Commands;
 using NuGet.Configuration;
-using NuGet.Logging;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
@@ -22,6 +21,11 @@ namespace NuGet.CommandLine.XPlat
             {
                 restore.Description = Strings.Restore_Description;
                 restore.HelpOption(XPlatUtility.HelpOption);
+
+                restore.Option(
+                    CommandConstants.ForceEnglishOutputOption,
+                    Strings.ForceEnglishOutput_Description,
+                    CommandOptionType.NoValue);
 
                 var sources = restore.Option(
                     "-s|--source <source>",
