@@ -36,7 +36,19 @@ namespace NuGet.Common
                 {
                     try
                     {
-                        // This file is deleted when the stream is closed.
+                        FileOptions options;
+                        if (RuntimeEnvironmentHelper.IsWindows)
+                        {
+                            
+                            // This file is deleted when the stream is closed.
+                            options = FileOptions.DeleteOnClose;
+                        }
+                        else
+                        {
+                            // FileOptions.DeleteOnClose causes concurrency issues on Mac OS X and Linux.
+                            options = FileOptions.None;
+                        }
+
                         // Sync operations have shown much better performance than FileOptions.Asynchronous
                         fs = new FileStream(
                             lockPath,
@@ -44,7 +56,7 @@ namespace NuGet.Common
                             FileAccess.ReadWrite,
                             FileShare.None,
                             bufferSize: 32,
-                            options: FileOptions.DeleteOnClose);
+                            options: options);
                     }
                     catch (DirectoryNotFoundException)
                     {

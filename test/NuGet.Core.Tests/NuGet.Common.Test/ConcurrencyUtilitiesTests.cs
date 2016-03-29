@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using NuGet.Test.Utility;
 
 namespace NuGet.Common.Test
 {
@@ -13,37 +15,57 @@ namespace NuGet.Common.Test
         public async Task ConcurrencyUtilities_LockStress()
         {
             // Arrange
-            var sem = new ManualResetEventSlim();
-            var threads = 1000;
-            var tasks = new Stack<Task<bool>>(threads);
-            var path = Path.Combine(Path.GetTempPath(), "ConcurrencyUtilities_LockStress");
-            var token = CancellationToken.None;
-            Func<CancellationToken, Task<bool>> action = (ct) => {
-                // Wait till all threads are ready
-                sem.Wait();
-                return Task.FromResult(true);
-            };
-
-            while (tasks.Count < threads)
+            using(var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
-                var task = Task.Run(async () => await ConcurrencyUtilities.ExecuteWithFileLockedAsync<bool>(
-                    path,
-                    action,
-                    token));
+                // This is the path that uniquely identifies the system-wide mutex.
+                var path = Path.Combine(testDirectory, "ConcurrencyUtilities_LockStress_Verification");
+                
+                // This is a semaphore use to verify the lock.
+                var verificationSemaphore = new SemaphoreSlim(1);
+                
+                // Iterate a lot, to increase confidence.
+                const int threads = 50;
+                const int iterations = 10;
+                
+                // This is the action that is execute inside of the lock.
+                Func<CancellationToken, Task<bool>> lockedActionAsync = async lockedToken =>
+                {
+                    var acquired = await verificationSemaphore.WaitAsync(0);
+                    if (!acquired)
+                    {
+                        return false;
+                    }
 
-                tasks.Push(task);
-            }
-
-            // Act
-            // Release all the threads at once
-            sem.Set();
-            await Task.WhenAll(tasks);
-
-            // Assert
-            while (tasks.Count > 0)
-            {
-                // Verify everything finished without errors
-                Assert.True(await tasks.Pop());
+                    // Hold the lock for a little bit.
+                    await Task.Delay(TimeSpan.FromMilliseconds(1));
+                    
+                    verificationSemaphore.Release();
+                    return true;
+                };
+                
+                // Loop the same action, over and over.
+                Func<int, Task<List<bool>>> loopAsync = async thread =>
+                {
+                    var loopResults = new List<bool>();
+                    foreach (var iteration in Enumerable.Range(0, iterations))
+                    {
+                        var result = await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
+                            path,
+                            lockedActionAsync,
+                            CancellationToken.None);
+                        loopResults.Add(result);
+                    }
+                    
+                    return loopResults;
+                };
+                
+                // Act
+                var tasks = Enumerable.Range(0, threads).Select(loopAsync);
+                var results = (await Task.WhenAll(tasks)).SelectMany(r => r).ToArray();
+                
+                // Assert
+                Assert.Equal(threads * iterations, results.Length);
+                Assert.DoesNotContain(false, results);
             }
         }
 
