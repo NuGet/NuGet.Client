@@ -1,5 +1,8 @@
 {
   "version": "3.4.1-*",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "projectUrl": "https://github.com/NuGet/NuGet.Client",
+  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
   "compilationOptions": {
     "warningsAsErrors": true
   },
@@ -19,7 +22,9 @@
       }
     },
     "dnxcore50": {
-      "imports": [ "portable-net45+win8" ],
+      "imports": [
+        "portable-net45+win8"
+      ],
       "dependencies": {
         "System.IO.FileSystem": "4.0.0-beta-23109",
         "System.Collections": "4.0.10-beta-23109",

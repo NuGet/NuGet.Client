@@ -1,5 +1,8 @@
 {
   "version": "3.4.1-*",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "projectUrl": "https://github.com/NuGet/NuGet.Client",
+  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
   "description": "NuGet 3 restore for dotnet CLI, DNX, and UWP",
   "compilationOptions": {
     "emitEntryPoint": true,
@@ -32,7 +35,9 @@
       }
     },
     "dnxcore50": {
-      "imports": [ "portable-net45+win8" ],
+      "imports": [
+        "portable-net45+win8"
+      ],
       "dependencies": {
         "System.Threading.Tasks": "4.0.11-beta-23516",
         "System.Console": "4.0.0-beta-23409"
