@@ -1,12 +1,12 @@
-﻿{
-    "version": "3.4.0-*",
+{
+    "version": "3.4.1-*",
     "dependencies": {
         "Microsoft.NETCore.Platforms": "1.0.1-beta-23516",
         "NuGet.Shared": {
-            "version": "3.4.0-*",
+            "version": "3.4.1-*",
             "type": "build"
         },
-        "NuGet.Test.Utility": "3.4.0-*",
+        "NuGet.Test.Utility": "3.4.1-*",
         "SynchronizationTestApp": "1.0.0-*",
         "xunit": "2.1.0",
         "xunit.runner.dnx": "2.1.0-rc1-build204"

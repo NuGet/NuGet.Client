@@ -1,16 +1,16 @@
-﻿{
-  "version": "3.4.0-*",
+{
+  "version": "3.4.1-*",
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Versioning": "3.4.0-*",
-    "NuGet.Packaging": "3.4.0-*",
-    "NuGet.Repositories": "3.4.0-*",
-    "NuGet.RuntimeModel": "3.4.0-*",
-    "NuGet.ContentModel": "3.4.0-*",
+    "NuGet.Versioning": "3.4.1-*",
+    "NuGet.Packaging": "3.4.1-*",
+    "NuGet.Repositories": "3.4.1-*",
+    "NuGet.RuntimeModel": "3.4.1-*",
+    "NuGet.ContentModel": "3.4.1-*",
     "NuGet.Shared": {
-      "version": "3.4.0-*",
+      "version": "3.4.1-*",
       "type": "build"
     }
   },

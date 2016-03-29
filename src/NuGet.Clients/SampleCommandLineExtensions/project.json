@@ -1,7 +1,7 @@
-﻿{
+{
   "dependencies": {
-    "NuGet.ProjectManagement": "3.4.0-*",
-    "NuGet.PackageManagement": "3.4.0-*"
+    "NuGet.ProjectManagement": "3.4.1-*",
+    "NuGet.PackageManagement": "3.4.1-*"
   },
   "frameworks": {
     "net45": {}
