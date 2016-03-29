@@ -40,22 +40,36 @@ then
 fi
 
 # restore packages
-$DOTNET restore src/NuGet.Core test/NuGet.Core.Tests --verbosity minimal
-if [ $? -ne 0 ]; then
-	echo "Restore failed!!"
-	exit 1
-fi
+for coreProject in `find src/NuGet.Core -type f -name project.json`
+do
+	echo "$DOTNET restore $coreProject --disable-parallel --verbosity minimal"
+	$DOTNET restore $coreProject --disable-parallel --verbosity minimal
+
+	if [ $? -ne 0 ]; then
+		echo "restore failed @$coreProject"
+		RESULTCODE=1
+	fi
+done
 
 # run tests
 for testProject in `find test/NuGet.Core.Tests -type f -name project.json`
 do
 	testDir="$(pwd)/$(dirname $testProject)"
+	echo "Entering $testDir..."
 
 	if grep -q "netcoreapp1.0" "$testProject"; then
 		pushd $testDir
 
-		echo "$DOTNET $testDir --configuration release --framework netcoreapp1.0"
-		$DOTNET test $testDir --configuration release --framework netcoreapp1.0
+		echo "$DOTNET restore --disable-parallel --verbosity minimal"
+		$DOTNET restore --disable-parallel --verbosity minimal
+
+		if [ $? -ne 0 ]; then
+			echo "restore failed @$testProject"
+			RESULTCODE=1
+		fi
+
+		echo "$DOTNET test --configuration release --framework netcoreapp1.0"
+		$DOTNET test --configuration release --framework netcoreapp1.0
 
 		if [ $? -ne 0 ]; then
 			echo "$testDir FAILED on CoreCLR"
