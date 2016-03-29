@@ -232,9 +232,14 @@ namespace NuGet.CommandLine
             }
 
             var projectAuthor = InitializeProperties(builder);
+            Manifest manifest = null;
 
-            // If the package contains a nuspec file then use it for metadata
-            Manifest manifest = ProcessNuspec(builder, basePath);
+            // If there is a project.json file, load that and skip any nuspec that may exist
+            if (!PackCommandRunner.ProcessProjectJsonFile(builder, basePath))
+            {
+                // If the package contains a nuspec file then use it for metadata
+                manifest = ProcessNuspec(builder, basePath);
+            }
 
             // Remove the extra author
             if (builder.Authors.Count > 1)

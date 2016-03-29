@@ -60,6 +60,7 @@ namespace NuGet.ProjectModel
             var authors = rawPackageSpec["authors"];
             var owners = rawPackageSpec["owners"];
             var tags = rawPackageSpec["tags"];
+            var contentFiles = rawPackageSpec["contentFiles"];
 
             packageSpec.Name = name;
             packageSpec.FilePath = Path.GetFullPath(packageSpecPath);
@@ -82,15 +83,19 @@ namespace NuGet.ProjectModel
                 }
             }
 
+            packageSpec.Title = rawPackageSpec.GetValue<string>("title");
             packageSpec.Description = rawPackageSpec.GetValue<string>("description");
             packageSpec.Authors = authors == null ? new string[] { } : authors.ValueAsArray<string>();
             packageSpec.Owners = owners == null ? new string[] { } : owners.ValueAsArray<string>();
+            packageSpec.ContentFiles = contentFiles == null ? new string[] { } : contentFiles.ValueAsArray<string>();
             packageSpec.Dependencies = new List<LibraryDependency>();
             packageSpec.ProjectUrl = rawPackageSpec.GetValue<string>("projectUrl");
             packageSpec.IconUrl = rawPackageSpec.GetValue<string>("iconUrl");
             packageSpec.LicenseUrl = rawPackageSpec.GetValue<string>("licenseUrl");
             packageSpec.Copyright = rawPackageSpec.GetValue<string>("copyright");
             packageSpec.Language = rawPackageSpec.GetValue<string>("language");
+            packageSpec.Summary = rawPackageSpec.GetValue<string>("summary");
+            packageSpec.ReleaseNotes = rawPackageSpec.GetValue<string>("releaseNotes");
 
             var requireLicenseAcceptance = rawPackageSpec["requireLicenseAcceptance"];
 

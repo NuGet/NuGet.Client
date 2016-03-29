@@ -9,6 +9,9 @@ using NuGet.Configuration;
 using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Versioning;
+using NuGet.ProjectModel;
+using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 
 namespace NuGet.Commands
 {
@@ -28,7 +31,8 @@ namespace NuGet.Commands
             ".fsproj",
             ".nproj",
             ".btproj",
-            ".dxjsproj"
+            ".dxjsproj",
+            ".json"
         };
 
         private static readonly string[] _defaultExcludes = new[] {
@@ -70,13 +74,147 @@ namespace NuGet.Commands
         {
             string extension = Path.GetExtension(path);
 
-            if (extension.Equals(NuGetConstants.ManifestExtension, StringComparison.OrdinalIgnoreCase))
+            if (Path.GetFileName(path).Equals("project.json"))
+            {
+                return BuildFromProjectJson(path);
+            }
+            else if (extension.Equals(NuGetConstants.ManifestExtension, StringComparison.OrdinalIgnoreCase))
             {
                 return BuildFromNuspec(path);
             }
             else
             {
                 return BuildFromProjectFile(path);
+            }
+        }
+
+        private PackageArchiveReader BuildFromProjectJson(string path)
+        {
+            PackageBuilder packageBuilder = CreatePackageBuilderFromProjectJson(path);
+
+            if (_packArgs.Symbols)
+            {
+                // remove source related files when building the lib package
+                ExcludeFilesForLibPackage(packageBuilder.Files);
+
+                if (!packageBuilder.Files.Any())
+                {
+                    throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Strings.Error_PackageCommandNoFilesForLibPackage, path, Strings.NuGetDocs));
+                }
+            }
+
+            PackageArchiveReader package = BuildPackage(packageBuilder);
+
+            if (_packArgs.Symbols)
+            {
+                BuildSymbolsPackage(path);
+            }
+
+            if (package != null && !_packArgs.NoPackageAnalysis)
+            {
+                AnalyzePackage(package, packageBuilder);
+            }
+
+            return package;
+        }
+
+        private PackageBuilder CreatePackageBuilderFromProjectJson(string path)
+        {
+            // Set the version property if the flag is set
+            if (!String.IsNullOrEmpty(_packArgs.Version))
+            {
+                _packArgs.Properties["version"] = _packArgs.Version;
+            }
+
+            PackageBuilder builder = new PackageBuilder();
+
+            LoadProjectJsonFile(builder, path, _packArgs.BasePath);
+
+            return builder;
+        }
+
+        public static bool ProcessProjectJsonFile(PackageBuilder builder, string basePath)
+        {
+            string path = Path.Combine(basePath, "project.json");
+            if (File.Exists(path))
+            {
+                LoadProjectJsonFile(builder, path, basePath);
+                return true;
+            }
+
+            return false;
+        }
+
+        private static void LoadProjectJsonFile(PackageBuilder builder, string path, string basePath)
+        {
+            PackageSpec spec = JsonPackageSpecReader.GetPackageSpec("name", path);
+
+            builder.Id = spec.Name;
+            builder.Version = spec.Version;
+            builder.Title = spec.Title;
+            builder.Description = spec.Description;
+            builder.Copyright = spec.Copyright;
+            if (spec.Authors.Any())
+            {
+                builder.Authors.Add(spec.Authors.First());
+            }
+            if (spec.Owners.Any())
+            {
+                builder.Owners.AddRange(spec.Owners);
+            }
+            Uri tempUri;
+            if (Uri.TryCreate(spec.LicenseUrl, UriKind.Absolute, out tempUri))
+            {
+                builder.LicenseUrl = tempUri;
+            }
+            if (Uri.TryCreate(spec.ProjectUrl, UriKind.Absolute, out tempUri))
+            {
+                builder.ProjectUrl = tempUri;
+            }
+            if (Uri.TryCreate(spec.IconUrl, UriKind.Absolute, out tempUri))
+            {
+                builder.IconUrl = tempUri;
+            }
+            builder.RequireLicenseAcceptance = spec.RequireLicenseAcceptance;
+            builder.Summary = spec.Summary;
+            builder.ReleaseNotes = spec.ReleaseNotes;
+            builder.Language = spec.Language;
+
+            // If there's no base path then ignore the files node
+            if (basePath != null)
+            {
+                builder.AddFiles(basePath, @"**\*", null);
+            }
+
+            if (spec.Tags.Any())
+            {
+                builder.Tags.AddRange(spec.Tags);
+            }
+            if (spec.Dependencies.Any())
+            {
+                List<PackageDependency> dependencies = new List<PackageDependency>();
+                foreach (var dependency in spec.Dependencies)
+                {
+                    dependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange));
+                }
+                PackageDependencyGroup group = new PackageDependencyGroup(NuGetFramework.AnyFramework, dependencies);
+
+                builder.DependencyGroups.Add(group);
+            }
+
+            if (spec.TargetFrameworks.Any())
+            {
+                foreach (var framework in spec.TargetFrameworks)
+                {
+                    List<PackageDependency> dependencies = new List<PackageDependency>();
+                    foreach (var dependency in framework.Dependencies)
+                    {
+                        dependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange));
+                    }
+                    PackageDependencyGroup group = new PackageDependencyGroup(framework.FrameworkName, dependencies);
+
+                    builder.DependencyGroups.Add(group);
+                }
             }
         }
 
@@ -404,6 +542,9 @@ namespace NuGet.Commands
         {
             var candidates = files.Where(file => _allowedExtensions.Contains(Path.GetExtension(file))).ToList();
             string result;
+
+            _allowedExtensions.RemoveWhere(ext => ext.EndsWith(".json") && !ext.Equals("project.json", StringComparison.OrdinalIgnoreCase));
+
             switch (candidates.Count)
             {
                 case 1:
@@ -419,7 +560,7 @@ namespace NuGet.Commands
                     }
                     goto default;
                 default:
-                    throw new ArgumentException("Please specify a nuspec or project file to use");
+                    throw new ArgumentException("Please specify a nuspec, project.json, project file to use");
             }
 
             return Path.GetFullPath(Path.Combine(packArgs.CurrentDirectory, result));

@@ -34,9 +34,15 @@ namespace NuGet.ProjectModel
 
         public string Name { get; set; }
 
+        public string Title { get; set; }
+
         public NuGetVersion Version { get; set; }
 
         public string Description { get; set; }
+
+        public string Summary { get; set; }
+
+        public string ReleaseNotes { get; set; }
 
         public string[] Authors { get; set; }
 
@@ -55,6 +61,8 @@ namespace NuGet.ProjectModel
         public string Language { get; set; }
 
         public string[] Tags { get; set; }
+
+        public IList<string> ContentFiles { get; set; }
 
         public IList<LibraryDependency> Dependencies { get; set; }
 

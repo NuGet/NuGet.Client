@@ -546,7 +546,7 @@ namespace NuGet.Packaging
             return extensions;
         }
 
-        private void AddFiles(string basePath, string source, string destination, string exclude = null)
+        public void AddFiles(string basePath, string source, string destination, string exclude = null)
         {
             List<PhysicalPackageFile> searchFiles = ResolveSearchPattern(basePath, source.Replace('\\', Path.DirectorySeparatorChar), destination, _includeEmptyDirectories).ToList();
             if (_includeEmptyDirectories)

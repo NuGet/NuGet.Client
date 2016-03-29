@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using NuGet.Commands;
@@ -15,37 +14,8 @@ namespace NuGet.CommandLine
     {
         internal static readonly string SymbolsExtension = ".symbols" + Constants.PackageExtension;
 
-        private static readonly string[] _defaultExcludes = new[] {
-            // Exclude previous package files
-            @"**\*" + Constants.PackageExtension,
-            // Exclude all files and directories that begin with "."
-            @"**\\.**", ".**"
-        };
-
-        // Target file paths to exclude when building the lib package for symbol server scenario
-        private static readonly string[] _libPackageExcludes = new[] {
-            @"**\*.pdb",
-            @"src\**\*"
-        };
-
-        // Target file paths to exclude when building the symbols package for symbol server scenario
-        private static readonly string[] _symbolPackageExcludes = new[] {
-            @"content\**\*",
-            @"tools\**\*.ps1"
-        };
-
         private readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, string> _properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-        private static readonly HashSet<string> _allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
-            Constants.ManifestExtension,
-            ".csproj",
-            ".vbproj",
-            ".fsproj",
-            ".nproj",
-            ".btproj",
-            ".dxjsproj"
-        };
 
         private Version _minClientVersionValue;
 

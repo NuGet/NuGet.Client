@@ -72,7 +72,7 @@ namespace NuGet.CommandLine.XPlat
                     CommandOptionType.SingleValue);
 
                 var arguments = pack.Argument(
-                    "nuspec file",
+                    "nuspec or project.json file",
                     Strings.InputFile_Description,
                     multipleValues: true);
 
