@@ -5,8 +5,8 @@
     "NuGet"
   ],
   "copyright": "Copyright .NET Foundation. All rights reserved.",
-  "projectUrl": "https://github.com/NuGet/NuGet.Packaging/",
-  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Packaging/master/LICENSE",
+  "projectUrl": "https://github.com/NuGet/NuGet.Client",
+  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
   "compilationOptions": {
     "warningsAsErrors": true
   },

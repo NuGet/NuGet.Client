@@ -5,8 +5,8 @@
   ],
   "description": "NuGet Protocol v2",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
-  "projectUrl": "https://github.com/NuGet/NuGet.Protocol/",
-  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Protocol/master/LICENSE",
+  "projectUrl": "https://github.com/NuGet/NuGet.Client",
+  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
   "tags": [
     "nuget protocol"
   ],

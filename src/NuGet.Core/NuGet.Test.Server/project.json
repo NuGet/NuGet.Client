@@ -1,5 +1,8 @@
 {
   "version": "3.4.1-*",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "projectUrl": "https://github.com/NuGet/NuGet.Client",
+  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
   "compilationOptions": {
     "warningsAsErrors": true
   },
@@ -7,7 +10,7 @@
     "NuGet.Common": "3.4.1-*"
   },
   "frameworks": {
-    "dnx451": { },
+    "dnx451": {},
     "dnxcore50": {
       "dependencies": {
         "System.Net.NetworkInformation": "4.0.10-beta-23019",

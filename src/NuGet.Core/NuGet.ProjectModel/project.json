@@ -1,5 +1,8 @@
 {
   "version": "3.4.1-*",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "projectUrl": "https://github.com/NuGet/NuGet.Client",
+  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
   "dependencies": {
     "Newtonsoft.Json": "6.0.4",
     "NuGet.DependencyResolver.Core": "3.4.1-*",
@@ -14,7 +17,9 @@
   "frameworks": {
     "net45": {},
     "dnxcore50": {
-      "imports": [ "portable-net45+win8" ],
+      "imports": [
+        "portable-net45+win8"
+      ],
       "dependencies": {
         "System.Dynamic.Runtime": "4.0.10-*"
       }

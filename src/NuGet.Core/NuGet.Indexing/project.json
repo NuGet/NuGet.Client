@@ -1,5 +1,8 @@
 {
   "version": "3.4.1-*",
+  "copyright": "Copyright .NET Foundation. All rights reserved.",
+  "projectUrl": "https://github.com/NuGet/NuGet.Client",
+  "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
   "description": "NuGet.Indexing Class Library",
   "compile": [
     "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/NuGetQuery.cs",
@@ -20,6 +23,6 @@
     "NuGet.Protocol.Core.Types": "3.4.1-*"
   },
   "frameworks": {
-    "net45": { }
+    "net45": {}
   }
 }
