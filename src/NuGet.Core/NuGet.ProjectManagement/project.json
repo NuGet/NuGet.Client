@@ -1,14 +1,14 @@
-﻿{
-  "version": "3.4.0-*",
+{
+  "version": "3.4.1-*",
   "description": "NuGet Project Management",
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
     "Microsoft.Web.Xdt": "2.1.1",
-    "NuGet.ProjectModel": "3.4.0-*",
+    "NuGet.ProjectModel": "3.4.1-*",
     "NuGet.Shared": {
-      "version": "3.4.0-*",
+      "version": "3.4.1-*",
       "type": "build"
     }
   },

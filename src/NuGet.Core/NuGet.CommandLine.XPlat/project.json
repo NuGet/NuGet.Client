@@ -1,5 +1,5 @@
-﻿{
-  "version": "3.4.0-*",
+{
+  "version": "3.4.1-*",
   "description": "NuGet 3 restore for dotnet CLI, DNX, and UWP",
   "compilationOptions": {
     "emitEntryPoint": true,
@@ -12,9 +12,9 @@
     },
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-rc1-final",
     "Microsoft.NETCore.Platforms": "1.0.1-beta-*",
-    "NuGet.Commands": "3.4.0-*",
+    "NuGet.Commands": "3.4.1-*",
     "NuGet.Shared": {
-      "version": "3.4.0-*",
+      "version": "3.4.1-*",
       "type": "build"
     },
     "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-rc2-23826",

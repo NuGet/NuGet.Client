@@ -1,11 +1,11 @@
-﻿{
-  "version": "3.4.0-*",
+{
+  "version": "3.4.1-*",
   "dependencies": {
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.0-*"
+      "version": "3.4.1-*"
     },
-    "NuGet.Frameworks": "3.4.0-*"
+    "NuGet.Frameworks": "3.4.1-*"
   },
   "compilationOptions": {
     "warningsAsErrors": true

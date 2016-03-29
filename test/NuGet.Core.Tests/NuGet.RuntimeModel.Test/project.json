@@ -1,7 +1,7 @@
-﻿{
-  "version": "3.4.0-*",
+{
+  "version": "3.4.1-*",
   "dependencies": {
-    "NuGet.RuntimeModel": "3.4.0-*",
+    "NuGet.RuntimeModel": "3.4.1-*",
     "xunit": "2.1.0",
     "xunit.runner.dnx": "2.1.0-rc1-build204"
   },
