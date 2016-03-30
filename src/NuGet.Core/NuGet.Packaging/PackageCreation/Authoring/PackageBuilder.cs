@@ -10,7 +10,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
-
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.PackageCreation.Resources;
@@ -663,7 +662,7 @@ namespace NuGet.Packaging
 
         private static void CreatePart(ZipArchive package, string path, Stream sourceStream)
         {
-            if (PackageHelper.IsManifest(path))
+            if (PackageHelper.IsManifest(path) || ProjectJsonPathUtilities.IsProjectConfig(path))
             {
                 return;
             }

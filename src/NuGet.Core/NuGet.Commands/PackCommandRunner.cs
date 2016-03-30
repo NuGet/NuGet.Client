@@ -90,7 +90,7 @@ namespace NuGet.Commands
 
         private PackageArchiveReader BuildFromProjectJson(string path)
         {
-            PackageBuilder packageBuilder = CreatePackageBuilderFromProjectJson(path);
+            PackageBuilder packageBuilder = CreatePackageBuilderFromProjectJson(path, _packArgs.GetPropertyValue);
 
             if (_packArgs.Symbols)
             {
@@ -118,7 +118,7 @@ namespace NuGet.Commands
             return package;
         }
 
-        private PackageBuilder CreatePackageBuilderFromProjectJson(string path)
+        private PackageBuilder CreatePackageBuilderFromProjectJson(string path, Func<string, string> propertyProvider)
         {
             // Set the version property if the flag is set
             if (!String.IsNullOrEmpty(_packArgs.Version))
@@ -128,28 +128,51 @@ namespace NuGet.Commands
 
             PackageBuilder builder = new PackageBuilder();
 
-            LoadProjectJsonFile(builder, path, _packArgs.BasePath);
+            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
+            {
+                LoadProjectJsonFile(builder, path, _packArgs.BasePath, Path.GetFileName(Path.GetDirectoryName(path)), stream, propertyProvider);
+            }
 
             return builder;
         }
 
-        public static bool ProcessProjectJsonFile(PackageBuilder builder, string basePath)
+        public static bool ProcessProjectJsonFile(PackageBuilder builder, string basePath, string id, Func<string, string> propertyProvider)
         {
+            if (basePath == null)
+            {
+                return false;
+            }
             string path = Path.Combine(basePath, "project.json");
             if (File.Exists(path))
             {
-                LoadProjectJsonFile(builder, path, basePath);
+                using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
+                {
+                    LoadProjectJsonFile(builder, path, basePath, id, stream, propertyProvider);
+                }
                 return true;
             }
 
             return false;
         }
 
-        private static void LoadProjectJsonFile(PackageBuilder builder, string path, string basePath)
+        private static void LoadProjectJsonFile(PackageBuilder builder, string path, string basePath, string id, Stream stream, Func<string, string> propertyProvider)
         {
-            PackageSpec spec = JsonPackageSpecReader.GetPackageSpec("name", path);
+            string content = Preprocessor.Process(stream, propName => propertyProvider(propName));
 
-            builder.Id = spec.Name;
+            PackageSpec spec = JsonPackageSpecReader.GetPackageSpec(content, id, path);
+
+            if (id == null)
+            {
+                if (basePath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                {
+                    basePath = basePath.Substring(0, basePath.Length - 2);
+                }
+                builder.Id = Path.GetFileName(basePath);
+            }
+            else
+            {
+                builder.Id = id;
+            }
             builder.Version = spec.Version;
             builder.Title = spec.Title;
             builder.Description = spec.Description;
@@ -181,7 +204,8 @@ namespace NuGet.Commands
             builder.Language = spec.Language;
 
             // If there's no base path then ignore the files node
-            if (basePath != null)
+            // Also, id is null only when we want to skip the AddFiles
+            if (basePath != null && id != null)
             {
                 builder.AddFiles(basePath, @"**\*", null);
             }
@@ -195,7 +219,9 @@ namespace NuGet.Commands
                 List<PackageDependency> dependencies = new List<PackageDependency>();
                 foreach (var dependency in spec.Dependencies)
                 {
-                    dependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange));
+                    var flags = dependency.IncludeType.ToString();
+                    
+                    dependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange, flags.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries), new List<string>()));
                 }
                 PackageDependencyGroup group = new PackageDependencyGroup(NuGetFramework.AnyFramework, dependencies);
 
@@ -433,7 +459,7 @@ namespace NuGet.Commands
             var path = physicalPackageFile.SourcePath;
             // Make sure that the basepath has a directory separator
 
-            int index = path.IndexOf(_packArgs.BasePath.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+            int index = path.IndexOf(PathUtility.EnsureTrailingSlash(_packArgs.BasePath), StringComparison.OrdinalIgnoreCase);
             if (index != -1)
             {
                 // Since wildcards are going to be relative to the base path, remove the BasePath portion of the file's source path.
