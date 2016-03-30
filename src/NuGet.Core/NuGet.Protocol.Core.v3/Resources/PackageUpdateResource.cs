@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -280,6 +280,10 @@ namespace NuGet.Protocol.Core.Types
             //not tied to actual package name.  
             content.Add(packageContent, "package", "package.nupkg");
             request.Content = content;
+
+            // Send the data in chunks so that it can be canceled if auth fails.
+            // Otherwise the whole package needs to be sent to the server before the PUT fails.
+            request.Headers.TransferEncodingChunked = true;
 
             if (!string.IsNullOrEmpty(apiKey))
             {
