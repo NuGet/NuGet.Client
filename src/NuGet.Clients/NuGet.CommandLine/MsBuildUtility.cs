@@ -57,8 +57,8 @@ namespace NuGet.CommandLine
                 UseShellExecute = false,
                 FileName = msbuildPath,
                 Arguments = args,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
+                RedirectStandardOutput = false,
+                RedirectStandardError = false
             };
 
             using (var process = Process.Start(processStartInfo))
