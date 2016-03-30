@@ -21,6 +21,7 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
+using Strings = NuGet.ProjectManagement.Strings;
 
 namespace NuGet.Test
 {

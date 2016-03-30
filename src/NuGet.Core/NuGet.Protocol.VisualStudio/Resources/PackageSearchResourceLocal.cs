@@ -35,8 +35,9 @@ namespace NuGet.Protocol.VisualStudio
                 // Check if source is available.
                 if (!IsHttpSource(V2Client.Source) && !IsLocalOrUNC(V2Client.Source))
                 {
-                    throw new InvalidOperationException(
-                        Strings.FormatProtocol_Search_LocalSourceNotFound(V2Client.Source));
+                    throw new InvalidOperationException(string.Format(
+                        Strings.Protocol_Search_LocalSourceNotFound,
+                        V2Client.Source));
                 }
 
                 var query = V2Client.Search(

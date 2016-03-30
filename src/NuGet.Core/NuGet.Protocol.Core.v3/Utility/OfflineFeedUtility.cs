@@ -13,6 +13,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Protocol.Core.v3;
+using Strings = NuGet.Protocol.Core.v3.Strings;
 
 namespace NuGet.Protocol.Core.Types
 {

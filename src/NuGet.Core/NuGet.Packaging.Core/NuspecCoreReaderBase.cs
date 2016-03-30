@@ -8,6 +8,7 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using NuGet.Versioning;
+using System.Globalization;
 
 namespace NuGet.Packaging.Core
 {
@@ -151,7 +152,10 @@ namespace NuGet.Packaging.Core
 
                     if (_metadataNode == null)
                     {
-                        throw new PackagingException(Strings.FormatMissingMetadataNode(Metadata));
+                        throw new PackagingException(string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.MissingMetadataNode,
+                            Metadata));
                     }
                 }
 

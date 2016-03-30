@@ -14,6 +14,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.v3;
 using NuGet.Versioning;
+using Strings = NuGet.Protocol.Core.v3.Strings;
 
 namespace NuGet.Protocol.Core.Types
 {
