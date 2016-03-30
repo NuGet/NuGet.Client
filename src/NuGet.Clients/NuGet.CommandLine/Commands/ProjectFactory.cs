@@ -93,10 +93,12 @@ namespace NuGet.CommandLine
         }
 
         private ProjectFactory(
+            string msbuildDirectory,
             Assembly msbuildAssembly,
             Assembly frameworkAssembly,
             dynamic project)
         {
+            _msbuildDirectory = msbuildDirectory;
             _msbuildAssembly = msbuildAssembly;
             _frameworkAssembly = frameworkAssembly;
             LoadTypes();
@@ -362,61 +364,21 @@ namespace NuGet.CommandLine
 
         private void BuildProjectWithMsbuild()
         {
-            int result = MsBuildUtility.Build(_msbuildDirectory, $"{_project.FullPath} {ProjectProperties} {_project.ToolsVersion}");
-
-            /*
-            var projectCollectionType = _msbuildAssembly.GetType(
-                "Microsoft.Build.Evaluation.ProjectCollection",
-                throwOnError: true);
-            using (dynamic projectCollection = Activator.CreateInstance(projectCollectionType))
+            string properties = string.Empty;
+            foreach (var property in ProjectProperties)
             {
-                var buildRequestDataType = _msbuildAssembly.GetType(
-                    "Microsoft.Build.Execution.BuildRequestData",
-                    throwOnError: true);
-                var requestData = Activator.CreateInstance(
-                    buildRequestDataType,
-                    _project.FullPath,
-                    ProjectProperties,
-                    _project.ToolsVersion,
-                    new string[0],
-                    null);
+                properties += $" /p:{property.Key}={property.Value}";
+            }
 
-                var buildParametersType = _msbuildAssembly.GetType(
-                    "Microsoft.Build.Execution.BuildParameters",
-                    throwOnError: true);
-                dynamic parameters = Activator.CreateInstance(
-                    buildParametersType,
-                    projectCollection);
-                var loggers = CreateLoggers();
-                var loggersProperty = buildParametersType.GetProperty("Loggers");
-                loggersProperty.SetMethod.Invoke(parameters, new[] { loggers });
-                parameters.NodeExeLocation = typeof(ProjectFactory).Assembly.Location;
-                parameters.ToolsetDefinitionLocations = projectCollection.ToolsetLocations;
+            int result = MsBuildUtility.Build(_msbuildDirectory, $"{_project.FullPath} {properties} /toolsversion:{_project.ToolsVersion}");
 
-                var buildManagerType = _msbuildAssembly.GetType(
-                    "Microsoft.Build.Execution.BuildManager",
-                    throwOnError: true);
-                var buildMethod = buildManagerType.GetMethod(
-                    "Build",
-                    new[] { buildParametersType, buildRequestDataType });
-                var defaultBuildManagerProperty = buildManagerType.GetProperty(
-                    "DefaultBuildManager",
-                    BindingFlags.Static | BindingFlags.Public);
-                dynamic defaultBuildManager = defaultBuildManagerProperty.GetValue(null);
-
-                // Build the project so that the outputs are created
-                dynamic result = buildMethod.Invoke(defaultBuildManager, new[] { parameters, requestData });
-                */
-
-            if (Microsoft.Build.Execution.BuildResultCode.Failure.ToString().Equals(
-                result.ToString(),
-                StringComparison.OrdinalIgnoreCase))
+            if ((int)Microsoft.Build.Execution.BuildResultCode.Failure == result)
             {
                 // If the build fails, report the error
                 throw new CommandLineException(LocalizedResourceManager.GetString("FailedToBuildProject"), Path.GetFileName(_project.FullPath));
             }
 
-            TargetPath = ResolveTargetPath(result);
+            TargetPath = ResolveTargetPath();
         }
 
         private object CreateLoggers()
@@ -477,35 +439,6 @@ namespace NuGet.CommandLine
             // REVIEW: Maybe there's something better we can do on mono
             // Just return false if the property isn't there
             return false;
-        }
-
-        private string ResolveTargetPath(dynamic result)
-        {
-            string targetPath = null;
-
-            object resultsByTarget = result.ResultsByTarget;
-            var tryGetValueMethod = resultsByTarget.GetType().GetMethod(
-                "TryGetValue");
-            object[] args = new object[] { "Build", null };
-            var r = tryGetValueMethod.Invoke(
-                resultsByTarget,
-                args);
-            if ((bool)r)
-            {
-                dynamic targetResult = args[1];
-                var items = targetResult.Items;
-                if (items.Length > 0)
-                {
-                    object firstItem = items[0];
-                    var retValue = firstItem.GetType()
-                        .GetProperty("ItemSpec")
-                        .GetMethod
-                        .Invoke(firstItem, null);
-                    targetPath = retValue as string;
-                }
-            }
-
-            return targetPath ?? ResolveTargetPath();
         }
 
         private void ExtractMetadataFromProject(PackageBuilder builder)
@@ -590,7 +523,7 @@ namespace NuGet.CommandLine
                         null,
                         alreadyAppliedProjects);
                     var referencedProject = new ProjectFactory(
-                        _msbuildAssembly, _frameworkAssembly, project);
+                        _msbuildDirectory, _msbuildAssembly, _frameworkAssembly, project);
                     referencedProject.Logger = _logger;
                     referencedProject.IncludeSymbols = IncludeSymbols;
                     referencedProject.Build = Build;
@@ -704,7 +637,7 @@ namespace NuGet.CommandLine
         {
             try
             {
-                var projectFactory = new ProjectFactory(_msbuildAssembly, _frameworkAssembly, project);
+                var projectFactory = new ProjectFactory(_msbuildDirectory, _msbuildAssembly, _frameworkAssembly, project);
                 projectFactory.Build = Build;
                 projectFactory.ProjectProperties = ProjectProperties;
                 projectFactory.BuildProject();
