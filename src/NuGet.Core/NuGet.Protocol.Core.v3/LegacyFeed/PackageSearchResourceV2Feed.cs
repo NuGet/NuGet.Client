@@ -81,6 +81,8 @@ namespace NuGet.Protocol
             // apply the filters to the version list returned
             var packages = await _feedParser.FindPackagesByIdAsync(
                 package.Id,
+                string.Empty,
+                SourceCacheContext.NoCacheInstance,
                 filter.IncludeDelisted,
                 filter.IncludePrerelease,
                 log,

@@ -285,11 +285,11 @@ namespace NuGet.Protocol.Core.v3 {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to The V2 feed at &apos;{0}&apos; returned an unexpected status code &apos;{1} {2}&apos;..
+        ///    Looks up a localized string similar to The feed at &apos;{0}&apos; returned an unexpected status code &apos;{1} {2}&apos;..
         /// </summary>
-        internal static string Log_FailedToFetchV2Feed {
+        internal static string Log_FailedToFetchFeed {
             get {
-                return ResourceManager.GetString("Log_FailedToFetchV2Feed", resourceCulture);
+                return ResourceManager.GetString("Log_FailedToFetchFeed", resourceCulture);
             }
         }
         

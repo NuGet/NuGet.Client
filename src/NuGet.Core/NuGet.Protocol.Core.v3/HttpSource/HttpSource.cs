@@ -87,6 +87,40 @@ namespace NuGet.Protocol
                 cancellationToken);
         }
 
+        public async Task<HttpSourceResult> GetAsync(
+           Uri uri,
+           bool ignoreNotFounds,
+           ILogger log,
+           CancellationToken token)
+        {
+            return await GetAsync(
+                uri.AbsoluteUri,
+                new MediaTypeWithQualityHeaderValue[0],
+                cacheKey: null,
+                cacheContext: null,
+                log: log,
+                ignoreNotFounds: ignoreNotFounds,
+                ensureValidContents: null,
+                cancellationToken: token);
+        }
+
+        public async Task<HttpSourceResult> GetAsync(
+          string uri,
+          bool ignoreNotFounds,
+          ILogger log,
+          CancellationToken token)
+        {
+            return await GetAsync(
+                uri,
+                new MediaTypeWithQualityHeaderValue[0],
+                cacheKey: null,
+                cacheContext: null,
+                log: log,
+                ignoreNotFounds: ignoreNotFounds,
+                ensureValidContents: null,
+                cancellationToken: token);
+        }
+
         /// <summary>
         /// Caching Get request.
         /// </summary>
@@ -152,24 +186,72 @@ namespace NuGet.Protocol
                             log,
                             token);
 
-                    using (var response = await httpRequest())
+                    var response = await httpRequest();
+
+                    try
                     {
-                        if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
+                        if (response.StatusCode == HttpStatusCode.OK)
                         {
+                            response.EnsureSuccessStatusCode();
+
+                            if (cacheContext != null && result != null)
+                            {
+                                await CreateCacheFile(result, uri, response, cacheContext, ensureValidContents, cancellationToken);
+                                response.Dispose();
+                                return new HttpSourceResult(
+                                    HttpSourceResultStatus.OpenedFromDisk,
+                                    result.CacheFile,
+                                    result.Stream);
+                            }
+                            else
+                            {
+                                var networkStream = await response.Content.ReadAsStreamAsync();
+                                var timeoutStream = new DownloadTimeoutStream(uri.ToString(), networkStream, DownloadTimeout);
+
+                                return new HttpSourceResult(
+                                    HttpSourceResultStatus.OpenedFromNetwork,
+                                    null,
+                                    timeoutStream);
+                            }
+                        }
+                        else if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
+                        {
+                            // Treat "404 Not Found" as an empty response.
+                            response.Dispose();
                             return new HttpSourceResult(HttpSourceResultStatus.NotFound);
                         }
-
-                        response.EnsureSuccessStatusCode();
-
-                        await CreateCacheFile(result, uri, response, cacheContext, ensureValidContents, token);
-
-                        return new HttpSourceResult(
-                            HttpSourceResultStatus.OpenedFromDisk,
-                            result.CacheFile,
-                            result.Stream);
+                        else if (response.StatusCode == HttpStatusCode.NoContent)
+                        {
+                            // Always treat "204 No Content" as exactly that.
+                            response.Dispose();
+                            return null;
+                        }
+                        else
+                        {
+                            response.Dispose();
+                            throw new FatalProtocolException(string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.Log_FailedToFetchFeed,
+                                uri,
+                                (int)response.StatusCode,
+                                response.ReasonPhrase));
+                        }
                     }
-                },
-                token: cancellationToken);
+                    catch
+                    {
+                        try
+                        {
+                            response.Dispose();
+                        }
+                        catch
+                        {
+                            // Nothing we can do here.
+                        }
+
+                        throw;
+                    }
+
+                });
         }
 
         public async Task<T> ProcessStreamAsync<T>(
@@ -227,53 +309,6 @@ namespace NuGet.Protocol
                 },
                 log: log,
                 token: token);
-        }
-
-        private async Task<HttpSourceResult> GetAsync(
-            Uri uri,
-            bool ignoreNotFounds,
-            ILogger log,
-            CancellationToken token)
-        {
-            Func<Task<HttpResponseMessage>> request = () => SendWithCredentialSupportAsync(
-                () => new HttpRequestMessage(HttpMethod.Get, uri),
-                log,
-                token);
-
-            var response = await request();
-
-            try
-            {
-                if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
-                {
-                    response.Dispose();
-
-                    return new HttpSourceResult(HttpSourceResultStatus.NotFound);
-                }
-
-                response.EnsureSuccessStatusCode();
-
-                var networkStream = await response.Content.ReadAsStreamAsync();
-                var timeoutStream = new DownloadTimeoutStream(uri.ToString(), networkStream, DownloadTimeout);
-
-                return new HttpSourceResult(
-                    HttpSourceResultStatus.OpenedFromNetwork,
-                    null,
-                    timeoutStream);
-            }
-            catch
-            {
-                try
-                {
-                    response.Dispose();
-                }
-                catch
-                {
-                    // Nothing we can do here.
-                }
-
-                throw;
-            }
         }
 
         private async Task<HttpResponseMessage> SendWithCredentialSupportAsync(
@@ -567,7 +602,7 @@ namespace NuGet.Protocol
                 if (!Directory.Exists(cacheFolder))
                 {
                     Directory.CreateDirectory(cacheFolder);
-                }   
+                }
             }
 
             if (File.Exists(cacheFile))

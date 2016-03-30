@@ -22,7 +22,8 @@ namespace NuGet.Protocol.Core.v3.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "FindPackagesById()?Id='WindowsAzure.Storage'",
+
+            responses.Add(serviceAddress + "FindPackagesById()?id='WindowsAzure.Storage'",
                  TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
@@ -47,7 +48,8 @@ namespace NuGet.Protocol.Core.v3.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "FindPackagesById()?Id='WindowsAzure.Storage'",
+
+            responses.Add(serviceAddress + "FindPackagesById()?id='WindowsAzure.Storage'",
                  TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
             responses.Add(serviceAddress + "Packages(Id='WindowsAzure.Storage',Version='4.3.2-preview')",
                  TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageGetPackages.xml", GetType()));
@@ -105,7 +107,9 @@ namespace NuGet.Protocol.Core.v3.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "FindPackagesById()?Id='xunit'",
+
+            responses.Add(serviceAddress + "FindPackagesById()?id='xunit'",
+
                  TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
@@ -139,8 +143,9 @@ namespace NuGet.Protocol.Core.v3.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
+
             responses.Add(serviceAddress + "Packages(Id='xunit',Version='1.0.0-notfound')", string.Empty);
-            responses.Add(serviceAddress + "FindPackagesById()?Id='xunit'",
+            responses.Add(serviceAddress + "FindPackagesById()?id='xunit'",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
@@ -165,7 +170,8 @@ namespace NuGet.Protocol.Core.v3.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "FindPackagesById()?Id='not-found'",
+
+            responses.Add(serviceAddress + "FindPackagesById()?id='not-found'",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.NotFoundFindPackagesById.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 

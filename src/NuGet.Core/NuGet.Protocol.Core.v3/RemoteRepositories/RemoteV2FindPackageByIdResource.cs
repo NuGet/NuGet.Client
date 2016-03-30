@@ -21,27 +21,25 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
 {
     public class RemoteV2FindPackageByIdResource : FindPackageByIdResource
     {
-        private static readonly XName _xnameEntry = XName.Get("entry", "http://www.w3.org/2005/Atom");
-        private static readonly XName _xnameContent = XName.Get("content", "http://www.w3.org/2005/Atom");
-        private static readonly XName _xnameLink = XName.Get("link", "http://www.w3.org/2005/Atom");
-        private static readonly XName _xnameProperties = XName.Get("properties", "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata");
-        private static readonly XName _xnameId = XName.Get("Id", "http://schemas.microsoft.com/ado/2007/08/dataservices");
-        private static readonly XName _xnameVersion = XName.Get("Version", "http://schemas.microsoft.com/ado/2007/08/dataservices");
-        private static readonly XName _xnamePublish = XName.Get("Published", "http://schemas.microsoft.com/ado/2007/08/dataservices");
-
-        // An unlisted package's publish time must be 1900-01-01T00:00:00.
-        private static readonly DateTime _unlistedPublishedTime = new DateTime(1900, 1, 1, 0, 0, 0);
-
-        private readonly string _baseUri;
         private readonly HttpSource _httpSource;
-        private readonly Dictionary<string, Task<IEnumerable<PackageInfo>>> _packageVersionsCache = new Dictionary<string, Task<IEnumerable<PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, Task<IReadOnlyList<V2FeedPackageInfo>>> _packageVersionsCache = new Dictionary<string, Task<IReadOnlyList<V2FeedPackageInfo>>>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Task<NupkgEntry>> _nupkgCache = new Dictionary<string, Task<NupkgEntry>>(StringComparer.OrdinalIgnoreCase);
+        private readonly V2FeedParser _feedParser;
 
-        public RemoteV2FindPackageByIdResource(PackageSource packageSource, HttpSource httpSource)
+        public RemoteV2FindPackageByIdResource(HttpSourceResource httpSourceResource, PackageSource packageSource)
         {
-            _baseUri = packageSource.Source.EndsWith("/") ? packageSource.Source : (packageSource.Source + "/");
-            _httpSource = httpSource;
+            if (httpSourceResource == null)
+            {
+                throw new ArgumentNullException(nameof(httpSourceResource));
+            }
 
+            if (packageSource == null)
+            {
+                throw new ArgumentNullException(nameof(packageSource));
+            }
+
+            _feedParser = new V2FeedParser(httpSourceResource.HttpSource, packageSource);
+            _httpSource = httpSourceResource.HttpSource;
             PackageSource = packageSource;
         }
 
@@ -92,15 +90,15 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             return await OpenNupkgStreamAsync(packageInfo, cancellationToken);
         }
 
-        private Task<IEnumerable<PackageInfo>> EnsurePackagesAsync(string id, CancellationToken cancellationToken)
+        private Task<IReadOnlyList<V2FeedPackageInfo>> EnsurePackagesAsync(string id, CancellationToken cancellationToken)
         {
-            Task<IEnumerable<PackageInfo>> task;
+            Task<IReadOnlyList<V2FeedPackageInfo>> task;
 
             lock (_packageVersionsCache)
             {
                 if (!_packageVersionsCache.TryGetValue(id, out task))
                 {
-                    task = FindPackagesByIdAsyncCore(id, cancellationToken);
+                    task = _feedParser.FindPackagesByIdAsync(id, Logger, "list_{0}_page{1}", CacheContext,  cancellationToken); ;
                     _packageVersionsCache[id] = task;
                 }
             }
@@ -108,100 +106,14 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             return task;
         }
 
-        private async Task<IEnumerable<PackageInfo>> FindPackagesByIdAsyncCore(string id, CancellationToken cancellationToken)
-        {
-            for (var retry = 0; retry != 3; ++retry)
-            {
-                var uri = _baseUri + "FindPackagesById()?id='" + id + "'";
-
-                try
-                {
-                    var results = new List<PackageInfo>();
-                    var page = 1;
-                    while (true)
-                    {
-                        // TODO: Pages for a package Id are cached separately.
-                        // So we will get inaccurate data when a page shrinks.
-                        // However, (1) In most cases the pages grow rather than shrink;
-                        // (2) cache for pages is valid for only 30 min.
-                        // So we decide to leave current logic and observe.
-                        using (var data = await _httpSource.GetAsync(
-                            uri,
-                            new[] { new MediaTypeWithQualityHeaderValue("application/atom+xml"), new MediaTypeWithQualityHeaderValue("application/xml") },
-                            $"list_{id}_page{page}",
-                            CreateCacheContext(retry),
-                            Logger,
-                            ignoreNotFounds: false,
-                            ensureValidContents: stream => HttpStreamValidation.ValidateXml(uri, stream),
-                            cancellationToken: cancellationToken))
-                        {
-                            var doc = V2FeedParser.LoadXml(data.Stream);
-
-                            var result = doc.Root
-                                .Elements(_xnameEntry)
-                                .Select(x => BuildModel(id, x))
-                                .Where(x => x != null);
-
-                            results.AddRange(result);
-
-                            // Find the next url for continuation
-                            var nextUri = V2FeedParser.GetNextUrl(doc);
-
-                            // Stop if there's nothing else to GET
-                            if (string.IsNullOrEmpty(nextUri))
-                            {
-                                break;
-                            }
-
-                            uri = nextUri;
-                            page++;
-                        }
-                    }
-
-                    return results;
-                }
-                catch (Exception ex) when (retry < 2)
-                {
-                    string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingFindPackagesById, nameof(FindPackagesByIdAsyncCore), uri)
-                        + Environment.NewLine
-                        + ExceptionUtilities.DisplayMessage(ex);
-                    Logger.LogMinimal(message);
-                }
-                catch (Exception ex) when (retry == 2)
-                {
-                    // Fail silently by returning empty result list
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, uri);
-                    Logger.LogError(message + Environment.NewLine + ex.Message);
-
-                    throw new FatalProtocolException(message, ex);
-                }
-            }
-
-            return null;
-        }
-
-        private static PackageInfo BuildModel(string id, XElement element)
-        {
-            var properties = element.Element(_xnameProperties);
-            var idElement = properties.Element(_xnameId);
-
-            return new PackageInfo
-            {
-                // Use the given Id as final fallback if all elements above don't exist
-                Id = idElement?.Value ?? id,
-                Version = NuGetVersion.Parse(properties.Element(_xnameVersion).Value),
-                ContentUri = element.Element(_xnameContent).Attribute("src").Value,
-            };
-        }
-
-        private async Task<Stream> OpenNupkgStreamAsync(PackageInfo package, CancellationToken cancellationToken)
+        private async Task<Stream> OpenNupkgStreamAsync(V2FeedPackageInfo package, CancellationToken cancellationToken)
         {
             Task<NupkgEntry> task;
             lock (_nupkgCache)
             {
-                if (!_nupkgCache.TryGetValue(package.ContentUri, out task))
+                if (!_nupkgCache.TryGetValue(package.DownloadUrl, out task))
                 {
-                    task = _nupkgCache[package.ContentUri] = OpenNupkgStreamAsyncCore(package, cancellationToken);
+                    task = _nupkgCache[package.DownloadUrl] = OpenNupkgStreamAsyncCore(package, cancellationToken);
                 }
             }
 
@@ -223,19 +135,19 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 token: cancellationToken);
         }
 
-        private async Task<NupkgEntry> OpenNupkgStreamAsyncCore(PackageInfo package, CancellationToken cancellationToken)
+        private async Task<NupkgEntry> OpenNupkgStreamAsyncCore(V2FeedPackageInfo package, CancellationToken cancellationToken)
         {
             for (var retry = 0; retry != 3; ++retry)
             {
                 try
                 {
                     using (var data = await _httpSource.GetAsync(
-                        package.ContentUri,
+                        package.DownloadUrl,
                         "nupkg_" + package.Id + "." + package.Version,
                         CreateCacheContext(retry),
                         Logger,
                         ignoreNotFounds: false,
-                        ensureValidContents: stream => HttpStreamValidation.ValidateNupkg(package.ContentUri, stream),
+                        ensureValidContents: stream => HttpStreamValidation.ValidateNupkg(package.DownloadUrl, stream),
                         cancellationToken: cancellationToken))
                     {
                         return new NupkgEntry
@@ -244,15 +156,19 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         };
                     }
                 }
+                catch (FatalProtocolException)
+                {
+                    throw;
+                }
                 catch (TaskCanceledException) when (retry < 2)
                 {
                     // Requests can get cancelled if we got the data from elsewhere, no reason to warn.
-                    string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_CanceledNupkgDownload, package.ContentUri);
+                    string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_CanceledNupkgDownload, package.DownloadUrl);
                     Logger.LogMinimal(message);
                 }
                 catch (Exception ex)
                 {
-                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToDownloadPackage, package.ContentUri)
+                    var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToDownloadPackage, package.DownloadUrl)
                         + Environment.NewLine
                         + ExceptionUtilities.DisplayMessage(ex);
                     if (retry == 2)
@@ -274,15 +190,5 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
             public string TempFileName { get; set; }
         }
 
-        private class PackageInfo
-        {
-            public string Id { get; set; }
-
-            public string Path { get; set; }
-
-            public string ContentUri { get; set; }
-
-            public NuGetVersion Version { get; set; }
-        }
     }
 }

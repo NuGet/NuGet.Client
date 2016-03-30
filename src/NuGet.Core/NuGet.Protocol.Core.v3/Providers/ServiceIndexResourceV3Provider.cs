@@ -132,6 +132,10 @@ namespace NuGet.Protocol.Core.v3
                         return ConsumeServiceIndexStream(sourceResponse.Stream, utcNow);
                     }
                 }
+                catch (FatalProtocolException)
+                {
+                    throw;
+                }
                 catch (Exception ex) when (retry < 2)
                 {
                     var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingServiceIndex, url)

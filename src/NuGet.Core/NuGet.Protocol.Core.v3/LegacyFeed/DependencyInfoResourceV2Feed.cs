@@ -19,14 +19,19 @@ namespace NuGet.Protocol
         private readonly FrameworkReducer _frameworkReducer = new FrameworkReducer();
         private readonly SourceRepository _source;
 
-        public DependencyInfoResourceV2Feed(V2FeedParser feedParser, SourceRepository source)
+        public DependencyInfoResourceV2Feed(HttpSourceResource httpSourceResource, string baseAddress, SourceRepository source)
         {
-            if (feedParser == null)
+            if (httpSourceResource == null)
             {
-                throw new ArgumentNullException(nameof(feedParser));
+                throw new ArgumentNullException(nameof(httpSourceResource));
             }
 
-            _feedParser = feedParser;
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            _feedParser = new V2FeedParser(httpSourceResource.HttpSource, baseAddress, source.PackageSource);
             _source = source;
         }
 

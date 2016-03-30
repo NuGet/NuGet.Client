@@ -1288,7 +1288,7 @@ $@"<?xml version='1.0' encoding='utf-8'?>
                     Assert.True(result.Item1 != 0, result.Item2 + " " + result.Item3);
 
                     Assert.True(
-                        result.Item3.Contains("Response status code does not indicate success: 404 (Not Found)."),
+                        result.Item3.Contains(string.Format("The feed at '{0}' returned an unexpected status code '404 Not Found'.", serverV3.Uri + "index.json")),
                         "Expected error message not found in " + result.Item3
                         );
                 }
@@ -1805,7 +1805,7 @@ $@"<?xml version='1.0' encoding='utf-8'?>
                     "The run did not fail as desired. Simply got this output:" + result.Item2);
 
                 Assert.True(
-                    result.Item3.Contains("Response status code does not indicate success: 400 (Bad Request)."),
+                    result.Item3.Contains(string.Format("The feed at '{0}' returned an unexpected status code '400 Bad Request'.", invalidInput)),
                     "Expected error message not found in " + result.Item3
                     );
             }

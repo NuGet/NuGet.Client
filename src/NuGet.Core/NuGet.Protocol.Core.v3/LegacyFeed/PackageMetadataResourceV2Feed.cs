@@ -44,7 +44,7 @@ namespace NuGet.Protocol
             Logging.ILogger log,
             CancellationToken token)
         {
-            var packages = await _feedParser.FindPackagesByIdAsync(packageId, includeUnlisted, includePrerelease, log, token);
+            var packages = await _feedParser.FindPackagesByIdAsync(packageId, string.Empty, SourceCacheContext.NoCacheInstance, includeUnlisted, includePrerelease, log, token);
 
             return packages.Select(p => new PackageSearchMetadataV2Feed(p)).ToList();
         }

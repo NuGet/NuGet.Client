@@ -174,6 +174,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         };
                     }
                 }
+                catch (FatalProtocolException)
+                {
+                    throw;
+                }
                 catch (Exception ex) when (retry < 2)
                 {
                     var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToDownloadPackage, package.ContentUri)

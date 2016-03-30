@@ -17,14 +17,19 @@ namespace NuGet.Protocol
     {
         private readonly V2FeedParser _feedParser;
 
-        public DownloadResourceV2Feed(V2FeedParser feedParser)
+        public DownloadResourceV2Feed(HttpSourceResource httpSourceResource, string baseAddress, PackageSource packageSource)
         {
-            if (feedParser == null)
+            if (httpSourceResource == null)
             {
-                throw new ArgumentNullException(nameof(feedParser));
+                throw new ArgumentNullException(nameof(httpSourceResource));
             }
 
-            _feedParser = feedParser;
+            if (packageSource == null)
+            {
+                throw new ArgumentNullException(nameof(packageSource));
+            }
+
+            _feedParser = new V2FeedParser(httpSourceResource.HttpSource, baseAddress, packageSource);
         }
 
         public override async Task<DownloadResourceResult> GetDownloadResourceResultAsync(
