@@ -217,6 +217,16 @@ namespace NuGet.ProjectManagement
         }
 
         /// <summary>
+        /// Checks if there is a packages.config or packages.'projectName'.config file in the current project.
+        /// </summary>
+        /// <returns></returns>
+        public bool PackagesConfigExists()
+        {
+            UpdateFullPath();
+            return File.Exists(FullPath);
+        }
+
+        /// <summary>
         /// Retrieve the packages.config XML.
         /// This will return null if the file does not exist.
         /// </summary>

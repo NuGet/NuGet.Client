@@ -689,9 +689,11 @@ namespace NuGet.PackageManagement
                 packageTargetIdsForResolver.Add(packageIdToInstall);
             }
 
+            var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
             var nuGetProjectActions = new List<NuGetProjectAction>();
             if (!packageTargetIdsForResolver.Any())
             {
+                nuGetProjectContext.Log(NuGet.ProjectManagement.MessageLevel.Info, Strings.NoPackagesInProject, projectName);
                 return nuGetProjectActions;
             }
 
@@ -702,7 +704,6 @@ namespace NuGet.PackageManagement
                 var contextForGather = new ResolutionContext(resolutionContext.DependencyBehavior, includePrereleaseInGather, resolutionContext.IncludeUnlisted, VersionConstraints.None);
 
                 // Step-1 : Get metadata resources using gatherer
-                var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
                 var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
                 nuGetProjectContext.Log(NuGet.ProjectManagement.MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, projectName, targetFramework);
 

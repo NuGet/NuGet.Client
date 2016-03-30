@@ -222,6 +222,15 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to No packages were found in packages.config for project &apos;{0}&apos;..
+        /// </summary>
+        internal static string NoPackagesInProject {
+            get {
+                return ResourceManager.GetString("NoPackagesInProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to There are no new updates available..
         /// </summary>
         internal static string NoUpdatesAvailable {

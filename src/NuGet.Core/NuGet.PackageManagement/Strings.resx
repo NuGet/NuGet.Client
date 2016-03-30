@@ -201,6 +201,9 @@
   <data name="AttemptingToGatherDependencyInfoForMultiplePackages" xml:space="preserve">
     <value>Attempting to gather dependency information for multiple packages with respect to project '{0}', targeting '{1}'</value>
   </data>
+  <data name="NoPackagesInProject" xml:space="preserve">
+    <value>No packages were found in packages.config for project '{0}'.</value>
+  </data>
   <data name="AttemptingToResolveDependenciesForMultiplePackages" xml:space="preserve">
     <value>Attempting to resolve dependencies for multiple packages.</value>
   </data>

@@ -6253,6 +6253,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to update. The project does not contain a packages.config file..
+        /// </summary>
+        public static string NoPackagesConfig {
+            get {
+                return ResourceManager.GetString("NoPackagesConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No projects found with packages.config..
         /// </summary>
         public static string NoProjectsFound {

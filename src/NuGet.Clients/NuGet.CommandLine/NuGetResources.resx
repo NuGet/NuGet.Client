@@ -252,6 +252,9 @@
   <data name="InvalidFile" xml:space="preserve">
     <value>No packages.config, project or solution file specified. Use the -self switch to update NuGet.exe.</value>
   </data>
+  <data name="NoPackagesConfig" xml:space="preserve">
+    <value>Unable to update. The project does not contain a packages.config file.</value>
+  </data>
   <data name="PackageDoesNotExist" xml:space="preserve">
     <value>Unable to locate '{0} {1}'. Make sure all packages exist in the packages folder before running update.</value>
   </data>

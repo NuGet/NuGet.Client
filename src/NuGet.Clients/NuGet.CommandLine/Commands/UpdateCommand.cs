@@ -238,6 +238,11 @@ namespace NuGet.CommandLine
             var sourceRepositoryProvider = GetSourceRepositoryProvider();
             var packageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, packagesDirectory);
             var nugetProject = new MSBuildNuGetProject(project, packagesDirectory, project.ProjectFullPath);
+            if (!nugetProject.PackagesConfigNuGetProject.PackagesConfigExists())
+            {
+                throw new CommandLineException(LocalizedResourceManager.GetString("NoPackagesConfig"));
+            }
+
             var versionConstraints = Safe ?
                 VersionConstraints.ExactMajor | VersionConstraints.ExactMinor :
                 VersionConstraints.None;
