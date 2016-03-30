@@ -38,6 +38,60 @@ namespace NuGet.CommandLine
             return _msbuildExtensions.Contains(Path.GetExtension(projectFullPath));
         }
 
+        public static int Build(string msbuildDirectory,
+                                    string args)
+        {
+            string msbuildPath = Path.Combine(msbuildDirectory, "msbuild.exe");
+
+            if (!File.Exists(msbuildPath))
+            {
+                throw new CommandLineException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString(nameof(NuGetResources.MsBuildDoesNotExistAtPath)),
+                        msbuildPath));
+            }
+
+            //var nugetExePath = Assembly.GetEntryAssembly().Location;
+
+            var processStartInfo = new ProcessStartInfo
+            {
+                UseShellExecute = false,
+                FileName = msbuildPath,
+                Arguments = args,
+                RedirectStandardError = true
+            };
+
+            int timeOut = 3600 * 100; // 1 hour for now
+            int exitCode;
+            using (var process = Process.Start(processStartInfo))
+            {
+                var finished = process.WaitForExit(timeOut);
+
+                if (!finished)
+                {
+                    try
+                    {
+                        process.Kill();
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new CommandLineException(
+                            LocalizedResourceManager.GetString(nameof(NuGetResources.Error_CannotKillMsBuild)) + " : " +
+                            ex.Message,
+                            ex);
+                    }
+
+                    throw new CommandLineException(
+                        LocalizedResourceManager.GetString(nameof(NuGetResources.Error_MsBuildTimedOut)));
+                }
+
+                exitCode = process.ExitCode;
+            }
+
+            return exitCode;
+        }
+
         /// <summary>
         /// Returns the closure of project references for projects specified in <paramref name="projectPaths"/>.
         /// </summary>

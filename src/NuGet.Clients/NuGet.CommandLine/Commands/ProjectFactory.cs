@@ -362,6 +362,9 @@ namespace NuGet.CommandLine
 
         private void BuildProjectWithMsbuild()
         {
+            int result = MsBuildUtility.Build(_msbuildDirectory, $"{_project.FullPath} {ProjectProperties} {_project.ToolsVersion}");
+
+            /*
             var projectCollectionType = _msbuildAssembly.GetType(
                 "Microsoft.Build.Evaluation.ProjectCollection",
                 throwOnError: true);
@@ -403,17 +406,17 @@ namespace NuGet.CommandLine
 
                 // Build the project so that the outputs are created
                 dynamic result = buildMethod.Invoke(defaultBuildManager, new[] { parameters, requestData });
+                */
 
-                if (Microsoft.Build.Execution.BuildResultCode.Failure.ToString().Equals(
-                    result.OverallResult.ToString(),
-                    StringComparison.OrdinalIgnoreCase))
-                {
-                    // If the build fails, report the error
-                    throw new CommandLineException(LocalizedResourceManager.GetString("FailedToBuildProject"), Path.GetFileName(_project.FullPath));
-                }
-
-                TargetPath = ResolveTargetPath(result);
+            if (Microsoft.Build.Execution.BuildResultCode.Failure.ToString().Equals(
+                result.ToString(),
+                StringComparison.OrdinalIgnoreCase))
+            {
+                // If the build fails, report the error
+                throw new CommandLineException(LocalizedResourceManager.GetString("FailedToBuildProject"), Path.GetFileName(_project.FullPath));
             }
+
+            TargetPath = ResolveTargetPath(result);
         }
 
         private object CreateLoggers()
