@@ -52,44 +52,21 @@ namespace NuGet.CommandLine
                         msbuildPath));
             }
 
-            //var nugetExePath = Assembly.GetEntryAssembly().Location;
-
             var processStartInfo = new ProcessStartInfo
             {
                 UseShellExecute = false,
                 FileName = msbuildPath,
                 Arguments = args,
+                RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
 
-            int timeOut = 3600 * 100; // 1 hour for now
-            int exitCode;
             using (var process = Process.Start(processStartInfo))
             {
-                var finished = process.WaitForExit(timeOut);
+                process.WaitForExit();
 
-                if (!finished)
-                {
-                    try
-                    {
-                        process.Kill();
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new CommandLineException(
-                            LocalizedResourceManager.GetString(nameof(NuGetResources.Error_CannotKillMsBuild)) + " : " +
-                            ex.Message,
-                            ex);
-                    }
-
-                    throw new CommandLineException(
-                        LocalizedResourceManager.GetString(nameof(NuGetResources.Error_MsBuildTimedOut)));
-                }
-
-                exitCode = process.ExitCode;
+                return process.ExitCode;
             }
-
-            return exitCode;
         }
 
         /// <summary>
