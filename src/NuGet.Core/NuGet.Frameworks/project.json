@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "3.5.0-*",
   "description": "The understanding of target frameworks for NuGet.Packaging",
   "authors": [
@@ -22,7 +22,7 @@
     "net45": {},
     "netstandard1.5": {
       "dependencies": {
-        "NETStandard.Library": "1.5.0-rc2-23925"
+        "NETStandard.Library": "1.5.0-rc2-23930"
       },
       "imports": [
         "dotnet5.6",

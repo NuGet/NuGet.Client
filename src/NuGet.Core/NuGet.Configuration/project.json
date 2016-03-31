@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "3.5.0-*",
   "authors": [
     "NuGet"
@@ -34,10 +34,10 @@
     },
     "netstandard1.5": {
       "dependencies": {
-        "NETStandard.Library": "1.5.0-rc2-23925",
-        "System.Xml.XDocument": "4.0.11-rc2-23925",
-        "System.Security.Cryptography.Algorithms": "4.0.0-rc2-23925",
-        "System.Security.Cryptography.Primitives": "4.0.0-rc2-23925"
+        "NETStandard.Library": "1.5.0-rc2-23930",
+        "System.Xml.XDocument": "4.0.11-rc2-23930",
+        "System.Security.Cryptography.Algorithms": "4.0.0-rc2-23930",
+        "System.Security.Cryptography.Primitives": "4.0.0-rc2-23930"
       },
       "imports": [
         "dotnet5.6",

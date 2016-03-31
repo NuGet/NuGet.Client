@@ -1,4 +1,4 @@
-{
+﻿{
   "dependencies": {
     "NuGet.Protocol.Core.v3": {
       "target": "project"
@@ -23,7 +23,7 @@
       ],
       "dependencies": {
         "moq.netcore": "4.4.0-beta8",
-        "NETStandard.Library": "1.5.0-rc2-23925",
+        "NETStandard.Library": "1.5.0-rc2-23930",
         "dotnet-test-xunit": "1.0.0-dev-48273-16"
       }
     },
