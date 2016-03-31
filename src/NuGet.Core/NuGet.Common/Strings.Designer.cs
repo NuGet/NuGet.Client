@@ -67,5 +67,14 @@ namespace NuGet.Common {
                 return ResourceManager.GetString("UnauthorizedLockFail", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Hash algorithm &apos;{0}&apos; is unsupported. Supported algorithms include: SHA512 and SHA256..
+        /// </summary>
+        internal static string UnsupportedHashAlgorithm {
+            get {
+                return ResourceManager.GetString("UnsupportedHashAlgorithm", resourceCulture);
+            }
+        }
     }
 }

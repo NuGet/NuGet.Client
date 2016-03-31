@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace NuGet.Configuration.Test
+namespace NuGet.Common.Test
 {
     public class CryptoHashProviderTest
     {
