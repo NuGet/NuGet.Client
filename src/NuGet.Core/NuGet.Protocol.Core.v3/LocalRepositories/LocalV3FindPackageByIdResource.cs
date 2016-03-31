@@ -112,7 +112,6 @@ namespace NuGet.Protocol.Core.v3.LocalRepositories
             if (!Directory.Exists(_source))
             {
                 var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToRetrievePackage, _source);
-                Logger.LogError(message);
 
                 throw new FatalProtocolException(message);
             }
