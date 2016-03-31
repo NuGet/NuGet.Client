@@ -367,10 +367,17 @@ namespace NuGet.CommandLine
             string properties = string.Empty;
             foreach (var property in ProjectProperties)
             {
-                properties += $" /p:{property.Key}={property.Value}";
+                if (property.Value.Contains(" "))
+                {
+                    properties += $" /p:{property.Key}=\"{property.Value}\"";
+                }
+                else
+                {
+                    properties += $" /p:{property.Key}={property.Value}";
+                }
             }
 
-            int result = MsBuildUtility.Build(_msbuildDirectory, $"{_project.FullPath} {properties} /toolsversion:{_project.ToolsVersion}");
+            int result = MsBuildUtility.Build(_msbuildDirectory, $"\"{_project.FullPath}\" {properties} /toolsversion:{_project.ToolsVersion}");
 
             if ((int)Microsoft.Build.Execution.BuildResultCode.Failure == result)
             {
