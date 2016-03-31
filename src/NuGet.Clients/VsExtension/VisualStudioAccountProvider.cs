@@ -24,11 +24,9 @@ namespace NuGetVSExtension
         private readonly IInteractiveLoginProvider _loginProvider;
 
         public VisualStudioAccountProvider()
-        {
             //  Loadup the account manager and the account provider so that we can query the keychain.
-            var serviceProvider = ServiceProvider.GlobalProvider;
-            _accountManager = serviceProvider.GetService(typeof (SVsAccountManager)) as IAccountManager;
-            _loginProvider = new InteractiveLoginProvider();
+            : this(ServiceProvider.GlobalProvider.GetService(typeof(SVsAccountManager)) as IAccountManager, new InteractiveLoginProvider())
+        {
         }
 
         /// <summary>
