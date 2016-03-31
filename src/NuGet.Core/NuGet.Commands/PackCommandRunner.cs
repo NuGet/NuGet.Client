@@ -6,6 +6,7 @@ using System.Linq;
 using NuGet.Commands.Rules;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.LibraryModel;
 using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Versioning;
@@ -32,6 +33,7 @@ namespace NuGet.Commands
             ".nproj",
             ".btproj",
             ".dxjsproj",
+            ".xproj",
             ".json"
         };
 
@@ -54,6 +56,8 @@ namespace NuGet.Commands
             @"tools\**\*.ps1".Replace('\\', Path.DirectorySeparatorChar)
         };
 
+        private static readonly IReadOnlyList<string> allIncludeFlags = LibraryIncludeFlags.All.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
         private readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         public IEnumerable<IPackageRule> Rules { get; set; }
@@ -74,7 +78,7 @@ namespace NuGet.Commands
         {
             string extension = Path.GetExtension(path);
 
-            if (Path.GetFileName(path).Equals("project.json"))
+            if (ProjectJsonPathUtilities.IsProjectConfig(path))
             {
                 return BuildFromProjectJson(path);
             }
@@ -142,7 +146,8 @@ namespace NuGet.Commands
             {
                 return false;
             }
-            string path = Path.Combine(basePath, "project.json");
+
+            string path = ProjectJsonPathUtilities.GetProjectConfigPath(basePath, Path.GetFileName(basePath));
             if (File.Exists(path))
             {
                 using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
@@ -157,16 +162,10 @@ namespace NuGet.Commands
 
         private static void LoadProjectJsonFile(PackageBuilder builder, string path, string basePath, string id, Stream stream, Func<string, string> propertyProvider)
         {
-            string content = Preprocessor.Process(stream, propName => propertyProvider(propName));
-
-            PackageSpec spec = JsonPackageSpecReader.GetPackageSpec(content, id, path);
+            PackageSpec spec = JsonPackageSpecReader.GetPackageSpec(stream, id, path);
 
             if (id == null)
             {
-                if (basePath.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                {
-                    basePath = basePath.Substring(0, basePath.Length - 2);
-                }
                 builder.Id = Path.GetFileName(basePath);
             }
             else
@@ -179,7 +178,7 @@ namespace NuGet.Commands
             builder.Copyright = spec.Copyright;
             if (spec.Authors.Any())
             {
-                builder.Authors.Add(spec.Authors.First());
+                builder.Authors.AddRange(spec.Authors);
             }
             if (spec.Owners.Any())
             {
@@ -219,9 +218,21 @@ namespace NuGet.Commands
                 List<PackageDependency> dependencies = new List<PackageDependency>();
                 foreach (var dependency in spec.Dependencies)
                 {
+                    if (dependency.IncludeType == LibraryIncludeFlags.None)
+                    {
+                        continue;
+                    }
+
                     var flags = dependency.IncludeType.ToString();
-                    
-                    dependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange, flags.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries), new List<string>()));
+                    IReadOnlyList<string> includes = flags.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (includes.SequenceEqual(allIncludeFlags))
+                    {
+                        dependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange));
+                    }
+                    else
+                    {
+                        dependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange, flags.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries), new List<string>()));
+                    }
                 }
                 PackageDependencyGroup group = new PackageDependencyGroup(NuGetFramework.AnyFramework, dependencies);
 
@@ -235,7 +246,21 @@ namespace NuGet.Commands
                     List<PackageDependency> dependencies = new List<PackageDependency>();
                     foreach (var dependency in framework.Dependencies)
                     {
-                        dependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange));
+                        if (dependency.IncludeType == LibraryIncludeFlags.None)
+                        {
+                            continue;
+                        }
+
+                        var flags = dependency.IncludeType.ToString();
+                        IReadOnlyList<string> includes = flags.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                        if (includes.SequenceEqual(allIncludeFlags))
+                        {
+                            dependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange));
+                        }
+                        else
+                        {
+                            dependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange, flags.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries), new List<string>()));
+                        }
                     }
                     PackageDependencyGroup group = new PackageDependencyGroup(framework.FrameworkName, dependencies);
 
@@ -569,7 +594,9 @@ namespace NuGet.Commands
             var candidates = files.Where(file => _allowedExtensions.Contains(Path.GetExtension(file))).ToList();
             string result;
 
-            _allowedExtensions.RemoveWhere(ext => ext.EndsWith(".json") && !ext.Equals("project.json", StringComparison.OrdinalIgnoreCase));
+            candidates.RemoveAll(ext => ext.EndsWith(".json") && 
+                                    !ext.Equals(ProjectJsonPathUtilities.ProjectConfigFileName, StringComparison.OrdinalIgnoreCase) &&
+                                    !ext.EndsWith(ProjectJsonPathUtilities.ProjectConfigFileEnding, StringComparison.OrdinalIgnoreCase));
 
             switch (candidates.Count)
             {

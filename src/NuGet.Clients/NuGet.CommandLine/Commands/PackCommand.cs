@@ -93,6 +93,7 @@ namespace NuGet.CommandLine
 
             // If the BasePath is not specified, use the directory of the input file (nuspec / proj) file
             BasePath = String.IsNullOrEmpty(BasePath) ? Path.GetDirectoryName(Path.GetFullPath(path)) : BasePath;
+            BasePath = BasePath.TrimEnd(Path.DirectorySeparatorChar);
 
             if (!String.IsNullOrEmpty(MinClientVersion))
             {

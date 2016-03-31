@@ -99,7 +99,7 @@ namespace NuGet.CommandLine.Test
 
                 Util.CreateFile(
                     workingDirectory,
-                    "project.json",
+                    Path.GetFileName(workingDirectory) + ".project.json",
                 @"{
   ""version"": ""1.0.0"",
   ""title"": ""packageA"",
@@ -133,7 +133,7 @@ namespace NuGet.CommandLine.Test
                 var r = CommandRunner.Run(
                     nugetexe,
                     workingDirectory,
-                    "pack project.json",
+                    "pack " + Path.GetFileName(workingDirectory) + ".project.json",
                     waitForExit: true);
                 Assert.Equal(0, r.Item1);
 
@@ -1310,73 +1310,6 @@ namespace Proj2
             }
         }
 
-        // Test that recognized tokens such as $version$ in the json file of the
-        // referenced project are replaced.
-        [Fact]
-        public void PackCommand_JsonFileWithTokens()
-        {
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
-            {
-                // Arrange
-
-                CreateTestProject(workingDirectory, "proj1",
-                    new string[] {
-                        @"..\proj2\proj2.csproj"
-                    });
-                CreateTestProject(workingDirectory, "proj2", null, "v4.0", "1.2");
-                Util.CreateFile(
-                    Path.Combine(workingDirectory, "proj2"),
-                    "project.json",
-                    @"{
-  ""version"": ""$version$"",
-  ""title"": ""Proj2"",
-  ""authors"": [ ""test"" ],
-  ""owners"": [ ""test"" ],
-  ""requireLicenseAcceptance"": ""false"",
-  ""description"": ""Description"",
-  ""copyright"": ""Copyright ©  2013"",
-  ""dependencies"": {
-    ""p1"": {
-      ""version"": ""1.5.11""
-    }
-  },
-}");
-
-                // Act
-                var proj1Directory = Path.Combine(workingDirectory, "proj1");
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    proj1Directory,
-                    "pack proj1.csproj -build -IncludeReferencedProjects",
-                    waitForExit: true);
-                Assert.Equal(0, r.Item1);
-
-                // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.0.nupkg"));
-                var files = package.GetFiles().Select(f => f.Path).ToArray();
-                Array.Sort(files);
-
-                Assert.Equal(
-                    files,
-                    new string[]
-                    {
-                        @"lib\net40\proj1.dll"
-                    });
-
-                // proj2 is added as dependencies.
-                var dependencies = package.DependencySets.First().Dependencies.OrderBy(d => d.Id);
-                Assert.Equal(
-                    dependencies,
-                    new PackageDependency[]
-                    {
-                        new PackageDependency("proj2", VersionUtility.ParseVersionSpec("1.2.0"))
-                    },
-                    new PackageDepencyComparer());
-            }
-        }
-
         [Theory]
         [InlineData("")]
         [InlineData(@"\\")]
@@ -1517,6 +1450,14 @@ namespace Proj2
         // referenced projects.
         public void PackCommand_IncludeReferencedProjectsOff()
         {
+            var msbuild = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+                    @"Microsoft.NET\Framework\v4.0.30319\msbuild.exe");
+            if (!File.Exists(msbuild))
+            {
+                return;
+            }
+
             var nugetexe = Util.GetNuGetExePath();
 
             using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
@@ -1603,10 +1544,6 @@ namespace Proj2
         public int A { get; set; }
     }
 }");
-
-                var msbuild = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.Windows),
-                    @"Microsoft.NET\Framework\v4.0.30319\msbuild.exe");
 
                 var r = CommandRunner.Run(
                     msbuild,
@@ -1906,6 +1843,14 @@ namespace Proj1
         [Fact]
         public void PackCommand_WarningDependencyVersionNotSpecified()
         {
+            var msbuild = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+                    @"Microsoft.NET\Framework\v4.0.30319\msbuild.exe");
+            if (!File.Exists(msbuild))
+            {
+                return;
+            }
+
             var nugetexe = Util.GetNuGetExePath();
 
             using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
@@ -1976,9 +1921,6 @@ namespace Proj1
     <file src=""release_out\"" target=""lib\net40"" />
   </files>
 </package>");
-                var msbuild = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.Windows),
-                    @"Microsoft.NET\Framework\v4.0.30319\msbuild.exe");
                 var r = CommandRunner.Run(
                     msbuild,
                     proj1Directory,
@@ -2005,6 +1947,14 @@ namespace Proj1
         [Fact]
         public void PackCommand_WarningDependencyVersionNotSpecifiedInJson()
         {
+            var msbuild = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+                    @"Microsoft.NET\Framework\v4.0.30319\msbuild.exe");
+            if (!File.Exists(msbuild))
+            {
+                return;
+            }
+
             var nugetexe = Util.GetNuGetExePath();
 
             using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
@@ -2067,9 +2017,6 @@ namespace Proj1
     ""json"": { }
   }
 }");
-                var msbuild = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.Windows),
-                    @"Microsoft.NET\Framework\v4.0.30319\msbuild.exe");
                 var r = CommandRunner.Run(
                     msbuild,
                     proj1Directory,

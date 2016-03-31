@@ -582,7 +582,8 @@ namespace NuGet.CommandLine
 
                 string fullPath = item.GetMetadataValue("FullPath");
                 if (!string.IsNullOrEmpty(fullPath) &&
-                    !NuspecFileExists(fullPath) && !File.Exists(Path.Combine(Path.GetDirectoryName(fullPath), "project.json")) &&
+                    !NuspecFileExists(fullPath) && 
+                    !File.Exists(ProjectJsonPathUtilities.GetProjectConfigPath(Path.GetDirectoryName(fullPath), Path.GetFileName(fullPath))) &&
                     alreadyAppliedProjects.GetLoadedProjects(fullPath).Count == 0)
                 {
                     dynamic project = Activator.CreateInstance(
@@ -685,7 +686,7 @@ namespace NuGet.CommandLine
                                 null,
                                 projectCollection);
 
-                        if (NuspecFileExists(fullPath) || File.Exists(Path.Combine(Path.GetDirectoryName(fullPath), "project.json")))
+                        if (NuspecFileExists(fullPath) || File.Exists(ProjectJsonPathUtilities.GetProjectConfigPath(Path.GetDirectoryName(fullPath), Path.GetFileName(fullPath))))
                         {
                             var dependency = CreateDependencyFromProject(referencedProject);
                             dependencies[dependency.Id] = dependency;
