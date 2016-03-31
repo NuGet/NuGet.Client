@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Logging;
@@ -24,6 +25,16 @@ namespace NuGet.DependencyResolver
         private FindPackageByIdResource _findPackagesByIdResource;
         private bool _ignoreFailedSources;
         private bool _ignoreWarning;
+
+        // Limiting concurrent requests to limit the amount of files open at a time on Mac OSX
+        // the default is 256 which is easy to hit if we don't limit concurrency
+        private readonly static SemaphoreSlim _throttle =
+            RuntimeEnvironmentHelper.IsMacOSX
+                ? new SemaphoreSlim(ConcurrencyLimit, ConcurrencyLimit)
+                : null;
+
+        // In order to avoid too many open files error, set concurrent requests number to 16 on Mac
+        private const int ConcurrencyLimit = 16;
 
         public SourceRepositoryDependencyProvider(
             SourceRepository sourceRepository,
@@ -65,6 +76,10 @@ namespace NuGet.DependencyResolver
             IEnumerable<NuGetVersion> packageVersions = null;
             try
             {
+                if (_throttle != null)
+                {
+                    await _throttle.WaitAsync();
+                }
                 packageVersions = await _findPackagesByIdResource.GetAllVersionsAsync(libraryRange.Name, cancellationToken);
             }
             catch (FatalProtocolException e) when (_ignoreFailedSources)
@@ -74,6 +89,10 @@ namespace NuGet.DependencyResolver
                     _logger.LogWarning(e.Message);
                 }
                 return null;
+            }
+            finally
+            {
+                _throttle?.Release();
             }
 
             var packageVersion = packageVersions?.FindBestMatch(libraryRange.VersionRange, version => version);
@@ -95,7 +114,27 @@ namespace NuGet.DependencyResolver
         {
             await EnsureResource();
 
-            var packageInfo = await _findPackagesByIdResource.GetDependencyInfoAsync(match.Name, match.Version, cancellationToken);
+            FindPackageByIdDependencyInfo packageInfo = null;
+            try
+            {
+                if (_throttle != null)
+                {
+                    await _throttle.WaitAsync();
+                }
+                packageInfo = await _findPackagesByIdResource.GetDependencyInfoAsync(match.Name, match.Version, cancellationToken);
+            }
+            catch (FatalProtocolException e) when (_ignoreFailedSources)
+            {
+                if (!_ignoreWarning)
+                {
+                    _logger.LogWarning(e.Message);
+                }
+                return new List<LibraryDependency>();
+            }
+            finally
+            {
+                _throttle?.Release();
+            }
 
             return GetDependencies(packageInfo, targetFramework);
         }
@@ -104,18 +143,41 @@ namespace NuGet.DependencyResolver
         {
             await EnsureResource();
 
-            using (var nupkgStream = await _findPackagesByIdResource.GetNupkgStreamAsync(identity.Name, identity.Version, cancellationToken))
+            try
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                if (_throttle != null)
+                {
+                    await _throttle.WaitAsync();
+                }
 
-                // If the stream is already available, do not stop in the middle of copying the stream
-                // Pass in CancellationToken.None
-                await nupkgStream.CopyToAsync(stream, bufferSize: 8192, cancellationToken: CancellationToken.None);
+                using (var nupkgStream = await _findPackagesByIdResource.GetNupkgStreamAsync(identity.Name, identity.Version, cancellationToken))
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    // If the stream is already available, do not stop in the middle of copying the stream
+                    // Pass in CancellationToken.None
+                    await nupkgStream.CopyToAsync(stream, bufferSize: 8192, cancellationToken: CancellationToken.None);
+                }
+            }
+            catch (FatalProtocolException e) when (_ignoreFailedSources)
+            {
+                if (!_ignoreWarning)
+                {
+                    _logger.LogWarning(e.Message);
+                }
+            }
+            finally
+            {
+                _throttle?.Release();
             }
         }
 
         private IEnumerable<LibraryDependency> GetDependencies(FindPackageByIdDependencyInfo packageInfo, NuGetFramework targetFramework)
         {
+            if (packageInfo == null)
+            {
+                return new List<LibraryDependency>();
+            }
             var dependencies = NuGetFrameworkUtility.GetNearest(packageInfo.DependencyGroups,
                 targetFramework,
                 item => item.TargetFramework);
