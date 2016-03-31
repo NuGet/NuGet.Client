@@ -6,7 +6,8 @@ param (
     [string]$ReleaseLabel = 'local',
     [int]$BuildNumber,
     [switch]$SkipRestore,
-    [switch]$CleanCache,
+    [ValidateSet("none", "all", "webcache", "allpackages", "nugetpackages")]
+    [string]$CleanCache="none",
     [string]$MSPFXPath,
     [string]$NuGetPFXPath,
     [switch]$SkipXProj,
@@ -64,7 +65,7 @@ Invoke-BuildStep 'Cleaning nupkgs' { Clear-Nupkgs } `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Cleaning package cache' { Clear-PackageCache } `
-    -skip:(-not $CleanCache) `
+    -skip:($CleanCache -eq "none") `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Installing NuGet.exe' { Install-NuGet } `
