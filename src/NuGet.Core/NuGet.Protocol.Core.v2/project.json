@@ -17,7 +17,7 @@
     "NuGet.Configuration": "3.4.1-*",
     "NuGet.Packaging": "3.4.1-*",
     "NuGet.Protocol.Core.Types": "3.4.1-*",
-    "NuGet.Core": "2.11.0",
+    "NuGet.Core": "2.11.1-rtm-*",
     "NuGet.Shared": {
       "type": "build",
       "version": "3.4.1-*"
