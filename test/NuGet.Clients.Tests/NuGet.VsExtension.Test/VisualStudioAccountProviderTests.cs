@@ -73,6 +73,12 @@ namespace NuGet.VsExtension.Test
         }
 
         [Fact]
+        public async Task VerifyContructorSetsId()
+        {
+            Assert.StartsWith($"{typeof(VisualStudioAccountProvider).Name}", _provider.Id);
+        }
+
+        [Fact]
         public async Task Get_WhenIsProxyRequest_ThenReturnsNull()
         {
             // Arange
