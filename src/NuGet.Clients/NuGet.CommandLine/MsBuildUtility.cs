@@ -38,6 +38,37 @@ namespace NuGet.CommandLine
             return _msbuildExtensions.Contains(Path.GetExtension(projectFullPath));
         }
 
+        public static int Build(string msbuildDirectory,
+                                    string args)
+        {
+            string msbuildPath = Path.Combine(msbuildDirectory, "msbuild.exe");
+
+            if (!File.Exists(msbuildPath))
+            {
+                throw new CommandLineException(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        LocalizedResourceManager.GetString(nameof(NuGetResources.MsBuildDoesNotExistAtPath)),
+                        msbuildPath));
+            }
+
+            var processStartInfo = new ProcessStartInfo
+            {
+                UseShellExecute = false,
+                FileName = msbuildPath,
+                Arguments = args,
+                RedirectStandardOutput = false,
+                RedirectStandardError = false
+            };
+
+            using (var process = Process.Start(processStartInfo))
+            {
+                process.WaitForExit();
+
+                return process.ExitCode;
+            }
+        }
+
         /// <summary>
         /// Returns the closure of project references for projects specified in <paramref name="projectPaths"/>.
         /// </summary>

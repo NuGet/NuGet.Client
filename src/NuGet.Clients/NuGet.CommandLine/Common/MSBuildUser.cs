@@ -18,6 +18,8 @@ namespace NuGet.Common
         // The type of class Microsoft.Build.Evaluation.ProjectCollection
         protected Type _projectCollectionType;
 
+        protected string _msbuildDirectory;
+
         // msbuildDirectory is the directory containing the msbuild to be used. E.g. C:\Program Files (x86)\MSBuild\14.0\Bin
         public void LoadAssemblies(string msbuildDirectory)
         {
@@ -26,6 +28,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(msbuildDirectory));
             }
 
+            _msbuildDirectory = msbuildDirectory;
             _msbuildAssembly = Assembly.LoadFile(Path.Combine(msbuildDirectory, "Microsoft.Build.dll"));
             _frameworkAssembly = Assembly.LoadFile(Path.Combine(msbuildDirectory, "Microsoft.Build.Framework.dll"));
 
