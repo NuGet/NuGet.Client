@@ -4,6 +4,7 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using NuGet.Common;
 
 namespace NuGet.Configuration
 {

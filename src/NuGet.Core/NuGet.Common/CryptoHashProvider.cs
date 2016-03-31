@@ -9,7 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 
-namespace NuGet.Configuration
+namespace NuGet.Common
 {
     /// <summary>
     /// CryptoHashProvider helps calculate or verify hash based on SHA256 or SHA512 algorithms
@@ -50,7 +50,7 @@ namespace NuGet.Configuration
                      !hashAlgorithm.Equals(SHA256HashAlgorithm, StringComparison.OrdinalIgnoreCase))
             {
                 // Only support a vetted list of hash algorithms.
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Resources.UnsupportedHashAlgorithm, hashAlgorithm), "hashAlgorithm");
+                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Strings.UnsupportedHashAlgorithm, hashAlgorithm), "hashAlgorithm");
             }
 
             _hashAlgorithm = hashAlgorithm;
