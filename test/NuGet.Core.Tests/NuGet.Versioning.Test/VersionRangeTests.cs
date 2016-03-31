@@ -9,6 +9,77 @@ namespace NuGet.Versioning.Test
 {
     public class VersionRangeTests
     {
+        [Fact]
+        public void VersionRange_MetadataIsIgnored_Satisfy()
+        {
+            // Arrange
+            var noMetadata = VersionRange.Parse("[1.0.0, 2.0.0]");
+            var lowerMetadata = VersionRange.Parse("[1.0.0+A, 2.0.0]");
+            var upperMetadata = VersionRange.Parse("[1.0.0, 2.0.0+A]");
+            var bothMetadata = VersionRange.Parse("[1.0.0+A, 2.0.0+A]");
+
+            var versionNoMetadata = NuGetVersion.Parse("1.0.0");
+            var versionMetadata = NuGetVersion.Parse("1.0.0+B");
+
+            // Act & Assert
+            Assert.True(noMetadata.Satisfies(versionNoMetadata));
+            Assert.True(noMetadata.Satisfies(versionMetadata));
+            Assert.True(lowerMetadata.Satisfies(versionNoMetadata));
+            Assert.True(lowerMetadata.Satisfies(versionMetadata));
+            Assert.True(upperMetadata.Satisfies(versionNoMetadata));
+            Assert.True(upperMetadata.Satisfies(versionMetadata));
+            Assert.True(bothMetadata.Satisfies(versionNoMetadata));
+            Assert.True(bothMetadata.Satisfies(versionMetadata));
+        }
+
+        [Fact]
+        public void VersionRange_MetadataIsIgnored_Equality()
+        {
+            // Arrange
+            var noMetadata = VersionRange.Parse("[1.0.0, 2.0.0]");
+            var lowerMetadata = VersionRange.Parse("[1.0.0+A, 2.0.0]");
+            var upperMetadata = VersionRange.Parse("[1.0.0, 2.0.0+A]");
+            var bothMetadata = VersionRange.Parse("[1.0.0+A, 2.0.0+A]");
+
+            // Act & Assert
+            Assert.True(noMetadata.Equals(lowerMetadata));
+            Assert.True(lowerMetadata.Equals(upperMetadata));
+            Assert.True(upperMetadata.Equals(bothMetadata));
+            Assert.True(bothMetadata.Equals(noMetadata));
+        }
+
+        [Fact]
+        public void VersionRange_MetadataIsIgnored_FormatRemovesMetadata()
+        {
+            // Arrange
+            var bothMetadata = VersionRange.Parse("[1.0.0+A, 2.0.0+A]");
+
+            // Act & Assert
+            Assert.Equal("[1.0.0, 2.0.0]", bothMetadata.ToString());
+            Assert.Equal("[1.0.0, 2.0.0]", bothMetadata.ToNormalizedString());
+            Assert.Equal("[1.0.0, 2.0.0]", bothMetadata.ToLegacyString());
+        }
+
+        [Fact]
+        public void VersionRange_MetadataIsIgnored_FormatRemovesMetadata_Short()
+        {
+            // Arrange
+            var bothMetadata = VersionRange.Parse("[1.0.0+A, )");
+
+            // Act & Assert
+            Assert.Equal("1.0.0", bothMetadata.ToLegacyShortString());
+        }
+
+        [Fact]
+        public void VersionRange_MetadataIsIgnored_FormatRemovesMetadata_PrettyPrint()
+        {
+            // Arrange
+            var bothMetadata = VersionRange.Parse("[1.0.0+A, )");
+
+            // Act & Assert
+            Assert.Equal("(>= 1.0.0)", bothMetadata.PrettyPrint());
+        }
+
         [Theory]
         [InlineData("1.0.0", "1.0.0")]
         [InlineData("1.0.0-beta", "1.0.0-beta")]
@@ -224,36 +295,36 @@ namespace NuGet.Versioning.Test
         }
 
         [Theory]
-        [InlineData("1.2.0")]
-        [InlineData("1.2.3")]
-        [InlineData("1.2.3-beta")]
-        [InlineData("1.2.3-beta+900")]
-        [InlineData("1.2.3-beta.2.4.55.X+900")]
-        [InlineData("1.2.3-0+900")]
-        [InlineData("[1.2.0]")]
-        [InlineData("[1.2.3]")]
-        [InlineData("[1.2.3-beta]")]
-        [InlineData("[1.2.3-beta+900]")]
-        [InlineData("[1.2.3-beta.2.4.55.X+900]")]
-        [InlineData("[1.2.3-0+90]")]
-        [InlineData("(, 1.2.0]")]
-        [InlineData("(, 1.2.3]")]
-        [InlineData("(, 1.2.3-beta]")]
-        [InlineData("(, 1.2.3-beta+900]")]
-        [InlineData("(, 1.2.3-beta.2.4.55.X+900]")]
-        [InlineData("(, 1.2.3-0+900]")]
-        public void ParseVersionRangeToStringShortHand(string version)
+        [InlineData("1.2.0", "1.2.0")]
+        [InlineData("1.2.3", "1.2.3")]
+        [InlineData("1.2.3-beta", "1.2.3-beta")]
+        [InlineData("1.2.3-beta+900", "1.2.3-beta")]
+        [InlineData("1.2.3-beta.2.4.55.X+900", "1.2.3-beta.2.4.55.X")]
+        [InlineData("1.2.3-0+900", "1.2.3-0")]
+        [InlineData("[1.2.0]", "[1.2.0]")]
+        [InlineData("[1.2.3]", "[1.2.3]")]
+        [InlineData("[1.2.3-beta]", "[1.2.3-beta]")]
+        [InlineData("[1.2.3-beta+900]", "[1.2.3-beta]")]
+        [InlineData("[1.2.3-beta.2.4.55.X+900]", "[1.2.3-beta.2.4.55.X]")]
+        [InlineData("[1.2.3-0+90]", "[1.2.3-0]")]
+        [InlineData("(, 1.2.0]", "(, 1.2.0]")]
+        [InlineData("(, 1.2.3]", "(, 1.2.3]")]
+        [InlineData("(, 1.2.3-beta]", "(, 1.2.3-beta]")]
+        [InlineData("(, 1.2.3-beta+900]", "(, 1.2.3-beta]")]
+        [InlineData("(, 1.2.3-beta.2.4.55.X+900]", "(, 1.2.3-beta.2.4.55.X]")]
+        [InlineData("(, 1.2.3-0+900]", "(, 1.2.3-0]")]
+        public void ParseVersionRangeToStringShortHand(string version, string expected)
         {
             // Act
             var versionInfo = VersionRange.Parse(version);
 
             // Assert
-            Assert.Equal(version, versionInfo.ToString("S", new VersionRangeFormatter()));
+            Assert.Equal(expected, versionInfo.ToString("S", new VersionRangeFormatter()));
         }
 
         [Theory]
         [InlineData("1.2.0", "[1.2.0, )")]
-        [InlineData("1.2.3-beta.2.4.55.X+900", "[1.2.3-beta.2.4.55.X+900, )")]
+        [InlineData("1.2.3-beta.2.4.55.X+900", "[1.2.3-beta.2.4.55.X, )")]
         [InlineData("[1.2.0)", "[1.2.0, 1.2.0)")]
         public void ParseVersionRangeToString(string version, string expected)
         {

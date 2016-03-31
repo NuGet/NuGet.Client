@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "3.5.0-*",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
   "projectUrl": "https://github.com/NuGet/NuGet.Client",
@@ -31,9 +31,9 @@
         "portable-net45+win8"
       ],
       "dependencies": {
-        "NETStandard.Library": "1.5.0-rc2-23925",
-        "System.ObjectModel": "4.0.11-rc2-23925",
-        "System.Dynamic.Runtime": "4.0.11-rc2-23925"
+        "NETStandard.Library": "1.5.0-rc2-23930",
+        "System.ObjectModel": "4.0.11-rc2-23930",
+        "System.Dynamic.Runtime": "4.0.11-rc2-23930"
       }
     }
   }

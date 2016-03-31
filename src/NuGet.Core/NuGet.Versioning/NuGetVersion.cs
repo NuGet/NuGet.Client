@@ -151,9 +151,13 @@ namespace NuGet.Versioning
         /// Returns the version string.
         /// </summary>
         /// <remarks>This method includes legacy behavior. Use ToNormalizedString() instead.</remarks>
+        /// <remarks>Versions with SemVer 2.0.0 components are automatically normalized.</remarks>
         public override string ToString()
         {
-            if (String.IsNullOrEmpty(_originalString))
+            // Versions with SemVer 2.0.0 components are automatically normalized,
+            // non-normalized strings are only allowed for backcompat with older versions
+            // of nuget, and those did not support SemVer 2.0.0.
+            if (string.IsNullOrEmpty(_originalString) || IsSemVer2)
             {
                 return ToNormalizedString();
             }

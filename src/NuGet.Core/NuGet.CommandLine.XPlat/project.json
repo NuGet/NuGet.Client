@@ -1,4 +1,4 @@
-{
+﻿{
   "version": "3.5.0-*",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
   "projectUrl": "https://github.com/NuGet/NuGet.Client",
@@ -20,7 +20,7 @@
     "NuGet.Commands": {
       "target": "project"
     },
-    "System.Runtime.Serialization.Primitives": "4.1.0-rc2-23925"
+    "System.Runtime.Serialization.Primitives": "4.1.0-rc2-23930"
   },
   "commands": {
     "NuGet.CommandLine.XPlat": "NuGet.CommandLine.XPlat"
@@ -40,8 +40,8 @@
         "portable-net45+win8"
       ],
       "dependencies": {
-        "NETStandard.Library": "1.5.0-rc2-23925",
-        "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-rc2-23925"
+        "NETStandard.Library": "1.5.0-rc2-23930",
+        "System.Runtime.InteropServices.RuntimeInformation": "4.0.0-rc2-23930"
       }
     }
   }
