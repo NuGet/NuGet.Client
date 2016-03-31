@@ -9178,6 +9178,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Pushing took too long. You can change the default timeout of 300 seconds by using the -Timeout &lt;seconds&gt; option with the push command..
+        /// </summary>
+        public static string PushCommandTimeoutError {
+            get {
+                return ResourceManager.GetString("PushCommandTimeoutError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to All.
         /// </summary>
         public static string ReservedPackageNameAll {

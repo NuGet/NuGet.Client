@@ -51,6 +51,11 @@ namespace NuGet.CommandLine
                     NoSymbols,
                     Console);
             }
+            catch (TaskCanceledException ex)
+            {
+                string timeoutMessage = LocalizedResourceManager.GetString(nameof(NuGetResources.PushCommandTimeoutError));
+                throw new AggregateException(ex, new Exception(timeoutMessage));
+            }
             catch (Exception ex)
             {
                 if (ex is HttpRequestException && ex.InnerException is WebException)

@@ -253,6 +253,35 @@ $@"<?xml version='1.0' encoding='utf-8'?>
             }
         }
 
+        [Fact]
+        public void PushCommand_PushTimeoutErrorMessage()
+        {
+            using (TestDirectory packageDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            using (MockServer server = new MockServer())
+            {
+                // Arrange
+                string packageFileName = Util.CreateTestPackage("testPackage1", "1.1.0", packageDirectory);
+                server.Get.Add("/push", r => "OK");
+                server.Put.Add("/push", r =>
+                {
+                    System.Threading.Thread.Sleep(2000);
+                    return HttpStatusCode.Created;
+                });
+                server.Start();
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    Directory.GetCurrentDirectory(),
+                    $"push {packageFileName} -Source {server.Uri}push -Timeout 1",
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(1, result.Item1);
+                Assert.Contains("took too long", result.Item3);
+            }
+        }
+
         // Tests that push command can follow redirection correctly.
         [Fact]
         public void PushCommand_PushToServerFollowRedirection()

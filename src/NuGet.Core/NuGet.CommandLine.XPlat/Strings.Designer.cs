@@ -447,6 +447,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Pushing took too long. You can change the default timeout of 300 seconds by using the --timeout &lt;seconds&gt; option with the push command..
+        /// </summary>
+        public static string Push_Timeout_Error {
+            get {
+                return ResourceManager.GetString("Push_Timeout_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to List of projects and project folders to restore. Each value can be: a path to a project.json or global.json file, or a folder to recursively search for project.json files..
         /// </summary>
         public static string Restore_Arg_ProjectName_Description {

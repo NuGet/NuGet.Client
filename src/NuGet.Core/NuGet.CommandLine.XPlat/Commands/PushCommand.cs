@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Commands;
 using NuGet.Configuration;
@@ -66,16 +67,23 @@ namespace NuGet.CommandLine.XPlat
 
                     PackageSourceProvider sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings());
 
-                    await PushRunner.Run(
-                        sourceProvider.Settings,
-                        sourceProvider,
-                        packagePath,
-                        sourcePath,
-                        apiKeyValue,
-                        timeoutSeconds,
-                        disableBufferingValue,
-                        noSymbolsValue,
-                        getLogger());
+                    try
+                    {
+                        await PushRunner.Run(
+                            sourceProvider.Settings,
+                            sourceProvider,
+                            packagePath,
+                            sourcePath,
+                            apiKeyValue,
+                            timeoutSeconds,
+                            disableBufferingValue,
+                            noSymbolsValue,
+                            getLogger());
+                    }
+                    catch (TaskCanceledException ex)
+                    {
+                        throw new AggregateException(ex, new Exception(Strings.Push_Timeout_Error));
+                    }
 
                     return 0;
                 });

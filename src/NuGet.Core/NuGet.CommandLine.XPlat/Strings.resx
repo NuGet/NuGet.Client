@@ -293,4 +293,7 @@
   <data name="Exclude_Description" xml:space="preserve">
     <value>Specifies one or more wildcard patterns to exclude when creating a package.</value>
   </data>
+  <data name="Push_Timeout_Error" xml:space="preserve">
+    <value>Pushing took too long. You can change the default timeout of 300 seconds by using the --timeout &lt;seconds&gt; option with the push command.</value>
+  </data>
 </root>
