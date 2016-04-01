@@ -388,13 +388,13 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
+            var uri = string.Format("{0}{1}", _baseAddress, relativeUri);
             for (var retry = 0; retry < 3; ++retry)
             {
                 try
                 {
                     var results = new List<V2FeedPackageInfo>();
-                    var page = 1;
-                    var uri = string.Format("{0}{1}", _baseAddress, relativeUri);
+                    var page = 1;                   
                     var httpSourceCacheContext = HttpSourceCacheContext.CreateCacheContext(cacheContext, retry);
 
                     // first request

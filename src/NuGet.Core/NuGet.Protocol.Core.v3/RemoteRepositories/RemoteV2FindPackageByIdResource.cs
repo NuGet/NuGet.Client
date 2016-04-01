@@ -38,7 +38,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                 throw new ArgumentNullException(nameof(packageSource));
             }
 
-            _feedParser = new V2FeedParser(httpSourceResource.HttpSource, packageSource);
+            _feedParser = new V2FeedParser(httpSourceResource.HttpSource, packageSource.Source);
             _httpSource = httpSourceResource.HttpSource;
             PackageSource = packageSource;
         }
