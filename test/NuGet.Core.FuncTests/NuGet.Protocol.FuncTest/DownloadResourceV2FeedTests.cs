@@ -83,48 +83,17 @@ namespace NuGet.Protocol.FuncTest
         }
 
         [Fact]
-        public async Task DownloadResourceFromInvalidUrl()
-        {
-            // Arrange
-            var randomName = Guid.NewGuid().ToString();
-            var repo = Repository.Factory.GetCoreV3($"https://www.{randomName}.org/api/v2");
-
-            var downloadResource = await repo.GetResourceAsync<DownloadResource>();
-
-            var package = new SourcePackageDependencyInfo("not-found", new NuGetVersion("6.2.0"), null, true, repo, new Uri($"https://www.{randomName}.org/api/v2/package/not-found/6.2.0"), "");
-
-            // Act 
-            Exception ex = await Assert.ThrowsAsync<FatalProtocolException>(async () => await downloadResource.GetDownloadResourceResultAsync(package,
-                                                              NullSettings.Instance,
-                                                              NullLogger.Instance,
-                                                              CancellationToken.None));
-
-            // Assert
-            Assert.NotNull(ex);
-            Assert.Equal($"Error downloading 'not-found.6.2.0' from 'https://www.{randomName}.org/api/v2/package/not-found/6.2.0'.", ex.Message);
-        }
-
-        [Fact]
         public async Task DownloadResourceFromIdentityInvalidSource()
         {
             // Arrange
             var randomName = Guid.NewGuid().ToString();
             var repo = Repository.Factory.GetCoreV3($"https://www.{randomName}.org/api/v2/");
 
-            var downloadResource = await repo.GetResourceAsync<DownloadResource>();
-
-            var package = new PackageIdentity("not-found", new NuGetVersion("6.2.0"));
-
             // Act & Assert
-            // Act 
-            Exception ex = await Assert.ThrowsAsync<FatalProtocolException>(async () => await downloadResource.GetDownloadResourceResultAsync(package,
-                                                              NullSettings.Instance,
-                                                              NullLogger.Instance,
-                                                              CancellationToken.None));
+            Exception ex = await Assert.ThrowsAsync<FatalProtocolException>(async () => await repo.GetResourceAsync<DownloadResource>());
 
-            // Assert
             Assert.NotNull(ex);
-            Assert.Equal($"Error downloading 'not-found.6.2.0' from 'https://www.{randomName}.org/api/v2/'.", ex.Message);
+            Assert.Equal($"Unable to load the service index for source https://www.{randomName}.org/api/v2/.", ex.Message);
         }
     }
 }
