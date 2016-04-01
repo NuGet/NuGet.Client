@@ -49,5 +49,23 @@ namespace NuGet.Protocol.Core.v3.Tests
             // Assert
             Assert.Equal("https://bringing/it/all/back/home", baseAddress);
         }
+
+        [Fact]
+        public async Task IgnoresInvalidXml()
+        {
+            // Arrange
+            var serviceAddress = TestUtility.CreateServiceAddress();
+
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress, "[1, 2, \"not XML\"]");
+
+            var repo = StaticHttpHandler.CreateSource(serviceAddress, Repository.Provider.GetCoreV3(), responses);
+
+            // Act
+            var resource = await repo.GetResourceAsync<ODataServiceDocumentResourceV2>();
+
+            // Assert
+            Assert.Equal(serviceAddress.Trim('/'), resource.BaseAddress);
+        }
     }
 }
