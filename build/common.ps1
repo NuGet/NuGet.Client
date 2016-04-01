@@ -194,22 +194,37 @@ Function Format-BuildNumber([int]$BuildNumber) {
 Function Clear-PackageCache {
     [CmdletBinding()]
     param()
-    Trace-Log 'Removing .NUGET packages'
 
-    if (Test-Path $env:userprofile\.nuget\packages) {
-        rm -r $env:userprofile\.nuget\packages -Force
+    if (Test-Path $env:userprofile\.nuget\packages)
+    {
+        if (($CleanCache -eq "all") -or ($CleanCache -eq "allpackages"))
+        {
+            Trace-Log "Removing all packages from global packages folder at $env:userprofile\.nuget\packages"
+            rm -r $env:userprofile\.nuget\packages -Force
+        }
+        ElseIf(($CleanCache -eq "all") -or ($CleanCache -eq "nugetpackages"))
+        {
+            Trace-Log "Removing only NuGet.* packages from global packages folder at $env:userprofile\.nuget\packages"
+            rm -r $env:userprofile\.nuget\packages\NuGet.* -Force
+        }
     }
 
-    Trace-Log 'Removing NuGet web cache'
-
-    if (Test-Path $env:localappdata\NuGet\v3-cache) {
-        rm -r $env:localappdata\NuGet\v3-cache -Force
+    if (Test-Path $env:localappdata\NuGet\v3-cache)
+    {
+        if (($CleanCache -eq "all") -or ($CleanCache -eq "webcache"))
+        {
+            Trace-Log "Removing NuGet web cache at $env:localappdata\NuGet\v3-cache"
+            rm -r $env:localappdata\NuGet\v3-cache -Force
+        }
     }
 
-    Trace-Log 'Removing NuGet machine cache'
-
-    if (Test-Path $env:localappdata\NuGet\Cache) {
-        rm -r $env:localappdata\NuGet\Cache -Force
+    if (Test-Path $env:localappdata\NuGet\Cache)
+    {
+        if ($CleanCache -eq "all")
+        {
+            Trace-Log "Removing NuGet v2 machine cache at $env:localappdata\NuGet\Cache"
+            rm -r $env:localappdata\NuGet\Cache -Force
+        }
     }
 }
 

@@ -2,7 +2,8 @@ param (
     [string]$DepBuildBranch="",
     [string]$DepCommitID="",
     [string]$DepBuildNumber="",
-    [switch]$CleanCache
+    [ValidateSet("none", "all", "webcache", "allpackages", "nugetpackages")]
+    [string]$CleanCache="none",
 )
 
 # For TeamCity - Incase any issue comes in this script fail the build. - Be default TeamCity returns exit code of 0 for all powershell even if it fails
@@ -36,7 +37,7 @@ Invoke-BuildStep 'Updating sub-modules' { Update-SubModules } `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Cleaning package cache' { Clear-PackageCache } `
-    -skip:(-not $CleanCache) `
+    -skip:($CleanCache -eq "none") `
     -ev +BuildErrors
 
 Invoke-BuildStep 'Installing NuGet.exe' { Install-NuGet } `
