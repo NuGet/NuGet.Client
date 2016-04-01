@@ -100,68 +100,76 @@ namespace NuGet.Protocol
             Action<Stream> ensureValidContents,
             CancellationToken cancellationToken)
         {
-            var result = await TryReadCacheFile(uri, cacheKey, cacheContext, log, cancellationToken);
+            var result = InitializeHttpCacheResult(cacheKey, cacheContext);
 
-            if (result.Stream != null)
-            {
-                log.LogInformation(string.Format(CultureInfo.InvariantCulture, "  " + Strings.Http_RequestLog, "CACHE", uri));
-
-                // Validate the content fetched from the cache.
-                try
+            return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
+                result.CacheFile,
+                action: async token =>
                 {
-                    ensureValidContents?.Invoke(result.Stream);
+                    result.Stream = TryReadCacheFile(uri, result.MaxAge, result.CacheFile);
 
-                    result.Stream.Seek(0, SeekOrigin.Begin);
+                    if (result.Stream != null)
+                    {
+                        log.LogInformation(string.Format(CultureInfo.InvariantCulture, "  " + Strings.Http_RequestLog, "CACHE", uri));
 
-                    return new HttpSourceResult(
-                        HttpSourceResultStatus.OpenedFromDisk,
-                        result.CacheFileName,
-                        result.Stream);
-                }
-                catch (Exception e)
-                {
-                    result.Stream.Dispose();
-                    result.Stream = null;
+                        // Validate the content fetched from the cache.
+                        try
+                        {
+                            ensureValidContents?.Invoke(result.Stream);
 
-                    string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_InvalidCacheEntry, uri)
-                                     + Environment.NewLine
-                                     + ExceptionUtilities.DisplayMessage(e);
-                    log.LogWarning(message);
-                }
-            }
+                            result.Stream.Seek(0, SeekOrigin.Begin);
 
-            Func<HttpRequestMessage> requestFactory = () =>
-            {
-                var request = new HttpRequestMessage(HttpMethod.Get, uri);
-                foreach (var a in accept)
-                {
-                    request.Headers.Accept.Add(a);
-                }
-                return request;
-            };
+                            return new HttpSourceResult(
+                                HttpSourceResultStatus.OpenedFromDisk,
+                                result.CacheFile,
+                                result.Stream);
+                        }
+                        catch (Exception e)
+                        {
+                            result.Stream.Dispose();
+                            result.Stream = null;
 
-            // Read the response headers before reading the entire stream to avoid timeouts from large packages.
-            Func<Task<HttpResponseMessage>> httpRequest = () => SendWithCredentialSupportAsync(
-                    requestFactory,
-                    log,
-                    cancellationToken);
+                            string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_InvalidCacheEntry, uri)
+                                             + Environment.NewLine
+                                             + ExceptionUtilities.DisplayMessage(e);
+                            log.LogWarning(message);
+                        }
+                    }
 
-            using (var response = await httpRequest())
-            {
-                if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
-                {
-                    return new HttpSourceResult(HttpSourceResultStatus.NotFound);
-                }
+                    Func<HttpRequestMessage> requestFactory = () =>
+                    {
+                        var request = new HttpRequestMessage(HttpMethod.Get, uri);
+                        foreach (var a in accept)
+                        {
+                            request.Headers.Accept.Add(a);
+                        }
+                        return request;
+                    };
 
-                response.EnsureSuccessStatusCode();
+                    // Read the response headers before reading the entire stream to avoid timeouts from large packages.
+                    Func<Task<HttpResponseMessage>> httpRequest = () => SendWithCredentialSupportAsync(
+                            requestFactory,
+                            log,
+                            token);
 
-                await CreateCacheFile(result, uri, response, cacheContext, ensureValidContents, cancellationToken);
+                    using (var response = await httpRequest())
+                    {
+                        if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
+                        {
+                            return new HttpSourceResult(HttpSourceResultStatus.NotFound);
+                        }
 
-                return new HttpSourceResult(
-                    HttpSourceResultStatus.OpenedFromDisk,
-                    result.CacheFileName,
-                    result.Stream);
-            }
+                        response.EnsureSuccessStatusCode();
+
+                        await CreateCacheFile(result, uri, response, cacheContext, ensureValidContents, token);
+
+                        return new HttpSourceResult(
+                            HttpSourceResultStatus.OpenedFromDisk,
+                            result.CacheFile,
+                            result.Stream);
+                    }
+                },
+                token: cancellationToken);
         }
 
         public async Task<T> ProcessStreamAsync<T>(
@@ -445,7 +453,36 @@ namespace NuGet.Protocol
             _lastAuthId = Guid.NewGuid();
         }
 
-        private Task CreateCacheFile(
+        private HttpCacheResult InitializeHttpCacheResult(string cacheKey, HttpSourceCacheContext context)
+        {
+            // When the MaxAge is TimeSpan.Zero, this means the caller is passing in a folder different than
+            // the global HTTP cache used by default. Additionally, creating and cleaning up the directory is
+            // all the responsibility of the caller.
+            var maxAge = context.MaxAge;
+            string newFile;
+            string cacheFile;
+            if (!maxAge.Equals(TimeSpan.Zero))
+            {
+                var baseFolderName = RemoveInvalidFileNameChars(ComputeHash(_baseUri.OriginalString));
+                var baseFileName = RemoveInvalidFileNameChars(cacheKey) + ".dat";
+
+                var cacheFolder = Path.Combine(HttpCacheDirectory, baseFolderName);
+
+                cacheFile = Path.Combine(cacheFolder, baseFileName);
+
+                newFile = cacheFile + "-new";
+            }
+            else
+            {
+                cacheFile = Path.Combine(context.RootTempFolder, Path.GetRandomFileName());
+
+                newFile = Path.Combine(context.RootTempFolder, Path.GetRandomFileName());
+            }
+
+            return new HttpCacheResult(maxAge, newFile, cacheFile);
+        }
+
+        private async Task CreateCacheFile(
             HttpCacheResult result,
             string uri,
             HttpResponseMessage response,
@@ -453,78 +490,58 @@ namespace NuGet.Protocol
             Action<Stream> ensureValidContents,
             CancellationToken cancellationToken)
         {
-            var newFile = result.CacheFileName + "-new";
-
-            // Zero value of TTL means we always download the latest package
-            // So we write to a temp file instead of cache
-            if (context.MaxAge.Equals(TimeSpan.Zero))
+            // The update of a cached file is divided into two steps:
+            // 1) Delete the old file.
+            // 2) Create a new file with the same name.
+            using (var fileStream = new FileStream(
+                result.NewCacheFile,
+                FileMode.Create,
+                FileAccess.ReadWrite,
+                FileShare.None,
+                BufferSize,
+                useAsync: true))
             {
-                var newCacheFile = Path.Combine(context.RootTempFolder, Path.GetRandomFileName());
+                using (var networkStream = await response.Content.ReadAsStreamAsync())
+                using (var timeoutStream = new DownloadTimeoutStream(uri, networkStream, DownloadTimeout))
+                {
+                    await timeoutStream.CopyToAsync(fileStream, 8192, cancellationToken);
+                }
 
-                result.CacheFileName = newCacheFile;
-
-                newFile = Path.Combine(context.RootTempFolder, Path.GetRandomFileName());
+                // Validate the content before putting it into the cache.
+                fileStream.Seek(0, SeekOrigin.Begin);
+                ensureValidContents?.Invoke(fileStream);
             }
 
-            // The update of a cached file is divided into two steps:
-            // 1) Delete the old file. 2) Create a new file with the same name.
-            // To prevent race condition among multiple processes, here we use a lock to make the update atomic.
-            return ConcurrencyUtilities.ExecuteWithFileLockedAsync(result.CacheFileName,
-                action: async token =>
+            if (File.Exists(result.CacheFile))
+            {
+                // Process B can perform deletion on an opened file if the file is opened by process A
+                // with FileShare.Delete flag. However, the file won't be actually deleted until A close it.
+                // This special feature can cause race condition, so we never delete an opened file.
+                if (!IsFileAlreadyOpen(result.CacheFile))
                 {
-                    using (var fileStream = new FileStream(
-                        newFile,
-                        FileMode.Create,
-                        FileAccess.ReadWrite,
-                        FileShare.ReadWrite | FileShare.Delete,
-                        BufferSize,
-                        useAsync: true))
-                    {
-                        using (var networkStream = await response.Content.ReadAsStreamAsync())
-                        using (var timeoutStream = new DownloadTimeoutStream(uri, networkStream, DownloadTimeout))
-                        {
-                            await timeoutStream.CopyToAsync(fileStream, 8192, token);
-                        }
+                    File.Delete(result.CacheFile);
+                }
+            }
 
-                        // Validate the content before putting it into the cache.
-                        fileStream.Seek(0, SeekOrigin.Begin);
-                        ensureValidContents?.Invoke(fileStream);
-                    }
+            // If the destination file doesn't exist, we can safely perform moving operation.
+            // Otherwise, moving operation will fail.
+            if (!File.Exists(result.CacheFile))
+            {
+                File.Move(
+                        result.NewCacheFile,
+                        result.CacheFile);
+            }
 
-                    if (File.Exists(result.CacheFileName))
-                    {
-                        // Process B can perform deletion on an opened file if the file is opened by process A
-                        // with FileShare.Delete flag. However, the file won't be actually deleted until A close it.
-                        // This special feature can cause race condition, so we never delete an opened file.
-                        if (!IsFileAlreadyOpen(result.CacheFileName))
-                        {
-                            File.Delete(result.CacheFileName);
-                        }
-                    }
-
-                    // If the destination file doesn't exist, we can safely perform moving operation.
-                    // Otherwise, moving operation will fail.
-                    if (!File.Exists(result.CacheFileName))
-                    {
-                        File.Move(
-                                newFile,
-                                result.CacheFileName);
-                    }
-
-                    // Even the file deletion operation above succeeds but the file is not actually deleted,
-                    // we can still safely read it because it means that some other process just updated it
-                    // and we don't need to update it with the same content again.
-                    result.Stream = new FileStream(
-                            result.CacheFileName,
-                            FileMode.Open,
-                            FileAccess.Read,
-                            FileShare.Read | FileShare.Delete,
-                            BufferSize,
-                            useAsync: true);
-
-                    return 0;
-                },
-                token: cancellationToken);
+            // Even the file deletion operation above succeeds but the file is not actually deleted,
+            // we can still safely read it because it means that some other process just updated it
+            // and we don't need to update it with the same content again.
+            result.Stream = new FileStream(
+                    result.CacheFile,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read | FileShare.Delete,
+                    BufferSize,
+                    useAsync: true);
         }
 
         public string HttpCacheDirectory
@@ -542,58 +559,36 @@ namespace NuGet.Protocol
             set { _httpCacheDirectory = value; }
         }
 
-        protected virtual async Task<HttpCacheResult> TryReadCacheFile(
-            string uri,
-            string cacheKey,
-            HttpSourceCacheContext context,
-            ILogger log,
-            CancellationToken token)
+        protected virtual Stream TryReadCacheFile(string uri, TimeSpan maxAge, string cacheFile)
         {
-            var baseFolderName = RemoveInvalidFileNameChars(ComputeHash(_baseUri.OriginalString));
-            var baseFileName = RemoveInvalidFileNameChars(cacheKey) + ".dat";
-            var cacheAgeLimit = context.MaxAge;
-            var cacheFolder = Path.Combine(HttpCacheDirectory, baseFolderName);
-            var cacheFile = Path.Combine(cacheFolder, baseFileName);
-
-            if (!Directory.Exists(cacheFolder)
-                && !cacheAgeLimit.Equals(TimeSpan.Zero))
+            if (!maxAge.Equals(TimeSpan.Zero))
             {
-                Directory.CreateDirectory(cacheFolder);
+                string cacheFolder = Path.GetDirectoryName(cacheFile);
+                if (!Directory.Exists(cacheFolder))
+                {
+                    Directory.CreateDirectory(cacheFolder);
+                }   
             }
 
-            // Acquire the lock on a file before we open it to prevent this process
-            // from opening a file deleted by the logic in HttpSource.GetAsync() in another process
-            return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(cacheFile,
-                action: cancellationToken =>
+            if (File.Exists(cacheFile))
+            {
+                var fileInfo = new FileInfo(cacheFile);
+                var age = DateTime.UtcNow.Subtract(fileInfo.LastWriteTimeUtc);
+                if (age < maxAge)
                 {
-                    if (File.Exists(cacheFile))
-                    {
-                        var fileInfo = new FileInfo(cacheFile);
-                        var age = DateTime.UtcNow.Subtract(fileInfo.LastWriteTimeUtc);
-                        if (age < cacheAgeLimit)
-                        {
-                            var stream = new FileStream(
-                                cacheFile,
-                                FileMode.Open,
-                                FileAccess.Read,
-                                FileShare.Read | FileShare.Delete,
-                                BufferSize,
-                                useAsync: true);
+                    var stream = new FileStream(
+                        cacheFile,
+                        FileMode.Open,
+                        FileAccess.Read,
+                        FileShare.Read | FileShare.Delete,
+                        BufferSize,
+                        useAsync: true);
 
-                            return Task.FromResult(new HttpCacheResult
-                            {
-                                CacheFileName = cacheFile,
-                                Stream = stream,
-                            });
-                        }
-                    }
+                    return stream;
+                }
+            }
 
-                    return Task.FromResult(new HttpCacheResult
-                    {
-                        CacheFileName = cacheFile,
-                    });
-                },
-                token: token);
+            return null;
         }
 
         private static string ComputeHash(string value)
@@ -657,6 +652,21 @@ namespace NuGet.Protocol
             }
 
             _httpClientLock.Dispose();
+        }
+
+        private class HttpCacheResult
+        {
+            public HttpCacheResult(TimeSpan maxAge, string newCacheFile, string cacheFile)
+            {
+                MaxAge = maxAge;
+                NewCacheFile = newCacheFile;
+                CacheFile = cacheFile;
+            }
+
+            public TimeSpan MaxAge { get; }
+            public string NewCacheFile { get; }
+            public string CacheFile { get; }
+            public Stream Stream { get; set; }
         }
     }
 }

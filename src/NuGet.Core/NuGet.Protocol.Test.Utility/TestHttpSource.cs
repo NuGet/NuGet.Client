@@ -26,22 +26,15 @@ namespace Test.Utility
             _responses = responses;
         }
         
-        protected override Task<HttpCacheResult> TryReadCacheFile(
-            string uri,
-            string cacheKey,
-            HttpSourceCacheContext context,
-            ILogger log,
-            CancellationToken token)
+        protected override Stream TryReadCacheFile(string uri, TimeSpan maxAge, string cacheFile)
         {
-            var result = new HttpCacheResult();
-
             string s;
             if (_responses.TryGetValue(uri, out s) && !string.IsNullOrEmpty(s))
             {
-                result.Stream = new MemoryStream(Encoding.UTF8.GetBytes(s));
+                return new MemoryStream(Encoding.UTF8.GetBytes(s));
             }
 
-            return Task.FromResult(result);
+            return null;
         }
     }
 }
