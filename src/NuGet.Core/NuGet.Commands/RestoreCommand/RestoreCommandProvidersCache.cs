@@ -20,8 +20,8 @@ namespace NuGet.Commands
         private static readonly StringComparer _comparer 
             = RuntimeEnvironmentHelper.IsWindows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
 
-        private readonly ConcurrentDictionary<PackageSource, List<IRemoteDependencyProvider>> _remoteProviders
-            = new ConcurrentDictionary<PackageSource, List<IRemoteDependencyProvider>>();
+        private readonly ConcurrentDictionary<SourceRepository, IRemoteDependencyProvider> _remoteProviders
+            = new ConcurrentDictionary<SourceRepository, IRemoteDependencyProvider>();
 
         private readonly ConcurrentDictionary<string, IRemoteDependencyProvider> _localProvider
             = new ConcurrentDictionary<string, IRemoteDependencyProvider>(_comparer);
@@ -51,7 +51,8 @@ namespace NuGet.Commands
 
             foreach (var source in sources)
             {
-                remoteProviders.Add(new SourceRepositoryDependencyProvider(source, log, cacheContext));
+                var remoteProvider = _remoteProviders.GetOrAdd(source, (sourceRepo) => new SourceRepositoryDependencyProvider(sourceRepo, log, cacheContext));
+                remoteProviders.Add(remoteProvider);
             }
 
             return new RestoreCommandProviders(globalCache, localProviders, remoteProviders, cacheContext);
