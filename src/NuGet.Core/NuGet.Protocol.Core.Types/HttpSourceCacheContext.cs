@@ -63,7 +63,7 @@ namespace NuGet.Protocol.Core.Types
 
         public static HttpSourceCacheContext CreateCacheContext(SourceCacheContext cacheContext, int retryCount)
         {
-            if (cacheContext == null || cacheContext.NoCache == true)
+            if (cacheContext == null)
             {
                 return null;
             }
