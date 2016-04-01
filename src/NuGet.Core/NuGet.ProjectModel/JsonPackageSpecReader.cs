@@ -312,7 +312,7 @@ namespace NuGet.ProjectModel
                         else
                         {
                             // Projects and references with no version property allow all versions
-                            dependencyVersionRange = VersionRange.All;
+                            dependencyVersionRange = VersionRange.AllStable;
                         }
                     }
 
