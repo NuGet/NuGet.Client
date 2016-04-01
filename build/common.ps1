@@ -147,12 +147,14 @@ Function Install-DotnetCLI {
 
         New-Item -ItemType Directory -Force -Path $CLIRoot | Out-Null
 
-        $zipPath = Join-Path $CLIRoot "dotnet.zip"
+        $installDotnet = Join-Path $CLIRoot "install.ps1"
+        $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
 
-        wget https://dotnetcli.blob.core.windows.net/dotnet/beta/Binaries/1.0.0.001840/dotnet-combined-framework-sdk-host-win-x64.1.0.0.001840.zip -OutFile $zipPath
+        New-Item -ItemType Directory -Force -Path $CLIRoot
 
-        Add-Type -AssemblyName System.IO.Compression.FileSystem
-        [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath, $CLIRoot)
+        wget https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/install.ps1 -OutFile cli/install.ps1
+
+        & cli/install.ps1 -Channel beta -i $CLIRoot
 
         if (-not (Test-Path $DotNetExe)) {
             Error-Log "Unable to find dotnet.exe. The CLI install may have failed."
