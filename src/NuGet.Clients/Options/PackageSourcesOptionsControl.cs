@@ -95,29 +95,31 @@ namespace NuGet.Options
             var selectedSource = (Configuration.PackageSource)PackageSourcesListBox.SelectedItem;
             var selectedMachineSource = (Configuration.PackageSource)MachineWidePackageSourcesListBox.SelectedItem;
 
-            if (selectedSource != null)
+            if (selectedMachineSource != null)
             {
-                // THIS BLOCK corresponds to PackageSourcesListBox
+                // This block corresponds to MachineWidePackageSourcesListBox
+                addButton.Enabled = false;
+                removeButton.Enabled = false;
+                MoveUpButton.Enabled = false;
+                MoveDownButton.Enabled = false;
+                BrowseButton.Enabled = false;
+                updateButton.Enabled = false;
 
+                NewPackageName.ReadOnly = NewPackageSource.ReadOnly = true;
+            }
+            else
+            {
+                // This block corresponds to PackageSourcesListBox
                 MoveUpButton.Enabled = selectedSource != null && PackageSourcesListBox.SelectedIndex > 0;
                 MoveDownButton.Enabled = selectedSource != null && PackageSourcesListBox.SelectedIndex < PackageSourcesListBox.Items.Count - 1;
 
-                // do not allow deleting the official NuGet source
-                bool allowEditing = selectedSource != null && !selectedSource.IsOfficial;
+                bool allowEditing = selectedSource != null;
 
                 BrowseButton.Enabled = updateButton.Enabled = removeButton.Enabled = allowEditing;
                 NewPackageName.ReadOnly = NewPackageSource.ReadOnly = !allowEditing;
 
                 // Always enable addButton for PackageSourceListBox
                 addButton.Enabled = true;
-            }
-            else if (selectedMachineSource != null)
-            {
-                // THIS BLOCK corresponds to MachineWidePackageSourcesListBox
-
-                addButton.Enabled = removeButton.Enabled = MoveUpButton.Enabled = MoveDownButton.Enabled = BrowseButton.Enabled = updateButton.Enabled = false;
-
-                NewPackageName.ReadOnly = NewPackageSource.ReadOnly = true;
             }
         }
 
