@@ -53,7 +53,7 @@ Invoke-BuildStep 'Restoring projects' { Restore-XProjects } `
 
 # Run tests
 $xtests = Find-XProjects $FuncTestRoot
-$xtests | Test-XProject
+$xtests | Test-XProject -ev +BuildErrors
 
 popd
 

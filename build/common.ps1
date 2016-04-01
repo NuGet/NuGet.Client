@@ -263,7 +263,7 @@ Function Restore-SolutionPackages{
 # Restore nuget.core.sln projects
 Function Restore-XProjects {
 
-    $opts = 'restore', "src\NuGet.Core", "test\NuGet.Core.Tests", "test\NuGet.Core.FuncTests", "--verbosity", "minimal"
+    $opts = 'restore', "src\NuGet.Core", "test\NuGet.Core.Tests", "test\NuGet.Core.FuncTests", "--verbosity", "minimal", "--infer-runtimes"
 
     Trace-Log "Restoring packages for xprojs"
     Verbose-Log "$dotnetExe $opts"
@@ -385,7 +385,7 @@ Function Test-XProject {
                 if (Get-Content $($xtestProjectJson) | Select-String "netstandardapp1.5") {
                     # Run tests for Core CLR
 
-                    Trace-Log "$DotNetExe test --configuration $Configuration"
+                    Trace-Log "$DotNetExe test --configuration $Configuration --framework netstandardapp1.5 --no-build"
                     & $DotNetExe test --configuration $Configuration
                     if (-not $?) {
                         Error-Log "Tests failed @""$_"" on CoreCLR. Code: $LASTEXITCODE"
