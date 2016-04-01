@@ -186,7 +186,7 @@ namespace NuGet.Commands
 
             if (!string.IsNullOrEmpty(_packArgs.Suffix))
             {
-                builder.Version = new NuGetVersion(builder.Version.Version, _packArgs.Suffix);
+                builder.Version = new NuGetVersion(builder.Version.Version, new List<string>() { _packArgs.Suffix }, null, builder.Version.ToString());
             }
 
             if (_packArgs.MinClientVersion != null)
