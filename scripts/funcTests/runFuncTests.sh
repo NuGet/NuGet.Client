@@ -45,7 +45,7 @@ then
 fi
 
 # restore packages
-$DOTNET restore src/NuGet.Core test/NuGet.Core.Tests test/NuGet.Core.FuncTests --verbosity minimal
+$DOTNET restore src/NuGet.Core test/NuGet.Core.Tests test/NuGet.Core.FuncTests --verbosity minimal --infer-runtimes
 if [ $? -ne 0 ]; then
 	echo "Restore failed!!"
 	exit 1
@@ -62,17 +62,8 @@ do
 	if grep -q netstandardapp1.5 "$testProject"; then
 		pushd $testDir
 
-	        echo "Running tests in $testDir on CoreCLR"
-        	echo "$DOTNET build $testDir"
-		$DOTNET build $testDir --framework netstandardapp1.5 --configuration release
-
-	 	if [ $? -ne 0 ]; then
-	            echo "$testDir FAILED build on CoreCLR"
-        	    RESULTCODE=1
-        	fi
-
         	echo "$DOTNET test $testDir"
-		$DOTNET test $testDir --configuration release
+		$DOTNET test $testDir --configuration release --framework netstandardapp1.5
 
 		if [ $? -ne 0 ]; then
 		    echo "$testDir FAILED on CoreCLR"
