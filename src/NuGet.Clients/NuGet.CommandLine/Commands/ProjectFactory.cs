@@ -732,6 +732,7 @@ namespace NuGet.CommandLine
                 {
                     projectFactory.ProcessNuspec(builder, null);
                 }
+
                 return new PackageDependency(
                     builder.Id,
                     VersionRange.Parse(builder.Version.ToString()));

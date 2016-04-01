@@ -1907,8 +1907,8 @@ namespace Proj1
   <metadata>
     <id>Package</id>
     <version>1.0.0</version>
-    <authors>feiling</authors>
-    <owners>feiling</owners>
+    <authors>author</authors>
+    <owners>author</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>description</description>
     <releaseNotes>release notes</releaseNotes>
@@ -2008,8 +2008,8 @@ namespace Proj1
                     "project.json",
                     @"{
   ""version"": ""1.0.0"",
-  ""authors"": [ ""feiling"" ],
-  ""owners"": [ ""feiling"" ],
+  ""authors"": [ ""author"" ],
+  ""owners"": [ ""author"" ],
   ""requireLicenseAcceptance"": ""false"",
   ""description"": ""description"",
   ""copyright"": ""Copyright 2013"",

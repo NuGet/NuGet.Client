@@ -202,9 +202,14 @@ namespace NuGet.Commands
             builder.ReleaseNotes = spec.ReleaseNotes;
             builder.Language = spec.Language;
 
+            foreach (var include in spec.PackInclude)
+            {
+                builder.AddFiles(basePath, include.Value, include.Key);
+            }
+
             // If there's no base path then ignore the files node
             // Also, id is null only when we want to skip the AddFiles
-            if (basePath != null && id != null)
+            if (basePath != null && id != null && !builder.Files.Any())
             {
                 builder.AddFiles(basePath, @"**\*", null);
             }
@@ -215,57 +220,43 @@ namespace NuGet.Commands
             }
             if (spec.Dependencies.Any())
             {
-                List<PackageDependency> dependencies = new List<PackageDependency>();
-                foreach (var dependency in spec.Dependencies)
-                {
-                    if (dependency.IncludeType == LibraryIncludeFlags.None)
-                    {
-                        continue;
-                    }
-
-                    var flags = dependency.IncludeType.ToString();
-                    IReadOnlyList<string> includes = flags.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    if (includes.SequenceEqual(allIncludeFlags))
-                    {
-                        dependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange));
-                    }
-                    else
-                    {
-                        dependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange, flags.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries), new List<string>()));
-                    }
-                }
-                PackageDependencyGroup group = new PackageDependencyGroup(NuGetFramework.AnyFramework, dependencies);
-
-                builder.DependencyGroups.Add(group);
+                AddDependencyGroups(spec.Dependencies, NuGetFramework.AnyFramework, builder);
             }
 
             if (spec.TargetFrameworks.Any())
             {
                 foreach (var framework in spec.TargetFrameworks)
                 {
-                    List<PackageDependency> dependencies = new List<PackageDependency>();
-                    foreach (var dependency in framework.Dependencies)
-                    {
-                        if (dependency.IncludeType == LibraryIncludeFlags.None)
-                        {
-                            continue;
-                        }
-
-                        var flags = dependency.IncludeType.ToString();
-                        IReadOnlyList<string> includes = flags.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                        if (includes.SequenceEqual(allIncludeFlags))
-                        {
-                            dependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange));
-                        }
-                        else
-                        {
-                            dependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange, flags.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries), new List<string>()));
-                        }
-                    }
-                    PackageDependencyGroup group = new PackageDependencyGroup(framework.FrameworkName, dependencies);
-
-                    builder.DependencyGroups.Add(group);
+                    AddDependencyGroups(framework.Dependencies, framework.FrameworkName, builder);
                 }
+            }
+        }
+
+        private static void AddDependencyGroups(IList<LibraryDependency> dependencies, NuGetFramework framework, PackageBuilder builder)
+        {
+            List<PackageDependency> packageDependencies = new List<PackageDependency>();
+            foreach (var dependency in dependencies)
+            {
+                if (dependency.IncludeType == LibraryIncludeFlags.None)
+                {
+                    continue;
+                }
+
+                var flags = dependency.IncludeType.ToString();
+                IReadOnlyList<string> includes = flags.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                if (dependency.IncludeType == LibraryIncludeFlags.All || includes.SequenceEqual(allIncludeFlags))
+                {
+                    packageDependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange));
+                }
+                else
+                {
+                    packageDependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange, flags.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries), new List<string>()));
+                }
+            }
+
+            if (packageDependencies.Any())
+            {
+                builder.DependencyGroups.Add(new PackageDependencyGroup(framework, packageDependencies));
             }
         }
 
@@ -613,7 +604,7 @@ namespace NuGet.Commands
                     }
                     goto default;
                 default:
-                    throw new ArgumentException("Please specify a nuspec, project.json, project file to use");
+                    throw new ArgumentException(Strings.InputFileNotSpecified);
             }
 
             return Path.GetFullPath(Path.Combine(packArgs.CurrentDirectory, result));

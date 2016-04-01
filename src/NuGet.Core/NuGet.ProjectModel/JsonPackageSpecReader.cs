@@ -83,6 +83,15 @@ namespace NuGet.ProjectModel
                 }
             }
 
+            var packInclude = rawPackageSpec["packInclude"] as JObject;
+            if (packInclude != null)
+            {
+                foreach (var include in packInclude)
+                {
+                    packageSpec.PackInclude.Add(new KeyValuePair<string, string>(include.Key, include.Value.ToString()));
+                }
+            }
+
             packageSpec.Title = rawPackageSpec.GetValue<string>("title");
             packageSpec.Description = rawPackageSpec.GetValue<string>("description");
             packageSpec.Authors = authors == null ? new string[] { } : authors.ValueAsArray<string>();
