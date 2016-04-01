@@ -95,29 +95,28 @@ namespace NuGet.Options
             var selectedSource = (Configuration.PackageSource)PackageSourcesListBox.SelectedItem;
             var selectedMachineSource = (Configuration.PackageSource)MachineWidePackageSourcesListBox.SelectedItem;
 
-            if (selectedSource != null)
-            {
-                // THIS BLOCK corresponds to PackageSourcesListBox
-
-                MoveUpButton.Enabled = selectedSource != null && PackageSourcesListBox.SelectedIndex > 0;
-                MoveDownButton.Enabled = selectedSource != null && PackageSourcesListBox.SelectedIndex < PackageSourcesListBox.Items.Count - 1;
-
-                // do not allow deleting the official NuGet source
-                bool allowEditing = selectedSource != null && !selectedSource.IsOfficial;
-
-                BrowseButton.Enabled = updateButton.Enabled = removeButton.Enabled = allowEditing;
-                NewPackageName.ReadOnly = NewPackageSource.ReadOnly = !allowEditing;
-
-                // Always enable addButton for PackageSourceListBox
-                addButton.Enabled = true;
-            }
-            else if (selectedMachineSource != null)
+            if (selectedMachineSource != null)
             {
                 // THIS BLOCK corresponds to MachineWidePackageSourcesListBox
 
                 addButton.Enabled = removeButton.Enabled = MoveUpButton.Enabled = MoveDownButton.Enabled = BrowseButton.Enabled = updateButton.Enabled = false;
 
                 NewPackageName.ReadOnly = NewPackageSource.ReadOnly = true;
+            }
+            else
+            {
+                // THIS BLOCK corresponds to PackageSourcesListBox
+
+                MoveUpButton.Enabled = selectedSource != null && PackageSourcesListBox.SelectedIndex > 0;
+                MoveDownButton.Enabled = selectedSource != null && PackageSourcesListBox.SelectedIndex < PackageSourcesListBox.Items.Count - 1;
+
+                bool allowEditing = selectedSource != null;
+
+                BrowseButton.Enabled = updateButton.Enabled = removeButton.Enabled = allowEditing;
+                NewPackageName.ReadOnly = NewPackageSource.ReadOnly = !allowEditing;
+
+                // Always enable addButton for PackageSourceListBox
+                addButton.Enabled = true;
             }
         }
 
@@ -170,6 +169,7 @@ namespace NuGet.Options
                 _machineWidepackageSources = new BindingSource(machineWidePackageSources.Select(ps => ps.Clone()).ToList(), null);
                 _machineWidepackageSources.CurrentChanged += OnSelectedMachineWidePackageSourceChanged;
                 MachineWidePackageSourcesListBox.GotFocus += MachineWidePackageSourcesListBox_GotFocus;
+                MachineWidePackageSourcesListBox.LostFocus += MachineWidePackageSourcesListBox_GotFocus;
                 MachineWidePackageSourcesListBox.DataSource = _machineWidepackageSources;
             }
             else
@@ -197,6 +197,11 @@ namespace NuGet.Options
                 PackageSourcesListBox.SelectedItem = _packageSources.Current;
             }
             OnSelectedPackageSourceChanged(sender, null);
+        }
+
+        private void MachineWidePackageSourcesListBox_LostFocus(object sender, EventArgs e)
+        {
+            UpdateUI();
         }
 
         /// <summary>
