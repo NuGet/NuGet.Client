@@ -77,9 +77,10 @@ namespace NuGet.Versioning
                 return false;
             }
 
-            return x.IncludePrerelease == y.IncludePrerelease && x.IsMinInclusive == y.IsMinInclusive &&
-                   y.IsMaxInclusive == x.IsMaxInclusive && _versionComparer.Equals(y.MinVersion, x.MinVersion)
-                   && _versionComparer.Equals(y.MaxVersion, x.MaxVersion);
+            return x.IsMinInclusive == y.IsMinInclusive
+                    && y.IsMaxInclusive == x.IsMaxInclusive
+                    && _versionComparer.Equals(y.MinVersion, x.MinVersion)
+                    && _versionComparer.Equals(y.MaxVersion, x.MaxVersion);
         }
 
         /// <summary>
@@ -95,7 +96,6 @@ namespace NuGet.Versioning
 
             var combiner = new HashCodeCombiner();
 
-            combiner.AddObject(obj.IncludePrerelease);
             combiner.AddObject(obj.IsMinInclusive);
             combiner.AddObject(obj.IsMaxInclusive);
             combiner.AddObject(_versionComparer.GetHashCode(obj.MinVersion));
