@@ -186,7 +186,11 @@ namespace NuGet.Commands
 
             if (!string.IsNullOrEmpty(_packArgs.Suffix))
             {
-                builder.Version = new NuGetVersion(builder.Version.Version, new List<string>() { _packArgs.Suffix }, null, builder.Version.ToString());
+                builder.Version = new NuGetVersion($"{builder.Version.ToNormalizedString()}-{_packArgs.Suffix}");
+
+                // This version with the suffix will be overridden by the packArgs
+                // version in GetOutputPath unless it is nulled out.
+                _packArgs.Version = null;
             }
 
             if (_packArgs.MinClientVersion != null)
@@ -374,7 +378,7 @@ namespace NuGet.Commands
 
         private string GetOutputPath(PackageBuilder builder, bool symbols = false)
         {
-            string version = String.IsNullOrEmpty(_packArgs.Version) ? builder.Version.ToString() : _packArgs.Version;
+            string version = String.IsNullOrEmpty(_packArgs.Version) ? builder.Version.ToNormalizedString() : _packArgs.Version;
 
             // Output file is {id}.{version}
             string outputFile = builder.Id + "." + version;

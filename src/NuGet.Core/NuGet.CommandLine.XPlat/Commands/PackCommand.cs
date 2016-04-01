@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Commands;
 using NuGet.Logging;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -111,12 +111,12 @@ namespace NuGet.CommandLine.XPlat
                     packArgs.Symbols = symbols.HasValue();
                     if (versionOption.HasValue())
                     {
-                        Version version;
-                        if (!System.Version.TryParse(versionOption.Value(), out version))
+                        NuGetVersion version;
+                        if (!NuGetVersion.TryParse(versionOption.Value(), out version))
                         {
                             throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Strings.PackageVersionInvalid, versionOption.Value()));
                         }
-                        packArgs.Version = versionOption.Value();
+                        packArgs.Version = version.ToNormalizedString();
                     }
 
                     PackCommandRunner packCommandRunner = new PackCommandRunner(packArgs, null);
