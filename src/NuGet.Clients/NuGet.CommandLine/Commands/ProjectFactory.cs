@@ -1153,7 +1153,7 @@ namespace NuGet.CommandLine
 
         private string GetTargetPath(dynamic item)
         {
-            string path = item.UnevaluatedInclude;
+            string path = item.EvaluatedInclude;
             if (item.HasMetadata("Link"))
             {
                 path = item.GetMetadataValue("Link");
