@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Logging;
 using NuGet.Protocol.Core.Types;
-using System.Collections.Concurrent;
 
 namespace NuGet.Protocol.Core.v3
 {
@@ -96,14 +98,26 @@ namespace NuGet.Protocol.Core.v3
 
             var cacheContext = HttpSourceCacheContext.CreateCacheContext(new SourceCacheContext(), 0);
 
-            HttpSourceResult response = await client.GetAsync(
-                url,
-                "odata_service_document",
-                cacheContext,
-                log,
-                ignoreNotFounds: true,
-                ensureValidContents: null,
-                cancellationToken: token);
+
+            HttpSourceResult response;
+            try
+            {
+                response = await client.GetAsync(
+                    url,
+                    "odata_service_document",
+                    cacheContext,
+                    log,
+                    ignoreNotFounds: true,
+                    ensureValidContents: null,
+                    cancellationToken: token);
+            }
+            catch (Exception ex) when (!(ex is FatalProtocolException) && (!(ex is OperationCanceledException)))
+            {
+                string message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToReadServiceIndex, source.PackageSource.Source);
+                log.LogError(message + Environment.NewLine + ExceptionUtilities.DisplayMessage(ex));
+
+                throw new FatalProtocolException(message, ex);
+            }
 
             string serviceDocumentBaseAddress = null;
             if (response.Status != HttpSourceResultStatus.NotFound)
