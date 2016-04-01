@@ -169,7 +169,6 @@ namespace NuGet.Options
                 _machineWidepackageSources = new BindingSource(machineWidePackageSources.Select(ps => ps.Clone()).ToList(), null);
                 _machineWidepackageSources.CurrentChanged += OnSelectedMachineWidePackageSourceChanged;
                 MachineWidePackageSourcesListBox.GotFocus += MachineWidePackageSourcesListBox_GotFocus;
-                MachineWidePackageSourcesListBox.LostFocus += MachineWidePackageSourcesListBox_GotFocus;
                 MachineWidePackageSourcesListBox.DataSource = _machineWidepackageSources;
             }
             else
@@ -197,11 +196,6 @@ namespace NuGet.Options
                 PackageSourcesListBox.SelectedItem = _packageSources.Current;
             }
             OnSelectedPackageSourceChanged(sender, null);
-        }
-
-        private void MachineWidePackageSourcesListBox_LostFocus(object sender, EventArgs e)
-        {
-            UpdateUI();
         }
 
         /// <summary>
