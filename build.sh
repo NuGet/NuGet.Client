@@ -34,8 +34,8 @@ git submodule update
 # clear caches
 if [ "$CLEAR_CACHE" == "1" ]
 then
-    echo "Clearing the nuget web cache folder"
-    rm -r -f ~/.local/share/nuget/cache/*
+    # echo "Clearing the nuget web cache folder"
+    # rm -r -f ~/.local/share/NuGet/*
 
     echo "Clearing the nuget packages folder"
     rm -r -f ~/.nuget/packages/*
