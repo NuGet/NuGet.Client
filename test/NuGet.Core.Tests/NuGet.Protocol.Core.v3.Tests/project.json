@@ -24,7 +24,7 @@
       "dependencies": {
         "moq.netcore": "4.4.0-beta8",
         "NETStandard.Library": "1.5.0-rc2-23930",
-        "dotnet-test-xunit": "1.0.0-dev-91790-12"
+        "dotnet-test-xunit": "1.0.0-dev-*"
       }
     },
     "net46": {
