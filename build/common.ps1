@@ -372,7 +372,7 @@ Function Test-XProject {
             pushd $_
 
             # Build 
-            Trace-Log "$DotNetExe build --configuration $Configuration"
+            Trace-Log "$DotNetExe build --configuration $Configuration" --runtime win7-x64
             & $DotNetExe build --configuration $Configuration
 
             if (-not $?) {
