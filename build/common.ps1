@@ -373,7 +373,7 @@ Function Test-XProject {
 
             # Build 
             Trace-Log "$DotNetExe build --configuration $Configuration" --runtime win7-x64
-            & $DotNetExe build --configuration $Configuration
+            & $DotNetExe build --configuration $Configuration --runtime win7-x64
 
             if (-not $?) {
                 Error-Log "Build failed for $directoryName. Code: $LASTEXITCODE"
