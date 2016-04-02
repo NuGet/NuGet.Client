@@ -14,7 +14,6 @@ namespace NuGet.Versioning
         private readonly bool _includeMaxVersion;
         private readonly NuGetVersion _minVersion;
         private readonly NuGetVersion _maxVersion;
-        private readonly bool _includePrerelease;
 
         /// <summary>
         /// Creates a VersionRange with the given min and max.
@@ -23,24 +22,16 @@ namespace NuGet.Versioning
         /// <param name="includeMinVersion">True if minVersion satisfies the condition.</param>
         /// <param name="maxVersion">Upper bound of the version range.</param>
         /// <param name="includeMaxVersion">True if maxVersion satisfies the condition.</param>
-        /// <param name="includePrerelease">True if prerelease versions should satisfy the condition.</param>
-        public VersionRangeBase(NuGetVersion minVersion = null, bool includeMinVersion = true, NuGetVersion maxVersion = null,
-            bool includeMaxVersion = false, bool? includePrerelease = null)
+        public VersionRangeBase(
+            NuGetVersion minVersion = null,
+            bool includeMinVersion = true,
+            NuGetVersion maxVersion = null,
+            bool includeMaxVersion = false)
         {
             _minVersion = minVersion;
             _maxVersion = maxVersion;
             _includeMinVersion = includeMinVersion;
             _includeMaxVersion = includeMaxVersion;
-
-            if (includePrerelease == null)
-            {
-                _includePrerelease = (_maxVersion != null && IsPrerelease(_maxVersion) == true) ||
-                                     (_minVersion != null && IsPrerelease(_minVersion) == true);
-            }
-            else
-            {
-                _includePrerelease = includePrerelease == true;
-            }
         }
 
         /// <summary>
@@ -97,14 +88,6 @@ namespace NuGet.Versioning
         public NuGetVersion MinVersion
         {
             get { return _minVersion; }
-        }
-
-        /// <summary>
-        /// True if pre-release versions are included in this range.
-        /// </summary>
-        public bool IncludePrerelease
-        {
-            get { return _includePrerelease; }
         }
 
         /// <summary>
@@ -166,11 +149,6 @@ namespace NuGet.Versioning
                 {
                     condition &= comparer.Compare(MaxVersion, version) > 0;
                 }
-            }
-
-            if (!IncludePrerelease)
-            {
-                condition &= IsPrerelease(version) != true;
             }
 
             return condition;
@@ -277,12 +255,6 @@ namespace NuGet.Versioning
             }
 
             var result = true;
-
-            if (possibleSubSet.IncludePrerelease
-                && !target.IncludePrerelease)
-            {
-                result = false;
-            }
 
             if (possibleSubSet.HasLowerBound)
             {

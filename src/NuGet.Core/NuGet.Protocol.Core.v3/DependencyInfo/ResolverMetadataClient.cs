@@ -50,7 +50,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
 
                     if (range.Satisfies(version))
                     {
-                        results.Add(ProcessPackageVersion(packageObj, version, range.IncludePrerelease));
+                        results.Add(ProcessPackageVersion(packageObj, version, includePrerelease: true));
                     }
                 }
             }
@@ -128,7 +128,7 @@ namespace NuGet.Protocol.Core.v3.DependencyInfo
             var result = new HashSet<RegistrationInfo>();
             var registrationInfo = new RegistrationInfo();
 
-            registrationInfo.IncludePrerelease = range.IncludePrerelease;
+            registrationInfo.IncludePrerelease = true;
             foreach (var item in dependencies)
             {
                 var packageInfo = new PackageInfo

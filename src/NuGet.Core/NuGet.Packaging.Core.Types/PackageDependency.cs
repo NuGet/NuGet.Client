@@ -66,14 +66,6 @@ namespace NuGet.Packaging.Core
         /// </summary>
         public IReadOnlyList<string> Exclude { get; }
 
-        /// <summary>
-        /// Sets the version range to also include prerelease versions
-        /// </summary>
-        public void SetIncludePrerelease()
-        {
-            _versionRange = VersionRange.SetIncludePrerelease(_versionRange, includePrerelease: true);
-        }
-
         public bool Equals(PackageDependency other)
         {
             return PackageDependencyComparer.Default.Equals(this, other);

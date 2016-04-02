@@ -266,8 +266,6 @@ namespace NuGet.PackageManagement
                     // Installed packages should exist, but if they do not an attempt will be made to find them in the sources.
                     if (packageInfo != null)
                     {
-                        packageInfo.SetIncludePrereleaseForDependencies();
-
                         // Create a request and result to match the other packages
                         var request = new GatherRequest(
                             source: null,
@@ -474,7 +472,6 @@ namespace NuGet.PackageManagement
                     var packages = await resource.ResolvePackages(packageId, targetFramework, _context.Log, token);
                     packages = packages.Select(package =>
                     {
-                        package.SetIncludePrereleaseForDependencies();
                         return package;
                     });
 
@@ -488,7 +485,6 @@ namespace NuGet.PackageManagement
 
                     if (package != null)
                     {
-                        package.SetIncludePrereleaseForDependencies();
                         results.Add(package);
                     }
                 }

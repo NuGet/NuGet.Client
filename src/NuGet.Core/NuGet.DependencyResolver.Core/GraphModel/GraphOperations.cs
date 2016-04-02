@@ -269,16 +269,6 @@ namespace NuGet.DependencyResolver
                             var versionRange = childNode.Key.VersionRange;
                             var checkVersion = acceptedNode.Item.Key.Version;
 
-                            // Allow prerelease versions if the selected library is prerelease and the range is
-                            // using the default behavior of filtering to stable versions.
-                            // Ex: [4.0.0, ) should allow 4.0.10-beta if that library was selected during the graph walk
-                            // The decision on if a prerelease version should be allowed should happen previous to this
-                            // check during the walk.
-                            if (checkVersion.IsPrerelease && !versionRange.IncludePrerelease)
-                            {
-                                versionRange = VersionRange.SetIncludePrerelease(versionRange, includePrerelease: true);
-                            }
-
                             if (!versionRange.Satisfies(checkVersion))
                             {
                                 versionConflicts.Add(new VersionConflictResult<TItem>

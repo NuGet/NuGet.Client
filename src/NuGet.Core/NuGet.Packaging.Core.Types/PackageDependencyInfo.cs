@@ -50,17 +50,6 @@ namespace NuGet.Packaging.Core
             get { return _dependencies; }
         }
 
-        /// <summary>
-        /// sets every dependency to include the prerelease versions in its range
-        /// </summary>
-        public void SetIncludePrereleaseForDependencies()
-        {
-            foreach (var dependency in _dependencies)
-            {
-                dependency.SetIncludePrerelease();
-            }
-        }
-
         public bool Equals(PackageDependencyInfo other)
         {
             return PackageDependencyInfoComparer.Default.Equals(this, other);
