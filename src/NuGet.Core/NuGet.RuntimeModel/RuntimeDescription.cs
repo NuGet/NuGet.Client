@@ -44,17 +44,9 @@ namespace NuGet.RuntimeModel
                 return false;
             }
 
-            var inheritedRuntimesEqual = InheritedRuntimes
-                .OrderBy(s => s, StringComparer.Ordinal)
-                .SequenceEqual(other.InheritedRuntimes.OrderBy(s => s, StringComparer.Ordinal));
-            var dependencySetsEqual = RuntimeDependencySets
-                .OrderBy(p => p.Key, StringComparer.Ordinal)
-                .SequenceEqual(other.RuntimeDependencySets.OrderBy(p => p.Key, StringComparer.Ordinal));
-
-            return
-                string.Equals(other.RuntimeIdentifier, RuntimeIdentifier, StringComparison.Ordinal) &&
-                inheritedRuntimesEqual &&
-                dependencySetsEqual;
+            return string.Equals(other.RuntimeIdentifier, RuntimeIdentifier, StringComparison.Ordinal)
+                && InheritedRuntimes.OrderedEquals(other.InheritedRuntimes, s => s, StringComparer.Ordinal, StringComparer.Ordinal)
+                && RuntimeDependencySets.OrderedEquals(other.RuntimeDependencySets, p => p.Key, StringComparer.Ordinal);
         }
 
         public RuntimeDescription Clone()

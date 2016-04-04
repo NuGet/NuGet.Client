@@ -40,7 +40,7 @@ namespace NuGet.RuntimeModel
         {
             return other != null &&
                 string.Equals(Name, other.Name, StringComparison.Ordinal) &&
-                RestoreContexts.OrderBy(r => r).SequenceEqual(other.RestoreContexts.OrderBy(r => r));
+                RestoreContexts.OrderedEquals(other.RestoreContexts, r => r);
         }
     }
 }

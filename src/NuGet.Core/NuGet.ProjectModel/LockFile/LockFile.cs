@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Frameworks;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
@@ -166,16 +167,11 @@ namespace NuGet.ProjectModel
 
             return IsLocked == other.IsLocked
                 && Version == other.Version
-                && ProjectFileDependencyGroups.OrderBy(group => group.FrameworkName, StringComparer.OrdinalIgnoreCase)
-                    .SequenceEqual(other.ProjectFileDependencyGroups.OrderBy(
-                        group => group.FrameworkName, StringComparer.OrdinalIgnoreCase))
-                && Libraries.OrderBy(library => library.Name, StringComparer.OrdinalIgnoreCase)
-                    .SequenceEqual(other.Libraries.OrderBy(library => library.Name, StringComparer.OrdinalIgnoreCase))
-                && Targets.OrderBy(target => target.Name).SequenceEqual(other.Targets.OrderBy(target => target.Name))
-                && ProjectFileToolGroups.OrderBy(group => group.FrameworkName, StringComparer.OrdinalIgnoreCase)
-                    .SequenceEqual(other.ProjectFileToolGroups.OrderBy(
-                        group => group.FrameworkName, StringComparer.OrdinalIgnoreCase))
-                && Tools.OrderBy(target => target.Name).SequenceEqual(other.Tools.OrderBy(target => target.Name));
+                && ProjectFileDependencyGroups.OrderedEquals(other.ProjectFileDependencyGroups, group => group.FrameworkName, StringComparer.OrdinalIgnoreCase)
+                && Libraries.OrderedEquals(other.Libraries, library => library.Name, StringComparer.OrdinalIgnoreCase)
+                && Targets.OrderedEquals(other.Targets, target => target.Name, StringComparer.Ordinal)
+                && ProjectFileToolGroups.OrderedEquals(other.ProjectFileToolGroups, group => group.FrameworkName, StringComparer.OrdinalIgnoreCase)
+                && Tools.OrderedEquals(other.Tools, target => target.Name, StringComparer.Ordinal);
         }
 
         public override bool Equals(object obj)

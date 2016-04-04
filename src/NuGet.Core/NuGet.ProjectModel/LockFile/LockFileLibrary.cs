@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
@@ -52,8 +53,7 @@ namespace NuGet.ProjectModel
                 && string.Equals(Sha512, other.Sha512, StringComparison.Ordinal)
                 && Version == other.Version)
             {
-                return Files.OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
-                    .SequenceEqual(other.Files.OrderBy(s => s, StringComparer.OrdinalIgnoreCase));
+                return Files.OrderedEquals(other.Files, s => s, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase);
             }
 
             return false;

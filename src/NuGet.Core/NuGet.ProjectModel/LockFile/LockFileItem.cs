@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
+using NuGet.Shared;
 
 namespace NuGet.ProjectModel
 {
@@ -35,8 +35,7 @@ namespace NuGet.ProjectModel
 
             if (string.Equals(Path, other.Path, StringComparison.OrdinalIgnoreCase))
             {
-                return Properties.OrderBy(pair => pair.Key, StringComparer.Ordinal)
-                    .SequenceEqual(other.Properties.OrderBy(pair => pair.Key, StringComparer.Ordinal));
+                return Properties.OrderedEquals(other.Properties, pair => pair.Key, StringComparer.Ordinal);
             }
 
             return false;

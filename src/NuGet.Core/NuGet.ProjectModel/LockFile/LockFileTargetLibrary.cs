@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
@@ -52,22 +52,14 @@ namespace NuGet.ProjectModel
                 && VersionComparer.Default.Equals(Version, other.Version)
                 && string.Equals(Type, other.Type, StringComparison.Ordinal)
                 && string.Equals(Framework, other.Framework, StringComparison.Ordinal)
-                && Dependencies.OrderBy(dependency => dependency.Id, StringComparer.OrdinalIgnoreCase)
-                    .SequenceEqual(other.Dependencies.OrderBy(dependency => dependency.Id, StringComparer.OrdinalIgnoreCase))
-                && FrameworkAssemblies.OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
-                    .SequenceEqual(other.FrameworkAssemblies.OrderBy(s => s, StringComparer.OrdinalIgnoreCase))
-                && RuntimeAssemblies.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase)
-                    .SequenceEqual(other.RuntimeAssemblies.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase))
-                && ResourceAssemblies.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase)
-                    .SequenceEqual(other.ResourceAssemblies.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase))
-                && CompileTimeAssemblies.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase)
-                    .SequenceEqual(other.CompileTimeAssemblies.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase))
-                && NativeLibraries.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase)
-                    .SequenceEqual(other.NativeLibraries.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase))
-                && ContentFiles.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase)
-                    .SequenceEqual(other.ContentFiles.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase))
-                && RuntimeTargets.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase)
-                    .SequenceEqual(other.RuntimeTargets.OrderBy(item => item.Path, StringComparer.OrdinalIgnoreCase));
+                && Dependencies.OrderedEquals(other.Dependencies, dependency => dependency.Id, StringComparer.OrdinalIgnoreCase)
+                && FrameworkAssemblies.OrderedEquals(other.FrameworkAssemblies, s => s, StringComparer.OrdinalIgnoreCase, StringComparer.OrdinalIgnoreCase)
+                && RuntimeAssemblies.OrderedEquals(other.RuntimeAssemblies, item => item.Path, StringComparer.OrdinalIgnoreCase)
+                && ResourceAssemblies.OrderedEquals(other.ResourceAssemblies, item => item.Path, StringComparer.OrdinalIgnoreCase)
+                && CompileTimeAssemblies.OrderedEquals(other.CompileTimeAssemblies, item => item.Path, StringComparer.OrdinalIgnoreCase)
+                && NativeLibraries.OrderedEquals(other.NativeLibraries, item => item.Path, StringComparer.OrdinalIgnoreCase)
+                && ContentFiles.OrderedEquals(other.ContentFiles, item => item.Path, StringComparer.OrdinalIgnoreCase)
+                && RuntimeTargets.OrderedEquals(other.RuntimeTargets, item => item.Path, StringComparer.OrdinalIgnoreCase);
         }
 
         public override bool Equals(object obj)

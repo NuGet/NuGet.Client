@@ -33,12 +33,9 @@ namespace NuGet.RuntimeModel
                 return false;
             }
 
-            var dependenciesEqual = Dependencies
-                .OrderBy(p => p.Key, StringComparer.Ordinal)
-                .SequenceEqual(other.Dependencies.OrderBy(p => p.Key, StringComparer.Ordinal));
 
-            return string.Equals(other.Id, Id, StringComparison.Ordinal) &&
-                   dependenciesEqual;
+            return string.Equals(other.Id, Id, StringComparison.Ordinal)
+                && Dependencies.OrderedEquals(other.Dependencies, p => p.Key, StringComparer.Ordinal);
         }
 
         public override bool Equals(object obj)
