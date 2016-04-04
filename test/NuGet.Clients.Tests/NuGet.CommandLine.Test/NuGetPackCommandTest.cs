@@ -32,7 +32,7 @@ namespace NuGet.CommandLine.Test
 @"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
   <metadata>
     <id>packageA</id>
-    <version>1.0.0</version>
+    <version>1.0.0.2</version>
     <title>packageA</title>
     <authors>test</authors>
     <owners>test</owners>
@@ -59,7 +59,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(0, r.Item1);
 
                 // Assert
-                var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
+                var path = Path.Combine(workingDirectory, "packageA.1.0.0.2.nupkg");
                 var package = new OptimizedZipPackage(path);
                 using (var zip = new ZipArchive(File.OpenRead(path)))
                 {
@@ -378,7 +378,7 @@ namespace Proj2
                 Assert.Equal(0, r.Item1);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.0.nupkg"));
+                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
                 Assert.Equal(
@@ -480,7 +480,7 @@ namespace Proj2
                 Assert.Equal(0, r.Item1);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.0.symbols.nupkg"));
+                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.symbols.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
                 Assert.Equal(
@@ -583,7 +583,7 @@ namespace Proj2
                 Assert.Equal(0, r.Item1);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.0.nupkg"));
+                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
 
@@ -693,7 +693,7 @@ namespace Proj2
                 Assert.Equal(0, r.Item1);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.0.nupkg"));
+                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
 
@@ -807,7 +807,7 @@ namespace Proj2
                 Assert.Equal(0, r.Item1);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.0.nupkg"));
+                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
 
                 // proj2 and proj6 are added as dependencies.
                 var dependencies = package.DependencySets.First().Dependencies.OrderBy(d => d.Id);
@@ -867,7 +867,7 @@ namespace Proj2
                 Assert.Equal(0, r.Item1);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.0.nupkg"));
+                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
 
@@ -919,7 +919,7 @@ namespace Proj2
                 Assert.True(0 == r.Item1, r.Item2 + Environment.NewLine + r.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(outputDirectory, "proj1.0.0.0.0.nupkg"));
+                var package = new OptimizedZipPackage(Path.Combine(outputDirectory, "proj1.0.0.0.nupkg"));
 
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
 
@@ -968,7 +968,7 @@ namespace Proj2
                 Assert.Equal(0, r.Item1);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.0.nupkg"));
+                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
 
@@ -1011,7 +1011,7 @@ namespace Proj2
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.0.nupkg"));
+                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
 
@@ -1255,7 +1255,7 @@ namespace Proj2
                 // Verify that proj1 was not built using the default config "Debug".
                 Assert.False(Directory.Exists(Path.Combine(proj1Directory, "debug_out")));
 
-                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.0.nupkg"));
+                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
                 Assert.Equal(
@@ -1312,7 +1312,7 @@ namespace Proj2
                 Assert.Equal(0, r.Item1);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(projDirectory, "ExcludeBug.0.1.0.0.nupkg"));
+                var package = new OptimizedZipPackage(Path.Combine(projDirectory, "ExcludeBug.0.1.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
 
@@ -1401,7 +1401,7 @@ namespace Proj1
                 Assert.Equal(0, r.Item1);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.0.nupkg"));
+                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg"));
                 Assert.Equal(1, package.DependencySets.Count());
                 var dependencySet = package.DependencySets.First();
 
@@ -1627,7 +1627,7 @@ namespace Proj2
                 // Verify that proj1 was not built using the default config "Debug".
                 Assert.False(Directory.Exists(Path.Combine(proj1Directory, "debug_out")));
 
-                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.0.nupkg"));
+                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
                 Assert.Equal(
@@ -1751,7 +1751,7 @@ namespace Proj2
                 // Verify that proj1 was not built using the default config "Debug".
                 Assert.False(Directory.Exists(Path.Combine(proj1Directory, "debug_out")));
 
-                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.0.nupkg"));
+                var package = new OptimizedZipPackage(Path.Combine(proj2Directory, "proj2.0.0.0.nupkg"));
                 var files = package.GetFiles().Select(f => f.Path).ToArray();
                 Array.Sort(files);
                 Assert.Equal(
@@ -1783,7 +1783,7 @@ namespace Proj2
                     waitForExit: true);
 
                 // Assert
-                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0.0-alpha.nupkg"));
+                var package = new OptimizedZipPackage(Path.Combine(proj1Directory, "proj1.0.0.0-alpha.nupkg"));
                 Assert.Equal(package.Version.ToString(), "0.0.0-alpha");
             }
         }
