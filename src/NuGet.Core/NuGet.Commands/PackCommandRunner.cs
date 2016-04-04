@@ -426,6 +426,7 @@ namespace NuGet.Commands
                     if (candidates.Count == 1)
                     {
                         result = candidates[0];
+                        break;
                     }
                     goto default;
                 default:
