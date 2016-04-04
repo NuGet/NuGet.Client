@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using NuGet.Commands;
 
 namespace NuGet.CommandLine
 {
+    using System.Globalization;
     using NuGet.Packaging;
+    using NuGet.Versioning;
 
     [Command(typeof(NuGetCommand), "pack", "PackageCommandDescription", MaxArgs = 1, UsageSummaryResourceName = "PackageCommandUsageSummary",
             UsageDescriptionResourceName = "PackageCommandUsageDescription", UsageExampleResourceName = "PackCommandUsageExamples")]
@@ -167,7 +168,16 @@ namespace NuGet.CommandLine
             packArgs.Suffix = Suffix;
             packArgs.Symbols = Symbols;
             packArgs.Tool = Tool;
-            packArgs.Version = Version;
+
+            if (!string.IsNullOrEmpty(Version))
+            {
+                NuGetVersion version;
+                if (!NuGetVersion.TryParse(Version, out version))
+                {
+                    throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, NuGetResources.InstallCommandPackageReferenceInvalidVersion, Version));
+                }
+                packArgs.Version = version.ToNormalizedString();
+            }
 
             PackCommandRunner packCommandRunner = new PackCommandRunner(packArgs, ProjectFactory.ProjectCreator);
             packCommandRunner.BuildPackage();

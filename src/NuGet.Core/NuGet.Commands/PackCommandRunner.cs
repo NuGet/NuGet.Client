@@ -186,7 +186,8 @@ namespace NuGet.Commands
 
             if (!string.IsNullOrEmpty(_packArgs.Suffix))
             {
-                builder.Version = new NuGetVersion(builder.Version.Version, _packArgs.Suffix);
+                string version = VersionFormatter.Instance.Format("V", builder.Version, VersionFormatter.Instance);
+                builder.Version = new NuGetVersion($"{version}-{_packArgs.Suffix}");
             }
 
             if (_packArgs.MinClientVersion != null)
@@ -194,7 +195,7 @@ namespace NuGet.Commands
                 builder.MinClientVersion = _packArgs.MinClientVersion;
             }
 
-            outputPath = outputPath ?? GetOutputPath(builder);
+            outputPath = outputPath ?? GetOutputPath(builder, false, builder.Version);
 
             ExcludeFiles(builder.Files);
 
@@ -372,9 +373,18 @@ namespace NuGet.Commands
             PathResolver.FilterPackageFiles(files, file => file.Path, _symbolPackageExcludes);
         }
 
-        private string GetOutputPath(PackageBuilder builder, bool symbols = false)
+        private string GetOutputPath(PackageBuilder builder, bool symbols = false, NuGetVersion nugetVersion = null)
         {
-            string version = String.IsNullOrEmpty(_packArgs.Version) ? builder.Version.ToString() : _packArgs.Version;
+            string version;
+
+            if (nugetVersion != null)
+            {
+                version = nugetVersion.ToNormalizedString();
+            }
+            else
+            {
+                version = String.IsNullOrEmpty(_packArgs.Version) ? builder.Version.ToNormalizedString() : _packArgs.Version;
+            }
 
             // Output file is {id}.{version}
             string outputFile = builder.Id + "." + version;
