@@ -56,7 +56,7 @@ namespace NuGet.Commands
             @"tools\**\*.ps1".Replace('\\', Path.DirectorySeparatorChar)
         };
 
-        private static readonly IReadOnlyList<string> allIncludeFlags = LibraryIncludeFlags.All.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        private static readonly IReadOnlyList<string> defaultIncludeFlags = LibraryIncludeFlagUtils.NoContent.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
         private readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -237,21 +237,30 @@ namespace NuGet.Commands
             List<PackageDependency> packageDependencies = new List<PackageDependency>();
             foreach (var dependency in dependencies)
             {
-                if (dependency.IncludeType == LibraryIncludeFlags.None)
+                LibraryIncludeFlags effectiveInclude = dependency.IncludeType & ~dependency.SuppressParent;
+
+                if (dependency.IncludeType == LibraryIncludeFlags.None || dependency.SuppressParent == LibraryIncludeFlags.All)
                 {
                     continue;
                 }
 
-                var flags = dependency.IncludeType.ToString();
-                IReadOnlyList<string> includes = flags.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                if (dependency.IncludeType == LibraryIncludeFlags.All || includes.SequenceEqual(allIncludeFlags))
+                List<string> includes = new List<string>();
+                if (effectiveInclude == LibraryIncludeFlags.All)
                 {
-                    packageDependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange));
+                    includes.Add(LibraryIncludeFlags.All.ToString());
                 }
-                else
+                else if ((effectiveInclude & LibraryIncludeFlags.ContentFiles) == LibraryIncludeFlags.ContentFiles)
                 {
-                    packageDependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange, flags.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries), new List<string>()));
+                    includes.Add(LibraryIncludeFlags.ContentFiles.ToString());
                 }
+
+                List<string> excludes = new List<string>();
+                if ((LibraryIncludeFlagUtils.NoContent & ~effectiveInclude) != LibraryIncludeFlags.None)
+                {
+                    excludes.AddRange((LibraryIncludeFlagUtils.NoContent & ~effectiveInclude).ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries));
+                }
+
+                packageDependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange, includes, excludes));
             }
 
             if (packageDependencies.Any())

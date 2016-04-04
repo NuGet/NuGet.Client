@@ -116,7 +116,8 @@ namespace NuGet.CommandLine.Test
     },
     ""packageC"": {
       ""version"": ""1.0.0"",
-      ""include"": ""runtime, compile, build""
+      ""include"": ""runtime, compile, build"",
+      ""suppressParent"": ""compile, build""
     },
     ""packageD"": {
       ""version"": ""1.0.0"",
@@ -124,7 +125,8 @@ namespace NuGet.CommandLine.Test
     },
     ""packageE"": {
       ""version"": ""1.0.0"",
-      ""exclude"": ""native""
+      ""include"": ""all"",
+      ""suppressParent"": ""none""
     },
   },
 }");
@@ -155,10 +157,10 @@ namespace NuGet.CommandLine.Test
                     Assert.Equal(
                         @"<dependencies xmlns=""http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"">
   <group>
-    <dependency id=""packageB"" version=""1.0.0"" include=""Build"" />
-    <dependency id=""packageC"" version=""1.0.0"" include=""Runtime,Compile,Build"" />
-    <dependency id=""packageD"" version=""1.0.0"" include=""Native,ContentFiles,Analyzers"" />
-    <dependency id=""packageE"" version=""1.0.0"" include=""Runtime,Compile,Build,ContentFiles,Analyzers"" />
+    <dependency id=""packageB"" version=""1.0.0"" exclude=""Runtime,Compile,Build,Native,Analyzers"" />
+    <dependency id=""packageC"" version=""1.0.0"" exclude=""Compile,Build,Native,Analyzers"" />
+    <dependency id=""packageD"" version=""1.0.0"" exclude=""Runtime,Compile,Build,Analyzers"" />
+    <dependency id=""packageE"" version=""1.0.0"" include=""All"" />
   </group>
 </dependencies>".Replace("\r\n", "\n"), actual);
                 }
