@@ -197,7 +197,7 @@ namespace NuGet.PackageManagement.UI
             else
             {
                 var indexer = new RelevanceSearchResultsIndexer();
-                var aggregator = new SearchResultsAggregator(indexer);
+                var aggregator = new SearchResultsAggregator(indexer, new PackageSearchMetadataSplicer());
                 var aggregatedItems = await aggregator.AggregateAsync(
                     searchText, nonEmptyResults.Select(r => r.Items).ToArray());
                 result = SearchResult.FromItems(aggregatedItems.ToArray());

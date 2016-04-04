@@ -15,8 +15,9 @@ namespace NuGet.Indexing
     public class SearchResultsAggregator : ISearchResultsAggregator
     {
         private readonly ISearchResultsIndexer _indexer;
+        private readonly IPackageSearchMetadataSplicer _splicer;
 
-        public SearchResultsAggregator(ISearchResultsIndexer indexer)
+        public SearchResultsAggregator(ISearchResultsIndexer indexer, IPackageSearchMetadataSplicer splicer)
         {
             if (indexer == null)
             {
@@ -24,14 +25,21 @@ namespace NuGet.Indexing
             }
 
             _indexer = indexer;
+
+            if (splicer == null)
+            {
+                throw new ArgumentNullException(nameof(splicer));
+            }
+
+            _splicer = splicer;
         }
 
-        public async Task<IEnumerable<IPackageSearchMetadata>> AggregateAsync(string queryString, params IEnumerable<IPackageSearchMetadata>[] inputResults)
+        public Task<IEnumerable<IPackageSearchMetadata>> AggregateAsync(string queryString, params IEnumerable<IPackageSearchMetadata>[] inputResults)
         {
-            var mergedIndex = new MergedIndex();
+            var mergedIndex = new MergedIndex(_splicer);
             foreach (var inputResult in inputResults)
             {
-                await mergedIndex.MergeAsync(inputResult);
+                mergedIndex.MergeResults(inputResult);
             }
 
             var ranking = _indexer.Rank(queryString, mergedIndex.Entries);
@@ -80,39 +88,42 @@ namespace NuGet.Indexing
                 }
             }
 
-            return outputQueue;
+            return Task.FromResult<IEnumerable<IPackageSearchMetadata>>(outputQueue);
         }
 
         private class MergedIndex
         {
             private readonly IDictionary<string, IPackageSearchMetadata> _index = new Dictionary<string, IPackageSearchMetadata>(StringComparer.OrdinalIgnoreCase);
+            private readonly IPackageSearchMetadataSplicer _splicer;
 
             public IEnumerable<IPackageSearchMetadata> Entries => _index.Values;
 
             public IPackageSearchMetadata this[string key] => _index[key];
 
-            public async Task MergeAsync(IEnumerable<IPackageSearchMetadata> result)
+            public MergedIndex(IPackageSearchMetadataSplicer splicer)
+            {
+                if (splicer == null)
+                {
+                    throw new ArgumentNullException(nameof(splicer));
+                }
+
+                _splicer = splicer;
+            }
+
+            public void MergeResults(IEnumerable<IPackageSearchMetadata> result)
             {
                 foreach (var entry in result)
                 {
                     IPackageSearchMetadata value;
                     if (_index.TryGetValue(entry.Identity.Id, out value))
                     {
-                        _index[entry.Identity.Id] = await MergeEntriesAsync(value, entry);
+                        _index[entry.Identity.Id] = _splicer.MergeEntries(value, entry);
                     }
                     else
                     {
                         _index.Add(entry.Identity.Id, entry);
                     }
                 }
-            }
-
-            private static async Task<IPackageSearchMetadata> MergeEntriesAsync(IPackageSearchMetadata lhs, IPackageSearchMetadata rhs)
-            {
-                var newerEntry = (lhs.Identity.Version >= rhs.Identity.Version) ? lhs : rhs;
-                var versions = await Task.WhenAll(lhs.GetVersionsAsync(), rhs.GetVersionsAsync());
-                var mergedVersions = versions.SelectMany(v => v).Distinct().ToArray();
-                return newerEntry.WithVersions(mergedVersions);
             }
         }
     }

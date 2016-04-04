@@ -24,7 +24,7 @@ namespace NuGet.Indexing.Test
         public async Task AggregateAsync_MergesVersions()
         {
             var indexer = new RelevanceSearchResultsIndexer();
-            var aggregator = new SearchResultsAggregator(indexer);
+            var aggregator = new SearchResultsAggregator(indexer, new PackageSearchMetadataSplicer());
 
             var queryString = "nuget";
 
@@ -50,7 +50,7 @@ namespace NuGet.Indexing.Test
         public async Task AggregateAsync_MaintainsOrder()
         {
             var indexer = new DownloadCountResultsIndexer();
-            var aggregator = new SearchResultsAggregator(indexer);
+            var aggregator = new SearchResultsAggregator(indexer, new PackageSearchMetadataSplicer());
 
             var queryString = "nuget";
 
@@ -69,7 +69,7 @@ namespace NuGet.Indexing.Test
         public async Task AggregateAsync_IdenticalFeeds()
         {
             var indexer = new DownloadCountResultsIndexer();
-            var aggregator = new SearchResultsAggregator(indexer);
+            var aggregator = new SearchResultsAggregator(indexer, new PackageSearchMetadataSplicer());
 
             var queryString = "nuget";
 
