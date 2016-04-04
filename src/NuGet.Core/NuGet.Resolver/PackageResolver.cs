@@ -131,7 +131,12 @@ namespace NuGet.Resolver
 
                 if (nonAbsentCandidates.Any())
                 {
-                    var circularReferences = ResolverUtility.FindCircularDependency(solution);
+                    // topologically sort non absent packages
+                    var sortedSolution = ResolverUtility.TopologicalSort(nonAbsentCandidates);
+
+                    // Find circular dependency for topologically sorted non absent packages since it will help maintain cache of 
+                    // already processed packages
+                    var circularReferences = ResolverUtility.FindFirstCircularDependency(sortedSolution);
 
                     if (circularReferences.Any())
                     {
@@ -141,9 +146,7 @@ namespace NuGet.Resolver
                             String.Join(" => ", circularReferences.Select(package => $"{package.Id} {package.Version.ToNormalizedString()}"))));
                     }
 
-                    // solution found!
-                    var sortedSolution = ResolverUtility.TopologicalSort(nonAbsentCandidates);
-
+                    // solution found!                    
                     return sortedSolution.ToArray();
                 }
             }
