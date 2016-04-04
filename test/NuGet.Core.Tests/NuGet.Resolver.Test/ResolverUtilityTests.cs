@@ -141,7 +141,7 @@ namespace NuGet.Resolver.Test
 
             // Assert
             var message = String.Join(" => ", result);
-            Assert.Equal("c 1.0.0 => d 2.0.0 => z 1.0.0 => y 1.0.0 => c 1.0.0", message);
+            Assert.Equal("z 1.0.0 => y 1.0.0 => c 1.0.0 => d 2.0.0 => z 1.0.0", message);
         }
 
         [Fact]
