@@ -111,7 +111,7 @@ namespace NuGet.Resolver.Test
             solution.Add(CreateAbsentPackage("y"));
 
             // Act
-            var result = ResolverUtility.FindCircularDependency(solution);
+            var result = ResolverUtility.FindFirstCircularDependency(solution);
 
             // Assert
             Assert.False(result.Any());
@@ -137,11 +137,11 @@ namespace NuGet.Resolver.Test
              new NuGet.Packaging.Core.PackageDependency("a", VersionRange.Parse("[1.0.0]"))));
 
             // Act
-            var result = ResolverUtility.FindCircularDependency(solution);
+            var result = ResolverUtility.FindFirstCircularDependency(solution);
 
             // Assert
             var message = String.Join(" => ", result);
-            Assert.Equal("c 1.0.0 => d 2.0.0 => z 1.0.0 => y 1.0.0 => c 1.0.0", message);
+            Assert.Equal("z 1.0.0 => y 1.0.0 => c 1.0.0 => d 2.0.0 => z 1.0.0", message);
         }
 
         [Fact]
@@ -159,7 +159,7 @@ namespace NuGet.Resolver.Test
                 new NuGet.Packaging.Core.PackageDependency("a", VersionRange.Parse("[1.0.0]"))));
 
             // Act
-            var result = ResolverUtility.FindCircularDependency(solution);
+            var result = ResolverUtility.FindFirstCircularDependency(solution);
 
             // Assert
             Assert.Equal("a 1.0.0 => b 1.0.0 => c 1.0.0 => d 1.0.0 => a 1.0.0", String.Join(" => ", result));
@@ -176,12 +176,72 @@ namespace NuGet.Resolver.Test
                 new NuGet.Packaging.Core.PackageDependency("a", VersionRange.Parse("[1.0.0]"))));
 
             // Act
-            var result = ResolverUtility.FindCircularDependency(solution);
+            var result = ResolverUtility.FindFirstCircularDependency(solution);
 
             // Assert
             Assert.Equal("a 1.0.0 => b 1.0.0 => a 1.0.0", String.Join(" => ", result));
         }
 
+        [Fact]
+        public void ResolverUtility_MultipleCircularDependencyCheck()
+        {
+            // Arrange
+            var solution = new List<ResolverPackage>();
+            solution.Add(CreatePackage("x", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("a", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("a", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("b", VersionRange.Parse("[1.0.0]")),
+                new NuGet.Packaging.Core.PackageDependency("e", VersionRange.Parse("[1.0.0]")),
+                new NuGet.Packaging.Core.PackageDependency("f", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("b", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("c", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("c", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("d", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("d", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("a", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("e", "1.0.0",null));
+
+            solution.Add(CreatePackage("f", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("g", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("g", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("h", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("h", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("i", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("i", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("f", VersionRange.Parse("[1.0.0]"))));
+
+            // Act
+            var result = ResolverUtility.FindFirstCircularDependency(solution);
+
+            // Assert
+            Assert.Equal("x 1.0.0 => a 1.0.0 => b 1.0.0 => c 1.0.0 => d 1.0.0 => a 1.0.0", String.Join(" => ", result));
+        }
+
+        [Fact]
+        public void ResolverUtility_NoCircularDependencyCheck()
+        {
+            // Arrange
+            var solution = new List<ResolverPackage>();
+            solution.Add(CreatePackage("a", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("b", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("b", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("c", VersionRange.Parse("[1.0.0]")),
+                new NuGet.Packaging.Core.PackageDependency("g", VersionRange.Parse("[1.0.0]")),
+                new NuGet.Packaging.Core.PackageDependency("j", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("c", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("d", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("d", "1.0.0",null));
+            solution.Add(CreatePackage("g", "1.0.0",
+                new NuGet.Packaging.Core.PackageDependency("h", VersionRange.Parse("[1.0.0]"))));
+            solution.Add(CreatePackage("h", "1.0.0", null));
+            solution.Add(CreatePackage("j", "1.0.0", null));
+
+            // Act
+            var result = ResolverUtility.FindFirstCircularDependency(solution);
+
+            // Assert
+            Assert.False(result.Any());
+        }        
 
         [Fact]
         public void ResolverUtility_GetDiagnosticMessageVerifyDiamondDependencySortsById()
