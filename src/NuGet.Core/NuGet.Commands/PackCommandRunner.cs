@@ -6,9 +6,13 @@ using System.Linq;
 using NuGet.Commands.Rules;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.LibraryModel;
 using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Versioning;
+using NuGet.ProjectModel;
+using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 
 namespace NuGet.Commands
 {
@@ -28,7 +32,9 @@ namespace NuGet.Commands
             ".fsproj",
             ".nproj",
             ".btproj",
-            ".dxjsproj"
+            ".dxjsproj",
+            ".xproj",
+            ".json"
         };
 
         private static readonly string[] _defaultExcludes = new[] {
@@ -50,6 +56,8 @@ namespace NuGet.Commands
             @"tools\**\*.ps1".Replace('\\', Path.DirectorySeparatorChar)
         };
 
+        private static readonly IReadOnlyList<string> defaultIncludeFlags = LibraryIncludeFlagUtils.NoContent.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
         private readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         public IEnumerable<IPackageRule> Rules { get; set; }
@@ -70,13 +78,194 @@ namespace NuGet.Commands
         {
             string extension = Path.GetExtension(path);
 
-            if (extension.Equals(NuGetConstants.ManifestExtension, StringComparison.OrdinalIgnoreCase))
+            if (ProjectJsonPathUtilities.IsProjectConfig(path))
+            {
+                return BuildFromProjectJson(path);
+            }
+            else if (extension.Equals(NuGetConstants.ManifestExtension, StringComparison.OrdinalIgnoreCase))
             {
                 return BuildFromNuspec(path);
             }
             else
             {
                 return BuildFromProjectFile(path);
+            }
+        }
+
+        private PackageArchiveReader BuildFromProjectJson(string path)
+        {
+            PackageBuilder packageBuilder = CreatePackageBuilderFromProjectJson(path, _packArgs.GetPropertyValue);
+
+            if (_packArgs.Symbols)
+            {
+                // remove source related files when building the lib package
+                ExcludeFilesForLibPackage(packageBuilder.Files);
+
+                if (!packageBuilder.Files.Any())
+                {
+                    throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, Strings.Error_PackageCommandNoFilesForLibPackage, path, Strings.NuGetDocs));
+                }
+            }
+
+            PackageArchiveReader package = BuildPackage(packageBuilder);
+
+            if (_packArgs.Symbols)
+            {
+                BuildSymbolsPackage(path);
+            }
+
+            if (package != null && !_packArgs.NoPackageAnalysis)
+            {
+                AnalyzePackage(package, packageBuilder);
+            }
+
+            return package;
+        }
+
+        private PackageBuilder CreatePackageBuilderFromProjectJson(string path, Func<string, string> propertyProvider)
+        {
+            // Set the version property if the flag is set
+            if (!String.IsNullOrEmpty(_packArgs.Version))
+            {
+                _packArgs.Properties["version"] = _packArgs.Version;
+            }
+
+            PackageBuilder builder = new PackageBuilder();
+
+            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
+            {
+                LoadProjectJsonFile(builder, path, _packArgs.BasePath, Path.GetFileName(Path.GetDirectoryName(path)), stream, propertyProvider);
+            }
+
+            return builder;
+        }
+
+        public static bool ProcessProjectJsonFile(PackageBuilder builder, string basePath, string id, Func<string, string> propertyProvider)
+        {
+            if (basePath == null)
+            {
+                return false;
+            }
+
+            string path = ProjectJsonPathUtilities.GetProjectConfigPath(basePath, Path.GetFileName(basePath));
+            if (File.Exists(path))
+            {
+                using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
+                {
+                    LoadProjectJsonFile(builder, path, basePath, id, stream, propertyProvider);
+                }
+                return true;
+            }
+
+            return false;
+        }
+
+        private static void LoadProjectJsonFile(PackageBuilder builder, string path, string basePath, string id, Stream stream, Func<string, string> propertyProvider)
+        {
+            PackageSpec spec = JsonPackageSpecReader.GetPackageSpec(stream, id, path);
+
+            if (id == null)
+            {
+                builder.Id = Path.GetFileName(basePath);
+            }
+            else
+            {
+                builder.Id = id;
+            }
+            builder.Version = spec.Version;
+            builder.Title = spec.Title;
+            builder.Description = spec.Description;
+            builder.Copyright = spec.Copyright;
+            if (spec.Authors.Any())
+            {
+                builder.Authors.AddRange(spec.Authors);
+            }
+            if (spec.Owners.Any())
+            {
+                builder.Owners.AddRange(spec.Owners);
+            }
+            Uri tempUri;
+            if (Uri.TryCreate(spec.LicenseUrl, UriKind.Absolute, out tempUri))
+            {
+                builder.LicenseUrl = tempUri;
+            }
+            if (Uri.TryCreate(spec.ProjectUrl, UriKind.Absolute, out tempUri))
+            {
+                builder.ProjectUrl = tempUri;
+            }
+            if (Uri.TryCreate(spec.IconUrl, UriKind.Absolute, out tempUri))
+            {
+                builder.IconUrl = tempUri;
+            }
+            builder.RequireLicenseAcceptance = spec.RequireLicenseAcceptance;
+            builder.Summary = spec.Summary;
+            builder.ReleaseNotes = spec.ReleaseNotes;
+            builder.Language = spec.Language;
+
+            foreach (var include in spec.PackInclude)
+            {
+                builder.AddFiles(basePath, include.Value, include.Key);
+            }
+
+            // If there's no base path then ignore the files node
+            // Also, id is null only when we want to skip the AddFiles
+            if (basePath != null && id != null && !builder.Files.Any())
+            {
+                builder.AddFiles(basePath, @"**\*", null);
+            }
+
+            if (spec.Tags.Any())
+            {
+                builder.Tags.AddRange(spec.Tags);
+            }
+            if (spec.Dependencies.Any())
+            {
+                AddDependencyGroups(spec.Dependencies, NuGetFramework.AnyFramework, builder);
+            }
+
+            if (spec.TargetFrameworks.Any())
+            {
+                foreach (var framework in spec.TargetFrameworks)
+                {
+                    AddDependencyGroups(framework.Dependencies, framework.FrameworkName, builder);
+                }
+            }
+        }
+
+        private static void AddDependencyGroups(IList<LibraryDependency> dependencies, NuGetFramework framework, PackageBuilder builder)
+        {
+            List<PackageDependency> packageDependencies = new List<PackageDependency>();
+            foreach (var dependency in dependencies)
+            {
+                LibraryIncludeFlags effectiveInclude = dependency.IncludeType & ~dependency.SuppressParent;
+
+                if (dependency.IncludeType == LibraryIncludeFlags.None || dependency.SuppressParent == LibraryIncludeFlags.All)
+                {
+                    continue;
+                }
+
+                List<string> includes = new List<string>();
+                if (effectiveInclude == LibraryIncludeFlags.All)
+                {
+                    includes.Add(LibraryIncludeFlags.All.ToString());
+                }
+                else if ((effectiveInclude & LibraryIncludeFlags.ContentFiles) == LibraryIncludeFlags.ContentFiles)
+                {
+                    includes.Add(LibraryIncludeFlags.ContentFiles.ToString());
+                }
+
+                List<string> excludes = new List<string>();
+                if ((LibraryIncludeFlagUtils.NoContent & ~effectiveInclude) != LibraryIncludeFlags.None)
+                {
+                    excludes.AddRange((LibraryIncludeFlagUtils.NoContent & ~effectiveInclude).ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries));
+                }
+
+                packageDependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange, includes, excludes));
+            }
+
+            if (packageDependencies.Any())
+            {
+                builder.DependencyGroups.Add(new PackageDependencyGroup(framework, packageDependencies));
             }
         }
 
@@ -296,7 +485,7 @@ namespace NuGet.Commands
             var path = physicalPackageFile.SourcePath;
             // Make sure that the basepath has a directory separator
 
-            int index = path.IndexOf(_packArgs.BasePath.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+            int index = path.IndexOf(PathUtility.EnsureTrailingSlash(_packArgs.BasePath), StringComparison.OrdinalIgnoreCase);
             if (index != -1)
             {
                 // Since wildcards are going to be relative to the base path, remove the BasePath portion of the file's source path.
@@ -414,6 +603,11 @@ namespace NuGet.Commands
         {
             var candidates = files.Where(file => _allowedExtensions.Contains(Path.GetExtension(file))).ToList();
             string result;
+
+            candidates.RemoveAll(ext => ext.EndsWith(".json") && 
+                                    !ext.Equals(ProjectJsonPathUtilities.ProjectConfigFileName, StringComparison.OrdinalIgnoreCase) &&
+                                    !ext.EndsWith(ProjectJsonPathUtilities.ProjectConfigFileEnding, StringComparison.OrdinalIgnoreCase));
+
             switch (candidates.Count)
             {
                 case 1:
@@ -430,7 +624,7 @@ namespace NuGet.Commands
                     }
                     goto default;
                 default:
-                    throw new ArgumentException("Please specify a nuspec or project file to use");
+                    throw new ArgumentException(Strings.InputFileNotSpecified);
             }
 
             return Path.GetFullPath(Path.Combine(packArgs.CurrentDirectory, result));

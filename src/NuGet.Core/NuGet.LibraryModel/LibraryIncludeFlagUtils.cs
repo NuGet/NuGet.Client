@@ -14,7 +14,7 @@ namespace NuGet.LibraryModel
         public static readonly LibraryIncludeFlags DefaultSuppressParent =
             (LibraryIncludeFlags.Build | LibraryIncludeFlags.ContentFiles | LibraryIncludeFlags.Analyzers);
 
-        public static readonly LibraryIncludeFlags NoContent = ~LibraryIncludeFlags.ContentFiles;
+        public static readonly LibraryIncludeFlags NoContent = LibraryIncludeFlags.All & ~LibraryIncludeFlags.ContentFiles;
 
         /// <summary>
         /// Convert set of flag strings into a LibraryIncludeFlags.

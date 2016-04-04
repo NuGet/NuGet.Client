@@ -283,7 +283,7 @@ namespace NuGet.ProjectModel.Test
             var dependency = spec.Dependencies.Single();
 
             // Assert
-            Assert.Equal(dependency.IncludeType, ~LibraryIncludeFlags.ContentFiles);
+            Assert.Equal(dependency.IncludeType, LibraryIncludeFlags.All & ~LibraryIncludeFlags.ContentFiles);
         }
 
         [Fact]

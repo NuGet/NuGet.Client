@@ -10,7 +10,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
-
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.PackageCreation.Resources;
@@ -546,7 +545,7 @@ namespace NuGet.Packaging
             return extensions;
         }
 
-        private void AddFiles(string basePath, string source, string destination, string exclude = null)
+        public void AddFiles(string basePath, string source, string destination, string exclude = null)
         {
             List<PhysicalPackageFile> searchFiles = ResolveSearchPattern(basePath, source.Replace('\\', Path.DirectorySeparatorChar), destination, _includeEmptyDirectories).ToList();
             if (_includeEmptyDirectories)
@@ -663,7 +662,7 @@ namespace NuGet.Packaging
 
         private static void CreatePart(ZipArchive package, string path, Stream sourceStream)
         {
-            if (PackageHelper.IsManifest(path))
+            if (PackageHelper.IsManifest(path) || ProjectJsonPathUtilities.IsProjectConfig(path))
             {
                 return;
             }
