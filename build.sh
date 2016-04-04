@@ -52,21 +52,13 @@ $DOTNET build src/NuGet.Core/NuGet.Shared --framework netstandard1.5 --configura
 # run tests
 for testProject in `find test/NuGet.Core.Tests -type f -name project.json`
 do
-    if [[ $testProject =~ "NuGet.Protocol.Core.v2.Tests" ]] ||
-       [[ $testProject =~ "NuGet.Resolver.Test" ]] ||
-       [[ $testProject =~ "NuGet.PackageManagement.Test" ]] ||
-       [[ $testProject =~ "NuGet.ProjectManagement.Test" ]];
-    then
-        echo "Skipping tests in $testProject because they hang"
-        continue
-    fi
 	testDir="$(pwd)/$(dirname $testProject)"
 
 	if grep -q "netstandardapp1.5" "$testProject"; then
 		pushd $testDir
 
-        	echo "$DOTNET test $testDir"
-		$DOTNET test $testDir --configuration release --framework netstandardapp1.5
+        	echo "$DOTNET $testDir --configuration release --framework netstandardapp1.5 -parallel none"
+		$DOTNET test $testDir --configuration release --framework netstandardapp1.5 -parallel none
 
 		if [ $? -ne 0 ]; then
 			echo "$testDir FAILED on CoreCLR"

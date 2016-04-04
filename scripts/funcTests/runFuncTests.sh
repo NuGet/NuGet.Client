@@ -62,8 +62,8 @@ do
 	if grep -q netstandardapp1.5 "$testProject"; then
 		pushd $testDir
 
-        	echo "$DOTNET test $testDir"
-		$DOTNET test $testDir --configuration release --framework netstandardapp1.5
+        	echo "$DOTNET test $testDir --configuration release --framework netstandardapp1.5 -parallel none"
+		$DOTNET test $testDir --configuration release --framework netstandardapp1.5 -parallel none
 
 		if [ $? -ne 0 ]; then
 		    echo "$testDir FAILED on CoreCLR"
