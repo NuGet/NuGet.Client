@@ -391,4 +391,7 @@
   <data name="Log_ProjectsIncompatible" xml:space="preserve">
     <value>One or more projects are incompatible with {0}.</value>
   </data>
+  <data name="InputFileNotSpecified" xml:space="preserve">
+    <value>Please specify a nuspec, project.json, project file to use</value>
+  </data>
 </root>

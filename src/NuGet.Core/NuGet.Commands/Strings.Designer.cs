@@ -168,6 +168,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Please specify a nuspec, project.json, project file to use.
+        /// </summary>
+        public static string InputFileNotSpecified {
+            get {
+                return ResourceManager.GetString("InputFileNotSpecified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to The specified source &apos;{0}&apos; is invalid. Please provide a valid source..
         /// </summary>
         public static string InvalidSource {

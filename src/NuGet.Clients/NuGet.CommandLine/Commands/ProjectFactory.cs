@@ -234,9 +234,14 @@ namespace NuGet.CommandLine
             }
 
             var projectAuthor = InitializeProperties(builder);
+            Manifest manifest = null;
 
-            // If the package contains a nuspec file then use it for metadata
-            Manifest manifest = ProcessNuspec(builder, basePath);
+            // If there is a project.json file, load that and skip any nuspec that may exist
+            if (!PackCommandRunner.ProcessProjectJsonFile(builder, basePath, builder.Id, GetPropertyValue))
+            {
+                // If the package contains a nuspec file then use it for metadata
+                manifest = ProcessNuspec(builder, basePath);
+            }
 
             // Remove the extra author
             if (builder.Authors.Count > 1)
@@ -520,7 +525,8 @@ namespace NuGet.CommandLine
 
                 string fullPath = item.GetMetadataValue("FullPath");
                 if (!string.IsNullOrEmpty(fullPath) &&
-                    !NuspecFileExists(fullPath) &&
+                    !NuspecFileExists(fullPath) && 
+                    !File.Exists(ProjectJsonPathUtilities.GetProjectConfigPath(Path.GetDirectoryName(fullPath), Path.GetFileName(fullPath))) &&
                     alreadyAppliedProjects.GetLoadedProjects(fullPath).Count == 0)
                 {
                     dynamic project = Activator.CreateInstance(
@@ -623,7 +629,7 @@ namespace NuGet.CommandLine
                                 null,
                                 projectCollection);
 
-                        if (NuspecFileExists(fullPath))
+                        if (NuspecFileExists(fullPath) || File.Exists(ProjectJsonPathUtilities.GetProjectConfigPath(Path.GetDirectoryName(fullPath), Path.GetFileName(fullPath))))
                         {
                             var dependency = CreateDependencyFromProject(referencedProject);
                             dependencies[dependency.Id] = dependency;
@@ -635,6 +641,11 @@ namespace NuGet.CommandLine
                     }
                 }
             }
+        }
+
+        private bool ProcessJsonFile(PackageBuilder builder, string basePath, string id)
+        {
+            return PackCommandRunner.ProcessProjectJsonFile(builder, basePath, id, GetPropertyValue);
         }
 
         // Creates a package dependency from the given project, which has a corresponding
@@ -659,7 +670,12 @@ namespace NuGet.CommandLine
                 }
 
                 projectFactory.InitializeProperties(builder);
-                projectFactory.ProcessNuspec(builder, null);
+
+                if (!projectFactory.ProcessJsonFile(builder, project.DirectoryPath, null))
+                {
+                    projectFactory.ProcessNuspec(builder, null);
+                }
+
                 return new PackageDependency(
                     builder.Id,
                     VersionRange.Parse(builder.Version.ToString()));

@@ -72,7 +72,7 @@ namespace NuGet.CommandLine.XPlat
                     CommandOptionType.SingleValue);
 
                 var arguments = pack.Argument(
-                    "nuspec file",
+                    "nuspec or project.json file",
                     Strings.InputFile_Description,
                     multipleValues: true);
 
@@ -88,6 +88,7 @@ namespace NuGet.CommandLine.XPlat
 
                     // If the BasePath is not specified, use the directory of the input file (nuspec / proj) file
                     packArgs.BasePath = !basePath.HasValue() ? Path.GetDirectoryName(Path.GetFullPath(packArgs.Path)) : basePath.Value();
+                    packArgs.BasePath = packArgs.BasePath.TrimEnd(Path.DirectorySeparatorChar);
 
                     packArgs.Exclude = exclude.Values;
                     packArgs.ExcludeEmptyDirectories = excludeEmpty.HasValue();

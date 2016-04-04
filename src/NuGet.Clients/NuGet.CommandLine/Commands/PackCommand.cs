@@ -16,37 +16,8 @@ namespace NuGet.CommandLine
     {
         internal static readonly string SymbolsExtension = ".symbols" + Constants.PackageExtension;
 
-        private static readonly string[] _defaultExcludes = new[] {
-            // Exclude previous package files
-            @"**\*" + Constants.PackageExtension,
-            // Exclude all files and directories that begin with "."
-            @"**\\.**", ".**"
-        };
-
-        // Target file paths to exclude when building the lib package for symbol server scenario
-        private static readonly string[] _libPackageExcludes = new[] {
-            @"**\*.pdb",
-            @"src\**\*"
-        };
-
-        // Target file paths to exclude when building the symbols package for symbol server scenario
-        private static readonly string[] _symbolPackageExcludes = new[] {
-            @"content\**\*",
-            @"tools\**\*.ps1"
-        };
-
         private readonly HashSet<string> _excludes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, string> _properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-        private static readonly HashSet<string> _allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
-            Constants.ManifestExtension,
-            ".csproj",
-            ".vbproj",
-            ".fsproj",
-            ".nproj",
-            ".btproj",
-            ".dxjsproj"
-        };
 
         private Version _minClientVersionValue;
 
@@ -124,6 +95,7 @@ namespace NuGet.CommandLine
 
             // If the BasePath is not specified, use the directory of the input file (nuspec / proj) file
             BasePath = String.IsNullOrEmpty(BasePath) ? Path.GetDirectoryName(Path.GetFullPath(path)) : BasePath;
+            BasePath = BasePath.TrimEnd(Path.DirectorySeparatorChar);
 
             if (!String.IsNullOrEmpty(MinClientVersion))
             {
