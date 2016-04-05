@@ -39,7 +39,7 @@ namespace NuGet.Protocol
                 var timeoutTask = Task.Delay(timeout, timeoutTcs.Token);
                 var responseTask = getTask(taskTcs.Token);
 
-                if (timeoutTask == await Task.WhenAny(responseTask, timeoutTask))
+                if (timeoutTask == await Task.WhenAny(responseTask, timeoutTask).ConfigureAwait(false))
                 {
                     taskTcs.Cancel();
 
@@ -47,7 +47,7 @@ namespace NuGet.Protocol
                 }
 
                 timeoutTcs.Cancel();
-                return await responseTask;
+                return await responseTask.ConfigureAwait(false);
             }
         }
 
@@ -64,12 +64,12 @@ namespace NuGet.Protocol
             await StartWithTimeout(
                 async timeoutToken =>
                 {
-                    await getTask(timeoutToken);
+                    await getTask(timeoutToken).ConfigureAwait(false);
                     return true;
                 },
                 timeout,
                 timeoutMessage,
-                token);
+                token).ConfigureAwait(false);
         }
     }
 }

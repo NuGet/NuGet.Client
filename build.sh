@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 while true ; do
-    case "$1" in
-        -c|--clear-cache) CLEAR_CACHE=1 ; shift ;;
-        --) shift ; break ;;
-        *) shift ; break ;;
-    esac
+	case "$1" in
+		-c|--clear-cache) CLEAR_CACHE=1 ; shift ;;
+		--) shift ; break ;;
+		*) shift ; break ;;
+	esac
 done
 
 RESULTCODE=0
@@ -32,11 +32,11 @@ git submodule update
 # clear caches
 if [ "$CLEAR_CACHE" == "1" ]
 then
-    # echo "Clearing the nuget web cache folder"
-    # rm -r -f ~/.local/share/NuGet/*
+	# echo "Clearing the nuget web cache folder"
+	# rm -r -f ~/.local/share/NuGet/*
 
-    echo "Clearing the nuget packages folder"
-    rm -r -f ~/.nuget/packages/*
+	echo "Clearing the nuget packages folder"
+	rm -r -f ~/.nuget/packages/*
 fi
 
 # restore packages
@@ -57,8 +57,8 @@ do
 	if grep -q "netstandardapp1.5" "$testProject"; then
 		pushd $testDir
 
-        	echo "$DOTNET $testDir --configuration release --framework netstandardapp1.5 -parallel none"
-		$DOTNET test $testDir --configuration release --framework netstandardapp1.5 -parallel none
+		echo "$DOTNET $testDir --configuration release --framework netstandardapp1.5"
+		$DOTNET test $testDir --configuration release --framework netstandardapp1.5
 
 		if [ $? -ne 0 ]; then
 			echo "$testDir FAILED on CoreCLR"
@@ -67,7 +67,7 @@ do
 
 		popd
 	else
-        	echo "Skipping the tests in $testDir on CoreCLR"
+		echo "Skipping the tests in $testDir on CoreCLR"
 	fi
 
 done
