@@ -1,23 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NuGet.RuntimeModel;
-using NuGet.LibraryModel;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
+using NuGet.RuntimeModel;
 
 namespace NuGet.ProjectModel
 {
     public class JsonPackageSpecWriter
     {
-        public static void WritePackageSpec(PackageSpec packageSpec, string fileName = null)
+        public static void WritePackageSpec(PackageSpec packageSpec, string filePath)
         {
-            // Will write to packageSpec.FilePath if fileName is null
-
             JObject json = new JObject();
+            WritePackageSpec(packageSpec, json);
 
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                using (var textWriter = new StreamWriter(fileStream))
+                {
+                    using (var jsonWriter = new JsonTextWriter(textWriter))
+                    {
+                        jsonWriter.Formatting = Formatting.Indented;
+                        json.WriteTo(jsonWriter);
+                    }
+                }
+            }
+        }
+
+        public static void WritePackageSpec(PackageSpec packageSpec, JObject json)
+        {
             SetValue(json, "title", packageSpec.Title);
             SetValue(json, "version", packageSpec.Version.ToNormalizedString());
             SetValue(json, "description", packageSpec.Description);
@@ -75,24 +89,7 @@ namespace NuGet.ProjectModel
                 SetValue(json, "frameworks", frameworks);
             }
 
-            if (packageSpec.RuntimeGraph.Runtimes.Any())
-            {
-                JObject runtimes = new JObject();
-
-                foreach (var runtime in packageSpec.RuntimeGraph.Runtimes)
-                {
-                    runtime.Value.InheritedRuntimes
-                    runtimes[runtime.Key] = runtime.Value.;
-                }
-
-                SetValue(json, "runtimes", runtimes);
-            }
-            if (packageSpec.RuntimeGraph.Supports.Any())
-            {
-                JObject supports = new JObject();
-
-                SetValue(json, "supports", supports);
-            }
+            JsonRuntimeFormat.WriteRuntimeGraph(json, packageSpec.RuntimeGraph);
         }
 
         private static void SetDependencies(JObject json, IList<LibraryDependency> libraryDependencies)

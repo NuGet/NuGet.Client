@@ -6,13 +6,13 @@ using System.Linq;
 using NuGet.Commands.Rules;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Logging;
 using NuGet.Packaging;
-using NuGet.Versioning;
-using NuGet.ProjectModel;
-using NuGet.Frameworks;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel;
+using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
@@ -228,14 +228,6 @@ namespace NuGet.Commands
                 foreach (var framework in spec.TargetFrameworks)
                 {
                     AddDependencyGroups(framework.Dependencies, framework.FrameworkName, builder);
-                }
-            }
-
-            if (spec.Tools.Any())
-            {
-                foreach (var tool in spec.Tools)
-                {
-                    builder.
                 }
             }
         }
