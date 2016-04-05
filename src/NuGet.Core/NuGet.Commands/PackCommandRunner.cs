@@ -220,21 +220,22 @@ namespace NuGet.Commands
             }
             if (spec.Dependencies.Any())
             {
-                AddDependencyGroups(spec.Dependencies, NuGetFramework.AnyFramework, builder);
+                AddDependencyGroups(spec.Dependencies, NuGetFramework.AnyFramework, builder, isTargetFrameworks: false);
             }
 
             if (spec.TargetFrameworks.Any())
             {
                 foreach (var framework in spec.TargetFrameworks)
                 {
-                    AddDependencyGroups(framework.Dependencies, framework.FrameworkName, builder);
+                    AddDependencyGroups(framework.Dependencies, framework.FrameworkName, builder, isTargetFrameworks: true);
                 }
             }
         }
 
-        private static void AddDependencyGroups(IList<LibraryDependency> dependencies, NuGetFramework framework, PackageBuilder builder)
+        private static void AddDependencyGroups(IList<LibraryDependency> dependencies, NuGetFramework framework, PackageBuilder builder, bool isTargetFrameworks)
         {
             List<PackageDependency> packageDependencies = new List<PackageDependency>();
+            bool addedFrameworkReference = false;
             foreach (var dependency in dependencies)
             {
                 LibraryIncludeFlags effectiveInclude = dependency.IncludeType & ~dependency.SuppressParent;
@@ -244,26 +245,38 @@ namespace NuGet.Commands
                     continue;
                 }
 
-                List<string> includes = new List<string>();
-                if (effectiveInclude == LibraryIncludeFlags.All)
+                if (isTargetFrameworks && dependency.LibraryRange.TypeConstraint == LibraryDependencyTarget.Project)
                 {
-                    includes.Add(LibraryIncludeFlags.All.ToString());
+                    continue;
                 }
-                else if ((effectiveInclude & LibraryIncludeFlags.ContentFiles) == LibraryIncludeFlags.ContentFiles)
+                else if (dependency.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference)
                 {
-                    includes.Add(LibraryIncludeFlags.ContentFiles.ToString());
+                    builder.FrameworkReferences.Add(new FrameworkAssemblyReference(dependency.Name, new NuGetFramework[] { framework }));
+                    addedFrameworkReference = true;
                 }
+                else
+                {
+                    List<string> includes = new List<string>();
+                    if (effectiveInclude == LibraryIncludeFlags.All)
+                    {
+                        includes.Add(LibraryIncludeFlags.All.ToString());
+                    }
+                    else if ((effectiveInclude & LibraryIncludeFlags.ContentFiles) == LibraryIncludeFlags.ContentFiles)
+                    {
+                        includes.Add(LibraryIncludeFlags.ContentFiles.ToString());
+                    }
 
-                List<string> excludes = new List<string>();
-                if ((LibraryIncludeFlagUtils.NoContent & ~effectiveInclude) != LibraryIncludeFlags.None)
-                {
-                    excludes.AddRange((LibraryIncludeFlagUtils.NoContent & ~effectiveInclude).ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries));
-                }
+                    List<string> excludes = new List<string>();
+                    if ((LibraryIncludeFlagUtils.NoContent & ~effectiveInclude) != LibraryIncludeFlags.None)
+                    {
+                        excludes.AddRange((LibraryIncludeFlagUtils.NoContent & ~effectiveInclude).ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries));
+                    }
 
-                packageDependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange, includes, excludes));
+                    packageDependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange, includes, excludes));
+                }
             }
 
-            if (packageDependencies.Any())
+            if (addedFrameworkReference || packageDependencies.Any())
             {
                 builder.DependencyGroups.Add(new PackageDependencyGroup(framework, packageDependencies));
             }

@@ -217,7 +217,7 @@ namespace NuGet.ProjectModel
                     // Dependencies should allow everything but framework references.
                     var targetFlagsValue = isGacOrFrameworkReference
                                                     ? LibraryDependencyTarget.Reference
-                                                    : ~LibraryDependencyTarget.Reference;
+                                                    : LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference;
 
                     string dependencyVersionValue = null;
                     var dependencyVersionToken = dependencyValue;
