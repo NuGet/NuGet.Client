@@ -131,10 +131,10 @@ namespace NuGet.Resolver
 
                 if (nonAbsentCandidates.Any())
                 {
-                    //topologicallly sort non absent packages
+                    // topologically sort non absent packages
                     var sortedSolution = ResolverUtility.TopologicalSort(nonAbsentCandidates);
 
-                    //Find circular dependency for topologically sorted non absent packages since it will help maintain cache of 
+                    // Find circular dependency for topologically sorted non absent packages since it will help maintain cache of 
                     // already processed packages
                     var circularReferences = ResolverUtility.FindCircularDependency(sortedSolution);
 
