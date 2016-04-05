@@ -196,7 +196,7 @@ namespace NuGet.PackageManagement.UI
             await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                _loadingStatusBar.ItemsLoaded = PackageItems.Count();
+                _loadingStatusBar.ItemsLoaded = currentLoader.State.ItemsCount;
             });
 
             token.ThrowIfCancellationRequested();
@@ -281,7 +281,7 @@ namespace NuGet.PackageManagement.UI
 
             if (loader.IsMultiSource)
             {
-                bool hasMore = PackageItems.Any() && state.ItemsCount > PackageItems.Count();
+                bool hasMore = _loadingStatusBar.ItemsLoaded != 0 && state.ItemsCount > _loadingStatusBar.ItemsLoaded;
                 if (hasMore)
                 {
                     statusBarVisibility = Visibility.Visible;
@@ -325,7 +325,7 @@ namespace NuGet.PackageManagement.UI
                 .ForEach(i => i.PropertyChanged -= Package_PropertyChanged);
             Items.Clear();
 
-            _loadingStatusBar.ItemsLoaded = PackageItems.Count();
+            _loadingStatusBar.ItemsLoaded = 0;
         }
 
         public void UpdatePackageStatus(PackageIdentity[] installedPackages)
@@ -513,7 +513,7 @@ namespace NuGet.PackageManagement.UI
         {
             var packageItems = _loader?.GetCurrent() ?? Enumerable.Empty<PackageItemListViewModel>();
             UpdatePackageList(packageItems.ToList(), refresh: true);
-            _loadingStatusBar.ItemsLoaded = PackageItems.Count();
+            _loadingStatusBar.ItemsLoaded = _loader?.State.ItemsCount ?? 0;
 
             var desiredVisibility = EvaluateStatusBarVisibility(_loader, _loader.State);
             if (_loadingStatusBar.Visibility != desiredVisibility)
