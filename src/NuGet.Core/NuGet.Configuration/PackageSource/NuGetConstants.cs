@@ -24,7 +24,7 @@ namespace NuGet.Configuration
 
         public static readonly string FeedName = "nuget.org";
 
-        public static readonly string AddV3TrackFile = "AddV3Track.config";
+        public static readonly string AddV3TrackFile = "NuGetOrgAdd.trk";
 
         public static readonly string DefaultConfigContent = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
