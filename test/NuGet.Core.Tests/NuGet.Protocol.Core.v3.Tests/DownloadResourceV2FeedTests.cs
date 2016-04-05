@@ -22,7 +22,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             // Arrange
             var responses = new Dictionary<string, string>();
             responses.Add("http://testsource/v2/Packages(Id='xunit',Version='1.0.0-notfound')", string.Empty);
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='xunit'",
+            responses.Add("http://testsource/v2/FindPackagesById()?id='xunit'",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
 
             var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses,
