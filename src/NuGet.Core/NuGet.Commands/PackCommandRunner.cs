@@ -245,31 +245,44 @@ namespace NuGet.Commands
                     continue;
                 }
 
-                if (isTargetFrameworks && dependency.LibraryRange.TypeConstraint == LibraryDependencyTarget.Project)
+                if (dependency.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference)
                 {
-                    continue;
-                }
-                else if (dependency.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference)
-                {
-                    builder.FrameworkReferences.Add(new FrameworkAssemblyReference(dependency.Name, new NuGetFramework[] { framework }));
+                    var reference = builder.FrameworkReferences.FirstOrDefault(r => r.AssemblyName == dependency.Name);
+                    if (reference == null)
+                    {
+                        builder.FrameworkReferences.Add(new FrameworkAssemblyReference(dependency.Name, new NuGetFramework [] { framework }));
+                    }
+                    else
+                    {
+                        if (!reference.SupportedFrameworks.Contains(framework))
+                        {
+                            // Add another framework reference by replacing the existing reference
+                            var newReference = new FrameworkAssemblyReference(reference.AssemblyName, reference.SupportedFrameworks.Concat(new NuGetFramework[] { framework }));
+                            int index = builder.FrameworkReferences.IndexOf(reference);
+                            builder.FrameworkReferences.Remove(reference);
+                            builder.FrameworkReferences.Insert(index, newReference);
+                        }
+                    }
                     addedFrameworkReference = true;
                 }
                 else
                 {
                     List<string> includes = new List<string>();
+                    List<string> excludes = new List<string>();
                     if (effectiveInclude == LibraryIncludeFlags.All)
                     {
                         includes.Add(LibraryIncludeFlags.All.ToString());
                     }
                     else if ((effectiveInclude & LibraryIncludeFlags.ContentFiles) == LibraryIncludeFlags.ContentFiles)
                     {
-                        includes.Add(LibraryIncludeFlags.ContentFiles.ToString());
+                        includes.AddRange(effectiveInclude.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries));
                     }
-
-                    List<string> excludes = new List<string>();
-                    if ((LibraryIncludeFlagUtils.NoContent & ~effectiveInclude) != LibraryIncludeFlags.None)
+                    else
                     {
-                        excludes.AddRange((LibraryIncludeFlagUtils.NoContent & ~effectiveInclude).ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries));
+                        if ((LibraryIncludeFlagUtils.NoContent & ~effectiveInclude) != LibraryIncludeFlags.None)
+                        {
+                            excludes.AddRange((LibraryIncludeFlagUtils.NoContent & ~effectiveInclude).ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries));
+                        }
                     }
 
                     packageDependencies.Add(new PackageDependency(dependency.Name, dependency.LibraryRange.VersionRange, includes, excludes));
