@@ -168,8 +168,8 @@ namespace NuGet.CommandLine.Test
                     // track hits on the url
                     var urlHits = hitsByUrl.AddOrUpdate(path, 1, (s, i) => i + 1);
 
-                    // Fail on the first 3 requests for every url
-                    if (urlHits < 4)
+                    // Fail on the first 2 requests for every url
+                    if (urlHits < 3)
                         {
                             return new Action<HttpListenerResponse>(response =>
                             {
@@ -251,10 +251,10 @@ namespace NuGet.CommandLine.Test
 
                     Assert.True(File.Exists(Path.Combine(workingDirectory, "project.lock.json")));
 
-                    // Everything should be hit 4 times
+                    // Everything should be hit 3 times
                     foreach (var url in hitsByUrl.Keys)
                     {
-                        Assert.True(hitsByUrl[url] == 4, url);
+                        Assert.True(hitsByUrl[url] == 3, url);
                     }
                 }
             }

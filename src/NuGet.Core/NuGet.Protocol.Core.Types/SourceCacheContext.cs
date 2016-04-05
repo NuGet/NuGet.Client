@@ -24,6 +24,22 @@ namespace NuGet.Protocol.Core.Types
         /// </summary>
         private static readonly TimeSpan DefaultCacheAgeLimitNupkg = TimeSpan.FromHours(24);
 
+        private static SourceCacheContext _noCacheInstance;
+
+        public static SourceCacheContext NoCacheInstance
+        {
+            get
+            {
+                if (_noCacheInstance == null)
+                {
+                    _noCacheInstance = new SourceCacheContext();
+                    _noCacheInstance.NoCache = true;
+                }
+
+                return _noCacheInstance;
+            }
+        }
+
         /// <summary>
         /// If set, ignore the disk cache when listing and downloading packages
         /// </summary>

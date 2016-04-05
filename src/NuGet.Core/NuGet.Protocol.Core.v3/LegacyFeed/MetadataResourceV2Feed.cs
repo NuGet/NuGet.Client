@@ -15,17 +15,22 @@ namespace NuGet.Protocol
     public class MetadataResourceV2Feed : MetadataResource
     {
         private readonly V2FeedParser _feedParser;
-        private readonly SourceRepository _source;
+        private readonly Configuration.PackageSource _packageSource;
 
-        public MetadataResourceV2Feed(V2FeedParser feedParser, SourceRepository source)
+        public MetadataResourceV2Feed(HttpSourceResource httpSourceResource, string baseAddress, Configuration.PackageSource packageSource)
         {
-            if (feedParser == null)
+            if (httpSourceResource == null)
             {
-                throw new ArgumentNullException(nameof(feedParser));
+                throw new ArgumentNullException(nameof(httpSourceResource));
             }
 
-            _feedParser = feedParser;
-            _source = source;
+            if (packageSource == null)
+            {
+                throw new ArgumentNullException(nameof(packageSource));
+            }
+
+            _feedParser = new V2FeedParser(httpSourceResource.HttpSource, baseAddress, packageSource);
+            _packageSource = packageSource;
         }
 
         public override async Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, ILogger log, CancellationToken token)
@@ -68,13 +73,13 @@ namespace NuGet.Protocol
 
             try
             {
-                var packages = await _feedParser.FindPackagesByIdAsync(packageId, includeUnlisted, includePrerelease, log, token);
+                var packages = await _feedParser.FindPackagesByIdAsync(packageId, string.Empty, SourceCacheContext.NoCacheInstance, includeUnlisted, includePrerelease, log, token);
 
                 return packages.Select(p => p.Version).ToArray();
             }
             catch (Exception ex)
             {
-                throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, packageId, _source), ex);
+                throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, packageId, _packageSource), ex);
             }
         }
 
@@ -90,7 +95,7 @@ namespace NuGet.Protocol
             }
             catch (Exception ex)
             {
-                throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, identity, _source), ex);
+                throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Protocol_PackageMetadataError, identity, _packageSource), ex);
             }
         }
 

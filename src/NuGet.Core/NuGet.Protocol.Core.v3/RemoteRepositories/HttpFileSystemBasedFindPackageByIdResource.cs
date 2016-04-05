@@ -146,6 +146,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         }
                     }
                 }
+                catch (FatalProtocolException)
+                {
+                    throw;
+                }
                 catch (Exception ex) when (retry < 2)
                 {
                     var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingFindPackagesById, nameof(FindPackagesByIdAsync), uri)
@@ -260,6 +264,10 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                             TempFileName = data.CacheFileName
                         };
                     }
+                }
+                catch (FatalProtocolException)
+                {
+                    throw;
                 }
                 catch (Exception ex) when (retry < 2)
                 {

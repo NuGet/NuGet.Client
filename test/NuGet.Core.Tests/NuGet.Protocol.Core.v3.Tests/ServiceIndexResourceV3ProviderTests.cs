@@ -73,8 +73,6 @@ namespace NuGet.Protocol.Core.v3.Tests
             {
                 var result = await provider.TryCreate(sourceRepository, default(CancellationToken));
             });
-
-            Assert.IsType<HttpRequestException>(exception.InnerException);
         }
 
         [Theory]

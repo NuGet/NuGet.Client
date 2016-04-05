@@ -22,7 +22,8 @@ namespace NuGet.Protocol.Core.v3.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "FindPackagesById()?Id='WindowsAzure.Storage'",
+
+            responses.Add(serviceAddress + "FindPackagesById()?id='WindowsAzure.Storage'",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
@@ -47,7 +48,8 @@ namespace NuGet.Protocol.Core.v3.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "FindPackagesById()?Id='ravendb.client'",
+
+            responses.Add(serviceAddress + "FindPackagesById()?id='ravendb.client'",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.RavendbFindPackagesById.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
             responses.Add("https://www.nuget.org/api/v2/FindPackagesById?id='ravendb.client'&$skiptoken='RavenDB.Client','1.2.2067-Unstable'",
@@ -73,7 +75,8 @@ namespace NuGet.Protocol.Core.v3.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "FindPackagesById()?Id='WindowsAzure.Storage'",
+
+            responses.Add(serviceAddress + "FindPackagesById()?id='WindowsAzure.Storage'",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
@@ -141,8 +144,9 @@ namespace NuGet.Protocol.Core.v3.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
+
             responses.Add(serviceAddress + "Packages(Id='xunit',Version='1.0.0-notfound')", string.Empty);
-            responses.Add(serviceAddress + "FindPackagesById()?Id='xunit'",
+            responses.Add(serviceAddress + "FindPackagesById()?id='xunit'",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
@@ -265,7 +269,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 CancellationToken.None));
 
             Assert.Equal(
-                "The V2 feed at '" + serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-client'&includePrerelease=false&$skip=0&$top=1' " +
+                "The feed at '" + serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-client'&includePrerelease=false&$skip=0&$top=1' " +
                 "returned an unexpected status code '404 Not Found'.",
                 exception.Message);
         }
@@ -300,7 +304,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 CancellationToken.None));
 
             Assert.Equal(
-                "The V2 feed at '" + serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-client'&includePrerelease=false&$skip=0&$top=1' " +
+                "The feed at '" + serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='azure'&targetFramework='net40-client'&includePrerelease=false&$skip=0&$top=1' " +
                 "returned an unexpected status code '500 Internal Server Error'.",
                 exception.Message);
         }
@@ -352,8 +356,9 @@ namespace NuGet.Protocol.Core.v3.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
+
             responses.Add(serviceAddress + "Packages(Id='xunit',Version='1.0.0-notfound')", string.Empty);
-            responses.Add(serviceAddress + "FindPackagesById()?Id='xunit'",
+            responses.Add(serviceAddress + "FindPackagesById()?id='xunit'",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
@@ -376,8 +381,9 @@ namespace NuGet.Protocol.Core.v3.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
+
             responses.Add(serviceAddress + "Packages(Id='WindowsAzure.Storage',Version='4.3.2-preview')", string.Empty);
-            responses.Add(serviceAddress + "FindPackagesById()?Id='WindowsAzure.Storage'",
+            responses.Add(serviceAddress + "FindPackagesById()?id='WindowsAzure.Storage'",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
@@ -418,8 +424,9 @@ namespace NuGet.Protocol.Core.v3.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
+
             responses.Add(serviceAddress + "Packages(Id='xunit',Version='1.0.0-notfound')", string.Empty);
-            responses.Add(serviceAddress + "FindPackagesById()?Id='xunit'", string.Empty);
+            responses.Add(serviceAddress + "FindPackagesById()?id='xunit'", string.Empty);
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses,
@@ -436,7 +443,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 CancellationToken.None));
 
             Assert.Equal(
-                "The V2 feed at '" + serviceAddress + "FindPackagesById()?Id='xunit'' " +
+                "The feed at '" + serviceAddress + "FindPackagesById()?id='xunit'' " +
                 "returned an unexpected status code '404 Not Found'.",
                 exception.Message);
         }
@@ -463,7 +470,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 NullLogger.Instance,
                 CancellationToken.None));
             Assert.Equal(
-                "The V2 feed at '" + serviceAddress + "Packages(Id='xunit',Version='1.0.0-InternalServerError')' " +
+                "The feed at '" + serviceAddress + "Packages(Id='xunit',Version='1.0.0-InternalServerError')' " +
                 "returned an unexpected status code '500 Internal Server Error'.",
                 exception.Message);
         }
@@ -475,7 +482,8 @@ namespace NuGet.Protocol.Core.v3.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "FindPackagesById()?Id='xunit'", string.Empty);
+
+            responses.Add(serviceAddress + "FindPackagesById()?id='xunit'", string.Empty);
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses,
@@ -490,7 +498,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 CancellationToken.None));
 
             Assert.Equal(
-                "The V2 feed at '" + serviceAddress + "FindPackagesById()?Id='xunit'' " +
+                "The feed at '" + serviceAddress + "FindPackagesById()?id='xunit'' " +
                 "returned an unexpected status code '404 Not Found'.",
                 exception.Message);
         }
@@ -502,7 +510,8 @@ namespace NuGet.Protocol.Core.v3.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "FindPackagesById()?Id='xunit'", null);
+
+            responses.Add(serviceAddress + "FindPackagesById()?id='xunit'", null);
             responses.Add(serviceAddress, string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses,
@@ -517,7 +526,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 CancellationToken.None));
 
             Assert.Equal(
-                "The V2 feed at '" + serviceAddress + "FindPackagesById()?Id='xunit'' " +
+                "The feed at '" + serviceAddress + "FindPackagesById()?id='xunit'' " +
                 "returned an unexpected status code '500 Internal Server Error'.",
                 exception.Message);
         }
