@@ -17,7 +17,7 @@
     "net45": {},
     "netstandard1.5": {
       "dependencies": {
-        "NETStandard.Library": "1.5.0-rc2-23930"
+        "NETStandard.Library": "1.5.0-rc2-23931"
       },
       "imports": [
         "dotnet5.6",

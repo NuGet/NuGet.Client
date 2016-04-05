@@ -24,9 +24,9 @@
         "portable-net45+win8"
       ],
       "dependencies": {
-        "NETStandard.Library": "1.5.0-rc2-23930",
-        "System.Dynamic.Runtime": "4.0.11-rc2-23930",
-        "System.Threading.Thread": "4.0.0-rc2-23930"
+        "NETStandard.Library": "1.5.0-rc2-23931",
+        "System.Dynamic.Runtime": "4.0.11-rc2-23931",
+        "System.Threading.Thread": "4.0.0-rc2-23931"
       }
     }
   }
