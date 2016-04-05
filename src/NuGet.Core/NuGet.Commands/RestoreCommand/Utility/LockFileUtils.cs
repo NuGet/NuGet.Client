@@ -317,7 +317,13 @@ namespace NuGet.Commands
                 {
                     foreach (var item in group.Items)
                     {
-                        yield return new LockFileItem(item.Path);
+                        var newItem = new LockFileItem(item.Path);
+                        object locale;
+                        if (item.Properties.TryGetValue("locale", out locale))
+                        {
+                            newItem.Properties["locale"] = (string)locale;
+                        }
+                        yield return newItem;
                     }
 
                     // Take only the first group that has items
