@@ -1,5 +1,5 @@
 {
-  "version": "3.4.1-*",
+  "version": "3.4.2-*",
   "authors": [
     "NuGet"
   ],
@@ -16,11 +16,11 @@
   "dependencies": {
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.1-*"
+      "version": "3.4.2-*"
     },
-    "NuGet.Logging": "3.4.1-*",
-    "NuGet.Packaging": "3.4.1-*",
-    "NuGet.Protocol.Core.Types": "3.4.1-*",
+    "NuGet.Logging": "3.4.2-*",
+    "NuGet.Packaging": "3.4.2-*",
+    "NuGet.Protocol.Core.Types": "3.4.2-*",
     "Newtonsoft.Json": "6.0.4"
   },
   "frameworks": {

@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "NuGet.PackageManagement": "3.4.1-*"
+    "NuGet.PackageManagement": "3.4.2-*"
   },
   "frameworks": {
     "net45": {}
