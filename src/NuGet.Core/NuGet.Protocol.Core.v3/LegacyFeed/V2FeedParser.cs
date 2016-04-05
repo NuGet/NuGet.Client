@@ -29,7 +29,7 @@ namespace NuGet.Protocol
         private const string W3Atom = "http://www.w3.org/2005/Atom";
         private const string MetadataNS = "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata";
         private const string DataServicesNS = "http://schemas.microsoft.com/ado/2007/08/dataservices";
-        private const string FindPackagesByIdFormat = "/FindPackagesById()?Id='{0}'";
+        private const string FindPackagesByIdFormat = "/FindPackagesById()?id='{0}'";
         private const string SearchEndPointFormat = "/Search()?$filter={0}&searchTerm='{1}'&targetFramework='{2}'&includePrerelease={3}&$skip={4}&$top={5}";
         private const string GetPackagesFormat = "/Packages(Id='{0}',Version='{1}')";
         private const string IsLatestVersionFilterFlag = "IsLatestVersion";
