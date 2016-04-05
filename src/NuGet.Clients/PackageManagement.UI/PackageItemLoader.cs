@@ -67,7 +67,9 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
-            public int ItemsCount => _results?.Items?.Count() ?? 0;
+            // returns the "raw" counter which is not the same as _results.Items.Count
+            // simply because it correlates to un-merged items
+            public int ItemsCount => _results?.RawItemsCount ?? 0;
 
             public IDictionary<string, LoadingStatus> SourceLoadingStatus => _results?.SourceSearchStatus;
 
