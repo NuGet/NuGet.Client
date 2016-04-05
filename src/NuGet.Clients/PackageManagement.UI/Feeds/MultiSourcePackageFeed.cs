@@ -196,11 +196,16 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
+                var items = nonEmptyResults.Select(r => r.Items).ToArray();
+
                 var indexer = new RelevanceSearchResultsIndexer();
                 var aggregator = new SearchResultsAggregator(indexer);
                 var aggregatedItems = await aggregator.AggregateAsync(
-                    searchText, nonEmptyResults.Select(r => r.Items).ToArray());
+                    searchText, items);
+
                 result = SearchResult.FromItems(aggregatedItems.ToArray());
+                // set correct count of unmerged items
+                result.RawItemsCount = items.Aggregate(0, (r, next) => r + next.Count);
             }
 
             result.SourceSearchStatus = results
