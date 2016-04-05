@@ -296,6 +296,19 @@ namespace NuGet.Configuration
                 else
                 {
                     appDataSettings = ReadSettings(root, defaultSettingsFilePath);
+                    bool IsEmptyConfig = !appDataSettings.GetSettingValues(ConfigurationConstants.PackageSources).Any();
+
+                    if (IsEmptyConfig)
+                    {
+                        var trackFilePath = Path.Combine(Path.GetDirectoryName(defaultSettingsFilePath), NuGetConstants.AddV3TrackFile);
+
+                        if (appDataSettings.GetorCreateAddV3TrackFileValue(trackFilePath))
+                        {
+                            var defaultPackageSource = new SettingValue(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, isMachineWide: false);
+                            defaultPackageSource.AdditionalData.Add(ConfigurationConstants.ProtocolVersionAttribute, "3");
+                            appDataSettings.UpdateSections(ConfigurationConstants.PackageSources, new List<SettingValue> { defaultPackageSource });
+                        }
+                    }
                 }
             }
             else
@@ -1190,6 +1203,39 @@ namespace NuGet.Configuration
             {
                 throw new NuGetConfigurationException(
                          string.Format(Resources.ShowError_ConfigRootInvalid, ConfigFilePath));
+            }
+        }
+
+        private bool GetorCreateAddV3TrackFileValue(string path)
+        {
+            bool FileNotExist = false;
+            if (!File.Exists(path))
+            {
+                FileNotExist = true;
+            }
+            var content = new XDocument(new XElement(ConfigurationConstants.AddV3Track, "false"));
+            XDocument doc = null;
+            ExecuteSynchronized(() => doc = XmlUtility.GetOrCreateDocument(content, path));
+
+            if (FileNotExist)
+            {
+                return true;
+            }
+            else
+            {
+                if (doc != null)
+                {
+                   try
+                    {
+                        return Convert.ToBoolean(doc.Elements(ConfigurationConstants.AddV3Track).FirstOrDefault().Value);
+                    }
+                    catch (FormatException)
+                    {
+                        return false;
+                    }
+                }
+
+                return false;
             }
         }
     }
