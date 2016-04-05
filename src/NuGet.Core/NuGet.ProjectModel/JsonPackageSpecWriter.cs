@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.RuntimeModel;
+using NuGet.LibraryModel;
+using NuGet.Frameworks;
 
 namespace NuGet.ProjectModel
 {
@@ -36,21 +38,7 @@ namespace NuGet.ProjectModel
 
             if (packageSpec.Dependencies.Any())
             {
-                JObject dependencies = new JObject();
-                foreach (var dependency in packageSpec.Dependencies)
-                {
-                    JObject dependencyObject = new JObject();
-
-                    SetValue(dependencyObject, "include", dependency.IncludeType.ToString());
-                    //SetValue(dependencyObject, "type", dependency.LibraryRange.TypeConstraint.ToString());
-                    SetValue(dependencyObject, "version", dependency.LibraryRange.VersionRange.ToNormalizedString());
-                    SetValue(dependencyObject, "suppressParent", dependency.SuppressParent.ToString());
-                    SetValue(dependencyObject, "type", dependency.Type.ToString());
-                    //SetValue(dependencyObject, "name", dependency.LibraryRange.Name);
-                    
-                    dependencies[dependency.Name] = dependencyObject;
-                }
-                SetValue(json, "dependencies", dependencies);
+                SetDependencies(json, packageSpec.Dependencies);
             }
 
             if (packageSpec.Tools.Any())
@@ -63,21 +51,92 @@ namespace NuGet.ProjectModel
 
                     if (tool.Imports.Any())
                     {
-                        JArray imports = new JArray();
-                        foreach (var import in tool.Imports)
-                        {
-                            JObject importObject = new JObject();
-                            importObject[import.] = import.DotNetFrameworkName
-                            imports.Add()
-                        }
-                        toolObject["imports"] = imports;
+                        SetImports(toolObject, tool.Imports);
                     }
                     tools[tool.LibraryRange.Name] = toolObject;
                 }
+
+                SetValue(json, "tools", tools);
             }
 
-            packageSpec.TargetFrameworks;
+            if (packageSpec.TargetFrameworks.Any())
+            {
+                JObject frameworks = new JObject();
+                foreach (var framework in packageSpec.TargetFrameworks)
+                {
+                    JObject frameworkObject = new JObject();
 
+                    SetDependencies(frameworkObject, framework.Dependencies);
+                    SetImports(frameworkObject, framework.Imports);
+
+                    frameworks[framework.FrameworkName] = frameworkObject;
+                }                
+
+                SetValue(json, "frameworks", frameworks);
+            }
+
+            if (packageSpec.RuntimeGraph.Runtimes.Any())
+            {
+                JObject runtimes = new JObject();
+
+                foreach (var runtime in packageSpec.RuntimeGraph.Runtimes)
+                {
+                    runtime.Value.InheritedRuntimes
+                    runtimes[runtime.Key] = runtime.Value.;
+                }
+
+                SetValue(json, "runtimes", runtimes);
+            }
+            if (packageSpec.RuntimeGraph.Supports.Any())
+            {
+                JObject supports = new JObject();
+
+                SetValue(json, "supports", supports);
+            }
+        }
+
+        private static void SetDependencies(JObject json, IList<LibraryDependency> libraryDependencies)
+        {
+            JObject dependencies = new JObject();
+            JObject frameworkAssemblies = new JObject();
+            foreach (var dependency in libraryDependencies)
+            {
+                JObject dependencyObject = new JObject();
+
+                SetValue(dependencyObject, "include", dependency.IncludeType.ToString());
+                SetValue(dependencyObject, "version", dependency.LibraryRange.VersionRange.ToNormalizedString());
+                SetValue(dependencyObject, "suppressParent", dependency.SuppressParent.ToString());
+                SetValue(dependencyObject, "type", dependency.Type.ToString());
+
+                if (dependency.LibraryRange.TypeConstraint != LibraryDependencyTarget.Reference)
+                {
+                    SetValue(dependencyObject, "target", dependency.LibraryRange.TypeConstraint.ToString());
+                    dependencies[dependency.Name] = dependencyObject;
+                }
+                else
+                {
+                    frameworkAssemblies[dependency.Name] = dependencyObject;
+                }
+            }
+
+            if (dependencies.HasValues)
+            {
+                SetValue(json, "dependencies", dependencies);
+            }
+            if (frameworkAssemblies.HasValues)
+            {
+                SetValue(json, "frameworkAssemblies", frameworkAssemblies);
+            }
+        }
+
+        private static void SetImports(JObject json, IReadOnlyList<NuGetFramework> frameworks)
+        {
+            JArray imports = new JArray();
+            foreach (var import in frameworks)
+            {
+                imports.Add(import.ToString());
+            }
+            json["imports"] = imports;
         }
 
         private static void SetValue(JObject json, string name, string value)
