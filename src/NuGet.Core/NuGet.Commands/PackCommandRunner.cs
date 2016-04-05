@@ -230,6 +230,14 @@ namespace NuGet.Commands
                     AddDependencyGroups(framework.Dependencies, framework.FrameworkName, builder);
                 }
             }
+
+            if (spec.Tools.Any())
+            {
+                foreach (var tool in spec.Tools)
+                {
+                    builder.
+                }
+            }
         }
 
         private static void AddDependencyGroups(IList<LibraryDependency> dependencies, NuGetFramework framework, PackageBuilder builder)
