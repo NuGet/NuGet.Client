@@ -33,7 +33,7 @@
 		-->
 		<SemanticVersionMajor>3</SemanticVersionMajor>
 		<SemanticVersionMinor>4</SemanticVersionMinor>
-		<SemanticVersionPatch>1</SemanticVersionPatch>
+		<SemanticVersionPatch>2</SemanticVersionPatch>
 		<PreReleaseVersion>0</PreReleaseVersion>
 	</PropertyGroup>
 

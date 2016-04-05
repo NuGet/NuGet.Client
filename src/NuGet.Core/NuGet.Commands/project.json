@@ -1,5 +1,5 @@
 {
-  "version": "3.4.1-*",
+  "version": "3.4.2-*",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
   "projectUrl": "https://github.com/NuGet/NuGet.Client",
   "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
@@ -20,14 +20,14 @@
     "../../../tools/compiler/preprocess/Internalization.cs"
   ],
   "dependencies": {
-    "NuGet.Client": "3.4.1-*",
-    "NuGet.ContentModel": "3.4.1-*",
-    "NuGet.ProjectModel": "3.4.1-*",
-    "NuGet.Configuration": "3.4.1-*",
-    "NuGet.DependencyResolver": "3.4.1-*",
-    "NuGet.RuntimeModel": "3.4.1-*",
+    "NuGet.Client": "3.4.2-*",
+    "NuGet.ContentModel": "3.4.2-*",
+    "NuGet.ProjectModel": "3.4.2-*",
+    "NuGet.Configuration": "3.4.2-*",
+    "NuGet.DependencyResolver": "3.4.2-*",
+    "NuGet.RuntimeModel": "3.4.2-*",
     "NuGet.Shared": {
-      "version": "3.4.1-*",
+      "version": "3.4.2-*",
       "type": "build"
     }
   },
