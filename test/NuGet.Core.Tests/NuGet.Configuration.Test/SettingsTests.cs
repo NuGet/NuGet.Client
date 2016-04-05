@@ -2237,6 +2237,46 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void AddV3ToEmptyConfigFile()
+        {
+            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>";
+
+                var nugetConfigPath = "NuGet.Config";
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, 
+                    Path.Combine(mockBaseDirectory, "TestingGlobalPath"), config);
+
+                // Act
+                var settings = Settings.LoadDefaultSettings(mockBaseDirectory, null, null, true, true);
+
+                // Assert
+                var text = File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")).Replace("\r\n", "\n");
+                var result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""nuget.org"" value=""https://api.nuget.org/v3/index.json"" protocolVersion=""3"" />
+  </packageSources>
+</configuration>".Replace("\r\n", "\n");
+                Assert.Equal(result, text);
+
+                // Act
+                settings.DeleteSection("packageSources");
+                settings = Settings.LoadDefaultSettings(mockBaseDirectory, null, null, true, true);
+
+                // Assert
+                text = File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath" , "NuGet.Config")).Replace("\r\n", "\n");
+                result = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+</configuration>".Replace("\r\n", "\n");
+                Assert.Equal(result, text);
+            }
+        }
+
+        [Fact]
         public void LoadNuGetConfig_InvalidXmlThrowException()
         {
             // Arrange

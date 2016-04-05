@@ -291,6 +291,20 @@ namespace NuGet.Configuration
                 else
                 {
                     appDataSettings = ReadSettings(root, defaultSettingsFilePath);
+                    bool IsEmptyConfig = !appDataSettings.GetSettingValues(ConfigurationConstants.PackageSources).Any();
+
+                    if (IsEmptyConfig)
+                    {
+                        var trackFilePath = Path.Combine(Path.GetDirectoryName(defaultSettingsFilePath), NuGetConstants.AddV3TrackFile);
+
+                        if (!File.Exists(trackFilePath))
+                        {
+                            File.Create(trackFilePath).Dispose();
+                            var defaultPackageSource = new SettingValue(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, isMachineWide: false);
+                            defaultPackageSource.AdditionalData.Add(ConfigurationConstants.ProtocolVersionAttribute, "3");
+                            appDataSettings.UpdateSections(ConfigurationConstants.PackageSources, new List<SettingValue> { defaultPackageSource });
+                        }
+                    }
                 }
             }
             else
