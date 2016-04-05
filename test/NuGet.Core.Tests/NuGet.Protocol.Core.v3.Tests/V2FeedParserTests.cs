@@ -20,7 +20,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='WindowsAzure.Storage'",
+            responses.Add("http://testsource/v2/FindPackagesById()?id='WindowsAzure.Storage'",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses);
@@ -42,7 +42,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='ravendb.client'",
+            responses.Add("http://testsource/v2/FindPackagesById()?id='ravendb.client'",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.RavendbFindPackagesById.xml", GetType()));
             responses.Add("https://www.nuget.org/api/v2/FindPackagesById?id='ravendb.client'&$skiptoken='RavenDB.Client','1.2.2067-Unstable'",
                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.RavendbFindPackagesByIdPage1.xml", GetType()));
@@ -65,7 +65,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='WindowsAzure.Storage'",
+            responses.Add("http://testsource/v2/FindPackagesById()?id='WindowsAzure.Storage'",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses);
@@ -131,7 +131,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             // Arrange
             var responses = new Dictionary<string, string>();
             responses.Add("http://testsource/v2/Packages(Id='xunit',Version='1.0.0-notfound')", string.Empty);
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='xunit'",
+            responses.Add("http://testsource/v2/FindPackagesById()?id='xunit'",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses,
@@ -324,7 +324,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             // Arrange
             var responses = new Dictionary<string, string>();
             responses.Add("http://testsource/v2/Packages(Id='xunit',Version='1.0.0-notfound')", string.Empty);
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='xunit'",
+            responses.Add("http://testsource/v2/FindPackagesById()?id='xunit'",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.XunitFindPackagesById.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses,
@@ -345,7 +345,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             // Arrange
             var responses = new Dictionary<string, string>();
             responses.Add("http://testsource/v2/Packages(Id='WindowsAzure.Storage',Version='4.3.2-preview')", string.Empty);
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='WindowsAzure.Storage'",
+            responses.Add("http://testsource/v2/FindPackagesById()?id='WindowsAzure.Storage'",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
 
             var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses);
@@ -384,7 +384,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             // Arrange
             var responses = new Dictionary<string, string>();
             responses.Add("http://testsource/v2/Packages(Id='xunit',Version='1.0.0-notfound')", string.Empty);
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='xunit'", string.Empty);
+            responses.Add("http://testsource/v2/FindPackagesById()?id='xunit'", string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses,
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
@@ -400,7 +400,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 CancellationToken.None));
 
             Assert.Equal(
-                "The V2 feed at 'http://testsource/v2/FindPackagesById()?Id='xunit'' " +
+                "The V2 feed at 'http://testsource/v2/FindPackagesById()?id='xunit'' " +
                 "returned an unexpected status code '404 Not Found'.",
                 exception.Message);
         }
@@ -434,7 +434,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='xunit'", string.Empty);
+            responses.Add("http://testsource/v2/FindPackagesById()?id='xunit'", string.Empty);
 
             var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses,
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
@@ -448,7 +448,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 CancellationToken.None));
 
             Assert.Equal(
-                "The V2 feed at 'http://testsource/v2/FindPackagesById()?Id='xunit'' " +
+                "The V2 feed at 'http://testsource/v2/FindPackagesById()?id='xunit'' " +
                 "returned an unexpected status code '404 Not Found'.",
                 exception.Message);
         }
@@ -458,7 +458,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='xunit'", null);
+            responses.Add("http://testsource/v2/FindPackagesById()?id='xunit'", null);
 
             var httpSource = new TestHttpSource(new PackageSource("http://testsource/v2/"), responses,
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.500Error.xml", GetType()));
@@ -472,7 +472,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 CancellationToken.None));
 
             Assert.Equal(
-                "The V2 feed at 'http://testsource/v2/FindPackagesById()?Id='xunit'' " +
+                "The V2 feed at 'http://testsource/v2/FindPackagesById()?id='xunit'' " +
                 "returned an unexpected status code '500 Internal Server Error'.",
                 exception.Message);
         }

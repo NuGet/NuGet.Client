@@ -18,7 +18,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='WindowsAzure.Storage'",
+            responses.Add("http://testsource/v2/FindPackagesById()?id='WindowsAzure.Storage'",
                  TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.WindowsAzureStorageFindPackagesById.xml", GetType()));
 
             var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses);
@@ -56,7 +56,7 @@ namespace NuGet.Protocol.Core.v3.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("http://testsource/v2/FindPackagesById()?Id='not-found'",
+            responses.Add("http://testsource/v2/FindPackagesById()?id='not-found'",
                  TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.NotFoundFindPackagesById.xml", GetType()));
 
             var repo = StaticHttpHandler.CreateSource("http://testsource/v2/", Repository.Provider.GetCoreV3(), responses);
