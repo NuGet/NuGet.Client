@@ -33,16 +33,16 @@ namespace NuGet.PackageManagement.UI
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             var iconUrl = value as Uri;
-            var defaultPackageIcon = parameter as BitmapImage;
+            var defaultPackageIcon = parameter as BitmapSource;
             if (iconUrl == null)
             {
                 return null;
             }
 
-            var iconBitmapImage = _bitmapImageCache.Get(iconUrl.ToString()) as BitmapImage;
-            if (iconBitmapImage != null)
+            var cachedBitmapImage = _bitmapImageCache.Get(iconUrl.ToString()) as BitmapSource;
+            if (cachedBitmapImage != null)
             {
-                return iconBitmapImage;
+                return cachedBitmapImage;
             }
 
             // Some people run on networks with internal NuGet feeds, but no access to the package images on the internet.
@@ -52,7 +52,7 @@ namespace NuGet.PackageManagement.UI
                 return null;
             }
 
-            iconBitmapImage = new BitmapImage();
+            var iconBitmapImage = new BitmapImage();
             iconBitmapImage.BeginInit();
             iconBitmapImage.UriSource = iconUrl;
 
@@ -75,22 +75,27 @@ namespace NuGet.PackageManagement.UI
             }
             // if the URL is a file: URI (which actually happened!), we'll get an exception.
             // if the URL is a file: URI which is in an existing directory, but the file doesn't exist, we'll fail silently.
-            catch (Exception e) when (e is System.IO.IOException || e is System.Net.WebException)
+            catch (Exception e)
+            when (
+                e is System.IO.IOException || 
+                e is System.Net.WebException ||
+                e is System.NotSupportedException)
             {
-                iconBitmapImage = defaultPackageIcon;
+                iconBitmapImage = null;
             }
             finally
             {
                 // store this bitmapImage in the bitmap image cache, so that other occurances can reuse the BitmapImage
-                AddToCache(iconUrl, iconBitmapImage);
+                cachedBitmapImage = iconBitmapImage ?? defaultPackageIcon;
+                AddToCache(iconUrl, cachedBitmapImage);
 
                 _errorFloodGate.ReportAttempt();
             }
 
-            return iconBitmapImage;
+            return cachedBitmapImage;
         }
 
-        private static void AddToCache(Uri iconUrl, BitmapImage iconBitmapImage)
+        private static void AddToCache(Uri iconUrl, BitmapSource iconBitmapImage)
         {
             var policy = new CacheItemPolicy
             {
@@ -124,8 +129,8 @@ namespace NuGet.PackageManagement.UI
             var bitmapImage = sender as BitmapImage;
 
             // Fix the bitmap image cache to have default package icon, if some other failure didn't already do that.
-            var iconBitmapImage = _bitmapImageCache.Get(bitmapImage.UriSource.ToString()) as BitmapImage;
-            if (iconBitmapImage != Images.DefaultPackageIcon)
+            var cachedBitmapImage = _bitmapImageCache.Get(bitmapImage.UriSource.ToString()) as BitmapSource;
+            if (cachedBitmapImage != Images.DefaultPackageIcon)
             {
                 AddToCache(bitmapImage.UriSource, Images.DefaultPackageIcon);
 
