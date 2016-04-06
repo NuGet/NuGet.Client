@@ -234,7 +234,7 @@ namespace NuGet.Protocol
                                 // Nexus will write "null" when there is no depenency version range.
                                 // Parse the optional version range
                                 if (!string.IsNullOrWhiteSpace(versionRangeString) 
-                                    && !string.Equals(NullString, versionRangeString, StringComparison.Ordinal))
+                                    && !string.Equals(NullString, versionRangeString, StringComparison.OrdinalIgnoreCase))
                                 {
                                     // Attempt to parse the version
                                     versionRange = VersionRange.Parse(versionRangeString);
@@ -246,7 +246,7 @@ namespace NuGet.Protocol
                                     var frameworkString = parts[2];
 
                                     if (!string.IsNullOrWhiteSpace(frameworkString)
-                                        && !string.Equals(NullString, versionRangeString, StringComparison.Ordinal))
+                                        && !string.Equals(NullString, versionRangeString, StringComparison.OrdinalIgnoreCase))
                                     {
                                         framework = NuGetFramework.Parse(frameworkString);
                                     }
