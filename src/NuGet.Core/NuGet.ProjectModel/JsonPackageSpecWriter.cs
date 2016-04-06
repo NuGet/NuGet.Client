@@ -78,13 +78,12 @@ namespace NuGet.ProjectModel
                 JObject frameworks = new JObject();
                 foreach (var framework in packageSpec.TargetFrameworks)
                 {
-                    Console.WriteLine("TODD - framework: " + framework.FrameworkName.DotNetFrameworkName);
                     JObject frameworkObject = new JObject();
 
                     SetDependencies(frameworkObject, framework.Dependencies);
                     SetImports(frameworkObject, framework.Imports);
 
-                    frameworks[framework.FrameworkName.DotNetFrameworkName] = frameworkObject;
+                    frameworks[framework.FrameworkName.GetShortFolderName()] = frameworkObject;
                 }                
 
                 SetValue(json, "frameworks", frameworks);
@@ -102,7 +101,10 @@ namespace NuGet.ProjectModel
                 JObject dependencyObject = new JObject();
 
                 SetValue(dependencyObject, "include", dependency.IncludeType.ToString());
-                SetValue(dependencyObject, "version", dependency.LibraryRange.VersionRange.ToNormalizedString());
+                if (!dependency.LibraryRange.VersionRange.Equals(new Versioning.VersionRange()))
+                {
+                    SetValue(dependencyObject, "version", dependency.LibraryRange.VersionRange.ToNormalizedString());
+                }
                 SetValue(dependencyObject, "suppressParent", dependency.SuppressParent.ToString());
                 SetValue(dependencyObject, "type", dependency.Type.ToString());
 
@@ -129,12 +131,15 @@ namespace NuGet.ProjectModel
 
         private static void SetImports(JObject json, IReadOnlyList<NuGetFramework> frameworks)
         {
-            JArray imports = new JArray();
-            foreach (var import in frameworks)
+            if (frameworks.Any())
             {
-                imports.Add(import.ToString());
+                JArray imports = new JArray();
+                foreach (var import in frameworks)
+                {
+                    imports.Add(import.Profile);
+                }
+                json["imports"] = imports;
             }
-            json["imports"] = imports;
         }
 
         private static void SetValue(JObject json, string name, string value)

@@ -18,16 +18,22 @@ namespace NuGet.ProjectModel.Test
         {
             // Arrange
             var json = @"{
-  ""authors"": [ ""todd ""],
+  ""version"": ""1.2.3"",
   ""description"": ""test"",
+  ""authors"": [
+    ""author""
+  ],
+  ""requireLicenseAcceptance"": ""False"",
   ""dependencies"": {
     ""packageA"": {
-      ""target"": ""project""
-      }
-    },
-    ""frameworks"": {
-      ""net46"": {
+      ""include"": ""All"",
+      ""suppressParent"": ""Build, ContentFiles, Analyzers"",
+      ""type"": ""MainReference,MainSource"",
+      ""target"": ""Project""
     }
+  },
+  ""frameworks"": {
+    ""net46"": {}
   }
 }";
 
@@ -38,7 +44,8 @@ namespace NuGet.ProjectModel.Test
             JsonPackageSpecWriter.WritePackageSpec(spec, jsonObject);
 
             string text;
-            using (var memoryStream = new MemoryStream())
+            byte[] buffer = new byte[json.Length];
+            using (var memoryStream = new MemoryStream(buffer, true))
             {
                 using (var textWriter = new StreamWriter(memoryStream))
                 {
@@ -46,18 +53,13 @@ namespace NuGet.ProjectModel.Test
                     {
                         jsonWriter.Formatting = Formatting.Indented;
                         jsonObject.WriteTo(jsonWriter);
-                        jsonWriter.Flush();
-                        textWriter.Flush();
-                        memoryStream.Flush();
 
-                        Console.WriteLine("TODD - memoryStream.Length: " + memoryStream.Length);
-                        byte[] buffer = new byte[memoryStream.Length + 1];
-                        memoryStream.Read(buffer, 0, (int)memoryStream.Length);
-                        Encoding encoding = new System.Text.UnicodeEncoding();
-                        text = encoding.GetString(buffer);
+                        jsonWriter.Flush();
                     }
                 }
             }
+
+            text = System.Text.Encoding.UTF8.GetString(buffer);
 
             // Assert
             Assert.Equal(json, text);
