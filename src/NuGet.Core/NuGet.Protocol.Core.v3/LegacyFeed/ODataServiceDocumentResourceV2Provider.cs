@@ -106,7 +106,7 @@ namespace NuGet.Protocol.Core.v3
                 cancellationToken: token);
 
             string serviceDocumentBaseAddress = null;
-            if (response.Status != HttpSourceResultStatus.NotFound)
+            if (response.Stream != null)
             {
                 serviceDocumentBaseAddress = V2FeedParser.GetBaseAddress(response.Stream);
             }
