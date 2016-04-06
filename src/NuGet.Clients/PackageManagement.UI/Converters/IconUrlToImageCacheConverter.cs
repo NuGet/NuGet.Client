@@ -75,11 +75,7 @@ namespace NuGet.PackageManagement.UI
             }
             // if the URL is a file: URI (which actually happened!), we'll get an exception.
             // if the URL is a file: URI which is in an existing directory, but the file doesn't exist, we'll fail silently.
-            catch (Exception e)
-            when (
-                e is System.IO.IOException || 
-                e is System.Net.WebException ||
-                e is System.NotSupportedException)
+            catch (Exception)
             {
                 iconBitmapImage = null;
             }

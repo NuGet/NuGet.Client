@@ -33,7 +33,7 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [Fact]
-        public void Convert_WithLocalPath_ReturnsDefault()
+        public void Convert_WhenFileNotFound_ReturnsDefault()
         {
             var iconUrl = new Uri(@"C:\path\to\image.png");
 
@@ -49,9 +49,27 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [Fact]
+        public void Convert_WithLocalPath_LoadsImage()
+        {
+            var iconUrl = new Uri(@"resources/packageicon.png", UriKind.Relative);
+
+            var converter = new IconUrlToImageCacheConverter();
+
+            var image = converter.Convert(
+                iconUrl,
+                typeof(ImageSource),
+                DefaultPackageIcon,
+                Thread.CurrentThread.CurrentCulture) as BitmapImage;
+
+            Assert.NotNull(image);
+            Assert.NotSame(DefaultPackageIcon, image);
+            Assert.Equal(iconUrl, image.UriSource);
+        }
+
+        [Fact]
         public void Convert_WithValidImageUrl_DownloadsImage()
         {
-            var iconUrl = new Uri("http://go.microsoft.com/fwlink/?LinkID=288859");
+            var iconUrl = new Uri("http://fake.com/image.png");
 
             var converter = new IconUrlToImageCacheConverter();
 
