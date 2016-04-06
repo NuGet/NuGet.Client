@@ -99,52 +99,17 @@ namespace NuGet.Commands
                 _success = false;
             }
 
-            // Scan every graph for compatibility, as long as there were no unresolved packages
-            var checkResults = new List<CompatibilityCheckResult>();
-            if (graphs.All(g => !g.Unresolved.Any()))
+            var checkResults = VerifyCompatibility(
+                _request.Project,
+                _includeFlagGraphs,
+                localRepository,
+                lockFile,
+                graphs,
+                _logger);
+
+            if (checkResults.Any(r => !r.Success))
             {
-                var checker = new CompatibilityChecker(localRepository, lockFile, _logger);
-                foreach (var graph in graphs)
-                {
-                    _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingCompatibility, graph.Name));
-
-                    var includeFlags = IncludeFlagUtils.FlattenDependencyTypes(_includeFlagGraphs, _request.Project, graph);
-
-                    var res = checker.Check(graph, includeFlags);
-                    _success &= res.Success;
-                    checkResults.Add(res);
-                    if (res.Success)
-                    {
-                        _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackagesAndProjectsAreCompatible, graph.Name));
-                    }
-                    else
-                    {
-                        // Get error counts on a project vs package basis
-                        var projectCount = res.Issues.Count(issue => issue.Type == CompatibilityIssueType.ProjectIncompatible);
-                        var packageCount = res.Issues.Count(issue => issue.Type != CompatibilityIssueType.ProjectIncompatible);
-
-                        // Log a summary with compatibility error counts
-                        if (projectCount > 0)
-                        {
-                            _logger.LogError(
-                                string.Format(CultureInfo.CurrentCulture,
-                                    Strings.Log_ProjectsIncompatible,
-                                    graph.Name));
-
-                            _logger.LogDebug($"Incompatible projects: {projectCount}");
-                        }
-
-                        if (packageCount > 0)
-                        {
-                            _logger.LogError(
-                                string.Format(CultureInfo.CurrentCulture,
-                                    Strings.Log_PackagesIncompatible,
-                                    graph.Name));
-
-                            _logger.LogDebug($"Incompatible packages: {packageCount}");
-                        }
-                    }
-                }
+                _success = false;
             }
 
             // Generate Targets/Props files
@@ -258,6 +223,64 @@ namespace NuGet.Commands
             }
 
             return true;
+        }
+
+        private static IList<CompatibilityCheckResult> VerifyCompatibility(
+            PackageSpec project,
+            Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>> includeFlagGraphs,
+            NuGetv3LocalRepository localRepository,
+            LockFile lockFile,
+            IEnumerable<RestoreTargetGraph> graphs,
+            ILogger logger)
+        {
+            // Scan every graph for compatibility, as long as there were no unresolved packages
+            var checkResults = new List<CompatibilityCheckResult>();
+            if (graphs.All(g => !g.Unresolved.Any()))
+            {
+                var checker = new CompatibilityChecker(localRepository, lockFile, logger);
+                foreach (var graph in graphs)
+                {
+                    logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_CheckingCompatibility, graph.Name));
+
+                    var includeFlags = IncludeFlagUtils.FlattenDependencyTypes(includeFlagGraphs, project, graph);
+
+                    var res = checker.Check(graph, includeFlags);
+                    checkResults.Add(res);
+                    if (res.Success)
+                    {
+                        logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_PackagesAndProjectsAreCompatible, graph.Name));
+                    }
+                    else
+                    {
+                        // Get error counts on a project vs package basis
+                        var projectCount = res.Issues.Count(issue => issue.Type == CompatibilityIssueType.ProjectIncompatible);
+                        var packageCount = res.Issues.Count(issue => issue.Type != CompatibilityIssueType.ProjectIncompatible);
+
+                        // Log a summary with compatibility error counts
+                        if (projectCount > 0)
+                        {
+                            logger.LogError(
+                                string.Format(CultureInfo.CurrentCulture,
+                                    Strings.Log_ProjectsIncompatible,
+                                    graph.Name));
+
+                            logger.LogDebug($"Incompatible projects: {projectCount}");
+                        }
+
+                        if (packageCount > 0)
+                        {
+                            logger.LogError(
+                                string.Format(CultureInfo.CurrentCulture,
+                                    Strings.Log_PackagesIncompatible,
+                                    graph.Name));
+
+                            logger.LogDebug($"Incompatible packages: {packageCount}");
+                        }
+                    }
+                }
+            }
+
+            return checkResults;
         }
 
         private async Task<IEnumerable<ToolRestoreResult>> ExecuteToolRestoresAsync(
@@ -397,6 +420,20 @@ namespace NuGet.Commands
 
                 // Validate the results.
                 if (!ValidateRestoreGraphs(graphs, _logger))
+                {
+                    toolSuccess = false;
+                    _success = false;
+                }
+                
+                var checkResults = VerifyCompatibility(
+                    toolPackageSpec,
+                    new Dictionary<RestoreTargetGraph, Dictionary<string, LibraryIncludeFlags>>(),
+                    localRepository,
+                    toolLockFile,
+                    graphs,
+                    _logger);
+
+                if (checkResults.Any(r => !r.Success))
                 {
                     toolSuccess = false;
                     _success = false;

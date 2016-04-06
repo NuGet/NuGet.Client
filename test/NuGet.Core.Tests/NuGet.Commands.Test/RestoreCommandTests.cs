@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -810,7 +811,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreCommand_NoMatchingToolImports()
+        public async Task RestoreCommand_NoMatchingToolImportsForTool()
         {
             // Arrange
             using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
@@ -843,11 +844,18 @@ namespace NuGet.Commands.Test
                 await result.CommitAsync(tc.Logger, CancellationToken.None);
 
                 // Assert
-                Assert.True(
+                Assert.False(
                     result.Success,
-                    "The command should have succeeded. Error messages: "
-                    + Environment.NewLine + tc.Logger.ShowErrors());
+                    "The command should not have succeeded. Messages: "
+                    + Environment.NewLine + tc.Logger.ShowMessages());
                 Assert.Equal(1, result.ToolRestoreResults.Count());
+
+                Assert.Contains(
+                    "Package packageA 1.0.0 is not compatible with netcoreapp1.0 (.NETCoreApp,Version=v1.0). Package packageA 1.0.0 supports: win8 (Windows,Version=v8.0)",
+                    tc.Logger.ErrorMessages);
+                Assert.Contains(
+                    "One or more packages are incompatible with .NETCoreApp,Version=v1.0.",
+                    tc.Logger.ErrorMessages);
 
                 var toolResult = result.ToolRestoreResults.First();
                 Assert.NotNull(toolResult.LockFilePath);
@@ -869,6 +877,84 @@ namespace NuGet.Commands.Test
                 var library = target.Libraries.First(l => l.Name == "packageA");
                 Assert.NotNull(library);
                 Assert.Equal(0, library.RuntimeAssemblies.Count);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_NoMatchingToolImportsForToolDependency()
+        {
+            // Arrange
+            using (var testDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var tc = new ToolTestContext(testDirectory)
+                {
+                    ProjectJson = @"
+                    {
+                        ""frameworks"": {
+                            ""net45"": { }
+                        },
+                        ""tools"": {
+                            ""packageB"": {
+                                ""version"": ""*""
+                            }
+                        }
+                    }"
+                };
+
+                var packageA = new SimpleTestPackageContext("packageA");
+                packageA.AddFile("lib/win8/a.dll");
+                packageA.AddFile("lib/net40/a.dll");
+
+                var packageB = new SimpleTestPackageContext("packageB");
+                packageB.AddFile("lib/netstandard1.4/b.dll");
+                packageB.Dependencies.Add(packageA);
+
+                SimpleTestPackageUtility.CreatePackages(tc.PackageSource.FullName, packageA, packageB);
+
+                tc.Initialize();
+
+                // Act
+                var result = await tc.Command.ExecuteAsync();
+                await result.CommitAsync(tc.Logger, CancellationToken.None);
+
+                // Assert
+                Assert.False(
+                    result.Success,
+                    "The command should not have succeeded. Messages: "
+                    + Environment.NewLine + tc.Logger.ShowMessages());
+                Assert.Equal(1, result.ToolRestoreResults.Count());
+
+                Assert.Contains(
+                    "Package packageA 1.0.0 is not compatible with netcoreapp1.0 (.NETCoreApp,Version=v1.0). Package packageA 1.0.0 supports:" +
+                    Environment.NewLine + "  - net40 (.NETFramework,Version=v4.0)" +
+                    Environment.NewLine + "  - win8 (Windows,Version=v8.0)",
+                    tc.Logger.ErrorMessages);
+                Assert.Contains(
+                    "One or more packages are incompatible with .NETCoreApp,Version=v1.0.",
+                    tc.Logger.ErrorMessages);
+
+                var toolResult = result.ToolRestoreResults.First();
+                Assert.NotNull(toolResult.LockFilePath);
+                Assert.True(
+                    File.Exists(toolResult.LockFilePath),
+                    $"The tool lock file at {toolResult.LockFilePath} does not exist.");
+                Assert.NotNull(toolResult.LockFile);
+                Assert.Equal(1, toolResult.LockFile.Targets.Count);
+
+                var target = toolResult.LockFile.Targets[0];
+                Assert.Null(target.RuntimeIdentifier);
+                Assert.Equal(
+                    FrameworkConstants.CommonFrameworks.NetCoreApp10,
+                    target.TargetFramework);
+                Assert.Equal(2, target.Libraries.Count);
+
+                var libraryA = target.Libraries.First(l => l.Name == "packageA");
+                Assert.NotNull(libraryA);
+                Assert.Equal(0, libraryA.RuntimeAssemblies.Count);
+
+                var libraryB = target.Libraries.First(l => l.Name == "packageB");
+                Assert.NotNull(libraryB);
+                Assert.Equal(1, libraryB.RuntimeAssemblies.Count);
             }
         }
 
