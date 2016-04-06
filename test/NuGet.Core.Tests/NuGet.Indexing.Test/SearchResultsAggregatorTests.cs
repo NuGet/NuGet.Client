@@ -41,9 +41,15 @@ namespace NuGet.Indexing.Test
             var results = await aggregator.AggregateAsync(queryString, rawSearch1, rawSearch2);
 
             var mergedPackage = FindNuGetCorePackage(results);
-            var vm = await GetPackageVersionsAsync(mergedPackage);
-            Assert.Superset(v1, vm);
-            Assert.Superset(v2, vm);
+
+            var vm = (await mergedPackage.GetVersionsAsync()).Select(v => v.Version);
+
+            // validate no duplicates
+            Assert.Equal(vm, vm.Distinct());
+
+            var vmset = new HashSet<NuGetVersion>(vm);
+            Assert.Superset(v1, vmset);
+            Assert.Superset(v2, vmset);
         }
 
         [Fact]

@@ -1,11 +1,11 @@
 {
   "dependencies": {
-    "NuGet.PackageManagement": "3.4.1-*",
-    "NuGet.ProjectManagement": "3.4.1-*",
-    "NuGet.Protocol.Core.Types": "3.4.1-*",
-    "NuGet.Protocol.VisualStudio": "3.4.1-*",
+    "NuGet.PackageManagement": "3.4.2-*",
+    "NuGet.ProjectManagement": "3.4.2-*",
+    "NuGet.Protocol.Core.Types": "3.4.2-*",
+    "NuGet.Protocol.VisualStudio": "3.4.2-*",
     "System.Management.Automation_PowerShell_3.0": "6.3.9600.17400",
-    "Test.Utility": "3.4.1-*"
+    "Test.Utility": "3.4.2-*"
   },
   "frameworks": {
     "net451": {}

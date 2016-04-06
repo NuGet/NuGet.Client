@@ -1,5 +1,5 @@
 {
-  "version": "3.4.1-*",
+  "version": "3.4.2-*",
   "authors": [
     "NuGet"
   ],
@@ -16,10 +16,10 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Common": "3.4.1-*",
+    "NuGet.Common": "3.4.2-*",
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.1-*"
+      "version": "3.4.2-*"
     }
   },
   "frameworks": {

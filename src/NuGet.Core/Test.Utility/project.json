@@ -1,5 +1,5 @@
 {
-  "version": "3.4.1-*",
+  "version": "3.4.2-*",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
   "projectUrl": "https://github.com/NuGet/NuGet.Client",
   "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
@@ -7,12 +7,12 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.PackageManagement": "3.4.1-*",
-    "NuGet.ProjectManagement": "3.4.1-*",
-    "NuGet.Protocol.VisualStudio": "3.4.1-*",
+    "NuGet.PackageManagement": "3.4.2-*",
+    "NuGet.ProjectManagement": "3.4.2-*",
+    "NuGet.Protocol.VisualStudio": "3.4.2-*",
     "Microsoft.VisualStudio.ProjectSystem.Interop": "1.0.0",
     "xunit": "2.1.0",
-    "NuGet.Test.Utility": "3.4.1-*"
+    "NuGet.Test.Utility": "3.4.2-*"
   },
   "frameworks": {
     "net45": {

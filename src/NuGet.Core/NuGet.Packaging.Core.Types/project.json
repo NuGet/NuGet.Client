@@ -1,14 +1,14 @@
 {
-  "version": "3.4.1-*",
+  "version": "3.4.2-*",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
   "projectUrl": "https://github.com/NuGet/NuGet.Client",
   "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
   "dependencies": {
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.1-*"
+      "version": "3.4.2-*"
     },
-    "NuGet.Frameworks": "3.4.1-*"
+    "NuGet.Frameworks": "3.4.2-*"
   },
   "compilationOptions": {
     "warningsAsErrors": true

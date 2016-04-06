@@ -111,7 +111,12 @@ namespace NuGet.Indexing
             {
                 var newerEntry = (lhs.Identity.Version >= rhs.Identity.Version) ? lhs : rhs;
                 var versions = await Task.WhenAll(lhs.GetVersionsAsync(), rhs.GetVersionsAsync());
-                var mergedVersions = versions.SelectMany(v => v).Distinct().ToArray();
+                var mergedVersions = versions
+                    .SelectMany(v => v) // flatten a list of two lists
+                    .GroupBy(v => v.Version) // group all by version
+                    .Select(group => group.First()) // select first VersionInfo for each version
+                    .ToArray(); // force execution
+
                 return newerEntry.WithVersions(mergedVersions);
             }
         }

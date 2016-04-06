@@ -11,9 +11,9 @@
     },
 
   "dependencies": {
-    "NuGet.Common": "3.4.1-*",
+    "NuGet.Common": "3.4.2-*",
     "NuGet.Shared": {
-      "version": "3.4.1-*",
+      "version": "3.4.2-*",
       "type": "build"
     }
   },
