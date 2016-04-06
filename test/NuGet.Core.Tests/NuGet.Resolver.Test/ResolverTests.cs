@@ -229,7 +229,7 @@ namespace NuGet.Resolver.Test
         }
 
         [Fact]
-        public void ResolveDependenciesForVeryLargeSet()
+        public void ResolveDependenciesForVeryDeepGraph()
         {
             // Arrange
             var target = CreatePackage("Package0", "1.0", new Dictionary<string, string>() {

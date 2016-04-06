@@ -302,8 +302,9 @@ namespace NuGet.Resolver
             }
 
             // add any unsorted nodes onto the end of the result
-            var sorted = new HashSet<string>(result.Select(n => n.Id), StringComparer.OrdinalIgnoreCase);
-            result.AddRange(nodes.Where(n => !sorted.Contains(n.Id)).OrderBy(p => p.Id, StringComparer.OrdinalIgnoreCase));
+            var uniqueResult = new HashSet<string>(result.Select(n => n.Id), StringComparer.OrdinalIgnoreCase);
+            var sorted = nodes.Where(n => !uniqueResult.Contains(n.Id)).OrderBy(p => p.Id, StringComparer.OrdinalIgnoreCase);
+            result.AddRange(sorted);
 
             return result;
         }
@@ -330,9 +331,9 @@ namespace NuGet.Resolver
         }
 
         /// <summary>
-        /// Returns the first circular dependency found. Please sort solution topologically first to improve performance.
+        /// Returns the first circular dependency found for a package. Please sort solution topologically first to improve performance.
         /// </summary>
-        public static IEnumerable<ResolverPackage> FindCircularDependency(IEnumerable<ResolverPackage> solution)
+        public static IEnumerable<ResolverPackage> FindFirstCircularDependency(IEnumerable<ResolverPackage> solution)
         {
             // to keep track of visited packages to avoid processing them again
             var visitedPackages = new HashSet<ResolverPackage>();
@@ -343,7 +344,7 @@ namespace NuGet.Resolver
             foreach (var package in solution)
             {                
                 var result = FindCircularDependency(package, packageLookUp, visitedPackages);
-                if (result?.Any() == true)
+                if (result.Any())
                 {
                     return result;
                 }
@@ -355,39 +356,38 @@ namespace NuGet.Resolver
         private static List<ResolverPackage> FindCircularDependency(ResolverPackage package, Dictionary<string, ResolverPackage> packageLookUp, HashSet<ResolverPackage> visitedPackages)
         {
             // avoid checking depths beyond 20 packages deep
-            //ashish: removed 20 packages check to go by any depth since no more stack processing
             if (package != null && !package.Absent && package.Dependencies.Any())
             {                
                 var queue = new Queue<QueueNode>();
-                //added the first initial node to queue
-                var qNode = new QueueNode(package, new List<ResolverPackage>());
-                queue.Enqueue(qNode);
 
-                //BFS traversal to traverse through all the packages to find out circular dependency
+                // added the first initial node to queue
+                var node = new QueueNode(package, new List<ResolverPackage>());
+                queue.Enqueue(node);
+
+                // BFS traversal to traverse through all the packages to find out circular dependency
                 while (queue.Count > 0)
                 {
                     var source = queue.Dequeue();
-                    //access parent list and add current package as well
-                    var parentPackages = new List<ResolverPackage>(source.Parent);
+
+                    // access parent packages list and add current package as well
+                    var parentPackages = new List<ResolverPackage>(source.ParentPackages);
                     parentPackages.Add(source.Package);
 
                     // walk the dependencies
                     foreach (var dependency in source.Package.Dependencies.OrderBy(d => d.Id, StringComparer.OrdinalIgnoreCase))
                     {
                         var dependencyPackage = packageLookUp[dependency.Id];
-                        //If already visited, then check current source package for circular dependency since it means we've already processed child nodes
-                        //bottom-up approach                     
+
+                        // If already visited, then it means it doesn't have any circular dependency so we can avoid processing this node again
                         if (!visitedPackages.Contains(dependencyPackage))
-                        {
-                            //top-down approach
-                            //it means we've processed parent node, n moving down-ward
+                        {                            
                             if (parentPackages.Contains(dependencyPackage))
                             {
-                                // loop detected
+                                // circular dependency detected
                                 parentPackages.Add(dependencyPackage);
                                 return parentPackages;
                             }
-                            //add child node to Queue to process
+                            // add child node to Queue to process further
                             var newQNode = new QueueNode(dependencyPackage, parentPackages);
                             queue.Enqueue(newQNode);
                         }
@@ -395,22 +395,22 @@ namespace NuGet.Resolver
                 }
             }
 
-            //add processed packages to local cache
+            // add processed packages to local cache
             visitedPackages.Add(package);
 
             // end of the walk
-            return null;
+            return new List<ResolverPackage>();
         }
 
         /// <summary>
-        /// Simple QueueNode class to hold package n it's parent node list together
+        /// Simple QueueNode class to hold package n it's parent nodes list together
         /// </summary>
         private class QueueNode
         {
-            public QueueNode(ResolverPackage package, List<ResolverPackage> parent)
+            public QueueNode(ResolverPackage package, List<ResolverPackage> parentPackages)
             {
                 Package = package;
-                Parent = parent;
+                ParentPackages = parentPackages;
             }
 
             /// <summary>
@@ -421,7 +421,7 @@ namespace NuGet.Resolver
             /// <summary>
             /// Complete Parent list for the given package
             /// </summary>
-            public List<ResolverPackage> Parent { get; }
+            public List<ResolverPackage> ParentPackages { get; }
         }         
     }
 }

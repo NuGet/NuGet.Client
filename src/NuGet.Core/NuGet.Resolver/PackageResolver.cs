@@ -136,7 +136,7 @@ namespace NuGet.Resolver
 
                     // Find circular dependency for topologically sorted non absent packages since it will help maintain cache of 
                     // already processed packages
-                    var circularReferences = ResolverUtility.FindCircularDependency(sortedSolution);
+                    var circularReferences = ResolverUtility.FindFirstCircularDependency(sortedSolution);
 
                     if (circularReferences.Any())
                     {

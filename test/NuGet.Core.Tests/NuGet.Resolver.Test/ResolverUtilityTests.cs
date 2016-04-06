@@ -111,7 +111,7 @@ namespace NuGet.Resolver.Test
             solution.Add(CreateAbsentPackage("y"));
 
             // Act
-            var result = ResolverUtility.FindCircularDependency(solution);
+            var result = ResolverUtility.FindFirstCircularDependency(solution);
 
             // Assert
             Assert.False(result.Any());
@@ -137,7 +137,7 @@ namespace NuGet.Resolver.Test
              new NuGet.Packaging.Core.PackageDependency("a", VersionRange.Parse("[1.0.0]"))));
 
             // Act
-            var result = ResolverUtility.FindCircularDependency(solution);
+            var result = ResolverUtility.FindFirstCircularDependency(solution);
 
             // Assert
             var message = String.Join(" => ", result);
@@ -159,7 +159,7 @@ namespace NuGet.Resolver.Test
                 new NuGet.Packaging.Core.PackageDependency("a", VersionRange.Parse("[1.0.0]"))));
 
             // Act
-            var result = ResolverUtility.FindCircularDependency(solution);
+            var result = ResolverUtility.FindFirstCircularDependency(solution);
 
             // Assert
             Assert.Equal("a 1.0.0 => b 1.0.0 => c 1.0.0 => d 1.0.0 => a 1.0.0", String.Join(" => ", result));
@@ -176,7 +176,7 @@ namespace NuGet.Resolver.Test
                 new NuGet.Packaging.Core.PackageDependency("a", VersionRange.Parse("[1.0.0]"))));
 
             // Act
-            var result = ResolverUtility.FindCircularDependency(solution);
+            var result = ResolverUtility.FindFirstCircularDependency(solution);
 
             // Assert
             Assert.Equal("a 1.0.0 => b 1.0.0 => a 1.0.0", String.Join(" => ", result));
@@ -211,7 +211,7 @@ namespace NuGet.Resolver.Test
                 new NuGet.Packaging.Core.PackageDependency("f", VersionRange.Parse("[1.0.0]"))));
 
             // Act
-            var result = ResolverUtility.FindCircularDependency(solution);
+            var result = ResolverUtility.FindFirstCircularDependency(solution);
 
             // Assert
             Assert.Equal("x 1.0.0 => a 1.0.0 => b 1.0.0 => c 1.0.0 => d 1.0.0 => a 1.0.0", String.Join(" => ", result));
@@ -237,7 +237,7 @@ namespace NuGet.Resolver.Test
             solution.Add(CreatePackage("j", "1.0.0", null));
 
             // Act
-            var result = ResolverUtility.FindCircularDependency(solution);
+            var result = ResolverUtility.FindFirstCircularDependency(solution);
 
             // Assert
             Assert.False(result.Any());
