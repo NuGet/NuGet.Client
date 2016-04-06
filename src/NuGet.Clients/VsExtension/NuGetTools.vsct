@@ -109,6 +109,17 @@
         </Strings>
       </Button>
 
+      <Button guid="guidDialogCmdSet" id="cmdidConvertPackagesConfig" priority="0x0400" type="Button">
+        <Parent guid="guidReferenceContext" id="cmdAddReferenceGroup" />
+        <Icon guid="guidToolbarImages" id="bmpAddNuGetPackage" />
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <CommandName>cmdidConvertPackagesConfig</CommandName>
+          <ButtonText>Convert to project.json...</ButtonText>
+        </Strings>
+      </Button>
+
       <Button guid="guidToolsGroup" id="idGeneralSettings" priority="0xF200" type="Button">
         <Parent guid="guidToolsGroup" id="idToolsGroup"/>
         <Icon guid="guidToolbarImages" id="bmpSourceSettings" />
@@ -195,6 +206,9 @@
     <CommandPlacement guid="guidDialogCmdSet" id="cmdidAddPackages" priority="0xF100">
       <Parent guid="guidVenusCmdId" id="IDG_CTX_REFERENCE"/>
     </CommandPlacement>
+    <CommandPlacement guid="guidDialogCmdSet" id="cmdidConvertPackagesConfig" priority="0xF100">
+      <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_ITEM_OPEN"/>
+    </CommandPlacement>
     <CommandPlacement guid="guidDialogCmdSet" id="cmdidRestorePackages" priority="0xF101">
       <Parent guid="guidSHLMainMenu" id="IDG_VS_CTXT_SOLUTION_BUILD" />
     </CommandPlacement>
@@ -235,6 +249,7 @@
       <IDSymbol name="cmdidAddPackages" value="0x0100" />
       <IDSymbol name="cmdidAddPackagesForSolution" value="0x0200" />
       <IDSymbol name="cmdidRestorePackages" value="0x0300" />
+      <IDSymbol name="cmdidConvertPackagesConfig" value="0x0400" />
     </GuidSymbol>
     <GuidSymbol name="guidVenusCmdId" value="{C7547851-4E3A-4E5B-9173-FA6E9C8BD82C}" >
       <IDSymbol name="IDG_VENUS_CTX_REFERENCE" value="27" />

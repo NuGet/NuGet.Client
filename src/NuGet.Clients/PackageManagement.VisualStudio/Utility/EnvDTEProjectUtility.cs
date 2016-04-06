@@ -362,7 +362,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// Returns the full path of the packages config file associated with the project.
         /// </summary>
         /// <param name="envDTEProject">The project.</param>
-        internal static string GetPackagesConfigFullPath(EnvDTEProject envDTEProject)
+        public static string GetPackagesConfigFullPath(EnvDTEProject envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
