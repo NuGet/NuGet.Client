@@ -37,7 +37,20 @@ namespace NuGet.ProjectModel
 
         public string Title { get; set; }
 
-        public NuGetVersion Version { get; set; }
+        private NuGetVersion _version;
+        public NuGetVersion Version
+        {
+            get
+            {
+                return _version;
+            }
+            set
+            {
+                _version = value;
+                this.IsDefaultVersion = false;
+            }
+        }
+        public bool IsDefaultVersion { get; set; }
 
         public string Description { get; set; }
 

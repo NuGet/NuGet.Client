@@ -172,10 +172,22 @@ namespace NuGet.Commands
             {
                 builder.Id = id;
             }
-            builder.Version = spec.Version;
-            builder.Title = spec.Title;
-            builder.Description = spec.Description;
-            builder.Copyright = spec.Copyright;
+            if (!spec.IsDefaultVersion)
+            {
+                builder.Version = spec.Version;
+            }
+            if (spec.Title != null)
+            {
+                builder.Title = spec.Title;
+            }
+            if (spec.Description != null)
+            {
+                builder.Description = spec.Description;
+            }
+            if (spec.Copyright != null)
+            {
+                builder.Copyright = spec.Copyright;
+            }
             if (spec.Authors.Any())
             {
                 builder.Authors.AddRange(spec.Authors);
@@ -198,9 +210,18 @@ namespace NuGet.Commands
                 builder.IconUrl = tempUri;
             }
             builder.RequireLicenseAcceptance = spec.RequireLicenseAcceptance;
-            builder.Summary = spec.Summary;
-            builder.ReleaseNotes = spec.ReleaseNotes;
-            builder.Language = spec.Language;
+            if (spec.Summary != null)
+            {
+                builder.Summary = spec.Summary;
+            }
+            if (spec.ReleaseNotes != null)
+            {
+                builder.ReleaseNotes = spec.ReleaseNotes;
+            }
+            if (spec.Language != null)
+            {
+                builder.Language = spec.Language;
+            }
 
             foreach (var include in spec.PackInclude)
             {
@@ -211,7 +232,7 @@ namespace NuGet.Commands
             // Also, id is null only when we want to skip the AddFiles
             if (basePath != null && id != null && !builder.Files.Any())
             {
-                builder.AddFiles(basePath, @"**\*", null);
+                builder.AddFiles(basePath, @"**\*.dll", null);
             }
 
             if (spec.Tags.Any())

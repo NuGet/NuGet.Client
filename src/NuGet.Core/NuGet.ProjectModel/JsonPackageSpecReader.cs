@@ -68,6 +68,7 @@ namespace NuGet.ProjectModel
             if (version == null)
             {
                 packageSpec.Version = new NuGetVersion("1.0.0");
+                packageSpec.IsDefaultVersion = true;
             }
             else
             {
