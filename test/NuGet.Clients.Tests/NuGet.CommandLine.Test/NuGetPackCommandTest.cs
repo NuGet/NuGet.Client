@@ -2383,6 +2383,80 @@ namespace " + projectName + @"
 }");
         }
 
+        [Fact]
+        public void PackCommand_FrameworkAssemblies()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                // Arrange
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles/any/any"),
+                    "image.jpg",
+                    "");
+
+                Util.CreateFile(
+                    workingDirectory,
+                    Path.GetFileName(workingDirectory) + ".project.json",
+                @"{
+  ""version"": ""1.0.0"",
+  ""title"": ""packageA"",
+  ""authors"": [ ""test"" ],
+  ""owners"": [ ""test"" ],
+  ""requireLicenseAcceptance"": ""false"",
+  ""description"": ""Description"",
+  ""copyright"": ""Copyright ©  2013"",
+  ""frameworks"": {
+    ""net46"": {
+      ""frameworkAssemblies"": {
+        ""System.Xml"": """",
+        ""System.Xml.Linq"": """"
+      }
+    }
+  }
+}
+");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack " + Path.GetFileName(workingDirectory) + ".project.json",
+                    waitForExit: true);
+                Assert.Equal(0, r.Item1);
+
+                var id = Path.GetFileName(workingDirectory);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, id + ".1.0.0.nupkg");
+                var package = new OptimizedZipPackage(path);
+                using (var zip = new ZipArchive(File.OpenRead(path)))
+                {
+                    var manifestReader
+                        = new StreamReader(zip.Entries.Single(file => file.FullName == id + ".nuspec").Open());
+                    var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
+
+                    var node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "dependencies");
+                    var actual = node.ToString().Replace("\r\n", "\n");
+
+                    Assert.Equal(
+                        @"<dependencies xmlns=""http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"">
+  <group targetFramework="".NETFramework4.6"" />
+</dependencies>".Replace("\r\n", "\n"), actual);
+
+                    node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "frameworkAssemblies");
+                    actual = node.ToString().Replace("\r\n", "\n");
+
+                    Assert.Equal(
+                        @"<frameworkAssemblies xmlns=""http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"">
+  <frameworkAssembly assemblyName=""System.Xml"" targetFramework="".NETFramework4.6"" />
+  <frameworkAssembly assemblyName=""System.Xml.Linq"" targetFramework="".NETFramework4.6"" />
+</frameworkAssemblies>".Replace("\r\n", "\n"), actual);
+                }
+            }
+        }
+
         private class PackageDepencyComparer : IEqualityComparer<PackageDependency>
         {
             public bool Equals(PackageDependency x, PackageDependency y)
