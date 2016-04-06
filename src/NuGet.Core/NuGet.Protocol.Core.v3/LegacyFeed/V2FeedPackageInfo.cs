@@ -33,6 +33,7 @@ namespace NuGet.Protocol
         private readonly string _packageHash;
         private readonly string _packageHashAlgorithm;
         private readonly NuGetVersion _minClientVersion;
+        private const string NullString = "null";
 
         public V2FeedPackageInfo(PackageIdentity identity, string title, string summary, string description, IEnumerable<string> authors, IEnumerable<string> owners,
             string iconUrl, string licenseUrl, string projectUrl, string reportAbuseUrl,
@@ -230,8 +231,10 @@ namespace NuGet.Protocol
                             {
                                 var versionRangeString = parts[1];
 
+                                // Nexus will write "null" when there is no depenency version range.
                                 // Parse the optional version range
-                                if (!string.IsNullOrEmpty(versionRangeString))
+                                if (!string.IsNullOrWhiteSpace(versionRangeString) 
+                                    && !string.Equals(NullString, versionRangeString, StringComparison.OrdinalIgnoreCase))
                                 {
                                     // Attempt to parse the version
                                     versionRange = VersionRange.Parse(versionRangeString);
@@ -242,7 +245,8 @@ namespace NuGet.Protocol
                                 {
                                     var frameworkString = parts[2];
 
-                                    if (!string.IsNullOrEmpty(frameworkString))
+                                    if (!string.IsNullOrWhiteSpace(frameworkString)
+                                        && !string.Equals(NullString, versionRangeString, StringComparison.OrdinalIgnoreCase))
                                     {
                                         framework = NuGetFramework.Parse(frameworkString);
                                     }
