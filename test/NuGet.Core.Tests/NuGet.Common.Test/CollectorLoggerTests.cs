@@ -5,7 +5,7 @@ using System.Linq;
 using Moq;
 using Xunit;
 
-namespace NuGet.Logging.Test
+namespace NuGet.Common.Test
 {
     public class CollectorLoggerTests
     {

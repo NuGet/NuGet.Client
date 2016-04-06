@@ -3,7 +3,7 @@ using System.Globalization;
 using System.IO;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Commands;
-using NuGet.Logging;
+using NuGet.Common;
 using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat

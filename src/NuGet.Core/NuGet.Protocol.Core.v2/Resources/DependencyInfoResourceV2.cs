@@ -41,7 +41,7 @@ namespace NuGet.Protocol.Core.v2
         /// Returns dependency info for the given package if it exists. If the package is not found null is
         /// returned.
         /// </returns>
-        public override Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, Logging.ILogger log, CancellationToken token)
+        public override Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, Common.ILogger log, CancellationToken token)
         {
             if (package == null)
             {
@@ -98,7 +98,7 @@ namespace NuGet.Protocol.Core.v2
         /// Returns dependency info for the given package if it exists. If the package is not found null is
         /// returned.
         /// </returns>
-        public override Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, Logging.ILogger log, CancellationToken token)
+        public override Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, Common.ILogger log, CancellationToken token)
         {
             if (packageId == null)
             {

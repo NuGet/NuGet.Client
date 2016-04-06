@@ -40,7 +40,7 @@ namespace NuGet.Protocol
             SearchFilter filters,
             int skip,
             int take,
-            Logging.ILogger log,
+            Common.ILogger log,
             CancellationToken cancellationToken)
         {
             var query = await _feedParser.Search(
@@ -62,7 +62,7 @@ namespace NuGet.Protocol
         private IPackageSearchMetadata CreatePackageSearchResult(
             V2FeedPackageInfo package,
             SearchFilter filter,
-            Logging.ILogger log,
+            Common.ILogger log,
             CancellationToken cancellationToken)
         {
             var metadata = new PackageSearchMetadataV2Feed(package);
@@ -73,7 +73,7 @@ namespace NuGet.Protocol
         public async Task<IEnumerable<VersionInfo>> GetVersions(
             V2FeedPackageInfo package,
             SearchFilter filter,
-            Logging.ILogger log,
+            Common.ILogger log,
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();

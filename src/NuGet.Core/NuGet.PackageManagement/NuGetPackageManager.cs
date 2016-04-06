@@ -1302,7 +1302,7 @@ namespace NuGet.PackageManagement
         /// </summary>
         private static async Task<SourceRepository> GetSourceRepository(PackageIdentity packageIdentity,
             IEnumerable<SourceRepository> sourceRepositories,
-            Logging.ILogger logger)
+            Common.ILogger logger)
         {
             SourceRepository source = null;
 
@@ -1505,7 +1505,7 @@ namespace NuGet.PackageManagement
 
                 foreach (var package in packageIdentities)
                 {
-                    var packageDependencyInfo = await dependencyInfoResource.ResolvePackage(package, nuGetFramework, Logging.NullLogger.Instance, CancellationToken.None);
+                    var packageDependencyInfo = await dependencyInfoResource.ResolvePackage(package, nuGetFramework, Common.NullLogger.Instance, CancellationToken.None);
                     if (packageDependencyInfo != null)
                     {
                         results.Add(packageDependencyInfo);
@@ -2202,7 +2202,7 @@ namespace NuGet.PackageManagement
             NuGetFramework framework,
             ResolutionContext resolutionContext,
             SourceRepository primarySourceRepository,
-            Logging.ILogger log,
+            Common.ILogger log,
             CancellationToken token)
         {
             return GetLatestVersionAsync(
@@ -2219,7 +2219,7 @@ namespace NuGet.PackageManagement
             NuGetProject project,
             ResolutionContext resolutionContext,
             SourceRepository primarySourceRepository,
-            Logging.ILogger log,
+            Common.ILogger log,
             CancellationToken token)
         {
             NuGetFramework framework;
@@ -2243,7 +2243,7 @@ namespace NuGet.PackageManagement
             NuGetProject project,
             ResolutionContext resolutionContext,
             IEnumerable<SourceRepository> sources,
-            Logging.ILogger log,
+            Common.ILogger log,
             CancellationToken token)
         {
             var tasks = new List<Task<NuGetVersion>>();
@@ -2263,7 +2263,7 @@ namespace NuGet.PackageManagement
             NuGetFramework framework,
             ResolutionContext resolutionContext,
             IEnumerable<SourceRepository> sources,
-            Logging.ILogger log,
+            Common.ILogger log,
             CancellationToken token)
         {
             var tasks = new List<Task<NuGetVersion>>();
@@ -2283,7 +2283,7 @@ namespace NuGet.PackageManagement
             NuGetFramework framework,
             ResolutionContext resolutionContext,
             SourceRepository source,
-            Logging.ILogger log,
+            Common.ILogger log,
             CancellationToken token)
         {
             var dependencyInfoResource = await source.GetResourceAsync<DependencyInfoResource>();

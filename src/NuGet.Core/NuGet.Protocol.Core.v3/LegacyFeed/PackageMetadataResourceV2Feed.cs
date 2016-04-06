@@ -41,7 +41,7 @@ namespace NuGet.Protocol
             string packageId,
             bool includePrerelease,
             bool includeUnlisted,
-            Logging.ILogger log,
+            Common.ILogger log,
             CancellationToken token)
         {
             var packages = await _feedParser.FindPackagesByIdAsync(packageId, includeUnlisted, includePrerelease, log, token);

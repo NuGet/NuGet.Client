@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using NuGet.Logging;
+using NuGet.Common;
 
 namespace NuGet.Commands
 {

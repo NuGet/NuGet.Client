@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
-using NuGet.Logging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 

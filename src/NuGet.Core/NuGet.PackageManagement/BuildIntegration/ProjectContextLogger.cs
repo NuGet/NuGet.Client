@@ -5,7 +5,7 @@ using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement
 {
-    public class ProjectContextLogger : NuGet.Logging.ILogger
+    public class ProjectContextLogger : NuGet.Common.ILogger
     {
         private readonly INuGetProjectContext _projectContext;
 

@@ -28,7 +28,7 @@ namespace NuGet.Protocol.VisualStudio
             V2Client = repo;
         }
 
-        public async override Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(string searchTerm, SearchFilter filters, int skip, int take, Logging.ILogger log, CancellationToken cancellationToken)
+        public async override Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(string searchTerm, SearchFilter filters, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
         {
             return await Task.Run(() =>
             {

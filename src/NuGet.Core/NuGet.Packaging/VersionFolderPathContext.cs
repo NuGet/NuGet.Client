@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Globalization;
-using NuGet.Logging;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging

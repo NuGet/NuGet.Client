@@ -16,7 +16,7 @@ namespace NuGet.Protocol.Core.Types
             string packageId,
             bool includePrerelease,
             bool includeUnlisted,
-            Logging.ILogger log,
+            Common.ILogger log,
             CancellationToken token);
     }
 }

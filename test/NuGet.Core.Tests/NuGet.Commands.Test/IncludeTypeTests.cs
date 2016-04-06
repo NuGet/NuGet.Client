@@ -1575,7 +1575,7 @@ namespace NuGet.Commands.Test
 
         private async Task<RestoreResult> ProjectToProjectSetup(
             string workingDir,
-            NuGet.Logging.ILogger logger,
+            NuGet.Common.ILogger logger,
             string configJson1,
             string configJson2)
         {
@@ -1643,7 +1643,7 @@ namespace NuGet.Commands.Test
 
         private async Task<RestoreResult> TriangleProjectSetup(
             string workingDir,
-            NuGet.Logging.ILogger logger,
+            NuGet.Common.ILogger logger,
             string configJson1,
             string configJson2,
             string configJson3)
@@ -1706,7 +1706,7 @@ namespace NuGet.Commands.Test
 
         private async Task<RestoreResult> StandardSetup(
             string workingDir,
-            NuGet.Logging.ILogger logger,
+            NuGet.Common.ILogger logger,
             string configJson)
         {
             // Arrange

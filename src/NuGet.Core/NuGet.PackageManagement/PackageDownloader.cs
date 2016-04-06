@@ -28,7 +28,7 @@ namespace NuGet.PackageManagement
         public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(IEnumerable<SourceRepository> sources,
             PackageIdentity packageIdentity,
             Configuration.ISettings settings,
-            Logging.ILogger logger,
+            Common.ILogger logger,
             CancellationToken token)
         {
             if (sources == null)
@@ -168,7 +168,7 @@ namespace NuGet.PackageManagement
         public static async Task<DownloadResourceResult> GetDownloadResourceResultAsync(SourceRepository sourceRepository,
             PackageIdentity packageIdentity,
             Configuration.ISettings settings,
-            Logging.ILogger logger,
+            Common.ILogger logger,
             CancellationToken token)
         {
             if (sourceRepository == null)

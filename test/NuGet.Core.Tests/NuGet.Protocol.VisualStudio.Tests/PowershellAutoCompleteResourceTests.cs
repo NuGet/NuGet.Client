@@ -34,7 +34,7 @@ namespace NuGet.Protocol.VisualStudio.Tests
 
             // Act
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            IEnumerable<string> packages = await resource.IdStartsWith("elm", true, Logging.NullLogger.Instance, cancellationTokenSource.Token);
+            IEnumerable<string> packages = await resource.IdStartsWith("elm", true, Common.NullLogger.Instance, cancellationTokenSource.Token);
 
             // Assert
             Assert.True(packages != null & packages.Count() > 0);
@@ -53,7 +53,7 @@ namespace NuGet.Protocol.VisualStudio.Tests
 
             // Act
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            Task<IEnumerable<string>> packagesTask = resource.IdStartsWith("elm", true, Logging.NullLogger.Instance, cancellationTokenSource.Token);
+            Task<IEnumerable<string>> packagesTask = resource.IdStartsWith("elm", true, Common.NullLogger.Instance, cancellationTokenSource.Token);
             cancellationTokenSource.Cancel();
 
             // Assert

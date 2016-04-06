@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Logging;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat

@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Text;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
-using NuGet.Logging;
+using NuGet.Common;
 
 namespace NuGet.CommandLine.XPlat
 {

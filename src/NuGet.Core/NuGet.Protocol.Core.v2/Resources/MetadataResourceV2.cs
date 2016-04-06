@@ -28,7 +28,7 @@ namespace NuGet.Protocol.Core.v2
             V2Client = resource.V2Client;
         }
 
-        public override async Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, Logging.ILogger log, CancellationToken token)
+        public override async Task<IEnumerable<KeyValuePair<string, NuGetVersion>>> GetLatestVersions(IEnumerable<string> packageIds, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
         {
             var results = new List<KeyValuePair<string, NuGetVersion>>();
 
@@ -63,7 +63,7 @@ namespace NuGet.Protocol.Core.v2
             return results;
         }
 
-        public override async Task<IEnumerable<NuGetVersion>> GetVersions(string packageId, bool includePrerelease, bool includeUnlisted, Logging.ILogger log, CancellationToken token)
+        public override async Task<IEnumerable<NuGetVersion>> GetVersions(string packageId, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -85,7 +85,7 @@ namespace NuGet.Protocol.Core.v2
             }
         }
 
-        public override Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, Logging.ILogger log, CancellationToken token)
+        public override Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, Common.ILogger log, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -126,7 +126,7 @@ namespace NuGet.Protocol.Core.v2
             return Task.FromResult(exists);
         }
 
-        public override Task<bool> Exists(string packageId, bool includePrerelease, bool includeUnlisted, Logging.ILogger log, CancellationToken token)
+        public override Task<bool> Exists(string packageId, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
         {
             return Task.FromResult(V2Client.Exists(packageId));
         }

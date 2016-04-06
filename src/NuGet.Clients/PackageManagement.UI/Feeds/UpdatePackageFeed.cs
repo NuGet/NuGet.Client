@@ -20,13 +20,13 @@ namespace NuGet.PackageManagement.UI
         private readonly IEnumerable<PackageIdentity> _installedPackages;
         private readonly IPackageMetadataProvider _metadataProvider;
         private readonly PackageSearchMetadataCache _cachedUpdates;
-        private readonly Logging.ILogger _logger;
+        private readonly Common.ILogger _logger;
 
         public UpdatePackageFeed(
             IEnumerable<PackageIdentity> installedPackages,
             IPackageMetadataProvider metadataProvider,
             PackageSearchMetadataCache cachedUpdates,
-            Logging.ILogger logger)
+            Common.ILogger logger)
         {
             if (installedPackages == null)
             {

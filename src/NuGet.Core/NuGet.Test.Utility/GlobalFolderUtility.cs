@@ -28,7 +28,7 @@ namespace NuGet.Test.Utility
                 var pathContext = new VersionFolderPathContext(
                     package: reader.GetIdentity(),
                     packagesDirectory: globalFolder,
-                    logger: Logging.NullLogger.Instance,
+                    logger: Common.NullLogger.Instance,
                     fixNuspecIdCasing: true,
                     packageSaveMode: PackageSaveMode.Defaultv3,
                     normalizeFileNames: true,

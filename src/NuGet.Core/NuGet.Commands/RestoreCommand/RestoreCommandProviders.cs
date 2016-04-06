@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using NuGet.Common;
 using NuGet.DependencyResolver;
-using NuGet.Logging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
 using NuGet.Repositories;

@@ -23,9 +23,6 @@
     },
     "NuGet.Packaging.Core": {
       "target": "project"
-    },
-    "NuGet.Logging": {
-      "target": "project"
     }
   },
   "frameworks": {

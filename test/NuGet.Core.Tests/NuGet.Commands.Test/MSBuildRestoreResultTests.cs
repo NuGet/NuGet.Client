@@ -39,7 +39,7 @@ namespace NuGet.Commands.Test
                     Assert.False(File.Exists(targetsPath));
 
                     // Act
-                    msBuildRestoreResult.Commit(Logging.NullLogger.Instance);
+                    msBuildRestoreResult.Commit(Common.NullLogger.Instance);
 
                     Assert.True(File.Exists(targetsPath));
                     var xml = XDocument.Load(targetsPath);

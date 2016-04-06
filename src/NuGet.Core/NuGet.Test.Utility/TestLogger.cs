@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 
 namespace NuGet.Test.Utility
 {
-    public class TestLogger : Logging.ILogger
+    public class TestLogger : Common.ILogger
     {
         /// <summary>
         /// Logged messages

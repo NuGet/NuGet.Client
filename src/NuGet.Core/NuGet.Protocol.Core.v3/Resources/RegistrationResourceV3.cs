@@ -97,7 +97,7 @@ namespace NuGet.Protocol.Core.v3
         /// Returns the registration blob for the id and version
         /// </summary>
         /// <remarks>The inlined entries are potentially going away soon</remarks>
-        public virtual async Task<JObject> GetPackageMetadata(PackageIdentity identity, Logging.ILogger log, CancellationToken token)
+        public virtual async Task<JObject> GetPackageMetadata(PackageIdentity identity, Common.ILogger log, CancellationToken token)
         {
             return (await GetPackageMetadata(identity.Id, new VersionRange(identity.Version, true, identity.Version, true), true, true, log, token)).SingleOrDefault();
         }
@@ -106,7 +106,7 @@ namespace NuGet.Protocol.Core.v3
         /// Returns inlined catalog entry items for each registration blob
         /// </summary>
         /// <remarks>The inlined entries are potentially going away soon</remarks>
-        public virtual async Task<IEnumerable<JObject>> GetPackageMetadata(string packageId, bool includePrerelease, bool includeUnlisted, Logging.ILogger log, CancellationToken token)
+        public virtual async Task<IEnumerable<JObject>> GetPackageMetadata(string packageId, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
         {
             return await GetPackageMetadata(packageId, VersionRange.All, includePrerelease, includeUnlisted, log, token);
         }
@@ -115,7 +115,7 @@ namespace NuGet.Protocol.Core.v3
         /// Returns inlined catalog entry items for each registration blob
         /// </summary>
         /// <remarks>The inlined entries are potentially going away soon</remarks>
-        public virtual async Task<IEnumerable<JObject>> GetPackageMetadata(string packageId, VersionRange range, bool includePrerelease, bool includeUnlisted, Logging.ILogger log, CancellationToken token)
+        public virtual async Task<IEnumerable<JObject>> GetPackageMetadata(string packageId, VersionRange range, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
         {
             var results = new List<JObject>();
 
@@ -157,7 +157,7 @@ namespace NuGet.Protocol.Core.v3
         /// <summary>
         /// Returns all index entries of type Package within the given range and filters
         /// </summary>
-        public virtual Task<IEnumerable<JObject>> GetPackageEntries(string packageId, bool includeUnlisted, Logging.ILogger log, CancellationToken token)
+        public virtual Task<IEnumerable<JObject>> GetPackageEntries(string packageId, bool includeUnlisted, Common.ILogger log, CancellationToken token)
         {
             return GetPackageMetadata(packageId, VersionRange.All, true, includeUnlisted, log, token);
         }

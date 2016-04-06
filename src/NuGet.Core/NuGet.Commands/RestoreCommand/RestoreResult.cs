@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.LibraryModel;
-using NuGet.Logging;
 using NuGet.ProjectModel;
 
 namespace NuGet.Commands

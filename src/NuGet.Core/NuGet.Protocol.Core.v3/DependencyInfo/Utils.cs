@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NuGet.Logging;
+using NuGet.Common;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.v3.DependencyInfo

@@ -7,9 +7,9 @@ namespace NuGet.CommandLine
 {
     public class ConsoleProjectContext : INuGetProjectContext
     {
-        private readonly Logging.ILogger _logger;
+        private readonly Common.ILogger _logger;
 
-        public ConsoleProjectContext(Logging.ILogger logger)
+        public ConsoleProjectContext(Common.ILogger logger)
         {
             _logger = logger;
         }

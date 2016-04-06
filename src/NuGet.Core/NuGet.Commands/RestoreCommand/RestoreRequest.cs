@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
-using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.ProjectModel;

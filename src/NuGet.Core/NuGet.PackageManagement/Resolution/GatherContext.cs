@@ -72,11 +72,11 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Logging adapter
         /// </summary>
-        public Logging.ILogger Log
+        public Common.ILogger Log
         {
             get
             {
-                return ProjectContext == null ? Logging.NullLogger.Instance : new LoggerAdapter(ProjectContext);
+                return ProjectContext == null ? Common.NullLogger.Instance : new LoggerAdapter(ProjectContext);
             }
         }
     }

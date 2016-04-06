@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Logging;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Protocol.Core.Types;

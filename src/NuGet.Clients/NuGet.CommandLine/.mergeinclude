@@ -13,7 +13,6 @@ NuGet.DependencyResolver.Core.dll
 NuGet.DependencyResolver.dll
 NuGet.Frameworks.dll
 NuGet.LibraryModel.dll
-NuGet.Logging.dll
 NuGet.PackageManagement.dll
 NuGet.Packaging.Core.dll
 NuGet.Packaging.Core.Types.dll

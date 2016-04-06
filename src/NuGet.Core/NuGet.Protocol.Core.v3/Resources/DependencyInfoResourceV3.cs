@@ -62,7 +62,7 @@ namespace NuGet.Protocol.Core.v3
         /// Returns dependency info for the given package if it exists. If the package is not found null is
         /// returned.
         /// </returns>
-        public override async Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, Logging.ILogger log, CancellationToken token)
+        public override async Task<SourcePackageDependencyInfo> ResolvePackage(PackageIdentity package, NuGetFramework projectFramework, Common.ILogger log, CancellationToken token)
         {
             try
             {
@@ -101,7 +101,7 @@ namespace NuGet.Protocol.Core.v3
         /// <param name="projectFramework">project target framework. This is used for finding the dependency group</param>
         /// <param name="token">cancellation token</param>
         /// <returns>available packages and their dependencies</returns>
-        public override async Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, Logging.ILogger log, CancellationToken token)
+        public override async Task<IEnumerable<SourcePackageDependencyInfo>> ResolvePackages(string packageId, NuGetFramework projectFramework, Common.ILogger log, CancellationToken token)
         {
             try
             {
@@ -142,7 +142,7 @@ namespace NuGet.Protocol.Core.v3
         /// <param name="projectFramework">project target framework. This is used for finding the dependency group</param>
         /// <param name="token">cancellation token</param>
         /// <returns>available packages and their dependencies</returns>
-        public override Task<IEnumerable<RemoteSourceDependencyInfo>> ResolvePackages(string packageId, Logging.ILogger log, CancellationToken token)
+        public override Task<IEnumerable<RemoteSourceDependencyInfo>> ResolvePackages(string packageId, Common.ILogger log, CancellationToken token)
         {
             try
             {

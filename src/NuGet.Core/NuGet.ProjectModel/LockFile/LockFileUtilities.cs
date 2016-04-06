@@ -9,7 +9,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// Returns the lockfile if it exists, otherwise null.
         /// </summary>
-        public static LockFile GetLockFile(string lockFilePath, Logging.ILogger logger)
+        public static LockFile GetLockFile(string lockFilePath, Common.ILogger logger)
         {
             LockFile lockFile = null;
 

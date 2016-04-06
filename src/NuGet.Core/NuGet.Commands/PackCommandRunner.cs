@@ -7,7 +7,6 @@ using NuGet.Commands.Rules;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.LibraryModel;
-using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.Versioning;
 using NuGet.ProjectModel;

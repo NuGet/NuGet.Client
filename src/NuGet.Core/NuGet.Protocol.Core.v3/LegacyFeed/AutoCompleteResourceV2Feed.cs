@@ -40,7 +40,7 @@ namespace NuGet.Protocol
         public override async Task<IEnumerable<string>> IdStartsWith(
             string packageIdPrefix,
             bool includePrerelease,
-            Logging.ILogger log,
+            Common.ILogger log,
             CancellationToken token)
         {
             var apiEndpointUri = new UriBuilder(new Uri(_baseUri, @"package-ids"))
@@ -55,7 +55,7 @@ namespace NuGet.Protocol
             string packageId,
             string versionPrefix,
             bool includePrerelease,
-            Logging.ILogger log,
+            Common.ILogger log,
             CancellationToken token)
         {
             var apiEndpointUri = new UriBuilder(new Uri(_baseUri, @"package-versions/" + packageId))
@@ -73,7 +73,7 @@ namespace NuGet.Protocol
 
         private async Task<IEnumerable<string>> GetResults(
             Uri apiEndpointUri,
-            Logging.ILogger logger,
+            Common.ILogger logger,
             CancellationToken token)
         {
             return await _httpSource.ProcessStreamAsync(

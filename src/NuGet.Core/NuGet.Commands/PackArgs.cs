@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using NuGet.Configuration;
-using NuGet.Logging;
+using NuGet.Common;
 
 namespace NuGet.Commands
 {

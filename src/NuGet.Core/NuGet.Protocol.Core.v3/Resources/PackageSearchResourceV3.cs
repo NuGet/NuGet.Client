@@ -22,9 +22,9 @@ namespace NuGet.Protocol
             _metadataResource = metadataResource;
         }
 
-        public async override Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(string searchTerm, SearchFilter filter, int skip, int take, Logging.ILogger log, CancellationToken cancellationToken)
+        public async override Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(string searchTerm, SearchFilter filter, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
         {
-            var searchResultJsonObjects = await _rawSearchResource.Search(searchTerm, filter, skip, take, Logging.NullLogger.Instance, cancellationToken);
+            var searchResultJsonObjects = await _rawSearchResource.Search(searchTerm, filter, skip, take, Common.NullLogger.Instance, cancellationToken);
 
             var searchResults = searchResultJsonObjects
                 .Select(s => s.FromJToken<PackageSearchMetadata>())

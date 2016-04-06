@@ -27,7 +27,7 @@ namespace NuGet.Protocol
             _reportAbuseResource = reportAbuseResource;
         }
 
-        public override async Task<IEnumerable<IPackageSearchMetadata>> GetMetadataAsync(string packageId, bool includePrerelease, bool includeUnlisted, Logging.ILogger log, CancellationToken token)
+        public override async Task<IEnumerable<IPackageSearchMetadata>> GetMetadataAsync(string packageId, bool includePrerelease, bool includeUnlisted, Common.ILogger log, CancellationToken token)
         {
             var metadataList = await _regResource.GetPackageMetadata(packageId, includePrerelease, includeUnlisted, log, token);
             return metadataList.Select(ParseMetadata);

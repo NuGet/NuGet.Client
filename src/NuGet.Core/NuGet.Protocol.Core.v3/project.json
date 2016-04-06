@@ -17,7 +17,7 @@
     "../NuGet.Shared/*.cs"
   ],
   "dependencies": {
-    "NuGet.Logging": {
+    "NuGet.Common": {
       "target": "project"
     },
     "NuGet.Packaging": {

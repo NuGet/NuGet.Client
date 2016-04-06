@@ -26,7 +26,7 @@ namespace NuGet.Protocol.VisualStudio
             string packageId,
             bool includePrerelease,
             bool includeUnlisted,
-            Logging.ILogger log,
+            Common.ILogger log,
             CancellationToken token)
         {
             return await Task.Run(() =>

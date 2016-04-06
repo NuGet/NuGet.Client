@@ -15,7 +15,6 @@ using NuGet.Versioning;
 
 namespace NuGet.CommandLine
 {
-    using Logging;
     using Microsoft.Build.Evaluation;
     using Microsoft.Build.Execution;
     using NuGet.Frameworks;
@@ -29,7 +28,7 @@ namespace NuGet.CommandLine
         // Its type is Microsoft.Build.Evaluation.Project
         private dynamic _project;
 
-        private Logging.ILogger _logger;
+        private Common.ILogger _logger;
         private Configuration.ISettings _settings;
 
         // Files we want to always exclude from the resulting package
@@ -187,11 +186,11 @@ namespace NuGet.CommandLine
 
         public LogLevel LogLevel { get; set; }
 
-        public Logging.ILogger Logger
+        public Common.ILogger Logger
         {
             get
             {
-                return _logger ?? Logging.NullLogger.Instance;
+                return _logger ?? Common.NullLogger.Instance;
             }
             set
             {

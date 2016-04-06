@@ -488,7 +488,7 @@ namespace NuGet.PackageManagement.UI
                         package.Id,
                         includePrerelease: true,
                         includeUnlisted: true,
-                        log: Logging.NullLogger.Instance,
+                        log: Common.NullLogger.Instance,
                         token: token);
                     var packageMetadata = r.FirstOrDefault(p => p.Identity.Version == package.Version);
                     if (packageMetadata != null)

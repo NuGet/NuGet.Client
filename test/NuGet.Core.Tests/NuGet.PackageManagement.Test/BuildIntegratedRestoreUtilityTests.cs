@@ -1072,7 +1072,7 @@ namespace NuGet.Test
 
         private static ExternalProjectReferenceContext GetExternalProjectReferenceContext()
         {
-            return new ExternalProjectReferenceContext(Logging.NullLogger.Instance);
+            return new ExternalProjectReferenceContext(Common.NullLogger.Instance);
         }
 
         private class TestBuildIntegratedNuGetProject : BuildIntegratedNuGetProject

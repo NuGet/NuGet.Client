@@ -14,11 +14,11 @@ namespace NuGet.PackageManagement.UI
     internal class MultiSourceAutoCompleteProvider : IAutoCompleteProvider
     {
         private readonly IEnumerable<SourceRepository> _sourceRepositories;
-        private readonly Logging.ILogger _logger;
+        private readonly Common.ILogger _logger;
 
         public MultiSourceAutoCompleteProvider(
             IEnumerable<SourceRepository> sourceRepositories,
-            Logging.ILogger logger)
+            Common.ILogger logger)
         {
             _sourceRepositories = sourceRepositories;
             _logger = logger;

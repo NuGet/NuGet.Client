@@ -8,7 +8,6 @@ using System.IO;
 using System.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Logging;
 using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;

@@ -560,25 +560,25 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected async Task<IEnumerable<IPackageSearchMetadata>> GetPackagesFromRemoteSourceAsync(string packageId, bool includePrerelease)
         {
-            var metadataProvider = new MultiSourcePackageMetadataProvider(PrimarySourceRepositories, optionalLocalRepository: null, optionalGlobalLocalRepository: null, logger: Logging.NullLogger.Instance);
+            var metadataProvider = new MultiSourcePackageMetadataProvider(PrimarySourceRepositories, optionalLocalRepository: null, optionalGlobalLocalRepository: null, logger: Common.NullLogger.Instance);
             return await metadataProvider.GetPackageMetadataListAsync(packageId, includePrerelease, false, Token);
         }
 
         protected async Task<IPackageSearchMetadata> GetLatestPackageFromRemoteSourceAsync(PackageIdentity identity, bool includePrerelease)
         {
-            var metadataProvider = new MultiSourcePackageMetadataProvider(PrimarySourceRepositories, optionalLocalRepository: null, optionalGlobalLocalRepository: null, logger: Logging.NullLogger.Instance);
+            var metadataProvider = new MultiSourcePackageMetadataProvider(PrimarySourceRepositories, optionalLocalRepository: null, optionalGlobalLocalRepository: null, logger: Common.NullLogger.Instance);
             return await metadataProvider.GetLatestPackageMetadataAsync(identity, includePrerelease, Token);
         }
 
         protected async Task<IEnumerable<string>> GetPackageIdsFromRemoteSourceAsync(string idPrefix, bool includePrerelease)
         {
-            var autoCompleteProvider = new MultiSourceAutoCompleteProvider(PrimarySourceRepositories, logger: Logging.NullLogger.Instance);
+            var autoCompleteProvider = new MultiSourceAutoCompleteProvider(PrimarySourceRepositories, logger: Common.NullLogger.Instance);
             return await autoCompleteProvider.IdStartsWithAsync(idPrefix, includePrerelease, Token);
         }
 
         protected async Task<IEnumerable<NuGetVersion>> GetPackageVersionsFromRemoteSourceAsync(string id, string versionPrefix, bool includePrerelease)
         {
-            var autoCompleteProvider = new MultiSourceAutoCompleteProvider(PrimarySourceRepositories, logger: Logging.NullLogger.Instance);
+            var autoCompleteProvider = new MultiSourceAutoCompleteProvider(PrimarySourceRepositories, logger: Common.NullLogger.Instance);
             var results = await autoCompleteProvider.VersionStartsWithAsync(id, versionPrefix, includePrerelease, Token);
             return results?.OrderByDescending(v => v).ToArray();
         }

@@ -4,8 +4,8 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Logging;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
@@ -25,7 +25,7 @@ namespace Test.Utility
         {
             _responses = responses;
         }
-        
+
         protected override Stream TryReadCacheFile(string uri, TimeSpan maxAge, string cacheFile)
         {
             string s;

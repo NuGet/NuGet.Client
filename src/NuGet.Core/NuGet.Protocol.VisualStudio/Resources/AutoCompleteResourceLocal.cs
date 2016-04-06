@@ -29,7 +29,7 @@ namespace NuGet.Protocol.VisualStudio
         public override async Task<IEnumerable<string>> IdStartsWith(
             string packageIdPrefix,
             bool includePrerelease,
-            Logging.ILogger log,
+            Common.ILogger log,
             CancellationToken token)
         {
             return await GetPackageIdsFromLocalPackageRepository(V2Client, packageIdPrefix, true, token);
@@ -39,7 +39,7 @@ namespace NuGet.Protocol.VisualStudio
             string packageId,
             string versionPrefix,
             bool includePrerelease,
-            Logging.ILogger log,
+            Common.ILogger log,
             CancellationToken token)
         {
             return await GetPackageVersionsFromLocalPackageRepository(V2Client, packageId, versionPrefix, includePrerelease, token);

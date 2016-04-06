@@ -8,7 +8,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Logging;
 using NuGet.Protocol.Core.v3;
 
 namespace NuGet.Protocol

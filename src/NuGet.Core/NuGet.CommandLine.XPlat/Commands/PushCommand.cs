@@ -3,8 +3,8 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Logging;
 
 namespace NuGet.CommandLine.XPlat
 {

@@ -13,14 +13,14 @@ namespace NuGet.Protocol.Core.Types
         public abstract Task<IEnumerable<string>> IdStartsWith(
             string packageIdPrefix,
             bool includePrerelease,
-            Logging.ILogger log,
+            Common.ILogger log,
             CancellationToken token);
 
         public abstract Task<IEnumerable<NuGetVersion>> VersionStartsWith(
             string packageId,
             string versionPrefix,
             bool includePrerelease,
-            Logging.ILogger log,
+            Common.ILogger log,
             CancellationToken token);
     }
 }

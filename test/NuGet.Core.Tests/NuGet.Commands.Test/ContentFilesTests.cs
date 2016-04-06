@@ -1837,7 +1837,7 @@ namespace NuGet.Commands.Test
             Assert.Equal("False", helperCsItem.Properties["copyToOutput"]);
         }
 
-        private async Task<RestoreResult> SetupWithRuntimes(string framework, NuGet.Logging.ILogger logger)
+        private async Task<RestoreResult> SetupWithRuntimes(string framework, NuGet.Common.ILogger logger)
         {
             // Arrange
             using (var workingDir = TestFileSystemUtility.CreateRandomTestFolder())
@@ -1890,14 +1890,14 @@ namespace NuGet.Commands.Test
 
         private async Task<RestoreResult> StandardSetup(
             string framework,
-            NuGet.Logging.ILogger logger)
+            NuGet.Common.ILogger logger)
         {
             return await StandardSetup(framework, logger, null);
         }
 
         private async Task<RestoreResult> StandardSetup(
             string framework,
-            NuGet.Logging.ILogger logger,
+            NuGet.Common.ILogger logger,
             JObject configJson)
         {
             // Arrange

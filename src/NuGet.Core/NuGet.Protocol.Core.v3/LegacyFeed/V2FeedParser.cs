@@ -13,7 +13,6 @@ using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
-using NuGet.Logging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;

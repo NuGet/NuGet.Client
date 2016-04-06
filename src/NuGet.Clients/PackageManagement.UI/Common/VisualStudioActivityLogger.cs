@@ -6,7 +6,7 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Logger routing messages into VS ActivityLog
     /// </summary>
-    internal class VisualStudioActivityLogger : Logging.ILogger
+    internal class VisualStudioActivityLogger : Common.ILogger
     {
         private const string LogEntrySource = "NuGet Package Manager";
 

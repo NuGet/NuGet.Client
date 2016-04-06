@@ -21,13 +21,13 @@ namespace NuGet.PackageManagement.UI
         private readonly IEnumerable<SourceRepository> _sourceRepositories;
         private readonly SourceRepository _localRepository;
         private readonly SourceRepository _globalLocalRepository;
-        private readonly Logging.ILogger _logger;
+        private readonly Common.ILogger _logger;
 
         public MultiSourcePackageMetadataProvider(
             IEnumerable<SourceRepository> sourceRepositories,
             SourceRepository optionalLocalRepository,
             SourceRepository optionalGlobalLocalRepository,
-            Logging.ILogger logger)
+            Common.ILogger logger)
         {
             if (sourceRepositories == null)
             {

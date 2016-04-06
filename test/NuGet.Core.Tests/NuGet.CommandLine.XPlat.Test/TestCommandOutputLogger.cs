@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using NuGet.Logging;
+using NuGet.Common;
 using NuGet.Test.Utility;
 
 namespace NuGet.CommandLine.XPlat

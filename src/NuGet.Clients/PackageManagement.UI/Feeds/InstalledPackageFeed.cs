@@ -18,12 +18,12 @@ namespace NuGet.PackageManagement.UI
     {
         private readonly IEnumerable<PackageIdentity> _installedPackages;
         private readonly IPackageMetadataProvider _metadataProvider;
-        private readonly Logging.ILogger _logger;
+        private readonly Common.ILogger _logger;
 
         public InstalledPackageFeed(
             IEnumerable<PackageIdentity> installedPackages,
             IPackageMetadataProvider metadataProvider,
-            Logging.ILogger logger)
+            Common.ILogger logger)
         {
             if (installedPackages == null)
             {

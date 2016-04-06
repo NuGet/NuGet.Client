@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace NuGet.Logging
+namespace NuGet.Common
 {
     public interface ICollectorLogger : ILogger
     {

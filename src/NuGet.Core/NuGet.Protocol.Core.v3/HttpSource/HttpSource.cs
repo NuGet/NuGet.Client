@@ -16,7 +16,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Logging;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3;
 

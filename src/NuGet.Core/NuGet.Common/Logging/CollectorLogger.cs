@@ -4,7 +4,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace NuGet.Logging
+namespace NuGet.Common
 {
     public class CollectorLogger : ICollectorLogger
     {

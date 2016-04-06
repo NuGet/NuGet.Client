@@ -1,5 +1,5 @@
 ﻿using System;
-using NuGet.Logging;
+using NuGet.Common;
 
 namespace NuGet.Commands.Rules
 {

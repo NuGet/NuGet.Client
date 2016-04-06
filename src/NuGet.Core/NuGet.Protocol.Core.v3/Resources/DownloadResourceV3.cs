@@ -4,8 +4,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Logging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
@@ -64,7 +64,7 @@ namespace NuGet.Protocol.Core.v3
         /// 2. A url will be constructed for the flat container location if the source has that resource.
         /// 3. The download url will be found in the registration blob as a fallback.
         /// </summary>
-        private async Task<Uri> GetDownloadUrl(PackageIdentity identity, Logging.ILogger log, CancellationToken token)
+        private async Task<Uri> GetDownloadUrl(PackageIdentity identity, Common.ILogger log, CancellationToken token)
         {
             Uri downloadUri = null;
             var sourcePackage = identity as SourcePackageDependencyInfo;

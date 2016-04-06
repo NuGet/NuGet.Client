@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using Microsoft.Extensions.PlatformAbstractions;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;

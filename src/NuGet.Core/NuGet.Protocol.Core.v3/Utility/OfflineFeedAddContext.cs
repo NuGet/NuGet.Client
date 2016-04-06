@@ -11,7 +11,7 @@ namespace NuGet.Protocol.Core.Types
     {
         public string PackagePath { get; }
         public string Source { get; }
-        public Logging.ILogger Logger { get; }
+        public Common.ILogger Logger { get; }
         public bool ThrowIfSourcePackageIsInvalid { get; }
         public bool ThrowIfPackageExistsAndInvalid { get; }
         public bool ThrowIfPackageExists { get; }
@@ -20,7 +20,7 @@ namespace NuGet.Protocol.Core.Types
         public OfflineFeedAddContext(
             string packagePath,
             string source,
-            Logging.ILogger logger,
+            Common.ILogger logger,
             bool throwIfSourcePackageIsInvalid,
             bool throwIfPackageExistsAndInvalid,
             bool throwIfPackageExists,

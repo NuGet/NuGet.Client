@@ -32,7 +32,7 @@ namespace NuGet.Protocol.Core.v2
         public override Task<DownloadResourceResult> GetDownloadResourceResultAsync(
             PackageIdentity identity,
             Configuration.ISettings settings,
-            NuGet.Logging.ILogger logger,
+            NuGet.Common.ILogger logger,
             CancellationToken token)
         {
             // settings are not used here, since, global packages folder are not used for v2 sources
@@ -104,7 +104,7 @@ namespace NuGet.Protocol.Core.v2
         private DownloadResourceResult DownloadFromUrl(
             SourcePackageDependencyInfo package,
             DataServicePackageRepository repository,
-            NuGet.Logging.ILogger logger,
+            NuGet.Common.ILogger logger,
             CancellationToken token)
         {
             IPackage newPackage = null;
@@ -155,7 +155,7 @@ namespace NuGet.Protocol.Core.v2
         private DownloadResourceResult DownloadFromIdentity(
             PackageIdentity identity,
             IPackageRepository repository,
-            NuGet.Logging.ILogger logger,
+            NuGet.Common.ILogger logger,
             CancellationToken token)
         {
             var version = SemanticVersion.Parse(identity.Version.ToString());
@@ -232,7 +232,7 @@ namespace NuGet.Protocol.Core.v2
             PackageIdentity package,
             DataServicePackageRepository repository,
             Uri downloadUri,
-            NuGet.Logging.ILogger logger,
+            NuGet.Common.ILogger logger,
             CancellationToken token)
         {
             var packageName = new PackageNameWrapper(package);

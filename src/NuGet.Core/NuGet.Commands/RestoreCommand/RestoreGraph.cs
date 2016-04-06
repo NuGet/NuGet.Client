@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Client;
+using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Logging;
 using NuGet.RuntimeModel;
 
 namespace NuGet.Commands
