@@ -2441,7 +2441,7 @@ namespace " + projectName + @"
                     var actual = node.ToString().Replace("\r\n", "\n");
 
                     Assert.Equal(
-                        @"<dependencies xmlns=""http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd"">
+                        @"<dependencies xmlns=""http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"">
   <group targetFramework="".NETFramework4.6"" />
 </dependencies>".Replace("\r\n", "\n"), actual);
 
@@ -2449,7 +2449,7 @@ namespace " + projectName + @"
                     actual = node.ToString().Replace("\r\n", "\n");
 
                     Assert.Equal(
-                        @"<frameworkAssemblies xmlns=""http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd"">
+                        @"<frameworkAssemblies xmlns=""http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd"">
   <frameworkAssembly assemblyName=""System.Xml"" targetFramework="".NETFramework4.6"" />
   <frameworkAssembly assemblyName=""System.Xml.Linq"" targetFramework="".NETFramework4.6"" />
 </frameworkAssemblies>".Replace("\r\n", "\n"), actual);

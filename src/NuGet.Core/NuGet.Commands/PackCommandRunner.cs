@@ -137,6 +137,11 @@ namespace NuGet.Commands
                 LoadProjectJsonFile(builder, path, _packArgs.BasePath, Path.GetFileName(Path.GetDirectoryName(path)), stream, propertyProvider);
             }
 
+            if (!builder.Files.Any())
+            {
+                builder.AddFiles(_packArgs.BasePath, @"**/*", null);
+            }
+
             return builder;
         }
 
@@ -226,13 +231,6 @@ namespace NuGet.Commands
             foreach (var include in spec.PackInclude)
             {
                 builder.AddFiles(basePath, include.Value, include.Key);
-            }
-
-            // If there's no base path then ignore the files node
-            // Also, id is null only when we want to skip the AddFiles
-            if (basePath != null && id != null && !builder.Files.Any())
-            {
-                builder.AddFiles(basePath, @"**\*.dll", null);
             }
 
             if (spec.Tags.Any())
