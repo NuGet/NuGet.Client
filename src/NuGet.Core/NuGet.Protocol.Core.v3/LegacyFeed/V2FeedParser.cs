@@ -425,7 +425,7 @@ namespace NuGet.Protocol
 
             return results;
         }
-        
+
         internal async Task<XDocument> LoadXmlAsync(
             string uri,
             bool ignoreNotFounds,
@@ -433,11 +433,11 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             return await _httpSource.ProcessResponseAsync(
-                () => 
+                () =>
                 {
                     var request = new HttpRequestMessage(HttpMethod.Get, uri);
                     request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/atom+xml"));
-                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));                    
+                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));
                     return request;
                 },
                 async response =>

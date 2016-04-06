@@ -521,5 +521,38 @@ namespace NuGet.Protocol.Core.v3.Tests
                 "returned an unexpected status code '500 Internal Server Error'.",
                 exception.Message);
         }
+
+        [Fact]
+        public async Task V2FeedParser_NexusFindPackagesByIdNullDependencyRange()
+        {
+            // Arrange
+            var serviceAddress = TestUtility.CreateServiceAddress();
+
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "FindPackagesById()?id='PackageA'",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.NexusFindPackagesById.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
+
+            V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
+
+            // Act
+            var packages = await parser.FindPackagesByIdAsync("PackageA", NullLogger.Instance, CancellationToken.None);
+
+            var latest = packages.OrderByDescending(e => e.Version, VersionComparer.VersionRelease).FirstOrDefault();
+
+            // Assert
+            Assert.Equal("PackageA", latest.Id);
+            Assert.Equal("1.0.0.99", latest.Version.ToNormalizedString());
+            Assert.Equal("My Name", String.Join(",", latest.Authors));
+            Assert.Equal("", String.Join(",", latest.Owners));
+            Assert.True(latest.Description.StartsWith("Some description"));
+            Assert.Equal(0, latest.DownloadCountAsInt);
+            Assert.Equal("PackageB:null|EntityFramework:6.1.3|PackageC:3.7.0.15", latest.Dependencies);
+            Assert.Equal(1, latest.DependencySets.Count());
+            Assert.Equal(VersionRange.All, latest.DependencySets.Single().Packages.Where(p => p.Id == "PackageB").Single().VersionRange);
+            Assert.Equal("any", latest.DependencySets.First().TargetFramework.GetShortFolderName());
+        }
     }
 }
