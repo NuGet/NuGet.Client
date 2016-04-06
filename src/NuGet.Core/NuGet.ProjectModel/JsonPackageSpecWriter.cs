@@ -78,12 +78,13 @@ namespace NuGet.ProjectModel
                 JObject frameworks = new JObject();
                 foreach (var framework in packageSpec.TargetFrameworks)
                 {
+                    Console.WriteLine("TODD - framework: " + framework.FrameworkName.DotNetFrameworkName);
                     JObject frameworkObject = new JObject();
 
                     SetDependencies(frameworkObject, framework.Dependencies);
                     SetImports(frameworkObject, framework.Imports);
 
-                    frameworks[framework.FrameworkName] = frameworkObject;
+                    frameworks[framework.FrameworkName.DotNetFrameworkName] = frameworkObject;
                 }                
 
                 SetValue(json, "frameworks", frameworks);
