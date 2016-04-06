@@ -74,6 +74,21 @@ namespace NuGet.Protocol
                     
                     try
                     {
+                        // The only time that we will be disposing this existing response is if we have 
+                        // successfully fetched an HTTP response but the response has an status code indicating
+                        // failure (i.e. HTTP status code >= 500).
+                        // 
+                        // If we don't even get an HTTP response message because an exception is thrown, then there
+                        // is no response instance to dispose. Additionally, we cannot use a finally here because
+                        // the caller needs the response instance returned in a non-disposed state.
+                        //
+                        // Also, remember that if an HTTP server continuously returns a failure status code (like
+                        // 500 Internal Server Error), we will retry some number of times but eventually return the
+                        // response as-is, expecting the caller to check the status code as well. This results in the
+                        // success variable being set to false but the response being returned to the caller without
+                        // disposing it.
+                        response?.Dispose();
+
                         var timeoutMessage = string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.Http_Timeout,

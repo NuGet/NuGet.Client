@@ -178,15 +178,16 @@ namespace NuGet.Packaging.Core
 
         private static XDocument LoadXml(Stream stream, bool leaveStreamOpen)
         {
-            var xmlReader = XmlReader.Create(stream, new XmlReaderSettings()
+            using (var xmlReader = XmlReader.Create(stream, new XmlReaderSettings
             {
                 CloseInput = !leaveStreamOpen,
                 IgnoreWhitespace = true,
                 IgnoreComments = true,
                 IgnoreProcessingInstructions = true
-            });
-
-            return XDocument.Load(xmlReader, LoadOptions.None);
+            }))
+            {
+                return XDocument.Load(xmlReader, LoadOptions.None);
+            }
         }
     }
 }
