@@ -112,10 +112,12 @@ namespace NuGet.Packaging
             }
 
             // Enumerate all sub folders without filtering
-            foreach (var folder in searchFolder.GetDirectories("*", SearchOption.TopDirectoryOnly))
+            foreach (var directory in searchFolder.GetDirectories("*", SearchOption.TopDirectoryOnly))
             {
-                foreach (var file in folder.GetFiles("*", SearchOption.AllDirectories))
+                foreach (var file in directory.GetFiles("*", SearchOption.AllDirectories))
+                {
                     yield return GetRelativePath(_root, file);
+                }
             }
 
             yield break;
