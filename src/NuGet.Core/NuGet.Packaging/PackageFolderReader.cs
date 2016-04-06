@@ -104,18 +104,21 @@ namespace NuGet.Packaging
         {
             var searchFolder = new DirectoryInfo(_root.FullName);
 
-            foreach (var file in searchFolder.GetFiles("*", SearchOption.AllDirectories).
-                Where(p => !IsRootPackageFile(_root, p)))
+            // Enumerate root folder filtering out nupkg files
+            foreach (var file in searchFolder.GetFiles("*", SearchOption.TopDirectoryOnly).
+                Where(p => !p.FullName.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase)))
             {
                 yield return GetRelativePath(_root, file);
             }
 
-            yield break;
-        }
+            // Enumerate all sub folders without filtering
+            foreach (var folder in searchFolder.GetDirectories("*", SearchOption.TopDirectoryOnly))
+            {
+                foreach (var file in folder.GetFiles("*", SearchOption.AllDirectories))
+                    yield return GetRelativePath(_root, file);
+            }
 
-        private bool IsRootPackageFile(DirectoryInfo root, FileInfo path)
-        {
-            return StringComparer.OrdinalIgnoreCase.Equals(root.FullName, path.Directory?.FullName) && path.FullName.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase);
+            yield break;
         }
 
         public override IEnumerable<string> GetFiles(string folder)
