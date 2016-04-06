@@ -105,12 +105,17 @@ namespace NuGet.Packaging
             var searchFolder = new DirectoryInfo(_root.FullName);
 
             foreach (var file in searchFolder.GetFiles("*", SearchOption.AllDirectories).
-                Where(p => !p.FullName.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase)))
+                Where(p => !IsRootPackageFile(_root, p)))
             {
                 yield return GetRelativePath(_root, file);
             }
 
             yield break;
+        }
+
+        private bool IsRootPackageFile(DirectoryInfo root, FileInfo path)
+        {
+            return StringComparer.OrdinalIgnoreCase.Equals(root.FullName, path.Directory?.FullName) && path.FullName.EndsWith(PackagingCoreConstants.NupkgExtension, StringComparison.OrdinalIgnoreCase);
         }
 
         public override IEnumerable<string> GetFiles(string folder)

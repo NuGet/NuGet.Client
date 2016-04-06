@@ -67,6 +67,39 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public async Task PackageExtractor_NupkgContent()
+        {
+            // Arrange
+            using (var root = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var packageFileInfo = await TestPackages.GeneratePackageAsync(
+                   root,
+                   "A",
+                   "2.0.4",
+                   DateTimeOffset.UtcNow.LocalDateTime,
+                   "content/A.nupkg");
+
+                using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                {
+                    var packageExtractionContext = new PackageExtractionContext
+                    {
+                        XmlDocFileSaveMode = XmlDocFileSaveMode.None
+                    };
+
+                    // Act
+                    var packageFiles = PackageExtractor.ExtractPackage(
+                        packageStream,
+                        new PackagePathResolver(root),
+                        packageExtractionContext,
+                        CancellationToken.None);
+
+                    // Assert
+                    Assert.True(File.Exists(Path.Combine(root, "A.2.0.4", "content", "A.nupkg")));
+                }
+            }
+        }
+
+        [Fact]
         public void PackageExtractor_PackageSaveModeNupkg_FolderReader()
         {
             // Arrange
