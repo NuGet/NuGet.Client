@@ -515,7 +515,7 @@ namespace NuGet.Commands.Test
 
                 var target = toolResult.LockFile.Targets[0];
                 Assert.Null(target.RuntimeIdentifier);
-                Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandardApp15, target.TargetFramework);
+                Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp10, target.TargetFramework);
                 Assert.Equal(2, target.Libraries.Count);
 
                 var library = target.Libraries.First(l => l.Name == "packageB");
@@ -682,7 +682,7 @@ namespace NuGet.Commands.Test
 
                 var target = toolResult.LockFile.Targets[0];
                 Assert.Null(target.RuntimeIdentifier);
-                Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandardApp15, target.TargetFramework);
+                Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp10, target.TargetFramework);
                 Assert.Equal(0, target.Libraries.Count);
             }
         }
@@ -798,7 +798,7 @@ namespace NuGet.Commands.Test
                 Assert.Null(target.RuntimeIdentifier);
                 Assert.Equal(
                     new FallbackFramework(
-                        FrameworkConstants.CommonFrameworks.NetStandardApp15,
+                        FrameworkConstants.CommonFrameworks.NetCoreApp10,
                         new[] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net46") }),
                     (FallbackFramework) target.TargetFramework);
                 Assert.Equal(1, target.Libraries.Count);
@@ -861,7 +861,7 @@ namespace NuGet.Commands.Test
                 Assert.Null(target.RuntimeIdentifier);
                 Assert.Equal(
                     new FallbackFramework(
-                        FrameworkConstants.CommonFrameworks.NetStandardApp15,
+                        FrameworkConstants.CommonFrameworks.NetCoreApp10,
                         new[] { NuGetFramework.Parse("net40"), NuGetFramework.Parse("net46") }),
                     (FallbackFramework) target.TargetFramework);
                 Assert.Equal(1, target.Libraries.Count);
