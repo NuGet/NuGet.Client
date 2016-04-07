@@ -18,12 +18,37 @@ namespace NuGet.ProjectModel.Test
         {
             // Arrange
             var json = @"{
+  ""title"": ""My Title"",
   ""version"": ""1.2.3"",
   ""description"": ""test"",
   ""authors"": [
-    ""author""
+    ""author1"",
+    ""author2""
   ],
+  ""owners"": [
+    ""owner1"",
+    ""owner2""
+  ],
+  ""tags"": [
+    ""tag1"",
+    ""tag2""
+  ],
+  ""projectUrl"": ""http://my.url.com"",
+  ""iconUrl"": ""http://my.url.com"",
+  ""licenseUrl"": ""http://my.url.com"",
+  ""copyright"": ""2016"",
+  ""language"": ""en-US"",
+  ""summary"": ""Sum"",
+  ""releaseNotes"": ""release noted"",
   ""requireLicenseAcceptance"": ""False"",
+  ""packInclude"": {
+    ""file"": ""file.txt""
+  },
+  ""scripts"": {
+    ""script1"": [
+      ""script.js""
+    ]
+  },
   ""dependencies"": {
     ""packageA"": {
       ""include"": ""All"",
