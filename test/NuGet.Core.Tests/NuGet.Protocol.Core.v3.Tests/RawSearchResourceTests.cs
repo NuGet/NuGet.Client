@@ -1,0 +1,50 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using NuGet.Configuration;
+using NuGet.Logging;
+using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3;
+using NuGet.Versioning;
+using Test.Utility;
+using Xunit;
+
+namespace NuGet.Protocol.Core.v3.Tests
+{
+    public class RawSearchResourceTests
+    {
+        [Fact]
+        public async Task RawSearchResource_SearchEncoding()
+        {
+            // Arrange
+            var serviceAddress = TestUtility.CreateServiceAddress();
+
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "?q=azure+b&skip=0&take=1&prerelease=false&supportedFramework=portable-net45%2Bwin8",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.V3Search.json", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
+
+            var searchResource = new RawSearchResourceV3(httpSource, new Uri[] { new Uri(serviceAddress) } );
+
+            var searchFilter = new SearchFilter()
+            {
+                IncludePrerelease = false,
+                SupportedFrameworks = new string[] { "portable-net45+win8" }
+            };
+
+            // Act
+            var packages = await searchResource.Search("azure+b", searchFilter, 0, 1, NullLogger.Instance, CancellationToken.None);
+            var packagesArray = packages.ToArray();
+
+            // Assert
+            // Verify that the url matches the one in the response dictionary
+            Assert.True(packagesArray.Length > 0);
+        }
+    }
+}

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,9 +43,10 @@ namespace NuGet.Protocol.Core.v3
             {
                 var endpoint = _searchEndpoints[i];
 
+                // The search term comes in already encoded from VS
                 var queryUrl = new UriBuilder(endpoint.AbsoluteUri);
                 var queryString =
-                    "q=" + searchTerm +
+                    "q=" + WebUtility.UrlEncode(searchTerm) +
                     "&skip=" + skip.ToString() +
                     "&take=" + take.ToString() +
                     "&prerelease=" + filters.IncludePrerelease.ToString().ToLowerInvariant();
@@ -59,7 +61,7 @@ namespace NuGet.Protocol.Core.v3
                     var frameworks =
                         string.Join("&",
                             filters.SupportedFrameworks.Select(
-                                fx => "supportedFramework=" + fx.ToString()));
+                                fx => "supportedFramework=" + WebUtility.UrlEncode(fx.ToString())));
                     queryString += "&" + frameworks;
                 }
 
@@ -68,7 +70,7 @@ namespace NuGet.Protocol.Core.v3
                 {
                     var types = string.Join("&",
                         filters.PackageTypes.Select(
-                            s => "packageTypeFilter=" + s));
+                            s => "packageTypeFilter=" + WebUtility.UrlEncode(s)));
                     queryString += "&" + types;
                 }
 

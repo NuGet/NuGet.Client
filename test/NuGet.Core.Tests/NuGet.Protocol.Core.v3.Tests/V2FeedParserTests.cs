@@ -208,6 +208,34 @@ namespace NuGet.Protocol.Core.v3.Tests
         }
 
         [Fact]
+        public async Task V2FeedParser_SearchEncoding()
+        {
+            // Arrange
+            var serviceAddress = TestUtility.CreateServiceAddress();
+
+            var responses = new Dictionary<string, string>();
+            responses.Add(serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='azure+b'&targetFramework='portable-net45%2Bwin8'&includePrerelease=false&$skip=0&$top=1",
+                TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.AzureSearch.xml", GetType()));
+            responses.Add(serviceAddress, string.Empty);
+
+            var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
+
+            V2FeedParser parser = new V2FeedParser(httpSource, serviceAddress);
+            var searchFilter = new SearchFilter()
+            {
+                IncludePrerelease = false,
+                SupportedFrameworks = new string[] { "portable-net45+win8" }
+            };
+
+            // Act
+            var packages = await parser.Search("azure+b", searchFilter, 0, 1, NullLogger.Instance, CancellationToken.None);
+            var package = packages.FirstOrDefault();
+
+            // Assert
+            Assert.Equal("WindowsAzure.Storage", package.Id);
+        }
+
+        [Fact]
         public async Task V2FeedParser_SearchTop100()
         {
             // Arrange
