@@ -239,19 +239,19 @@ namespace NuGet.Commands
             }
             if (spec.Dependencies.Any())
             {
-                AddDependencyGroups(spec.Dependencies, NuGetFramework.AnyFramework, builder, isTargetFrameworks: false);
+                AddDependencyGroups(spec.Dependencies, NuGetFramework.AnyFramework, builder);
             }
 
             if (spec.TargetFrameworks.Any())
             {
                 foreach (var framework in spec.TargetFrameworks)
                 {
-                    AddDependencyGroups(framework.Dependencies, framework.FrameworkName, builder, isTargetFrameworks: true);
+                    AddDependencyGroups(framework.Dependencies, framework.FrameworkName, builder);
                 }
             }
         }
 
-        private static void AddDependencyGroups(IList<LibraryDependency> dependencies, NuGetFramework framework, PackageBuilder builder, bool isTargetFrameworks)
+        private static void AddDependencyGroups(IList<LibraryDependency> dependencies, NuGetFramework framework, PackageBuilder builder)
         {
             List<PackageDependency> packageDependencies = new List<PackageDependency>();
             bool addedFrameworkReference = false;
