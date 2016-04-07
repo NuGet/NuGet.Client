@@ -15,7 +15,6 @@ using NuGet.Frameworks;
 using NuGet.Logging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Core.v3;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -132,11 +131,11 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(token));
             }
 
-            var uri = String.Format(
+            var uri = string.Format(
                 CultureInfo.InvariantCulture,
                 GetPackagesFormat,
-                package.Id,
-                package.Version.ToNormalizedString());
+                WebUtility.UrlEncode(package.Id),
+                WebUtility.UrlEncode(package.Version.ToNormalizedString()));
 
             // Try to find the package directly
             // Set max count to -1, get all packages 
@@ -186,7 +185,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(token));
             }
 
-            var uri = string.Format(CultureInfo.InvariantCulture, FindPackagesByIdFormat, id);
+            var uri = string.Format(CultureInfo.InvariantCulture, FindPackagesByIdFormat, WebUtility.UrlEncode(id));
             // Set max count to -1, get all packages
             var packages = await QueryV2Feed(
                 uri,
@@ -216,10 +215,11 @@ namespace NuGet.Protocol
 
             var shortFormTargetFramework = NuGetFramework.Parse(targetFramework).GetShortFolderName();
 
-            var uri = String.Format(CultureInfo.InvariantCulture, SearchEndPointFormat,
+            // The search term comes in already encoded from VS
+            var uri = string.Format(CultureInfo.InvariantCulture, SearchEndPointFormat,
                                     filters.IncludePrerelease ? IsAbsoluteLatestVersionFilterFlag : IsLatestVersionFilterFlag,
-                                    searchTerm,
-                                    shortFormTargetFramework,
+                                    WebUtility.UrlEncode(searchTerm),
+                                    WebUtility.UrlEncode(shortFormTargetFramework),
                                     filters.IncludePrerelease.ToString().ToLowerInvariant(),
                                     skip,
                                     take);
