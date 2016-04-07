@@ -62,7 +62,7 @@ namespace NuGet.RuntimeModel
                 EachProperty(json["supports"]).Select(ReadCompatibilityProfile));
         }
 
-        private static void WriteRuntimeGraph(JObject jObject, RuntimeGraph runtimeGraph)
+        public static void WriteRuntimeGraph(JObject jObject, RuntimeGraph runtimeGraph)
         {
             if (runtimeGraph.Runtimes.Any())
             {
