@@ -214,7 +214,7 @@ namespace NuGet.Protocol.Core.v3.Tests
             var serviceAddress = TestUtility.CreateServiceAddress();
 
             var responses = new Dictionary<string, string>();
-            responses.Add(serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='azure+b'&targetFramework='portable-net45%2Bwin8'&includePrerelease=false&$skip=0&$top=1",
+            responses.Add(serviceAddress + "Search()?$filter=IsLatestVersion&searchTerm='azure%2Bb'&targetFramework='portable-net45%2Bwin8'&includePrerelease=false&$skip=0&$top=1",
                 TestUtility.GetResource("NuGet.Protocol.Core.v3.Tests.compiler.resources.AzureSearch.xml", GetType()));
             responses.Add(serviceAddress, string.Empty);
 
