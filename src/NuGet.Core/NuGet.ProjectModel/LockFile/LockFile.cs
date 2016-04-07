@@ -13,7 +13,7 @@ namespace NuGet.ProjectModel
     public class LockFile : IEquatable<LockFile>
     {
         // Tools run under a hard coded framework.
-        public static readonly NuGetFramework ToolFramework = FrameworkConstants.CommonFrameworks.NetStandardApp15;
+        public static readonly NuGetFramework ToolFramework = FrameworkConstants.CommonFrameworks.NetCoreApp10;
 
         public static readonly char DirectorySeparatorChar = '/';
 
