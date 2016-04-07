@@ -68,6 +68,7 @@ namespace NuGet.ProjectModel
             if (version == null)
             {
                 packageSpec.Version = new NuGetVersion("1.0.0");
+                packageSpec.IsDefaultVersion = true;
             }
             else
             {
@@ -217,7 +218,7 @@ namespace NuGet.ProjectModel
                     // Dependencies should allow everything but framework references.
                     var targetFlagsValue = isGacOrFrameworkReference
                                                     ? LibraryDependencyTarget.Reference
-                                                    : ~LibraryDependencyTarget.Reference;
+                                                    : LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference;
 
                     string dependencyVersionValue = null;
                     var dependencyVersionToken = dependencyValue;
