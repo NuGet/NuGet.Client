@@ -31,9 +31,7 @@
 		  Semantic Version. See http://semver.org for full details.
 		  Update for every public release.
 		-->
-		<SemanticVersionMajor>3</SemanticVersionMajor>
-		<SemanticVersionMinor>5</SemanticVersionMinor>
-		<SemanticVersionPatch>0</SemanticVersionPatch>
+		<SemanticVersion>3.5.0</SemanticVersion>
 		<PreReleaseVersion>0</PreReleaseVersion>
 	</PropertyGroup>
 
@@ -60,13 +58,13 @@
 		  NuGet package version is derived from AssemblyFileVersion.
 		-->
 		<AssemblyAttributes Include="AssemblyVersion">
-		  <_Parameter1>$(SemanticVersionMajor).$(SemanticVersionMinor).$(SemanticVersionPatch).$(PreReleaseVersion)</_Parameter1>
+		  <_Parameter1>$(SemanticVersion).$(PreReleaseVersion)</_Parameter1>
 		</AssemblyAttributes>
 		<AssemblyAttributes Include="AssemblyFileVersion">
-		  <_Parameter1>$(SemanticVersionMajor).$(SemanticVersionMinor).$(SemanticVersionPatch).$(PreReleaseVersion)</_Parameter1>
+		  <_Parameter1>$(SemanticVersion).$(PreReleaseVersion)</_Parameter1>
 		</AssemblyAttributes>
 		<AssemblyAttributes Include="AssemblyInformationalVersion">
-		  <_Parameter1>$(SemanticVersionMajor).$(SemanticVersionMinor).$(SemanticVersionPatch)$(PreReleaseInformationVersion)</_Parameter1>
+		  <_Parameter1>$(SemanticVersion)$(PreReleaseInformationVersion)</_Parameter1>
 		</AssemblyAttributes>
 		<AssemblyAttributes Include="AssemblyCompany">
 		  <_Parameter1>Microsoft Corporation</_Parameter1>
