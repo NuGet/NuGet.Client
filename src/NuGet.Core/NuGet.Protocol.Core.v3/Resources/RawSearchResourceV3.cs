@@ -46,7 +46,7 @@ namespace NuGet.Protocol.Core.v3
                 // The search term comes in already encoded from VS
                 var queryUrl = new UriBuilder(endpoint.AbsoluteUri);
                 var queryString =
-                    "q=" + WebUtility.UrlEncode(searchTerm) +
+                    "q=" + searchTerm +
                     "&skip=" + skip.ToString() +
                     "&take=" + take.ToString() +
                     "&prerelease=" + filters.IncludePrerelease.ToString().ToLowerInvariant();
@@ -61,7 +61,7 @@ namespace NuGet.Protocol.Core.v3
                     var frameworks =
                         string.Join("&",
                             filters.SupportedFrameworks.Select(
-                                fx => "supportedFramework=" + WebUtility.UrlEncode(fx.ToString())));
+                                fx => "supportedFramework=" + fx.ToString()));
                     queryString += "&" + frameworks;
                 }
 
@@ -70,7 +70,7 @@ namespace NuGet.Protocol.Core.v3
                 {
                     var types = string.Join("&",
                         filters.PackageTypes.Select(
-                            s => "packageTypeFilter=" + WebUtility.UrlEncode(s)));
+                            s => "packageTypeFilter=" + s));
                     queryString += "&" + types;
                 }
 
