@@ -97,7 +97,8 @@ namespace NuGet.PackageManagement.UI
         public async Task<IEnumerable<IPackageSearchMetadata>> GetPackageMetadataListAsync(string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken cancellationToken)
         {
             var tasks = _sourceRepositories
-                .Select(r => r.GetPackageMetadataListAsync(packageId, includePrerelease, includeUnlisted, cancellationToken));
+                .Select(r => r.GetPackageMetadataListAsync(packageId, includePrerelease, includeUnlisted, cancellationToken))
+                .ToArray();
 
             var ignored = tasks
                 .Select(task => task.ContinueWith(LogError, TaskContinuationOptions.OnlyOnFaulted))
