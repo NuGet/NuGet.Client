@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Logging;
@@ -135,8 +136,8 @@ namespace NuGet.Protocol
             var uri = string.Format(
                 CultureInfo.InvariantCulture,
                 GetPackagesFormat,
-                WebUtility.UrlEncode(package.Id),
-                WebUtility.UrlEncode(package.Version.ToNormalizedString()));
+                UriUtility.UrlEncodeOdataParameter(package.Id),
+                UriUtility.UrlEncodeOdataParameter(package.Version.ToNormalizedString()));
 
             // Try to find the package directly
             // Set max count to -1, get all packages 
@@ -186,7 +187,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(token));
             }
 
-            var uri = string.Format(CultureInfo.InvariantCulture, FindPackagesByIdFormat, WebUtility.UrlEncode(id));
+            var uri = string.Format(CultureInfo.InvariantCulture, FindPackagesByIdFormat, UriUtility.UrlEncodeOdataParameter(id));
             // Set max count to -1, get all packages
             var packages = await QueryV2Feed(
                 uri,
@@ -219,8 +220,8 @@ namespace NuGet.Protocol
             // The search term comes in already encoded from VS
             var uri = string.Format(CultureInfo.InvariantCulture, SearchEndPointFormat,
                                     filters.IncludePrerelease ? IsAbsoluteLatestVersionFilterFlag : IsLatestVersionFilterFlag,
-                                    WebUtility.UrlEncode(searchTerm),
-                                    WebUtility.UrlEncode(shortFormTargetFramework),
+                                    UriUtility.UrlEncodeOdataParameter(searchTerm),
+                                    UriUtility.UrlEncodeOdataParameter(shortFormTargetFramework),
                                     filters.IncludePrerelease.ToString().ToLowerInvariant(),
                                     skip,
                                     take);
