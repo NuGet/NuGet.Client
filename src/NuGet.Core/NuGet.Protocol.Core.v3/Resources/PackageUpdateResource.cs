@@ -51,7 +51,7 @@ namespace NuGet.Protocol.Core.Types
 
                 await PushPackage(packagePath, _source, apiKey, log, tokenSource.Token);
 
-                if (!IsFileSource())
+                if (IsOfficialGallerySource(_source))
                 {
                     await PushSymbols(packagePath, apiKey, log, tokenSource.Token);
                 }
@@ -235,6 +235,18 @@ namespace NuGet.Protocol.Core.Types
             //we leverage the detection already done at resource provider level. 
             //that for file system, the "httpSource" is null. 
             return _httpSource == null;
+        }
+
+        private bool IsOfficialGallerySource(string source)
+        {
+            Uri sourceUri;
+            if (!IsFileSource() && Uri.TryCreate(source, UriKind.RelativeOrAbsolute, out sourceUri))
+            {
+                return sourceUri.Host.Equals(NuGetConstants.NuGetHostName, StringComparison.OrdinalIgnoreCase) // e.g. nuget.org  
+                       || sourceUri.Host.EndsWith("." + NuGetConstants.NuGetHostName, StringComparison.OrdinalIgnoreCase); // *.nuget.org, e.g. www.nuget.org  
+            }
+
+            return false;
         }
 
         // Pushes a package to the Http server.
