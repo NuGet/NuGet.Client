@@ -75,10 +75,8 @@ namespace NuGet.Commands.Test
             }
         }
 
-        // Project -> PackageA -> PackageB 
-        // PackageB must be a package, Project not allowed
         [Fact]
-        public async Task DependencyTypeConstraint_PackagesDependOnOtherPackages()
+        public async Task DependencyTypeConstraint_PackagesDependOnProject()
         {
             // Arrange
             var sources = new List<PackageSource>();
@@ -165,9 +163,10 @@ namespace NuGet.Commands.Test
                 await result.CommitAsync(logger, CancellationToken.None);
 
                 // Assert
-                Assert.False(result.Success);
-                Assert.Equal("packageB", result.GetAllUnresolved().Single().Name);
-                Assert.Equal(LibraryDependencyTarget.Package, result.GetAllUnresolved().Single().TypeConstraint);
+                Assert.True(result.Success);
+                var packageBLib = lockFile.GetLibrary("packageB", NuGetVersion.Parse("1.0.0"));
+                Assert.NotNull(packageBLib);
+                Assert.Equal(LibraryType.Project, packageBLib.Type);
             }
         }
 
