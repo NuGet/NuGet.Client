@@ -36,6 +36,11 @@ namespace NuGet.Protocol.Core.Types
             _httpSource = httpSource;
         }
 
+        public Uri SourceUri
+        {
+            get { return UriUtility.CreateSourceUri(_source); }
+        }
+
         public async Task Push(
             string packagePath,
             string symbolsSource, // empty to not push symbols

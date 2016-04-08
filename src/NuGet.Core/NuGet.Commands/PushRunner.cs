@@ -34,8 +34,8 @@ namespace NuGet.Commands
             // only push to SymbolSource when the actual package is being pushed to the official NuGet.org
             string symbolsSource = string.Empty;
 
-            Uri sourceUri;
-            if (!noSymbols && Uri.TryCreate(source, UriKind.RelativeOrAbsolute, out sourceUri))
+            Uri sourceUri = packageUpdateResource.SourceUri;
+            if (!noSymbols && !sourceUri.IsFile && sourceUri.IsAbsoluteUri)
             {
                 if (sourceUri.Host.Equals(NuGetConstants.NuGetHostName, StringComparison.OrdinalIgnoreCase) // e.g. nuget.org
                     || sourceUri.Host.EndsWith("." + NuGetConstants.NuGetHostName, StringComparison.OrdinalIgnoreCase)) // *.nuget.org, e.g. www.nuget.org
