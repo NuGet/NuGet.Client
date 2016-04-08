@@ -76,7 +76,8 @@ namespace NuGet.PackageManagement.UI
             bool includePrerelease, CancellationToken cancellationToken)
         {
             var tasks = _sourceRepositories
-                .Select(r => r.GetLatestPackageMetadataAsync(identity.Id, includePrerelease, cancellationToken));
+                .Select(r => r.GetLatestPackageMetadataAsync(identity.Id, includePrerelease, cancellationToken))
+                .ToArray();
 
             var ignored = tasks
                 .Select(task => task.ContinueWith(LogError, TaskContinuationOptions.OnlyOnFaulted))
