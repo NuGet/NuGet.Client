@@ -34,7 +34,7 @@ namespace NuGet.DependencyResolver
                 {
                     Name = dependency.Id,
                     VersionRange = dependency.VersionRange,
-                    TypeConstraint = LibraryDependencyTarget.Package  // Package dependencies must be filled by packages
+                    TypeConstraint = LibraryDependencyTarget.PackageProjectExternal
                 },
                 IncludeType = includeType,
                 SuppressParent = LibraryIncludeFlags.None
