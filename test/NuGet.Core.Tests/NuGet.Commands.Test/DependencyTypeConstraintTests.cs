@@ -164,7 +164,6 @@ namespace NuGet.Commands.Test
 
                 // Assert
                 Assert.True(result.Success);
-                Assert.False(result.GetAllInstalled().Any());
                 var packageBLib = lockFile.GetLibrary("packageB", NuGetVersion.Parse("1.0.0"));
                 Assert.NotNull(packageBLib);
                 Assert.Equal(LibraryType.Project, packageBLib.Type);
