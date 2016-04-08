@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Logging;
@@ -219,8 +220,8 @@ namespace NuGet.Protocol
             // The search term comes in already encoded from VS
             var uri = string.Format(CultureInfo.InvariantCulture, SearchEndPointFormat,
                                     filters.IncludePrerelease ? IsAbsoluteLatestVersionFilterFlag : IsLatestVersionFilterFlag,
-                                    WebUtility.UrlEncode(searchTerm),
-                                    WebUtility.UrlEncode(shortFormTargetFramework),
+                                    UriUtility.UrlEncodeOdataParameter(searchTerm),
+                                    UriUtility.UrlEncodeOdataParameter(shortFormTargetFramework),
                                     filters.IncludePrerelease.ToString().ToLowerInvariant(),
                                     skip,
                                     take);
