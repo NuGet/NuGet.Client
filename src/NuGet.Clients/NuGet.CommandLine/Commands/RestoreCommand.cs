@@ -117,9 +117,12 @@ namespace NuGet.CommandLine
                                         globalPackagesFolder);
 
                     // Providers
+                    // Use the settings loaded above in ReadSettings(restoreInputs)
                     restoreContext.RequestProviders.Add(new MSBuildCachedRequestProvider(
                         providerCache,
-                        restoreInputs.ProjectReferenceLookup));
+                        restoreInputs.ProjectReferenceLookup,
+                        Settings));
+
                     restoreContext.RequestProviders.Add(new MSBuildP2PRestoreRequestProvider(providerCache));
                     restoreContext.RequestProviders.Add(new ProjectJsonRestoreRequestProvider(providerCache));
 
