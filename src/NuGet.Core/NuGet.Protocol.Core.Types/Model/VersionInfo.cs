@@ -32,5 +32,13 @@ namespace NuGet.Protocol.Core.Types
         public NuGetVersion Version { get; private set; }
 
         public long? DownloadCount { get; private set; }
+
+        /// <summary>
+        /// In V2, when finding the list of versions that a package ID has, we also get all of the metadata
+        /// associated with each version. It would be wasteful to throw this away, so we store what we have
+        /// here. For V3, the metadata property is null. Callers that receive this type need to be able to
+        /// fetch this package metadata some other way if this property is null.
+        /// </summary>
+        public IPackageSearchMetadata PackageSearchMetadata { get; set; }
     }
 }

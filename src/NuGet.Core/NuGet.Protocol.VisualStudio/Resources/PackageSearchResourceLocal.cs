@@ -93,14 +93,23 @@ namespace NuGet.Protocol.VisualStudio
                 .ToArray();
 
             IEnumerable<VersionInfo> versions = packages
-                .Select(p => new VersionInfo(V2Utilities.SafeToNuGetVer(p.Version), p.DownloadCount))
+                .Select(p => new VersionInfo(V2Utilities.SafeToNuGetVer(p.Version), p.DownloadCount)
+                {
+                    PackageSearchMetadata = new PackageSearchMetadata(package)
+                })
                 .OrderByDescending(v => v.Version, VersionComparer.VersionRelease);
 
             var packageVersion = V2Utilities.SafeToNuGetVer(package.Version);
+
             if (!versions.Any(v => v.Version == packageVersion))
             {
-                versions = versions.Concat(
-                    new[] { new VersionInfo(packageVersion, package.DownloadCount) });
+                versions = versions.Concat(new[]
+                {
+                    new VersionInfo(packageVersion, package.DownloadCount)
+                    {
+                        PackageSearchMetadata = new PackageSearchMetadata(package)
+                    }
+                });
             }
 
             return versions;

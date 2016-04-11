@@ -267,28 +267,55 @@ namespace NuGet.PackageManagement.UI
         {
             var versions = await _searchResultPackage.GetVersionsAsync();
 
-            var packages = Enumerable.Empty<IPackageSearchMetadata>();
-            try
+            // First try to load the metadata from the version info. This will happen if we already fetched metadata
+            // about each version at the same time as fetching the version list (that it, V2). This also acts as a
+            // means to cache version metadata.
+            _metadataDict = versions
+                .Where(v => v.PackageSearchMetadata != null)
+                .ToDictionary(
+                    v => v.Version,
+                    v => new DetailedPackageMetadata(v.PackageSearchMetadata, v.DownloadCount));
+
+            // If we are missing any metadata, go to the metadata provider and fetch all of the data again.
+            if (versions.Select(v => v.Version).Except(_metadataDict.Keys).Any())
             {
-                // load up the full details for each version
-                packages = await metadataProvider?.GetPackageMetadataListAsync(Id, true, false, token);
+                try
+                {
+                    // Load up the full details for each version.
+                    var packages = await metadataProvider?.GetPackageMetadataListAsync(
+                        Id,
+                        includePrerelease: true,
+                        includeUnlisted: false,
+                        cancellationToken: token);
+
+                    var uniquePackages = packages
+                        .GroupBy(
+                            m => m.Identity.Version,
+                            (v, ms) => ms.First());
+
+                    _metadataDict = uniquePackages
+                        .GroupJoin(
+                            versions,
+                            m => m.Identity.Version,
+                            d => d.Version,
+                            (m, d) =>
+                            {
+                                var versionInfo = d.OrderByDescending(v => v.DownloadCount).FirstOrDefault();
+                                if (versionInfo != null)
+                                {
+                                    // Save the metadata about this version to the VersionInfo instance.
+                                    versionInfo.PackageSearchMetadata = m;
+                                }
+
+                                return new DetailedPackageMetadata(m, versionInfo?.DownloadCount);
+                            })
+                         .ToDictionary(m => m.Version);
+                }
+                catch (InvalidOperationException)
+                {
+                    // Ignore failures.
+                }
             }
-            catch (InvalidOperationException)
-            {
-                // Ignore failures.
-            }
-
-            var uniquePackages = packages
-                .GroupBy(m => m.Identity.Version, (v, ms) => ms.First());
-
-            var s = uniquePackages
-                .GroupJoin(
-                    versions,
-                    m => m.Identity.Version,
-                    d => d.Version,
-                    (m, d) => new DetailedPackageMetadata(m, d.FirstOrDefault()?.DownloadCount));
-
-            _metadataDict = s.ToDictionary(m => m.Version);
 
             DetailedPackageMetadata p;
             if (SelectedVersion != null

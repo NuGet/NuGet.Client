@@ -136,8 +136,8 @@ namespace NuGet.PackageManagement.UI
                 .Concat(new[] { new VersionInfo(identity.Version) });
 
             return allVersions
-                .GroupBy(v => v.Version, v => v.DownloadCount)
-                .Select(g => new VersionInfo(g.Key, g.Max()))
+                .GroupBy(v => v.Version)
+                .Select(g => g.OrderBy(v => v.DownloadCount).First())
                 .ToArray();
         }
 

@@ -93,7 +93,12 @@ namespace NuGet.Protocol
             {
                 if (uniqueVersions.Add(versionPackage.Version))
                 {
-                    results.Add(new VersionInfo(versionPackage.Version, versionPackage.DownloadCount));
+                    var versionInfo = new VersionInfo(versionPackage.Version, versionPackage.DownloadCount)
+                    {
+                        PackageSearchMetadata = new PackageSearchMetadataV2Feed(versionPackage)
+                    };
+
+                    results.Add(versionInfo);
                 }
             }
             return results;
