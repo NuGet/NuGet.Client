@@ -316,7 +316,7 @@ namespace NuGet.Commands.Test
             var result = new SyncdRunResult();
             result.Start();
 
-#if NETSTANDARDAPP1_5
+#if NETCOREAPP1_0
             var testDir = new DirectoryInfo(dir);
 
             // Find the root test directory

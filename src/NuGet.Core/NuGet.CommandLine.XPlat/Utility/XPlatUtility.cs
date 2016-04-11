@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
-#if NETSTANDARDAPP1_5
+#if NETCOREAPP1_0
 using System.Runtime.InteropServices;
 #endif
 using Microsoft.Dnx.Runtime.Common.CommandLine;
@@ -37,7 +37,7 @@ namespace NuGet.CommandLine.XPlat
 
         public static void SetUserAgent()
         {
-#if NETSTANDARDAPP1_5
+#if NETCOREAPP1_0
             UserAgent.SetUserAgentString(new UserAgentStringBuilder("NuGet xplat")
                 .WithOSDescription(RuntimeInformation.OSDescription));
 #else
@@ -47,7 +47,7 @@ namespace NuGet.CommandLine.XPlat
 
         public static void SetConnectionLimit()
         {
-#if !NETSTANDARDAPP1_5
+#if !NETCOREAPP1_0
             // Increase the maximum number of connections per server.
             if (!RuntimeEnvironmentHelper.IsMono)
             {

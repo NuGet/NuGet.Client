@@ -18,9 +18,9 @@
     },
     "netstandard1.5": {
       "dependencies": {
-        "NETStandard.Library": "1.5.0-rc2-23931",
-        "System.Security.Cryptography.Algorithms": "4.1.0-rc2-23931",
-        "System.Diagnostics.Process": "4.1.0-rc2-23931"
+        "NETStandard.Library": "1.5.0-rc2-24008",
+        "System.Security.Cryptography.Algorithms": "4.1.0-rc2-24008",
+        "System.Diagnostics.Process": "4.1.0-rc2-24008"
       },
       "imports": [
         "dotnet5.6",

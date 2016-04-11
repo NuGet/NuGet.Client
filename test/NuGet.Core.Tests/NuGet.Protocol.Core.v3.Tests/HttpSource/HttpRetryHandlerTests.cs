@@ -30,7 +30,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
             // Act & Assert
             var exception = await ThrowsException<HttpRequestException>(server);
-#if NETSTANDARDAPP1_5
+#if NETCOREAPP1_0
             Assert.NotNull(exception.InnerException);
             if (!RuntimeEnvironmentHelper.IsWindows)
             {
@@ -54,7 +54,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
             // Act & Assert
             var exception = await ThrowsException<HttpRequestException>(server);
-#if NETSTANDARDAPP1_5
+#if NETCOREAPP1_0
             if (!RuntimeEnvironmentHelper.IsWindows)
             {
                 Assert.Null(exception.InnerException);
@@ -79,7 +79,7 @@ namespace NuGet.Protocol.Core.v3.Tests
 
             // Act & Assert
             var exception = await ThrowsException<HttpRequestException>(server);
-#if NETSTANDARDAPP1_5
+#if NETCOREAPP1_0
             Assert.NotNull(exception.InnerException);
             if (!RuntimeEnvironmentHelper.IsWindows)
             {

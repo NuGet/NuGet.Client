@@ -10,18 +10,22 @@
     "xunit": "2.1.0"
   },
   "frameworks": {
-    "netstandardapp1.5": {
+    "netcoreapp1.0": {
       "imports": [
-        "dotnet5.6",
+        "netstandardapp1.5",
         "dnxcore50",
         "portable-net45+win8"
       ],
       "dependencies": {
         "moq.netcore": "4.4.0-beta8",
-        "NETStandard.Library": "1.5.0-rc2-23931",
-        "dotnet-test-xunit": "1.0.0-dev-128011-22",
-        "System.Threading.Tasks.Parallel": "4.0.1-rc2-23931",
-        "System.Threading.Thread": "4.0.0-rc2-23930"
+        "dotnet-test-xunit": "1.0.0-dev-140469-38",
+        "System.Threading.Tasks.Parallel": "4.0.1-rc2-24008",
+        "System.Threading.Thread": "4.0.0-rc2-24008",
+        "System.Diagnostics.TraceSource": "4.0.0-rc2-24008",
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.0-rc2-3002339"
+        }
       }
     },
     "net46": {

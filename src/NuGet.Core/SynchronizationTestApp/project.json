@@ -25,10 +25,13 @@
     "SynchronizationTestApp": "SynchronizationTestApp"
   },
   "frameworks": {
-    "netstandardapp1.5": {
+    "netcoreapp1.0": {
       "dependencies": {
-        "NETStandard.Library": "1.5.0-rc2-23931",
-        "System.Diagnostics.Process": "4.1.0-rc2-23931"
+        "System.Diagnostics.Process": "4.1.0-rc2-24008",
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.0-rc2-3002339"
+        }
       },
       "imports": [
         "dotnet5.6",
