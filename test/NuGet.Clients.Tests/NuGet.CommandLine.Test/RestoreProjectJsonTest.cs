@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -880,6 +881,126 @@ namespace NuGet.CommandLine.Test
                     waitForExit: true);
 
                 // Assert
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));
+                var test2Lock = new FileInfo(Path.Combine(projectDir2, "project.lock.json"));
+
+                Assert.True(test1Lock.Exists);
+                Assert.True(test2Lock.Exists);
+            }
+        }
+
+        // Verify that the settings for the solution are used for all projects
+        [Fact]
+        public void RestoreProjectJson_RestoreFromSlnUsesNuGetFolderSettings()
+        {
+            // Arrange
+            using (var workingPath = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+
+                var solutionDir = Path.Combine(workingPath, "a", "b", "solution");
+                var nugetDir = Path.Combine(solutionDir, ".nuget");
+
+                // Project 1 is under the solution
+                var projectDir1 = Path.Combine(solutionDir, "test1");
+
+                // Project 2 is above
+                var projectDir2 = Path.Combine(workingPath, "test2");
+
+                var nugetexe = Util.GetNuGetExePath();
+
+                Directory.CreateDirectory(projectDir1);
+                Directory.CreateDirectory(projectDir2);
+                Directory.CreateDirectory(nugetDir);
+
+                // Write the config to the .nuget folder, this contains the source needed for restore
+                Util.CreateNuGetConfig(workingPath, new List<string>() { repositoryPath });
+
+                // Move the NuGet.Config file down into the .nuget folder
+                File.Move(Path.Combine(workingPath, "NuGet.Config"), Path.Combine(nugetDir, "NuGet.Config"));
+
+                Util.CreateFile(projectDir1, "project.json",
+                                                @"{
+                                                    'dependencies': {
+                                                        'packageA': '1.0.0'
+                                                    },
+                                                    'frameworks': {
+                                                                'uap10.0': { }
+                                                            }
+                                                    }");
+
+                Util.CreateFile(projectDir1, "test1.csproj", Util.GetCSProjXML("test1"));
+
+                Util.CreateFile(projectDir2, "project.json",
+                                    @"{
+                                        'version': '1.0.0-*',
+                                        'dependencies': {
+                                            'packageB': '1.0.0'
+                                        },
+                                        'frameworks': {
+                                                    'uap10.0': { }
+                                                }
+                                        }");
+
+                Util.CreateFile(projectDir2, "test2.xproj", Util.GetXProjXML());
+
+                // Create bad configs in the project directories, this will cause
+                // the restore to fail if they are used (they shouldn't be used)
+                Util.CreateFile(projectDir1, "NuGet.Config", "<badXml");
+                Util.CreateFile(projectDir2, "NuGet.Config", "<badXml");
+
+                var slnPath = Path.Combine(solutionDir, "xyz.sln");
+
+                Util.CreateFile(solutionDir, "xyz.sln",
+                           @"
+                        Microsoft Visual Studio Solution File, Format Version 12.00
+                        # Visual Studio 14
+                        VisualStudioVersion = 14.0.23107.0
+                        MinimumVisualStudioVersion = 10.0.40219.1
+                        Project(""{AAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test1"", ""$TEST1DIR$\test1.csproj"", ""{AA6279C1-B5EE-4C6B-9FA3-A794CE195136}""
+                        EndProject
+                        Project(""{BBE04EC0-301F-11D3-BF4B-00C04F79EFBC}"") = ""test2"", ""$TEST2DIR$\test2.xproj"", ""{BB6279C1-B5EE-4C6B-9FA3-A794CE195136}""
+                        EndProject
+                        Global
+                            GlobalSection(SolutionConfigurationPlatforms) = preSolution
+                                Debug|Any CPU = Debug|Any CPU
+                                Release|Any CPU = Release|Any CPU
+                            EndGlobalSection
+                            GlobalSection(ProjectConfigurationPlatforms) = postSolution
+                                {AA6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                                {AA6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                                {BB6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+                                {BB6279C1-B5EE-4C6B-9FA3-A794CE195136}.Debug|Any CPU.Build.0 = Debug|Any CPU
+                            EndGlobalSection
+                            GlobalSection(SolutionProperties) = preSolution
+                                HideSolutionNode = FALSE
+                            EndGlobalSection
+                        EndGlobal
+                        ".Replace("$TEST1DIR$", projectDir1).Replace("$TEST2DIR$", projectDir2));
+
+                string[] args = new string[] {
+                    "restore",
+                    "-solutionDir",
+                    workingPath,
+                    slnPath
+                };
+
+                // Create the packages needed by the projects
+                SimpleTestPackageUtility.CreateFullPackage(repositoryPath, "packageA", "1.0.0");
+                SimpleTestPackageUtility.CreateFullPackage(repositoryPath, "packageB", "1.0.0");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                // Verify restore worked, this requires finding the packages from the repository, which is in 
+                // the solution level nuget.config.
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 var test1Lock = new FileInfo(Path.Combine(projectDir1, "project.lock.json"));

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,11 +11,19 @@ namespace NuGet.CommandLine
     {
         private readonly RestoreCommandProvidersCache _providerCache;
         private readonly MSBuildProjectReferenceProvider _projectProvider;
+        private readonly Configuration.ISettings _settings;
 
+        /// <summary>
+        /// Create RestoreRequests for msbuild based projects or solutions.
+        /// </summary>
+        /// <param name="providerCache">Shared resource providers.</param>
+        /// <param name="projectProvider">Request provider.</param>
+        /// <param name="settings">Solution or project level nuget.config settings.</param>
         public MSBuildCachedRequestProvider(
             RestoreCommandProvidersCache providerCache,
-            MSBuildProjectReferenceProvider projectProvider)
-            : base (providerCache)
+            MSBuildProjectReferenceProvider projectProvider,
+            Configuration.ISettings settings)
+            : base(providerCache)
         {
             if (providerCache == null)
             {
@@ -28,8 +35,14 @@ namespace NuGet.CommandLine
                 throw new ArgumentNullException(nameof(projectProvider));
             }
 
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
             _providerCache = providerCache;
             _projectProvider = projectProvider;
+            _settings = settings;
         }
 
         public override Task<IReadOnlyList<RestoreSummaryRequest>> CreateRequests(
@@ -39,9 +52,6 @@ namespace NuGet.CommandLine
             var paths = new List<string>();
             var requests = new List<RestoreSummaryRequest>();
             var rootPath = Path.GetDirectoryName(inputPath);
-
-            // Get settings relative to the input file
-            var settings = restoreContext.GetSettings(rootPath);
 
             var entryPoints = _projectProvider.GetEntryPoints();
 
@@ -54,7 +64,7 @@ namespace NuGet.CommandLine
                         entryPoint,
                         _projectProvider,
                         restoreContext,
-                        settings);
+                        _settings);
 
                     requests.Add(request);
                 }
