@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -159,8 +160,18 @@ namespace NuGet.Protocol.Core.v3
 
         private async Task<NetworkCredential> PromptForProxyCredentialsAsync(Uri proxyAddress, IWebProxy proxy, CancellationToken cancellationToken)
         {
-            var credentials = await _credentialService.GetCredentials(
-                proxyAddress, proxy, isProxy: true, cancellationToken: cancellationToken);
+            var message = string.Format(
+                CultureInfo.CurrentCulture,
+                Strings.Http_CredentialsForProxy,
+                proxyAddress);
+
+            var credentials = await _credentialService.GetCredentialsAsync(
+                proxyAddress,
+                proxy,
+                type: CredentialRequestType.Proxy,
+                message: message,
+                cancellationToken: cancellationToken);
+
             return credentials?.GetCredential(proxyAddress, BasicAuthenticationType);
         }
     }

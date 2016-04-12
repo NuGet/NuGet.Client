@@ -171,7 +171,7 @@ namespace NuGet.Protocol
 
                         response.EnsureSuccessStatusCode();
 
-                        await CreateCacheFile(result, uri, response, cacheContext, ensureValidContents, token);
+                        await CreateCacheFileAsync(result, uri, response, cacheContext, ensureValidContents, token);
 
                         return new HttpSourceResult(
                             HttpSourceResultStatus.OpenedFromDisk,
@@ -311,7 +311,7 @@ namespace NuGet.Protocol
                     // Double check
                     if (_httpClient == null)
                     {
-                        await UpdateHttpClient();
+                        await UpdateHttpClientAsync();
                     }
                 }
                 finally
@@ -376,18 +376,40 @@ namespace NuGet.Protocol
                             STSAuthHelper.TryRetrieveSTSToken(_baseUri, CredentialStore.Instance, response))
                         {
                             // Auth token found, create a new message handler and retry.
-                            await UpdateHttpClient();
+                            await UpdateHttpClientAsync();
                             continue;
                         }
 
                         // Prompt the user
-                        promptCredentials = await PromptForCredentials(cancellationToken);
+                        CredentialRequestType type;
+                        string message;
+                        if (response.StatusCode == HttpStatusCode.Unauthorized)
+                        {
+                            type = CredentialRequestType.Unauthorized;
+                            message = string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.Http_CredentialsForUnauthorized,
+                                _packageSource.Source);
+                        }
+                        else
+                        {
+                            type = CredentialRequestType.Forbidden;
+                            message = string.Format(
+                                CultureInfo.CurrentCulture,
+                                Strings.Http_CredentialsForForbidden,
+                                _packageSource.Source);
+                        }
+
+                        promptCredentials = await PromptForCredentialsAsync(
+                            type,
+                            message,
+                            cancellationToken);
 
                         if (promptCredentials != null)
                         {
                             // The user entered credentials, create a new message handler that includes
                             // these and retry.
-                            await UpdateHttpClient(promptCredentials);
+                            await UpdateHttpClientAsync(promptCredentials);
                             continue;
                         }
 
@@ -429,11 +451,14 @@ namespace NuGet.Protocol
             return authState;
         }
 
-        private async Task<ICredentials> PromptForCredentials(CancellationToken cancellationToken)
+        private async Task<ICredentials> PromptForCredentialsAsync(
+            CredentialRequestType type,
+            string message,
+            CancellationToken token)
         {
             ICredentials promptCredentials = null;
 
-            if (HttpHandlerResourceV3.PromptForCredentials != null)
+            if (HttpHandlerResourceV3.PromptForCredentialsAsync != null)
             {
                 try
                 {
@@ -441,7 +466,7 @@ namespace NuGet.Protocol
                     await _credentialPromptLock.WaitAsync();
 
                     promptCredentials =
-                        await HttpHandlerResourceV3.PromptForCredentials(_baseUri, cancellationToken);
+                        await HttpHandlerResourceV3.PromptForCredentialsAsync(_baseUri, type, message, token);
                 }
                 catch (TaskCanceledException)
                 {
@@ -461,7 +486,7 @@ namespace NuGet.Protocol
             return promptCredentials;
         }
 
-        private async Task UpdateHttpClient()
+        private async Task UpdateHttpClientAsync()
         {
             // Get package source credentials
             var credentials = CredentialStore.Instance.GetCredentials(_baseUri);
@@ -478,10 +503,10 @@ namespace NuGet.Protocol
                 CredentialStore.Instance.Add(_baseUri, credentials);
             }
 
-            await UpdateHttpClient(credentials);
+            await UpdateHttpClientAsync(credentials);
         }
 
-        private async Task UpdateHttpClient(ICredentials credentials)
+        private async Task UpdateHttpClientAsync(ICredentials credentials)
         {
             if (_httpHandler == null)
             {
@@ -536,7 +561,7 @@ namespace NuGet.Protocol
             return new HttpCacheResult(maxAge, newFile, cacheFile);
         }
 
-        private async Task CreateCacheFile(
+        private async Task CreateCacheFileAsync(
             HttpCacheResult result,
             string uri,
             HttpResponseMessage response,

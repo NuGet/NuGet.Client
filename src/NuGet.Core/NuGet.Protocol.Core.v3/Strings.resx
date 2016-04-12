@@ -321,4 +321,16 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
     <comment>'{0}' is replaced with the resource that could not be downloaded.
 '{1}' is replaced with the integer (in milliseconds) of the timeout duration.</comment>
   </data>
+  <data name="Http_CredentialsForUnauthorized" xml:space="preserve">
+    <value>The server responded with HTTP '401 Unauthorized' when accessing the source '{0}'. This suggests that the server needs credentials to authenticate your identity. Provide credentials to access this resource.</value>
+    <comment>{0} is the source that needs credentials to be accessed.</comment>
+  </data>
+  <data name="Http_CredentialsForForbidden" xml:space="preserve">
+    <value>The server responded with HTTP '403 Forbidden' when accessing the source '{0}'. This suggests that the server has authenticated your identity but has not permitted you to access the requested resource. Provide credentials that have permissions to view this resource.</value>
+    <comment>{0} is the source that needs credentials to be accessed.</comment>
+  </data>
+  <data name="Http_CredentialsForProxy" xml:space="preserve">
+    <value>The server responded with HTTP '407 Proxy Authentication Required' when accessing the proxy '{0}'. This suggests that the server needs credentials to authenticate your identity to use a proxy. Provide credentials to access this resource.</value>
+    <comment>{0} is the proxy URL that needs credentials to be accessed.</comment>
+  </data>
 </root>

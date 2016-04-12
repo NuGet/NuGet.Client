@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
+using NuGet.Configuration;
 using Xunit;
 
 namespace NuGet.Credentials.Test
@@ -28,15 +29,26 @@ namespace NuGet.Credentials.Test
         [Fact]
         public async Task WhenProxyRequest_ReturnNull()
         {
+            // Arrange
             var provider = _mockProvider;
+            var proxy = null as IWebProxy;
             var uri = new Uri("http://host/");
-            var isProxyRequest = true;
+            var type = CredentialRequestType.Proxy;
+            var message = null as string;
             var isRetry = false;
             var nonInteractive = false;
 
-            var result = await provider.Object.Get(
-                uri, null, isProxyRequest, isRetry, nonInteractive, CancellationToken.None);
+            // Act
+            var result = await provider.Object.GetAsync(
+                uri,
+                proxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
+                CancellationToken.None);
 
+            // Assert
             Assert.Equal(CredentialStatus.ProviderNotApplicable, result.Status);
             Assert.Null(result.Credentials);
             _mockProvider.Verify(
@@ -45,17 +57,58 @@ namespace NuGet.Credentials.Test
         }
 
         [Fact]
-        public async Task CreatesExpectedCredentialRequest()
+        public async Task CreatesExpectedCredentialRequestWithUnauthorized()
         {
+            // Arrange
             var provider = _mockProvider;
             var uri = new Uri("http://host/");
-            var isProxyRequest = false;
+            var proxy = null as IWebProxy;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
             var isRetry = true;
             var nonInteractive = true;
 
-            var result = await provider.Object.Get(
-                uri, null, isProxyRequest, isRetry, nonInteractive, CancellationToken.None);
+            // Act
+            var result = await provider.Object.GetAsync(
+                uri,
+                proxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
+                CancellationToken.None);
 
+            // Assert
+            Assert.Equal(CredentialStatus.ProviderNotApplicable, result.Status);
+            Assert.Null(result.Credentials);
+            Assert.Equal("http://host/", _actualRequest.Uri);
+            Assert.True(_actualRequest.IsRetry);
+            Assert.True(_actualRequest.NonInteractive);
+        }
+
+        [Fact]
+        public async Task CreatesExpectedCredentialRequestWithForbidden()
+        {
+            // Arrange
+            var provider = _mockProvider;
+            var uri = new Uri("http://host/");
+            var proxy = null as IWebProxy;
+            var type = CredentialRequestType.Forbidden;
+            var message = null as string;
+            var isRetry = true;
+            var nonInteractive = true;
+
+            // Act
+            var result = await provider.Object.GetAsync(
+                uri,
+                proxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
+                CancellationToken.None);
+
+            // Assert
             Assert.Equal(CredentialStatus.ProviderNotApplicable, result.Status);
             Assert.Null(result.Credentials);
             Assert.Equal("http://host/", _actualRequest.Uri);
@@ -66,16 +119,26 @@ namespace NuGet.Credentials.Test
         [Fact]
         public async Task WhenResponseContainsAbort_ThenThrow()
         {
+            // Arrange
             var provider = _mockProvider;
             var uri = new Uri("http://host/");
-            var isProxyRequest = false;
+            var proxy = null as IWebProxy;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
             var isRetry = true;
             var nonInteractive = true;
             _mockProvider.Setup(x => x.Execute(It.IsAny<PluginCredentialRequest>(), It.IsAny<CancellationToken>()))
                 .Throws(PluginException.CreateAbortMessage(@"c:\path\plugin.exe", ""));
 
-            var exception = await Record.ExceptionAsync(async () => await provider.Object.Get(
-                uri, null, isProxyRequest, isRetry, nonInteractive, CancellationToken.None));
+            // Act & Assert
+            var exception = await Record.ExceptionAsync(async () => await provider.Object.GetAsync(
+                uri,
+                proxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
+                CancellationToken.None));
 
             Assert.IsAssignableFrom<PluginException>(exception);
             Assert.Contains(@"Credential plugin c:\path\plugin.exe handles this request, but is unable to provide credentials.", 
@@ -85,16 +148,26 @@ namespace NuGet.Credentials.Test
         [Fact]
         public async Task WhenResponseContainsAbortAndAbortMessage_ThenThrow()
         {
+            // Arrange
             var provider = _mockProvider;
             var uri = new Uri("http://host/");
-            var isProxyRequest = false;
+            var proxy = null as IWebProxy;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
             var isRetry = true;
             var nonInteractive = true;
             _mockProvider.Setup(x => x.Execute(It.IsAny<PluginCredentialRequest>(), It.IsAny<CancellationToken>()))
                 .Throws(PluginException.CreateAbortMessage(@"c:\path\plugin.exe", "Extra message."));
 
-            var exception =  await Record.ExceptionAsync(async () => await provider.Object.Get(
-                uri, null, isProxyRequest, isRetry, nonInteractive, CancellationToken.None));
+            // Act & Assert
+            var exception =  await Record.ExceptionAsync(async () => await provider.Object.GetAsync(
+                uri,
+                proxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
+                CancellationToken.None));
 
             Assert.IsAssignableFrom<PluginException>(exception);
             Assert.Contains(
@@ -105,17 +178,28 @@ namespace NuGet.Credentials.Test
         [Fact]
         public async Task WhenResponseContainsUsername_ReturnCredential()
         {
+            // Arrange
             var provider = _mockProvider;
             var uri = new Uri("http://host/");
-            var isProxyRequest = false;
+            var proxy = null as IWebProxy;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
             var isRetry = true;
             var nonInteractive = true;
             _mockProvider.Setup(x => x.Execute(It.IsAny<PluginCredentialRequest>(), It.IsAny<CancellationToken>()))
                 .Returns(new PluginCredentialResponse() { Username = "u" });
 
-            var result = await provider.Object.Get(
-                uri, null, isProxyRequest, isRetry, nonInteractive, CancellationToken.None);
+            // Act
+            var result = await provider.Object.GetAsync(
+                uri,
+                proxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
+                CancellationToken.None);
 
+            // Assert
             Assert.NotNull(result);
             Assert.NotNull(result.Credentials);
             Assert.Equal("u", ((NetworkCredential)result.Credentials)?.UserName);
@@ -124,17 +208,28 @@ namespace NuGet.Credentials.Test
         [Fact]
         public async Task WhenResponseContainsPassword_ReturnCredential()
         {
+            // Arrange
             var provider = _mockProvider;
             var uri = new Uri("http://host/");
-            var isProxyRequest = false;
+            var proxy = null as IWebProxy;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
             var isRetry = true;
             var nonInteractive = true;
             _mockProvider.Setup(x => x.Execute(It.IsAny<PluginCredentialRequest>(), It.IsAny<CancellationToken>()))
                 .Returns(new PluginCredentialResponse() { Password = "p" });
 
-            var result = await provider.Object.Get(
-                uri, null, isProxyRequest, isRetry, nonInteractive, CancellationToken.None);
+            // Act
+            var result = await provider.Object.GetAsync(
+                uri,
+                proxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
+                CancellationToken.None);
 
+            // Assert
             Assert.NotNull(result);
             Assert.NotNull(result.Credentials);
             Assert.Equal("p", ((NetworkCredential)result.Credentials)?.Password);

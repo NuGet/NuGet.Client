@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Credentials;
 using Xunit;
+using NuGet.Configuration;
 
 namespace NuGet.VsExtension.Test
 {
@@ -78,12 +79,19 @@ namespace NuGet.VsExtension.Test
             // Arange
             var uri = new Uri("https://uri1");
             var webProxy = null as IWebProxy;
-            var isProxyRequest = true;
+            var type = CredentialRequestType.Proxy;
+            var message = null as string;
             var isRetry = false;
             var nonInteractive = false;
 
             // Act
-            var cred = await _provider.Get(uri, webProxy, isProxyRequest, isRetry, nonInteractive,
+            var cred = await _provider.GetAsync(
+                uri,
+                webProxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
                 CancellationToken.None);
 
             // Assert
@@ -97,13 +105,20 @@ namespace NuGet.VsExtension.Test
             // Arange
             var uri = null as Uri;
             var webProxy = null as IWebProxy;
-            var isProxyRequest = false;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
             var isRetry = false;
             var nonInteractive = false;
 
-            // Act - Assert
+            // Act & Assert
             await Assert.ThrowsAsync<ArgumentNullException>(
-                async () => await _provider.Get(uri, webProxy, isProxyRequest, isRetry, nonInteractive,
+                async () => await _provider.GetAsync(
+                    uri,
+                    webProxy,
+                    type,
+                    message,
+                    isRetry,
+                    nonInteractive,
                     CancellationToken.None));
         }
 
@@ -113,12 +128,19 @@ namespace NuGet.VsExtension.Test
             // Arange
             var uri = new Uri("https://uri1");
             var webProxy = null as IWebProxy;
-            var isProxyRequest = false;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
             var isRetry = false;
             var nonInteractive = false;
 
             // Act
-            var cred = await _provider.Get(uri, webProxy, isProxyRequest, isRetry, nonInteractive,
+            var cred = await _provider.GetAsync(
+                uri,
+                webProxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
                 CancellationToken.None);
 
             // Assert
@@ -138,12 +160,19 @@ namespace NuGet.VsExtension.Test
 
             var uri = new Uri("https://uri1");
             var webProxy = null as IWebProxy;
-            var isProxyRequest = false;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
             var isRetry = false;
             var nonInteractive = false;
 
             // Act
-            var cred = await _provider.Get(uri, webProxy, isProxyRequest, isRetry, nonInteractive,
+            var cred = await _provider.GetAsync(
+                uri,
+                webProxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
                 CancellationToken.None);
 
             // Assert
@@ -160,12 +189,19 @@ namespace NuGet.VsExtension.Test
 
             var uri = new Uri("http://uri1");
             var webProxy = null as IWebProxy;
-            var isProxyRequest = false;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
             var isRetry = false;
             var nonInteractive = false;
 
             // Act
-            var cred = await _provider.Get(uri, webProxy, isProxyRequest, isRetry, nonInteractive,
+            var cred = await _provider.GetAsync(
+                uri,
+                webProxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
                 CancellationToken.None);
 
             // Assert
@@ -179,17 +215,19 @@ namespace NuGet.VsExtension.Test
             // Arange
             var uri = new Uri("https://uri1");
             var webProxy = null as IWebProxy;
-            var isProxyRequest = false;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
             var isRetry = false;
             var nonInteractive = true;
 
             // Act
             var exception =
                 await Assert.ThrowsAsync<InvalidOperationException>(
-                        async () => await _provider.Get(
+                        async () => await _provider.GetAsync(
                             uri, 
                             webProxy, 
-                            isProxyRequest, 
+                            type,
+                            message,
                             isRetry, 
                             nonInteractive,
                             CancellationToken.None));
@@ -208,12 +246,19 @@ namespace NuGet.VsExtension.Test
 
             var uri = new Uri("https://uri1");
             var webProxy = null as IWebProxy;
-            var isProxyRequest = false;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
             var isRetry = false;
             var nonInteractive = false;
 
             // Act
-            var cred = await _provider.Get(uri, webProxy, isProxyRequest, isRetry, nonInteractive,
+            var cred = await _provider.GetAsync(
+                uri,
+                webProxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
                 CancellationToken.None);
 
             // Assert
@@ -243,12 +288,19 @@ namespace NuGet.VsExtension.Test
 
             var uri = new Uri("https://uri1");
             var webProxy = null as IWebProxy;
-            var isProxyRequest = false;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
             var isRetry = false;
             var nonInteractive = false;
 
             // Act
-            var cred = await _provider.Get(uri, webProxy, isProxyRequest, isRetry, nonInteractive,
+            var cred = await _provider.GetAsync(
+                uri,
+                webProxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
                 CancellationToken.None);
 
             // Assert
@@ -281,12 +333,19 @@ namespace NuGet.VsExtension.Test
 
             var uri = new Uri("https://uri1");
             var webProxy = null as IWebProxy;
-            var isProxyRequest = false;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
             var isRetry = false;
             var nonInteractive = false;
 
             // Act
-            var cred = await _provider.Get(uri, webProxy, isProxyRequest, isRetry, nonInteractive,
+            var cred = await _provider.GetAsync(
+                uri,
+                webProxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
                 CancellationToken.None);
 
             // Assert
@@ -332,12 +391,19 @@ namespace NuGet.VsExtension.Test
 
             var uri = new Uri("https://uri1");
             var webProxy = null as IWebProxy;
-            var isProxyRequest = false;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
             var isRetry = false;
             var nonInteractive = false;
 
             // Act
-            var cred = await _provider.Get(uri, webProxy, isProxyRequest, isRetry, nonInteractive,
+            var cred = await _provider.GetAsync(
+                uri,
+                webProxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
                 CancellationToken.None);
 
             // Assert
@@ -364,12 +430,19 @@ namespace NuGet.VsExtension.Test
 
             var uri = new Uri("https://uri1");
             var webProxy = null as IWebProxy;
-            var isProxyRequest = false;
+            var type = CredentialRequestType.Unauthorized;
+            var message = null as string;
             var isRetry = true;
             var nonInteractive = false;
 
             // Act
-            var cred = await _provider.Get(uri, webProxy, isProxyRequest, isRetry, nonInteractive,
+            var cred = await _provider.GetAsync(
+                uri,
+                webProxy,
+                type,
+                message,
+                isRetry,
+                nonInteractive,
                 CancellationToken.None);
 
             // Assert

@@ -1096,6 +1096,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The remote server indicated that the previous request was forbidden. Please provide credentials for: {0}.
+        /// </summary>
+        public static string Credentials_ForbiddenCredentials {
+            get {
+                return ResourceManager.GetString("Credentials_ForbiddenCredentials", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Password: .
         /// </summary>
         public static string Credentials_Password {

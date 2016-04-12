@@ -5,6 +5,7 @@ using System;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Configuration;
 using NuGet.Credentials;
 using NuGet.VisualStudio;
 
@@ -30,10 +31,11 @@ namespace NuGetVSExtension
 
         public string Id => _provider.GetType().FullName;
 
-        public async Task<CredentialResponse> Get(
-            Uri uri, 
-            IWebProxy proxy, 
-            bool isProxyRequest, 
+        public async Task<CredentialResponse> GetAsync(
+            Uri uri,
+            IWebProxy proxy,
+            CredentialRequestType type,
+            string message,
             bool isRetry, 
             bool nonInteractive, 
             CancellationToken cancellationToken)
@@ -48,7 +50,14 @@ namespace NuGetVSExtension
                 throw new ArgumentNullException(nameof(cancellationToken));
             }
 
-            var credentials = await _provider.GetCredentialsAsync(uri, proxy, isProxyRequest, isRetry, nonInteractive, cancellationToken);
+            // TODO: Extend the IVS API surface area to pass down the credential request type.
+            var credentials = await _provider.GetCredentialsAsync(
+                uri,
+                proxy,
+                isProxyRequest: type == CredentialRequestType.Proxy,
+                isRetry: isRetry,
+                nonInteractive: nonInteractive,
+                cancellationToken: cancellationToken);
 
             return credentials == null
                 ? new CredentialResponse(CredentialStatus.ProviderNotApplicable)

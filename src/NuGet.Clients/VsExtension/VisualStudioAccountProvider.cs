@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Services.Client.AccountManagement;
 using System.Threading;
 using NuGet.Credentials;
+using NuGet.Configuration;
 
 namespace NuGetVSExtension
 {
@@ -54,8 +55,12 @@ namespace NuGetVSExtension
         /// <param name="uri">URI for the feed endponint to use</param>
         /// <param name="proxy">Web proxy to use when comunicating on the network.  Null if there is no proxy
         /// authentication configured</param>
-        /// <param name="isProxyRequest">Flag to indicate that this request is to get proxy authentication
-        /// credetials.  Note, if this is set to true method will return null</param>
+        /// <param name="type">
+        /// The type of credential request that is being made. Note that this implementation of
+        /// <see cref="ICredentialProvider"/> does not support providing proxy credenitials and treats
+        /// all other types the same.
+        /// </param>
+        /// <param name="message">A message provided by NuGet to show to the user when prompting.</param>
         /// <param name="isRetry">Flag to indicate if this is the first time the URI has been looked up.
         /// If this is true we check to see if the account has access to the feed.
         /// First time we assume that is true to minimize network trafic.</param>
@@ -64,7 +69,12 @@ namespace NuGetVSExtension
         /// <param name="cancellationToken">Cancelation token used to comunicate cancelation to the async tasks</param>
         /// <returns>If a credentials can be obtained a credentails object with a session token for the URI,
         /// if not NULL</returns>
-        public async Task<CredentialResponse> Get(Uri uri, IWebProxy proxy, bool isProxyRequest, bool isRetry,
+        public async Task<CredentialResponse> GetAsync(
+            Uri uri,
+            IWebProxy proxy,
+            CredentialRequestType type,
+            string message,
+            bool isRetry,
             bool nonInteractive, CancellationToken cancellationToken)
         {
             if (uri == null)
@@ -78,7 +88,7 @@ namespace NuGetVSExtension
                 return new CredentialResponse(CredentialStatus.ProviderNotApplicable);
             }
 
-            if (isProxyRequest)
+            if (type == CredentialRequestType.Proxy)
             {
                 //  We don't handle getting proxy credentials so don't try to do anything on a isProxyRequest.
                 return new CredentialResponse(CredentialStatus.ProviderNotApplicable);

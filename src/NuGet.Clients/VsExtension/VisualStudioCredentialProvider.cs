@@ -7,7 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Configuration;
 using NuGet.Credentials;
+using WebProxy = System.Net.WebProxy;
 
 namespace NuGetVSExtension
 {
@@ -34,8 +36,14 @@ namespace NuGetVSExtension
         /// Returns an ICredentials instance that the consumer would need in order
         /// to properly authenticate to the given Uri.
         /// </summary>
-        public async Task<CredentialResponse> Get(Uri uri, IWebProxy proxy, bool isProxyRequest, bool isRetry,
-            bool nonInteractive, CancellationToken cancellationToken)
+        public async Task<CredentialResponse> GetAsync(
+            Uri uri,
+            IWebProxy proxy,
+            CredentialRequestType type,
+            string message,
+            bool isRetry,
+            bool nonInteractive,
+            CancellationToken cancellationToken)
         {
 
             if (uri == null)
@@ -69,7 +77,7 @@ namespace NuGetVSExtension
                 // The cached credentials that we found are not valid so let's ask the user
                 // until they abort or give us valid credentials.
                 var uriToDisplay = uri;
-                if (isProxyRequest && proxy != null)
+                if (type == CredentialRequestType.Proxy && proxy != null)
                 {
                     // Display the proxy server's host name when asking for proxy credentials
                     uriToDisplay = proxy.GetProxy(uri);

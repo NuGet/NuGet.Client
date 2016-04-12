@@ -138,9 +138,13 @@ namespace NuGet.CommandLine
 
             NuGet.Protocol.Core.v3.HttpHandlerResourceV3.CredentialSerivce = credentialService;
             
-            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForCredentials =
-                async (uri, cancellationToken) => await credentialService.GetCredentials(
-                    uri, proxy: null, isProxy: false, cancellationToken: cancellationToken);
+            NuGet.Protocol.Core.v3.HttpHandlerResourceV3.PromptForCredentialsAsync =
+                async (uri, type, message, cancellationToken) => await credentialService.GetCredentialsAsync(
+                    uri,
+                    proxy: null,
+                    type: type,
+                    message: message,
+                    cancellationToken: cancellationToken);
 
             NuGet.Protocol.Core.v3.HttpHandlerResourceV3.CredentialsSuccessfullyUsed = (uri, credentials) =>
             {

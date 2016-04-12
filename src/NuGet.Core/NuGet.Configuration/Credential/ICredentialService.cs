@@ -10,6 +10,11 @@ namespace NuGet.Configuration
 {
     public interface ICredentialService
     {
-        Task<ICredentials> GetCredentials(Uri uri, IWebProxy proxy, bool isProxy, CancellationToken cancellationToken);
+        Task<ICredentials> GetCredentialsAsync(
+            Uri uri,
+            IWebProxy proxy,
+            CredentialRequestType type,
+            string message,
+            CancellationToken cancellationToken);
     }
 }

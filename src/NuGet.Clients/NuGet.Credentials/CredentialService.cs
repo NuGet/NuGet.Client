@@ -62,14 +62,27 @@ namespace NuGet.Credentials
         /// <summary>
         /// Provides credentials for http requests.
         /// </summary>
-        /// <param name="uri">The uri of a web resource for which credentials are needed.</param>
-        /// <param name="proxy">The currently configured proxy. It may be necessary for CredentialProviders
-        /// to use this proxy in order to acquire credentials from their authentication source.</param>
-        /// <param name="isProxy">If true, get credentials to authenticate for the requested proxy.
-        /// If false, the credentials are intended for a remote service.</param>
+        /// <param name="uri">
+        /// The URI of a web resource for which credentials are needed.
+        /// </param>
+        /// <param name="proxy">
+        /// The currently configured proxy. It may be necessary for CredentialProviders
+        /// to use this proxy in order to acquire credentials from their authentication source.
+        /// </param>
+        /// <param name="type">
+        /// The type of credential request that is being made.
+        /// </param>
+        /// <param name="message">
+        /// A default, user-readable message explaining why they are being prompted for credentials.
+        /// The credential provider can choose to ignore this value and write their own message.
+        /// </param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A credential object, or null if no credentials could be acquired.</returns>
-        public async Task<ICredentials> GetCredentials(Uri uri, IWebProxy proxy, bool isProxy,
+        public async Task<ICredentials> GetCredentialsAsync(
+            Uri uri,
+            IWebProxy proxy,
+            CredentialRequestType type,
+            string message,
             CancellationToken cancellationToken)
         {
             if (uri == null)
@@ -83,7 +96,7 @@ namespace NuGet.Credentials
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var retryKey = RetryCacheKey(uri, isProxy, provider);
+                var retryKey = RetryCacheKey(uri, type, provider);
                 var isRetry = _retryCache.ContainsKey(retryKey);
 
                 try
@@ -97,10 +110,16 @@ namespace NuGet.Credentials
                     ProviderSemaphore.WaitOne();
 
                     CredentialResponse response;
-                    if (!TryFromCredentialCache(uri, isProxy, isRetry, provider, out response))
+                    if (!TryFromCredentialCache(uri, type, isRetry, provider, out response))
                     {
-                        response = await provider.Get(uri, proxy, isProxyRequest: isProxy, isRetry: isRetry,
-                            nonInteractive: _nonInteractive, cancellationToken: cancellationToken);
+                        response = await provider.GetAsync(
+                            uri,
+                            proxy,
+                            type,
+                            message,
+                            isRetry,
+                            _nonInteractive,
+                            cancellationToken);
 
                         // Check that the provider gave us a valid response.
                         if (response == null || (response.Status != CredentialStatus.ProviderNotApplicable && 
@@ -109,8 +128,7 @@ namespace NuGet.Credentials
                             throw new ProviderException(Resources.ProviderException_MalformedResponse);
                         }
 
-
-                        AddToCredentialCache(uri, isProxy, provider, response);
+                        AddToCredentialCache(uri, type, provider, response);
                     }
 
                     if (response.Status == CredentialStatus.Success)
@@ -142,12 +160,12 @@ namespace NuGet.Credentials
         /// </summary>
         private IEnumerable<ICredentialProvider> Providers { get; }
 
-        private bool TryFromCredentialCache(Uri uri, bool isProxy, bool isRetry, ICredentialProvider provider,
+        private bool TryFromCredentialCache(Uri uri, CredentialRequestType type, bool isRetry, ICredentialProvider provider,
             out CredentialResponse credentials)
         {
             credentials = null;
 
-            var key = CredentialCacheKey(uri, isProxy, provider);
+            var key = CredentialCacheKey(uri, type, provider);
             if (isRetry)
             {
                 CredentialResponse removed;
@@ -158,26 +176,26 @@ namespace NuGet.Credentials
             return _providerCredentialCache.TryGetValue(key, out credentials);
         }
 
-        private void AddToCredentialCache(Uri uri, bool isProxy, ICredentialProvider provider,
+        private void AddToCredentialCache(Uri uri, CredentialRequestType type, ICredentialProvider provider,
             CredentialResponse credentials)
         {
-            _providerCredentialCache[CredentialCacheKey(uri, isProxy, provider)] = credentials;
+            _providerCredentialCache[CredentialCacheKey(uri, type, provider)] = credentials;
         }
 
-        private static string RetryCacheKey(Uri uri, bool isProxy, ICredentialProvider provider)
+        private static string RetryCacheKey(Uri uri, CredentialRequestType type, ICredentialProvider provider)
         {
-            return $"{provider.Id}_{isProxy}_{uri}";
+            return GetUriKey(uri, type, provider);
         }
 
-        private static string CredentialCacheKey(Uri uri, bool isProxy, ICredentialProvider provider)
+        private static string CredentialCacheKey(Uri uri, CredentialRequestType type, ICredentialProvider provider)
         {
-            var rootUri = GetRootUri(uri);
-            return $"{provider.Id}_{isProxy}_{rootUri}";
+            var rootUri =new Uri(uri.GetComponents(UriComponents.SchemeAndServer, UriFormat.SafeUnescaped));
+            return GetUriKey(rootUri, type, provider);
         }
 
-        private static Uri GetRootUri(Uri uri)
+        private static string GetUriKey(Uri uri, CredentialRequestType type, ICredentialProvider provider)
         {
-            return new Uri(uri.GetComponents(UriComponents.SchemeAndServer, UriFormat.SafeUnescaped));
+            return $"{provider.Id}_{type == CredentialRequestType.Proxy}_{uri}";
         }
     }
 }

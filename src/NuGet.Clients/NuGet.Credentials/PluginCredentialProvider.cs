@@ -6,9 +6,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using System.Threading;
+using NuGet.Configuration;
 
 namespace NuGet.Credentials
 {
@@ -52,18 +53,28 @@ namespace NuGet.Credentials
         /// </summary>
         /// <param name="uri">The uri of a web resource for which credentials are needed.</param>
         /// <param name="proxy">Ignored.  Proxy information will not be passed to plugins.</param>
-        /// <param name="isProxyRequest">If true, the client is requesting credentials for a proxy.
-        /// In this case, null will be returned, as plugins do not provide credentials for proxies.</param>
+        /// <param name="type">
+        /// The type of credential request that is being made. Note that this implementation of
+        /// <see cref="ICredentialProvider"/> does not support providing proxy credenitials and treats
+        /// all other types the same.
+        /// </param>
         /// <param name="isRetry">If true, credentials were previously supplied by this
         /// provider for the same uri.</param>
+        /// <param name="message">A message provided by NuGet to show to the user when prompting.</param>
         /// <param name="nonInteractive">If true, the plugin must not prompt for credentials.</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         /// <returns>A credential object.  If </returns>
-        public Task<CredentialResponse> Get(Uri uri, IWebProxy proxy, bool isProxyRequest, bool isRetry,
-            bool nonInteractive, CancellationToken cancellationToken)
+        public Task<CredentialResponse> GetAsync(
+            Uri uri,
+            IWebProxy proxy,
+            CredentialRequestType type,
+            string message,
+            bool isRetry,
+            bool nonInteractive,
+            CancellationToken cancellationToken)
         {
             CredentialResponse taskResponse;
-            if (isProxyRequest)
+            if (type == CredentialRequestType.Proxy)
             {
                 taskResponse = new CredentialResponse(CredentialStatus.ProviderNotApplicable);
                 return Task.FromResult(taskResponse);
@@ -78,6 +89,7 @@ namespace NuGet.Credentials
                     NonInteractive = nonInteractive
                 };
 
+                // TODO: Extend the plug protocol to pass in the credential request type.
                 var response = Execute(request, cancellationToken);
 
                 if (response.IsValid)
@@ -149,7 +161,7 @@ namespace NuGet.Credentials
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
-            using (cancellationToken.Register(()=>Kill(process)))
+            using (cancellationToken.Register(() => Kill(process)))
             {
                 if (!process.WaitForExit(TimeoutSeconds*1000))
                 {

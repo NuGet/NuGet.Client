@@ -53,7 +53,8 @@ namespace NuGet.Protocol.Core.v3
         /// <summary>
         /// Gets or sets a delegate to be invoked to prompt user for authenticated feed credentials.
         /// </summary>
-        public static Func<Uri, CancellationToken, Task<ICredentials>> PromptForCredentials { get; set; }
+        public static Func<Uri, CredentialRequestType, string, CancellationToken, Task<ICredentials>>
+            PromptForCredentialsAsync { get; set; }
 
         /// <summary>
         /// Gets or sets a delegate that is to be invoked when authenticated feed credentials are successfully

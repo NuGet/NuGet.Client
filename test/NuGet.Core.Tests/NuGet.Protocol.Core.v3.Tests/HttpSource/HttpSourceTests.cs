@@ -46,7 +46,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 });
 
                 var prompted = false;
-                HttpHandlerResourceV3.PromptForCredentials = (uri, token) =>
+                HttpHandlerResourceV3.PromptForCredentialsAsync = (uri, type, message, token) =>
                 {
                     prompted = true;
                     return Task.FromResult(tc.Credentials);
@@ -84,7 +84,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 });
 
                 var prompted = false;
-                HttpHandlerResourceV3.PromptForCredentials = (uri, token) =>
+                HttpHandlerResourceV3.PromptForCredentialsAsync = (uri, type, message, token) =>
                 {
                     prompted = true;
                     return Task.FromResult(tc.Credentials);

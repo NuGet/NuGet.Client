@@ -47,8 +47,14 @@ namespace NuGet.Protocol.Core.v3.Tests
             Assert.NotNull(response);
             Assert.Equal(HttpStatusCode.ProxyAuthenticationRequired, response.StatusCode);
 
-            Mock.Get(service)
-                .Verify(x => x.GetCredentials(ProxyAddress, It.IsAny<IWebProxy>(), true, It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(service).Verify(
+                x => x.GetCredentialsAsync(
+                    ProxyAddress,
+                    It.IsAny<IWebProxy>(),
+                    CredentialRequestType.Proxy,
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()),
+                 Times.Once());
         }
 
         [Fact]
@@ -58,7 +64,12 @@ namespace NuGet.Protocol.Core.v3.Tests
 
             var service = Mock.Of<ICredentialService>();
             Mock.Get(service)
-                .Setup(x => x.GetCredentials(ProxyAddress, It.IsAny<IWebProxy>(), true, It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetCredentialsAsync(
+                    ProxyAddress,
+                    It.IsAny<IWebProxy>(),
+                    CredentialRequestType.Proxy,
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult<ICredentials>(new NetworkCredential()));
 
             var handler = new ProxyCredentialHandler(defaultClientHandler, service, ProxyCache.Instance);
@@ -74,8 +85,14 @@ namespace NuGet.Protocol.Core.v3.Tests
             Assert.NotNull(response);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            Mock.Get(service)
-                .Verify(x => x.GetCredentials(ProxyAddress, It.IsAny<IWebProxy>(), true, It.IsAny<CancellationToken>()), Times.Once());
+            Mock.Get(service).Verify(
+                x => x.GetCredentialsAsync(
+                    ProxyAddress,
+                    It.IsAny<IWebProxy>(),
+                    CredentialRequestType.Proxy,
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()),
+                Times.Once());
         }
 
         [Fact]
@@ -85,7 +102,12 @@ namespace NuGet.Protocol.Core.v3.Tests
 
             var service = Mock.Of<ICredentialService>();
             Mock.Get(service)
-                .Setup(x => x.GetCredentials(ProxyAddress, It.IsAny<IWebProxy>(), true, It.IsAny<CancellationToken>()))
+                .Setup(x => x.GetCredentialsAsync(
+                    ProxyAddress,
+                    It.IsAny<IWebProxy>(),
+                    CredentialRequestType.Proxy,
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()))
                 .Returns(() => Task.FromResult<ICredentials>(new NetworkCredential()));
 
             var handler = new ProxyCredentialHandler(defaultClientHandler, service, ProxyCache.Instance);
@@ -102,8 +124,14 @@ namespace NuGet.Protocol.Core.v3.Tests
 
             Assert.Equal(ProxyCredentialHandler.MaxAuthRetries, retryCount);
 
-            Mock.Get(service)
-                .Verify(x => x.GetCredentials(ProxyAddress, It.IsAny<IWebProxy>(), true, It.IsAny<CancellationToken>()), Times.Exactly(2));
+            Mock.Get(service).Verify(
+                x => x.GetCredentialsAsync(
+                    ProxyAddress,
+                    It.IsAny<IWebProxy>(),
+                    CredentialRequestType.Proxy,
+                    It.IsAny<string>(),
+                    It.IsAny<CancellationToken>()),
+                Times.Exactly(2));
         }
 
         private static HttpClientHandler GetDefaultClientHandler()

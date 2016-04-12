@@ -4,6 +4,7 @@
 using System;
 using System.Net;
 using System.Threading;
+using NuGet.Configuration;
 
 namespace NuGet.Credentials
 {
@@ -31,8 +32,16 @@ namespace NuGet.Credentials
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            var isProxy = credentialType == CredentialType.ProxyCredentials;
-            var task = _credentialService.GetCredentials(uri, proxy, isProxy, CancellationToken.None);
+            var type = credentialType == CredentialType.ProxyCredentials ?
+                CredentialRequestType.Proxy : CredentialRequestType.Unauthorized;
+
+            var task = _credentialService.GetCredentialsAsync(
+                uri,
+                proxy,
+                type,
+                message: null,
+                cancellationToken: CancellationToken.None);
+
             return task.Result;
         }
     }
