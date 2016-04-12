@@ -7,10 +7,12 @@ using System.Net;
 namespace NuGet.Protocol
 {
     /// <summary>
-    /// A mutable ICredentials wrapper. This allows the underlying ICredentials to 
+    /// A mutable CredentialCache wrapper. This allows the underlying ICredentials to
     /// be changed to work around HttpClientHandler not allowing Credentials to change.
+    /// This class intentionally inherits from CredentialCache to support authentication on redirects.
+    /// According to System.Net implementation any other ICredentials implementation is dropped for security reasons.
     /// </summary>
-    public class CredentialHelper : ICredentials
+    public class CredentialHelper : CredentialCache, ICredentials
     {
         /// <summary>
         /// Credentials can be changed by other threads, for this reason volatile
@@ -37,7 +39,7 @@ namespace NuGet.Protocol
         /// <summary>
         /// Used by the HttpClientHandler to retrieve the current credentials.
         /// </summary>
-        public NetworkCredential GetCredential(Uri uri, string authType)
+        NetworkCredential ICredentials.GetCredential(Uri uri, string authType)
         {
             // Credentials may change during this call so keep a local copy.
             var currentCredentials = Credentials;
