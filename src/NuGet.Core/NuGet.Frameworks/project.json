@@ -1,5 +1,5 @@
 {
-  "version": "3.4.2-*",
+  "version": "3.4.3-*",
   "description": "The understanding of target frameworks for NuGet.Packaging",
   "authors": [
     "NuGet"
@@ -11,10 +11,10 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Versioning": "3.4.2-*",
+    "NuGet.Versioning": "3.4.3-*",
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.2-*"
+      "version": "3.4.3-*"
     }
   },
   "frameworks": {

@@ -1,5 +1,5 @@
 {
-  "version": "3.4.2-*",
+  "version": "3.4.3-*",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
   "projectUrl": "https://github.com/NuGet/NuGet.Client",
   "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
@@ -10,10 +10,10 @@
     "Newtonsoft.Json": "6.0.4",
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.2-*"
+      "version": "3.4.3-*"
     },
-    "NuGet.Versioning": "3.4.2-*",
-    "NuGet.Frameworks": "3.4.2-*"
+    "NuGet.Versioning": "3.4.3-*",
+    "NuGet.Frameworks": "3.4.3-*"
   },
   "frameworks": {
     "net45": {

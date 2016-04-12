@@ -1,5 +1,5 @@
 {
-  "version": "3.4.2-*",
+  "version": "3.4.3-*",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
   "projectUrl": "https://github.com/NuGet/NuGet.Client",
   "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
@@ -7,13 +7,13 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Versioning": "3.4.2-*",
-    "NuGet.Packaging": "3.4.2-*",
-    "NuGet.Repositories": "3.4.2-*",
-    "NuGet.RuntimeModel": "3.4.2-*",
-    "NuGet.ContentModel": "3.4.2-*",
+    "NuGet.Versioning": "3.4.3-*",
+    "NuGet.Packaging": "3.4.3-*",
+    "NuGet.Repositories": "3.4.3-*",
+    "NuGet.RuntimeModel": "3.4.3-*",
+    "NuGet.ContentModel": "3.4.3-*",
     "NuGet.Shared": {
-      "version": "3.4.2-*",
+      "version": "3.4.3-*",
       "type": "build"
     }
   },
