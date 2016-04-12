@@ -173,7 +173,14 @@ namespace NuGet.Packaging
                         var attr = File.GetAttributes(copiedFile);
                         if (!attr.HasFlag(FileAttributes.Directory))
                         {
-                            File.SetLastWriteTimeUtc(copiedFile, entry.LastWriteTime.UtcDateTime);
+                            try
+                            {
+                                File.SetLastWriteTimeUtc(copiedFile, entry.LastWriteTime.UtcDateTime);
+                            }
+                            catch (ArgumentOutOfRangeException)
+                            {
+                                // Ignore invalid file times in zip file
+                            }
                         }
 
                         filesCopied.Add(copiedFile);
