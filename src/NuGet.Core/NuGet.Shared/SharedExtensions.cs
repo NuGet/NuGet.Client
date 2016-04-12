@@ -18,8 +18,8 @@ namespace NuGet.Shared
         /// <param name="self">This list</param>
         /// <param name="other">The other list</param>
         /// <param name="keySelector">The function to extract the key from each item in the list</param>
-        /// <param name="comparer">An optional comparer for comparing keys</param>
-        /// <returns></returns>
+        /// <param name="orderComparer">An optional comparer for comparing keys</param>
+        /// <param name="sequenceComparer">An optional comparer for sequences</param>
         internal static bool OrderedEquals<TSource, TKey>(this IEnumerable<TSource> self, IEnumerable<TSource> other, Func<TSource, TKey> keySelector, IComparer<TKey> orderComparer = null, IEqualityComparer<TSource> sequenceComparer = null)
         {
             Debug.Assert(orderComparer != null || typeof(TKey) != typeof(string), "Argument " + nameof(orderComparer) + " must be provided if " + nameof(TKey) + " is a string.");

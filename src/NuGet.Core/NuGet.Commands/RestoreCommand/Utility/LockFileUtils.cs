@@ -533,7 +533,7 @@ namespace NuGet.Commands
         /// Create LockFileItems from groups of library items.
         /// </summary>
         /// <param name="groups">Library items grouped by RID.</param>
-        /// <param name="groupLabel">Lock file section the items apply to.</param>
+        /// <param name="assetType">Lock file section the items apply to.</param>
         private static List<LockFileRuntimeTarget> GetRuntimeTargetItems(List<ContentItemGroup> groups, string assetType)
         {
             var results = new List<LockFileRuntimeTarget>();

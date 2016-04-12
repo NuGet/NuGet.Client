@@ -13,7 +13,7 @@ namespace NuGet.Common
 
         /// <summary>
         /// Initializes an instance of the <see cref="CollectorLogger"/>, while still
-        /// delegating all log messages to the <see cref="innerLogger"/>.
+        /// delegating all log messages to the <param name="innerLogger" />.
         /// </summary>
         public CollectorLogger(ILogger innerLogger)
         {

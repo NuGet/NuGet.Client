@@ -207,7 +207,6 @@ namespace NuGet.Packaging
         /// <summary>
         /// Update a package entry to the file
         /// </summary>
-        /// <param name="entry">Package reference entry</param>
         public void UpdatePackageEntry(PackageReference oldEntry, PackageReference newEntry)
         {
             if (oldEntry == null)

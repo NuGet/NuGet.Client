@@ -24,7 +24,6 @@ namespace NuGet.Versioning
         /// <param name="maxVersion">Upper bound of the version range.</param>
         /// <param name="includeMaxVersion">True if maxVersion satisfies the condition.</param>
         /// <param name="includePrerelease">True if prerelease versions should satisfy the condition.</param>
-        /// <param name="exclude">Subsets that are excluded from the range.</param>
         public VersionRangeBase(NuGetVersion minVersion = null, bool includeMinVersion = true, NuGetVersion maxVersion = null,
             bool includeMaxVersion = false, bool? includePrerelease = null)
         {

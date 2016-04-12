@@ -108,7 +108,7 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        /// ==
+        /// Equals
         /// </summary>
         public static bool operator ==(SemanticVersion version1, SemanticVersion version2)
         {
@@ -116,7 +116,7 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        /// !=
+        /// Not equal
         /// </summary>
         public static bool operator !=(SemanticVersion version1, SemanticVersion version2)
         {
@@ -124,7 +124,7 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        ///     <
+        /// Less than
         /// </summary>
         public static bool operator <(SemanticVersion version1, SemanticVersion version2)
         {
@@ -132,7 +132,7 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        ///     <=
+        /// Less than or equal
         /// </summary>
         public static bool operator <=(SemanticVersion version1, SemanticVersion version2)
         {
@@ -140,7 +140,7 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        /// >
+        /// Greater than
         /// </summary>
         public static bool operator >(SemanticVersion version1, SemanticVersion version2)
         {
@@ -148,7 +148,7 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        /// >=
+        /// Greater than or equal
         /// </summary>
         public static bool operator >=(SemanticVersion version1, SemanticVersion version2)
         {

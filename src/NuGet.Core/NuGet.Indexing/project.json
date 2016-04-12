@@ -4,6 +4,13 @@
   "projectUrl": "https://github.com/NuGet/NuGet.Client",
   "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
   "description": "NuGet.Indexing Class Library",
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "xmlDoc": true,
+    "nowarn": [
+      "CS1591"
+    ]
+  },
   "compile": [
     "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/NuGetQuery.cs",
     "../../../submodules/NuGet.Services.Metadata/src/NuGet.Indexing/IdentifierKeywordAnalyzer.cs",
@@ -28,6 +35,6 @@
     }
   },
   "frameworks": {
-    "net45": {}
+    "net45": { }
   }
 }

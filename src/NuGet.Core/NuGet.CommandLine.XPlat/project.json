@@ -6,7 +6,11 @@
   "description": "NuGet 3 restore for dotnet CLI, DNX, and UWP",
   "compilationOptions": {
     "emitEntryPoint": true,
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "xmlDoc": true,
+    "nowarn": [
+      "CS1591"
+    ]
   },
   "compile": [
     "../NuGet.Shared/*.cs"

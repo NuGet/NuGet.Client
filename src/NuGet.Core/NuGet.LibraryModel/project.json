@@ -15,7 +15,11 @@
     }
   },
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "xmlDoc": true,
+    "nowarn": [
+      "CS1591"
+    ]
   },
   "frameworks": {
     "net45": {},
