@@ -67,7 +67,7 @@ namespace NuGet.Protocol
         /// <summary>
         /// Creates a V2 parser
         /// </summary>
-        /// <param name="httpHandler">Message handler containing auth/proxy support</param>
+        /// <param name="httpSource">HttpSource and message handler containing auth/proxy support</param>
         /// <param name="baseAddress">base address for all services from this OData service</param>
         public V2FeedParser(HttpSource httpSource, string baseAddress)
             : this(httpSource, baseAddress, new PackageSource(baseAddress))
@@ -77,7 +77,7 @@ namespace NuGet.Protocol
         /// <summary>
         /// Creates a V2 parser
         /// </summary>
-        /// <param name="httpHandler">Message handler containing auth/proxy support</param>
+        /// <param name="httpSource">HttpSource and message handler containing auth/proxy support</param>
         /// <param name="baseAddress">base address for all services from this OData service</param>
         /// <param name="source">PackageSource useful for reporting meaningful errors that relate back to the configuration</param>
         public V2FeedParser(HttpSource httpSource, string baseAddress, PackageSource source)

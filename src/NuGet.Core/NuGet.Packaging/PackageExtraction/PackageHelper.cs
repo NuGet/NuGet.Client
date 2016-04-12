@@ -136,12 +136,6 @@ namespace NuGet.Packaging
         /// <summary>
         /// This returns all the installed package files (does not include satellite files)
         /// </summary>
-        /// <param name="packageIdentity"></param>
-        /// <param name="packagePathResolver"></param>
-        /// <param name="packageDirectory"></param>
-        /// <param name="packageSaveMode"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
         public static IEnumerable<ZipFilePair> GetInstalledPackageFiles(
             PackageArchiveReader packageReader,
             PackageIdentity packageIdentity,

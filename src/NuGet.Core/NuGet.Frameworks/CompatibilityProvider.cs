@@ -192,9 +192,9 @@ namespace NuGet.Frameworks
         /// Find all equivalent frameworks, and their equivalent frameworks.
         /// Example:
         /// Mappings:
-        /// A <-> B
-        /// B <-> C
-        /// C <-> D
+        /// A &lt;&#8210;&gt; B
+        /// B &lt;&#8210;&gt; C
+        /// C &lt;&#8210;&gt; D
         /// For A we need to find B, C, and D so we must retrieve equivalent frameworks for A, B, and C
         /// also as we discover them.
         /// </summary>

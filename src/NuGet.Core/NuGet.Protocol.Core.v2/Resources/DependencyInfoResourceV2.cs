@@ -91,7 +91,7 @@ namespace NuGet.Protocol.Core.v2
         /// <summary>
         /// Retrieve dependency info for a single package.
         /// </summary>
-        /// <param name="package">package id and version</param>
+        /// <param name="packageId">package id</param>
         /// <param name="projectFramework">project target framework. This is used for finding the dependency group</param>
         /// <param name="token">cancellation token</param>
         /// <returns>

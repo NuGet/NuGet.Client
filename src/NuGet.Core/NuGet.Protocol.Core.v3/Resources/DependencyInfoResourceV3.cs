@@ -139,7 +139,6 @@ namespace NuGet.Protocol.Core.v3
         /// </summary>
         /// <remarks>Includes prerelease packages</remarks>
         /// <param name="packageId">package Id to search</param>
-        /// <param name="projectFramework">project target framework. This is used for finding the dependency group</param>
         /// <param name="token">cancellation token</param>
         /// <returns>available packages and their dependencies</returns>
         public override Task<IEnumerable<RemoteSourceDependencyInfo>> ResolvePackages(string packageId, Common.ILogger log, CancellationToken token)

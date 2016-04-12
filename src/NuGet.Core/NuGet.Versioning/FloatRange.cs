@@ -31,7 +31,7 @@ namespace NuGet.Versioning
         /// </summary>
         /// <param name="floatBehavior">Section to float</param>
         /// <param name="minVersion">Min version of the range</param>
-        /// <param name="originalReleasePrefix">The original release label. Invalid labels are allowed here.</param>
+        /// <param name="releasePrefix">The original release label. Invalid labels are allowed here.</param>
         public FloatRange(NuGetVersionFloatBehavior floatBehavior, NuGetVersion minVersion, string releasePrefix)
         {
             _floatBehavior = floatBehavior;
