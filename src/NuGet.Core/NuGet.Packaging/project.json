@@ -1,5 +1,5 @@
 {
-  "version": "3.4.2-*",
+  "version": "3.4.3-*",
   "description": "NuGet's implementation for reading nupkg package and nuspec package specification files.",
   "authors": [
     "NuGet"
@@ -15,15 +15,15 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "NuGet.Common": "3.4.2-*",
-    "NuGet.Frameworks": "3.4.2-*",
+    "NuGet.Common": "3.4.3-*",
+    "NuGet.Frameworks": "3.4.3-*",
     "NuGet.Shared": {
       "type": "build",
-      "version": "3.4.2-*"
+      "version": "3.4.3-*"
     },
-    "NuGet.Packaging.Core": "3.4.2-*",
-    "NuGet.Logging": "3.4.2-*",
-    "NuGet.Versioning": "3.4.2-*"
+    "NuGet.Packaging.Core": "3.4.3-*",
+    "NuGet.Logging": "3.4.3-*",
+    "NuGet.Versioning": "3.4.3-*"
   },
   "frameworks": {
     "net45": {

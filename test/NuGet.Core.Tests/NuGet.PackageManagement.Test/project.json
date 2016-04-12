@@ -1,9 +1,9 @@
 {
-  "version": "3.4.2-*",
+  "version": "3.4.3-*",
   "dependencies": {
     "Moq": "4.2.1510.2205",
-    "NuGet.PackageManagement": "3.4.2-*",
-    "Test.Utility": "3.4.2-*",
+    "NuGet.PackageManagement": "3.4.3-*",
+    "Test.Utility": "3.4.3-*",
     "xunit": "2.1.0",
     "xunit.runner.dnx": "2.1.0-rc1-build204"
   },

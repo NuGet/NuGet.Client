@@ -1,5 +1,5 @@
 {
-  "version": "3.4.2-*",
+  "version": "3.4.3-*",
   "copyright": "Copyright .NET Foundation. All rights reserved.",
   "projectUrl": "https://github.com/NuGet/NuGet.Client",
   "licenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "xunit": "2.1.0",
-    "NuGet.Packaging": "3.4.2-*"
+    "NuGet.Packaging": "3.4.3-*"
   },
   "frameworks": {
     "net45": {

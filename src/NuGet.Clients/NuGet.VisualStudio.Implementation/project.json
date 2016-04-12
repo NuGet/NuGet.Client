@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "NuGet.Resolver": "3.4.2-*",
+    "NuGet.Resolver": "3.4.3-*",
     "Microsoft.VisualStudio.Shell.14.0": "14.0.23107",
     "Microsoft.VisualStudio.Shell.Interop": "7.10.6071",
     "Microsoft.VisualStudio.Shell.Interop.10.0": "10.0.30319",
