@@ -262,7 +262,7 @@ namespace NuGet.CommandLine
             {
                 var projectContext = new ConsoleProjectContext(Console)
                 {
-                    PackageExtractionContext = new PackageExtractionContext()
+                    PackageExtractionContext = new PackageExtractionContext(Console)
                 };
 
                 if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)

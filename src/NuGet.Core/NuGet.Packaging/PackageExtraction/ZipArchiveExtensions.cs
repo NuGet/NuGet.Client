@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using NuGet.Common;
 
 namespace NuGet.Packaging
 {
@@ -47,13 +49,20 @@ namespace NuGet.Packaging
             return entry.Open();
         }
 
-        public static string SaveAsFile(this ZipArchiveEntry entry, string fileFullPath)
+        public static string SaveAsFile(this ZipArchiveEntry entry, string fileFullPath, ILogger logger)
         {
             using (var inputStream = entry.Open())
             {
                 inputStream.CopyToFile(fileFullPath);
             }
 
+            entry.UpdateFileTimeFromEntry(fileFullPath, logger);
+
+            return fileFullPath;
+        }
+
+        public static void UpdateFileTimeFromEntry(this ZipArchiveEntry entry, string fileFullPath, ILogger logger)
+        {
             var attr = File.GetAttributes(fileFullPath);
             if (!attr.HasFlag(FileAttributes.Directory) && entry.LastWriteTime.DateTime != DateTime.MinValue)
             {
@@ -61,13 +70,17 @@ namespace NuGet.Packaging
                 {
                     File.SetLastWriteTimeUtc(fileFullPath, entry.LastWriteTime.UtcDateTime);
                 }
-                catch (ArgumentOutOfRangeException)
+                catch (ArgumentOutOfRangeException ex)
                 {
-                    // Ignore invalid file times in zip file
+                    string message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.FailedFileTime,
+                        fileFullPath, // {0}
+                        ex.Message); // {1}
+
+                    logger.LogVerbose(message);
                 }
             }
-
-            return fileFullPath;
         }
     }
 }

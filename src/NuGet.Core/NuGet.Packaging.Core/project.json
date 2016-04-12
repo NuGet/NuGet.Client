@@ -18,6 +18,9 @@
     "../NuGet.Shared/*.cs"
   ],
   "dependencies": {
+    "NuGet.Common": {
+      "target": "project"
+    },
     "NuGet.Packaging.Core.Types": {
       "target": "project"
     }

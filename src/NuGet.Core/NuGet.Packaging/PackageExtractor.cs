@@ -61,6 +61,7 @@ namespace NuGet.Packaging
                     packageDirectory,
                     packageFiles,
                     packageFileExtractor.ExtractPackageFile,
+                    packageExtractionContext.Logger,
                     token));
 
                 var nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentityFromNuspec));
@@ -80,7 +81,7 @@ namespace NuGet.Packaging
                         packageReader,
                         packagePathResolver,
                         packageSaveMode,
-                        packageExtractionContext.XmlDocFileSaveMode,
+                        packageExtractionContext,
                         token));
                 }
             }
@@ -126,6 +127,7 @@ namespace NuGet.Packaging
                 packageDirectory,
                 packageFiles,
                 packageFileExtractor.ExtractPackageFile,
+                packageExtractionContext.Logger,
                 token));
 
             var nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentityFromNuspec));
@@ -154,7 +156,7 @@ namespace NuGet.Packaging
                     packageReader,
                     packagePathResolver,
                     packageSaveMode,
-                    packageExtractionContext.XmlDocFileSaveMode,
+                    packageExtractionContext,
                     token));
             }
 
@@ -254,7 +256,7 @@ namespace NuGet.Packaging
                                 var nuspecFile = packageReader.GetNuspecFile();
                                 if ((packageSaveMode & PackageSaveMode.Nuspec) == PackageSaveMode.Nuspec)
                                 {
-                                    packageReader.ExtractFile(nuspecFile, targetNuspec);
+                                    packageReader.ExtractFile(nuspecFile, targetNuspec, logger);
                                     if (versionFolderPathContext.FixNuspecIdCasing)
                                     {
                                         // DNU REFACTORING TODO: delete the hacky FixNuSpecIdCasing()
@@ -279,6 +281,7 @@ namespace NuGet.Packaging
                                         targetPath,
                                         packageFiles,
                                         packageFileExtractor.ExtractPackageFile,
+                                        logger,
                                         token);
                                 }
 
@@ -402,7 +405,7 @@ namespace NuGet.Packaging
             PackageIdentity packageIdentity,
             PackagePathResolver packagePathResolver,
             PackageSaveMode packageSaveMode,
-            XmlDocFileSaveMode xmlDocFileSaveMode,
+            PackageExtractionContext packageExtractionContext,
             CancellationToken token)
         {
             if (packageIdentity == null)
@@ -426,7 +429,7 @@ namespace NuGet.Packaging
                         packageReader,
                         packagePathResolver,
                         packageSaveMode,
-                        xmlDocFileSaveMode,
+                        packageExtractionContext,
                         token);
                 }
             }
@@ -438,7 +441,7 @@ namespace NuGet.Packaging
             PackageReaderBase packageReader,
             PackagePathResolver packagePathResolver,
             PackageSaveMode packageSaveMode,
-            XmlDocFileSaveMode xmlDocFileSaveMode,
+            PackageExtractionContext packageExtractionContext,
             CancellationToken token)
         {
             if (packageReader == null)
@@ -451,6 +454,11 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException(nameof(packagePathResolver));
             }
 
+            if (packageExtractionContext == null)
+            {
+                throw new ArgumentNullException(nameof(packageExtractionContext));
+            }
+
             var satelliteFilesCopied = Enumerable.Empty<string>();
 
             string runtimePackageDirectory;
@@ -460,13 +468,14 @@ namespace NuGet.Packaging
                 .ToList();
             if (satelliteFiles.Count > 0)
             {
-                var packageFileExtractor = new PackageFileExtractor(satelliteFiles, xmlDocFileSaveMode);
+                var packageFileExtractor = new PackageFileExtractor(satelliteFiles, packageExtractionContext.XmlDocFileSaveMode);
 
                 // Now, add all the satellite files collected from the package to the runtime package folder(s)
                 satelliteFilesCopied = packageReader.CopyFiles(
                     runtimePackageDirectory,
                     satelliteFiles,
                     packageFileExtractor.ExtractPackageFile,
+                    packageExtractionContext.Logger,
                     token);
             }
 

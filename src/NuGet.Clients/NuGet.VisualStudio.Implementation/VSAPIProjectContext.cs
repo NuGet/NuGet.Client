@@ -18,7 +18,7 @@ namespace NuGet.VisualStudio
 
         public VSAPIProjectContext(bool skipAssemblyReferences, bool bindingRedirectsDisabled, bool useLegacyInstallPaths = true)
         {
-            PackageExtractionContext = new PackageExtractionContext();
+            PackageExtractionContext = new PackageExtractionContext(new LoggerAdapter(this));
 
             // many templates depend on legacy paths, for the VS API and template wizard we unfortunately need to keep them
             PackageExtractionContext.UseLegacyPackageInstallPath = useLegacyInstallPaths;

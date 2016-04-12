@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using NuGet.Common;
 using NuGet.Versioning;
 
 namespace NuGet.Packaging.Core
@@ -58,6 +59,7 @@ namespace NuGet.Packaging.Core
             string destination,
             IEnumerable<string> packageFiles,
             ExtractPackageFileDelegate extractFile,
+            ILogger logger,
             CancellationToken token);
     }
 }

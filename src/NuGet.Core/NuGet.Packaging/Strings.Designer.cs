@@ -114,6 +114,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Failed to update file time for {0}: {1}.
+        /// </summary>
+        internal static string FailedFileTime {
+            get {
+                return ResourceManager.GetString("FailedFileTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Fail to load packages.config as XML file. Please check it. .
         /// </summary>
         internal static string FailToLoadPackagesConfig {

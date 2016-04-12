@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -25,7 +26,7 @@ namespace Test.Utility
             return FileConflictAction.IgnoreAll;
         }
 
-        public PackageExtractionContext PackageExtractionContext { get; set; } = new PackageExtractionContext();
+        public PackageExtractionContext PackageExtractionContext { get; set; } = new PackageExtractionContext(NullLogger.Instance);
 
         public ISourceControlManagerProvider SourceControlManagerProvider { get; set; }
 

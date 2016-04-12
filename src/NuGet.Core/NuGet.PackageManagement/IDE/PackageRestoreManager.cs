@@ -304,7 +304,7 @@ namespace NuGet.PackageManagement
 
             if (nuGetProjectContext.PackageExtractionContext == null)
             {
-                nuGetProjectContext.PackageExtractionContext = new PackageExtractionContext();
+                nuGetProjectContext.PackageExtractionContext = new PackageExtractionContext(new LoggerAdapter(nuGetProjectContext));
             }
             nuGetProjectContext.PackageExtractionContext.CopySatelliteFiles = false;
 

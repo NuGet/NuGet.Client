@@ -88,6 +88,12 @@ namespace NuGet.ProjectManagement
             downloadResourceResult.PackageStream.Seek(0, SeekOrigin.Begin);
             var addedPackageFilesList = new List<string>();
 
+            PackageExtractionContext packageExtractionContext = nuGetProjectContext.PackageExtractionContext;
+            if (packageExtractionContext == null)
+            {
+                packageExtractionContext = new PackageExtractionContext(new LoggerAdapter(nuGetProjectContext));
+            }
+
             if (downloadResourceResult.PackageReader != null)
             {
                 addedPackageFilesList.AddRange(
@@ -95,7 +101,7 @@ namespace NuGet.ProjectManagement
                         downloadResourceResult.PackageReader,
                         downloadResourceResult.PackageStream,
                         PackagePathResolver,
-                        nuGetProjectContext.PackageExtractionContext ?? new PackageExtractionContext(),
+                        packageExtractionContext,
                         token));
             }
             else
@@ -104,7 +110,7 @@ namespace NuGet.ProjectManagement
                     PackageExtractor.ExtractPackage(
                         downloadResourceResult.PackageStream,
                         PackagePathResolver,
-                        nuGetProjectContext.PackageExtractionContext ?? new PackageExtractionContext(),
+                        packageExtractionContext,
                         token));
             }
 
@@ -143,14 +149,18 @@ namespace NuGet.ProjectManagement
             INuGetProjectContext nuGetProjectContext, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-            var xmlDocFileSaveMode = nuGetProjectContext.PackageExtractionContext?.XmlDocFileSaveMode ??
-                PackageExtractionBehavior.XmlDocFileSaveMode;
+
+            PackageExtractionContext packageExtractionContext = nuGetProjectContext.PackageExtractionContext;
+            if (packageExtractionContext == null)
+            {
+                packageExtractionContext = new PackageExtractionContext(new LoggerAdapter(nuGetProjectContext));
+            }
 
             var copiedSatelliteFiles = PackageExtractor.CopySatelliteFiles(
                 packageIdentity,
                 PackagePathResolver,
                 GetPackageSaveMode(nuGetProjectContext),
-                xmlDocFileSaveMode,
+                packageExtractionContext,
                 token);
 
             FileSystemUtility.PendAddFiles(copiedSatelliteFiles, Root, nuGetProjectContext);

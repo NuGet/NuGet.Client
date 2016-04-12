@@ -28,12 +28,17 @@ namespace NuGet.CommandLine
             switch (level)
             {
                 case ProjectManagement.MessageLevel.Debug:
+                    _logger.LogDebug(message);
+                    break;
+
                 case ProjectManagement.MessageLevel.Info:
                     _logger.LogMinimal(message);
                     break;
+
                 case ProjectManagement.MessageLevel.Warning:
                     _logger.LogWarning(message);
                     break;
+
                 case ProjectManagement.MessageLevel.Error:
                     _logger.LogError(message);
                     break;
