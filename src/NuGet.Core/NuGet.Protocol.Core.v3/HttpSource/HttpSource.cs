@@ -35,7 +35,6 @@ namespace NuGet.Protocol
         private string _httpCacheDirectory;
         private Guid _lastAuthId = Guid.NewGuid();
         private readonly PackageSource _packageSource;
-        private readonly HttpRetryHandler _retryHandler;
 
         // Only one thread may re-create the http client at a time.
         private readonly SemaphoreSlim _httpClientLock = new SemaphoreSlim(1, 1);
@@ -53,6 +52,10 @@ namespace NuGet.Protocol
                 ? new SemaphoreSlim(ConcurrencyLimit, ConcurrencyLimit)
                 : null;
 
+        /// <summary>The retry handler to use for all HTTP requests.</summary>
+        /// <summary>This API is intended only for testing purposes and should not be used in product code.</summary>
+        public IHttpRetryHandler RetryHandler { get; set; } = new HttpRetryHandler();
+
         public HttpSource(PackageSource source, Func<Task<HttpHandlerResource>> messageHandlerFactory)
         {
             if (source == null)
@@ -68,7 +71,6 @@ namespace NuGet.Protocol
             _packageSource = source;
             _baseUri = new Uri(source.Source);
             _messageHandlerFactory = messageHandlerFactory;
-            _retryHandler = new HttpRetryHandler();
         }
 
         /// <summary>
@@ -321,14 +323,15 @@ namespace NuGet.Protocol
                 var beforeLockId = _lastAuthId;
 
                 // Read the response headers before reading the entire stream to avoid timeouts from large packages.
-                response = await _retryHandler.SendAsync(
+                response = await RetryHandler.SendAsync(
                     _httpClient,
                     requestWithStsFactory,
                     completionOption,
                     log,
                     cancellationToken);
 
-                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                if (response.StatusCode == HttpStatusCode.Unauthorized ||
+                    response.StatusCode == HttpStatusCode.Forbidden)
                 {
                     try
                     {
@@ -349,7 +352,8 @@ namespace NuGet.Protocol
                         }
 
                         // Windows auth
-                        if (STSAuthHelper.TryRetrieveSTSToken(_baseUri, CredentialStore.Instance, response))
+                        if (response.StatusCode == HttpStatusCode.Unauthorized &&
+                            STSAuthHelper.TryRetrieveSTSToken(_baseUri, CredentialStore.Instance, response))
                         {
                             // Auth token found, create a new message handler and retry.
                             await UpdateHttpClient();

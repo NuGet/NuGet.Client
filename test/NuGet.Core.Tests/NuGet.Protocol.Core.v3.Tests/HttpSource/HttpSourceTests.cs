@@ -1,12 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Logging;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Core.v3.Tests.Utility;
 using NuGet.Test.Utility;
 using Test.Utility;
 using Xunit;
@@ -15,6 +21,82 @@ namespace NuGet.Protocol.Core.v3.Tests
 {
     public class HttpSourceTests
     {
+        /// <summary>
+        /// We need a lock whenever we set static properties on <see cref="HttpHandlerResourceV3"/>.
+        /// </summary>
+        private static readonly SemaphoreSlim HttpHandlerResourceV3Lock = new SemaphoreSlim(1);
+        private const string FakeSource = "https://fake.server/users.json";
+
+        [Fact]
+        public async Task HttpSource_PromptsForCredentialsOn401()
+        {
+            // Arrange
+            using (await UsingSemaphore.WaitAsync(HttpHandlerResourceV3Lock))
+            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var tc = new TestContext(td);
+
+                tc.SetResponseSequence(new[]
+                {
+                    new HttpResponseMessage(HttpStatusCode.Unauthorized),
+                    new HttpResponseMessage(HttpStatusCode.OK),
+                });
+
+                var prompted = false;
+                HttpHandlerResourceV3.PromptForCredentials = (uri, token) =>
+                {
+                    prompted = true;
+                    return Task.FromResult(tc.Credentials);
+                };
+
+                // Act
+                var response = await tc.HttpSource.GetAsync(
+                    new Uri(FakeSource),
+                    new MediaTypeWithQualityHeaderValue[0],
+                    tc.Logger,
+                    CancellationToken.None);
+
+                // Assert
+                Assert.True(prompted, "The user should have been prompted for credentials.");
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+        }
+
+        [Fact]
+        public async Task HttpSource_PromptsForCredentialsOn403()
+        {
+            // Arrange
+            using (await UsingSemaphore.WaitAsync(HttpHandlerResourceV3Lock))
+            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var tc = new TestContext(td);
+
+                tc.SetResponseSequence(new[]
+                {
+                    new HttpResponseMessage(HttpStatusCode.Forbidden),
+                    new HttpResponseMessage(HttpStatusCode.OK),
+                });
+
+                var prompted = false;
+                HttpHandlerResourceV3.PromptForCredentials = (uri, token) =>
+                {
+                    prompted = true;
+                    return Task.FromResult(tc.Credentials);
+                };
+
+                // Act
+                var response = await tc.HttpSource.GetAsync(
+                    new Uri(FakeSource),
+                    new MediaTypeWithQualityHeaderValue[0],
+                    tc.Logger,
+                    CancellationToken.None);
+
+                // Assert
+                Assert.True(prompted, "The user should have been prompted for credentials.");
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+        }
+
         [Fact]
         public async Task HttpSource_ValidatesValidNetworkContent()
         {
@@ -131,6 +213,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 NetworkContent = "network";
                 CacheKey = "CacheKey";
                 Url = "https://fake.server/foo/bar/something.json";
+                Credentials = new NetworkCredential("foo", "bar");
 
                 if (!RuntimeEnvironmentHelper.IsWindows)
                 {
@@ -150,6 +233,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                 CacheContext = new HttpSourceCacheContext();
                 Logger = new TestLogger();
                 TestDirectory = testDirectory;
+                RetryHandlerMock = new Mock<IHttpRetryHandler>();
 
                 // target
                 HttpSource = new HttpSource(packageSource, () => Task.FromResult((HttpHandlerResource)handlerResource))
@@ -181,6 +265,8 @@ namespace NuGet.Protocol.Core.v3.Tests
             public bool ValidatedNetworkContent { get; set; }
 
             public bool ValidatedCacheContent { get; set; }
+            public Mock<IHttpRetryHandler> RetryHandlerMock { get; }
+            public ICredentials Credentials { get; }
 
             public void WriteToCache(string cacheKey, string content)
             {
@@ -194,6 +280,20 @@ namespace NuGet.Protocol.Core.v3.Tests
             public string ReadStream(Stream stream)
             {
                 return new StreamReader(stream, Encoding.UTF8).ReadToEnd();
+            }
+
+            public void SetResponseSequence(HttpResponseMessage[] responses)
+            {
+                HttpSource.RetryHandler = RetryHandlerMock.Object;
+                int index = 0;
+                RetryHandlerMock
+                    .Setup(x => x.SendAsync(
+                        It.IsAny<HttpClient>(),
+                        It.IsAny<Func<HttpRequestMessage>>(),
+                        It.IsAny<HttpCompletionOption>(),
+                        It.IsAny<ILogger>(),
+                        It.IsAny<CancellationToken>()))
+                    .Returns(() => Task.FromResult(responses[index++ % responses.Length]));
             }
 
             public Action<Stream> GetStreamValidator(bool validCache, bool validNetwork)

@@ -12,7 +12,7 @@ using NuGet.Protocol.Core.v3;
 
 namespace NuGet.Protocol
 {
-    public class HttpRetryHandler
+    public class HttpRetryHandler : IHttpRetryHandler
     {
         /// <summary>
         /// The <see cref="HttpRetryHandler"/> is for retrying and HTTP request if it times out, has any exception,
