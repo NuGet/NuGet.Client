@@ -126,6 +126,7 @@ namespace NuGet.Protocol.Core.v3
                         cacheContext,
                         log,
                         ignoreNotFounds: false,
+                        allowNoContent: false,
                         ensureValidContents: stream => HttpStreamValidation.ValidateJObject(url, stream),
                         cancellationToken: token))
                     {

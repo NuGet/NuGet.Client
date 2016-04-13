@@ -132,9 +132,17 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                             CreateCacheContext(retry),
                             Logger,
                             ignoreNotFounds: false,
+                            allowNoContent: true,
                             ensureValidContents: stream => HttpStreamValidation.ValidateXml(uri, stream),
                             cancellationToken: cancellationToken))
                         {
+                            if (data.Stream == null)
+                            {
+                                // The stream is null when a 204 is returned.
+                                // This can happen with team city feeds and means that there are 0 versions for this id.
+                                break;
+                            }
+
                             var doc = V2FeedParser.LoadXml(data.Stream);
 
                             var result = doc.Root
@@ -235,6 +243,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         CreateCacheContext(retry),
                         Logger,
                         ignoreNotFounds: false,
+                        allowNoContent: false,
                         ensureValidContents: stream => HttpStreamValidation.ValidateNupkg(package.ContentUri, stream),
                         cancellationToken: cancellationToken))
                     {

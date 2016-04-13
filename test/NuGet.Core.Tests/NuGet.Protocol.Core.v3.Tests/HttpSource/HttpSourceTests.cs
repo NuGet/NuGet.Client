@@ -30,6 +30,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                     tc.CacheContext,
                     tc.Logger,
                     ignoreNotFounds: false,
+                    allowNoContent: false,
                     ensureValidContents: tc.GetStreamValidator(validCache: true, validNetwork: true),
                     cancellationToken: CancellationToken.None);
 
@@ -55,6 +56,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                     tc.CacheContext,
                     tc.Logger,
                     ignoreNotFounds: false,
+                    allowNoContent: false,
                     ensureValidContents: tc.GetStreamValidator(validCache: true, validNetwork: false),
                     cancellationToken: CancellationToken.None));
 
@@ -81,6 +83,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                     tc.CacheContext,
                     tc.Logger,
                     ignoreNotFounds: false,
+                    allowNoContent: false,
                     ensureValidContents: tc.GetStreamValidator(validCache: true, validNetwork: true),
                     cancellationToken: CancellationToken.None);
 
@@ -107,6 +110,7 @@ namespace NuGet.Protocol.Core.v3.Tests
                     tc.CacheContext,
                     tc.Logger,
                     ignoreNotFounds: false,
+                    allowNoContent: false,
                     ensureValidContents: tc.GetStreamValidator(validCache: false, validNetwork: true),
                     cancellationToken: CancellationToken.None);
 
