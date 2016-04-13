@@ -165,6 +165,7 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                         CreateCacheContext(retry),
                         Logger,
                         ignoreNotFounds: false,
+                        allowNoContent: false,
                         ensureValidContents: stream => HttpStreamValidation.ValidateNupkg(package.ContentUri, stream),
                         cancellationToken: cancellationToken))
                     {

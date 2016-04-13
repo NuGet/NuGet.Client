@@ -80,6 +80,7 @@ namespace NuGet.Protocol
             HttpSourceCacheContext cacheContext,
             ILogger log,
             bool ignoreNotFounds,
+            bool allowNoContent,
             Action<Stream> ensureValidContents,
             CancellationToken cancellationToken)
         {
@@ -90,6 +91,7 @@ namespace NuGet.Protocol
                 cacheContext,
                 log,
                 ignoreNotFounds,
+                allowNoContent,
                 ensureValidContents,
                 cancellationToken);
         }
@@ -104,6 +106,7 @@ namespace NuGet.Protocol
             HttpSourceCacheContext cacheContext,
             ILogger log,
             bool ignoreNotFounds,
+            bool allowNoContent,
             Action<Stream> ensureValidContents,
             CancellationToken cancellationToken)
         {
@@ -153,6 +156,11 @@ namespace NuGet.Protocol
             using (var response = await GetThrottled(throttleRequest))
             {
                 if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return new HttpSourceResult();
+                }
+
+                if (allowNoContent && response.StatusCode == HttpStatusCode.NoContent)
                 {
                     return new HttpSourceResult();
                 }
