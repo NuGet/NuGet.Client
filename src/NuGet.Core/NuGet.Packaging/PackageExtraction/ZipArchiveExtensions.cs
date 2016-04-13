@@ -55,7 +55,7 @@ namespace NuGet.Packaging
             }
 
             var attr = File.GetAttributes(fileFullPath);
-            if (!attr.HasFlag(FileAttributes.Directory))
+            if (!attr.HasFlag(FileAttributes.Directory) && entry.LastWriteTime.DateTime != DateTime.MinValue)
             {
                 try
                 {
