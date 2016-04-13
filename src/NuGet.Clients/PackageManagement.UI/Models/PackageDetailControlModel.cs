@@ -113,10 +113,7 @@ namespace NuGet.PackageManagement.UI
             // first add all the available versions to be updated
             foreach (var version in allVersionsAllowed)
             {
-                if (!version.Equals(installedVersion))
-                {
-                    _versions.Add(new DisplayVersion(version, string.Empty));
-                }
+                _versions.Add(new DisplayVersion(version, string.Empty, isCurrentInstalled: version.Equals(installedVersion)));
             }
 
             // add a separator

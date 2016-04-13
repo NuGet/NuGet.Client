@@ -16,15 +16,21 @@
       <local:NotNullToBooleanConverter
         x:Key="NotNullToBooleanConverter" />
       <local:TooltipConverter
-        x:Key="TooltipConverter" />  
+        x:Key="TooltipConverter" />
+      <local:BooleanToFontWeightConverter
+        x:Key="BooleanToFontWeightConverter" />
+      <local:NotNullOrTrueToBooleanConverter
+        x:Key="NotNullOrTrueToBooleanConverter" />
       <ControlTemplate
         x:Key="SeparatorControlTemplate">
         <Separator
           HorizontalAlignment="Stretch"
           IsEnabled="False" />
       </ControlTemplate>
-            
-        </ResourceDictionary>
+      <DataTemplate DataType="{x:Type local:DisplayVersion}">
+        <TextBlock FontWeight="{Binding Path=IsCurrentInstalled,Converter={StaticResource BooleanToFontWeightConverter}}" Text="{Binding Path=.}" />
+      </DataTemplate>
+    </ResourceDictionary>
   </UserControl.Resources>
   <Grid>
     <Grid.RowDefinitions>
@@ -92,28 +98,28 @@
       AutomationProperties.Name="{x:Static local:Resources.Label_Version}"
       ItemsSource="{Binding Path=Versions}"
       SelectedItem="{Binding Path=SelectedVersion}">
-    
+
         <ComboBox.ItemContainerStyle>
             <Style TargetType="{x:Type ComboBoxItem}">
                 <Style.Triggers>
-                    <DataTrigger 
+                    <DataTrigger
                         Binding="{Binding Converter={StaticResource NotNullToBooleanConverter}}"
-                        Value="True" >                        
+                        Value="True" >
                         <Setter
                             Property="IsEnabled"
                             Value="{Binding IsValidVersion}" />
-                        <Setter 
+                        <Setter
                             Property="ToolTipService.ShowOnDisabled"
                             Value="True" />
-                        <Setter 
-                            Property="ToolTip" 
+                        <Setter
+                            Property="ToolTip"
                             Value="{Binding Converter={StaticResource TooltipConverter}}" />
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
         </ComboBox.ItemContainerStyle>
     </ComboBox>
-      
+
     <!-- install button and update button. They are in fact the same button. Which
          one is displayed depends on whether InstalledVersion is null.
     -->
@@ -137,7 +143,7 @@
       AutomationProperties.AutomationId="Project_Button_Update"
       Click="InstallButton_Clicked"
       Visibility="{Binding InstalledVersion, Converter={StaticResource NullToVisibilityConverter}}"
-      IsEnabled="{Binding SelectedVersion,Converter={StaticResource NotNullToBooleanConverter}}"
+      IsEnabled="{Binding SelectedVersion.IsCurrentInstalled,Converter={StaticResource NotNullOrTrueToBooleanConverter}}"
       Content="{x:Static local:Resources.Button_Update}" />
   </Grid>
 </UserControl>

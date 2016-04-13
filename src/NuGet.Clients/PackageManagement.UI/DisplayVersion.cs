@@ -17,15 +17,18 @@ namespace NuGet.PackageManagement.UI
         public DisplayVersion(
             NuGetVersion version,
             string additionalInfo,
-            bool isValidVersion = true)
-            : this(GetRange(version), additionalInfo, isValidVersion)
+            bool isValidVersion = true,
+            bool isCurrentInstalled = false)
+            : this(GetRange(version), additionalInfo, isValidVersion, isCurrentInstalled)
         {
+
         }
 
         public DisplayVersion(
             VersionRange range,
             string additionalInfo,
-            bool isValidVersion = true)
+            bool isValidVersion = true,
+            bool isCurrentInstalled = false)
         {
             Range = range;
             _additionalInfo = additionalInfo;
@@ -33,6 +36,7 @@ namespace NuGet.PackageManagement.UI
             IsValidVersion = isValidVersion;
 
             Version = range.MinVersion;
+            IsCurrentInstalled = isCurrentInstalled;
 
             // Display a single version if the range is locked
             if (range.HasLowerAndUpperBounds && range.MinVersion == range.MaxVersion)
@@ -49,6 +53,8 @@ namespace NuGet.PackageManagement.UI
                     _additionalInfo + " " + Range.OriginalString;
             }
         }
+
+        public bool IsCurrentInstalled { get; set; }
 
         public NuGetVersion Version { get; }
 
