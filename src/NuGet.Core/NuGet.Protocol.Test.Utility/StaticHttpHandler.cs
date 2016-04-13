@@ -106,6 +106,11 @@ namespace Test.Utility
                     msg = new HttpResponseMessage(HttpStatusCode.NotFound);
                     msg.Content = new TestContent(_errorContent);
                 }
+                else if (source == "204")
+                {
+                    msg = new HttpResponseMessage(HttpStatusCode.NoContent);
+                    msg.Content = new TestContent(string.Empty);
+                }
                 else if (source == null)
                 {
                     msg = new HttpResponseMessage(HttpStatusCode.InternalServerError);

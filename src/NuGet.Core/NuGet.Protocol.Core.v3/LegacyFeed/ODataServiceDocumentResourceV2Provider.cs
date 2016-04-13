@@ -108,6 +108,7 @@ namespace NuGet.Protocol.Core.v3
                     cacheContext,
                     log,
                     ignoreNotFounds: true,
+                    allowNoContent: false,
                     ensureValidContents: null,
                     cancellationToken: token);
             }
