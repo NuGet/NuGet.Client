@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Core.v3.Tests.Utility;
 using NuGet.Test.Server;
@@ -102,6 +103,34 @@ namespace NuGet.Protocol.Core.v3.Tests
                 // Assert
                 Assert.True(prompted, "The user should have been prompted for credentials.");
                 Assert.Equal(HttpStatusCode.OK, statusCode);
+            }
+        }
+
+        [Fact]
+        public async Task HttpSource_GetNoContent()
+        {
+            // Arrange
+            using (var td = TestFileSystemUtility.CreateRandomTestFolder())
+            {
+                var tc = new TestContext(td);
+
+                tc.SetResponseSequence(new[]
+                {
+                    new HttpResponseMessage(HttpStatusCode.NoContent),
+                });
+
+                // Act
+                var result = await tc.HttpSource.GetAsync(
+                    tc.Url,
+                    tc.CacheKey,
+                    tc.CacheContext,
+                    tc.Logger,
+                    ignoreNotFounds: false,
+                    ensureValidContents: tc.GetStreamValidator(validCache: true, validNetwork: true),
+                    cancellationToken: CancellationToken.None);
+
+                // Assert
+                Assert.Equal(HttpSourceResultStatus.NoContent, result.Status);
             }
         }
 
