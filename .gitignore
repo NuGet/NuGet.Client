@@ -5,7 +5,10 @@
 # Project K
 project.lock.json
 artifacts/
+
+# VSCode
 **/.vs/
+**/.vscode/
 
 cli/
 **/nupkgs/*.nupkg
