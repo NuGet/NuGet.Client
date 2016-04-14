@@ -162,6 +162,12 @@ namespace NuGet.Protocol
                             return new HttpSourceResult(HttpSourceResultStatus.NotFound);
                         }
 
+                        if (response.StatusCode == HttpStatusCode.NoContent)
+                        {
+                            // Ignore reading and caching the empty stream.
+                            return new HttpSourceResult(HttpSourceResultStatus.NoContent);
+                        }
+
                         response.EnsureSuccessStatusCode();
 
                         await CreateCacheFile(result, uri, response, cacheContext, ensureValidContents, token);
@@ -184,7 +190,7 @@ namespace NuGet.Protocol
         {
             using (var result = await GetAsync(uri, ignoreNotFounds, log, token))
             {
-                if (result.Status == HttpSourceResultStatus.NotFound)
+                if (result.Status == HttpSourceResultStatus.NotFound || result.Status == HttpSourceResultStatus.NoContent)
                 {
                     return await processAsync(null);
                 }
@@ -252,6 +258,14 @@ namespace NuGet.Protocol
                     response.Dispose();
 
                     return new HttpSourceResult(HttpSourceResultStatus.NotFound);
+                }
+
+                if (response.StatusCode == HttpStatusCode.NoContent)
+                {
+                    response.Dispose();
+
+                    // Ignore reading and caching the empty stream.
+                    return new HttpSourceResult(HttpSourceResultStatus.NoContent);
                 }
 
                 response.EnsureSuccessStatusCode();

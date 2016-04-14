@@ -6,6 +6,7 @@ namespace NuGet.Protocol
     public enum HttpSourceResultStatus
     {
         NotFound,
+        NoContent,
         OpenedFromDisk,
         OpenedFromNetwork
     }
