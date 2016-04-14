@@ -57,9 +57,12 @@
     <DeployExtension>True</DeployExtension>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Common\ProjectHelper.cs" />
+    <Compile Include="Common\ReadOnlyPackageRepository.cs" />
     <Compile Include="DataStreamFromComStream.cs" />
     <Compile Include="FontAndColorsRegistrationAttribute.cs" />
     <Compile Include="Guids.cs" />
+    <Compile Include="PackagesConfigDependencies.cs" />
     <Compile Include="VsCredentialProviderImporter.cs" />
     <Compile Include="InteractiveLoginProvider.cs" />
     <Compile Include="INuGetUIContextFactory.cs" />
@@ -251,6 +254,9 @@
     <Reference Include="envdte80, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
+    <Reference Include="Microsoft.Build">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Microsoft.CSharp">
       <Private>False</Private>
     </Reference>
@@ -278,6 +284,10 @@
     </Reference>
     <Reference Include="System.Design">
       <Private>False</Private>
+    </Reference>
+    <Reference Include="VSLangProj, Version=7.0.3300.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <Private>False</Private>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="WindowsBase">
       <Private>False</Private>

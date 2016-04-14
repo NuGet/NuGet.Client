@@ -54,6 +54,13 @@ namespace NuGet.PackageManagement.UI
         bool DisplayPreviewWindow { get; }
 
         /// <summary>
+        /// True if should display license acceptance window for added packages. Note that in all normal circumstances
+        /// this should be true. It is only set to false when adding just removed packages as part of converting
+        /// packages.config to project.json.
+        /// </summary>
+        bool DisplayLicenseAcceptanceWindow { get; }
+
+        /// <summary>
         /// Package currently selected in the UI
         /// </summary>
         PackageIdentity SelectedPackage { get; }

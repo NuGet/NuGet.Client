@@ -35,6 +35,7 @@ namespace NuGet.PackageManagement.UI
             ForceRemove = false;
             Projects = Enumerable.Empty<NuGetProject>();
             DisplayPreviewWindow = true;
+            DisplayLicenseAcceptanceWindow = true;
         }
 
         public bool PromptForLicenseAcceptance(IEnumerable<PackageLicenseInfo> packages)
@@ -137,6 +138,12 @@ namespace NuGet.PackageManagement.UI
             get;
         }
 
+        public bool DisplayLicenseAcceptanceWindow
+        {
+            set;
+            get;
+        }
+
         public FileConflictAction FileConflictAction
         {
             set;
@@ -177,6 +184,10 @@ namespace NuGet.PackageManagement.UI
                 if (PackageManagerControl != null)
                 {
                     UIDispatcher.Invoke(() => { sources = PackageManagerControl.ActiveSources; });
+                }
+                else
+                {
+                    sources = _context.SourceProvider.GetRepositories().Where(repo => repo.PackageSource.IsEnabled).ToArray();
                 }
 
                 return sources;

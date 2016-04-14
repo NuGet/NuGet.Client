@@ -112,7 +112,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <summary>
         /// Returns the full path including the project file name.
         /// </summary>
-        internal static string GetFullProjectPath(EnvDTEProject envDTEProject)
+        public static string GetFullProjectPath(EnvDTEProject envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -204,7 +204,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return null;
         }
 
-        internal static References GetReferences(EnvDTEProject project)
+        public static References GetReferences(EnvDTEProject project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -257,6 +257,57 @@ namespace NuGet.PackageManagement.VisualStudio
 
             return NuGetVSConstants.UnloadedProjectTypeGuid.Equals(envDTEProject.Kind, StringComparison.OrdinalIgnoreCase);
         }
+
+	    public static bool TryUnload(EnvDTEProject envDTEProject)
+	    {
+		    Guid projectGuid;
+		    if (!TryGetProjectGuid(envDTEProject, out projectGuid))
+		    {
+			    return false;
+		    }
+
+			var solution = (IVsSolution4)ServiceLocator.GetInstance<SVsSolution>();
+		    return solution.UnloadProject(ref projectGuid, (uint)_VSProjectUnloadStatus.UNLOADSTATUS_UnloadedByUser) == 0;
+
+		    //return solution.CloseSolutionElement((uint) __VSSLNCLOSEOPTIONS.SLNCLOSEOPT_UnloadProject, VsHierarchyUtility.ToVsHierarchy(envDTEProject), 0) == 0;
+	    }
+
+	    public static bool TryUnloadReload(EnvDTEProject envDTEProject)
+	    {
+			Guid projectGuid;
+			if (!TryGetProjectGuid(envDTEProject, out projectGuid))
+			{
+				return false;
+			}
+
+			// Unload
+			var solution = (IVsSolution4)ServiceLocator.GetInstance<SVsSolution>();
+		    if (solution.UnloadProject(ref projectGuid, (uint) _VSProjectUnloadStatus.UNLOADSTATUS_UnloadedByUser) != 0)
+		    {
+			    return false;
+		    }
+
+			// Reload
+			return solution.ReloadProject(ref projectGuid) == 0;
+		}
+
+		public static bool TryReload(EnvDTEProject envDTEProject)
+	    {
+			Guid projectGuid;
+			if (!TryGetProjectGuid(envDTEProject, out projectGuid))
+			{
+				return false;
+			}
+
+            var solution = (IVsSolution4)ServiceLocator.GetInstance<SVsSolution>();
+		    return solution.ReloadProject(ref projectGuid) == 0;
+	    }
+
+		private static bool TryGetProjectGuid(EnvDTEProject envDTEProject, out Guid projectGuid)
+	    {
+			var projectHierarchy = VsHierarchyUtility.ToVsHierarchy(envDTEProject);
+		     return projectHierarchy.GetGuidProperty(VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_ProjectIDGuid, out projectGuid) == 0;
+	    }
 
         public static EnvDTEProject GetActiveProject(IVsMonitorSelection vsMonitorSelection)
         {
@@ -584,6 +635,14 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
+        public static MicrosoftBuildEvaluationProject AsMicrosoftBuildEvaluationProject(EnvDTEProject envDTEproject)
+        {
+            // Need NOT be on the UI thread
+
+            return ProjectCollection.GlobalProjectCollection.GetLoadedProjects(envDTEproject.FullName).FirstOrDefault() ??
+                   ProjectCollection.GlobalProjectCollection.LoadProject(envDTEproject.FullName);
+        }
+
         internal static MicrosoftBuildEvaluationProject AsMicrosoftBuildEvaluationProject(string dteProjectFullName)
         {
             // Need NOT be on the UI thread
@@ -592,7 +651,7 @@ namespace NuGet.PackageManagement.VisualStudio
                    ProjectCollection.GlobalProjectCollection.LoadProject(dteProjectFullName);
         }
 
-        internal static NuGetFramework GetTargetNuGetFramework(EnvDTEProject envDTEProject)
+        public static NuGetFramework GetTargetNuGetFramework(EnvDTEProject envDTEProject)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -1420,7 +1479,7 @@ namespace NuGet.PackageManagement.VisualStudio
             MicrosoftBuildEvaluationProjectUtility.AddImportStatement(AsMSBuildProject(project), targetsPath, location);
         }
 
-        internal static void RemoveImportStatement(EnvDTEProject project, string targetsPath)
+        public static void RemoveImportStatement(EnvDTEProject project, string targetsPath)
         {
             // Need NOT be on the UI Thread
             MicrosoftBuildEvaluationProjectUtility.RemoveImportStatement(AsMSBuildProject(project), targetsPath);
@@ -1433,7 +1492,7 @@ namespace NuGet.PackageManagement.VisualStudio
                    ProjectCollection.GlobalProjectCollection.LoadProject(project.FullName);
         }
 
-        internal static void Save(EnvDTEProject project)
+        public static void Save(EnvDTEProject project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
