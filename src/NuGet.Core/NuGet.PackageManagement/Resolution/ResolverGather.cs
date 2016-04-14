@@ -2,15 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Configuration;
+using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using System.Globalization;
 
 namespace NuGet.PackageManagement
 {
@@ -27,6 +30,7 @@ namespace NuGet.PackageManagement
         private readonly List<GatherResult> _results = new List<GatherResult>();
         private readonly HashSet<string> _idsSearched = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private int _maxDegreeOfParallelism;
+        private readonly ConcurrentDictionary<string, TimeSpan> _timeTaken = new ConcurrentDictionary<string, TimeSpan>(StringComparer.OrdinalIgnoreCase);
 
         private ResolverGather(GatherContext context)
         {
@@ -75,6 +79,9 @@ namespace NuGet.PackageManagement
 
         private async Task<HashSet<SourcePackageDependencyInfo>> GatherAsync(CancellationToken token)
         {
+            // preserve start time of gather api
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
             token.ThrowIfCancellationRequested();
 
             // get a distinct set of packages from all repos
@@ -172,6 +179,7 @@ namespace NuGet.PackageManagement
                 // We are done when the queue is empty, and the number of finished requests matches the total request count
                 if (_gatherRequests.Count < 1 && _workerTasks.Count < 1)
                 {
+                    _context.Log.LogDebug(string.Format("Total number of results gathered : {0}", _results.Count));
                     break;
                 }
             }
@@ -214,7 +222,16 @@ namespace NuGet.PackageManagement
                     throw new InvalidOperationException(message);
                 }
             }
-
+            // calculate total time taken to gather all packages as well as with each source
+            stopWatch.Stop();
+            _context.Log.LogMinimal(
+                string.Format(Strings.GatherTotalTime, DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed)));
+            _context.Log.LogDebug("Summary of time taken to gather dependencies per source :");
+            foreach(var key in _timeTaken.Keys)
+            {
+                _context.Log.LogDebug(
+                    string.Format("{0}\t-\t{1}", key, DatetimeUtility.ToReadableTimeFormat(_timeTaken[key])));
+            }
             return combinedResults;
         }
 
@@ -364,6 +381,8 @@ namespace NuGet.PackageManagement
         /// </summary>
         private async Task<GatherResult> GatherPackageAsync(GatherRequest request, CancellationToken token)
         {
+            Stopwatch stopWatch = new Stopwatch();
+            stopWatch.Start();
             token.ThrowIfCancellationRequested();
 
             var packages = new List<SourcePackageDependencyInfo>();
@@ -386,6 +405,7 @@ namespace NuGet.PackageManagement
             if (_cache != null && cacheResult.HasEntry)
             {
                 // Use cached packages
+                _context.Log.LogDebug(string.Format("Package {0} from source {1} gathered from cache.", request.Package.Id, request.Source.Source.PackageSource.Name));
                 packages.AddRange(cacheResult.Packages);
             }
             else
@@ -445,6 +465,9 @@ namespace NuGet.PackageManagement
                     throw new InvalidOperationException(message, ex);
                 }
 
+                // it maintain each source total time taken so far
+                stopWatch.Stop();
+                _timeTaken.AddOrUpdate(request.Source.Source.PackageSource.Name, stopWatch.Elapsed, (k,v) => stopWatch.Elapsed + v);
             }
 
             return new GatherResult(request, packages);

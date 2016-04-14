@@ -123,6 +123,15 @@ namespace NuGet.Resolver {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Resolving dependency information took {0}.
+        /// </summary>
+        public static string ResolverTotalTime {
+            get {
+                return ResourceManager.GetString("ResolverTotalTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Unable to find a version of &apos;{0}&apos; that is compatible with {1}..
         /// </summary>
         public static string UnableToFindCompatibleVersion {

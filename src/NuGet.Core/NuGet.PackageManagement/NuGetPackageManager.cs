@@ -713,6 +713,7 @@ namespace NuGet.PackageManagement
 
                 // Step-1 : Get metadata resources using gatherer
                 var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
+                nuGetProjectContext.Log(NuGet.ProjectManagement.MessageLevel.Info, Environment.NewLine);
                 nuGetProjectContext.Log(NuGet.ProjectManagement.MessageLevel.Info, Strings.AttemptingToGatherDependencyInfoForMultiplePackages, projectName, targetFramework);
 
                 var allSources = new List<SourceRepository>(primarySources);
@@ -738,7 +739,8 @@ namespace NuGet.PackageManagement
                     AllSources = allSources.ToList(),
                     PackagesFolderSource = PackagesFolderSourceRepository,
                     ResolutionContext = resolutionContext,
-                    AllowDowngrades = allowDowngrades
+                    AllowDowngrades = allowDowngrades,
+                    ProjectContext = nuGetProjectContext
                 };
 
                 var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherAsync(gatherContext, token);
@@ -778,7 +780,7 @@ namespace NuGet.PackageManagement
                 }
 
                 // Remove packages that do not meet the constraints specified in the UpdateConstrainst
-                prunedAvailablePackages = PrunePackageTree.PruneByUpdateConstraints(prunedAvailablePackages, projectInstalledPackageReferences, resolutionContext.VersionConstraints);
+                prunedAvailablePackages = PrunePackageTree.PruneByUpdateConstraints(prunedAvailablePackages, projectInstalledPackageReferences, resolutionContext.VersionConstraints);                
 
                 // Remove all but the highest packages that are of the same Id as a specified packageId
                 if (packageId != null)
@@ -813,7 +815,8 @@ namespace NuGet.PackageManagement
                     projectInstalledPackageReferences,
                     preferredVersions.Values,
                     prunedAvailablePackages,
-                    SourceRepositoryProvider.GetRepositories().Select(s => s.PackageSource));
+                    SourceRepositoryProvider.GetRepositories().Select(s => s.PackageSource),
+                    log);
 
                 nuGetProjectContext.Log(NuGet.ProjectManagement.MessageLevel.Info, Strings.AttemptingToResolveDependenciesForMultiplePackages);
                 var newListOfInstalledPackages = packageResolver.Resolve(packageResolverContext, token);
@@ -1159,7 +1162,8 @@ namespace NuGet.PackageManagement
                         AllSources = effectiveSources.ToList(),
                         PackagesFolderSource = PackagesFolderSourceRepository,
                         ResolutionContext = resolutionContext,
-                        AllowDowngrades = downgradeAllowed
+                        AllowDowngrades = downgradeAllowed,
+                        ProjectContext = nuGetProjectContext
                     };
 
                     var availablePackageDependencyInfoWithSourceSet = await ResolverGather.GatherAsync(gatherContext, token);
@@ -1208,7 +1212,8 @@ namespace NuGet.PackageManagement
                         projectInstalledPackageReferences,
                         preferredPackageReferences.Select(package => package.PackageIdentity),
                         prunedAvailablePackages,
-                        SourceRepositoryProvider.GetRepositories().Select(s => s.PackageSource));
+                        SourceRepositoryProvider.GetRepositories().Select(s => s.PackageSource),
+                        new LoggerAdapter(nuGetProjectContext));
 
                     nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.AttemptingToResolveDependencies, packageIdentity, resolutionContext.DependencyBehavior);
 
@@ -1555,6 +1560,9 @@ namespace NuGet.PackageManagement
                 throw new ArgumentNullException(nameof(nuGetProjectContext));
             }
 
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+
             // DNU: Find the closure before executing the actions
             var buildIntegratedProject = nuGetProject as BuildIntegratedNuGetProject;
             if (buildIntegratedProject != null)
@@ -1682,6 +1690,11 @@ namespace NuGet.PackageManagement
 
                 // Clear direct install
                 SetDirectInstall(null, nuGetProjectContext);
+
+                // calculate total time taken to execute all nuget actions
+                stopWatch.Stop();
+                nuGetProjectContext.Log(
+                    ProjectManagement.MessageLevel.Info, Strings.NugetActionsTotalTime, DatetimeUtility.ToReadableTimeFormat(stopWatch.Elapsed));
 
                 if (exceptionInfo != null)
                 {

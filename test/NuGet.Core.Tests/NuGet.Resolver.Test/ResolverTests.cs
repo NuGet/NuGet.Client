@@ -535,7 +535,8 @@ namespace NuGet.Resolver.Test
                 install,
                 targets,
                 sourceRepository,
-                Enumerable.Empty<PackageSource>());
+                Enumerable.Empty<PackageSource>(),
+				Common.NullLogger.Instance);
 
             var solution = resolver.Resolve(context, CancellationToken.None).ToArray();
             var packages = solution.ToDictionary(p => p.Id);
@@ -1000,7 +1001,8 @@ namespace NuGet.Resolver.Test
                 Enumerable.Empty<PackageReference>(),
                 targets,
                 availablePackages,
-                Enumerable.Empty<PackageSource>());
+                Enumerable.Empty<PackageSource>(),
+				Common.NullLogger.Instance);
         }
     }
 }

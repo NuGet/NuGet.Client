@@ -138,6 +138,9 @@
   <data name="PackagesConfigConstraint" xml:space="preserve">
     <value>'{0}' has an additional constraint {1} defined in {2}.</value>
   </data>
+  <data name="ResolverTotalTime" xml:space="preserve">
+    <value>Resolving dependency information took {0}</value>
+  </data>
   <data name="UnableToFindCompatibleVersion" xml:space="preserve">
     <value>Unable to find a version of '{0}' that is compatible with {1}.</value>
   </data>

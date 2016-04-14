@@ -285,4 +285,10 @@
   <data name="PackageNotFoundOnSource" xml:space="preserve">
     <value>Package '{0}' is not found on source '{1}'.</value>
   </data>
+  <data name="GatherTotalTime" xml:space="preserve">
+    <value>Gathering dependency information took {0}</value>
+  </data>
+  <data name="NugetActionsTotalTime" xml:space="preserve">
+    <value>Executing nuget actions took {0}</value>
+  </data>
 </root>
