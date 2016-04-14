@@ -134,6 +134,14 @@ namespace NuGet.Protocol.Core.v3.RemoteRepositories
                             ensureValidContents: stream => HttpStreamValidation.ValidateXml(uri, stream),
                             cancellationToken: cancellationToken))
                         {
+                            if (data.Status == HttpSourceResultStatus.NoContent)
+                            {
+                                // Team city returns 204 when no versions of the package exist
+                                // This should result in an empty list and we should not try to
+                                // read the stream as xml.
+                                break;
+                            }
+
                             var doc = V2FeedParser.LoadXml(data.Stream);
 
                             var result = doc.Root

@@ -119,7 +119,7 @@ namespace NuGet.Protocol.Core.v3
             }
 
             string serviceDocumentBaseAddress = null;
-            if (response.Status != HttpSourceResultStatus.NotFound)
+            if (response.Status != HttpSourceResultStatus.NotFound && response.Status != HttpSourceResultStatus.NoContent)
             {
                 serviceDocumentBaseAddress = V2FeedParser.GetBaseAddress(response.Stream);
             }
