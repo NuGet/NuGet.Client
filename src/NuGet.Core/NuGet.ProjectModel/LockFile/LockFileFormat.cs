@@ -251,7 +251,7 @@ namespace NuGet.ProjectModel
 
             WritePathArray(json, FilesProperty, library.Files, WriteString);
             return new JProperty(
-                library.Name + "/" + library.Version.ToString(),
+                library.Name + "/" + library.Version.ToNormalizedString(),
                 json);
         }
 
