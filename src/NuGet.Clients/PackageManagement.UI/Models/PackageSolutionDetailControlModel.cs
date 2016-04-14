@@ -343,7 +343,7 @@ namespace NuGet.PackageManagement.UI
         {
             CanUninstall = Projects.Any(project => project.IsSelected && project.InstalledVersion != null);
 
-            CanInstall = Projects.Any(
+            CanInstall = SelectedVersion != null && Projects.Any(
                 project => project.IsSelected &&
                     VersionComparer.Default.Compare(SelectedVersion.Version, project.InstalledVersion) != 0);
         }
